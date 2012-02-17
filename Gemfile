@@ -2,9 +2,12 @@ source 'https://rubygems.org'
 
 gem 'rails', '3.2.1'
 
-# Bundle edge Rails instead:
-# gem 'rails', :git => 'git://github.com/rails/rails.git'
-
+#
+# ---------- Database
+#
+#if/when my key abbreviation gets pulled into the official gem, should move back to that
+gem "mongo_mapper", :git => 'git://github.com/spinosa/mongomapper.git', :branch => 'key_abbreviation'
+gem "bson_ext"
 
 
 # Gems used only for assets and not required
