@@ -1,0 +1,19 @@
+defaults: &defaults
+  db_host: '127.0.0.1'
+  db_port: '27017'
+  db_options: {}
+
+development:
+  <<: *defaults
+  db_name: 'dev-gt-video'
+
+test:
+  <<: *defaults
+  db_name: 'test-gt-video'
+
+production:
+  <<: *defaults
+  db_name: 'gt-video'
+  db_hosts: ["ip:port", "ip:port", "ip:port"]
+  db_username: "someun"
+  db_password: "somepw"

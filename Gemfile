@@ -9,6 +9,11 @@ gem 'rails', '3.2.1'
 gem "mongo_mapper", :git => 'git://github.com/spinosa/mongomapper.git', :branch => 'key_abbreviation'
 gem "bson_ext"
 
+#
+# ---------- Config
+#
+gem "settingslogic"
+
 
 # Gems used only for assets and not required
 # in production environments by default.
