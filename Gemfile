@@ -27,19 +27,28 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 end
 
-gem 'jquery-rails'
-
-# To use ActiveModel has_secure_password
-# gem 'bcrypt-ruby', '~> 3.0.0'
-
-# To use Jbuilder templates for JSON
-# gem 'jbuilder'
-
-# Use unicorn as the web server
-# gem 'unicorn'
+#gem 'jquery-rails'
 
 # Deploy with Capistrano
 # gem 'capistrano'
 
 # To use debugger
 # gem 'ruby-debug19', :require => 'ruby-debug'
+
+#
+# ---------- Testing
+#
+group :test, :development do
+	gem 'rspec-rails'
+end
+
+group :test do
+	gem 'shoulda'
+	
+	# rspec has nice mocking, but we could also use
+	# gem 'mocha'
+	# and then change the config in spec/spec_helper.rb
+	
+	# if we have to fuck with time, this looks nice:
+	# gem 'timecop'
+end

@@ -1,12 +1,15 @@
+# We are using the User model form Shelby (before rolls)
+# New vs. old keys will be clearly listed
+
 class User
   include MongoMapper::Document
   
   include Plugins::MongoMapperConfigurator
-  configure_mongomapper Settings::Roll
+  configure_mongomapper Settings::User
 
 
   #--new keys--
-
+  many :rolls_following
 
   #--old keys--
 
