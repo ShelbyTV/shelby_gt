@@ -1,7 +1,7 @@
 # A user can follow many rolls
 # We want to track not just those IDs, but some metadata (like when they started following)
 
-class RollsFollowing
+class RollFollowing
   include MongoMapper::EmbeddedDocument
   plugin MongoMapper::Plugins::Timestamps
   

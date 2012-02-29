@@ -31,8 +31,8 @@ module Settings
     load!
   end
   
-  class Post < Settingslogic
-    source "#{Rails.root}/config/settings/post.yml"
+  class Conversation < Settingslogic
+    source "#{Rails.root}/config/settings/conversation.yml"
     namespace Rails.env
     load!
   end

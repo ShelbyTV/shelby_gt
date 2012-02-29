@@ -5,15 +5,15 @@ defaults: &defaults
 
 development:
   <<: *defaults
-  db_name: 'dev-gt-post'
+  db_name: 'dev-gt-conversation'
 
 test:
   <<: *defaults
-  db_name: 'test-gt-post'
+  db_name: 'test-gt-conversation'
 
 production:
   <<: *defaults
-  db_name: 'gt-post'
+  db_name: 'gt-conversation'
   db_hosts: ["ip:port", "ip:port", "ip:port"]
   db_username: "someun"
   db_password: "somepw"

@@ -9,15 +9,19 @@ class User
 
 
   #--new keys--
-  many :rolls_following
+  
+  # the Rolls this user is following and when they started following
+  many :roll_followings
 
   #--old keys--
 
-  #TODO: enforce uniqueness within Mongo
-  #User.ensure_index([:nickname, 1], :unique => true, :background => true)
-  
+
   # N.B. - we are still seeing invalid nicknames
   # seeing nicknames with spaces
   # seeing duplicates (although my auth controller primary-only stuff may fix this one)
 
+
+  #TODO: finish this list
+  attr_accessible :name, :nickname, :primary_email
+  
 end
