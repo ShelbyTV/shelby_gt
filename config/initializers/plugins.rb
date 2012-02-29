@@ -1,3 +1,3 @@
 module Plugins
-  autoload :MongoMapperConfigurator, 'mongomapper_configurator'
+  autoload :MongoMapperConfigurator, 'mongo_mapper_configurator'
 end
