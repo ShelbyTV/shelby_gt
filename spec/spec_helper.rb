@@ -3,6 +3,7 @@ ENV["RAILS_ENV"] ||= 'test'
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
 require 'rspec/autorun'
+require "mongo_mapper_helper"
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
@@ -18,3 +19,7 @@ RSpec.configure do |config|
   # config.mock_with :rr
 
 end
+
+# Before running tests, drop all the collections across the DBs and re-create the indexes
+MongoMapper::Helper.drop_all_dbs
+MongoMapper::Helper.ensure_all_indexes

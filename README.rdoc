@@ -1,3 +1,1 @@
 == TODO
-
-1. Make sure rake runs the tasks 'db:test:prepare', 'db:indexes:ensure' in TEST environment (current have to run `rake RAILS_ENV=test`)
