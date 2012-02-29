@@ -14,7 +14,8 @@ class User
   many :roll_followings
 
   #--old keys--
-
+  key :name,              String
+  key :nickname,          String
 
   # N.B. - we are still seeing invalid nicknames
   # seeing nicknames with spaces
