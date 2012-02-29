@@ -9,11 +9,11 @@ class Roll
   
   # it was created by somebody
   belongs_to :creator,  :class_name => 'User', :required => true
-  key :creator_id,      ObjectId,   :abbr => :a
+  key :creator_id,      ObjectId, :required => true, :abbr => :a
   
   # it has some basic categorical info
-  key :title,           String,     :abbr => :b
-  key :thumbnail_url,   String,     :abbr => :c
+  key :title,           String, :required => true, :abbr => :b
+  key :thumbnail_url,   String, :required => true, :abbr => :c
 
   # public rolls can be viewed, posted to, and invited to by any user (doesn't have to be following)
   # private rolls can only be viewed, posted to, and invited to by private_collaborators
@@ -30,5 +30,11 @@ class Roll
   many :private_collaborators
   
   attr_accessible :title, :thumbnail_url
+
+  def followed_by?(u)
+    raise ArgumentException "must supply user or user_id" unless u
+    user_id = (u.class == User ? u.id : u)
+    following_users.any? { |fu| fu.user_id == user_id }
+  end
 
 end

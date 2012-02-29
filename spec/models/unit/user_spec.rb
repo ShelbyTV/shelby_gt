@@ -1,5 +1,6 @@
 require 'spec_helper'
 
+# Unit: don't hit DB, check on internals of model
 describe User do
   before(:each) do
     @user = User.new

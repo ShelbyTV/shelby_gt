@@ -1,5 +1,6 @@
 require 'spec_helper'
 
+#Functional: hit the database, treat model as black box
 describe DashboardEntry do
   before(:each) do
     @dashboard_entry = DashboardEntry.new
