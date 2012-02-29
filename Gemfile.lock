@@ -69,6 +69,9 @@ GEM
     plucky (0.4.4)
       mongo (~> 1.5)
     polyglot (0.3.3)
+    rabl (0.6.0)
+      activesupport (>= 2.3.14)
+      multi_json (~> 1.0.3)
     rack (1.4.1)
     rack-cache (1.1)
       rack (>= 0.4)
@@ -135,6 +138,7 @@ DEPENDENCIES
   bson_ext
   coffee-rails (~> 3.2.1)
   mongo_mapper!
+  rabl
   rails (= 3.2.1)
   rspec-rails
   sass-rails (~> 3.2.3)

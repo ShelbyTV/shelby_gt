@@ -14,6 +14,11 @@ gem "bson_ext"
 #
 gem "settingslogic"
 
+#
+# ---------- API
+#
+gem 'rabl'
+
 
 # Gems used only for assets and not required
 # in production environments by default.
