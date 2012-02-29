@@ -10,7 +10,7 @@ class Video
   # The video host (ie YouTube, Vimeo, &c.)
   key :provider_name, String, :abbr => :a
   # The unique id used by the host to identify the video
-  key :privoder_id, String, :abbr => :b
+  key :provider_id, String, :abbr => :b
 
   # Metadata from the host...
   key :title, String, :abbr => :c

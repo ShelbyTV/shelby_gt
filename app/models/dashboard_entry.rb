@@ -35,4 +35,6 @@ class DashboardEntry
   
   attr_accessible
 
+  def created_at() self.id.generation_time; end
+
 end

@@ -7,7 +7,11 @@ describe Roll do
   
   it "should have an index on [creator_id]" do
     indexes = Roll.collection.index_information.values.map { |v| v["key"] }
-    indexes.should include({"creator_id"=>1})
+    indexes.should include({"a"=>1})
+  end
+  
+  it "should abbreviate creator_id as a" do
+    Roll.keys["creator_id"].abbr.should == :a
   end
   
 end

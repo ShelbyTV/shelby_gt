@@ -19,17 +19,17 @@ namespace :db do
     desc 'Ensure we have created the indexes we need'
     task :ensure => :environment do
       
-      # Get the newest dashboard entries for a user
-      DashboardEntry.ensure_index([[:user_id, 1], [:created_at, -1]], :background => false)
+      #Get all the conversations related to a given video (a == video_id)
+      Conversation.ensure_index(:a, :background => true)
       
-      # Get the highest scored frame for a given roll
-      Frame.ensure_index([[:roll_id, 1], [:score, -1]], :background => true)
+      # Get the newest dashboard entries for a user (a == user_id)
+      DashboardEntry.ensure_index([[:a, 1], [:_id, -1]], :background => false)
       
-      #Get all the conversations related to a given video
-      Conversation.ensure_index(:video_id, :background => true)
+      # Get the highest scored frame for a given roll (a == roll_id; e == score)
+      Frame.ensure_index([[:a, 1], [:e, -1]], :background => true)
       
-      # Get the rolls a given user has created
-      Roll.ensure_index(:creator_id, :background => true)
+      # Get the rolls a given user has created (a == creator_id)
+      Roll.ensure_index(:a, :background => true)
           
       # Get a user by their nickname, ensure it's unique
       User.ensure_index(:nickname, :background => true, :unique => true)
@@ -43,8 +43,8 @@ namespace :db do
       # Get user based on their nickname on a 3rd party network (facebook, twitter)
       User.ensure_index('authentications.nickname', :background => true)
 
-      # Get a video from a provider (ie youtube video 123xyz), make sure they're unique
-      Video.ensure_index([[:provider_name, 1], [:provider_id, 1]], :background => true, :unique => true)
+      # Get a video from a provider (ie youtube video 123xyz), make sure they're unique (a == provider_name, b == provider_id)
+      Video.ensure_index([[:a, 1], [:b, 1]], :background => true, :unique => true)
 
     end
     

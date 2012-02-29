@@ -7,7 +7,11 @@ describe Conversation do
   
   it "should have an index on [video_id]" do
     indexes = Conversation.collection.index_information.values.map { |v| v["key"] }
-    indexes.should include({"video_id"=>1})
+    indexes.should include({"a"=>1})
+  end
+  
+  it "should abbreviate video_id as :a" do
+    Conversation.keys["video_id"].abbr.should == :a
   end
   
 end
