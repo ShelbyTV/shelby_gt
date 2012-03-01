@@ -50,10 +50,4 @@ describe Frame do
   
   end
   
-  context "re-rolling" do
-  
-    it "***needs tests for re-rollwing w/r/t frame ancestors and frame children"
-  
-  end
-  
 end

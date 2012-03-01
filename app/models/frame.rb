@@ -44,6 +44,39 @@ class Frame
   
   def created_at() self.id.generation_time; end
   
+  #------ ReRolling -------
+  
+  #re roll this frame into the given roll, for the given user
+  def re_roll(user, roll)
+    raise ArgumentException "must supply user or user_id" unless user
+    user_id = (user.class == User ? user.id : user)
+    
+    raise ArgumentException "must supply roll or roll_id" unless roll
+    roll_id = (roll.class == Roll ? roll.id : roll)
+    
+    # Set up the basics
+    new_frame = Frame.new
+    new_frame.creator_id = user_id
+    new_frame.roll_id = roll_id
+    new_frame.video_id = self.video_id
+    
+    # Create a new conversation
+    convo = Conversation.new
+    convo.video_id = new_frame.video_id
+    convo.public = true
+    new_frame.conversation = convo
+    
+    # Track the lineage
+    new_frame.frame_ancestors = self.frame_ancestors.clone
+    new_frame.frame_ancestors << self.id
+    self.frame_children << new_frame.id
+    
+    return new_frame
+  end
+  
+  
+  #------ Voting -------
+  
   def upvote(u)
     raise ArgumentException "must supply user or user_id" unless u
     user_id = (u.class == User ? u.id : u)
