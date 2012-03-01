@@ -12,13 +12,13 @@ class User
   
   # the Rolls this user is following and when they started following
   many :roll_followings
+  
+  # Rolls this user has unfollowed
+  # these rolls should not be auto-followed by our system
+  key :rolls_unfollowed, Array, :typecase => ObjectId, :abbr => :aa
 
   #--old keys--
 
-
-  # N.B. - we are still seeing invalid nicknames
-  # seeing nicknames with spaces
-  # seeing duplicates (although my auth controller primary-only stuff may fix this one)
 
 
   #TODO: finish this list
