@@ -17,9 +17,13 @@ gem "settingslogic"
 #
 # ---------- API
 #
-gem 'rabl'
-gem 'yard', '~> 0.7.4'
-gem 'yard-rest', '0.3.0', :git => 'git://github.com/rknLA/yard-rest-plugin.git'
+gem 'rabl','~> 0.6.0'
+gem 'yajl-ruby', :require => "yajl"
+
+group :development do
+	gem 'yard', '~> 0.7.4'
+	gem 'yard-rest', '0.3.0', :git => 'git://github.com/rknLA/yard-rest-plugin.git'
+end
 
 # Gems used only for assets and not required
 # in production environments by default.

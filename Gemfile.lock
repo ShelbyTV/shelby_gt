@@ -72,11 +72,13 @@ GEM
     mime-types (1.17.2)
     mongo (1.5.2)
       bson (= 1.5.2)
-    multi_json (1.1.0)
+    multi_json (1.0.3)
     plucky (0.4.4)
       mongo (~> 1.5)
     polyglot (0.3.3)
-    rabl (0.2.8)
+    rabl (0.6.0)
+      activesupport (>= 2.3.14)
+      multi_json (~> 1.0.3)
     rack (1.4.1)
     rack-cache (1.1)
       rack (>= 0.4)
@@ -139,6 +141,7 @@ GEM
     uglifier (1.2.3)
       execjs (>= 0.3.0)
       multi_json (>= 1.0.2)
+    yajl-ruby (1.1.0)
     yard (0.7.5)
 
 PLATFORMS
@@ -148,12 +151,13 @@ DEPENDENCIES
   bson_ext
   coffee-rails (~> 3.2.1)
   mongo_mapper!
-  rabl
+  rabl (~> 0.6.0)
   rails (= 3.2.2)
   rspec-rails
   sass-rails (~> 3.2.3)
   settingslogic
   shoulda
   uglifier (>= 1.0.3)
+  yajl-ruby
   yard (~> 0.7.4)
   yard-rest (= 0.3.0)!

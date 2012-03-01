@@ -1,4 +1,4 @@
-class FramesController < ApplicationConroller
+class FramesController < ApplicationController
   
   ##
   # Returns one user, with the given parameters.
