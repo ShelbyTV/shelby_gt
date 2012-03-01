@@ -18,7 +18,8 @@ gem "settingslogic"
 # ---------- API
 #
 gem 'rabl'
-
+gem 'yard'
+gem 'yard-rest-plugin'
 
 # Gems used only for assets and not required
 # in production environments by default.

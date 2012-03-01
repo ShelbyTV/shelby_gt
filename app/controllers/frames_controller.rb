@@ -1,4 +1,4 @@
-class FramesController < ApplicationContframeer  
+class FramesController < ApplicationConroller
 
   # optional parameters:
   #   params[:include_video]    : Boolean
