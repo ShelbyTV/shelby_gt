@@ -8,10 +8,12 @@ describe Roll do
     @stranger = User.new
   end
   
+  context "whatever" do
   it "should have an index on [creator_id]" do
     indexes = Roll.collection.index_information.values.map { |v| v["key"] }
     indexes.should include({"a"=>1})
   end
+end
   
   it "should abbreviate creator_id as :a" do
     Roll.keys["creator_id"].abbr.should == :a
@@ -32,8 +34,11 @@ describe Roll do
   end
 
   it "should be viewable & invitable to by anybody if +public" do
+    @roll.creator = @user
     @roll.public = true
     
+    @roll.viewable_by?(@user).should == true
+    @roll.invitable_to_by?(@user).should == true
     @roll.viewable_by?(@stranger).should == true
     @roll.invitable_to_by?(@stranger).should == true
   end
@@ -54,7 +59,7 @@ describe Roll do
     @roll.postable_by?(@stranger).should == false
   end
   
-  it "should be viewable, postable and invitable-to by private_collaborators if it's -public and +collaborative" do
+  it "should be viewable, postable and invitable-to by followers if it's -public and +collaborative" do
     @roll.creator = @user
     @roll.public = false
     @roll.collaborative = true
@@ -64,7 +69,8 @@ describe Roll do
     @roll.postable_by?(@stranger).should == false
     
     #get to know that stranger...
-    @roll.add_private_collaborator(@stranger)
+    # ie add them as a follower to a private collaborative roll
+    @roll.add_follower(@stranger)
     @roll.viewable_by?(@stranger).should == true
     @roll.invitable_to_by?(@stranger).should == true
     @roll.postable_by?(@stranger).should == true
