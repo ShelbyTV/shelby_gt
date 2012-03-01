@@ -1,0 +1,3 @@
+object @post
+
+attributes :id
