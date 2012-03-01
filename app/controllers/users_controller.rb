@@ -10,18 +10,24 @@ class UsersController < ApplicationController
   ##
   # Returns one user, with the given parameters.
   #
-  # [GET] /users.[format]?[argument_name=argument_val]
+  # [GET] /users.[format]/:id?attr_name=attr_val
   # 
   # @param [Required, String] id The id of the user
   # @param [Optional, Boolean] include_auths Include the embedded authorizations
   # @param [Optional,  Boolean] include_rolls Include the referenced rolls the user is following
+  #
+  # @todo return error if id not present w/ params.has_key?(:id)
   def show
-    # TODO: return error if :id not present w/ params.has_key?(:id)
     id = params.delete(:id)
     @params = params
     @user = User.find(params[:id])
   end
-  
+
+  ##
+  # Creates and returns one user, with the given parameters.
+  #
+  # [POST] /users.[format]?[argument_name=argument_val]
+  # @todo FIGURE THIS OUT. BUILD IT.
   def create
     
   end
@@ -29,10 +35,12 @@ class UsersController < ApplicationController
   ##
   # Updates and returns one user, with the given parameters.
   #
-  # [GET] /users.[format]?[argument_name=argument_val]
+  # [PUT] /users.[format]/:id?attr_name=attr_val
   # 
   # @param [Required, String] id The id of the user  
   # @param [Required, String] attr The attribute(s) to update
+  #
+  # @todo FIGURE THIS OUT. BUILD IT.
   def update
     @user = User.find(params[:id])
   end
@@ -40,7 +48,7 @@ class UsersController < ApplicationController
   ##
   # Destroys one user, returning Success/Failure
   #
-  # [GET] /users.[format]?[argument_name=argument_val]
+  # [DELETE] /users.[format]/:id
   # 
   # @param [Required, String] id The id of the user to destroy.
   # @return [Integer] Whether request was successful or not.
