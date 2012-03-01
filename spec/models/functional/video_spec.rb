@@ -1,5 +1,6 @@
 require 'spec_helper'
 
+#Functional: hit the database, treat model as black box
 describe Video do
   before(:each) do
     @video = Video.new
