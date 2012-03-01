@@ -24,10 +24,8 @@ class Roll
   key :collaborative,   Boolean,  :default => true,    :abbr => :e
 
   # each user following this roll and when they started following
+  # for private collaborative rolls, these are the participating users
   many :following_users
-  
-  # for private collaborative rolls, who are the private collaborators (active or invited)
-  many :private_collaborators
   
   attr_accessible :title, :thumbnail_url
 
@@ -36,5 +34,47 @@ class Roll
     user_id = (u.class == User ? u.id : u)
     following_users.any? { |fu| fu.user_id == user_id }
   end
+  
+  def add_follower(u)
+    raise ArgumentException "must supply user" unless u and u.class == User
+    
+    self.following_users << FollowingUser.new(:user => u)
+    u.roll_followings << RollFollowing.new(:roll => self)
+  end
+  
+  # Anybody can view a public roll
+  # Creator of a roll can always view it
+  # Private rolls are only viewable by followers
+  def viewable_by?(u)
+    raise ArgumentException "must supply user or user_id" unless u
+    user_id = (u.class == User ? u.id : u)
+    
+    return true if self.public?
+    
+    return true if self.creator_id == user_id
+    
+    #private roll user didn't create, must be a follower to view
+    return self.following_users.any? { |fu| fu.user_id == user_id }
+  end
+
+  # Only creator can post to a non-collaborative roll
+  # Anybody can post to public collaborative roll
+  # Only followers can post to private, collaborative roll
+  def postable_by?(u)
+    raise ArgumentException "must supply user or user_id" unless u
+    user_id = (u.class == User ? u.id : u)
+    
+    return true if self.creator_id == user_id
+    
+    return false unless self.collaborative?
+    
+    return true if self.public?
+    
+    # private collaborative roll, must be a follower to post
+    return self.following_users.any? { |fu| fu.user_id == user_id }
+  end
+
+  # if you can view it, you can invite to it
+  def invitable_to_by?(u) viewable_by?(u); end
 
 end
