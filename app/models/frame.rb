@@ -20,15 +20,18 @@ class Frame
   
   # Frames will be ordered in Rolls based on their score
   key :score,  Integer, :required => true, :abbr => :e
+  
+  # The users who have upvoted, increasing the score
+  key :upvoters, Array, :typecase => ObjectId, :abbr => :f
 
   # To track the lineage of a Frame (both forward and backward), when Frame F1 gets re-rolled as F2:
   # F1.frame_children << F2
   # (F2.frame_ancestors = F1.frame_ancestors) << F1
   #
   # Track a complete lineage to the original Frame
-  key :frame_ancestors, Array, :typecast => 'ObjectId', :abbr => :f
+  key :frame_ancestors, Array, :typecast => 'ObjectId', :abbr => :g
   # Track *immediate* children (but not grandchilren, &c.)
-  key :frame_children, Array, :typecast => 'ObjectId', :abbr => :g
+  key :frame_children, Array, :typecast => 'ObjectId', :abbr => :h
   
   
   #nothing needs to be mass-assigned (yet?)

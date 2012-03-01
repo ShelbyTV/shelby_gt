@@ -1,5 +1,6 @@
 require 'spec_helper'
 
+#Functional: hit the database, treat model as black box
 describe Frame do
   before(:each) do
     @frame = Frame.new
