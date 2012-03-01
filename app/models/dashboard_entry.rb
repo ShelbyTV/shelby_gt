@@ -25,7 +25,7 @@ class DashboardEntry
     :new_social_frame => 0,
     :re_roll => 1,
     :watch => 2,
-    :commenbt => 3
+    :comment => 3
   }.freeze
   key :action, Integer, :abbr => :e, :default => ENTRY_TYPE[:new_social_frame]
 

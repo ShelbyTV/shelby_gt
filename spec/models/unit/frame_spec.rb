@@ -10,10 +10,4 @@ describe Frame do
     @frame.database.name.should =~ /.*roll-frame/
   end
   
-  it "should update score correctly with each new upvote"
-  
-  it "should add upvoting user to upvoters array"
-  
-  it "should not allow user to upvote more than once"
-  
 end
