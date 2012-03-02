@@ -18,9 +18,14 @@ class User
   key :rolls_unfollowed, Array, :typecase => ObjectId, :abbr => :aa
 
   #--old keys--
-  key :name,              String
-  key :nickname,          String
-
+  key :name,                  String
+  #Mongo string matches are case sensitive and regex queries w/ case insensitivity won't actually use index
+  #So we downcase the nickname into User and then query based on that (which is now indexed)
+  key :nickname,              String, :required => true
+  key :downcase_nickname,     String
+  key :user_image,            String
+  key :user_image_original,   String
+  key :primary_email,         String
 
   #TODO: finish this list
   attr_accessible :name, :nickname, :primary_email
