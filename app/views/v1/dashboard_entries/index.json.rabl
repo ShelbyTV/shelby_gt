@@ -1,3 +1,3 @@
-collection @users
+collection @dashboad_entries
 
-extends "users/show"
+attributes :roll, :frame, :video, :conversation, :user

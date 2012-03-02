@@ -1,0 +1,3 @@
+object @message
+
+attributes :id

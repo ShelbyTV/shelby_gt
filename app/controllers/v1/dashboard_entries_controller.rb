@@ -6,13 +6,24 @@ class V1::DashboardEntriesController < ApplicationController
   # [GET] /dashboad.[format]?attr_name=attr_val
   # 
   # @param [Optional, Integer] limit The number of entries to return
-  # @param [Optional, Integer] limit The number of offset to return
+  # @param [Optional, Integer] offset The number of offset to return
   # @param [Optional, Boolean] include_children Include the referenced objects
-  # @param [Optional, Boolean] unread Only get unread entries
   #
   # @todo return error if id not present w/ params.has_key?(:id)  
   # @todo FIGURE THIS OUT. BUILD IT.
   def index
+    # defaults
+    params[:limit] ||= 20
+    params[:offset] ||= 0
+    @dashboad_entries = [];
+    DashboardEntry.limit(params[:limit]).skip(params[:offset]).find_each.each do |entry|
+      @dashboad_entries << {  :roll => entry.roll, 
+                    :frame => entry.frame, 
+                    :video => entry.video, 
+                    :conversation => entry.conversation, 
+                    :user => entry.user
+                  }
+    end
     
   end
 
@@ -28,7 +39,10 @@ class V1::DashboardEntriesController < ApplicationController
   def show
     id = params.delete(:id)
     @params = params
-    @post = DashboardEntry.find(id)
+    @dashboard_entry = DashboardEntry.find(id)
+    @roll = @dashboard_entry.roll
+    @frame = @dashboard_entry.frame
+    @video = @dashboard_entry.video
   end
   
   ##
@@ -50,7 +64,7 @@ class V1::DashboardEntriesController < ApplicationController
   #
   # @todo FIGURE THIS OUT. BUILD IT.
   def update
-    @dashboard = DashboardEntry.find(params[:id])
+    @dashboard_entry = DashboardEntry.find(params[:id])
   end
   
   ##
@@ -61,7 +75,7 @@ class V1::DashboardEntriesController < ApplicationController
   # @param [Required, String] id The id of the dashboard entry to destroy.
   # @return [Integer] Whether request was successful or not.
   def destroy
-    @dashboard = DashboardEntry.find(params[:id])
+    @dashboard_entry = DashboardEntry.find(params[:id])
   end
 
 end
