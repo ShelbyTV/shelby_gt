@@ -6,7 +6,7 @@ class V1::UsersController < ApplicationController
     @success = 1 if @users = User.all
   end
   
-  ##
+  ####################################
   # Returns one user, with the given parameters.
   #
   # [GET] /users.[format]/:id?attr_name=attr_val
@@ -23,7 +23,7 @@ class V1::UsersController < ApplicationController
     @auths = @params[:include_auths] ? @user.authentications : nil
   end
 
-  ##
+  ####################################
   # Creates and returns one user, with the given parameters.
   #
   # [POST] /users.[format]?[argument_name=argument_val]
@@ -32,7 +32,7 @@ class V1::UsersController < ApplicationController
     
   end
 
-  ##
+  ####################################
   # Updates and returns one user, with the given parameters.
   #
   # [PUT] /users.[format]/:id?attr_name=attr_val
@@ -45,7 +45,7 @@ class V1::UsersController < ApplicationController
     @user = User.find(params[:id])
   end
   
-  ##
+  ####################################
   # Destroys one user, returning Success/Failure
   #
   # [DELETE] /users.[format]/:id
