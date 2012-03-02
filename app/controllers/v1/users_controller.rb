@@ -54,11 +54,7 @@ class V1::UsersController < ApplicationController
   # @return [Integer] Whether request was successful or not.
   def destroy
     @user = User.find(params[:id])
-    if @user.destroy
-      @success = 1
-    else
-      @error = 1
-    end
+    @status = @user.destroy ? "ok" : "error"
   end
 
 

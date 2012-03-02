@@ -46,11 +46,7 @@ class V1::RollsController < ApplicationController
   # @param [Required, String] id The id of the roll
   def destroy
     @roll = Roll.find(params[:id])
-    if @roll.destroy
-      @success = 1
-    else
-      @error = 1
-    end
+    @status = @roll.destroy ? "ok" : "error"
   end
 
 end

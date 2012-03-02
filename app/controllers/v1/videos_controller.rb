@@ -45,6 +45,7 @@ class V1::VideosController < ApplicationController
   # @return [Integer] Whether request was successful or not.
   def destroy
     @video = Video.find(params[:id])
+    @status = @video.destroy ? "ok" : "error"
   end
 
 

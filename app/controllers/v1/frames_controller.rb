@@ -49,6 +49,7 @@ class V1::FramesController < ApplicationController
   # @return [Integer] Whether request was successful or not.
   def destroy
     @frame = Frame.find(params[:id])
+    @status = @frame.destroy ? "ok" : "error"
   end
 
 

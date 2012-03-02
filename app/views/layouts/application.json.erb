@@ -1,8 +1,6 @@
 {
-	<% if @success %>
-  	"success": <%= @success.to_json.html_safe %>,
-	<% elsif @error %>
-  	"error": <%= @error.to_json.html_safe %>,
+	<% if @status %>
+  	"status": <%= @status.to_json.html_safe %>,
 	<% end %>
   "result": <%= yield %>
 }
