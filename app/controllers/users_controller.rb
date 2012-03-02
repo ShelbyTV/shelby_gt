@@ -1,11 +1,10 @@
 class UsersController < ApplicationController  
 
-=begin
+
   # only for testing purposes
   def index
-    @users = User.all
+    @success = 1 if @users = User.all
   end
-=end
   
   ##
   # Returns one user, with the given parameters.
@@ -20,7 +19,7 @@ class UsersController < ApplicationController
   def show
     id = params.delete(:id)
     @params = params
-    @user = User.find(params[:id])
+    @user = User.find(id)
   end
 
   ##
