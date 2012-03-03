@@ -3,12 +3,10 @@
 	%head
 		%meta{ :charset => "utf-8" }
 		%meta{ 'http-equiv' => "X-UA-Compatible", :content => "chrome=1" }
-		%title= APP_CONFIG[:title] || yield(:title)
+		%title= Settings::Global.title] || yield(:title)
 		= csrf_meta_tag
 		
-		-# Jammit (http://documentcloud.github.com/jammit/) used to package our assets -- see /config/assets.yml
-		= include_stylesheets :common, :media => 'all'
-		= include_stylesheets :standalone, :media => 'all'
+		= include_stylesheets :application, :media => 'all'
 		
 		%link{ :rel => "shortcut icon", :href => "/favicon.png" }
 		

@@ -19,13 +19,10 @@ ShelbyGt::Application.routes.draw do
   # Allows for versioning of API
   # NOTE: Must use V1::ControllerName in controllers
   namespace :v1 do
-    resources :users
-    resources :rolls
-    resources :frames
-    resources :conversation
-    resources :messages
-    resources :videos
-    resources :dashboard_entries
+    resources :user, :roll, :frame, :video, :dashboard_entries
+    resources :conversation do 
+      resources :message
+    end
   end
 
   # Sample of regular route:

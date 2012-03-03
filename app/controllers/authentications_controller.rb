@@ -8,13 +8,12 @@ class AuthenticationsController < ApplicationController
   
   def create
     omniauth = request.env["omniauth.auth"]
-    
     # See if we have a matching user...
     user = User.first( :conditions => { 'authentications.provider' => omniauth['provider'], 'authentications.uid' => omniauth['uid'] } )
     
     # Broadcast id saved as cookie when user isn't logged in
-    referral_broadcast_id = cookies[:shelby_referral_broadcast_id]
-    cookies[:shelby_referral_broadcast_id] = nil
+    #referral_broadcast_id = cookies[:shelby_referral_broadcast_id]
+    #cookies[:shelby_referral_broadcast_id] = nil
     
     # ---- Current user with two seperate accounts
     if user_signed_in? and user and user != current_user
@@ -91,3 +90,5 @@ class AuthenticationsController < ApplicationController
     @opener_location = new_user_session_path
     render :action => 'redirector', :layout => 'simple'
   end
+  
+end
