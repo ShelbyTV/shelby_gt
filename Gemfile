@@ -27,6 +27,14 @@ gem "haml"
 gem "compass", "0.11.7"
 gem "jammit"
 
+#
+# ---------- User Authentication
+#
+gem 'devise', '>= 2.0'
+gem 'mm-devise'
+gem 'omniauth', '~> 1.0.2'
+gem 'httparty'
+
 group :development do
 	gem 'yard', '~> 0.7.4'
 	gem 'yard-rest', '0.3.0', :git => 'git://github.com/rknLA/yard-rest-plugin.git'
