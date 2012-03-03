@@ -56,18 +56,18 @@ class AuthenticationsController < ApplicationController
         user.save
       
         # Update Signin Stat
-        Stats.increment(Stats::SIGNIN)
-        Stats.increment(Stats::USER_SIGNIN_TWITTER, user.id, 'twitter_signin') if omniauth['provider'] == 'twitter'
-        Stats.increment(Stats::USER_SIGNIN_FACEBOOK, user.id, 'facebook_signin') if omniauth['provider'] == 'facebook'
+        #Stats.increment(Stats::SIGNIN)
+        #Stats.increment(Stats::USER_SIGNIN_TWITTER, user.id, 'twitter_signin') if omniauth['provider'] == 'twitter'
+        #Stats.increment(Stats::USER_SIGNIN_FACEBOOK, user.id, 'facebook_signin') if omniauth['provider'] == 'facebook'
 
         # Track the signup for A/B testing
-        track! :new_signup
+        #track! :new_signup
 
         sign_in(:user, user)
         @opener_location = request.env['omniauth.origin'] || root_path
       else
         Rails.logger.error "AuthenticationsController#create - ERROR - user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
-        Stats.increment(Stats::FAILED_SIGNUP)
+        #Stats.increment(Stats::FAILED_SIGNUP)
         
         @opener_location = new_user_session_path
       end
@@ -78,7 +78,7 @@ class AuthenticationsController < ApplicationController
   end
 
   def fail
-    Stats.increment(Stats::FAILED_SIGNIN)
+    #Stats.increment(Stats::FAILED_SIGNIN)
     if current_user
       Rails.logger.error "AuthenticationsController#fail user: #{current_user.nickname}"
     else

@@ -20,6 +20,13 @@ gem "settingslogic"
 gem 'rabl','~> 0.6.0'
 gem 'yajl-ruby', :require => "yajl"
 
+#
+# ---------- Assets
+#
+gem "haml"
+gem "compass", "0.11.7"
+gem "jammit"
+
 group :development do
 	gem 'yard', '~> 0.7.4'
 	gem 'yard-rest', '0.3.0', :git => 'git://github.com/rknLA/yard-rest-plugin.git'
