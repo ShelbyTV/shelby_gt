@@ -1,4 +1,4 @@
-class V1::VideosController < ApplicationController  
+class V1::VideoController < ApplicationController  
 
   ##
   # Returns one video, with the given parameters.

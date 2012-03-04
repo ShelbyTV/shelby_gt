@@ -1,4 +1,4 @@
-class V1::RollsController < ApplicationController  
+class V1::RollController < ApplicationController  
   
   ##
   # Returns one roll, with the given parameters.

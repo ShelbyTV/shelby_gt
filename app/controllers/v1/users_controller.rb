@@ -1,4 +1,4 @@
-class V1::UsersController < ApplicationController  
+class V1::UserController < ApplicationController  
 
 
   # only for testing purposes
