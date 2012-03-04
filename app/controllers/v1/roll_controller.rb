@@ -3,7 +3,7 @@ class V1::RollController < ApplicationController
   ##
   # Returns one roll, with the given parameters.
   #
-  # [GET] /rolls.[format]/:id
+  # [GET] /v1/roll/:id.json
   # 
   # @param [Required, String] id The id of the user
   #
@@ -11,13 +11,17 @@ class V1::RollController < ApplicationController
   def show
     id = params.delete(:id)
     @params = params
-    @roll = Roll.find(id)
+    if @roll = Roll.find(id)
+      @status =  "ok"
+    else
+      @status, @message = "error", "could not find that roll"
+    end
   end
   
   ##
   # Creates and returns one roll, with the given parameters.
   # 
-  # [POST] /rolls.[format]?[argument_name=argument_val]
+  # [POST] /v1/roll.json
   # 
   # @param [Required, String] id The id of the user
   #
@@ -29,24 +33,31 @@ class V1::RollController < ApplicationController
   ##
   # Updates and returns one roll, with the given parameters.
   # 
-  # [PUT] /rolls.[format]/:id?attr_name=attr_val
+  # [PUT] /v1/roll/:id.json
   # 
   # @param [Required, String] id The id of the roll
   #
   # @todo FIGURE THIS OUT. BUILD IT.
   def update
-    @roll = Roll.find(params[:id])
+    id = params.delete(:id)
+    @roll = Roll.find(id)
+    @roll.update_attributes(params)
   end
   
   ##
   # Destroys one roll, returning Success/Failure
   # 
-  # [DELETE] /rolls.[format]/:id
+  # [DELETE] /v1/roll/:id.json
   # 
   # @param [Required, String] id The id of the roll
   def destroy
-    @roll = Roll.find(params[:id])
-    @status = @roll.destroy ? "ok" : "error"
+    roll = Roll.find(params[:id])
+    @status, @message = "error", "could not find that roll to destroy" unless roll
+    if roll.destroy
+      @status =  "ok"
+    else
+      @status, @message = "error", "could not destroy that roll"
+    end
   end
 
 end

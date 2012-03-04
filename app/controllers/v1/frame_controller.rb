@@ -1,9 +1,18 @@
 class V1::FrameController < ApplicationController
-  
+
+  ##
+  # Returns all frames in a roll
+  #
+  # [GET] /v1/roll/:id/frames.json
+  # @todo FIGURE THIS OUT. BUILD IT.
+  def index
+    
+  end
+    
   ##
   # Returns one user, with the given parameters.
   #
-  # [GET] /frames.[format]/:id?attr_name=attr_val
+  # [GET] /v1/frame/:id.json
   # 
   # @param [Required, String] id The id of the frame
   # @param [Optional, Boolean] include_roll Include the referenced roll
@@ -15,13 +24,17 @@ class V1::FrameController < ApplicationController
   def show
     id = params.delete(:id)
     @params = params
-    @frame = Frame.find(id)
+    if @frame = Frame.find(id)
+      @status =  "ok"
+    else
+      @status, @message = "error", "could not find that frame"
+    end
   end
   
   ##
   # Creates and returns one frame, with the given parameters.
   #
-  # [POST] /frames.[format]?[argument_name=argument_val]
+  # [POST] /v1/roll/:id/frames.json
   # @todo FIGURE THIS OUT. BUILD IT.
   def create
     
@@ -30,7 +43,7 @@ class V1::FrameController < ApplicationController
   ##
   # Updates and returns one frame, with the given parameters.
   #
-  # [PUT] /frames.[format]/:id?attr_name=attr_val
+  # [PUT] /v1/frame/:id.json
   # 
   # @param [Required, String] id The id of the frame
   # @param [Required, String] attr The attribute(s) to update
@@ -43,13 +56,18 @@ class V1::FrameController < ApplicationController
   ##
   # Destroys one frame, returning Success/Failure
   #
-  # [DELETE] /frames.[format]/:id
+  # [DELETE] /v1/frame/:id.json
   # 
   # @param [Required, String] id The id of the frame to destroy.
   # @return [Integer] Whether request was successful or not.
   def destroy
-    @frame = Frame.find(params[:id])
-    @status = @frame.destroy ? "ok" : "error"
+    frame = Frame.find(params[:id])
+    @status, @message = "error", "could not find that frame to destroy" unless frame
+    if frame.destroy 
+      @status = "ok"
+    else
+      @status, @message = "error", "could not destroy that frame"
+    end
   end
 
 

@@ -9,7 +9,7 @@ class V1::UserController < ApplicationController
   ####################################
   # Returns one user, with the given parameters.
   #
-  # [GET] /users.[format]/:id?attr_name=attr_val
+  # [GET] /v1/users/:id.json
   # 
   # @param [Required, String] id The id of the user
   # @param [Optional, Boolean] include_auths Include the embedded authorizations
@@ -19,43 +19,26 @@ class V1::UserController < ApplicationController
   def show
     id = params.delete(:id)
     @params = params
-    @user = User.find(id)
-    @auths = @params[:include_auths] ? @user.authentications : nil
-  end
-
-  ####################################
-  # Creates and returns one user, with the given parameters.
-  #
-  # [POST] /users.[format]?[argument_name=argument_val]
-  # @todo FIGURE THIS OUT. BUILD IT.
-  def create
-    
+    if @user = User.find(id)
+      @auths = @params[:include_auths] ? @user.authentications : nil
+    else
+      @status, @message = "error", "could not find user"
+    end
   end
 
   ####################################
   # Updates and returns one user, with the given parameters.
   #
-  # [PUT] /users.[format]/:id?attr_name=attr_val
+  # [PUT] /v1/users/:id.json
   # 
   # @param [Required, String] id The id of the user  
   # @param [Required, String] attr The attribute(s) to update
   #
   # @todo FIGURE THIS OUT. BUILD IT.
   def update
-    @user = User.find(params[:id])
+    id = params.delete(:id)
+    @user = User.find(id)
+    @user.update_attributes(params)
   end
-  
-  ####################################
-  # Destroys one user, returning Success/Failure
-  #
-  # [DELETE] /users.[format]/:id
-  # 
-  # @param [Required, String] id The id of the user to destroy.
-  # @return [Integer] Whether request was successful or not.
-  def destroy
-    @user = User.find(params[:id])
-    @status = @user.destroy ? "ok" : "error"
-  end
-
 
 end

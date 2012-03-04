@@ -7,7 +7,7 @@ ShelbyGt::Application.routes.draw do
   # NOTE: Must use V1::ControllerName in controllers
   namespace :v1 do
     resources :user, :only => [:show, :update] 
-    resources :roll, :only => [:show, :update, :destroy]
+    resources :roll, :only => [:show, :create, :update, :destroy]
     resources :frame, :only => [:show, :update, :destroy]
     resources :video, :only => [:show]
     resources :dashboard_entries, :path => "dashboard", :only => [:index, :update]
