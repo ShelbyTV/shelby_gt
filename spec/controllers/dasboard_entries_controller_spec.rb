@@ -1,15 +1,32 @@
 require 'spec_helper'
 
 describe V1::DashboardEntriesController do
+  before(:each) do
+    @user = stub_model(User)
+    @d1 = stub_model(Frame)
+    @d2 = stub_model(Frame)
+    
+    User.stub(:find) { @user }
+    DashboardEntry.stub(:where) { [@d1, @d2] }
+  end
   
   describe "GET index" do
     it "should return the dashboard entrys to @dashboard and return 200" do
-      
+      get :index, :user_id => @user.id, :format => :json
+      assigns(:status).should eq(200)
     end
     
     it "should return error if could not find dashboard entry" do
-      
+      DashboardEntry.stub_chain(:limit, :skip, :where).and_return([])
+      get :index, :user_id => @user.id, :format => :json
+      assigns(:status).should eq(500)   
     end
+    
+    it "should return error if could not find a user" do
+      get :index, :format => :json
+      assigns(:status).should eq(500)
+    end
+    
   end
   
   describe "PUT update" do

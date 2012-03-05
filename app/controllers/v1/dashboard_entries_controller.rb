@@ -17,27 +17,37 @@ class V1::DashboardEntriesController < ApplicationController
     # get user
     if params[:user_id]
       @status, @message = 500, "could not find that user" unless user = User.find(params[:user_id])
-    elsif user_signed_in?
-      user_id = current_user
+    #elsif user_signed_in?
+    #  user = current_user
     else
       @status, @message = 500, "no user info found, try again"
     end
     
-    # get and structure dashboard_entries
-    @dashboard_entries = [];
-    if params[:include_children]
-      DashboardEntry.where(:user_id => user.id).limit(params[:limit]).skip(params[:offset]).find_each.each do |entry|
-        @dashboad_entries << {  :roll => entry.roll, 
-                                :frame => entry.frame, 
-                                :video => entry.video, 
-                                :conversation => entry.conversation, 
-                                :user => entry.user
-                              }
+    if user
+      
+      # get and structure dashboard_entries
+      @dashboard_entries = [];
+      unless params[:quiet] == false
+        DashboardEntry.limit(params[:limit]).skip(params[:offset]).where(:user_id => user.id).each do |entry|
+          @dashboad_entries << {  :roll => entry.roll, 
+                                  :frame => entry.frame, 
+                                  :video => entry.video, 
+                                  :conversation => entry.conversation, 
+                                  :user => entry.user
+                                }
+        end
+      else
+        @dashboard_entries = DashboardEntry.limit(params[:limit]).skip(params[:offset])
       end
-    else
-      @dashboard_entries = DashboardEntry.limit(params[:limit]).skip(params[:offset])
-    end
-    
+      
+      # return status
+      if !@dashboard_entries.empty?
+        @status = 200
+      else
+        @status, @message = 500, "error retrieving dashboard entries"
+      end
+      
+    end    
   end
   
   ##
