@@ -19,7 +19,7 @@ describe GT::Framer do
     end
   
     it "should create a Frame for a given Video, Message, Roll and User" do
-      res = GT::Framer.create_frame!(
+      res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => @video,
@@ -37,7 +37,7 @@ describe GT::Framer do
     end
 
     it "should create no DashboardEntries if the roll has no followers" do
-      res = GT::Framer.create_frame!(
+      res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => @video,
@@ -51,7 +51,7 @@ describe GT::Framer do
     it "should create a DashboardEntry for the Roll's single follower" do
       @roll.add_follower(@roll_creator)
       
-      res = GT::Framer.create_frame!(
+      res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => @video,
@@ -78,7 +78,7 @@ describe GT::Framer do
       @roll.add_follower(u3 = User.create)
       user_ids = [u1.id, u2.id, u3.id]
       
-      res = GT::Framer.create_frame!(
+      res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => @video,
@@ -97,7 +97,7 @@ describe GT::Framer do
     it "should create DashboardEntry for given :dashboard_user_id" do
       u = User.create
       
-      res = GT::Framer.create_frame!(
+      res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => @video,
@@ -112,7 +112,7 @@ describe GT::Framer do
     end
   
     it "should create a Frame without Message" do
-      res = GT::Framer.create_frame!(
+      res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => @video,
@@ -130,7 +130,7 @@ describe GT::Framer do
     end
   
     it "should not create a Frame without Video" do
-      lambda { GT::Framer.create_frame!(
+      lambda { GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => nil,
@@ -140,7 +140,7 @@ describe GT::Framer do
     end
   
     it "should not create a Frame without Creator" do
-      lambda { GT::Framer.create_frame!(
+      lambda { GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => nil,
         :video => @video,
@@ -150,7 +150,7 @@ describe GT::Framer do
     end
     
     it "should not create a Frame without action" do
-      lambda { GT::Framer.create_frame!(
+      lambda { GT::Framer.create_frame(
         :action => nil,
         :creator => @frame_creator,
         :video => @video,
@@ -160,7 +160,7 @@ describe GT::Framer do
     end
   
     it "should not create a Frame without Roll or dashboard user" do
-      lambda { GT::Framer.create_frame!(
+      lambda { GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => @video,

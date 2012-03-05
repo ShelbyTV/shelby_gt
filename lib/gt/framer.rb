@@ -1,4 +1,4 @@
-# This is the one and place where Frames are created.
+# This is the one and only place where Frames are created.
 #
 # If the user re-rolls a Frame, that goes through us.
 # If Arnold 2, the bookmarklet, or a dev script needs to create a Frame, that goes through us.
@@ -27,7 +27,7 @@ module GT
     #
     # { :frame => newly_created_frame, :dashboard_entries => [1 or more DashboardEntry, ...] }
     #
-    def self.create_frame!(options)
+    def self.create_frame(options)
       raise ArgumentError, "must supply a :creator" unless (creator = options.delete(:creator)).is_a? User
       raise ArgumentError, "must supply a :video" unless (video = options.delete(:video)).is_a? Video
       raise ArgumentError, "must supply an :action" unless DashboardEntry::ENTRY_TYPE.values.include?(action = options.delete(:action))
@@ -39,7 +39,7 @@ module GT
       res = { :frame => nil, :dashboard_entries => [] }
       
       # Frame
-      # There will always be exactly 1 new frame (we're persisting here, hence the ! in the method name)
+      # There will always be exactly 1 new frame
       f = Frame.new
       f.creator = creator
       f.video = video

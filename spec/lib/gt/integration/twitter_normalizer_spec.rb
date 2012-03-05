@@ -22,7 +22,7 @@ describe GT::TwitterNormalizer do
     it "should create Frame with normalized tweet Message" do
       m = GT::TwitterNormalizer.normalize_tweet(TwitterData.no_video_hash)
     
-      res = GT::Framer.create_frame!(
+      res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => @video,
