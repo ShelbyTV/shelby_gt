@@ -41,7 +41,12 @@ class V1::RollController < ApplicationController
   def update
     id = params.delete(:id)
     @roll = Roll.find(id)
-    @roll.update_attributes(params)
+    @status, @message = "error", "could not find roll" unless @roll
+    if @roll.update_attributes(params)
+      @status = "ok"
+    else
+      @status, @message = "error", "could not update roll"
+    end
   end
   
   ##

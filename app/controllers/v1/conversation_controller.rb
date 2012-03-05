@@ -8,8 +8,7 @@ class V1::ConversationController < ApplicationController
   # @param [Required, String] id The id of the conversation
   # @todo return error if id not present w/ params.has_key?(:id)
   def show
-    id = params.delete(:id)
-    if @conversation = Conversation.find(id)
+    if @conversation = Conversation.find(params[:id])
       @messages = @conversation.messages
       @status = "ok"
     else

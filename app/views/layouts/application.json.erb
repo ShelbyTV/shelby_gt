@@ -1,6 +1,7 @@
 {
 	<% if @status %>
   	"status": <%= @status.to_json.html_safe %>,
+		"message": <%= @message.to_json.html_safe %>, 
 	<% end %>
   "result": <%= yield %>
 }

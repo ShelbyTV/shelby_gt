@@ -3,7 +3,7 @@ ShelbyGt::Application.routes.draw do
   # first created -> highest priority.
 
   ########################
-  # Allows for versioning of API
+  # Namespace allows for versioning of API
   # NOTE: Must use V1::ControllerName in controllers
   namespace :v1 do
     resources :user, :only => [:show, :update] 

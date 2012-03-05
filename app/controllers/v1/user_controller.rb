@@ -1,9 +1,10 @@
 class V1::UserController < ApplicationController  
 
-
+  respond_to :json
+  
   # only for testing purposes
   def index
-    @success = 1 if @users = User.all
+    @success = "ok" if @users = User.all
   end
   
   ####################################
@@ -18,9 +19,9 @@ class V1::UserController < ApplicationController
   # @todo return error if id not present w/ params.has_key?(:id)
   def show
     id = params.delete(:id)
-    @params = params
     if @user = User.find(id)
-      @auths = @params[:include_auths] ? @user.authentications : nil
+      @auths = params[:include_auths] ? @user.authentications : nil
+      @rolls = params[:include_rolls] ? @user.rolls : nil
     else
       @status, @message = "error", "could not find user"
     end
@@ -34,11 +35,14 @@ class V1::UserController < ApplicationController
   # @param [Required, String] id The id of the user  
   # @param [Required, String] attr The attribute(s) to update
   #
-  # @todo FIGURE THIS OUT. BUILD IT.
   def update
     id = params.delete(:id)
-    @user = User.find(id)
-    @user.update_attributes(params)
+    @status, @message = "error", "could not find user" unless @user = User.find(id)
+    if @user.update_attributes(params)
+      @status = "ok"
+    else
+      @status, @message = "error", "could not update user"
+    end
   end
 
 end

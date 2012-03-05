@@ -1,3 +1,0 @@
-object @video
-
-attributes :id

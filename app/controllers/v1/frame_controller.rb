@@ -4,9 +4,14 @@ class V1::FrameController < ApplicationController
   # Returns all frames in a roll
   #
   # [GET] /v1/roll/:id/frames.json
-  # @todo FIGURE THIS OUT. BUILD IT.
   def index
-    
+    roll = Roll.find(params[:id])
+    @status, @message = "error", "could not find that roll" unless roll
+    if @frames = roll.frames
+      @status =  "ok"
+    else
+      @status, @message = "error", "could not find the frames from that roll"
+    end
   end
     
   ##
@@ -15,17 +20,16 @@ class V1::FrameController < ApplicationController
   # [GET] /v1/frame/:id.json
   # 
   # @param [Required, String] id The id of the frame
-  # @param [Optional, Boolean] include_roll Include the referenced roll
-  # @param [Optional,  Boolean] include_video Include the referenced video
-  # @param [Optional,  Boolean] include_post Include the referenced post
-  # @param [Optional,  Boolean] include_rerolls Include the referenced rerolls
-  #
-  # @todo return error if id not present w/ params.has_key?(:id)
+  # @param [Optional, Boolean] include_children Include the referenced roll, video, conv, and rerolls
   def show
-    id = params.delete(:id)
-    @params = params
-    if @frame = Frame.find(id)
+    if @frame = Frame.find(params[:id])
       @status =  "ok"
+      if params[:include_children]
+        @roll =  @frame.role
+        @video = @frame.video
+        @conversation = @frame.conversation
+        @rerolls = @frame.rerolls
+      end
     else
       @status, @message = "error", "could not find that frame"
     end
@@ -47,10 +51,15 @@ class V1::FrameController < ApplicationController
   # 
   # @param [Required, String] id The id of the frame
   # @param [Required, String] attr The attribute(s) to update
-  #
-  # @todo FIGURE THIS OUT. BUILD IT.
   def update
-    @frame = Frame.find(params[:id])
+    id = params.delete(:id)
+    @frame = Frame.find(id)
+    @status, @message = "error", "could not find frame" unless @frame
+    if @frame.update_attributes(params)
+      @status = "ok"
+    else
+      @status, @message = "error", "could not update frame"
+    end
   end
   
   ##

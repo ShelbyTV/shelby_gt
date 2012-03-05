@@ -1,3 +1,0 @@
-object @roll
-
-attributes :id
