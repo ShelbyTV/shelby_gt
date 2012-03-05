@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'twitter_normalizer'
 require 'framer'
 
-# UNIT test
+# INTEGRATION test
 describe GT::TwitterNormalizer do
   
   before(:each) do
