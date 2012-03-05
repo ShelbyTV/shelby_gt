@@ -13,9 +13,9 @@ describe GT::TwitterNormalizer do
     
     m.nickname.should == "laurenwick"
     m.realname.should == "Lauren Appelwick"
-    m.user_image_url = "http://a3.twimg.com/profile_images/1778667511/LAxc_normal.jpg"
+    m.user_image_url.should == "http://a3.twimg.com/profile_images/1778667511/LAxc_normal.jpg"
     
-    m.text = "There's a lingering smell of fart... (@ Anthropologie) http://t.co/ibAVw8pu"
+    m.text.should == "There's a lingering smell of fart... (@ Anthropologie) http://t.co/ibAVw8pu"
   end
   
   it "should not barf on empty or bad input" do
