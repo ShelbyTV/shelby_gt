@@ -13,7 +13,7 @@ class Roll
   
   # it has some basic categorical info
   key :title,           String, :required => true, :abbr => :b
-  key :thumbnail_url,   String, :required => true, :abbr => :c
+  key :thumbnail_url,   String, :abbr => :c
 
   # public rolls can be viewed, posted to, and invited to by any user (doesn't have to be following)
   # private rolls can only be viewed, posted to, and invited to by private_collaborators
@@ -30,13 +30,13 @@ class Roll
   attr_accessible :title, :thumbnail_url
 
   def followed_by?(u)
-    raise ArgumentException "must supply user or user_id" unless u
-    user_id = (u.class == User ? u.id : u)
+    raise ArgumentError, "must supply user or user_id" unless u
+    user_id = (u.is_a?(User) ? u.id : u)
     following_users.any? { |fu| fu.user_id == user_id }
   end
   
   def add_follower(u)
-    raise ArgumentException "must supply user" unless u and u.class == User
+    raise ArgumentError, "must supply user" unless u and u.is_a?(User)
     
     self.following_users << FollowingUser.new(:user => u)
     u.roll_followings << RollFollowing.new(:roll => self)
@@ -46,8 +46,8 @@ class Roll
   # Creator of a roll can always view it
   # Private rolls are only viewable by followers
   def viewable_by?(u)
-    raise ArgumentException "must supply user or user_id" unless u
-    user_id = (u.class == User ? u.id : u)
+    raise ArgumentError, "must supply user or user_id" unless u
+    user_id = (u.is_a?(User) ? u.id : u)
     
     return true if self.public?
     
@@ -61,8 +61,8 @@ class Roll
   # Anybody can post to public collaborative roll
   # Only followers can post to private, collaborative roll
   def postable_by?(u)
-    raise ArgumentException "must supply user or user_id" unless u
-    user_id = (u.class == User ? u.id : u)
+    raise ArgumentError, "must supply user or user_id" unless u
+    user_id = (u.is_a?(User) ? u.id : u)
     
     return true if self.creator_id == user_id
     

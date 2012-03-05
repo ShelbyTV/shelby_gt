@@ -10,6 +10,7 @@ class DashboardEntry
   belongs_to :user, :required => true
   key :user_id, ObjectId, :abbr => :a
 
+  # N.B. Roll is also self.frame.roll, but we keep it here for easy access
   belongs_to :roll, :required => true
   key :roll_id, ObjectId, :abbr => :b  
   
@@ -23,13 +24,14 @@ class DashboardEntry
   # [using integers instead of strings to keep the size as small as possible]
   ENTRY_TYPE = {
     :new_social_frame => 0,
-    :re_roll => 1,
-    :watch => 2,
-    :comment => 3
+    :new_bookmark_frame => 1,
+    :re_roll => 8,
+    :watch => 9,
+    :comment => 10
   }.freeze
   key :action, Integer, :abbr => :e, :default => ENTRY_TYPE[:new_social_frame]
 
-  # If this was an action other than new_social_frame, what Shelbyer was it?
+  # If this was an action other than new_*_frame, what Shelbyer was it?
   belongs_to :actor
   key :actor_id, ObjectId, :abbr => :f
   

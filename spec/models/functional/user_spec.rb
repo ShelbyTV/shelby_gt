@@ -3,7 +3,7 @@ require 'spec_helper'
 #Functional: hit the database, treat model as black box
 describe User do
   before(:each) do
-    @user = User.new
+    @user = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
   end
   
   context "database" do
@@ -15,6 +15,12 @@ describe User do
       indexes.should include({"primary_email"=>1})
       indexes.should include({"authentications.uid"=>1})
       indexes.should include({"authentications.nickname"=>1})
+    end
+    
+    it "should be savable and loadable" do
+      @user.persisted?.should == true
+      User.find(@user.id).should == @user      
+      User.find(@user.id).id.should == @user.id
     end
   
   end
