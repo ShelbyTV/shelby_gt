@@ -2,9 +2,9 @@ class V1::UserController < ApplicationController
 
   respond_to :json
   
-  # only for testing purposes
+  # @todo Remove: Only for testing purposes
   def index
-    @success = "ok" if @users = User.all
+    @status = 200 if @users = User.all
   end
   
   ####################################
@@ -22,8 +22,9 @@ class V1::UserController < ApplicationController
     if @user = User.find(id)
       @auths = params[:include_auths] ? @user.authentications : nil
       @rolls = params[:include_rolls] ? @user.rolls : nil
+      @status = 200
     else
-      @status, @message = "error", "could not find user"
+      @status, @message = 500, "could not find user"
     end
   end
 
@@ -37,11 +38,12 @@ class V1::UserController < ApplicationController
   #
   def update
     id = params.delete(:id)
-    @status, @message = "error", "could not find user" unless @user = User.find(id)
-    if @user.update_attributes(params)
-      @status = "ok"
+    @user = User.find(id)
+    if @user and @user.update_attributes(params)
+      @status = 200
     else
-      @status, @message = "error", "could not update user"
+      @status = 500
+      @message = @user ? "could not update user" : "could not find user"
     end
   end
 

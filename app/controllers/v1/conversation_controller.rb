@@ -6,13 +6,12 @@ class V1::ConversationController < ApplicationController
   # [GET] /v1/conversation/:id.json
   # 
   # @param [Required, String] id The id of the conversation
-  # @todo return error if id not present w/ params.has_key?(:id)
   def show
     if @conversation = Conversation.find(params[:id])
       @messages = @conversation.messages
-      @status = "ok"
+      @status = 200
     else
-      @status, @message = "error", "could not find user"
+      @status, @message = 500, "could not find user"
     end
   end
   

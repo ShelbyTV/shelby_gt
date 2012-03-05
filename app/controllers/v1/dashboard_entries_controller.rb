@@ -5,24 +5,37 @@ class V1::DashboardEntriesController < ApplicationController
   #
   # [GET] v1/dashboard.json
   # 
+  # @param [Optional, String] user_id The id of the user otherwise user = current_user
   # @param [Optional, Integer] limit The number of entries to return
   # @param [Optional, Integer] offset The number of offset to return
   # @param [Optional, Boolean] include_children Include the referenced objects
-  #
-  # @todo return error if id not present w/ params.has_key?(:id)  
-  # @todo FIGURE THIS OUT. BUILD IT.
   def index
-    # defaults
+    # default params
     params[:limit] ||= 20
     params[:offset] ||= 0
-    @dashboad_entries = [];
-    DashboardEntry.limit(params[:limit]).skip(params[:offset]).find_each.each do |entry|
-      @dashboad_entries << {  :roll => entry.roll, 
-                    :frame => entry.frame, 
-                    :video => entry.video, 
-                    :conversation => entry.conversation, 
-                    :user => entry.user
-                  }
+
+    # get user
+    if params[:user_id]
+      @status, @message = 500, "could not find that user" unless user = User.find(params[:user_id])
+    elsif user_signed_in?
+      user_id = current_user
+    else
+      @status, @message = 500, "no user info found, try again"
+    end
+    
+    # get and structure dashboard_entries
+    @dashboard_entries = [];
+    if params[:include_children]
+      DashboardEntry.where(:user_id => user.id).limit(params[:limit]).skip(params[:offset]).find_each.each do |entry|
+        @dashboad_entries << {  :roll => entry.roll, 
+                                :frame => entry.frame, 
+                                :video => entry.video, 
+                                :conversation => entry.conversation, 
+                                :user => entry.user
+                              }
+      end
+    else
+      @dashboard_entries = DashboardEntry.limit(params[:limit]).skip(params[:offset])
     end
     
   end
@@ -33,11 +46,15 @@ class V1::DashboardEntriesController < ApplicationController
   # [PUT] v1/dashboard/:id.json
   # 
   # @param [Required, String] id The id of the dashboard entry
-  # @param [Required, String] attr The attribute(s) to update
-  #
-  # @todo FIGURE THIS OUT. BUILD IT.
   def update
-    @dashboard_entry = DashboardEntry.find(params[:id])
+    id = params.delete(:id)
+    @dashboard_entry = DashboardEntry.find(id)
+    if @dashboard_entry and @dashboard_entry.update_attributes(params)
+      @status = 200
+    else
+      @status = 500
+      @message = @dashboard_entry ? "could not update dashboard_entry" : "could not find that dashboard_entry"
+    end    
   end
 
 end

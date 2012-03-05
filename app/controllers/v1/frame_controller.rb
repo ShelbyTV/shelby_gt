@@ -5,17 +5,18 @@ class V1::FrameController < ApplicationController
   #
   # [GET] /v1/roll/:id/frames.json
   def index
-    roll = Roll.find(params[:id])
-    @status, @message = "error", "could not find that roll" unless roll
-    if @frames = roll.frames
-      @status =  "ok"
+    @roll = Roll.find(params[:id])
+    if !@roll
+      @status, @message = 500, "could not find that roll"
+    elsif @frames = @roll.frames
+      @status =  200
     else
-      @status, @message = "error", "could not find the frames from that roll"
+      @status, @message = 500, "could not find the frames from that roll"
     end
   end
     
   ##
-  # Returns one user, with the given parameters.
+  # Returns one frame
   #
   # [GET] /v1/frame/:id.json
   # 
@@ -23,15 +24,19 @@ class V1::FrameController < ApplicationController
   # @param [Optional, Boolean] include_children Include the referenced roll, video, conv, and rerolls
   def show
     if @frame = Frame.find(params[:id])
-      @status =  "ok"
+      @status =  200
       if params[:include_children]
-        @roll =  @frame.role
-        @video = @frame.video
-        @conversation = @frame.conversation
-        @rerolls = @frame.rerolls
+        begin
+          @roll =  @frame.role
+          @video = @frame.video
+          @conversation = @frame.conversation
+          @rerolls = @frame.rerolls
+        rescue => e
+          @status, @message = 500, e
+        end
       end
     else
-      @status, @message = "error", "could not find that frame"
+      @status, @message = 500, "could not find that frame"
     end
   end
   
@@ -54,11 +59,11 @@ class V1::FrameController < ApplicationController
   def update
     id = params.delete(:id)
     @frame = Frame.find(id)
-    @status, @message = "error", "could not find frame" unless @frame
+    @status, @message = 500, "could not find frame" unless @frame
     if @frame.update_attributes(params)
-      @status = "ok"
+      @status = 200
     else
-      @status, @message = "error", "could not update frame"
+      @status, @message = 500, "could not update frame"
     end
   end
   
@@ -71,11 +76,11 @@ class V1::FrameController < ApplicationController
   # @return [Integer] Whether request was successful or not.
   def destroy
     frame = Frame.find(params[:id])
-    @status, @message = "error", "could not find that frame to destroy" unless frame
+    @status, @message = 500, "could not find that frame to destroy" unless frame
     if frame.destroy 
-      @status = "ok"
+      @status = 200
     else
-      @status, @message = "error", "could not destroy that frame"
+      @status, @message = 500, "could not destroy that frame"
     end
   end
 

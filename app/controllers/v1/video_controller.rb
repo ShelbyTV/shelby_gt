@@ -10,9 +10,9 @@ class V1::VideoController < ApplicationController
   def show
     id = params.delete(:id)
     if @video = Video.find(id)
-      @status =  "ok"
+      @status =  200
     else
-      @status, @message = "error", "could not find video"
+      @status, @message = 500, "could not find video"
     end
   end
   

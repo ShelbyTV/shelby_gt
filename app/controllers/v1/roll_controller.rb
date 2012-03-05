@@ -6,15 +6,12 @@ class V1::RollController < ApplicationController
   # [GET] /v1/roll/:id.json
   # 
   # @param [Required, String] id The id of the user
-  #
-  # @todo return error if id not present w/ params.has_key?(:id)
   def show
     id = params.delete(:id)
-    @params = params
     if @roll = Roll.find(id)
-      @status =  "ok"
+      @status =  200
     else
-      @status, @message = "error", "could not find that roll"
+      @status, @message = 500, "could not find that roll"
     end
   end
   
@@ -36,16 +33,14 @@ class V1::RollController < ApplicationController
   # [PUT] /v1/roll/:id.json
   # 
   # @param [Required, String] id The id of the roll
-  #
-  # @todo FIGURE THIS OUT. BUILD IT.
   def update
     id = params.delete(:id)
     @roll = Roll.find(id)
-    @status, @message = "error", "could not find roll" unless @roll
+    @status, @message = 500, "could not find roll" unless @roll
     if @roll.update_attributes(params)
-      @status = "ok"
+      @status = 200
     else
-      @status, @message = "error", "could not update roll"
+      @status, @message = 500, "could not update roll"
     end
   end
   
@@ -56,12 +51,12 @@ class V1::RollController < ApplicationController
   # 
   # @param [Required, String] id The id of the roll
   def destroy
-    roll = Roll.find(params[:id])
-    @status, @message = "error", "could not find that roll to destroy" unless roll
-    if roll.destroy
-      @status =  "ok"
+    @roll = Roll.find(params[:id])
+    @status, @message = 500, "could not find that roll to destroy" if @roll == nil
+    if @roll.destroy
+      @status =  200
     else
-      @status, @message = "error", "could not destroy that roll"
+      @status, @message = 500, "could not destroy that roll"
     end
   end
 
