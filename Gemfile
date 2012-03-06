@@ -20,6 +20,20 @@ gem "settingslogic"
 gem 'rabl','~> 0.6.0'
 gem 'yajl-ruby', :require => "yajl"
 
+#
+# ---------- User Authentication
+#
+gem 'devise', '>= 2.0'
+gem 'mm-devise'
+
+gem 'omniauth', '~> 1.0.2'
+gem 'omniauth-twitter', :git => 'git://github.com/arunagw/omniauth-twitter.git'
+gem 'omniauth-facebook', :git => 'git://github.com/mkdynamic/omniauth-facebook.git'
+gem 'omniauth-tumblr', :git => 'git://github.com/jamiew/omniauth-tumblr.git'
+
+gem 'httparty'
+
+
 group :development do
 	gem 'yard', '~> 0.7.4'
 	gem 'yard-rest', '0.3.0', :git => 'git://github.com/rknLA/yard-rest-plugin.git'

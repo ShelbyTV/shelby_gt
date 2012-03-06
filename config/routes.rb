@@ -21,6 +21,6 @@ ShelbyGt::Application.routes.draw do
   end
   
 
-  # root :to => 'welcome#index'
+  root :to => 'home#index'
 
 end
