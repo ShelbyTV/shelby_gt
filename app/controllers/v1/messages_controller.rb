@@ -11,7 +11,6 @@ class V1::MessagesController < ApplicationController
       @status = 500
       @message = "text of message required" unless params.include?(:text)
       @message = "not authenticated, could not access user" unless user_signed_in?
-      puts user_signed_in?
     else
       conversation = Conversation.find(params[:conversation_id])
       if !conversation
@@ -19,7 +18,7 @@ class V1::MessagesController < ApplicationController
       else
         @new_message = Message.new(:text => params[:title])
         @new_message.user = current_user
-        @new_message.username = current_user.nickname
+        @new_message.nickname = current_user.nickname
         @new_message.user_image_url = current_user.user_image
         conversation.messages << @new_message
         begin        

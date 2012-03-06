@@ -64,14 +64,42 @@ describe V1::FrameController do
   end
   
   describe "POST create" do
-    it "creates and assigns one frame to @frame" do
-      post :create, :format => :json
-      assigns(:roll).should eq(r1)
+    before(:each) do
+      @user = Factory.create(:user)
+      sign_in @user
+      
+      @f1 = stub_model(Frame)
+      @f1.conversation = stub_model(Conversation)
+
+      @r2 = stub_model(Roll)
+      @f2 = stub_model(Frame)
+
+      Frame.stub(:find) { @f1 }      
+      Roll.stub(:find) { @r2 }
     end
     
-    it "returns 500" do
+    it "re_roll and returns one frame to @frame" do      
+      @f1.should_receive(:re_roll).and_return(@f2)
       
+      post :create, :id => @r2.id, :frame_id => @f1.id, :format => :json
+      assigns(:frame).should eq(@f2)
+      assigns(:status).should eq(200)
     end
+    
+    it "returns 500 if it can't re_roll" do
+      @f1.stub(:re_roll).and_raise(ArgumentError)
+      
+      post :create, :id => @r2.id, :frame_id => @f1.id, :format => :json
+      assigns(:status).should eq(500)
+      assigns(:message).should eq("could not re_roll: ArgumentError")
+    end
+
+    it "returns 500 if it theres no frame_id to re_roll" do
+      post :create, :id => @r2.id, :format => :json
+      assigns(:status).should eq(500)
+      assigns(:message).should eq("you haven't built me to do anything else yet...")
+    end
+
   end
   
   describe "DELETE destroy" do

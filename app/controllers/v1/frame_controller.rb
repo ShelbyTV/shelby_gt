@@ -44,12 +44,23 @@ class V1::FrameController < ApplicationController
   # Creates and returns one frame, with the given parameters.
   #
   # [POST] /v1/roll/:id/frames.json
+  #
+  # @param [Optional, String] frame_id A frame to be re_rolled
   def create
+    user = current_user
     roll = Roll.find(params[:id])
+    frame_to_re_roll = Frame.find(params[:frame_id]) if params[:frame_id]
     if !roll
       @status, @message = 500, "could not find that roll"
+    elsif !frame_to_re_roll
+      @status, @message = 500, "you haven't built me to do anything else yet..."
     else
-      @frame = Frame.new()
+      begin
+        @frame = frame_to_re_roll.re_roll(user, roll)
+        @status = 200
+      rescue => e
+        @status, @message = 500, "could not re_roll: #{e}"
+      end
     end
   end
   
