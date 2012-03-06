@@ -1,6 +1,5 @@
 require 'net/http'
 require 'memcached_link_resolving_cache'
-require 'memcached_video_processing_link_cache'
 
 # A helper module for URLs
 # works with or without EventMachine and Memcache
@@ -42,12 +41,22 @@ module GT
       return resolved_url
     end
     
-    SHELBY_URL_REGEX = /shel\.tv|shelby\.tv/i
+    # a little transformation on some URLs allows our URL analyst services to better process them
+    def self.post_process_url(url)
+      # http://vimeo.com/channels/hdgirls#30492458 => http://vimeo.com/30492458
+      vimeo_ch_check = VIMEO_URL_REGEX.match(url)
+      url = "http://vimeo.com/" + vimeo_ch_check[2] if (vimeo_ch_check and vimeo_ch_check[2])
+      return url
+    end
+    
     def self.url_is_shelby?(url)
       url.match(SHELBY_URL_REGEX) != nil
     end
     
-    private       
+    private
+    
+      SHELBY_URL_REGEX = /shel\.tv|shelby\.tv/i
+      VIMEO_URL_REGEX = /(http:\/\/vimeo.com\/\D*\#)(\d*)/       
    
       # we see lots of these, don't want to waste time resolving them
       BLACKLIST_REGEX = /freq\.ly|yfrog\.|4sq\.com|twitpic\.com|nyti\.ms|plixi\.com|instagr\.am/i
@@ -90,7 +99,7 @@ module GT
       end
       
       ##############################################
-      #------ Cacheing --------
+      #------ Caching --------
       ##############################################
       
       def self.check_link_resolving_cache(url, memcache_client)
