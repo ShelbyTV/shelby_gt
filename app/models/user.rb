@@ -10,11 +10,7 @@ class User
   devise  :rememberable, :trackable
   #devise includes root in json which fucked up backbone models, need to undo that...
   def self.include_root_in_json() nil; end
-<<<<<<< HEAD
 
-=======
-  
->>>>>>> authentication
   #--new keys--
   
   # the Rolls this user is following and when they started following

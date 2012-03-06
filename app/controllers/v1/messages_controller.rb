@@ -1,4 +1,4 @@
-class V1::MessageController < ApplicationController  
+class V1::MessagesController < ApplicationController  
 
   ##
   # Returns a message, with the given parameters.

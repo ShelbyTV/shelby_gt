@@ -5,7 +5,7 @@ ShelbyGt::Application.routes.draw do
   
   ########################
   # Authentication and User Managment
-  devise_for :users, :skip => [:sessions] do
+  devise_scope :users do
     get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
     get 'login' => 'home#index', :as => :new_user_session
   end
