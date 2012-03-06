@@ -15,8 +15,6 @@ class V1::UserController < ApplicationController
   # @param [Required, String] id The id of the user
   # @param [Optional, Boolean] include_auths Include the embedded authorizations
   # @param [Optional,  Boolean] include_rolls Include the referenced rolls the user is following
-  #
-  # @todo return error if id not present w/ params.has_key?(:id)
   def show
     id = params.delete(:id)
     if @user = User.find(id)
@@ -35,7 +33,6 @@ class V1::UserController < ApplicationController
   # 
   # @param [Required, String] id The id of the user  
   # @param [Required, String] attr The attribute(s) to update
-  #
   def update
     id = params.delete(:id)
     @user = User.find(id)

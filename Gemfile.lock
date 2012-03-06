@@ -1,9 +1,30 @@
 GIT
+  remote: git://github.com/ShelbyTV/beanstalk-client-ruby.git
+  revision: b2a94be9f9a4f1a8a495fdea078055aee5ea8bcb
+  specs:
+    beanstalk-client (1.2.0)
+
+GIT
+  remote: git://github.com/ShelbyTV/delayed_job_mongo_mapper.git
+  revision: 9967e81204a3198770119d3dcc1a00e98ea708b3
+  specs:
+    delayed_job_mongo_mapper (1.1.0)
+      delayed_job
+      mongo_mapper (>= 0.9.1)
+
+GIT
   remote: git://github.com/arunagw/omniauth-twitter.git
   revision: 3d0ee54a7bfc843602ad195e47695b1e22f8cbec
   specs:
     omniauth-twitter (0.0.8)
       omniauth-oauth (~> 1.0)
+
+GIT
+  remote: git://github.com/collectiveidea/delayed_job.git
+  revision: 4df5d96be75bc17e98d36234004f6c46dbd04ff4
+  specs:
+    delayed_job (3.0.1)
+      activesupport (~> 3.0)
 
 GIT
   remote: git://github.com/jamiew/omniauth-tumblr.git
@@ -104,6 +125,10 @@ GEM
       multipart-post (~> 1.1)
       rack (~> 1.1)
     fssm (0.2.8.1)
+    grackle (0.1.10)
+      json
+      mime-types
+      oauth
     haml (3.1.4)
     hashie (1.2.0)
     hike (1.2.1)
@@ -113,6 +138,9 @@ GEM
     i18n (0.6.0)
     journey (1.0.3)
     json (1.6.5)
+    koala (1.3.0)
+      faraday (~> 0.7.0)
+      multi_json (~> 1.0)
     mail (2.4.1)
       i18n (>= 0.4.0)
       mime-types (~> 1.16)
@@ -126,6 +154,7 @@ GEM
     multi_json (1.0.4)
     multi_xml (0.4.1)
     multipart-post (1.1.5)
+    nokogiri (1.5.0)
     oauth (0.4.5)
     oauth2 (0.5.2)
       faraday (~> 0.7)
@@ -184,11 +213,19 @@ GEM
       activesupport (>= 3.0)
       railties (>= 3.0)
       rspec (~> 2.8.0)
+    sailthru-client (1.14)
+      json
+      multipart-post
+    sanitize (2.0.3)
+      nokogiri (>= 1.4.4, < 1.6)
     sass (3.1.15)
     sass-rails (3.2.4)
       railties (~> 3.2.0)
       sass (>= 3.1.10)
       tilt (~> 1.3)
+    sendgrid (1.0.1)
+      json
+      json
     settingslogic (2.0.8)
     shoulda (3.0.1)
       shoulda-context (~> 1.0.0)
@@ -199,6 +236,7 @@ GEM
       hike (~> 1.2)
       rack (~> 1.0)
       tilt (~> 1.1, != 1.3.0)
+    statsd-ruby (0.3.0)
     thor (0.14.6)
     tilt (1.3.3)
     treetop (1.4.10)
@@ -217,13 +255,18 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  beanstalk-client!
   bson_ext
   coffee-rails (~> 3.2.1)
   compass (= 0.11.7)
+  delayed_job!
+  delayed_job_mongo_mapper!
   devise (>= 2.0)
   factory_girl_rails
+  grackle
   haml
   httparty
+  koala
   mm-devise
   mongo_mapper!
   omniauth (~> 1.0.2)
@@ -233,9 +276,13 @@ DEPENDENCIES
   rabl (~> 0.6.0)
   rails (= 3.2.2)
   rspec-rails
+  sailthru-client
+  sanitize
   sass-rails (~> 3.2.3)
+  sendgrid
   settingslogic
   shoulda
+  statsd-ruby
   uglifier (>= 1.0.3)
   yajl-ruby
   yard (~> 0.7.4)

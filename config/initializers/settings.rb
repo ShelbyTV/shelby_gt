@@ -19,6 +19,12 @@ module Settings
     load!
   end
   
+  class Beanstalk < Settingslogic
+    source "#{Rails.root}/config/settings/beanstalk.yml"
+    namespace Rails.env
+    load!
+  end
+  
   class User < Settingslogic
     source "#{Rails.root}/config/settings/user.yml"
     namespace Rails.env

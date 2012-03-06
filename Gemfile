@@ -40,6 +40,29 @@ gem 'omniauth-tumblr', :git => 'git://github.com/jamiew/omniauth-tumblr.git'
 
 gem 'httparty'
 
+#
+# ---------- External Services
+#
+gem "grackle" 		# twitter
+gem "koala"				# facebook
+gem "sendgrid" 		# email
+gem "sailthru-client"
+
+gem "sanitize" # for sanitizing html in models
+gem "statsd-ruby" # for communicating with graphite server
+
+
+#
+# ---------- Beanstalk (non-Event Machine, non-Arnold)
+#
+gem "beanstalk-client", :git => "git://github.com/ShelbyTV/beanstalk-client-ruby.git"
+
+#
+# ---------- Async Processing
+#
+gem 'delayed_job', :git => 'git://github.com/collectiveidea/delayed_job.git'
+gem 'delayed_job_mongo_mapper', :git => 'git://github.com/ShelbyTV/delayed_job_mongo_mapper.git'
+
 
 group :development do
 	gem 'yard', '~> 0.7.4'

@@ -6,13 +6,13 @@ class V1::DashboardEntriesController < ApplicationController
   # [GET] v1/dashboard.json
   # 
   # @param [Optional, String] user_id The id of the user otherwise user = current_user
-  # @param [Optional, Integer] limit The number of entries to return (max 50)
-  # @param [Optional, Integer] offset The number of offset to return
+  # @param [Optional, Integer] limit The number of entries to return (default/max 50)
+  # @param [Optional, Integer] skip The number of entries to skip (default 0)
   # @param [Optional, Boolean] include_children Include the referenced objects
   def index
     # default params
     params[:limit] ||= 50
-    params[:offset] ||= 0
+    params[:skip] ||= 0
     # max number of entries returned
     params[:limit] = 50 if params[:limit] > 50
 
@@ -29,7 +29,7 @@ class V1::DashboardEntriesController < ApplicationController
       # get and structure dashboard_entries
       unless params[:quiet] == false
         @entries = [];
-        DashboardEntry.limit(params[:limit]).skip(params[:offset]).where(:user_id => user.id).all.each do |entry|
+        DashboardEntry.limit(params[:limit]).skip(params[:skip]).where(:user_id => user.id).all.each do |entry|
           @entries << {   :roll => entry.roll, 
                           :frame => entry.frame, 
                           :video => entry.video, 
@@ -37,7 +37,7 @@ class V1::DashboardEntriesController < ApplicationController
                           :user => entry.user }
         end
       else
-        @entries = DashboardEntry.limit(params[:limit]).skip(params[:offset]).where(:user_id => user.id).all
+        @entries = DashboardEntry.limit(params[:limit]).skip(params[:skip]).where(:user_id => user.id).all
       end
       
       # return status
