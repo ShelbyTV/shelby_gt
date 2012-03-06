@@ -1,4 +1,17 @@
-class V1::MessagesController < ApplicationController  
+class V1::MessageController < ApplicationController  
+
+  ##
+  # Returns a message, with the given parameters.
+  #
+  # [GET] /message.[format]/:id
+  # 
+  # @param [Required, String] id The id of the message
+  # @todo return error if id not present w/ params.has_key?(:id)
+  def show
+    id = params.delete(:id)
+    @params = params
+    @message = message.find(id)
+  end
   
   ##
   # Creates and returns one message, with the given parameters.

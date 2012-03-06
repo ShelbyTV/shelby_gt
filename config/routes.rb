@@ -2,6 +2,19 @@ ShelbyGt::Application.routes.draw do
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
+  
+  ########################
+  # Authentication and User Managment
+  devise_for :users, :skip => [:sessions] do
+    get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
+    get 'login' => 'home#index', :as => :new_user_session
+  end
+
+  resources :authentications
+  match '/auth/:provider/callback' => 'authentications#create'
+  match '/auth/failure' => 'authentications#fail'
+  
+
   ########################
   # Authentication and User Managment
   devise_for :user, :skip => [:sessions]
@@ -28,7 +41,6 @@ ShelbyGt::Application.routes.draw do
     
   end
   
-
   root :to => 'home#index'
 
 end

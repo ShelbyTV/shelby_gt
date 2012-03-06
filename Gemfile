@@ -21,6 +21,13 @@ gem 'rabl','~> 0.6.0'
 gem 'yajl-ruby', :require => "yajl"
 
 #
+# ---------- Assets
+#
+gem "haml"
+gem "compass", "0.11.7"
+#gem "jammit"
+
+#
 # ---------- User Authentication
 #
 gem 'devise', '>= 2.0'

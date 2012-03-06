@@ -4,7 +4,7 @@ Devise.setup do |config|
   # ==> Mailer Configuration
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class with default "from" parameter.
-  config.mailer_sender = "please-change-me-at-config-initializers-devise@example.com"
+  config.mailer_sender = "help@shelby.tv"
 
   # Configure the class responsible to send e-mails.
   # config.mailer = "Devise::Mailer"
@@ -85,7 +85,7 @@ Devise.setup do |config|
   config.stretches = Rails.env.test? ? 1 : 10
 
   # Setup a pepper to generate the encrypted password.
-  # config.pepper = "371050161a29ed496ca2da542e205c6d550b4dd80f08bae73e7b9a51c20a828baf017c645beac91e81cd53581f73a19ed1f64c6f1c53c32c94675be333c964a2"
+  # config.pepper = "a6bbf2a9957d8a153406ab927c9279d916f025e9d95e9ea33a240cf082e7438cda192ee72d3ba1b1f5e4dbf8c22a7580e81beaecc35595555a71962dc7093698"
 
   # ==> Configuration for :confirmable
   # A period that the user is allowed to access the website even without
@@ -106,10 +106,10 @@ Devise.setup do |config|
 
   # ==> Configuration for :rememberable
   # The time the user will be remembered without asking for credentials again.
-  # config.remember_for = 2.weeks
+  config.remember_for = 4.weeks
 
   # If true, extends the user's remember period when remembered via cookie.
-  # config.extend_remember_period = false
+  config.extend_remember_period = true
 
   # If true, uses the password salt as remember token. This should be turned
   # to false if you are not using database authenticatable.

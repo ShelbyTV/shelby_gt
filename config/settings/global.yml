@@ -1,0 +1,12 @@
+defaults: &defaults
+  title: Shelby.tv
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+  
+
+production:
+  <<: *defaults

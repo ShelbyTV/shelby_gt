@@ -1,0 +1,36 @@
+defaults: &defaults
+  twitter_consumer_key: 5DNrVZpdIwhQthCJJXCfnQ
+  twitter_consumer_secret: Tlb35nblFFTZRidpu36Uo3z9mfcvSVv1MuZZ19SHaU
+  twitter_processor_tweets_per_page: 200
+  twitter_processor_last_page: 17
+  sailthru_api_key : "b54e228046cc84b78fcf09140688f3da"
+  sailthru_api_secret : "4ca74b2aa97c0739f85b6fe9848eed5c"
+  sailthru_api_url : "http://api.sailthru.com"
+  sendgrid_username: "smtp_login@shelby.tv"
+  sendgrid_password: "$h3lby"
+  bitly_api_username : "onshelby"
+  bitly_api_key : "R_41aac83f2cc30229bded13d2864827d6"
+  facebook_app_id: "161009453955546"
+  facebook_app_key: "1b92299ba1a3969e67cec3b8166705bf"
+  facebook_app_secret: "02a4c96905857504312c6bb47772f823"
+  our_fb_og_base_url: "https://graph.facebook.com/me/"
+  google_id: "259310947930.apps.googleusercontent.com"
+  google_secret: "QJJTX5YTX+07rQqdfwCZu5+I"
+  tumblr_key: "mrw08LmNseqVVIa6i8nO5UEl78fxXOGcaSe978iZyrswS2a8Wj"
+  tumblr_secret: "mefqdRTB2eNlTE5EnS3U8Raa5oMKFvo3Llhj2yyTAPGqu2Go90"
+  embedly_key: '8f495a84af0c11e083e34040d3dc5c07'  
+
+development:
+  <<: *defaults
+  twitter_processor_tweets_per_page: 200
+  twitter_processor_last_page: 5
+
+test:
+  <<: *defaults
+  
+
+production:
+  <<: *defaults
+  facebook_app_id: "115071338568035"
+  facebook_app_key: "972bf758aed0f9c8cf9ce4dc961bcc35"
+  facebook_app_secret: "416ce973e4a78ca6a99227731946b27b"

@@ -10,7 +10,11 @@ class User
   devise  :rememberable, :trackable
   #devise includes root in json which fucked up backbone models, need to undo that...
   def self.include_root_in_json() nil; end
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> authentication
   #--new keys--
   
   # the Rolls this user is following and when they started following
@@ -29,6 +33,10 @@ class User
   key :user_image,            String
   key :user_image_original,   String
   key :primary_email,         String
+  
+  # for rememberable functionality with devise
+  key :remember_me,           Boolean, :default => true
+  
 
   #TODO: finish this list
   attr_accessible :name, :nickname, :primary_email
