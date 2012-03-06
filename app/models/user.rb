@@ -33,9 +33,11 @@ class User
   #TODO: finish this list
   attr_accessible :name, :nickname, :primary_email
   
+  validates_uniqueness_of :nickname
+  
   def following_roll?(r)
-    raise ArgumentException "must supply roll or roll_id" unless r
-    roll_id = (r.class == Roll ? r.id : r)
+    raise ArgumentError, "must supply roll or roll_id" unless r
+    roll_id = (r.is_a?(Roll) ? r.id : r)
     roll_followings.any? { |rf| rf.roll_id == roll_id }
   end
   

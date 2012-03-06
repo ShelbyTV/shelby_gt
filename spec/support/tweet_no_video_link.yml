@@ -1,0 +1,59 @@
+tweet: 
+  in_reply_to_status_id_str: 
+  in_reply_to_user_id_str: 
+  retweeted: false
+  coordinates: 
+  in_reply_to_screen_name: 
+  created_at: Sat Mar 03 21:07:41 +0000 2012
+  user:
+    id_str: \"20096495\"
+    id: 20096495
+    profile_text_color: 744f8f
+    created_at: Wed Feb 04 21:33:16 +0000 2009
+    contributors_enabled: false
+    follow_request_sent: false
+    lang: en
+    listed_count: 34
+    profile_sidebar_border_color: e8e8e8
+    show_all_inline_media: true
+    friends_count: 400
+    utc_offset: -18000
+    location: New York City
+    name: Lauren Appelwick
+    profile_background_tile: true
+    profile_sidebar_fill_color: \"300830\"
+    profile_image_url_https: https://si0.twimg.com/profile_images/1778667511/LAxc_normal.jpg
+    protected: false
+    geo_enabled: false
+    following: true
+    default_profile_image: false
+    statuses_count: 8988
+    is_translator: false
+    favourites_count: 47
+    profile_background_color: \"131516\"
+    description: Brand Director @onShelby something something http://shelby.tv blah blah blah when's lunch? I don't always write complete bios, but when I do
+    time_zone: Eastern Time (US & Canada)
+    screen_name: laurenwick
+    profile_background_image_url: http://a1.twimg.com/profile_background_images/157619092/cdkcrop.jpg
+    profile_image_url: http://a3.twimg.com/profile_images/1778667511/LAxc_normal.jpg
+    profile_link_color: e60961
+    profile_background_image_url_https: https://si0.twimg.com/profile_background_images/157619092/cdkcrop.jpg
+    followers_count: 756
+    default_profile: false
+    notifications: false
+    url: http://thelaurenproject.tumblr.com/
+    profile_use_background_image: true
+    verified: false
+  possibly_sensitive: false
+  contributors: 
+  in_reply_to_status_id: 
+  geo: 
+  in_reply_to_user_id: 
+  place: 
+  favorited: false
+  truncated: false
+  source: <a href=\"http://foursquare.com\" rel=\"nofollow\">foursquare</a>
+  id_str: \"176051240076185600\"
+  id: 176051240076185600
+  retweet_count: 0
+  text: There's a lingering smell of fart... (@ Anthropologie) http://t.co/ibAVw8pu

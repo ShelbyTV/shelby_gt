@@ -51,6 +51,13 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 end
 
+
+#
+# ---------- External Services
+#
+# gem "grackle" 		# twitter
+
+
 #gem 'jquery-rails'
 
 # Deploy with Capistrano

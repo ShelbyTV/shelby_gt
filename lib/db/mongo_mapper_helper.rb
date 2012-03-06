@@ -10,6 +10,8 @@ module MongoMapper
     def self.ensure_all_indexes
       #Get all the conversations related to a given video (a == video_id)
       Conversation.ensure_index(:a, :background => true)
+      #Get a conversation based on originating tweet/facebook update/tumblr/etc (don't need to add network to index, won't help much)
+      Conversation.ensure_index('messages.b', :background => true)
       
       # Get the newest dashboard entries for a user (a == user_id)
       DashboardEntry.ensure_index([[:a, 1], [:_id, -1]], :background => false)

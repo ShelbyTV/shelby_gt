@@ -1,3 +1,5 @@
+require 'framer'
+
 class Frame
   include MongoMapper::Document
 
@@ -5,6 +7,7 @@ class Frame
   configure_mongomapper Settings::Frame
 
   # A Frame is contained by exactly one Roll, first and foremost.
+  # In some special cases, a Frame may *not* have a Roll (ie a private Facebook post creates a Frame that only attaches to DashboardEntry)
   belongs_to :roll, :required => true
   key :roll_id, ObjectId, :abbr => :a
   
@@ -37,10 +40,7 @@ class Frame
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
   
-  def initialize
-    super
-    update_score
-  end
+  before_validation :update_score
   
   def created_at() self.id.generation_time; end
   
@@ -48,38 +48,15 @@ class Frame
   
   #re roll this frame into the given roll, for the given user
   def re_roll(user, roll)
-    raise ArgumentException "must supply user or user_id" unless user
-    user_id = (user.class == User ? user.id : user)
-    
-    raise ArgumentException "must supply roll or roll_id" unless roll
-    roll_id = (roll.class == Roll ? roll.id : roll)
-    
-    # Set up the basics
-    new_frame = Frame.new
-    new_frame.creator_id = user_id
-    new_frame.roll_id = roll_id
-    new_frame.video_id = self.video_id
-    
-    # Create a new conversation
-    convo = Conversation.new
-    convo.video_id = new_frame.video_id
-    convo.public = true
-    new_frame.conversation = convo
-    
-    # Track the lineage
-    new_frame.frame_ancestors = self.frame_ancestors.clone
-    new_frame.frame_ancestors << self.id
-    self.frame_children << new_frame.id
-    
-    return new_frame
+    return GT::Framer.re_roll(self, user, roll)
   end
   
   
   #------ Voting -------
   
   def upvote(u)
-    raise ArgumentException "must supply user or user_id" unless u
-    user_id = (u.class == User ? u.id : u)
+    raise ArgumentError, "must supply user or user_id" unless u
+    user_id = (u.is_a?(User) ? u.id : u)
     
     return false if self.has_voted?(user_id)
     
@@ -91,8 +68,8 @@ class Frame
   end
   
   def has_voted?(u)
-    raise ArgumentException "must supply user or user_id" unless u
-    user_id = (u.class == User ? u.id : u)
+    raise ArgumentError, "must supply user or user_id" unless u
+    user_id = (u.is_a?(User) ? u.id : u)
     
     return self.upvoters.any? { |uid| uid == user_id }
   end

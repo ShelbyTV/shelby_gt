@@ -19,16 +19,26 @@ class Message
   belongs_to :user
   key :user_id, ObjectId, :abbr => :d
   
-  # The Shelby or external username
-  key :username, String, :required => true, :abbr => :e
+  # The Shelby or external nickname
+  key :nickname, String, :required => true, :abbr => :e
+  
+  # The Shelby or external real name
+  key :realname, String, :required => true, :abbr => :f
   
   # The Shelby or external user avatar
-  key :user_image_url, String, :required => true, :abbr => :f
+  key :user_image_url, String, :required => true, :abbr => :g
   
   # The message itself
-  key :text, String, :required => true, :abbr => :g
+  key :text, String, :required => true, :abbr => :h
 
   # TODO: do i need to open this up?
   attr_accessible
 
+
+  ORIGIN_NETWORKS = {
+    :twitter => "twitter",
+    :facebook => "facebook",
+    :tumblr => "tumblr",
+    :shelby => "shelby"
+    }
 end
