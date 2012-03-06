@@ -64,6 +64,7 @@ end
 #
 group :test, :development do
 	gem 'rspec-rails'
+	
 end
 
 group :test do
@@ -72,6 +73,8 @@ group :test do
 	# rspec has nice mocking, but we could also use
 	# gem 'mocha'
 	# and then change the config in spec/spec_helper.rb
+	
+	gem 'factory_girl_rails'
 	
 	# if we have to fuck with time, this looks nice:
 	# gem 'timecop'

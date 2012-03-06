@@ -3,6 +3,14 @@ ShelbyGt::Application.routes.draw do
   # first created -> highest priority.
 
   ########################
+  # Authentication and User Managment
+  devise_for :user, :skip => [:sessions]
+  as :users do
+    get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
+    get 'login' => 'home#index', :as => :new_user_session
+  end
+
+  ########################
   # Namespace allows for versioning of API
   # NOTE: Must use V1::ControllerName in controllers
   namespace :v1 do
