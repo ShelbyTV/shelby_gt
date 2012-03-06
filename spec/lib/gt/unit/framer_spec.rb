@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'framer'
 
 # UNIT test
-# N.B. GT::Framer.re_roll is tested by unit/frame_spec.rb
+# N.B. GT::Framer.re_roll is also tested by unit/frame_spec.rb
 describe GT::Framer do
   
   context "creating Frames" do
@@ -171,5 +171,48 @@ describe GT::Framer do
     end
 
   end # /creating Frames
+
+  context "re-rolling" do
+    before(:each) do
+      @f1 = Frame.create
+      
+      @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+      @roll = Roll.new( :title => "title" )
+      @roll.creator = @roll_creator
+      @roll.save
+    end
+    
+    it "should set the DashboardEntry metadata correctly" do
+      @roll.add_follower(@roll_creator)
+      res = GT::Framer.re_roll(@f1, @roll_creator, @roll)
+      
+      res[:dashboard_entries].size.should == 1
+      res[:dashboard_entries][0].user.should == @roll_creator
+      res[:dashboard_entries][0].action.should == DashboardEntry::ENTRY_TYPE[:re_roll]
+      res[:dashboard_entries][0].frame.should == res[:frame]
+      res[:dashboard_entries][0].roll.should == @roll
+      res[:dashboard_entries][0].roll.should == res[:frame].roll
+    end
+    
+    it "should create DashboardEntries for all users following the Roll a Frame is re-rolled to" do
+      @roll.add_follower(@roll_creator)
+      @roll.add_follower(u1 = User.create)
+      @roll.add_follower(u2 = User.create)
+      @roll.add_follower(u3 = User.create)
+      user_ids = [@roll_creator.id, u1.id, u2.id, u3.id]
+      
+      # Re-roll some random frame on the roll this user created
+      res = GT::Framer.re_roll(@f1, @roll_creator, @roll)
+      
+      # all roll followers should have a DashboardEntry
+      res[:dashboard_entries].size.should == 4
+      res[:dashboard_entries].each { |dbe| dbe.persisted?.should == true }
+      res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(@roll_creator.id)
+      res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u1.id)
+      res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u2.id)
+      res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u3.id)
+    end
+    
+  end
 
 end

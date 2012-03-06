@@ -53,17 +53,9 @@ module GT
       # We need dashboard entries for the roll's followers or the given dashboard_user_id
       user_ids = []
       user_ids << dashboard_user_id if dashboard_user_id
-      user_ids += roll.following_users.map { |fu| fu.user_id } if roll
+      user_ids += roll.following_users_ids if roll
       
-      user_ids.uniq.each do |user_id|
-        dbe = DashboardEntry.new
-        dbe.user_id = user_id
-        dbe.roll = roll
-        dbe.frame = res[:frame]
-        dbe.action = action
-        dbe.save
-        res[:dashboard_entries] << dbe
-      end
+      res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids)
       
       return res
     end
@@ -73,8 +65,11 @@ module GT
     # for_user must be a User or the id of a user
     # to_roll must be a Roll or the id of a roll
     #
-    # RETURNS: the newly re-rolled Frame
     # SIDE EFFECTS: orig_frame.frame_children will be updated with the new Frame
+    #
+    # --returns--
+    #
+    # { :frame => newly_created_frame, :dashboard_entries => [1 or more DashboardEntry, ...] }
     #
     def self.re_roll(orig_frame, for_user, to_roll)
       raise ArgumentError, "must supply user or user_id" unless for_user
@@ -82,8 +77,14 @@ module GT
 
       raise ArgumentError, "must supply roll or roll_id" unless to_roll
       roll_id = (to_roll.is_a?(Roll) ? to_roll.id : to_roll)
+      
+      res = { :frame => nil, :dashboard_entries => [] }
 
-      return basic_re_roll(orig_frame, user_id, roll_id)
+      res[:frame] = basic_re_roll(orig_frame, user_id, roll_id)
+      
+      res[:dashboard_entries] = create_dashboard_entries(res[:frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids)
+      
+      return res
     end
     
     private
@@ -106,7 +107,23 @@ module GT
         new_frame.frame_ancestors << orig_frame.id
         orig_frame.frame_children << new_frame.id
 
+        new_frame.save
+
         return new_frame
+      end
+      
+      def self.create_dashboard_entries(frame, action, user_ids)
+        entries = []
+        user_ids.uniq.each do |user_id|
+          dbe = DashboardEntry.new
+          dbe.user_id = user_id
+          dbe.roll = frame.roll
+          dbe.frame = frame
+          dbe.action = action
+          dbe.save
+          entries << dbe
+        end
+        return entries
       end
     
   end
