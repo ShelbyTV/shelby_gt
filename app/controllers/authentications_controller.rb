@@ -27,7 +27,9 @@ class AuthenticationsController < ApplicationController
       #SigninHelper.start_user_signin(user, omniauth, referral_broadcast_id, session)
       sign_in(:user, user)
       
-      @opener_location = request.env['omniauth.origin'] || root_path
+      render :text => "Welcome #{user.nickname}"
+      
+      #@opener_location = request.env['omniauth.origin'] || root_path
 
     elsif user_signed_in?         # ---- Adding new authentication to current user
       current_user.authentications << (a = Authentication.build_from_omniauth(omniauth))
@@ -73,7 +75,7 @@ class AuthenticationsController < ApplicationController
       
     end
     
-    render :action => 'redirector', :layout => 'simple'
+    #render :action => 'redirector', :layout => 'simple'
   end
 
   def fail
