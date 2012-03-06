@@ -44,9 +44,13 @@ class V1::FrameController < ApplicationController
   # Creates and returns one frame, with the given parameters.
   #
   # [POST] /v1/roll/:id/frames.json
-  # @todo FIGURE THIS OUT. BUILD IT.
   def create
-    
+    roll = Roll.find(params[:id])
+    if !roll
+      @status, @message = 500, "could not find that roll"
+    else
+      @frame = Frame.new()
+    end
   end
   
   ##

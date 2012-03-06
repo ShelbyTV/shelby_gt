@@ -20,12 +20,14 @@ describe V1::FrameController do
       Roll.stub(:find) { nil }
       get :index, :format => :json
       assigns(:status).should eq(500)
+      assigns(:message).should eq("could not find that roll")
     end
     
     it "returns 500 if cant find frames in a roll" do
       @roll.stub(:frames) { nil }
       get :index, :format => :json
       assigns(:status).should eq(500)
+      assigns(:message).should eq("could not find the frames from that roll")
     end
   end
   
@@ -34,6 +36,13 @@ describe V1::FrameController do
       get :show, :id => @frame.id, :format => :json
       assigns(:frame).should eq(@frame)
       assigns(:status).should eq(200)
+    end
+    
+    it "returns 500 when cant find frame" do
+      Frame.stub(:find) { nil }
+      get :show, :format => :json
+      assigns(:status).should eq(500)
+      assigns(:message).should eq("could not find that frame")
     end
   end
   
@@ -58,6 +67,10 @@ describe V1::FrameController do
     it "creates and assigns one frame to @frame" do
       post :create, :format => :json
       assigns(:roll).should eq(r1)
+    end
+    
+    it "returns 500" do
+      
     end
   end
   
