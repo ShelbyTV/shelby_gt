@@ -2,7 +2,6 @@ require 'spec_helper'
 
 require 'url_helper'
 require 'memcached_link_resolving_cache'
-require 'memcached_video_processing_link_cache'
 
 # UNIT test
 describe GT::UrlHelper do

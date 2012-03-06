@@ -18,7 +18,7 @@ module GT
     
     #
     #
-    def self.get_or_create_video_for_url(url, options={})
+    def self.get_or_create_video_for_url(url, use_em=false, memcache_client=nil, options={})
       return nil unless (url = GT::UrlHelper.get_clean_url(url))
       
       # If we have video at this point, return it
@@ -28,7 +28,7 @@ module GT
       end
       
       # No video (yet)? Time to resolve it if it's a shortlink
-      url = GT::UrlHelper.resolve_url(url)
+      url = GT::UrlHelper.resolve_url(url, use_em, memcache_client)
       
       # See if we have Video at this point
       if (provider_info = GT::UrlHelper.parse_url_for_provider_info(url))

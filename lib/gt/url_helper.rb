@@ -27,17 +27,17 @@ module GT
     end
     
     # resolve the URL, using a cache if available
-    def self.resolve_url(url, em=false, cache_memcached=nil)
+    def self.resolve_url(url, use_em=false, memcache_client=nil)
       # 1) Check cache
-      if cache_memcached and (cache = check_link_resolving_cache(url, cache_memcached))
+      if memcache_client and (cache = check_link_resolving_cache(url, memcache_client))
         return cache.resolved_url
       end
       
       # 2) resolve (event machine or otherwise)
-      resolved_url = em ? self.resolve_url_with_eventmachine(url) : self.resolve_url_with_net_http(url, 5)
+      resolved_url = use_em ? self.resolve_url_with_eventmachine(url) : self.resolve_url_with_net_http(url, 5)
     
       # 3) cache this
-      cache_link_resolution(url, resolved_url, cache_memcached) if cache_memcached
+      cache_link_resolution(url, resolved_url, memcache_client) if memcache_client
     
       return resolved_url
     end
@@ -93,10 +93,10 @@ module GT
       #------ Cacheing --------
       ##############################################
       
-      def self.check_link_resolving_cache(url, cache_memcached)
+      def self.check_link_resolving_cache(url, memcache_client)
         begin
-          #cache_memcached is asynchronous via EventMachine
-          return MemcachedLinkResolvingCache.find_by_original_url(url, cache_memcached)
+          #memcache_client is asynchronous via EventMachine
+          return MemcachedLinkResolvingCache.find_by_original_url(url, memcache_client)
         rescue Errno::EAGAIN => e
           return false
         rescue Timeout::Error => e
@@ -107,10 +107,10 @@ module GT
         end
       end
 
-      def self.cache_link_resolution(url, resolved_url, cache_memcached)
+      def self.cache_link_resolution(url, resolved_url, memcache_client)
         begin
-          #cache_memcached is asynchronous via EventMachine
-          MemcachedLinkResolvingCache.create({:original_url => url, :resolved_url => resolved_url}, cache_memcached) if resolved_url
+          #memcache_client is asynchronous via EventMachine
+          MemcachedLinkResolvingCache.create({:original_url => url, :resolved_url => resolved_url}, memcache_client) if resolved_url
         rescue Errno::EAGAIN => e
         rescue Timeout::Error => e
         rescue => e
