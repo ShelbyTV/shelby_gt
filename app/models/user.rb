@@ -7,6 +7,9 @@ class User
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::User
 
+  devise  :rememberable, :trackable
+  #devise includes root in json which fucked up backbone models, need to undo that...
+  def self.include_root_in_json() nil; end
 
   #--new keys--
   
