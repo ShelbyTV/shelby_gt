@@ -24,7 +24,8 @@ describe Frame do
   
   context "upvoting" do
     
-    it "should have a baseline score > 0 on creation" do
+    it "should have a baseline score > 0 after validation" do
+      @frame.valid?.should == true
       @frame.score.should > 0
     end
   

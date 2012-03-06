@@ -17,7 +17,7 @@ describe Frame do
       @f1.conversation = Conversation.new
       @u = User.new
       @r2 = Roll.new
-      @f2 = @f1.re_roll(@u, @r2)
+      @f2 = @f1.re_roll(@u, @r2)[:frame]
     end
     
     it "F2 should have video from F1, blank upvoters, new conversation, updated creator, updated roll" do
@@ -52,8 +52,8 @@ describe Frame do
       @f1 = Frame.new
       @u = User.new
       @r2 = Roll.new
-      @f2 = @f1.re_roll(@u, @r2)
-      @f3 = @f2.re_roll(@u, @r2)
+      @f2 = @f1.re_roll(@u, @r2)[:frame]
+      @f3 = @f2.re_roll(@u, @r2)[:frame]
     end
   
     it "F1 should have F2 as its only child" do
@@ -88,8 +88,8 @@ describe Frame do
       @f1 = Frame.new
       @u = User.new
       @r2 = Roll.new
-      @f2 = @f1.re_roll(@u, @r2)
-      @f3 = @f1.re_roll(@u, @r2)
+      @f2 = @f1.re_roll(@u, @r2)[:frame]
+      @f3 = @f1.re_roll(@u, @r2)[:frame]
     end
     
     it "F1 should have ordered children [F2, F3]" do
