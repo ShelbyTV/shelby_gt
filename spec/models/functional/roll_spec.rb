@@ -4,8 +4,8 @@ require 'spec_helper'
 describe Roll do
   before(:each) do
     @roll = Roll.new
-    @user = User.new
-    @stranger = User.new
+    @user = User.new(:nickname => "nick")
+    @stranger = User.new(:nickname => "name")
   end
   
   context "database" do
