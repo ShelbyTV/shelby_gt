@@ -34,9 +34,20 @@ describe V1::RollController do
   
   describe "POST create" do
     it "creates and assigns one roll to @roll" do
-      post :create, :format => :json
+      post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :format => :json
       assigns(:roll).should eq(@roll)
     end
+    
+    it "returns 500 if there is no title" do
+      post :create, :thumbnail_url => "http://foofle", :format => :json
+      assigns(:status).should eq(500)
+    end
+    
+    it "returns 500 if there is no thumbnail_url" do
+      post :create, :format => :json
+      assigns(:status).should eq(500)
+    end
+    
   end
   
   describe "DELETE destroy" do
