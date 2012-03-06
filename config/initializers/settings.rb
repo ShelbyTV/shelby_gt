@@ -61,4 +61,10 @@ module Settings
     load!
   end
   
+  class Embedly < Settingslogic
+    source "#{Rails.root}/config/settings/embedly.yml"
+    namespace Rails.env
+    load!
+  end
+  
 end

@@ -35,6 +35,8 @@ class Roll
     following_users.any? { |fu| fu.user_id == user_id }
   end
   
+  def following_users_ids() following_users.map { |fu| fu.user_id } end
+  
   def add_follower(u)
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
     

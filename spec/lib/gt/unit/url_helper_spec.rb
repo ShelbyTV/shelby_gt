@@ -122,6 +122,22 @@ describe GT::UrlHelper do
       GT::UrlHelper.resolve_url(url1, false, :fake_memcache).should == url3
     end
     
+    it "should be able to resolve with EventMachine"
+    
+  end
+  
+  context "post_process_url" do
+    
+    it "should transform vimeo channel urls" do
+      GT::UrlHelper.post_process_url("http://vimeo.com/channels/hdgirls#30492458").should == "http://vimeo.com/30492458"
+    end
+    
+    it "should not touch other urs" do
+      GT::UrlHelper.post_process_url("absd").should == "absd"
+      GT::UrlHelper.post_process_url("http://danspinosa.com").should == "http://danspinosa.com"
+      GT::UrlHelper.post_process_url("https://danspinosa.com").should == "https://danspinosa.com"
+    end
+    
   end
   
   context "url_is_shelby" do
