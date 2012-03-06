@@ -1,7 +1,9 @@
 # Needed for testing with Devise
-FactoryGirl.define do
-  factory :user do
-    name 'John Doe'
-    nickname  'Doe'
-  end
+Factory.sequence :nickname do |n|
+  "nickname#{n}"
 end
+
+Factory.define :user do |user|
+  user.nickname                 { Factory.next :nickname }
+end
+

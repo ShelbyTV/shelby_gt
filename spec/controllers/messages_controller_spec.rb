@@ -10,10 +10,39 @@ describe V1::MessagesController do
   end  
 
   describe "POST create" do
-    it "creates and assigns one frame to @frame" do
-      post :create, :format => :json
-      assigns(:message).should eq(@message)
+    before(:each) do
+      @user = Factory.create(:user)
+      sign_in @user
     end
+    
+    it "creates and assigns one message to @new_message" do
+      Message.stub!(:new).and_return(@message)
+      @conversation.stub(:valid?).and_return(true)
+      post :create, :text => "SOS", :format => :json
+      assigns(:new_message).should eq(@message)
+      assigns(:status).should eq(200)
+    end
+    
+    it "returns 500 without message text" do
+      post :create, :format => :json
+      assigns(:status).should eq(500)
+      assigns(:message).should eq("text of message required")
+    end
+
+    it "returns 500 without a user authenticated" do
+      sign_out @user
+      post :create, :text => "SOS", :format => :json
+      assigns(:status).should eq(500)
+      assigns(:message).should eq("not authenticated, could not access user")
+    end
+    
+    it "returns 500 if it cant find the conversation" do
+      Conversation.stub(:find) { nil }
+      post :create, :text => "SOS", :format => :json
+      assigns(:status).should eq(500)
+      assigns(:message).should eq("could not find that conversation")
+    end
+    
   end
   
   describe "DELETE destroy" do

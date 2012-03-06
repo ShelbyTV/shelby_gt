@@ -33,9 +33,12 @@ describe V1::RollController do
   end
   
   describe "POST create" do
+    before(:each) do
+      @user = Factory.create(:user)
+      sign_in @user
+    end
+    
     it "creates and assigns one roll to @roll" do
-      user = Factory.create(:user)
-      sign_in user
       Roll.stub!(:new).and_return(@roll)
       @roll.stub(:valid?).and_return(true)
       post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :format => :json
@@ -44,6 +47,7 @@ describe V1::RollController do
     end
     
     it "returns 500 if user not signed in" do
+      sign_out @user
       post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :format => :json
       assigns(:status).should eq(500)
     end
@@ -51,11 +55,13 @@ describe V1::RollController do
     it "returns 500 if there is no title" do
       post :create, :thumbnail_url => "http://foofle", :format => :json
       assigns(:status).should eq(500)
+      assigns(:message).should eq("title required")
     end
     
     it "returns 500 if there is no thumbnail_url" do
       post :create, :title => "test", :format => :json
       assigns(:status).should eq(500)
+      assigns(:message).should eq("thumbnail_url required")
     end
     
   end
