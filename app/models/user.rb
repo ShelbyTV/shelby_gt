@@ -96,13 +96,15 @@ class User
   def created_at() self.id.generation_time; end
   
   def make_unique_nickname
-    #replace whitespace with underscore
-    self.nickname = self.nickname.gsub(' ','_');
-    #remove punctuation
-    self.nickname = self.nickname.gsub(/['‘’"`]/,'');
+    if nickname 
+      #replace whitespace with underscore
+      self.nickname = self.nickname.gsub(' ','_');
+      #remove punctuation
+      self.nickname = self.nickname.gsub(/['‘’"`]/,'');
     
-    while( User.count( :conditions => { :downcase_nickname => self.nickname.downcase } ) > 0 ) do
-      self.nickname += NICKNAME_EXTENSIONS[rand(NICKNAME_EXTENSIONS.size)]
+      while( User.count( :conditions => { :downcase_nickname => self.nickname.downcase } ) > 0 ) do
+        self.nickname += NICKNAME_EXTENSIONS[rand(NICKNAME_EXTENSIONS.size)]
+      end
     end
   end
   

@@ -27,7 +27,7 @@ class AuthenticationsController < ApplicationController
       #SigninHelper.start_user_signin(user, omniauth, referral_broadcast_id, session)
       sign_in(:user, user)
       
-      render :text => "Welcome #{user.nickname}"
+      redirect_to request.env['omniauth.origin']
       
       #@opener_location = request.env['omniauth.origin'] || root_path
 
