@@ -14,16 +14,20 @@ class Video
 
   # Metadata from the host...
   key :title, String, :abbr => :c
-  key :description, String, :abbr => :d
-  key :duration, String, :abbr => :e
-  key :author, String, :abbr => :f
-  key :video_height, String, :abbr => :g
-  key :video_width, String, :abbr => :h
-  key :thumbnail_url, String, :abbr => :i
-  key :thumbnail_height, String, :abbr => :j
-  key :thumbnail_width, String, :abbr => :k
-  key :tags, Array, :typecase => String, :abbr => :l
-  key :categories, Array, :typecase => String, :abbr => :m
+  key :name, String, :abbr => :d
+  key :description, String, :abbr => :e
+  key :duration, String, :abbr => :f
+  key :author, String, :abbr => :g
+  key :video_height, String, :abbr => :h
+  key :video_width, String, :abbr => :i
+  key :thumbnail_url, String, :abbr => :j
+  key :thumbnail_height, String, :abbr => :k
+  key :thumbnail_width, String, :abbr => :l
+  key :tags, Array, :typecase => String, :abbr => :m
+  key :categories, Array, :typecase => String, :abbr => :n
+
+  key :source_url, String, :abbr => :o
+  key :embed_url, String, :abbr => :p
 
   #nothing needs to be mass-assigned
   attr_accessible

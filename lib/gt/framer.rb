@@ -35,6 +35,7 @@ module GT
       dashboard_user_id = options.delete(:dashboard_user_id)
       raise ArgumentError, "must include a :roll or :dashboard_user_id" unless roll.is_a?(Roll) or dashboard_user_id.is_a?(BSON::ObjectId)
       message = options.delete(:message)
+      raise ArgumentError, ":message must be a Message" if message and !message.is_a?(Message)
       
       res = { :frame => nil, :dashboard_entries => [] }
       
@@ -45,7 +46,11 @@ module GT
       f.video = video
       f.roll = roll if roll
       f.conversation = Conversation.new
-      f.conversation.messages << message if message
+      if message
+        f.conversation.messages << message
+        f.conversation.public = message.public
+      end
+      f.conversation.save
       f.save
       res[:frame] = f
       

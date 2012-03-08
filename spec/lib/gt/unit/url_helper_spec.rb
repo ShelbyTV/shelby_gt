@@ -56,6 +56,8 @@ describe GT::UrlHelper do
         {:provider_name => "youtube", :provider_id => "nTFEUsudhfs"}
       GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/v/L7jduDKGWUc?version=3").should == 
         {:provider_name => "youtube", :provider_id => "L7jduDKGWUc"}
+      GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/watch?v=6dncx6O5J4U&feature=youtu.be").should == 
+        {:provider_name => "youtube", :provider_id => "6dncx6O5J4U"}
     end  
     
     it "should correctly parse youtube shortlink urls" do
@@ -120,6 +122,22 @@ describe GT::UrlHelper do
       MemcachedLinkResolvingCache.stub( :create ).with( {:original_url => url1, :resolved_url => url3}, :fake_memcache)
 
       GT::UrlHelper.resolve_url(url1, false, :fake_memcache).should == url3
+    end
+    
+    it "should be able to resolve with EventMachine"
+    
+  end
+  
+  context "post_process_url" do
+    
+    it "should transform vimeo channel urls" do
+      GT::UrlHelper.post_process_url("http://vimeo.com/channels/hdgirls#30492458").should == "http://vimeo.com/30492458"
+    end
+    
+    it "should not touch other urs" do
+      GT::UrlHelper.post_process_url("absd").should == "absd"
+      GT::UrlHelper.post_process_url("http://danspinosa.com").should == "http://danspinosa.com"
+      GT::UrlHelper.post_process_url("https://danspinosa.com").should == "https://danspinosa.com"
     end
     
   end

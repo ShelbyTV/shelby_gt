@@ -27,4 +27,8 @@ class Conversation
   #TODO: do i need to open up the mesage itself in here?
   attr_accessible
 
+  def self.first_including_message_origin_id(mid)
+    Conversation.first( :conditions => { 'messages.b' => mid } )
+  end
+
 end

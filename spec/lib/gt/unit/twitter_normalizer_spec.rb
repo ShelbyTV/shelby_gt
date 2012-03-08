@@ -10,6 +10,7 @@ describe GT::TwitterNormalizer do
     m.origin_network.should == "twitter"
     m.origin_id.should == "176051240076185600"
     m.origin_user_id.should == "20096495"
+    m.public.should == true
     
     m.nickname.should == "laurenwick"
     m.realname.should == "Lauren Appelwick"

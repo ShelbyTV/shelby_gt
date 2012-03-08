@@ -15,6 +15,7 @@ module GT
       m.origin_network = Message::ORIGIN_NETWORKS[:twitter]
       m.origin_id = tweet_hash['id']      
       m.origin_user_id = user_hash['id']
+      m.public = true
       
       m.nickname = user_hash["screen_name"]
       m.realname = user_hash["name"]

@@ -36,6 +36,29 @@ describe Roll do
       @roll.followed_by?(@user).should == true
       @user.following_roll?(@roll).should == true
     end
+    
+    it "should be able to remove a follower, who then knows they've unfollowed this role" do
+      @roll.add_follower(@user)
+      @roll.remove_follower(@user)
+      
+      @roll.followed_by?(@user).should == false
+      @user.following_roll?(@roll).should == false
+      @user.unfollowed_roll?(@roll).should == true
+    end
+    
+    it "should only remove the follower requested" do
+      @roll.add_follower(@user)
+      @roll.add_follower(@stranger)
+      @roll.remove_follower(@stranger)
+      
+      @roll.followed_by?(@stranger).should == false
+      @stranger.following_roll?(@roll).should == false
+      @stranger.unfollowed_roll?(@roll).should == true
+      
+      @roll.followed_by?(@user).should == true
+      @user.following_roll?(@roll).should == true
+      @user.unfollowed_roll?(@roll).should == false
+    end
   
   end
 

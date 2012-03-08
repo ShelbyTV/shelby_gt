@@ -1,0 +1,12 @@
+defaults: &defaults
+  user_agent: "Mozilla/5.0 (compatible; Shelby.tv/0.1; +d@shelby.tv)"
+  key: '8f495a84af0c11e083e34040d3dc5c07'
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults

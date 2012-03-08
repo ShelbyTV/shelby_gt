@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 class Roll
   include MongoMapper::Document
 
@@ -35,11 +37,21 @@ class Roll
     following_users.any? { |fu| fu.user_id == user_id }
   end
   
+  def following_users_ids() following_users.map { |fu| fu.user_id } end
+  
   def add_follower(u)
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
     
     self.following_users << FollowingUser.new(:user => u)
     u.roll_followings << RollFollowing.new(:roll => self)
+  end
+  
+  def remove_follower(u)
+    raise ArgumentError, "must supply user" unless u and u.is_a?(User)
+    
+    self.following_users.delete_if { |fu| fu.user_id == u.id }
+    u.roll_followings.delete_if { |rf| rf.roll_id == self.id }
+    u.rolls_unfollowed << self.id
   end
   
   # Anybody can view a public roll
