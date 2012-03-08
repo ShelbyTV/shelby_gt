@@ -25,4 +25,23 @@ describe User do
   
   end
   
+  context "rolls" do
+    before(:each) do
+      @roll = Roll.new
+    end
+    
+    it "should know what Rolls it's following" do
+      @user.following_roll?(@roll).should == false
+      @roll.add_follower(@user)
+      @user.following_roll?(@roll).should == true
+    end
+    
+    it "should know what Rolls it's un-followed" do
+      @user.unfollowed_roll?(@roll).should == false
+      @roll.remove_follower(@user)
+      @user.unfollowed_roll?(@roll).should == true
+    end
+    
+  end
+  
 end

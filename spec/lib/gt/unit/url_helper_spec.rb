@@ -56,6 +56,8 @@ describe GT::UrlHelper do
         {:provider_name => "youtube", :provider_id => "nTFEUsudhfs"}
       GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/v/L7jduDKGWUc?version=3").should == 
         {:provider_name => "youtube", :provider_id => "L7jduDKGWUc"}
+      GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/watch?v=6dncx6O5J4U&feature=youtu.be").should == 
+        {:provider_name => "youtube", :provider_id => "6dncx6O5J4U"}
     end  
     
     it "should correctly parse youtube shortlink urls" do

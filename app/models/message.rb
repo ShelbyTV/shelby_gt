@@ -30,6 +30,9 @@ class Message
   
   # The message itself
   key :text, String, :required => true, :abbr => :h
+  
+  # is this public (ie tweet, tumblr post) or private/semi-private (ie Facebook limited share)
+  key :public, Boolean, :abbr => :i
 
   # TODO: do i need to open this up?
   attr_accessible

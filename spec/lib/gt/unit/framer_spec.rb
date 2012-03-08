@@ -10,7 +10,7 @@ describe GT::Framer do
       @video = Video.create
       @frame_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
       @message = Message.new
-    
+      @message.public = true
     
       @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
       @roll = Roll.new( :title => "title" )
@@ -33,6 +33,7 @@ describe GT::Framer do
       res[:frame].conversation.persisted?.should == true
       res[:frame].conversation.messages.size.should == 1
       res[:frame].conversation.messages[0].should == @message
+      res[:frame].conversation.messages[0].persisted?.should == true
       res[:frame].roll.should == @roll
     end
 
@@ -111,7 +112,7 @@ describe GT::Framer do
       res[:dashboard_entries][0].user_id.should == u.id
     end
   
-    it "should create a Frame without Message" do
+    it "should create a Frame with a public Message" do
       res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
@@ -126,6 +127,29 @@ describe GT::Framer do
       res[:frame].conversation.persisted?.should == true
       res[:frame].conversation.messages.size.should == 1
       res[:frame].conversation.messages[0].should == @message
+      res[:frame].conversation.messages[0].public?.should == true
+      res[:frame].conversation.public?.should == true
+      res[:frame].roll.should == @roll
+    end
+  
+    it "should create a Frame with a private Message" do
+      @message.public = false
+      res = GT::Framer.create_frame(
+        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+        :creator => @frame_creator,
+        :video => @video,
+        :message => @message,
+        :roll => @roll
+        )
+    
+      res[:frame].persisted?.should == true
+      res[:frame].creator.should == @frame_creator
+      res[:frame].video.should == @video
+      res[:frame].conversation.persisted?.should == true
+      res[:frame].conversation.messages.size.should == 1
+      res[:frame].conversation.messages[0].should == @message
+      res[:frame].conversation.messages[0].public?.should == false
+      res[:frame].conversation.public?.should == false
       res[:frame].roll.should == @roll
     end
   
