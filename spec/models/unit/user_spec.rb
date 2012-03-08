@@ -11,116 +11,14 @@ describe User do
     @user.database.name.should =~ /.*user/
   end
   
-  it "should have_provider from its authentications" do
-    u = Factory.create(:user)
-    omniauth_hash = {
-      'provider' => "motherfucker",
-      'uid' => '33',
-      'credentials' => {
-        'token' => "somelongtoken",
-        'secret' => 'foreskin'
-      },
-      'user_info' => {
-        'name' => 'some name',
-        'nickname' => 'ironically nick',
-        'garbage' => 'truck'
-      }
-    }
 
-    u.authentications << Authentication.build_from_omniauth(omniauth_hash)
-    u.has_provider('motherfucker').should eq(true)
-  end
   
-  it "should not have_provier not in its authentications" do
-    u = Factory.create(:user)
-    omniauth_hash = {
-      'provider' => "motherfucker",
-      'uid' => '33',
-      'credentials' => {
-        'token' => "somelongtoken",
-        'secret' => 'foreskin'
-      },
-      'user_info' => {
-        'name' => 'some name',
-        'nickname' => 'ironically nick',
-        'garbage' => 'truck'
-      }
-    }
-
-    u.authentications << Authentication.build_from_omniauth(omniauth_hash)
-    u.has_provider('your mom').should eq(false)
-  end
   
-  it "should incorporate authentication user image, and larger user image if twitter" do
-    u = Factory.create(:user)
-    omniauth_hash = {
-      'provider' => "twitter",
-      'uid' => '33',
-      'credentials' => {
-        'token' => "somelongtoken",
-        'secret' => 'foreskin'
-      },
-      'user_info' => {
-        'name' => 'some name',
-        'nickname' => 'ironically nick',
-        'garbage' => 'truck',
-        'image' => "http://original.com/image_normal.png"
-      }
-    }
 
-    u.authentications << Authentication.build_from_omniauth(omniauth_hash)
-    u.user_image.should == "http://original.com/image_normal.png"
-    u.user_image_original.should == "http://original.com/image.png"
-  end
   
-  it "should incorporate authentication user image, and larger user image if twitter, but not if it's a default image" do
-    u = Factory.create(:user)
-    omniauth_hash = {
-      'provider' => "twitter",
-      'uid' => '33',
-      'credentials' => {
-        'token' => "somelongtoken",
-        'secret' => 'foreskin'
-      },
-      'user_info' => {
-        'name' => 'some name',
-        'nickname' => 'ironically nick',
-        'garbage' => 'truck',
-        'image' => "http://original.com/default_profile_6_normal.png"
-      }
-    }
 
-    u.authentications << Authentication.build_from_omniauth(omniauth_hash)
-    u.user_image.should == "http://original.com/default_profile_6_normal.png"
-    u.user_image_original.should == nil
-  end
   
-  it "should be able to get auth from provider and id" do
-    u = Factory.create(:user)
-    omniauth_hash = {
-      'provider' => "twitter",
-      'uid' => '33',
-      'credentials' => {
-        'token' => "somelongtoken",
-        'secret' => 'foreskin'
-      },
-      'user_info' => {
-        'name' => 'some name',
-        'nickname' => 'ironically nick',
-        'garbage' => 'truck',
-        'image' => "http://original.com/default_profile_6_normal.png"
-      }
-    }
 
-    u.authentications << Authentication.build_from_omniauth(omniauth_hash)
-    
-    auth = u.authentication_by_provider_and_uid( "twitter", "33" )
-    auth.should_not == nil
-    auth.provider.should == "twitter"
-    auth.uid.should == "33"
-    auth.oauth_token.should == "somelongtoken"
-    auth.oauth_secret.should == "foreskin"
-  end
   
   it "should be able to update auth tokens" do
     u = Factory.create(:user)
@@ -160,19 +58,7 @@ describe User do
     auth.oauth_secret.should == "NEW--secret"
   end
 
-  it "should change nickname if it's taken" do
-    current_user = Factory.create(:user)
 
-    new_user = Factory.build(:user)
-    new_user.nickname = current_user.nickname
-    
-    current_user.nickname.should eql(new_user.nickname)
-    
-    new_user.save
-    
-    new_user.valid?.should == true
-    new_user.nickname.should_not == current_user.nickname
-  end
   
   it "should replace whitespace in the nickname with underscore" do
     u = Factory.build( :user, :nickname => "dan spinosa")

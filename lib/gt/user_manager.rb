@@ -7,6 +7,25 @@
 module GT
   class UserManager
     
+    # Creates a real User on signup
+    def self.create_new_from_omniauth(omniauth)
+      u = User.new
+      
+      u.nickname = omniauth['user_info']['nickname']
+      u.nickname = omniauth['user_info']['name'] if u.nickname.blank? or u.nickname.match(/\.php\?/)
+      
+      u.name = omniauth['user_info']['name']
+      
+      auth = build_authentication_from_omniauth(omniauth)
+
+      fill_in_user_with_auth_info(u, auth)
+      ensure_valid_unique_nickname!(u)
+      
+      u.authentications << auth
+
+      return u
+    end
+    
     
     # Creates a fake User with an Authentication matching the given network and user_id
     #
@@ -61,7 +80,74 @@ module GT
     # TODO: Going to need to handle faux User becoming *real* User
     
     private
-    
+      
+      def self.build_authentication_from_omniauth(omniauth)
+        raise ArgumentError, "Must have credentials and user info" unless (omniauth.has_key?('credentials') and omniauth.has_key?('user_info'))
+
+        auth = Authentication.new(
+          :provider => omniauth['provider'],
+          :uid => omniauth['uid'],
+          :name => omniauth['user_info']['name'])
+
+        #Optional credentials
+        if omniauth['credentials']
+          auth.oauth_token = omniauth['credentials']['token']
+          auth.oauth_secret = omniauth['credentials']['secret'] if omniauth['credentials']['secret']
+        end
+
+        # Optional user info
+        auth.nickname = omniauth['user_info']['nickname'] if omniauth['user_info']['nickname']
+        auth.email = omniauth['user_info']['email'] if omniauth['user_info']['email']
+        auth.first_name = omniauth['user_info']['first_name'] if omniauth['user_info']['first_name']
+        auth.last_name = omniauth['user_info']['last_name'] if omniauth['user_info']['last_name']
+        auth.location = omniauth['user_info']['location'] if omniauth['user_info']['location']
+        auth.description = omniauth['user_info']['description'] if omniauth['user_info']['description']
+        auth.image = omniauth['user_info']['image'] if omniauth['user_info']['image']
+        auth.phone = omniauth['user_info']['phone'] if omniauth['user_info']['phone']
+        auth.urls = omniauth['user_info']['urls'] if omniauth['user_info']['urls']
+
+        # Extra user hash (from services like twitter)
+        if omniauth['extra']
+          auth.user_hash = omniauth['extra']['user_hash'] if omniauth['extra']['user_hash']      
+          if omniauth['provider'] == 'facebook'
+            #from FB
+            auth.email = omniauth['extra']['user_hash']['email'] if omniauth['extra']['user_hash']['email']
+            auth.first_name = omniauth['extra']['user_hash']['first_name'] if omniauth['extra']['user_hash']['first_name']
+            auth.last_name = omniauth['extra']['user_hash']['last_name'] if omniauth['extra']['user_hash']['last_name']
+            auth.gender = omniauth['extra']['user_hash']['gender'] if omniauth['extra']['user_hash']['gender']
+            auth.timezone = omniauth['extra']['user_hash']['timezone'] if omniauth['extra']['user_hash']['timezone']
+            # request additional info from fb graph api
+            auth.image = "http://graph.facebook.com/" + omniauth['uid'] + "/picture"
+
+            graph = Koala::Facebook::GraphAPI.new(omniauth['credentials']['token'])
+            begin
+              auth.permissions = graph.get_connections("me","permissions")
+            rescue Koala::Facebook::APIError => e
+              Rails.logger.error "[Authentication ERROR] error with getting permissions: #{e}"
+            end
+          end
+        end
+
+        if omniauth['provider'] == 'tumblr' and omniauth['user_hash']
+          auth.user_hash = omniauth['user_hash']
+          auth.nickname = omniauth['user_hash']['name'] if omniauth['user_hash']['name']
+          auth.name = omniauth['user_hash']['title'] if omniauth['user_hash']['title']
+          auth.image = omniauth['user_hash']['avatar_url'] if omniauth['user_hash']['avatar_url']
+        end
+
+        return auth
+      end
+      
+      def self.fill_in_user_with_auth_info(u, auth)
+        u.user_image = auth.image if !u.user_image and auth.image
+        
+        #If auth is twitter, we can try removing the _normal before the extension of the image to get the large version...
+        if !u.user_image_original and auth.twitter? and !auth.image.blank? and !auth.image.include?("default_profile")
+          u.user_image_original = auth.image.gsub("_normal", "")
+        end
+        u.primary_email = auth.email if u.primary_email.blank? and !auth.email.blank?
+      end
+      
       def self.ensure_valid_unique_nickname!(u)
         #replace whitespace with underscore
         u.nickname = u.nickname.gsub(' ','_');
@@ -70,7 +156,9 @@ module GT
         
         orig_nick = u.nickname
         i = 2
-        while( User.count( :conditions => { :downcase_nickname => u.nickname.downcase } ) > 0 ) do
+        
+        while( User.where( :downcase_nickname => u.nickname.downcase ).count > 0 ) do
+          puts "makeing uniq!"
           u.nickname = "#{orig_nick}_#{i}"
           i = i*2
         end
