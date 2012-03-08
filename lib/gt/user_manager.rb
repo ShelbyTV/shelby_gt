@@ -11,13 +11,11 @@ module GT
     # Creates a fake User with an Authentication matching the given network and user_id
     #
     # --arguments--
-    #
     # nickname => REQUIRED the unclean nickname for this user
     # provider => REQUIRED the name of the fucking social network
     # uid => REQUIRED the id given to the user by the social network
     #
     # --returns--
-    #
     # a User - which may be an actual User or a faux User - with a public Roll
     # Or the Errors, if save failed.
     #

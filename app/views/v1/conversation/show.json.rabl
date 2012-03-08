@@ -1,0 +1,3 @@
+object @conversation
+
+attributes :id

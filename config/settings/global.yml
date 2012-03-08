@@ -1,0 +1,12 @@
+defaults: &defaults
+  title: Shelby.tv
+  sailthru_user_list: 'users'
+  
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults

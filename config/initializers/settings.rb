@@ -6,6 +6,24 @@
 #      along with default blocks.
 #
 module Settings
+
+  class ExternalAccounts < Settingslogic
+    source "#{Rails.root}/config/settings/external_accounts.yml"
+    namespace Rails.env
+    load!
+  end
+
+  class Global < Settingslogic
+    source "#{Rails.root}/config/settings/global.yml"
+    namespace Rails.env
+    load!
+  end
+  
+  class Beanstalk < Settingslogic
+    source "#{Rails.root}/config/settings/beanstalk.yml"
+    namespace Rails.env
+    load!
+  end
   
   class User < Settingslogic
     source "#{Rails.root}/config/settings/user.yml"

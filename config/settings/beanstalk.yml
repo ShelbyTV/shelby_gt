@@ -1,0 +1,19 @@
+defaults: &defaults
+  beanstalk_available: false
+  
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults
+  beanstalk_available: true
+  beanstalk_ip: '10.181.132.217:11300'
+  beanstalk_host: '10.181.132.217'
+  beanstalk_port: '11300'
+  tumblr_add_user: "tumblr_add_user"
+  facebook_add_user: "facebook_add_user"
+  twitter_backfill: "twitter_backfill"
+  twitter_add_stream: "twitter_add_stream"
