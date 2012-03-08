@@ -83,9 +83,6 @@ class User
   
   validates_format_of :primary_email, :with => /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\Z/, :allow_blank => true
   
-  # It seems that (:on => :create) is ignored when using MongoMapper
-  before_validation(:on => :create) { |u| u.make_unique_nickname if u.new? }
-  before_save :set_downcase_nickname
   #if email has changed/been set, update sailthru  &&
   # Be resilient if errors fuck up the create process
   after_save :check_to_send_email_address_to_sailthru
@@ -110,21 +107,7 @@ class User
     rolls_unfollowed.include? roll_id
   end
   
-  
-  # -- MOVE ME
-  def make_unique_nickname
-    if nickname 
-      #replace whitespace with underscore
-      self.nickname = self.nickname.gsub(' ','_');
-      #remove punctuation
-      self.nickname = self.nickname.gsub(/['‘’"`]/,'');
-    
-      while( User.count( :conditions => { :downcase_nickname => self.nickname.downcase } ) > 0 ) do
-        self.nickname += NICKNAME_EXTENSIONS[rand(NICKNAME_EXTENSIONS.size)]
-      end
-    end
-  end
-  
+  # -- old methods --   
   def self.find_by_nickname(n)
     return nil unless n.is_a? String and !n.blank?
     User.where( :downcase_nickname => n.downcase ).first || User.where( :nickname => /^#{n.downcase}$/i ).first
@@ -310,5 +293,4 @@ class User
   
     def set_downcase_nickname() self.downcase_nickname = self.nickname.downcase; end  
     
-    NICKNAME_EXTENSIONS = ["bagels", "x10", "thegreat", "enfuego", "money"]
 end

@@ -20,10 +20,16 @@ module GT
 
       fill_in_user_with_auth_info(u, auth)
       ensure_valid_unique_nickname!(u)
+      u.downcase_nickname = u.nickname.downcase
       
       u.authentications << auth
 
-      return u
+      if u.save
+        return u
+      else
+        puts u.errors.full_messages
+        return u.errors
+      end
     end
     
     
@@ -148,18 +154,17 @@ module GT
         u.primary_email = auth.email if u.primary_email.blank? and !auth.email.blank?
       end
       
-      def self.ensure_valid_unique_nickname!(u)
+      def self.ensure_valid_unique_nickname!(user)
         #replace whitespace with underscore
-        u.nickname = u.nickname.gsub(' ','_');
+        user.nickname = user.nickname.gsub(' ','_');
         #remove punctuation
-        u.nickname = u.nickname.gsub(/['‘’"`]/,'');
+        user.nickname = user.nickname.gsub(/['‘’"`]/,'');
         
-        orig_nick = u.nickname
+        orig_nick = user.nickname
         i = 2
         
-        while( User.where( :downcase_nickname => u.nickname.downcase ).count > 0 ) do
-          puts "makeing uniq!"
-          u.nickname = "#{orig_nick}_#{i}"
+        while( User.where( :downcase_nickname => user.nickname.downcase ).count > 0 ) do
+          user.nickname = "#{orig_nick}_#{i}"
           i = i*2
         end
       end

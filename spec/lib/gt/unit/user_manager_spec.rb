@@ -193,12 +193,43 @@ describe GT::UserManager do
       
       it "should change nickname if it's taken" do
         current_user = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
-        
-        new_user = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
-
-        new_user.valid?.should == true
-        new_user.nickname.should_not == current_user.nickname
+        GT::UserManager.create_new_from_omniauth(@omniauth_hash).nickname.should_not == current_user.nickname
       end
+      
+      it "should replace whitespace in the nickname with underscore" do
+        @omniauth_hash["user_info"]["nickname"] = "dan spinosa"
+        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u.valid?.should eql(true)
+        u.nickname.should eql("dan_spinosa")
+
+        @omniauth_hash["user_info"]["nickname"] = " spinosa"
+        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u.valid?.should eql(true)
+        u.nickname.should eql("_spinosa")
+
+        @omniauth_hash["user_info"]["nickname"] = "spinosa "
+        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u.valid?.should eql(true)
+        u.nickname.should eql("spinosa_")
+
+        @omniauth_hash["user_info"]["nickname"] = "spinDr"
+        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u.valid?.should eql(true)
+      end
+      
+      it "should remove invalid punctuation from nickname" do
+        @omniauth_hash["user_info"]["nickname"] = "dan‘s’"
+        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u.valid?.should == true
+        u.nickname.should == "dans"
+
+        @omniauth_hash["user_info"]["nickname"] = "'Astrid_Carolina_Valdez"
+        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u.valid?.should == true
+        u.nickname.should == "Astrid_Carolina_Valdez"
+      end
+      
+      
       
     end
     

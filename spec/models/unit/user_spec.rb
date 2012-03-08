@@ -60,33 +60,8 @@ describe User do
 
 
   
-  it "should replace whitespace in the nickname with underscore" do
-    u = Factory.build( :user, :nickname => "dan spinosa")
-    u.valid?.should eql(true)
-    u.nickname.should eql("dan_spinosa")
-    
-    u = Factory.build( :user, :nickname => " spinosa")
-    u.valid?.should eql(true)
-    u.nickname.should eql("_spinosa")
-    
-    u = Factory.build( :user, :nickname => "spinosa ")
-    u.valid?.should eql(true)
-    u.nickname.should eql("spinosa_")
-    
-    u = Factory.build( :user, :nickname => "spinDr")
-    u.valid?.should eql(true)
-  end
+
   
-  it "should not validate with route prefixes in the nickname" do
-    u = Factory.build( :user, :nickname => "users")
-    u.valid?.should eql(false)
-    
-    u = Factory.build( :user, :nickname => "authentications")
-    u.valid?.should eql(false)
-    
-    u = Factory.build( :user, :nickname => "setup")
-    u.valid?.should eql(false)
-  end
 
   it "should validate nickname w/ utf8 support, dot, underscore and/or hyphen" do
     Factory.build(:user, :nickname => "J.Marie_Teis-Sèdre").valid?.should == true
@@ -110,15 +85,7 @@ describe User do
     #Factory.build(:user, :nickname => "FILL_ME_IN").valid?.should == true
   end
 
-  it "should remove invalid punctuation from nickname" do
-    u = Factory.build(:user, :nickname => "dan‘s’")
-    u.valid?.should == true
-    u.nickname.should == "dans"
-    
-    u = Factory.build(:user, :nickname => "'Astrid_Carolina_Valdez")
-    u.valid?.should == true
-    u.nickname.should == "Astrid_Carolina_Valdez"
-  end
+
 
   it "should build a valid user itself from omniauth hash" do
     omniauth_hash = {
