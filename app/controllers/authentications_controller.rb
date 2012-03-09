@@ -6,7 +6,6 @@ class AuthenticationsController < ApplicationController
   #before_filter :read_user_on_primary_only
 
   def index
-  
   end
   
   def create
@@ -14,11 +13,11 @@ class AuthenticationsController < ApplicationController
     # See if we have a matching user...
     user = User.first( :conditions => { 'authentications.provider' => omniauth['provider'], 'authentications.uid' => omniauth['uid'] } )
     
-    # Broadcast id saved as cookie when user isn't logged in
-    #referral_broadcast_id = cookies[:shelby_referral_broadcast_id]
-    #cookies[:shelby_referral_broadcast_id] = nil
+    # Frame id saved as cookie when user isn't logged in
+    #referral_frame_id = cookies[:shelby_referral_frame_id]
+    #cookies[:shelby_referral_frame_id] = nil
     
-# ---- Current user with two seperate accounts
+#TODO: ---- Current user with two seperate accounts
     if user_signed_in? and user and user != current_user
       # make sure they want to merge "user" into "current_user"
       session[:user_to_merge_in_id] = user.id.to_s
