@@ -21,7 +21,7 @@ describe Authentication do
         'secret' => 'foreskin',
         'garbage' => 'truck'
       },
-      'user_info' => {
+      'info' => {
         'name' => 'some name',
         'nickname' => 'ironically nick',
         'garbage' => 'truck'
@@ -43,7 +43,7 @@ describe Authentication do
         'secret' => 'foreskin',
         'garbage' => 'truck'
       },
-      'user_info' => {
+      'info' => {
         'name' => 'some name',
         'nickname' => 'ironically nick',
         'garbage' => 'truck'
@@ -65,7 +65,7 @@ describe Authentication do
           'secret' => 'foreskin',
           'garbage' => 'truck'
         },
-        'user_info' => {
+        'info' => {
           'name' => 'some name',
           'nickname' => 'ironically nick',
           'garbage' => 'truck'
@@ -109,7 +109,7 @@ describe Authentication do
         'secret' => 'foreskin',
         'garbage' => 'truck'
       },
-      'user_info' => {
+      'info' => {
         'name' => 'some name',
         'nickname' => 'ironically nick',
         'garbage' => 'truck'
