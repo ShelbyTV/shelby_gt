@@ -1,12 +1,15 @@
 require 'spec_helper'
 
 describe V1::RollController do
-  before(:each) do
-    @roll = stub_model(Roll)
-    Roll.stub!(:find).and_return(@roll)
-  end
   
   describe "GET show" do
+    before(:each) do
+      @u1 = Factory.create(:user)
+      sign_in @u1
+      @roll = stub_model(Roll)
+      Roll.stub!(:find).and_return(@roll)
+    end
+    
     it "assigns one roll to @roll" do
       get :show, :format => :json
       assigns(:roll).should eq(@roll)
@@ -14,6 +17,13 @@ describe V1::RollController do
   end
   
   describe "PUT update" do
+    before(:each) do
+      @u1 = Factory.create(:user)
+      sign_in @u1
+      @roll = stub_model(Roll)
+      Roll.stub!(:find).and_return(@roll)
+    end
+    
     it "updates a roll successfuly" do
       roll = mock_model(Roll, :update_attributes => true)
       Roll.stub(:find) { roll }
@@ -34,11 +44,13 @@ describe V1::RollController do
   
   describe "POST create" do
     before(:each) do
-      @user = Factory.create(:user)
-      sign_in @user
+      @u1 = Factory.create(:user)
+      @roll = stub_model(Roll)
+      Roll.stub!(:find).and_return(@roll)
     end
     
     it "creates and assigns one roll to @roll" do
+      sign_in @u1
       Roll.stub!(:new).and_return(@roll)
       @roll.stub(:valid?).and_return(true)
       post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :format => :json
@@ -47,18 +59,19 @@ describe V1::RollController do
     end
     
     it "returns 500 if user not signed in" do
-      sign_out @user
       post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :format => :json
-      assigns(:status).should eq(500)
+      response.should_not be_success
     end
     
     it "returns 500 if there is no title" do
+      sign_in @u1
       post :create, :thumbnail_url => "http://foofle", :format => :json
       assigns(:status).should eq(500)
       assigns(:message).should eq("title required")
     end
     
     it "returns 500 if there is no thumbnail_url" do
+      sign_in @u1
       post :create, :title => "test", :format => :json
       assigns(:status).should eq(500)
       assigns(:message).should eq("thumbnail_url required")
@@ -67,6 +80,14 @@ describe V1::RollController do
   end
   
   describe "DELETE destroy" do
+    before(:each) do
+      @u1 = Factory.create(:user)
+      sign_in @u1
+      
+      @roll = stub_model(Roll)
+      Roll.stub!(:find).and_return(@roll)
+    end
+    
     it "destroys a roll successfuly" do
       @roll.should_receive(:destroy).and_return(true)
       delete :destroy, :id => @roll.id, :format => :json

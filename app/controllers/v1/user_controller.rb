@@ -4,6 +4,7 @@ class V1::UserController < ApplicationController
   
   ####################################
   # Returns one user, with the given parameters.
+  #   REQUIRES AUTHENTICATION
   #
   # [GET] /v1/users/:id.json
   # 
@@ -23,6 +24,7 @@ class V1::UserController < ApplicationController
 
   ####################################
   # Updates and returns one user, with the given parameters.
+  #   REQUIRES AUTHENTICATION
   #
   # [PUT] /v1/users/:id.json
   # 

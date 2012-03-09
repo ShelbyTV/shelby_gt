@@ -1,13 +1,17 @@
 class V1::RollController < ApplicationController  
   
+  before_filter :authenticate_user!, :except => [:show]
+  
   ##
   # Returns one roll, with the given parameters.
   #
   # [GET] /v1/roll/:id.json
   # 
   # @param [Required, String] id The id of the roll
+  # @param [Optional, String] following_users Return the following_users?
   def show
     if @roll = Roll.find(params[:id])
+      @following_users = @roll.following_users if params[:following_users]
       @status =  200
     else
       @status, @message = 500, "could not find that roll"
@@ -16,6 +20,7 @@ class V1::RollController < ApplicationController
   
   ##
   # Creates and returns one roll, with the given parameters.
+  #   REQUIRES AUTHENTICATION
   # 
   # [POST] /v1/roll.json
   # 
@@ -43,6 +48,7 @@ class V1::RollController < ApplicationController
   
   ##
   # Updates and returns one roll, with the given parameters.
+  #   REQUIRES AUTHENTICATION
   # 
   # [PUT] /v1/roll/:id.json
   # 
@@ -60,6 +66,7 @@ class V1::RollController < ApplicationController
   
   ##
   # Destroys one roll, returning Success/Failure
+  #   REQUIRES AUTHENTICATION
   # 
   # [DELETE] /v1/roll/:id.json
   # 

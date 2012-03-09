@@ -52,6 +52,7 @@ class User
   # for rememberable functionality with devise
   key :remember_me,           Boolean, :default => true
   key :remember_created_at,   Time
+  key :remember_token,        String
   
   # To keep track of social actions performed by user
   # [twitter, facebook, email, tumblr]

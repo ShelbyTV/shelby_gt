@@ -3,19 +3,10 @@ require 'spec_helper'
 describe V1::UserController do
   
   before(:each) do
-    @u1 = stub_model(User)
-    @u2 = stub_model(User)    
+    @u1 = Factory.create(:user)
+    sign_in @u1
   end
-  
-  describe "GET index" do
-    it "assigns all users to @users" do
-      User.stub(:all) { [@u1, @u2] }
-      get :index, :format => :json
-      assigns(:users).should eq([@u1, @u2]);
-      assigns(:status).should eq(200)
-    end    
-  end
-  
+    
   describe "GET show" do
     it "assigns one user to @user" do
       User.stub(:find) { @u1 }
