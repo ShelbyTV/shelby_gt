@@ -43,7 +43,7 @@ module GT
       update_authentication_tokens!(user, omniauth) if omniauth
       update_on_sign_in(user)
       # Always remember users, onus is on them to log out
-      user.remember_me!
+      #user.remember_me!
     end
     
     def self.add_new_auth_from_omniauth(user, omniauth)

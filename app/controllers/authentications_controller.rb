@@ -27,6 +27,7 @@ class AuthenticationsController < ApplicationController
 # ---- Current user, just signing in
     elsif user
       GT::UserManager.start_user_sign_in(user, omniauth, session)
+      Rails.logger.info("=====> User: #{user.nickname}: #{user.remember_token.class}")
       sign_in(:user, user)
       
       @opener_location = request.env['omniauth.origin'] || root_path
