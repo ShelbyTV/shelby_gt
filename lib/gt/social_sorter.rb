@@ -24,6 +24,10 @@ module GT
     # The created Frames and DashboardEntries (via GT::Framer)
     #
     def self.sort(message, video, observing_user)
+      raise ArgumentError, "must supply message" unless message.is_a?(Message)
+      raise ArgumentError, "must supply video" unless video.is_a?(Video)
+      raise ArgumentError, "must supply observing_user" unless observing_user.is_a?(User)
+
       posting_user = get_or_create_posting_user_for(message)
               
       if message.public?
