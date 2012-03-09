@@ -1,5 +1,3 @@
-require 'beanstalk-client'
-
 class Authentication
   include MongoMapper::EmbeddedDocument
   plugin MongoMapper::Plugins::Timestamps

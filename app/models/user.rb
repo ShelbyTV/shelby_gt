@@ -35,19 +35,19 @@ class User
   
   one :preferences
   
-  key :name,                  String, :abbr => :b
+  key :name,                  String
   #Mongo string matches are case sensitive and regex queries w/ case insensitivity won't actually use index
   #So we downcase the nickname into User and then query based on that (which is now indexed)
   key :nickname,              String, :required => true
-  key :downcase_nickname,     String, :abbr => :c
-  key :user_image,            String, :abbr => :d
-  key :user_image_original,   String, :abbr => :e
-  key :primary_email,         String, :abbr => :f
+  key :downcase_nickname,     String
+  key :user_image,            String
+  key :user_image_original,   String
+  key :primary_email,         String
   
   # so we know where a user was created...
-  key :server_created_on,     String, :default => "gt", :abbr => :g
+  key :server_created_on,     String, :default => "gt"
   # Used to track referrals (where they are coming from)
-  key :referral_frame_id, ObjectId, :abbr => :h
+  key :referral_frame_id, ObjectId
   
   # for rememberable functionality with devise
   key :remember_me,           Boolean, :default => true
@@ -56,7 +56,7 @@ class User
   
   # To keep track of social actions performed by user
   # [twitter, facebook, email, tumblr]
-  key :social_tracker,        Array, :default => [0, 0, 0, 0], :abbr => :i  
+  key :social_tracker,        Array, :default => [0, 0, 0, 0]
 
   #TODO: finish this list
   attr_accessible :name, :nickname, :primary_email

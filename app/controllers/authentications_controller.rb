@@ -33,7 +33,7 @@ class AuthenticationsController < ApplicationController
       
 # ---- Adding new authentication to current user
     elsif user_signed_in?
-      new_auth GT::UserManager.add_new_auth_from_omniauth(current_user, omniauth)
+      new_auth = GT::UserManager.add_new_auth_from_omniauth(current_user, omniauth)
       
       if new_auth
         @opener_reload = true
@@ -44,7 +44,7 @@ class AuthenticationsController < ApplicationController
 
 # ---- New User signing up!
     else
-      user = GT::UserManager.create_new_from_omniauth(omniauth)
+      user = GT::UserManager.create_new_user_from_omniauth(omniauth)
 
       if user.valid?
         sign_in(:user, user)

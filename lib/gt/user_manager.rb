@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+require 'beanstalk-client'
+
 # This is the one and only place where Users are created.
 #
 # Used to create actual users (on signup) and faux Users (for public Roll)
@@ -8,7 +10,7 @@ module GT
   class UserManager
     
     # Creates a real User on signup
-    def self.create_new_from_omniauth(omniauth)
+    def self.create_new_user_from_omniauth(omniauth)
       #TODO DRY
       #TODO there are many things in common to all user creation, pull them out and into a helper method
       u = User.new
