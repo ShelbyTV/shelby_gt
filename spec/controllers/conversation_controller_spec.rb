@@ -3,6 +3,11 @@ require 'spec_helper'
 describe V1::ConversationController do
   
   describe "GET show" do
+    before(:each) do
+      @u = Factory.create(:user)
+      sign_in @u
+    end
+    
     it "assigns one conversation to @conversation" do
       @conversation = stub_model(Conversation)
       Conversation.stub!(:find).and_return(@conversation)

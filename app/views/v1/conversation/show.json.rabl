@@ -1,3 +1,3 @@
 object @conversation
 
-attributes :id
+attributes :id, :public, :video_id

@@ -32,8 +32,7 @@ describe V1::MessagesController do
     it "returns 500 without a user authenticated" do
       sign_out @user
       post :create, :text => "SOS", :format => :json
-      assigns(:status).should eq(500)
-      assigns(:message).should eq("not authenticated, could not access user")
+      response.should_not be_success
     end
     
     it "returns 500 if it cant find the conversation" do
@@ -46,6 +45,11 @@ describe V1::MessagesController do
   end
   
   describe "DELETE destroy" do
+    before(:each) do
+      @user = Factory.create(:user)
+      sign_in @user
+    end
+    
     it "destroys a message successfuly" do
       @conversation.stub(:pull) { [@message1] }
       @conversation.stub(:reload) { @conversation }

@@ -1,7 +1,10 @@
 class V1::ConversationController < ApplicationController  
-
+  
+  before_filter :authenticate_user!
+  
   ##
   # Returns a conversation, with the given parameters.
+  #   AUTHENTICATION REQUIRED
   #
   # [GET] /v1/conversation/:id.json
   # 
@@ -11,7 +14,7 @@ class V1::ConversationController < ApplicationController
       @messages = @conversation.messages
       @status = 200
     else
-      @status, @message = 500, "could not find user"
+      @status, @message = 500, "could not find conversation"
     end
   end
   

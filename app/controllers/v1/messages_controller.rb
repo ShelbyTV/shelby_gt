@@ -1,29 +1,32 @@
 class V1::MessagesController < ApplicationController  
+  before_filter :authenticate_user!
 
   ##
   # Returns a message, with the given parameters.
+  #   REQUIRES AUTHENTICATION
   #
   # [GET] /message.[format]/:id
   # 
   # @param [Required, String] id The id of the message
   # @todo return error if id not present w/ params.has_key?(:id)
   def show
-    id = params.delete(:id)
-    @params = params
-    @message = message.find(id)
+    if @shelby_message = Message.find(params[:id])
+      @status = 200
+    else
+      @status, @message = "could not find that message"
+    end
   end
   
   ##
   # Creates and returns one message, with the given parameters.
+  #   REQUIRES AUTHENTICATION
   #
   # [POST] /v1/conversation/:conversation_id/messages.json
   #
   # @param [Required, String] text The text for the message
   def create
-    if ( !params.include?(:text) or !user_signed_in?)
-      @status = 500
-      @message = "text of message required" unless params.include?(:text)
-      @message = "not authenticated, could not access user" unless user_signed_in?
+    if !params.include?(:text)
+      @status, @message = 500, "text of message required"
     else
       conversation = Conversation.find(params[:conversation_id])
       if !conversation
@@ -45,6 +48,7 @@ class V1::MessagesController < ApplicationController
     
   ##
   # Destroys one message, returning Success/Failure
+  #   REQUIRES AUTHENTICATION
   #
   # [GET] /v1/conversation/:conversation_id/messages/:id.json
   # 
