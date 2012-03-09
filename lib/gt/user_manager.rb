@@ -13,10 +13,10 @@ module GT
     def self.create_new_user_from_omniauth(omniauth)
       u = User.new
       
-      u.nickname = omniauth['user_info']['nickname']
-      u.nickname = omniauth['user_info']['name'] if u.nickname.blank? or u.nickname.match(/\.php\?/)
+      u.nickname = omniauth['info']['nickname']
+      u.nickname = omniauth['info']['name'] if u.nickname.blank? or u.nickname.match(/\.php\?/)
       
-      u.name = omniauth['user_info']['name']
+      u.name = omniauth['info']['name']
       
       auth = build_authentication_from_omniauth(omniauth)
 
@@ -117,12 +117,12 @@ module GT
       # Takes an omniauth response and bulds a new authentication
       # - returns the new authentication
       def self.build_authentication_from_omniauth(omniauth)
-        raise ArgumentError, "Must have credentials and user info" unless (omniauth.has_key?('credentials') and omniauth.has_key?('user_info'))
+        raise ArgumentError, "Must have credentials and user info" unless (omniauth.has_key?('credentials') and omniauth.has_key?('info'))
 
         auth = Authentication.new(
           :provider => omniauth['provider'],
           :uid => omniauth['uid'],
-          :name => omniauth['user_info']['name'])
+          :name => omniauth['info']['name'])
 
         #Optional credentials
         if omniauth['credentials']
@@ -131,15 +131,15 @@ module GT
         end
 
         # Optional user info
-        auth.nickname = omniauth['user_info']['nickname'] if omniauth['user_info']['nickname']
-        auth.email = omniauth['user_info']['email'] if omniauth['user_info']['email']
-        auth.first_name = omniauth['user_info']['first_name'] if omniauth['user_info']['first_name']
-        auth.last_name = omniauth['user_info']['last_name'] if omniauth['user_info']['last_name']
-        auth.location = omniauth['user_info']['location'] if omniauth['user_info']['location']
-        auth.description = omniauth['user_info']['description'] if omniauth['user_info']['description']
-        auth.image = omniauth['user_info']['image'] if omniauth['user_info']['image']
-        auth.phone = omniauth['user_info']['phone'] if omniauth['user_info']['phone']
-        auth.urls = omniauth['user_info']['urls'] if omniauth['user_info']['urls']
+        auth.nickname = omniauth['info']['nickname'] if omniauth['info']['nickname']
+        auth.email = omniauth['info']['email'] if omniauth['info']['email']
+        auth.first_name = omniauth['info']['first_name'] if omniauth['info']['first_name']
+        auth.last_name = omniauth['info']['last_name'] if omniauth['info']['last_name']
+        auth.location = omniauth['info']['location'] if omniauth['info']['location']
+        auth.description = omniauth['info']['description'] if omniauth['info']['description']
+        auth.image = omniauth['info']['image'] if omniauth['info']['image']
+        auth.phone = omniauth['info']['phone'] if omniauth['info']['phone']
+        auth.urls = omniauth['info']['urls'] if omniauth['info']['urls']
 
         # Extra user hash (from services like twitter)
         if omniauth['extra']
