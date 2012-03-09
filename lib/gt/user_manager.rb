@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+require 'beanstalk-client'
+
 # This is the one and only place where Users are created.
 #
 # Used to create actual users (on signup) and faux Users (for public Roll)
