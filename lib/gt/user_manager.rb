@@ -12,7 +12,7 @@ module GT
     
     # Creates a real User on signup
     def self.create_new_user_from_omniauth(omniauth)
-      user, auth = build_new_user(omniauth)
+      user, auth = build_new_user_and_auth(omniauth)
       
       if user.save
         GT::VideoFetching.initialize_video_processing(user, auth)
@@ -104,7 +104,7 @@ module GT
     private
       
       # Takes an omniauth hash to build one user, prefs, and an auth to go along with it
-      def self.build_new_user(omniauth)
+      def self.build_new_user_and_auth(omniauth)
         u = User.new
 
         u.nickname = omniauth['info']['nickname']
