@@ -13,8 +13,8 @@ module GT
       
       m = Message.new
       m.origin_network = Message::ORIGIN_NETWORKS[:twitter]
-      m.origin_id = tweet_hash['id']      
-      m.origin_user_id = user_hash['id']
+      m.origin_id = tweet_hash['id'] || tweet_hash['id_str'].to_i
+      m.origin_user_id = user_hash['id'] || user_hash['id_str'].to_i
       m.public = true
       
       m.nickname = user_hash["screen_name"]
