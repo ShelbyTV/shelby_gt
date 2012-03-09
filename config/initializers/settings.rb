@@ -67,4 +67,10 @@ module Settings
     load!
   end
   
+  class EventMachine < Settingslogic
+    source "#{Rails.root}/config/settings/event_machine.yml"
+    namespace Rails.env
+    load!
+  end
+  
 end

@@ -75,56 +75,80 @@ describe GT::UrlHelper do
   
   context "resolve_url" do
     
-    it "should work without cache" do
-      #This is a real resolve that hits the www, which should never be in tests:
-      #GT::UrlHelper.resolve_url("http://shel.tv", false, nil).should == "http://shelby.tv"
+    context "with Net::HTTP" do
+    
+      it "should work without cache" do
+        #This is a real resolve that hits the www, which should never be in tests:
+        #GT::UrlHelper.resolve_url("http://shel.tv", false, nil).should == "http://shelby.tv"
       
-      # Instead, we mock up a couple redirects and make sure she works...
+        # Instead, we mock up a couple redirects and make sure she works...
       
-      url1 = "http://fake1.com"
-      url2 = "http://fake2.net"
-      url3 = "http://fake3.org"
+        url1 = "http://fake1.com"
+        url2 = "http://fake2.net"
+        url3 = "http://fake3.org"
       
-      r1to2 = Net::HTTPMovedPermanently.new("1", "301", "x")
-      r1to2['location'] = url2
-      Net::HTTP.stub( :get_response, url1).and_return(r1to2)
-      r2to3 = Net::HTTPMovedPermanently.new("1", "301", "x")
-      r2to3['location'] = url3
-      Net::HTTP.stub( :get_response, url2).and_return(r2to3)
+        r1to2 = Net::HTTPMovedPermanently.new("1", "301", "x")
+        r1to2['location'] = url2
+        Net::HTTP.stub( :get_response, url1).and_return(r1to2)
+        r2to3 = Net::HTTPMovedPermanently.new("1", "301", "x")
+        r2to3['location'] = url3
+        Net::HTTP.stub( :get_response, url2).and_return(r2to3)
       
-      GT::UrlHelper.resolve_url(url1, false, nil).should == url3
+        GT::UrlHelper.resolve_url(url1, false, nil).should == url3
+      end
+      
     end
     
-    it "should return directly from cache" do
-      url1 = "http://xfake1.com"
-      url3 = "http://xfake3.org"
+    context "with EventMachine" do
       
-      MemcachedLinkResolvingCache.stub( :find_by_original_url ).with(url1, :fake_memcache).and_return(
-        mock_model("MockMemcachedLinkResolvingCache", :resolved_url => url3)
-        )
-
-      GT::UrlHelper.resolve_url(url1, false, :fake_memcache).should == url3
-    end
-    
-    it "should save url resolution to cache" do
-      url1 = "http://yfake1.com"
-      url3 = "http://yfake3.org"
-      
-      # no cache hit
-      MemcachedLinkResolvingCache.stub( :find_by_original_url ).with(url1, :fake_memcache).and_return(nil)
+      it "should work without cache" do
+        url1 = "http://fake1.com"
+        url2 = "http://fake2.net"
         
-      #fake resolution
-      r1to3 = Net::HTTPMovedPermanently.new("1", "301", "x")
-      r1to3['location'] = url3
-      Net::HTTP.stub( :get_response, url1).and_return(r1to3)
+        #TODO: mock stuff
+        fake_em_http_request = mock_model("FakeEMHttpRequest")
+        fake_em_http_request.stub( :head ).and_return(
+          mock_model("FakeEMHttpResponse", :last_effective_url => mock_model("FakeResponseHeader", :normalize => url2) )
+          )
+        EventMachine::HttpRequest.stub(:new).with( url1, {:connect_timeout => Settings::EventMachine.connect_timeout} ).and_return( fake_em_http_request )
+        
+        GT::UrlHelper.resolve_url(url1, true, nil).should == url2
+      end
       
-      #expect save to cache
-      MemcachedLinkResolvingCache.stub( :create ).with( {:original_url => url1, :resolved_url => url3}, :fake_memcache)
-
-      GT::UrlHelper.resolve_url(url1, false, :fake_memcache).should == url3
     end
     
-    it "should be able to resolve with EventMachine"
+    context "with cache" do
+    
+      it "should return directly from cache" do
+        url1 = "http://xfake1.com"
+        url3 = "http://xfake3.org"
+      
+        MemcachedLinkResolvingCache.stub( :find_by_original_url ).with(url1, :fake_memcache).and_return(
+          mock_model("MockMemcachedLinkResolvingCache", :resolved_url => url3)
+          )
+
+        GT::UrlHelper.resolve_url(url1, false, :fake_memcache).should == url3
+      end
+    
+      it "should save url resolution to cache" do
+        url1 = "http://yfake1.com"
+        url3 = "http://yfake3.org"
+      
+        # no cache hit
+        MemcachedLinkResolvingCache.stub( :find_by_original_url ).with(url1, :fake_memcache).and_return(nil)
+        
+        #fake resolution
+        r1to3 = Net::HTTPMovedPermanently.new("1", "301", "x")
+        r1to3['location'] = url3
+        Net::HTTP.stub( :get_response, url1).and_return(r1to3)
+      
+        #expect save to cache
+        MemcachedLinkResolvingCache.stub( :create ).with( {:original_url => url1, :resolved_url => url3}, :fake_memcache)
+
+        GT::UrlHelper.resolve_url(url1, false, :fake_memcache).should == url3
+      end
+    
+    end
     
   end
   
