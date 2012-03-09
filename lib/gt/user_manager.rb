@@ -112,6 +112,8 @@ module GT
     
     private
       
+      # Takes an omniauth response and bulds a new authentication
+      # - returns the new authentication
       def self.build_authentication_from_omniauth(omniauth)
         raise ArgumentError, "Must have credentials and user info" unless (omniauth.has_key?('credentials') and omniauth.has_key?('user_info'))
 
@@ -169,6 +171,8 @@ module GT
         return auth
       end
       
+      # Takes facebook info and bulds a new authentication
+      # - returns the new authentication
       def self.build_authentication_from_facebook(fb_info, token, fb_permissions)
         auth = Authentication.new(
           :provider => 'facebook',
@@ -200,12 +204,16 @@ module GT
         end
         u.primary_email = auth.email if u.primary_email.blank? and !auth.email.blank?
       end
-      
+
+      # Finds a users authentication and updates it
+      #  - returns the updated auth      
       def self.update_authentication_tokens!(u,omniauth)
         auth = authentication_by_provider_and_uid(u, omniauth['provider'], omniauth['uid'])
         return auth ? update_oauth_tokens!(u, auth, omniauth) : false
       end
       
+      # Updates oauth tokens for a users auth given an authentication
+      #  - returns the updated auth
       def self.update_oauth_tokens!(u, a, omniauth)
         if a.oauth_token != omniauth['credentials']['token'] or a.oauth_secret != omniauth['credentials']['secret']
           a.update_attributes!({ :oauth_token => omniauth['credentials']['token'], :oauth_secret => omniauth['credentials']['secret'] })
@@ -216,12 +224,13 @@ module GT
         return a
       end
       
+      # Finds a auth by provider and id
       def self.authentication_by_provider_and_uid(u, provider, uid)
         u.authentications.select { |a| a.provider == provider and a.uid == uid } .first
       end
       
+      # If we have an FB authentication, poll on demand... and get updated permissions
       def self.update_on_sign_in(u)
-        # if we have an FB authentication, poll on demand... and get updated permissions
         u.authentications.each do |a| 
           update_video_processing(u, a)
           if a.provider == "facebook"
@@ -279,6 +288,7 @@ module GT
         end
       end
       
+      # Makes sure a nickname is valid and unique!
       def self.ensure_valid_unique_nickname!(user)
         #replace whitespace with underscore
         user.nickname = user.nickname.gsub(' ','_');
