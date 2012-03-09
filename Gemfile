@@ -25,7 +25,6 @@ gem 'yajl-ruby', :require => "yajl"
 #
 gem "haml"
 gem "compass", "0.11.7"
-#gem "jammit"
 
 #
 # ---------- User Authentication

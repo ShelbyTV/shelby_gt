@@ -3,10 +3,10 @@
 	%head
 		%meta{ :charset => "utf-8" }
 		%meta{ 'http-equiv' => "X-UA-Compatible", :content => "chrome=1" }
-		%title= Settings::Global.title] || yield(:title)
+		%title= Settings::Global.title || yield(:title)
 		= csrf_meta_tag
 		
-		= include_stylesheets :application, :media => 'all'
+		= stylesheet_link_tag :application, :media => 'all'
 		
 		%link{ :rel => "shortcut icon", :href => "/favicon.png" }
 		

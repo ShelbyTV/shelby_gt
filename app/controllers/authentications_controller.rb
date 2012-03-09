@@ -27,7 +27,6 @@ class AuthenticationsController < ApplicationController
 # ---- Current user, just signing in
     elsif user
       GT::UserManager.start_user_sign_in(user, omniauth, session)
-      Rails.logger.info("=====> User: #{user.nickname}: #{user.remember_token.class}")
       sign_in(:user, user)
       
       @opener_location = request.env['omniauth.origin'] || root_path
@@ -58,7 +57,7 @@ class AuthenticationsController < ApplicationController
       
     end
     
-    #render :action => 'redirector', :layout => 'simple'
+    render :action => 'redirector', :layout => 'simple'
   end
 
   def fail

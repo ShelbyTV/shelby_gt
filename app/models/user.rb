@@ -8,7 +8,7 @@ class User
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::User
 
-  devise  :rememberable, :trackable
+  devise  :rememberable, :trackable, :remember_for => 1.week
   #devise includes root in json which fucked up backbone models, need to undo that...
   def self.include_root_in_json() nil; end
 
@@ -51,8 +51,7 @@ class User
   
   # for rememberable functionality with devise
   key :remember_me,           Boolean, :default => true
-  key :remember_token,        String
-  key :remember_created_at,   Boolean
+  key :remember_created_at,   Time
   
   # To keep track of social actions performed by user
   # [twitter, facebook, email, tumblr]
