@@ -17,6 +17,8 @@ module GT
     # Try to pull the provider's name and id so we can check out DB
     # return nil if we can't
     def self.parse_url_for_provider_info(url)
+      return nil unless url
+      
       yt = self.parse_url_for_youtube_provider_info(url)
       return yt if yt
       

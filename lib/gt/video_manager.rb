@@ -1,4 +1,5 @@
 require 'url_helper'
+require 'url_video_detector'
 
 # This is the one and only place where Videos are created.
 # VideoManager handles the URLs resolution/parsing in the background
@@ -99,7 +100,7 @@ module GT
           provider_name = provider_info[:provider_name]
           provider_id = provider_info[:provider_id]
         else
-          Rails.logger.error("[GT::VideoManager#create_video_for_embedly_hash] could not determine provider name, id based on embed.ly hash #{vh}")
+          Rails.logger.error("[GT::VideoManager#create_video_for_embedly_hash] could not determine provider name, id based on embed.ly hash #{h}")
           return nil
         end
         

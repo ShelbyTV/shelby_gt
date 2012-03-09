@@ -1,0 +1,14 @@
+defaults: &defaults
+  consumer_key: 5DNrVZpdIwhQthCJJXCfnQ
+  consumer_secret: Tlb35nblFFTZRidpu36Uo3z9mfcvSVv1MuZZ19SHaU
+  dev_poller_tweets_per_page: 200
+  dev_poller_last_page: 17
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults

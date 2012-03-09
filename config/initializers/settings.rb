@@ -73,4 +73,10 @@ module Settings
     load!
   end
   
+  class Twitter < Settingslogic
+    source "#{Rails.root}/config/settings/twitter.yml"
+    namespace Rails.env
+    load!
+  end
+  
 end

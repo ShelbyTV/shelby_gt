@@ -31,6 +31,11 @@ describe GT::UrlHelper do
   
   context "parse_url_for_provider_info" do
     
+    it "should accept bad urls and return nil" do
+      GT::UrlHelper.parse_url_for_provider_info(nil).should == nil
+      GT::UrlHelper.parse_url_for_provider_info("").should == nil
+    end
+    
     it "should correctly parse long youtube urls" do
       GT::UrlHelper.parse_url_for_provider_info("https://www.youtube-nocookie.com/embed/Hl-zzrqQoSE").should == 
         {:provider_name => "youtube", :provider_id => "Hl-zzrqQoSE"}
