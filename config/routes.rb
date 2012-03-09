@@ -14,15 +14,7 @@ ShelbyGt::Application.routes.draw do
   resources :authentications
   match '/auth/:provider/callback' => 'authentications#create'
   match '/auth/failure' => 'authentications#fail'
-  
 
-  ########################
-  # Authentication and User Managment
-  devise_for :user, :skip => [:sessions]
-  as :users do
-    get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
-    get 'login' => 'home#index', :as => :new_user_session
-  end
 
   ########################
   # Namespace allows for versioning of API
