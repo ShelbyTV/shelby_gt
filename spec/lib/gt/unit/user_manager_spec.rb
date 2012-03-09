@@ -129,7 +129,7 @@ describe GT::UserManager do
       end
       
       it "should build a valid user itself from omniauth hash" do
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.nickname.should eq(@nickname)
       end
       
@@ -192,83 +192,83 @@ describe GT::UserManager do
       end
       
       it "should change nickname if it's taken" do
-        current_user = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
-        GT::UserManager.create_new_from_omniauth(@omniauth_hash).nickname.should_not == current_user.nickname
+        current_user = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).nickname.should_not == current_user.nickname
       end
       
       it "should replace whitespace in the nickname with underscore" do
         @omniauth_hash["user_info"]["nickname"] = "dan spinosa"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should eql(true)
         u.nickname.should eql("dan_spinosa")
 
         @omniauth_hash["user_info"]["nickname"] = " spinosa"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should eql(true)
         u.nickname.should eql("_spinosa")
 
         @omniauth_hash["user_info"]["nickname"] = "spinosa "
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should eql(true)
         u.nickname.should eql("spinosa_")
 
         @omniauth_hash["user_info"]["nickname"] = "spinDr"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should eql(true)
       end
       
       it "should remove invalid punctuation from nickname" do
         @omniauth_hash["user_info"]["nickname"] = "dan‘s’"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should == true
         u.nickname.should == "dans"
 
         @omniauth_hash["user_info"]["nickname"] = "'Astrid_Carolina_Valdez"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should == true
         u.nickname.should == "Astrid_Carolina_Valdez"
       end
       
       it "should validate nickname w/ utf8 support, dot, underscore and/or hyphen" do
         @omniauth_hash['user_info']['nickname'] = "J.Marie_Teis-Sèdre"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "보통그냥"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "Boris Šebošík"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "Олег_Бородин"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "Станислав_Станислав"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "厚任_賴厚任"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "Thập_Lục_Thập"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "ธีระพงษ์_อารีเอื้อ"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "鎮順_陳鎮順"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "Андрей_Бабакاسي"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "ابراهي_اليم"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "Παναγής_Μέγαρα"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "அன்புடன்_ஆனந்தகுமார்"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "אבו_ודיע"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "ომარი_დევიძე"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "みさお_みさお"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "たくや_たくや"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
         @omniauth_hash['user_info']['nickname'] = "ヴィクタ"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
 
         #@omniauth_hash['user_info']['nickname'] = "FILL_ME_IN"
-        #u = GT::UserManager.create_new_from_omniauth(@omniauth_hash).should_not == nil
+        #u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
       end
       
       it 'should handle blank nickname' do
@@ -283,7 +283,7 @@ describe GT::UserManager do
           },
           'more_garbage' => Date.new
         }
-        u = GT::UserManager.create_new_from_omniauth(omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(omniauth_hash)
 
         u.valid?.should eql(true)
       end
@@ -303,7 +303,7 @@ describe GT::UserManager do
           'more_garbage' => Date.new
         }
 
-        u = GT::UserManager.create_new_from_omniauth(omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(omniauth_hash)
 
         u.valid?.should eql(true)
         u.nickname.start_with?("the_name").should == true
@@ -311,27 +311,27 @@ describe GT::UserManager do
 
       it "should copy nickname downcased" do
         @omniauth_hash["user_info"]["nickname"] = "SomeInCAPS"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         nick = u.nickname
         u.reload.downcase_nickname.should == nick.downcase
       end
 
       it "should be findable by case-insensitive nickname" do
         @omniauth_hash["user_info"]["nickname"] = "Spinosa"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         User.find_by_nickname("spinosa").should be_a(User)
         User.find_by_nickname("Spinosa").should be_a(User)
         User.find_by_nickname("spinOSa").should be_a(User)
         User.find_by_nickname("spin osa").should be(nil)
 
         @omniauth_hash["user_info"]["nickname"] = "Frank_Lazio_JR"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         User.find_by_nickname("frank_lazio_jr").should be_a(User)
       end
       
       it "should make sure it's finding user by entire nickname only" do
         @omniauth_hash["user_info"]["nickname"] = "this_is_the_nickname"
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
 
         nick = u.nickname
         User.find_by_nickname(nick[0..nick.length-2]).should == nil
@@ -340,7 +340,7 @@ describe GT::UserManager do
       end
 
       it "should always have preferences once created" do
-        u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.preferences.email_updates.should == true
         u.preferences.like_notifications.should == true
         u.preferences.watched_notifications.should == true
@@ -390,7 +390,7 @@ describe GT::UserManager do
 
     end
     it "should be able to update auth tokens" do
-      u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+      u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
       
       # UPDATE
       @omniauth_hash['credentials']['token'] = "NEW--token"
@@ -407,7 +407,7 @@ describe GT::UserManager do
     end
 
     it "should add a new auth to an existing user" do
-      u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+      u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
 
       new_omniauth_hash = {
         'provider' => "facebook",
