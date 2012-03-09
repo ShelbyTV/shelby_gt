@@ -62,22 +62,12 @@ gem "beanstalk-client", :git => "git://github.com/ShelbyTV/beanstalk-client-ruby
 gem 'delayed_job', :git => 'git://github.com/collectiveidea/delayed_job.git'
 gem 'delayed_job_mongo_mapper', :git => 'git://github.com/ShelbyTV/delayed_job_mongo_mapper.git'
 
-
+#
+# ---------- TODO: explain what yard is and why it's here
+#
 group :development do
 	gem 'yard', '~> 0.7.4'
 	gem 'yard-rest', '0.3.0', :git => 'git://github.com/rknLA/yard-rest-plugin.git'
-end
-
-# Gems used only for assets and not required
-# in production environments by default.
-group :assets do
-  gem 'sass-rails',   '~> 3.2.3'
-  gem 'coffee-rails', '~> 3.2.1'
-
-  # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-  # gem 'therubyracer'
-
-  gem 'uglifier', '>= 1.0.3'
 end
 
 #
