@@ -57,6 +57,8 @@ describe V1::DashboardEntriesController do
   
   describe "PUT update" do
     before(:each) do
+      @u = Factory.create(:user)
+      sign_in @u
       @d = mock_model(DashboardEntry, :update_attributes => true)
     end
     

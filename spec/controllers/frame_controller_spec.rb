@@ -2,6 +2,8 @@ require 'spec_helper'
 
 describe V1::FrameController do
   before(:each) do
+    @u1 = Factory.create(:user)
+    sign_in @u1
     @roll = stub_model(Roll)
     @frame = stub_model(Frame)
     Roll.stub(:find) { @roll }
@@ -65,9 +67,6 @@ describe V1::FrameController do
   
   describe "POST create" do
     before(:each) do
-      @user = Factory.create(:user)
-      sign_in @user
-      
       @f1 = stub_model(Frame)
       @f1.conversation = stub_model(Conversation)
 

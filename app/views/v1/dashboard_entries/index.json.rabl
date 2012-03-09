@@ -1,3 +1,3 @@
-collection @dashboad_entries
+collection @entries
 
-attributes :roll, :frame, :video, :conversation, :user
+attributes :id, :action, :actor_id, :roll, :frame, :video, :conversation, :user

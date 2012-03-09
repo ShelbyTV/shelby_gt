@@ -1,5 +1,7 @@
 class V1::DashboardEntriesController < ApplicationController  
 
+  before_filter :authenticate_user!, :except => [:index]
+  
   ##
   # Returns dashboad entries, with the given parameters.
   #
@@ -8,7 +10,7 @@ class V1::DashboardEntriesController < ApplicationController
   # @param [Optional, String] user_id The id of the user otherwise user = current_user
   # @param [Optional, Integer] limit The number of entries to return (default/max 50)
   # @param [Optional, Integer] skip The number of entries to skip (default 0)
-  # @param [Optional, Boolean] include_children Include the referenced objects
+  # @param [Optional, Boolean] quiet if set to true, will not include all goodies, eg roll, frame etc
   def index
     # default params
     params[:limit] ||= 50

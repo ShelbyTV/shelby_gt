@@ -49,10 +49,17 @@ class User
   # Used to track referrals (where they are coming from)
   key :referral_frame_id, ObjectId
   
-  # for rememberable functionality with devise
+  ## For Devise
+  # Rememberable
   key :remember_me,           Boolean, :default => true
   key :remember_created_at,   Time
   key :remember_token,        String
+  ## Trackable
+  key :sign_in_count,         Integer, :default => 0
+  key :current_sign_in_at,    Time
+  key :last_sign_in_at,       Time
+  key :current_sign_in_ip,    String
+  key :last_sign_in_ip,       String
   
   # To keep track of social actions performed by user
   # [twitter, facebook, email, tumblr]
@@ -107,7 +114,7 @@ class User
   # -- Old Methods --   
   def self.find_by_nickname(n)
     return nil unless n.is_a? String and !n.blank?
-    User.where( :downcase_nickname => n.downcase ).first || User.where( :nickname => /^#{n.downcase}$/i ).first
+    User.first(:conditions=>{:downcase_nickname => n.downcase}) || User.first(:conditions=>{:nickname => /^#{n.downcase}$/i})
   end
 
   def self.find_by_email(n)

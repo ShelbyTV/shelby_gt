@@ -1,7 +1,10 @@
 class V1::FrameController < ApplicationController
 
+  before_filter :authenticate_user!
+
   ##
   # Returns all frames in a roll
+  #   REQUIRES AUTHENTICATION
   #
   # [GET] /v1/roll/:id/frames.json
   def index
@@ -17,6 +20,7 @@ class V1::FrameController < ApplicationController
     
   ##
   # Returns one frame
+  #   REQUIRES AUTHENTICATION
   #
   # [GET] /v1/frame/:id.json
   # 
@@ -27,7 +31,7 @@ class V1::FrameController < ApplicationController
       @status =  200
       if params[:include_children]
         begin
-          @roll =  @frame.role
+          @roll =  @frame.roll
           @video = @frame.video
           @conversation = @frame.conversation
           @rerolls = @frame.rerolls
@@ -42,6 +46,7 @@ class V1::FrameController < ApplicationController
   
   ##
   # Creates and returns one frame, with the given parameters.
+  #   REQUIRES AUTHENTICATION
   #
   # [POST] /v1/roll/:id/frames.json
   #
@@ -66,6 +71,7 @@ class V1::FrameController < ApplicationController
   
   ##
   # Updates and returns one frame, with the given parameters.
+  #   REQUIRES AUTHENTICATION
   #
   # [PUT] /v1/frame/:id.json
   # 
@@ -84,6 +90,7 @@ class V1::FrameController < ApplicationController
   
   ##
   # Destroys one frame, returning Success/Failure
+  #   REQUIRES AUTHENTICATION
   #
   # [DELETE] /v1/frame/:id.json
   # 

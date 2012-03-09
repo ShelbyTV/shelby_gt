@@ -8,7 +8,7 @@ require 'user_manager'
 describe Authentication do
 
   it "should validate w/ omniauth and twitter" do
-    auth = GT::UserManager.send(:build_authentication_from_omniauth, @valid_twitter_omniauth_hash)
+    auth = GT::AuthenticationBuilder.build_from_omniauth(@valid_twitter_omniauth_hash)
     auth.valid?.should eql(true)
   end
   
@@ -21,7 +21,7 @@ describe Authentication do
         'secret' => 'foreskin',
         'garbage' => 'truck'
       },
-      'user_info' => {
+      'info' => {
         'name' => 'some name',
         'nickname' => 'ironically nick',
         'garbage' => 'truck'
@@ -29,7 +29,7 @@ describe Authentication do
       'garbage' => 'truck'
     }
 
-    auth = GT::UserManager.send(:build_authentication_from_omniauth, omniauth_hash)
+    auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth_hash)
     
     auth.valid?.should eql(true)
   end
@@ -43,7 +43,7 @@ describe Authentication do
         'secret' => 'foreskin',
         'garbage' => 'truck'
       },
-      'user_info' => {
+      'info' => {
         'name' => 'some name',
         'nickname' => 'ironically nick',
         'garbage' => 'truck'
@@ -51,7 +51,7 @@ describe Authentication do
       'garbage' => 'truck'
     }
 
-    auth = GT::UserManager.send(:build_authentication_from_omniauth, omniauth_hash)
+    auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth_hash)
     
     auth.valid?.should eql(true)
   end
@@ -65,7 +65,7 @@ describe Authentication do
           'secret' => 'foreskin',
           'garbage' => 'truck'
         },
-        'user_info' => {
+        'info' => {
           'name' => 'some name',
           'nickname' => 'ironically nick',
           'garbage' => 'truck'
@@ -73,13 +73,12 @@ describe Authentication do
         'garbage' => 'truck'
       }
 
-    auth = GT::UserManager.send(:build_authentication_from_omniauth, omniauth_hash)
-
+      auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth_hash)
       auth.valid?.should eql(false)
   end  
     
   it "should be raise arg errors w/o full omniauth shit" do
-    lambda { GT::UserManager.send(:build_authentication_from_omniauth, {}) }.should raise_error(ArgumentError)
+    lambda { GT::AuthenticationBuilder.build_from_omniauth({}) }.should raise_error(ArgumentError)
   end
     
   it "should validate when via facebook app" do
@@ -94,8 +93,7 @@ describe Authentication do
     token = "somelongtoken"
     
     permissions = {:offline => 1, :you_mom => 1, :visitation_rights => 0}
-
-    auth = GT::UserManager.send(:build_authentication_from_facebook, facebook_hash, token, permissions)
+    auth = GT::AuthenticationBuilder.build_from_facebook(facebook_hash, token, permissions)
     
     auth.valid?.should eql(true)
   end
@@ -109,7 +107,7 @@ describe Authentication do
         'secret' => 'foreskin',
         'garbage' => 'truck'
       },
-      'user_info' => {
+      'info' => {
         'name' => 'some name',
         'nickname' => 'ironically nick',
         'garbage' => 'truck'
