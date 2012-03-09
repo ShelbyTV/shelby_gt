@@ -9,6 +9,8 @@ module GT
     
     # Creates a real User on signup
     def self.create_new_from_omniauth(omniauth)
+      #TODO DRY
+      #TODO there are many things in common to all user creation, pull them out and into a helper method
       u = User.new
       
       u.nickname = omniauth['user_info']['nickname']
@@ -24,6 +26,8 @@ module GT
       
       u.authentications << auth
       
+      #TODO: this is common to user creation, should not be in a specific method like this
+      #TODO: DRY
       u.preferences = Preferences.new()
 
       if u.save
@@ -39,7 +43,7 @@ module GT
     end
     
     # Things that happen when a user signs in.
-    def self.start_user_sign_in(user, omniauth=nil, session=nil)
+    def self.start_user_sign_in(user, omniauth=nil)
       update_authentication_tokens!(user, omniauth) if omniauth
       update_on_sign_in(user)
       # Always remember users, onus is on them to log out
@@ -86,6 +90,8 @@ module GT
       u.downcase_nickname = u.nickname.downcase
       
       # Create the public Roll for this new User
+      #TODO DRY
+      #TODO This is all common to new user, pull out into helper
       r = Roll.new
       r.creator = u
       r.public = true
@@ -114,6 +120,7 @@ module GT
       
       # Takes an omniauth response and bulds a new authentication
       # - returns the new authentication
+      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
       def self.build_authentication_from_omniauth(omniauth)
         raise ArgumentError, "Must have credentials and user info" unless (omniauth.has_key?('credentials') and omniauth.has_key?('user_info'))
 
@@ -173,6 +180,7 @@ module GT
       
       # Takes facebook info and bulds a new authentication
       # - returns the new authentication
+      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
       def self.build_authentication_from_facebook(fb_info, token, fb_permissions)
         auth = Authentication.new(
           :provider => 'facebook',
@@ -195,6 +203,8 @@ module GT
         return auth
       end
 
+      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
+      # and probably renamed
       def self.fill_in_user_with_auth_info(u, auth)
         u.user_image = auth.image if !u.user_image and auth.image
         
@@ -206,7 +216,8 @@ module GT
       end
 
       # Finds a users authentication and updates it
-      #  - returns the updated auth      
+      #  - returns the updated auth
+      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
       def self.update_authentication_tokens!(u,omniauth)
         auth = authentication_by_provider_and_uid(u, omniauth['provider'], omniauth['uid'])
         return auth ? update_oauth_tokens!(u, auth, omniauth) : false
@@ -214,6 +225,7 @@ module GT
       
       # Updates oauth tokens for a users auth given an authentication
       #  - returns the updated auth
+      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
       def self.update_oauth_tokens!(u, a, omniauth)
         if a.oauth_token != omniauth['credentials']['token'] or a.oauth_secret != omniauth['credentials']['secret']
           a.update_attributes!({ :oauth_token => omniauth['credentials']['token'], :oauth_secret => omniauth['credentials']['secret'] })
@@ -225,11 +237,13 @@ module GT
       end
       
       # Finds a auth by provider and id
+      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
       def self.authentication_by_provider_and_uid(u, provider, uid)
         u.authentications.select { |a| a.provider == provider and a.uid == uid } .first
       end
       
       # If we have an FB authentication, poll on demand... and get updated permissions
+      #TODO: this needs a new name
       def self.update_on_sign_in(u)
         u.authentications.each do |a| 
           update_video_processing(u, a)
@@ -249,10 +263,12 @@ module GT
       end
       
       # gets as many videos from statuses available and adds user to site streaming
+      #TODO: This should be pulled out into GT::VideoProcessing (or something like that)
       def self.initialize_video_processing(u, a)
         return unless Settings::Beanstalk.beanstalk_available
 
         begin
+          #TODO FIXME this settins is not _ip it's _url
           bean = Beanstalk::Connection.new(Settings::Beanstalk.beanstalk_ip)
           case a.provider
           when 'twitter'
@@ -269,6 +285,7 @@ module GT
       end
       
       # Puts jobs on Queues to get most recent video we may have missed
+      #TODO: This should be pulled out into GT::VideoProcessing (or something like that)
       def self.update_video_processing(u, a)
         return unless Settings::Beanstalk.beanstalk_available
 
@@ -304,6 +321,7 @@ module GT
         end
       end
       
+      #TODO: All these below should be pulled out into GT::VideoProcessing (or something like that)
       ###########################################
       # Adding jobs to Message Queue
       def self.tumblr_add_user(a, bean)
