@@ -1,34 +1,7 @@
 class SigninHelper
   
-  def self.start_user_signin(user, omniauth=nil, referral_broadcast_id=nil, session=nil)
-    # It's possible for authenication tokens to change...
-    #user.update_authentication_tokens!(omniauth) if omniauth
   
-    # Always remember users, onus is on them to log out
-    #user.remember_me!
-  
-    # Whateve needs to happen on demand at sign in
-    #user.do_at_sign_in
-    #if referral_broadcast_id and (bcast = Broadcast.find(referral_broadcast_id))
-      #redirect them to the broadcast they clicked on (will play if it's theirs, re-broadcast otherwise)
-    #  session[:user_return_to] = bcast.permalink
-
-      #send referral stat
-    #  Stats.increment(Stats::USER_VIA_SHORTLINK)
-    #end
-    
-    #if omniauth
-      # Update Signin Stat
-    #  Stats.increment(Stats::USER_SIGNIN_TWITTER, user.id, 'twitter_signin') if omniauth['provider'] == 'twitter'
-    #  Stats.increment(Stats::USER_SIGNIN_FACEBOOK, user.id, 'facebook_signin') if omniauth['provider'] == 'facebook'
-    #else
-    #  Stats.increment(Stats::USER_SIGNIN_FACEBOOK, user.id, 'facebook_app_signin')
-    #end
-    # Track the login for A/B testing
-    #track! :login
-      
-  end
-  
+  # in NOS used in Broadcast controller to handle coming from FB OG
   def self.get_fb_user_token(request_url, code)
     begin
       redirect_uri = remove_code_from_redirect_uri(request_url)

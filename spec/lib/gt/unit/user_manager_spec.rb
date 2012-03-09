@@ -405,6 +405,29 @@ describe GT::UserManager do
       auth.oauth_token.should == "NEW--token"
       auth.oauth_secret.should == "NEW--secret"
     end
+
+    it "should add a new auth to an existing user" do
+      u = GT::UserManager.create_new_from_omniauth(@omniauth_hash)
+
+      new_omniauth_hash = {
+        'provider' => "facebook",
+        'uid' => '33',
+        'credentials' => {
+          'token' => "somelongtoken",
+          'secret' => 'foreskin',
+          'garbage' => 'truck'
+        },
+        'user_info' => {
+          'name' => 'some name',
+          'nickname' => 'ironically nick',
+          'garbage' => 'truck'
+        },
+        'garbage' => 'truck'
+      }
+      
+      updated_u = GT::UserManager.add_new_auth_from_omniauth(u, new_omniauth_hash)
+      u.id.should == updated_u.id
+    end
   end
   
 end

@@ -38,13 +38,24 @@ module GT
       end
     end
     
-    
     # Things that happen when a user signs in.
-    def self.start_user_sign_in(user, omniauth=nil)
+    def self.start_user_sign_in(user, omniauth=nil, session=nil)
       update_authentication_tokens!(user, omniauth) if omniauth
       update_on_sign_in(user)
       # Always remember users, onus is on them to log out
       user.remember_me!
+    end
+    
+    def self.add_new_auth_from_omniauth(user, omniauth)
+      new_auth = build_authentication_from_omniauth(omniauth)
+      user.authentications << new_auth
+      if user.save
+        initialize_video_processing(user, new_auth)        
+        return user
+      else
+        puts user.errors.full_messages
+        return false
+      end
     end
     
     # Creates a fake User with an Authentication matching the given network and user_id
