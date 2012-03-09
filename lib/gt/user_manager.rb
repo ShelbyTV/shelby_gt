@@ -10,7 +10,7 @@ module GT
   class UserManager
     
     # Creates a real User on signup
-    def self.create_new_from_omniauth(omniauth)
+    def self.create_new_user_from_omniauth(omniauth)
       u = User.new
       
       u.nickname = omniauth['user_info']['nickname']
