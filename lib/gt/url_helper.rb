@@ -78,7 +78,7 @@ module GT
       #TODO test the event machine stuff
       def self.resolve_url_with_eventmachine(url)
         begin
-          http = EventMachine::HttpRequest.new(url, :connect_timeout => connect_timeout).head( {:redirects => max_redirects} )
+          http = EventMachine::HttpRequest.new(url, :connect_timeout => Settings::EventMachine.connect_timeout).head({:redirects => Settings::EventMachine.max_redirects})
           return http.last_effective_url.normalize.to_s
         rescue Addressable::URI::InvalidURIError => e
           Rails.logger.info("[GT::UrlHelper#resolve_url_with_eventmachine] url #{url} threw InvalidURIError: #{e}")

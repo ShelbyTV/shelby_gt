@@ -1,0 +1,12 @@
+defaults: &defaults
+  connect_timeout: 5
+  max_redirects: 10
+  
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults
