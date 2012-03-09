@@ -1,6 +1,7 @@
 # encoding: UTF-8
+require 'authentication_builder'
+require 'video_fetching'
 
-require 'beanstalk-client'
 
 # This is the one and only place where Users are created.
 #
@@ -11,52 +12,34 @@ module GT
     
     # Creates a real User on signup
     def self.create_new_user_from_omniauth(omniauth)
-      #TODO DRY
-      #TODO there are many things in common to all user creation, pull them out and into a helper method
-      u = User.new
+      user, auth = build_new_user(omniauth)
       
-      u.nickname = omniauth['info']['nickname']
-      u.nickname = omniauth['info']['name'] if u.nickname.blank? or u.nickname.match(/\.php\?/)
-      
-      u.name = omniauth['info']['name']
-      
-      auth = build_authentication_from_omniauth(omniauth)
-
-      fill_in_user_with_auth_info(u, auth)
-      ensure_valid_unique_nickname!(u)
-      u.downcase_nickname = u.nickname.downcase
-      
-      u.authentications << auth
-      
-      #TODO: this is common to user creation, should not be in a specific method like this
-      #TODO: DRY
-      u.preferences = Preferences.new()
-
-      if u.save
-        initialize_video_processing(u, auth)
+      if user.save
+        GT::VideoFetching.initialize_video_processing(user, auth)
         
         # Update user count stat
         #Stats.increment(Stats::TOTAL_USERS)
-        return u
+        return user
       else
-        puts u.errors.full_messages
-        return u.errors
+        puts user.errors.full_messages
+        return user.errors
       end
     end
     
     # Things that happen when a user signs in.
     def self.start_user_sign_in(user, omniauth=nil)
-      update_authentication_tokens!(user, omniauth) if omniauth
+      GT::AuthenticationBuilder.update_authentication_tokens!(user, omniauth) if omniauth
       update_on_sign_in(user)
       # Always remember users, onus is on them to log out
       user.remember_me!
     end
     
+    # Adds a new auth to an existing user
     def self.add_new_auth_from_omniauth(user, omniauth)
-      new_auth = build_authentication_from_omniauth(omniauth)
+      new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
       user.authentications << new_auth
       if user.save
-        initialize_video_processing(user, new_auth)        
+        GT::VideoFetching.initialize_video_processing(user, new_auth)        
         return user
       else
         puts user.errors.full_messages
@@ -120,135 +103,34 @@ module GT
     
     private
       
-      # Takes an omniauth response and bulds a new authentication
-      # - returns the new authentication
-      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
-      def self.build_authentication_from_omniauth(omniauth)
-        raise ArgumentError, "Must have credentials and user info" unless (omniauth.has_key?('credentials') and omniauth.has_key?('info'))
+      # Takes an omniauth hash to build one user, prefs, and an auth to go along with it
+      def self.build_new_user(omniauth)
+        u = User.new
 
-        auth = Authentication.new(
-          :provider => omniauth['provider'],
-          :uid => omniauth['uid'],
-          :name => omniauth['info']['name'])
+        u.nickname = omniauth['info']['nickname']
+        u.nickname = omniauth['info']['name'] if u.nickname.blank? or u.nickname.match(/\.php\?/)
 
-        #Optional credentials
-        if omniauth['credentials']
-          auth.oauth_token = omniauth['credentials']['token']
-          auth.oauth_secret = omniauth['credentials']['secret'] if omniauth['credentials']['secret']
-        end
+        u.name = omniauth['info']['name']
 
-        # Optional user info
-        auth.nickname = omniauth['info']['nickname'] if omniauth['info']['nickname']
-        auth.email = omniauth['info']['email'] if omniauth['info']['email']
-        auth.first_name = omniauth['info']['first_name'] if omniauth['info']['first_name']
-        auth.last_name = omniauth['info']['last_name'] if omniauth['info']['last_name']
-        auth.location = omniauth['info']['location'] if omniauth['info']['location']
-        auth.description = omniauth['info']['description'] if omniauth['info']['description']
-        auth.image = omniauth['info']['image'] if omniauth['info']['image']
-        auth.phone = omniauth['info']['phone'] if omniauth['info']['phone']
-        auth.urls = omniauth['info']['urls'] if omniauth['info']['urls']
+        auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
 
-        # Extra user hash (from services like twitter)
-        if omniauth['extra']
-          auth.user_hash = omniauth['extra']['user_hash'] if omniauth['extra']['user_hash']      
-          if omniauth['provider'] == 'facebook'
-            #from FB
-            auth.email = omniauth['extra']['user_hash']['email'] if omniauth['extra']['user_hash']['email']
-            auth.first_name = omniauth['extra']['user_hash']['first_name'] if omniauth['extra']['user_hash']['first_name']
-            auth.last_name = omniauth['extra']['user_hash']['last_name'] if omniauth['extra']['user_hash']['last_name']
-            auth.gender = omniauth['extra']['user_hash']['gender'] if omniauth['extra']['user_hash']['gender']
-            auth.timezone = omniauth['extra']['user_hash']['timezone'] if omniauth['extra']['user_hash']['timezone']
-            # request additional info from fb graph api
-            auth.image = "http://graph.facebook.com/" + omniauth['uid'] + "/picture"
+        GT::AuthenticationBuilder.normalize_user_info(u, auth)
+        ensure_valid_unique_nickname!(u)
+        u.downcase_nickname = u.nickname.downcase
 
-            graph = Koala::Facebook::GraphAPI.new(omniauth['credentials']['token'])
-            begin
-              auth.permissions = graph.get_connections("me","permissions")
-            rescue Koala::Facebook::APIError => e
-              Rails.logger.error "[Authentication ERROR] error with getting permissions: #{e}"
-            end
-          end
-        end
+        u.authentications << auth
 
-        if omniauth['provider'] == 'tumblr' and omniauth['user_hash']
-          auth.user_hash = omniauth['user_hash']
-          auth.nickname = omniauth['user_hash']['name'] if omniauth['user_hash']['name']
-          auth.name = omniauth['user_hash']['title'] if omniauth['user_hash']['title']
-          auth.image = omniauth['user_hash']['avatar_url'] if omniauth['user_hash']['avatar_url']
-        end
-
-        return auth
-      end
-      
-      # Takes facebook info and bulds a new authentication
-      # - returns the new authentication
-      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
-      def self.build_authentication_from_facebook(fb_info, token, fb_permissions)
-        auth = Authentication.new(
-          :provider => 'facebook',
-          :uid => fb_info["id"],
-          :oauth_token => token
-        )
-
-        # Optional user info
-        auth.nickname = fb_info["username"] if fb_info["username"]
-        auth.email = fb_info["email"] if fb_info["email"]
-        auth.first_name = fb_info["first_name"] if fb_info["first_name"]
-        auth.last_name = fb_info["last_name"] if fb_info["last_name"]
-        auth.location = fb_info["timezone"] if fb_info["timezone"]
-        auth.gender = fb_info["gender"] if fb_info["gender"]
-        auth.description = fb_info["description"] if fb_info["description"]
-        auth.image = "http://graph.facebook.com/" + fb_info["id"] + "/picture"
-
-        auth.permissions = fb_permissions
-
-        return auth
-      end
-
-      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
-      # and probably renamed
-      def self.fill_in_user_with_auth_info(u, auth)
-        u.user_image = auth.image if !u.user_image and auth.image
+        #TODO: this is common to user creation, should not be in a specific method like this
+        u.preferences = Preferences.new()
         
-        #If auth is twitter, we can try removing the _normal before the extension of the image to get the large version...
-        if !u.user_image_original and auth.twitter? and !auth.image.blank? and !auth.image.include?("default_profile")
-          u.user_image_original = auth.image.gsub("_normal", "")
-        end
-        u.primary_email = auth.email if u.primary_email.blank? and !auth.email.blank?
-      end
-
-      # Finds a users authentication and updates it
-      #  - returns the updated auth
-      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
-      def self.update_authentication_tokens!(u,omniauth)
-        auth = authentication_by_provider_and_uid(u, omniauth['provider'], omniauth['uid'])
-        return auth ? update_oauth_tokens!(u, auth, omniauth) : false
-      end
-      
-      # Updates oauth tokens for a users auth given an authentication
-      #  - returns the updated auth
-      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
-      def self.update_oauth_tokens!(u, a, omniauth)
-        if a.oauth_token != omniauth['credentials']['token'] or a.oauth_secret != omniauth['credentials']['secret']
-          a.update_attributes!({ :oauth_token => omniauth['credentials']['token'], :oauth_secret => omniauth['credentials']['secret'] })
-
-          #and need the node processes to update as well
-          update_video_processing(u, a)
-        end
-        return a
-      end
-      
-      # Finds a auth by provider and id
-      #TODO: This should be pulled out into GT::AuthenticationBuilder (or something like that)
-      def self.authentication_by_provider_and_uid(u, provider, uid)
-        u.authentications.select { |a| a.provider == provider and a.uid == uid } .first
+        return u, auth
       end
       
       # If we have an FB authentication, poll on demand... and get updated permissions
       #TODO: this needs a new name
       def self.update_on_sign_in(u)
         u.authentications.each do |a| 
-          update_video_processing(u, a)
+          GT::VideoFetching.update_video_processing(u, a)
           if a.provider == "facebook"
             begin
               graph = Koala::Facebook::GraphAPI.new(a.oauth_token)
@@ -261,49 +143,6 @@ module GT
               Rails.logger.error "[GT::UserManager] ERROR saving user after updating: #{e}"
             end
           end
-        end
-      end
-      
-      # gets as many videos from statuses available and adds user to site streaming
-      #TODO: This should be pulled out into GT::VideoProcessing (or something like that)
-      def self.initialize_video_processing(u, a)
-        return unless Settings::Beanstalk.beanstalk_available
-
-        begin
-          #TODO FIXME this settins is not _ip it's _url
-          bean = Beanstalk::Connection.new(Settings::Beanstalk.beanstalk_ip)
-          case a.provider
-          when 'twitter'
-            tw_add_backfill(a, bean)
-            tw_add_to_stream(a, bean)
-          when 'facebook'
-            fb_add_user(a, bean)
-          when 'tumblr'
-            tumblr_add_user(a, bean)
-          end
-        rescue => e
-          Rails.logger.error("Error: Video processing initialization failed for user #{u.id}: #{e}")
-        end
-      end
-      
-      # Puts jobs on Queues to get most recent video we may have missed
-      #TODO: This should be pulled out into GT::VideoProcessing (or something like that)
-      def self.update_video_processing(u, a)
-        return unless Settings::Beanstalk.beanstalk_available
-
-        begin
-          beanstalk = Beanstalk::Connection.new(Settings::Beanstalk.beanstalk_ip)
-          case a.provider
-          when 'twitter'
-            #unneccssary as twitter doesn't need tokens for site streaming
-          when 'facebook'
-            #add_user job also updates user
-            fb_add_user(a, beanstalk)
-          when 'tumblr'
-            #do we need this?
-          end
-        rescue => e
-          Rails.logger.error("Error: Video processing update failed for user #{u.id}: #{e}")
         end
       end
       
@@ -321,33 +160,6 @@ module GT
           user.nickname = "#{orig_nick}_#{i}"
           i = i*2
         end
-      end
-      
-      #TODO: All these below should be pulled out into GT::VideoProcessing (or something like that)
-      ###########################################
-      # Adding jobs to Message Queue
-      def self.tumblr_add_user(a, bean)
-        bean.use(Settings::Beanstalk.tumblr_add_user)      # insures we are using watching tumblr_backfill tube
-        add_user_job = {:tumblr_id => a.uid, :oauth_token => a.oauth_token, :oauth_secret => a.oauth_secret}
-        bean.put(add_user_job.to_json)
-      end
-      
-      def self.fb_add_user(a, bean)
-        bean.use(Settings::Beanstalk.facebook_add_user)      # insures we are using watching fb_add_user tube
-        add_user_job = {:fb_id => a.uid, :fb_access_token => a.oauth_token}
-        bean.put(add_user_job.to_json)
-      end
-
-      def self.tw_add_backfill(a, bean)
-        bean.use(Settings::Beanstalk.twitter_backfill)      # insures we are using watching tw_backfill tube
-        backfill_job = {:action=>'add_user', :twitter_id => a.uid, :oauth_token => self.oauth_token, :oauth_secret => self.oauth_secret}
-        bean.put(backfill_job.to_json)
-      end
-
-      def self.tw_add_to_stream(a, bean)
-        bean.use(Settings::Beanstalk.twitter_add_stream)    # insures we are using tw_stream_add tube
-        stream_job = {:action=>'add_user', :twitter_id => a.uid}
-        bean.put(stream_job.to_json)
       end
       
     

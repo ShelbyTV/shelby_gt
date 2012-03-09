@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 require 'user_manager'
+require 'authentication_builder'
+require 'video_fetching'
 
 # UNIT test
 describe GT::UserManager do
@@ -131,64 +133,6 @@ describe GT::UserManager do
       it "should build a valid user itself from omniauth hash" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.nickname.should eq(@nickname)
-      end
-      
-      it "should have_provider from its authentications" do
-        u = Factory.create(:user)
-        u.authentications << GT::UserManager.send(:build_authentication_from_omniauth, @omniauth_hash)
-        u.has_provider('twitter').should eq(true)
-      end
-      
-      it "should not have_provider not in its authentications" do
-        u = Factory.create(:user)
-        u.authentications << GT::UserManager.send(:build_authentication_from_omniauth, @omniauth_hash)
-        u.has_provider('your mom').should eq(false)
-      end
-      
-      it "should incorporate authentication user image, and larger user image if twitter" do
-        u = Factory.create(:user)
-        auth = GT::UserManager.send(:build_authentication_from_omniauth, @omniauth_hash)
-        u.authentications << auth
-        
-        GT::UserManager.send(:fill_in_user_with_auth_info, u, auth)
-        
-        u.user_image.should == "http://original.com/image_normal.png"
-        u.user_image_original.should == "http://original.com/image.png"
-      end
-      
-      it "should incorporate auth user image, and larger user image if twitter, but not if it's a default image" do
-        u = Factory.create(:user)
-        omniauth_hash = {
-          'provider' => "twitter",
-          'uid' => '33',
-          'credentials' => {
-            'token' => "somelongtoken",
-            'secret' => 'foreskin'
-          },
-          'info' => {
-            'name' => 'some name',
-            'nickname' => 'ironically nick',
-            'garbage' => 'truck',
-            'image' => "http://original.com/default_profile_6_normal.png"
-          }
-        }
-
-        auth = GT::UserManager.send(:build_authentication_from_omniauth, omniauth_hash)
-        GT::UserManager.send(:fill_in_user_with_auth_info, u, auth)
-        u.user_image.should == "http://original.com/default_profile_6_normal.png"
-        u.user_image_original.should == nil
-      end
-      
-      it "should be able to get auth from provider and id" do
-        u = Factory.create(:user)
-        u.authentications << GT::UserManager.send(:build_authentication_from_omniauth, @omniauth_hash)
-
-        auth = u.authentication_by_provider_and_uid( "twitter", "33" )
-        auth.should_not == nil
-        auth.provider.should == "twitter"
-        auth.uid.should == "33"
-        auth.oauth_token.should == "somelongtoken"
-        auth.oauth_secret.should == "foreskin"
       end
       
       it "should change nickname if it's taken" do
@@ -398,7 +342,7 @@ describe GT::UserManager do
       
       GT::UserManager.start_user_sign_in(u, @omniauth_hash)
 
-      auth = GT::UserManager.send(:authentication_by_provider_and_uid, u, "twitter", "33" )
+      auth = GT::AuthenticationBuilder.authentication_by_provider_and_uid(u, "twitter", "33" )
       auth.should_not == nil
       auth.provider.should == "twitter"
       auth.uid.should == "33"
