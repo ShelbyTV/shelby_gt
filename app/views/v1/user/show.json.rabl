@@ -2,6 +2,10 @@ object @user
 
 attributes :id, :name, :nickname, :primary_email
 
-node @auths do
-	attributes :provider, :oauth_token
+child @auths do
+	attributes :uid, :provider, :oauth_token
+end
+
+child @rolls => :rolls_following do
+	attributes :title, :thumbnail_url, :public, :collaborative
 end

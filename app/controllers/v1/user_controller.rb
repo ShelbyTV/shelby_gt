@@ -1,11 +1,6 @@
 class V1::UserController < ApplicationController  
-
-  respond_to :json
   
-  # @todo Remove: Only for testing purposes
-  def index
-    @status = 200 if @users = User.all
-  end
+  before_filter :authenticate_user!
   
   ####################################
   # Returns one user, with the given parameters.
@@ -19,7 +14,7 @@ class V1::UserController < ApplicationController
     id = params.delete(:id)
     if @user = User.find(id)
       @auths = params[:include_auths] ? @user.authentications : nil
-      @rolls = params[:include_rolls] ? @user.rolls : nil
+      @rolls = params[:include_rolls] ? @user.roll_followings : nil
       @status = 200
     else
       @status, @message = 500, "could not find user"
