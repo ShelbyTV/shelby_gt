@@ -8,11 +8,11 @@ class V1::ConversationController < ApplicationController
   # 
   # @param [Required, String] id The id of the conversation
   def show
-    if @conversation = Conversation.find(params[:id])
-      @messages = @conversation.messages
+    if @conversation = Conversation.find(params[:id]) and @messages = @conversation.messages
       @status = 200
     else
       @status, @message = 500, "could not find conversation"
+      render 'v1/blank'
     end
   end
   

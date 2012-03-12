@@ -7,15 +7,15 @@ class V1::MessagesController < ApplicationController
   #
   # [POST] /v1/conversation/:conversation_id/messages
   #
-  # @param [Required, String] text The text for the message
+  # @param [Required, String] text the text for the message
+  # @return [Integer] returns the entire conversation.
   def create
     if !params.include?(:text)
       @status, @message = 500, "text of message required"
+      render 'v1/blank'
     else
       @conversation = Conversation.find(params[:conversation_id])
-      if !@conversation
-        @status, @message = 500, "could not find that conversation"
-      else
+      if @conversation
         @new_message = Message.new(:text => params[:title])
         @new_message.user = current_user
         @new_message.nickname = current_user.nickname
@@ -25,7 +25,11 @@ class V1::MessagesController < ApplicationController
           @status = 200 if @conversation.save!
         rescue => e
           @status, @message = 500, e
+          render 'v1/blank'
         end
+      else
+        @status, @message = 500, "could not find that conversation"
+        render 'v1/blank'
       end
     end
   end
@@ -36,20 +40,23 @@ class V1::MessagesController < ApplicationController
   #
   # [GET] /v1/conversation/:conversation_id/messages/:id
   # 
-  # @param [Required, String] id The id of the message to destroy.
-  # @return [Integer] Messages remaining in conversation.
+  # @param [Required, String] id the id of the message to destroy.
+  # @return [Integer] messages remaining in conversation.
   def destroy
     message_id = params[:id]
     @conversation = Conversation.find(params[:conversation_id])
     message = @conversation.find_message_by_id(message_id)
-    @status, @message = 500, "could not find that conversation" unless @conversation and message
-    
+    unless @conversation and message
+      @status, @message = 500, "could not find that conversation"
+      render 'v1/blank'
+    end
     @conversation.pull(:messages => {:_id => message.id})
     @conversation.reload
     if !@conversation.find_message_by_id(message_id)
       @status = 200
     else 
       @status, @message = 500, "could not destroy that message"
+      render 'v1/blank'
     end
   end
 

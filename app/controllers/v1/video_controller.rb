@@ -12,6 +12,7 @@ class V1::VideoController < ApplicationController
       @status =  200
     else
       @status, @message = 500, "could not find video"
+      render 'v1/blank'
     end
   end
   

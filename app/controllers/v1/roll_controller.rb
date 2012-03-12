@@ -15,6 +15,7 @@ class V1::RollController < ApplicationController
       @status =  200
     else
       @status, @message = 500, "could not find that roll"
+      render 'v1/blank'
     end
   end
   
@@ -41,7 +42,8 @@ class V1::RollController < ApplicationController
       begin        
         @status = 200 if @roll.save!
       rescue => e
-        @status, @message = 500, e
+        @status, @message = 500, "could not save roll: #{e}"
+        render 'v1/blank'
       end
     end
   end
@@ -56,12 +58,18 @@ class V1::RollController < ApplicationController
   def update
     id = params.delete(:id)
     @roll = Roll.find(id)
-    @status, @message = 500, "could not find roll" unless @roll
-    begin
-      @roll.save! if @roll.update_attributes!(params)
-      @status = 200
-    rescue => e
-      @status, @message = 500, "error while updating roll: #{e}"
+    if !@roll
+      @status, @message = 500, "could not find roll"
+      render 'v1/blank'
+    else
+      begin
+        @roll.save! if @roll.update_attributes!(params)
+        @status = 200
+      rescue => e
+        @roll = nil
+        @status, @message = 500, "error while updating roll: #{e}"
+        render 'v1/blank'
+      end
     end
   end
   
@@ -73,12 +81,15 @@ class V1::RollController < ApplicationController
   # 
   # @param [Required, String] id The id of the roll
   def destroy
-    @roll = Roll.find(params[:id])
-    @status, @message = 500, "could not find that roll to destroy" if @roll == nil
+    unless @roll = Roll.find(params[:id])
+      @status, @message = 500, "could not find that roll to destroy"
+      render 'v1/blank'
+    end
     if @roll.destroy
       @status =  200
     else
       @status, @message = 500, "could not destroy that roll"
+      render 'v1/blank'
     end
   end
 

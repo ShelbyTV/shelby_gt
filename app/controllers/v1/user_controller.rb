@@ -17,6 +17,7 @@ class V1::UserController < ApplicationController
       @status = 200
     else
       @status, @message = 500, "could not find user"
+      render 'v1/blank'
     end
     @rolls_following = params[:rolls_following] == "true" ? @user.roll_followings : nil
   end
@@ -32,12 +33,15 @@ class V1::UserController < ApplicationController
   def update
     id = params.delete(:id)
     @user = User.find(id)
+    # allow for email to be removed, not sure if we want this or not...
     params[:primary_email] = nil if params[:primary_email] = ""
     begin
-        @user.save! if @user.update_attributes!(params)
-        @status = 200
+      @user.save! if @user.update_attributes!(params)
+      @status = 200
     rescue => e
+      @user = nil
       @status, @message = 500, "error while updating user: #{e}"
+      render 'v1/blank'
     end
   end
 
