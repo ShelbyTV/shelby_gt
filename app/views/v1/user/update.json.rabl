@@ -1,3 +1,3 @@
 object @user
 
-attributes :id, :name, :nickname, :primary_email
+extends 'v1/user/show'

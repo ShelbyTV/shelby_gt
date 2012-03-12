@@ -1,6 +1,6 @@
 object @frame
 
-if @include_children == true
+if @include_frame_children == true
 
 	attributes :id, :score, :upvoters, :frame_ancestors, :frame_children
 

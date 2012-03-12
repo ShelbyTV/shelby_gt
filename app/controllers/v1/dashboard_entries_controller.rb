@@ -10,7 +10,7 @@ class V1::DashboardEntriesController < ApplicationController
   # @param [Optional, String] user_id The id of the user otherwise user = current_user
   # @param [Optional, Integer] limit The number of entries to return (default/max 50)
   # @param [Optional, Integer] skip The number of entries to skip (default 0)
-  # @param [Optional, Boolean] quiet if set to true, will not include all goodies, eg roll, frame etc
+  # @param [Optional, Boolean] include_children if set to true, will not include all goodies, eg roll, frame etc
   def index
     # default params
     limit = params[:limit] ? params[:limit] : 20
@@ -19,28 +19,28 @@ class V1::DashboardEntriesController < ApplicationController
 
     # get user
     if params[:user_id]
-      @status, @message = 500, "could not find that user" unless user = User.find(params[:user_id])
+      unless user = User.find(params[:user_id])
+        @status, @message = 500, "could not find that user"
+      end
     elsif user_signed_in?
       user = current_user
-    else
-      @status, @message = 500, "no user info found, try again"
     end
     
+    # get and render dashboard entries
     if user
       @entries = DashboardEntry.limit(limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
-      if params[:quiet] != "true"
-        #render simple layout
-      else
-        #render full layout
-      end
+      @include_children = params[:include_children] != "false" ? true : false
       
       # return status
       if !@entries.empty?
         @status = 200
       else
         @status, @message = 500, "error retrieving dashboard entries"
+        render 'v1/blank'
       end
-      
+    else
+      @status, @message = 500, "no user info found"
+      render 'v1/blank'
     end    
   end
   
@@ -53,11 +53,18 @@ class V1::DashboardEntriesController < ApplicationController
   def update
     id = params.delete(:id)
     @dashboard_entry = DashboardEntry.find(id)
-    if @dashboard_entry and @dashboard_entry.update_attributes(params)
-      @status = 200
+    if @dashboard_entry
+      begin 
+        @dashboard_entry.update_attributes(params)
+        @dashboard_entry.save!
+        @status = 200
+      rescue => e
+        @status, @message = 500, "could not update dashboard_entry: #{e}"
+        render 'v1/blank'
+      end
     else
-      @status = 500
-      @message = @dashboard_entry ? "could not update dashboard_entry" : "could not find that dashboard_entry"
+      @status, @message = 500, "could not find that dashboard_entry"
+      render 'v1/blank'
     end    
   end
 

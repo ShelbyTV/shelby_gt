@@ -1,7 +1,7 @@
 object @conversation
 
-attributes :id, :public, :video_id
+attributes :id, :public
 
 child :messages do
-	attributes :id, :text, :public, :nickname, :realname
+	extends 'v1/messages/show'
 end

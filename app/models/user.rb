@@ -193,7 +193,7 @@ class User
   private
         
     def check_to_send_email_address_to_sailthru
-      send_email_address_to_sailthru() if self.primary_email_changed? and self.primary_email
+      send_email_address_to_sailthru() if self.primary_email_changed? and self.primary_email and Rails.env == "production"
     end
     
 end

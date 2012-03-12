@@ -1,3 +1,7 @@
 collection @entries, :root => "dashboard"
 
-extends 'v1/dashboard_entries/show'
+if @include_children
+	extends 'v1/dashboard_entries/show_with_children'
+else
+	extends 'v1/dashboard_entries/show'
+end
