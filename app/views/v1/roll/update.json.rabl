@@ -1,3 +1,3 @@
 object @roll
 
-update 'v1/roll/show'
+extends 'v1/roll/show'

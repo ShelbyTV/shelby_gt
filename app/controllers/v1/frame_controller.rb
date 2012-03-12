@@ -77,7 +77,7 @@ class V1::FrameController < ApplicationController
     id = params.delete(:id)
     if @frame = Frame.find(id)
       begin 
-        @frame.update_attributes(params)
+        @frame.update_attributes!(params)
         @frame.save!
         @status = 200
       rescue => e

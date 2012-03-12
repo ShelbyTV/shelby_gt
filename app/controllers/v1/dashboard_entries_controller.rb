@@ -56,8 +56,7 @@ class V1::DashboardEntriesController < ApplicationController
     if @dashboard_entry
       begin 
         @dashboard_entry.update_attributes(params)
-        @dashboard_entry.save!
-        @status = 200
+        @status = 200 if @dashboard_entry.save!
       rescue => e
         @status, @message = 500, "could not update dashboard_entry: #{e}"
         render 'v1/blank'

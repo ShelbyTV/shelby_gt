@@ -66,7 +66,6 @@ class V1::RollController < ApplicationController
         @roll.save! if @roll.update_attributes!(params)
         @status = 200
       rescue => e
-        @roll = nil
         @status, @message = 500, "error while updating roll: #{e}"
         render 'v1/blank'
       end

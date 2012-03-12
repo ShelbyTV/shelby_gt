@@ -49,14 +49,10 @@ class V1::MessagesController < ApplicationController
     unless @conversation and message
       @status, @message = 500, "could not find that conversation"
       render 'v1/blank'
-    end
-    @conversation.pull(:messages => {:_id => message.id})
-    @conversation.reload
-    if !@conversation.find_message_by_id(message_id)
+    else
+      @conversation.pull(:messages => {:_id => message.id})
+      @conversation.reload
       @status = 200
-    else 
-      @status, @message = 500, "could not destroy that message"
-      render 'v1/blank'
     end
   end
 

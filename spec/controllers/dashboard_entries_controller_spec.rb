@@ -2,38 +2,43 @@ require 'spec_helper'
 
 describe V1::DashboardEntriesController do  
   describe "GET index" do
-    it "should return the dashboard entrys to @dashboard and return 200" do
+    it "should return the dashboard entrys to @entries and return 200 when NOT including children" do
       @user = Factory.create(:user)
       sign_in @user
       
-      roll = stub_model(Roll)
-      frame = stub_model(Frame)
-      video = stub_model(Video)
-      conversation = stub_model(Conversation)
+      video = mock_model(Video)
+      frame = mock_model(Frame, :video_id => video.id)
+      entry = mock_model(DashboardEntry, :frame => frame)
       
-      dashboard_entry = { "roll" => roll,
-                          "frame" => frame,
-                          "video" => video,
-                          "conversation" => conversation,
-                          "user" => @user
-                        }
-
-      DashboardEntry.stub_chain(:limit, :skip, :where, :all).and_return([dashboard_entry])
-      dashboard_entry.stub(:roll).and_return(roll)
-      dashboard_entry.stub(:frame).and_return(frame)
-      dashboard_entry.stub(:video).and_return(video)
-      dashboard_entry.stub(:conversation).and_return(conversation)
-      dashboard_entry.stub(:user).and_return(@user)
-      
-      get :index, :format => :json
-      assigns(:entries).should eq([dashboard_entry])
+      DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([entry])
+      get :index, :include_children => "false", :format => :json
+      assigns(:entries).should eq([entry])
       assigns(:status).should eq(200)
     end
+
+    it "should return the dashboard entrys to @entries and return 200 when including children" do
+      @user = Factory.create(:user)
+      sign_in @user
+      
+      video = mock_model(Video)
+      message = mock_model(Message)
+      conv = mock_model(Conversation, :messages => [message])
+      frame = mock_model(Frame, :video => video, :conversation => conv)
+      roll = mock_model(Roll)
+      user = mock_model(User)
+      entry = mock_model(DashboardEntry, :frame => frame, :roll => roll, :user => user, :video => video)
+      
+      DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([entry])
+      get :index, :include_children => "true", :format => :json
+      assigns(:entries).should eq([entry])
+      assigns(:status).should eq(200)
+    end
+
     
     it "should return error if no entries found" do
       @user = Factory.create(:user)
       sign_in @user
-      DashboardEntry.stub_chain(:limit, :skip, :where, :all).and_return([])
+      DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([])
       get :index, :format => :json
       assigns(:status).should eq(500)
       assigns(:message).should eq("error retrieving dashboard entries")
@@ -42,7 +47,7 @@ describe V1::DashboardEntriesController do
     it "should return error if could not find dashboard entry" do
       @user = Factory.create(:user)
       sign_in @user
-      DashboardEntry.stub_chain(:limit, :skip, :where, :all).and_return([])
+      DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([])
       get :index, :user_id => @user.id, :format => :json
       assigns(:status).should eq(500)   
     end
@@ -50,7 +55,7 @@ describe V1::DashboardEntriesController do
     it "should return error if could not find any user" do
       get :index, :format => :json
       assigns(:status).should eq(500)
-      assigns(:message).should eq("no user info found, try again")
+      assigns(:message).should eq("no user info found")
     end
     
   end
@@ -65,6 +70,7 @@ describe V1::DashboardEntriesController do
     it "should return the dashboard entry to @dashboard and return 200" do
       DashboardEntry.stub(:find) { @d }
       @d.should_receive(:update_attributes).and_return(@d)
+      @d.should_receive(:save!).and_return(true)
       put :update, :id => @d.id, :format => :json
       assigns(:dashboard_entry).should eq(@d)
       assigns(:status).should eq(200)
@@ -77,12 +83,13 @@ describe V1::DashboardEntriesController do
       assigns(:message).should eq("could not find that dashboard_entry")
     end
     
-    it "should return error if could not updat dashboard entry" do
+    it "should return error if could not update dashboard entry" do
       DashboardEntry.stub(:find) { @d }
       @d.should_receive(:update_attributes).and_return(false)
+      @d.should_receive(:save!).and_raise(ArgumentError)
       put :update, :id => @d.id, :format => :json
       assigns(:status).should eq(500)
-      assigns(:message).should eq("could not update dashboard_entry")
+      assigns(:message).should eq("could not update dashboard_entry: ArgumentError")
     end
   end
   
