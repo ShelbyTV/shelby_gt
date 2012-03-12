@@ -30,7 +30,7 @@ class V1::FrameController < ApplicationController
   def show
     if @frame = Frame.find(params[:id])
       @status =  200
-      @include_children = (params[:include_children] == "true") ? true : false
+      @include_frame_children = (params[:include_children] == "true") ? true : false
     else
       @status, @message = 500, "could not find that frame"
       render 'v1/blank'

@@ -1,28 +1,7 @@
 object @entry
 
-attributes :id, :action, :actor_id, :read
+attributes :id, :action, :actor_id, :read, :roll_id, :frame_id, :user_id
 
-child :roll do
-	extends 'v1/roll/show'
-end
+node(:video_id) { |m| m.frame.video_id }
 
-child :frame do
-	extends 'v1/frame/show'
-end
-
-child :user do
-	extends 'v1/user/show'
-end
-
-glue :frame do
-	
-	child :video do
-		extends 'v1/video/show'
-	end
-	
-	child :conversation do
-		extends 'v1/conversation/show'
-	end
-	
-end
-
+node(:conversation_id) { |m| m.frame.conversation_id }
