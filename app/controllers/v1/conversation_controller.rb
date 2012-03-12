@@ -1,9 +1,7 @@
 class V1::ConversationController < ApplicationController  
   
-  before_filter :authenticate_user!
-  
   ##
-  # Returns a conversation, with the given parameters.
+  # Returns a conversation including messages, with the given parameters.
   #   AUTHENTICATION REQUIRED
   #
   # [GET] /v1/conversation/:id.json

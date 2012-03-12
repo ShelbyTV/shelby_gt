@@ -1,6 +1,6 @@
 class V1::UserController < ApplicationController  
   
-  before_filter :authenticate_user!
+  before_filter :authenticate_user!, :except => [:show]
   
   ####################################
   # Returns one user, with the given parameters.
@@ -10,18 +10,19 @@ class V1::UserController < ApplicationController
   # 
   # @param [Required, String] id The id of the user
   # @param [Optional, Boolean] include_auths Include the embedded authorizations
-  # @param [Optional,  Boolean] include_rolls Include the referenced rolls the user is following
+  # @param [Optional, Boolean] rolls_following Include the referenced rolls the user is following
   def show
-    id = params.delete(:id)
-    if @user = User.find(id)
-      @auths = params[:include_auths] ? @user.authentications : nil
-      @rolls = params[:include_rolls] ? @user.public_roll : nil
+    if user_signed_in?
+      @user = current_user
+      @auths =  @user.authentications if current_user.id.to_s == params[:id] and params[:include_auths] == "true"
+    elsif @user = User.find(params[:id])
       @status = 200
     else
       @status, @message = 500, "could not find user"
     end
+    @rolls_following = params[:rolls_following] == "true" ? @user.roll_followings : nil
   end
-
+  
   ####################################
   # Updates and returns one user, with the given parameters.
   #   REQUIRES AUTHENTICATION
@@ -34,7 +35,12 @@ class V1::UserController < ApplicationController
     id = params.delete(:id)
     @user = User.find(id)
     if @user and @user.update_attributes(params)
-      @status = 200
+      begin
+        @user.save!
+        @status = 200
+      rescue => e
+        @status, @message = 500, "could not save user: #{e}"
+      end
     else
       @status = 500
       @message = @user ? "could not update user" : "could not find user"
