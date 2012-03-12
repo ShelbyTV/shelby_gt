@@ -3,7 +3,7 @@ class V1::VideoController < ApplicationController
   ##
   # Returns one video, with the given parameters.
   #
-  # [GET] /v1/video/:id.json
+  # [GET] /v1/video/:id
   # 
   # @param [Required, String] id The id of the video
   # @todo return error if id not present w/ params.has_key?(:id)

@@ -6,16 +6,14 @@ class V1::UserController < ApplicationController
   # Returns one user, with the given parameters.
   #   REQUIRES AUTHENTICATION
   #
-  # [GET] /v1/users/:id.json
+  # [GET] /v1/users/:id
   # 
   # @param [Required, String] id The id of the user
   # @param [Optional, Boolean] include_auths Include the embedded authorizations
   # @param [Optional, Boolean] rolls_following Include the referenced rolls the user is following
   def show
-    if user_signed_in?
-      @user = current_user
-      @auths =  @user.authentications if current_user.id.to_s == params[:id] and params[:include_auths] == "true"
-    elsif @user = User.find(params[:id])
+    if @user = User.find(params[:id])
+      @include_auths = (current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
       @status = 200
     else
       @status, @message = 500, "could not find user"
@@ -27,23 +25,18 @@ class V1::UserController < ApplicationController
   # Updates and returns one user, with the given parameters.
   #   REQUIRES AUTHENTICATION
   #
-  # [PUT] /v1/users/:id.json
+  # [PUT] /v1/users/:id
   # 
   # @param [Required, String] id The id of the user  
   # @param [Required, String] attr The attribute(s) to update
   def update
     id = params.delete(:id)
     @user = User.find(id)
-    if @user and @user.update_attributes(params)
-      begin
-        @user.save!
+    begin
+        @user.save! if @user.update_attributes!(params)
         @status = 200
-      rescue => e
-        @status, @message = 500, "could not save user: #{e}"
-      end
-    else
-      @status = 500
-      @message = @user ? "could not update user" : "could not find user"
+    rescue => e
+      @status, @message = 500, "error while updating user: #{e}"
     end
   end
 
