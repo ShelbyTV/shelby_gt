@@ -6,7 +6,7 @@ module GT
     
     # gets as many videos from statuses available and adds user to site streaming
     def self.initialize_video_processing(u, a)
-      return unless Settings::Beanstalk.beanstalk_available
+      return unless Settings::Beanstalk.available
 
       begin
         #TODO FIXME this settins is not _ip it's _url
@@ -28,7 +28,7 @@ module GT
     # Puts jobs on Queues to get most recent video we may have missed
     #TODO: This should be pulled out into GT::VideoProcessing (or something like that)
     def self.update_video_processing(u, a)
-      return unless Settings::Beanstalk.beanstalk_available
+      return unless Settings::Beanstalk.available
 
       begin
         beanstalk = Beanstalk::Connection.new(Settings::Beanstalk.beanstalk_ip)

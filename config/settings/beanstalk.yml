@@ -1,19 +1,27 @@
 defaults: &defaults
-  beanstalk_available: false
+  available: false
+  tubes:
+    websocket_deliver_to_client: "ws_deliver_to_client"
+    twitter_backfill: "tw_backfill"
+    twitter_add_stream: "tw_stream_add"
+    link_processing: "link_processing"
+    link_processing_high: "link_processing_high"
+    facebook_add_user: "fb_add_user"
+    tumblr_add_user: "tumblr_add_user"
+    event_tube: "event_tube"
   
 development:
   <<: *defaults
 
 test:
   <<: *defaults
+  url: 'host:port'
+  host: 'host'
+  port: 'port'
 
 production:
   <<: *defaults
-  beanstalk_available: true
-  beanstalk_ip: '10.181.132.217:11300'
-  beanstalk_host: '10.181.132.217'
-  beanstalk_port: '11300'
-  tumblr_add_user: "tumblr_add_user"
-  facebook_add_user: "facebook_add_user"
-  twitter_backfill: "twitter_backfill"
-  twitter_add_stream: "twitter_add_stream"
+  available: true
+  url: '10.181.132.217:11300'
+  host: '10.181.132.217'
+  port: '11300'
