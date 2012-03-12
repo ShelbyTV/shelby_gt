@@ -71,6 +71,11 @@ group :development do
 end
 
 #
+# ---------- Error Monitoring
+#
+gem 'exception_notification'
+
+#
 # ---------- Arnold 2 (aka Link Processor 4)
 #
 # TODO: check these version (in Gemfile.lock) against those in Shelby if anything is acting odd
