@@ -13,7 +13,10 @@ module GT
     # Creates a real User on signup
     def self.create_new_user_from_omniauth(omniauth)
       user, auth = build_new_user_and_auth(omniauth)
-      
+
+      # Create the public Roll for this new User
+      create_roll_for_user(user)
+
       if user.save
         GT::VideoFetching.initialize_video_processing(user, auth)
         
@@ -27,7 +30,7 @@ module GT
     end
     
     # Things that happen when a user signs in.
-    def self.start_user_sign_in(user, omniauth=nil)
+    def self.start_user_sign_in(user, omniauth=nil, session=nil)
       GT::AuthenticationBuilder.update_authentication_tokens!(user, omniauth) if omniauth
       update_on_sign_in(user)
       # Always remember users, onus is on them to log out
@@ -75,15 +78,8 @@ module GT
       u.downcase_nickname = u.nickname.downcase
       
       # Create the public Roll for this new User
-      #TODO DRY
-      #TODO This is all common to new user, pull out into helper
-      r = Roll.new
-      r.creator = u
-      r.public = true
-      r.collaborative = false
-      r.title = u.nickname
-      u.public_roll = r
-      
+      create_roll_for_user(u)
+            
       if u.save
         return u
       else
@@ -162,6 +158,14 @@ module GT
         end
       end
       
+      def self.create_roll_for_user(u)
+        r = Roll.new
+        r.creator = u
+        r.public = true
+        r.collaborative = false
+        r.title = u.nickname
+        u.public_roll = r
+      end
     
   end
 end

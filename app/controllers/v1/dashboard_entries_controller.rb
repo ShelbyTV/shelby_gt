@@ -13,10 +13,9 @@ class V1::DashboardEntriesController < ApplicationController
   # @param [Optional, Boolean] quiet if set to true, will not include all goodies, eg roll, frame etc
   def index
     # default params
-    params[:limit] ||= 50
-    params[:skip] ||= 0
-    # max number of entries returned
-    params[:limit] = 50 if params[:limit] > 50
+    limit = params[:limit] ? params[:limit] : 20
+    #TODO: max number of entries returned
+    skip = params[:skip] ? params[:skip] : 0
 
     # get user
     if params[:user_id]
@@ -28,18 +27,11 @@ class V1::DashboardEntriesController < ApplicationController
     end
     
     if user
-      # get and structure dashboard_entries
-      unless params[:quiet] == false
-        @entries = [];
-        DashboardEntry.limit(params[:limit]).skip(params[:skip]).where(:user_id => user.id).all.each do |entry|
-          @entries << {   :roll => entry.roll, 
-                          :frame => entry.frame, 
-                          :video => entry.video, 
-                          :conversation => entry.conversation, 
-                          :user => entry.user }
-        end
+      @entries = DashboardEntry.limit(limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
+      if params[:quiet] != "true"
+        #render simple layout
       else
-        @entries = DashboardEntry.limit(params[:limit]).skip(params[:skip]).where(:user_id => user.id).all
+        #render full layout
       end
       
       # return status

@@ -1,3 +1,3 @@
-collection @entries
+collection @entries, :root => "dashboard"
 
-attributes :id, :action, :actor_id, :roll, :frame, :video, :conversation, :user
+extends 'v1/dashboard_entries/show'

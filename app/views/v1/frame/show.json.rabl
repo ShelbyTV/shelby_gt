@@ -1,19 +1,24 @@
 object @frame
 
-attributes :id, :score, :upvoters, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
+if @include_children == true
 
-child @roll do
-	extends "roll/show"
-end
+	attributes :id, :score, :upvoters, :frame_ancestors, :frame_children
 
-child @video do
-	extends "video/show"
-end
+	child :roll do
+		extends 'v1/roll/show'
+	end
 
-child @rerolls do
-		extends "roll/show"
-end
+	child :creator do
+		extends 'v1/user/show'
+	end
 
-child @conversation do
-		extends "conversation/show"
+	child :video do
+		extends 'v1/video/show'
+	end
+
+	child :conversation do
+		extends 'v1/conversation/show'
+	end
+else
+	attributes :id, :score, :upvoters, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
 end

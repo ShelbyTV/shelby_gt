@@ -29,16 +29,7 @@ class V1::FrameController < ApplicationController
   def show
     if @frame = Frame.find(params[:id])
       @status =  200
-      if params[:include_children]
-        begin
-          @roll =  @frame.roll
-          @video = @frame.video
-          @conversation = @frame.conversation
-          @rerolls = @frame.rerolls
-        rescue => e
-          @status, @message = 500, e
-        end
-      end
+      @include_children = (params[:include_children] == "true") ? true : false
     else
       @status, @message = 500, "could not find that frame"
     end

@@ -5,8 +5,8 @@ defaults: &defaults
 
 development:
   <<: *defaults
-  #db_name: 'dev-gt-user'
-  db_name: 'nos-development'
+  db_name: 'dev-gt-user'
+  #db_name: 'nos-development'
 
 test:
   <<: *defaults

@@ -15,7 +15,7 @@ class V1::UserController < ApplicationController
     id = params.delete(:id)
     if @user = User.find(id)
       @auths = params[:include_auths] ? @user.authentications : nil
-      @rolls = params[:include_rolls] ? @user.roll_followings : nil
+      @rolls = params[:include_rolls] ? @user.public_roll : nil
       @status = 200
     else
       @status, @message = 500, "could not find user"

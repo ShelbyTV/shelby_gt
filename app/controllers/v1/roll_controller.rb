@@ -9,9 +9,11 @@ class V1::RollController < ApplicationController
   # 
   # @param [Required, String] id The id of the roll
   # @param [Optional, String] following_users Return the following_users?
+  # @param [Optional, String] include_frames Includes the frames in the roll
   def show
     if @roll = Roll.find(params[:id])
-      @following_users = @roll.following_users if params[:following_users]
+      @following_users = @roll.following_users if params[:following_users] == true
+      @frames = @roll.frames if params[:include_frames] == "true"
       @status =  200
     else
       @status, @message = 500, "could not find that roll"
