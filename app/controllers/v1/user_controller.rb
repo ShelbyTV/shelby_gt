@@ -32,6 +32,7 @@ class V1::UserController < ApplicationController
   def update
     id = params.delete(:id)
     @user = User.find(id)
+    params[:primary_email] = nil if params[:primary_email] = ""
     begin
         @user.save! if @user.update_attributes!(params)
         @status = 200

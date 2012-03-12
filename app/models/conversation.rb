@@ -30,5 +30,9 @@ class Conversation
   def self.first_including_message_origin_id(mid)
     Conversation.first( :conditions => { 'messages.b' => mid } )
   end
+  
+  def find_message_by_id(id)
+    self.messages.select { |m| m.id.to_s == id } .first
+  end
 
 end
