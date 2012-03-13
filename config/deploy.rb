@@ -10,6 +10,6 @@ require "bundler/capistrano"
 #	Multistage Deploy via capistrano-ext
 #############################################################
 
-set :stages, %w(staging)
-set :default_stage, 'staging'
+set :stages, %w(production)
+set :default_stage, 'production'
 require 'capistrano/ext/multistage'
