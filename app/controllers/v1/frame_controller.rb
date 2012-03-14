@@ -11,7 +11,7 @@ class V1::FrameController < ApplicationController
   def index
     @roll = Roll.find(params[:id])
     if @roll
-      @include_children = (params[:include_children] == "true") ? true : false
+      @include_frame_children = (params[:include_children] == "true") ? true : false
       @status =  200
     else
       @status, @message = 500, "could not find that roll"
