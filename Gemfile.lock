@@ -53,13 +53,6 @@ GIT
       omniauth-oauth2 (~> 1.0.0)
 
 GIT
-  remote: git://github.com/rknLA/yard-rest-plugin.git
-  revision: 99cf7ba7ea349a1b072b2de83de975e9876f62cf
-  specs:
-    yard-rest (0.3.0)
-      yard (~> 0.7.4)
-
-GIT
   remote: git://github.com/spinosa/mongomapper.git
   revision: fb0a47aa64a5408935b1baa6722817aaf40efb29
   branch: key_abbreviation
@@ -271,7 +264,6 @@ GEM
     warden (1.1.1)
       rack (>= 1.0)
     yajl-ruby (1.1.0)
-    yard (0.7.5)
 
 PLATFORMS
   ruby
@@ -311,5 +303,3 @@ DEPENDENCIES
   shoulda
   statsd-ruby
   yajl-ruby
-  yard (~> 0.7.4)
-  yard-rest (= 0.3.0)!

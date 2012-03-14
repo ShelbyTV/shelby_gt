@@ -66,8 +66,8 @@ gem 'delayed_job_mongo_mapper', :git => 'git://github.com/ShelbyTV/delayed_job_m
 # ---------- TODO: explain what yard is and why it's here
 #
 group :development do
-	gem 'yard', '~> 0.7.4'
-	gem 'yard-rest', '0.3.0', :git => 'git://github.com/rknLA/yard-rest-plugin.git'
+	#gem 'yard', '~> 0.7.4'
+	#gem 'yard-rest', '0.3.0', :git => 'git://github.com/rknLA/yard-rest-plugin.git'
 end
 
 #

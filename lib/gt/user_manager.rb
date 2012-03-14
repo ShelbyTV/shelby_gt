@@ -126,7 +126,8 @@ module GT
       #TODO: this needs a new name
       def self.update_on_sign_in(u)
         u.authentications.each do |a| 
-          GT::VideoFetching.update_video_processing(u, a)
+          #TODO: Uncomment update_video_processing when beanstalk server allows communication from gt-API
+          #GT::VideoFetching.update_video_processing(u, a)
           if a.provider == "facebook"
             begin
               graph = Koala::Facebook::GraphAPI.new(a.oauth_token)
