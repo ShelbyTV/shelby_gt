@@ -67,8 +67,7 @@ EventMachine.synchrony do
       if job
         Rails.logger.debug "[Arnold Main] got job (job:#{job.jobid}), handing off to fiber. looks like: #{job.inspect}"
     		f = Fiber.new { |job|
-    		  #TODO: Bring job processing over from Shelby
-    		  #Arnold::JobProcessor.process_job(job, $fibers, $MAX_FIBERS)
+    		  GT::Arnold::JobProcessor.process_job(job, $fibers, $MAX_FIBERS)
         }
         $fibers << f
         f.resume(job)

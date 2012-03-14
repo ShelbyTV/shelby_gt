@@ -1,0 +1,12 @@
+defaults: &defaults
+  uri: 'localhost:11211'
+  
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults
+  uri : '10.183.196.168:11211'

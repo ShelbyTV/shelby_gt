@@ -25,6 +25,12 @@ module Settings
     load!
   end
   
+  class Memcached < Settingslogic
+    source "#{Rails.root}/config/settings/memcached.yml"
+    namespace Rails.env
+    load!
+  end
+  
   class User < Settingslogic
     source "#{Rails.root}/config/settings/user.yml"
     namespace Rails.env

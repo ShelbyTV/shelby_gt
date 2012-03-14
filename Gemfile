@@ -91,6 +91,10 @@ group :arnold, :test do
   gem "em-resolv-replace"
 end
 
+#
+# ---------- Memcached 
+#
+gem 'memcached', '~>1.4.1'
 
 #gem 'jquery-rails'
 
