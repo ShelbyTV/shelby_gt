@@ -1,1 +1,7 @@
-<%= link_to "login", '/auth/twitter' %>
+<div style="position:relative; left:200px; top:200px; font-size:30px;">
+	<% if user_signed_in? %>
+		hello <%= current_user.nickname %>
+	<% else %>
+		<%= link_to "login >>", '/auth/twitter' %>
+	<% end %>
+</div>
