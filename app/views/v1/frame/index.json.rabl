@@ -1,3 +1,7 @@
-collection @frames 
+object @roll
 
-extends "show"
+extends 'v1/roll/show'
+
+child :frames do
+	extends 'v1/frame/show'
+end

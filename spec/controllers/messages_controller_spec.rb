@@ -7,6 +7,7 @@ describe V1::MessagesController do
     @message = stub_model(Message)
     Conversation.stub(:find) { @conversation }
     @conversation.stub(:messages) { [@message, @message1] }
+    @conversation.stub(:find_message_by_id) { @message }
   end  
 
   describe "POST create" do
@@ -52,13 +53,15 @@ describe V1::MessagesController do
     
     it "destroys a message successfuly" do
       @conversation.stub(:pull) { [@message1] }
-      @conversation.stub(:reload) { @conversation }
+      @conversation.stub(:reload) { [@message1] }
+      @conversation.stub(:find_message_by_id) { @message }
       delete :destroy, :conversation_id => @conversation.id, :id => @message.id, :format => :json
       assigns(:status).should eq(200)
     end
     
     it "unsuccessfuly destroys a roll returning 500" do
-      @conversation.stub(:pull) { false }
+      @conversation.stub(:pull) { true }
+      @conversation.stub(:find_message_by_id) { false }
       delete :destroy, :conversation_id => @conversation.id, :id => @message.id, :format => :json
       assigns(:status).should eq(500)
     end

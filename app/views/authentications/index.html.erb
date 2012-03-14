@@ -1,0 +1,8 @@
+<div style="position:relative; left:200px; top:200px; font-size:30px;">
+	<% if user_signed_in? %>
+		hello <%= current_user.nickname %><br/>
+		get your <%= link_to 'dashboard', '/v1/dashboard' %>
+	<% else %>
+		<%= link_to "login >>", '/auth/twitter' %>
+	<% end %>
+</div>

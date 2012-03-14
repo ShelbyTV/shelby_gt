@@ -6,7 +6,8 @@ describe V1::UserController do
       { :get => "/v1/user/1" }.should route_to(
         :controller => "v1/user",
         :action => "show",
-        :id => "1"
+        :format => "json",
+        :id => "1",
       )
     end 
 
@@ -14,6 +15,7 @@ describe V1::UserController do
       { :put => "/v1/user/1" }.should route_to(
         :controller => "v1/user",
         :action => "update",
+        :format => "json",
         :id => "1"
       )
     end 
@@ -25,6 +27,7 @@ describe V1::DashboardEntriesController do
     it "routes for GET" do
       { :get => "/v1/dashboard" }.should route_to(
         :controller => "v1/dashboard_entries",
+        :format => "json",
         :action => "index"
       )
     end 
@@ -33,6 +36,7 @@ describe V1::DashboardEntriesController do
       { :put => "/v1/dashboard/1" }.should route_to(
         :controller => "v1/dashboard_entries",
         :action => "update",
+        :format => "json",
         :id => "1"
       )
     end 
@@ -45,6 +49,7 @@ describe V1::FrameController do
       { :get => "/v1/frame/1" }.should route_to(
         :controller => "v1/frame",
         :action => "show",
+        :format => "json",
         :id => "1"
       )
     end 
@@ -53,6 +58,7 @@ describe V1::FrameController do
       { :put => "/v1/frame/1" }.should route_to(
         :controller => "v1/frame",
         :action => "update",
+        :format => "json",
         :id => "1"
       )
     end 
@@ -61,6 +67,7 @@ describe V1::FrameController do
       { :delete => "/v1/frame/1" }.should route_to(
         :controller => "v1/frame",
         :action => "destroy",
+        :format => "json",
         :id => "1"
       )
     end 
@@ -69,6 +76,7 @@ describe V1::FrameController do
       { :post => "/v1/roll/1/frames" }.should route_to(
         :controller => "v1/frame",
         :action => "create",
+        :format => "json",
         :id => "1"
       )
     end
@@ -81,6 +89,7 @@ describe V1::RollController do
       { :get => "/v1/roll/1" }.should route_to(
         :controller => "v1/roll",
         :action => "show",
+        :format => "json",
         :id => "1"
       )
     end 
@@ -89,6 +98,7 @@ describe V1::RollController do
       { :put => "/v1/roll/1" }.should route_to(
         :controller => "v1/roll",
         :action => "update",
+        :format => "json",
         :id => "1"
       )
     end 
@@ -97,6 +107,7 @@ describe V1::RollController do
       { :delete => "/v1/roll/1" }.should route_to(
         :controller => "v1/roll",
         :action => "destroy",
+        :format => "json",
         :id => "1"
       )
     end 
@@ -109,6 +120,7 @@ describe V1::VideoController do
       { :get => "/v1/video/1" }.should route_to(
         :controller => "v1/video",
         :action => "show",
+        :format => "json",
         :id => "1"
       )
     end 
@@ -121,6 +133,7 @@ describe V1::ConversationController do
       { :get => "/v1/conversation/1" }.should route_to(
         :controller => "v1/conversation",
         :action => "show",
+        :format => "json",
         :id => "1"
       )
     end 
@@ -129,6 +142,7 @@ describe V1::ConversationController do
       { :post => "/v1/conversation/1/messages" }.should route_to(
         :controller => "v1/messages",
         :action => "create",
+        :format => "json",
         :conversation_id => "1"
       )
     end 
@@ -137,6 +151,7 @@ describe V1::ConversationController do
       { :delete => "/v1/conversation/1/messages/4" }.should route_to(
         :controller => "v1/messages",
         :action => "destroy",
+        :format => "json",
         :conversation_id => "1",
         :id => "4"
       )

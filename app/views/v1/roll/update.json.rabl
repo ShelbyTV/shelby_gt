@@ -1,3 +1,3 @@
 object @roll
 
-attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url
+extends 'v1/roll/show'

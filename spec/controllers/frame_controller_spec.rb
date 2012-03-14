@@ -14,7 +14,7 @@ describe V1::FrameController do
   describe "GET index" do
     it "assigns all frames in a roll to @frames" do
       get :index, :format => :json
-      assigns(:frames).should eq([@frame])
+      assigns(:roll).should eq(@roll)
       assigns(:status).should eq(200)
     end
     
@@ -23,13 +23,6 @@ describe V1::FrameController do
       get :index, :format => :json
       assigns(:status).should eq(500)
       assigns(:message).should eq("could not find that roll")
-    end
-    
-    it "returns 500 if cant find frames in a roll" do
-      @roll.stub(:frames) { nil }
-      get :index, :format => :json
-      assigns(:status).should eq(500)
-      assigns(:message).should eq("could not find the frames from that roll")
     end
   end
   
@@ -51,7 +44,8 @@ describe V1::FrameController do
   describe "PUT update" do
     it "updates a frame successfuly" do
       @frame = mock_model(Frame, :update_attributes => true)
-      @frame.should_receive(:update_attributes).and_return(@frame)
+      @frame.should_receive(:update_attributes!).and_return(@frame)
+      @frame.should_receive(:save!).and_return(true)
       put :update, :id => @frame.id, :format => :json
       assigns(:frame).should eq(@frame)
       assigns(:status).should eq(200)
@@ -59,7 +53,8 @@ describe V1::FrameController do
     
     it "updates a frame UNsuccessfuly gracefully" do
       @frame = mock_model(Frame, :update_attributes => true)
-      @frame.should_receive(:update_attributes).and_return(false)
+      @frame.should_receive(:save!).and_raise(ArgumentError)
+      @frame.should_receive(:update_attributes!).and_return(false)
       put :update, :id => @frame.id, :format => :json
       assigns(:status).should eq(500)
     end

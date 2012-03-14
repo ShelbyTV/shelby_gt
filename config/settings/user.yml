@@ -5,8 +5,8 @@ defaults: &defaults
 
 development:
   <<: *defaults
-  #db_name: 'dev-gt-user'
-  db_name: 'nos-development'
+  db_name: 'dev-gt-user'
+  #db_name: 'nos-development'
 
 test:
   <<: *defaults
@@ -15,6 +15,8 @@ test:
 production:
   <<: *defaults
   db_name: 'gt-user'
-  db_hosts: ["ip:port", "ip:port", "ip:port"]
-  db_username: "someun"
-  db_password: "somepw"
+  db_host: '108.166.111.208'
+  db_port: '27017'
+  #db_hosts: ["10.181.135.130:27018", "10.180.131.101:27018", "10.181.131.114:27018"]
+  #db_username: "someun"
+  #db_password: "somepw"

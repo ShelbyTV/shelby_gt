@@ -5,16 +5,17 @@ class V1::RollController < ApplicationController
   ##
   # Returns one roll, with the given parameters.
   #
-  # [GET] /v1/roll/:id.json
+  # [GET] /v1/roll/:id
   # 
   # @param [Required, String] id The id of the roll
   # @param [Optional, String] following_users Return the following_users?
   def show
     if @roll = Roll.find(params[:id])
-      @following_users = @roll.following_users if params[:following_users]
+      @include_following_users = params[:following_users] == "true" ? true : false
       @status =  200
     else
       @status, @message = 500, "could not find that roll"
+      render 'v1/blank'
     end
   end
   
@@ -22,7 +23,7 @@ class V1::RollController < ApplicationController
   # Creates and returns one roll, with the given parameters.
   #   REQUIRES AUTHENTICATION
   # 
-  # [POST] /v1/roll.json
+  # [POST] /v1/roll
   # 
   # @param [Required, String] title The title of the roll
   # @param [Required, String] thumbnail_url The thumbnail_url for the url
@@ -41,7 +42,8 @@ class V1::RollController < ApplicationController
       begin        
         @status = 200 if @roll.save!
       rescue => e
-        @status, @message = 500, e
+        @status, @message = 500, "could not save roll: #{e}"
+        render 'v1/blank'
       end
     end
   end
@@ -50,17 +52,23 @@ class V1::RollController < ApplicationController
   # Updates and returns one roll, with the given parameters.
   #   REQUIRES AUTHENTICATION
   # 
-  # [PUT] /v1/roll/:id.json
+  # [PUT] /v1/roll/:id
   # 
   # @param [Required, String] id The id of the roll
   def update
     id = params.delete(:id)
     @roll = Roll.find(id)
-    @status, @message = 500, "could not find roll" unless @roll
-    if @roll and @roll.update_attributes(params)
-      @status = 200
+    if !@roll
+      @status, @message = 500, "could not find roll"
+      render 'v1/blank'
     else
-      @status, @message = 500, "could not update roll"
+      begin
+        @roll.save! if @roll.update_attributes!(params)
+        @status = 200
+      rescue => e
+        @status, @message = 500, "error while updating roll: #{e}"
+        render 'v1/blank'
+      end
     end
   end
   
@@ -72,12 +80,15 @@ class V1::RollController < ApplicationController
   # 
   # @param [Required, String] id The id of the roll
   def destroy
-    @roll = Roll.find(params[:id])
-    @status, @message = 500, "could not find that roll to destroy" if @roll == nil
+    unless @roll = Roll.find(params[:id])
+      @status, @message = 500, "could not find that roll to destroy"
+      render 'v1/blank'
+    end
     if @roll.destroy
       @status =  200
     else
       @status, @message = 500, "could not destroy that roll"
+      render 'v1/blank'
     end
   end
 

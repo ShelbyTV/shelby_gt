@@ -8,7 +8,7 @@ ShelbyGt::Application.routes.draw do
   devise_for :user, :skip => [:sessions]
   as :user do
     get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
-    get 'login' => 'home#index', :as => :new_user_session
+    get 'login' => 'authentications#index', :as => :new_user_session
   end
 
   resources :authentications
@@ -19,7 +19,7 @@ ShelbyGt::Application.routes.draw do
   ########################
   # Namespace allows for versioning of API
   # NOTE: Must use V1::ControllerName in controllers
-  namespace :v1 do
+  namespace :v1, :defaults => { :format => 'json' } do
     resources :user, :only => [:show, :update] 
     resources :roll, :only => [:show, :create, :update, :destroy]
     resources :frame, :only => [:show, :update, :destroy]
@@ -29,11 +29,12 @@ ShelbyGt::Application.routes.draw do
       resources :messages, :only => [:create, :destroy]
     end
     
+    match 'user/' => 'user#show', :via => :get
     match 'roll/:id/frames' => 'frame#index', :via => :get
     match 'roll/:id/frames' => 'frame#create', :via => :post	
     
   end
   
-  root :to => 'home#index'
+  root :to => 'authentications#index'
 
 end

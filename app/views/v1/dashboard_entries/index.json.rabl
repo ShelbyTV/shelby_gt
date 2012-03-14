@@ -1,3 +1,7 @@
 collection @entries
 
-attributes :id, :action, :actor_id, :roll, :frame, :video, :conversation, :user
+if @include_children == true
+	extends 'v1/dashboard_entries/show_with_children'
+else
+	extends 'v1/dashboard_entries/show'
+end
