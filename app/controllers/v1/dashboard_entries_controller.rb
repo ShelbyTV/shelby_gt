@@ -35,7 +35,7 @@ class V1::DashboardEntriesController < ApplicationController
       if !@entries.empty?
         @status = 200
       else
-        @status, @message = 500, "error retrieving dashboard entries"
+        @status, @message = 500, "there are no dashboard entries for this user"
         render 'v1/blank'
       end
     else
