@@ -29,6 +29,7 @@ ShelbyGt::Application.routes.draw do
       resources :messages, :only => [:create, :destroy]
     end
     
+    match 'user/' => 'user#show', :via => :get
     match 'roll/:id/frames' => 'frame#index', :via => :get
     match 'roll/:id/frames' => 'frame#create', :via => :post	
     
