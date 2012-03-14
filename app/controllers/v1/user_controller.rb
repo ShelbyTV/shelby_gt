@@ -8,7 +8,7 @@ class V1::UserController < ApplicationController
   #
   # [GET] /v1/users/:id
   # 
-  # @param [Required, String] id The id of the user
+  # @param [Optional, String] id The id of the user, if not present, user is current_user
   # @param [Optional, Boolean] include_auths Include the embedded authorizations
   # @param [Optional, Boolean] rolls_following Include the referenced rolls the user is following
   def show
