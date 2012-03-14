@@ -8,7 +8,7 @@ ShelbyGt::Application.routes.draw do
   devise_for :user, :skip => [:sessions]
   as :user do
     get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
-    get 'login' => 'home#index', :as => :new_user_session
+    get 'login' => 'authentications#index', :as => :new_user_session
   end
 
   resources :authentications
@@ -34,6 +34,6 @@ ShelbyGt::Application.routes.draw do
     
   end
   
-  root :to => 'home#index'
+  root :to => 'authentications#index'
 
 end
