@@ -1,14 +1,13 @@
 defaults: &defaults
   available: false
   tubes:
-    websocket_deliver_to_client: "ws_deliver_to_client"
+    websocket_deliver_to_client: "ws_deliver_to_client_gt"
     twitter_backfill: "tw_backfill"
     twitter_add_stream: "tw_stream_add"
-    link_processing: "link_processing"
-    link_processing_high: "link_processing_high"
+    link_processing: "link_processing_gt"
+    link_processing_high: "link_processing_high_gt"
     facebook_add_user: "fb_add_user"
     tumblr_add_user: "tumblr_add_user"
-    event_tube: "event_tube"
   
 development:
   <<: *defaults
