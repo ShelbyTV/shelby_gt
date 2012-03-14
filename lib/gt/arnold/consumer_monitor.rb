@@ -13,7 +13,6 @@
 # 1) beanstalk treats clients in FIFO fashion, thus distributing load equally to all Arnold processes.
 # 2) even at lowest volume, enough jobs will flow that each Arnold gets at least 1/min. 
 #
-# TODO: Test GT::Arnold::ConsumerMonitor
 module GT
   module Arnold
     class ConsumerMonitor
