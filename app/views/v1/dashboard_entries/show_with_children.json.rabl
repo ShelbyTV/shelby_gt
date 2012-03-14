@@ -10,10 +10,6 @@ child :frame do
 	extends 'v1/frame/show'
 end
 
-child :user do
-	extends 'v1/user/show'
-end
-
 glue :frame do
 	
 	child :video do
