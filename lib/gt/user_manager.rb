@@ -18,7 +18,8 @@ module GT
       create_roll_for_user(user)
 
       if user.save
-        GT::VideoFetching.initialize_video_processing(user, auth)
+        #TODO: Uncomment update_video_processing when beanstalk server allows communication from gt-API
+        #GT::VideoFetching.initialize_video_processing(user, auth)
         
         # Update user count stat
         #Stats.increment(Stats::TOTAL_USERS)
