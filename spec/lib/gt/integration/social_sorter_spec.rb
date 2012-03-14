@@ -74,7 +74,8 @@ describe GT::SocialSorter do
       
       lambda {
         res = GT::SocialSorter.sort(m, @video, @observer)
-        @observer.following_roll?(res[:frame].roll).should == true
+        @observer.reload.following_roll?(res[:frame].roll).should == true
+        res[:frame].roll.reload.followed_by?(@observer).should == true
       }.should change { @observer.roll_followings.count }.by(1)
     end
     
@@ -82,23 +83,27 @@ describe GT::SocialSorter do
       lambda {
         GT::SocialSorter.sort(@existing_user_random_msg, @video, User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
       }.should change { Frame.count }.by(1)
+
+      new_observer = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
       
-      @existing_user.public_roll.remove_follower(@observer)
-      #hack observer
-      @observer.rolls_unfollowed = []
-      
-      @observer.following_roll?(@existing_user.public_roll).should == false
+      new_observer.following_roll?(@existing_user.public_roll).should == false
       lambda {
-        GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
-        @observer.following_roll?(@existing_user.public_roll).should == true
+        GT::SocialSorter.sort(@existing_user_random_msg, @video, new_observer)
+        new_observer.following_roll?(@existing_user.public_roll).should == true
+        new_observer.reload.following_roll?(@existing_user.public_roll).should == true
+        @existing_user.public_roll.reload.followed_by?(new_observer).should == true
       }.should_not change { Frame.count }
     end
     
     it "should not make observing User auto-follow public Roll if they've unfollowed it" do
       @existing_user.public_roll.remove_follower(@observer)
+      @existing_user.public_roll.save
+      @observer.save
 
       res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
       @observer.following_roll?(@existing_user.public_roll).should == false
+      @observer.reload.following_roll?(@existing_user.public_roll).should == false
+      @existing_user.public_roll.reload.followed_by?(@observer).should == false
       @observer.following_roll?(res[:frame].roll).should == false
     end
     
@@ -111,8 +116,6 @@ describe GT::SocialSorter do
       lambda {
         res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
         @observer.following_roll?(@existing_user.public_roll).should == true
-        res[:dashboard_entries].size.should == 1
-        res[:dashboard_entries][0].user.should == @observer
       }.should change { @observer.dashboard_entries.count }.by(1)
     end
       
@@ -125,8 +128,8 @@ describe GT::SocialSorter do
       
       lambda {
         res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
-        res[:dashboard_entries].size.should == 4
-      }.should change { DashboardEntry.count }.by(4)
+        res[:dashboard_entries].size.should satisfy { |n| n >= 4 }
+      }.should change { DashboardEntry.count }.by_at_least(4)
     end
     
     it "should create appropriate Frame" do

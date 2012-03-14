@@ -48,9 +48,8 @@ module GT
         unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)  
           posting_user.public_roll.add_follower(observing_user) 
           
-          #TODO: test if we need to save these here, they need to be persisted
-          #posting_user.public_roll.save
-          #observing_user.save
+          posting_user.public_roll.save
+          observing_user.save
         end
         
         # Don't re-post
