@@ -15,6 +15,10 @@ class V1::UserController < ApplicationController
     if @user = User.find(params[:id])
       @include_auths = (current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
       @status = 200
+    elsif user_logged_in?
+      @user = current_user
+      @include_auths = (current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
+      @status = 200
     else
       @status, @message = 500, "could not find user"
       render 'v1/blank'
