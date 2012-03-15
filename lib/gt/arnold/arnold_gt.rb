@@ -4,9 +4,9 @@
 ENV["RAILS_ENV"] ||= 'production'
 
 puts "loading app..."
-require File.dirname(__FILE__) + "/../../config/application"
+require File.dirname(__FILE__) + "/../../../config/application"
 Rails.application.require_environment!
-Rails.logger.level = 1 #0:DEBUG, 1:INFO, 2:WARN, 3:ERROR, 4:FATAL
+Rails.logger.level = 0 #0:DEBUG, 1:INFO, 2:WARN, 3:ERROR, 4:FATAL
 Rails.logger.auto_flushing = true
 
 # For cleanly exiting
@@ -19,10 +19,7 @@ trap(:INT) { puts "trapped SIG_INT, stopping..."; $running = false }
 #Anything else needed
 require 'arnold/event_loop'
 require 'arnold/bean_job'
-require 'arnold/url'
-require 'arnold/video'
-require 'arnold/broadcast_factory'
-require 'arnold/memcached_manager'
+require 'arnold/job_processor'
 require 'arnold/consumer_monitor'
 require "em-synchrony"
 require "em-synchrony/em-http"
@@ -47,7 +44,7 @@ $statsd_jobs_processed_bucket = "link_processor.#{machine_name}.jobs_processed"
 
 # To make sure the consumer isn't hung, and kill ourselves if it is
 $consumer_turns = 0
-Arnold::ConsumerMonitor.monitor()
+GT::Arnold::ConsumerMonitor.monitor()
 
 puts "running EM..."
 EventMachine.synchrony do
@@ -56,13 +53,13 @@ EventMachine.synchrony do
   Fiber.new {
   	while($running) do
       #Make sure we don't create too many fibers
-  		next unless Arnold::EventLoop.should_pull_a_job($fibers, $MAX_FIBERS)
+  		next unless GT::Arnold::EventLoop.should_pull_a_job($fibers, $MAX_FIBERS)
   		
   		#only counts as a turn if we're doing useful work
   	  $consumer_turns += 1
 
       # pull the job (w/o blocking reactor)
-  		job = Arnold::BeanJob.get_and_delete_job
+  		job = GT::Arnold::BeanJob.get_and_delete_job
 
       if job
         Rails.logger.debug "[Arnold Main] got job (job:#{job.jobid}), handing off to fiber. looks like: #{job.inspect}"
@@ -79,7 +76,7 @@ EventMachine.synchrony do
   	
   	# We've been asked to exit, try to allow fibers to finish up
     Rails.logger.info "[Arnold Main] exiting..."
-  	Arnold::EventLoop.wait_until_done($fibers, 60.seconds.from_now)
+  	GT::Arnold::EventLoop.wait_until_done($fibers, 60.seconds.from_now)
   	Rails.logger.info "[Arnold Main] done waiting for fibers (#{$fibers.size} fibers alive), stopping event machine"
   	EventMachine.stop
   	Rails.logger.info "[Arnold Main] EventMachine.stop returned, waiting to exit loop..."

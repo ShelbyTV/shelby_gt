@@ -27,6 +27,17 @@ describe GT::Arnold::JobProcessor do
     GT::Arnold::JobProcessor.process_job(@fake_job, :fibers, :max_fibers).should == :no_social_message
   end
   
+  it "should return :no_observing_user if there a user could not be found" do
+    GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "bad://url", :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
+    GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => true}])
+    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(true)
+    
+    # fail to find user...
+    User.stub(:find_by_provider_name_and_id).with('pt', 'puid').once.and_return(nil)
+    
+    GT::Arnold::JobProcessor.process_job(@fake_job, mock_model("FFiber", :delete => true, :size => 1), :max_fibers).should == :no_observing_user
+  end
+  
   it "should get the correct observing user from job_details" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "bad://url", :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => true}])
