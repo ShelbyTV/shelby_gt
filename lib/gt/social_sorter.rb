@@ -29,6 +29,7 @@ module GT
       raise ArgumentError, "must supply observing_user" unless observing_user.is_a?(User)
 
       posting_user = get_or_create_posting_user_for(message)
+      return false unless posting_user.is_a?(User) and posting_user.public_roll.is_a?(Roll)
               
       if message.public?
         sort_public_message(message, video, observing_user, posting_user)

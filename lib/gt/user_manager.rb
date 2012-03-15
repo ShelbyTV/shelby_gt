@@ -15,7 +15,7 @@ module GT
       user, auth = build_new_user_and_auth(omniauth)
 
       # Create the public Roll for this new User
-      create_roll_for_user(user)
+      build_public_roll_for_user(user)
 
       if user.save
         #TODO: Uncomment update_video_processing when beanstalk server allows communication from gt-API
@@ -63,8 +63,13 @@ module GT
     # Or the Errors, if save failed.
     #
     def self.get_or_create_faux_user(nickname, provider, uid)
-      u = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
-      return u if u
+      if u = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
+        unless u.public_roll
+          build_public_roll_for_user(u)
+          u.public_roll.save
+        end
+        return u
+      end
       
       # No user (faux or real) existed, create a faux user...
       u = User.new
@@ -79,7 +84,7 @@ module GT
       u.downcase_nickname = u.nickname.downcase
       
       # Create the public Roll for this new User
-      create_roll_for_user(u)
+      build_public_roll_for_user(u)
             
       if u.save
         return u
@@ -160,7 +165,7 @@ module GT
         end
       end
       
-      def self.create_roll_for_user(u)
+      def self.build_public_roll_for_user(u)
         r = Roll.new
         r.creator = u
         r.public = true

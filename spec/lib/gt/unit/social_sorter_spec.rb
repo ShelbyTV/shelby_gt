@@ -22,5 +22,15 @@ describe GT::SocialSorter do
       GT::SocialSorter.sort(Message.new, Video.new, nil) 
     }.should raise_error(ArgumentError)
   end
+
+  it "should return false if posting_user isn't found and can't be created" do
+    GT::UserManager.stub(:get_or_create_faux_user).and_return(nil)
+    GT::SocialSorter.sort(Message.new, Video.new, User.new).should == false 
+  end
+  
+  it "should return false if posting_user has no public roll" do
+    GT::UserManager.stub(:get_or_create_faux_user).and_return(User.new)
+    GT::SocialSorter.sort(Message.new, Video.new, User.new).should == false 
+  end
   
 end
