@@ -10,7 +10,7 @@ module Plugins
           connection Mongo::Connection.new(settings.db_host, settings.db_port, settings.db_options)
         end
         set_database_name settings.db_name
-        MongoMapper.database.authenticate(settings.db_username, settings.db_password) if settings['db_username'] && settings['db_password']
+        database.authenticate(settings.db_username, settings.db_password) if settings['db_username'] && settings['db_password']
       end
     end
     

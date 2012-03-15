@@ -17,5 +17,5 @@ production:
   db_host: '108.166.111.208'
   db_port: '27017'
   #db_hosts: ["host:port", "host:port"]
-  #db_username: "someun"
-  #db_password: "somepw"
+  db_username: "gt_user"
+  db_password: "GT/us3r!!!"

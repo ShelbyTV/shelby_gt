@@ -7,13 +7,23 @@ class MemcachedVideoProcessingLinkCache
   
   attr_accessor :embedly_json
   
+  # Store the embed.ly resolution in memcached.
+  #
+  # --arguments--
+  #
+  # options -- REQUIRED:
+  #  :url  -- REQUIRED -- the URL for which we are storing the result of the call to embed.ly
+  #  :embedly_json  -- REQUIRED -- the raw json returned by embed.ly
+  # memcached -- REQUIRED -- should be an instance of a Memcached client.  Use GT::Arnold::MemcachedManager.get_client
+  #
   def self.create(options, memcached)
-    #md5 = Digest::MD5.hexdigest(options[:url])
+    raise ArgumentError, "options must include :url as String" unless options[:url] and options[:url].is_a? String
+    raise ArgumentError, "options must include :embedly_json as String" unless options[:embedly_json] and options[:embedly_json].is_a? String
+    
     key = get_key_from_url(options[:url])
     
     #store the embedly json (w/ they key being the md5 hash of the url)
-    ##embedly json may be nil, this is okay, we want to cache that too
-    #no actual need to do this atomically, and it seems that was fucking with EventMachine
+    #embedly json may be nil, this is okay, we want to cache that too
 
     begin
       memcached.add key, {EMBEDLY_FIELD => options[:embedly_json]}
@@ -21,14 +31,22 @@ class MemcachedVideoProcessingLinkCache
       #puts 'video cache already contains item'
     end
 
-    #If we had video (i.e. embed.ly json isn't nil) update that counter, otherwise update no video counter
-    Stats.increment (options[:embedly_json] ? Stats::HAS_VIDEO : Stats::NO_VIDEO)
-
   end
 
+  # Get the embed.ly raw json for a URL
+  #
+  # --arguments--
+  #
+  # url -- REQUIRED -- The URL for which you want the embed.ly json result.  NOTE: This is the the embed.ly API call, this is the video source url as seen in the wild.
+  # memcached -- REQUIRED -- should be an instance of a Memcached client.  Use GT::Arnold::MemcachedManager.get_client
+  #
+  # --returns--
+  # an instance of MemcachedVideoProcessingLinkCache upon which you can call embedly_json to get the raw embed.ly json as embed.ly returned it for this url.
+  # nil on cache miss.
+  #
   def self.find_by_url(url, memcached)
-    #md5 = Digest::MD5.hexdigest(url)
     key = get_key_from_url(url)
+    
     #resolved is nil if there's nothing in memcached, the raw embedly json, or empty string if embedly returned nothing
     begin
       resolved = memcached.get key 
@@ -37,7 +55,7 @@ class MemcachedVideoProcessingLinkCache
       #puts 'video cache miss'
     end
 
-    if resolved 
+    if resolved and resolved.is_a? Hash
       #Building an object to match the old sematics
       obj = MemcachedVideoProcessingLinkCache.new()
       obj.embedly_json = (resolved.empty? ? nil : resolved[EMBEDLY_FIELD])
@@ -47,13 +65,13 @@ class MemcachedVideoProcessingLinkCache
     end
   end
 
-  def self.get_key_from_url(url)
-    return Digest::MD5.hexdigest(KEY_PREFIX+url)
-  end
-
   private
   
-  EMBEDLY_FIELD = "e"
-  KEY_PREFIX = "e"
+    def self.get_key_from_url(url)
+      return Digest::MD5.hexdigest(KEY_PREFIX+url)
+    end
+  
+    EMBEDLY_FIELD = "e"
+    KEY_PREFIX = "e"
 
 end

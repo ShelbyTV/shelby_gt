@@ -77,7 +77,6 @@ module GT
       #------ URL Resolution --------
       ##############################################
       
-      #TODO test the event machine stuff
       def self.resolve_url_with_eventmachine(url)
         begin
           http = EventMachine::HttpRequest.new(url, :connect_timeout => Settings::EventMachine.connect_timeout).head({:redirects => Settings::EventMachine.max_redirects})

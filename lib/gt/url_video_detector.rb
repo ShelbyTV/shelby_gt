@@ -12,7 +12,7 @@ module GT
       if cache = check_video_processing_link_cache(url, memcache_client)
         begin
           return [{:embedly_hash => JSON.parse(cache.embedly_json)}] if cache.embedly_json
-          #return {:shelby_hash => JSON.parse(cache.shelby_json)} if cache.shelby_json
+          #return [{:shelby_hash => JSON.parse(cache.shelby_json)}] if cache.shelby_json
         rescue JSON::ParserError => e
           Rails.logger.error("[GT::UrlVideoDetector#examine_url_for_video] JSON::ParserError on embedly_json=#{cache.embedly_json} / returning nil") if cache.embedly_json
           #Rails.logger.error("[GT::UrlVideoDetector#examine_url_for_video] JSON::ParserError on shelby_json=#{cache.shelby_json} / returning nil") if cache.shelby_json
@@ -21,7 +21,11 @@ module GT
         return nil
       end
       
-      # Cache miss!  See if one of our services can find video there...
+      # Cache miss!  
+      # We should pretty much *always* have a cache miss here: The first time we see Video at a URL, it's added to DB.  The next time we see that URL,
+      # we should pull Video from DB, and not have to resort to the methods of this class.
+      
+      # See if one of our services can find video there...
       
       #TODO in the future 2) check our own service
       #shelby_json = check_shelby_for_video(url, use_em)

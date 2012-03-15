@@ -1,7 +1,6 @@
 #
 # Handles the pulling and parsing of jobs from Beanstalk
 #
-# TODO: Test GT::Arnold::BeanJob
 module GT
   module Arnold
     class BeanJob

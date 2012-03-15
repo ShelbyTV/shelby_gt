@@ -12,8 +12,8 @@ module Dev
    
     # Idempotent.  You can run this as much as you like, there won't be duplicates.
     def self.poll_for_user(u)
-      raise ArgumentException, "must present a User" unless u.is_a?(User)
-      raise ArgumentException, "User doesn't have a twitter auth" unless twitter_auth = u.authentications.select { |a| a.provider == 'twitter'  }.first
+      raise ArgumentError, "must present a User" unless u.is_a?(User)
+      raise ArgumentError, "User doesn't have a twitter auth" unless twitter_auth = u.authentications.select { |a| a.provider == 'twitter'  }.first
       client = twitter_client(twitter_auth.oauth_token, twitter_auth.oauth_secret)
             
       # Hit twitter, and process each tweet
