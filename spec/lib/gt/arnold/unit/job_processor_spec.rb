@@ -2,6 +2,7 @@ require 'spec_helper'
 
 require 'job_processor'
 require 'bean_job'
+require 'memcached_manager'
 
 # UNIT test
 describe GT::Arnold::JobProcessor do
@@ -12,6 +13,8 @@ describe GT::Arnold::JobProcessor do
     #make sure delete is *always* called exactly once
     @mock_fibers = mock_model("FFiber", :size => 1)
     @mock_fibers.should_receive(:delete)
+    
+    GT::Arnold::MemcachedManager.stub(:get_client).and_return(nil)
   end
   
   it "should return :bad_job if job cannot be parsed" do
