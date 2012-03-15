@@ -22,8 +22,14 @@ describe GT::Arnold::JobProcessor do
     GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == :bad_job
   end
   
-  it "should return :no_videos if there are no vids at that url" do
+  it "should return :no_videos if there are no vids at :url" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "bad://url"})
+    GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([])
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == :no_videos
+  end
+  
+  it "should return :no_videos if there are no vids at :expanded_urls" do
+    GT::Arnold::BeanJob.stub(:parse_job).and_return({:expanded_urls => ["bad://url1", "bad://url2"]})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([])
     GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == :no_videos
   end
@@ -57,17 +63,30 @@ describe GT::Arnold::JobProcessor do
     GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [:sorted]
   end
   
-  it "should SocialSort multiple videos" do
-    GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "bad://url", :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
+  it "should SocialSort multiple videos from :url" do
+    GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "ok://url", :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => 1}, {:fake => 2}])
     GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(true)
     User.stub(:find_by_provider_name_and_id).with('pt', 'puid').and_return(@user)
     GT::SocialSorter.stub(:sort).and_return(:sorted)
+    
+    # 1 standard url returning 2 videos...
     GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [:sorted, :sorted]
   end
   
+  it "should SocialSort multiple videos from :expanded_urls" do
+    GT::Arnold::BeanJob.stub(:parse_job).and_return({:expanded_urls => ["ok://url1", "ok://url2"], :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
+    GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => 1}, {:fake => 2}])
+    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(true)
+    User.stub(:find_by_provider_name_and_id).with('pt', 'puid').and_return(@user)
+    GT::SocialSorter.stub(:sort).and_return(:sorted)
+    
+    # 2 expanded urls returning 2 videos each...
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [:sorted, :sorted, :sorted, :sorted]
+  end
+  
   it "should remove it's controlling fiber from fibers array"  do
-    GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "bad://url", :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
+    GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "ok://url", :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => true}])
     GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(true)
     User.stub(:find_by_provider_name_and_id).with('pt', 'puid').and_return(@user)

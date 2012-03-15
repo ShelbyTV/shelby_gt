@@ -19,6 +19,7 @@ describe GT::VideoManager do
   context "get_or_create_videos_for_url" do
     
     it "should return [] with crappy url" do
+      GT::VideoManager.get_or_create_videos_for_url(nil).should == []
       GT::VideoManager.get_or_create_videos_for_url("dan").should == []
       GT::VideoManager.get_or_create_videos_for_url("http://4sq.com/xyz").should == []
     end
@@ -30,9 +31,15 @@ describe GT::VideoManager do
     end
     
     it "should resolve shortlink" do
-      GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
+      GT::UrlHelper.should_receive( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
       
       GT::VideoManager.get_or_create_videos_for_url(@short_url).should == []
+    end
+    
+    it "should not resolve shortlink is should_resolve_url==false" do
+      GT::UrlHelper.should_not_receive( :resolve_url )
+      
+      GT::VideoManager.get_or_create_videos_for_url(@short_url, false, nil, false).should == []
     end
     
     it "should find Video already in DB after resolving shortlink" do

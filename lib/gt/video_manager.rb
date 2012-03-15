@@ -17,15 +17,17 @@ module GT
     # -- options --
     #
     # url --- REQUIRED, the url (unclean, unresvoled) where we are looking for video
-    # use_em --- [fase] should we use EventMachine for blocking processes? (allows same code to be used in multiple environments)
+    # use_em --- [false] should we use EventMachine for blocking processes? (allows same code to be used in multiple environments)
     # memcache_client --- [nil] if memcache is availble, this client should give us access to it 
     #                 *** Memcached client should be EventMachine aware if applicable!
+    # should_resolve_url --- [true] should we try to resolve the url?  
+    #                        When we get URLs assured to be resolved (ie from Twitter entities) we don't try to resolve
     #
     # -- returns --
     #
     # [Video] --- and Array of 0 or more Videos, persisted.
     # 
-    def self.get_or_create_videos_for_url(url, use_em=false, memcache_client=nil)
+    def self.get_or_create_videos_for_url(url, use_em=false, memcache_client=nil, should_resolve_url=true)
       begin
         return [] unless (url = GT::UrlHelper.get_clean_url(url))
       rescue
@@ -38,9 +40,9 @@ module GT
         return [v] if v
       end
       
-      # No video? Resolve it if it's a shortlink and then look again
+      # No video? Resolve it and then look again
       begin
-        url = GT::UrlHelper.resolve_url(url, use_em, memcache_client)
+        url = GT::UrlHelper.resolve_url(url, use_em, memcache_client) if should_resolve_url
         url = GT::UrlHelper.post_process_url(url)
       rescue
         return []

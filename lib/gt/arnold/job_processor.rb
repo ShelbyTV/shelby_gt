@@ -19,9 +19,17 @@ module GT
 		    end
 		    
 		    # 1) Get videos at that URL
-		    url = job_details[:url]
-		    if (vids = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client)).empty?
-		      Rails.logger.debug "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No videos found at #{url}"
+		    if job_details[:expanded_urls].is_a?(Array)
+		      vids = []
+		      job_details[:expanded_urls].each do |url|
+		        vids += GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, false)
+	        end
+	      else
+  		    vids = GT::VideoManager.get_or_create_videos_for_url(job_details[:url], true, GT::Arnold::MemcachedManager.get_client)
+        end
+        
+        if vids.empty?
+		      Rails.logger.debug "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No videos found for #{job_details}"
 		      clean_up(job, fibers, max_fibers, job_start_t) and return :no_videos
 	      end
 		    
