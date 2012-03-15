@@ -26,6 +26,7 @@ class AuthenticationsController < ApplicationController
     
 # ---- Current user, just signing in
     elsif user
+      #TODO: if user.faux == true turn faux user into real user via UserManager
       GT::UserManager.start_user_sign_in(user, omniauth, session)
       sign_in(:user, user)
       

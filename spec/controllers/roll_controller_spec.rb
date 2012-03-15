@@ -20,7 +20,6 @@ describe V1::RollController do
       roll = mock_model(Roll, :update_attributes => true)
       Roll.stub(:find) { roll }
       roll.should_receive(:update_attributes!).and_return(roll)
-      roll.should_receive(:save!).and_return(true)
       put :update, :id => roll.id, :public => false , :format => :json
       assigns(:roll).should eq(roll)
       assigns(:status).should eq(200)

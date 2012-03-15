@@ -40,7 +40,7 @@ class V1::UserController < ApplicationController
     # allow for email to be removed, not sure if we want this or not...
     params[:primary_email] = nil if params[:primary_email] = ""
     begin
-      if @user.update_attributes!(params) and @user.save!
+      if @user.update_attributes!(params)
         @status = 200
       else
         @status, @message = 500, "error while updating user."

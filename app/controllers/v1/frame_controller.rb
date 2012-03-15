@@ -77,9 +77,7 @@ class V1::FrameController < ApplicationController
     id = params.delete(:id)
     if @frame = Frame.find(id)
       begin 
-        @frame.update_attributes!(params)
-        @frame.save!
-        @status = 200
+        @status = 200 if @frame.update_attributes!(params)
       rescue => e
         @frame = nil
         @status, @message = 500, "could not update frame: #{e}"

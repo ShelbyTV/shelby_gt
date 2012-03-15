@@ -69,8 +69,7 @@ describe V1::DashboardEntriesController do
     
     it "should return the dashboard entry to @dashboard and return 200" do
       DashboardEntry.stub(:find) { @d }
-      @d.should_receive(:update_attributes).and_return(@d)
-      @d.should_receive(:save!).and_return(true)
+      @d.should_receive(:update_attributes!).and_return(@d)
       put :update, :id => @d.id, :format => :json
       assigns(:dashboard_entry).should eq(@d)
       assigns(:status).should eq(200)
@@ -85,8 +84,7 @@ describe V1::DashboardEntriesController do
     
     it "should return error if could not update dashboard entry" do
       DashboardEntry.stub(:find) { @d }
-      @d.should_receive(:update_attributes).and_return(false)
-      @d.should_receive(:save!).and_raise(ArgumentError)
+      @d.should_receive(:update_attributes!).and_raise(ArgumentError)
       put :update, :id => @d.id, :format => :json
       assigns(:status).should eq(500)
       assigns(:message).should eq("could not update dashboard_entry: ArgumentError")

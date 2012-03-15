@@ -45,7 +45,6 @@ describe V1::FrameController do
     it "updates a frame successfuly" do
       @frame = mock_model(Frame, :update_attributes => true)
       @frame.should_receive(:update_attributes!).and_return(@frame)
-      @frame.should_receive(:save!).and_return(true)
       put :update, :id => @frame.id, :format => :json
       assigns(:frame).should eq(@frame)
       assigns(:status).should eq(200)
@@ -53,8 +52,7 @@ describe V1::FrameController do
     
     it "updates a frame UNsuccessfuly gracefully" do
       @frame = mock_model(Frame, :update_attributes => true)
-      @frame.should_receive(:save!).and_raise(ArgumentError)
-      @frame.should_receive(:update_attributes!).and_return(false)
+      @frame.should_receive(:update_attributes!).and_raise(ArgumentError)
       put :update, :id => @frame.id, :format => :json
       assigns(:status).should eq(500)
     end
