@@ -35,8 +35,8 @@ class DashboardEntry
   belongs_to :actor
   key :actor_id, ObjectId, :abbr => :f
   
-  attr_accessible
-
+  attr_accessible :read
+  
   def created_at() self.id.generation_time; end
 
 end

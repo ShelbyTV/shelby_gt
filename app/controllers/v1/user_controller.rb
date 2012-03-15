@@ -13,7 +13,7 @@ class V1::UserController < ApplicationController
   # @param [Optional, Boolean] rolls_following Include the referenced rolls the user is following
   def show
     if @user = User.find(params[:id])
-      @include_auths = (current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
+      @include_auths = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
       @status = 200
     elsif user_signed_in?
       @user = current_user

@@ -41,19 +41,20 @@ describe V1::FrameController do
     end
   end
   
-  describe "PUT update" do
+  describe "POST upvote" do
     it "updates a frame successfuly" do
-      @frame = mock_model(Frame, :update_attributes => true)
-      @frame.should_receive(:update_attributes!).and_return(@frame)
-      put :update, :id => @frame.id, :format => :json
+      @frame = Factory.create(:frame)
+      @frame.should_receive(:upvote).and_return(@frame)
+      @frame.should_receive(:reload).and_return(@frame)
+      post :upvote, :id => @frame.id, :format => :json
       assigns(:frame).should eq(@frame)
       assigns(:status).should eq(200)
     end
     
     it "updates a frame UNsuccessfuly gracefully" do
-      @frame = mock_model(Frame, :update_attributes => true)
-      @frame.should_receive(:update_attributes!).and_raise(ArgumentError)
-      put :update, :id => @frame.id, :format => :json
+      frame = Factory.create(:frame)
+      Frame.stub(:find) { nil }
+      post :upvote, :id => frame.id, :format => :json
       assigns(:status).should eq(500)
     end
   end
@@ -71,11 +72,11 @@ describe V1::FrameController do
     end
     
     it "re_roll and returns one frame to @frame" do      
-      @f1.should_receive(:re_roll).and_return(@f2)
+      @f1.should_receive(:re_roll).and_return({:frame => @f2})
       
       post :create, :id => @r2.id, :frame_id => @f1.id, :format => :json
-      assigns(:frame).should eq(@f2)
       assigns(:status).should eq(200)
+      assigns(:frame).should eq(@f2)
     end
     
     it "returns 500 if it can't re_roll" do

@@ -54,8 +54,7 @@ describe V1::DashboardEntriesController do
     
     it "should return error if could not find any user" do
       get :index, :format => :json
-      assigns(:status).should eq(500)
-      assigns(:message).should eq("no user info found")
+      response.status.should eq(401)
     end
     
   end

@@ -8,7 +8,8 @@ class V1::VideoController < ApplicationController
   # @param [Required, String] id The id of the video
   # @todo return error if id not present w/ params.has_key?(:id)
   def show
-    if @video = Video.find(params[:id])
+    @video = Video.find(params[:id])
+    if @video
       @status =  200
     else
       @status, @message = 500, "could not find video"

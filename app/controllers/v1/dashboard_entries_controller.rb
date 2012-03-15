@@ -1,6 +1,6 @@
 class V1::DashboardEntriesController < ApplicationController  
 
-  before_filter :authenticate_user!, :except => [:index]
+  before_filter :authenticate_user!
   
   ##
   # Returns dashboad entries, with the given parameters.
@@ -52,10 +52,10 @@ class V1::DashboardEntriesController < ApplicationController
   # @param [Required, String] id The id of the dashboard entry
   def update
     id = params.delete(:id)
-    @dashboard_entry = DashboardEntry.find(id)
-    if @dashboard_entry
+    if @dashboard_entry = DashboardEntry.find(id)
       begin 
         @status = 200 if @dashboard_entry.update_attributes!(params)
+        Rails.logger.info(@dashboard_entry.inspect)
       rescue => e
         @status, @message = 500, "could not update dashboard_entry: #{e}"
         render 'v1/blank'

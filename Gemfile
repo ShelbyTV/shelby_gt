@@ -109,7 +109,6 @@ gem 'capistrano'
 #
 group :test, :development do
 	gem 'rspec-rails'
-	
 end
 
 group :test do
@@ -120,6 +119,9 @@ group :test do
 	# and then change the config in spec/spec_helper.rb
 	
 	gem 'factory_girl_rails'
+	
+	# for rspec requests testing (json responses)
+	gem 'json_spec' 
 	
 	# if we have to fuck with time, this looks nice:
 	# gem 'timecop'

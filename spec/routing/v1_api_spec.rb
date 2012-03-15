@@ -54,10 +54,10 @@ describe V1::FrameController do
       )
     end 
 
-    it "routes for PUT" do
-      { :put => "/v1/frame/1" }.should route_to(
+    it "routes for POST" do
+      { :post => "/v1/frame/1/upvote" }.should route_to(
         :controller => "v1/frame",
-        :action => "update",
+        :action => "upvote",
         :format => "json",
         :id => "1"
       )

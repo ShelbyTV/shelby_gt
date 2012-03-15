@@ -22,7 +22,7 @@ ShelbyGt::Application.routes.draw do
   namespace :v1, :defaults => { :format => 'json' } do
     resources :user, :only => [:show, :update] 
     resources :roll, :only => [:show, :create, :update, :destroy]
-    resources :frame, :only => [:show, :update, :destroy]
+    resources :frame, :only => [:show, :destroy]
     resources :video, :only => [:show]
     resources :dashboard_entries, :path => "dashboard", :only => [:index, :update]
     resources :conversation, :only => [:show] do 
@@ -30,6 +30,7 @@ ShelbyGt::Application.routes.draw do
     end
     
     match 'user/' => 'user#show', :via => :get
+    match 'frame/:id/upvote' => 'frame#upvote', :via => :post
     match 'roll/:id/frames' => 'frame#index', :via => :get
     match 'roll/:id/frames' => 'frame#create', :via => :post	
     

@@ -16,7 +16,7 @@ describe DashboardEntry do
     it "should abbreviate user_id as :a" do
       DashboardEntry.keys["user_id"].abbr.should == :a
     end
-  
+      
   end
   
 end

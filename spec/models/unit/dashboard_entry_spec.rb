@@ -9,5 +9,5 @@ describe DashboardEntry do
   it "should use the database dashboard-entry" do
     @dashboard_entry.database.name.should =~ /.*dashboard-entry/
   end
-  
+    
 end

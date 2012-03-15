@@ -57,6 +57,7 @@ class V1::FrameController < ApplicationController
     else
       begin
         @frame = frame_to_re_roll.re_roll(user, roll)
+        @frame = @frame[:frame]
         @status = 200
       rescue => e
         @status, @message = 500, "could not re_roll: #{e}"
@@ -66,23 +67,16 @@ class V1::FrameController < ApplicationController
   end
   
   ##
-  # Updates and returns one frame, with the given parameters.
+  # Upvotes a frame and returns the frame back w new score
   #   REQUIRES AUTHENTICATION
   #
-  # [PUT] /v1/frame/:id
+  # [POST] /v1/frame/:id/upvote
   # 
   # @param [Required, String] id The id of the frame
-  # @param [Required, String] attr The attribute(s) to update
-  def update
-    id = params.delete(:id)
-    if @frame = Frame.find(id)
-      begin 
-        @status = 200 if @frame.update_attributes!(params)
-      rescue => e
-        @frame = nil
-        @status, @message = 500, "could not update frame: #{e}"
-        render 'v1/blank'
-      end
+  def upvote
+    if @frame = Frame.find(params[:id])
+      @status = 200 if @frame.upvote(current_user)
+      @frame.reload
     else
       @status, @message = 500, "could not find frame"
       render 'v1/blank'     
