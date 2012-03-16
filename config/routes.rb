@@ -19,7 +19,7 @@ ShelbyGt::Application.routes.draw do
   ########################
   # Namespace allows for versioning of API
   # NOTE: Must use V1::ControllerName in controllers
-  namespace :v1, :defaults => { :format => 'json' } do
+  namespace :v1, :defaults => { :format => 'json', :constraints => {:method => 'OPTIONS'} } do
     resources :user, :only => [:show, :update] 
     resources :roll, :only => [:show, :create, :update, :destroy]
     resources :frame, :only => [:show, :destroy]

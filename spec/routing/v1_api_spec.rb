@@ -8,6 +8,7 @@ describe V1::UserController do
         :action => "show",
         :format => "json",
         :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
 
@@ -16,7 +17,8 @@ describe V1::UserController do
         :controller => "v1/user",
         :action => "update",
         :format => "json",
-        :id => "1"
+        :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
   end
@@ -28,7 +30,8 @@ describe V1::DashboardEntriesController do
       { :get => "/v1/dashboard" }.should route_to(
         :controller => "v1/dashboard_entries",
         :format => "json",
-        :action => "index"
+        :action => "index",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
 
@@ -37,7 +40,8 @@ describe V1::DashboardEntriesController do
         :controller => "v1/dashboard_entries",
         :action => "update",
         :format => "json",
-        :id => "1"
+        :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
   end
@@ -50,7 +54,8 @@ describe V1::FrameController do
         :controller => "v1/frame",
         :action => "show",
         :format => "json",
-        :id => "1"
+        :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
 
@@ -59,7 +64,8 @@ describe V1::FrameController do
         :controller => "v1/frame",
         :action => "upvote",
         :format => "json",
-        :id => "1"
+        :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
     
@@ -68,7 +74,8 @@ describe V1::FrameController do
         :controller => "v1/frame",
         :action => "destroy",
         :format => "json",
-        :id => "1"
+        :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
     
@@ -77,7 +84,8 @@ describe V1::FrameController do
         :controller => "v1/frame",
         :action => "create",
         :format => "json",
-        :id => "1"
+        :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end
   end
@@ -90,7 +98,8 @@ describe V1::RollController do
         :controller => "v1/roll",
         :action => "show",
         :format => "json",
-        :id => "1"
+        :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
 
@@ -99,7 +108,8 @@ describe V1::RollController do
         :controller => "v1/roll",
         :action => "update",
         :format => "json",
-        :id => "1"
+        :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
     
@@ -108,7 +118,8 @@ describe V1::RollController do
         :controller => "v1/roll",
         :action => "destroy",
         :format => "json",
-        :id => "1"
+        :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
   end
@@ -121,7 +132,8 @@ describe V1::VideoController do
         :controller => "v1/video",
         :action => "show",
         :format => "json",
-        :id => "1"
+        :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
   end
@@ -134,7 +146,8 @@ describe V1::ConversationController do
         :controller => "v1/conversation",
         :action => "show",
         :format => "json",
-        :id => "1"
+        :id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
 
@@ -143,7 +156,8 @@ describe V1::ConversationController do
         :controller => "v1/messages",
         :action => "create",
         :format => "json",
-        :conversation_id => "1"
+        :conversation_id => "1",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
     
@@ -153,7 +167,8 @@ describe V1::ConversationController do
         :action => "destroy",
         :format => "json",
         :conversation_id => "1",
-        :id => "4"
+        :id => "4",
+        :constraints => {"method" => 'OPTIONS'}
       )
     end 
   end
