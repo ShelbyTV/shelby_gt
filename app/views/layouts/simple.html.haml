@@ -6,8 +6,6 @@
 		%title= Settings::Global.title || yield(:title)
 		= csrf_meta_tag
 		
-		%link{ :rel => "shortcut icon", :href => "/favicon.png" }
-		
 	%body.bp.simple
 		= yield
 		= render :partial => 'shared/simple_javascript'
