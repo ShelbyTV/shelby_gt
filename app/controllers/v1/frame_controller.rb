@@ -12,6 +12,7 @@ class V1::FrameController < ApplicationController
     @roll = Roll.find(params[:id])
     if @roll
       @include_frame_children = (params[:include_children] == "true") ? true : false
+      @frames = @roll.frames.sort(:score.desc)
       @status =  200
     else
       @status, @message = 500, "could not find that roll"

@@ -8,7 +8,7 @@ describe V1::FrameController do
     @frame = stub_model(Frame)
     Roll.stub(:find) { @roll }
     Frame.stub(:find) { @frame }
-    @roll.stub(:frames) { [@frame] }
+    @roll.stub_chain(:frames, :sort) { [@frame] }
   end  
 
   describe "GET index" do
