@@ -94,7 +94,10 @@ end
 #
 # ---------- Memcached 
 #
-gem 'memcached', '~>1.4.1'
+group :arnold, :development, :production do
+  #don't want this in tests since it's not required and it's slow as shit
+  gem 'memcached', '~>1.4.1'
+end
 
 #gem 'jquery-rails'
 

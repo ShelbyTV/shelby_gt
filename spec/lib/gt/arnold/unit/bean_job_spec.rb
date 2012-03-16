@@ -58,6 +58,47 @@ describe GT::Arnold::BeanJob do
       parsed[:provider_user_id].should == 'pro_id_1'
     end
     
+    it "should pull multiple :expanded_urls from twitter status if provided" do
+      @body_hash['twitter_status_update'] = {
+        'text' => "boo",
+        'entities' => {
+          'urls' => [
+            {'display' => 'x', 'expanded_url' => 'url1'},
+            {'display' => 'y', 'expanded_url' => 'url2'},
+            {'display' => 'z', 'expanded_url' => 'url3'}]
+        }}
+        
+        parsed = GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => URI.escape(@body_hash.to_json), :jobid => :id))
+        parsed[:expanded_urls].class.should == Array
+        parsed[:expanded_urls].size.should == 3
+        parsed[:expanded_urls].should include('url1')
+        parsed[:expanded_urls].should include('url2')
+        parsed[:expanded_urls].should include('url3')
+    end
+    
+    it "should not choke if entities includes no urls" do
+      @body_hash['twitter_status_update'] = {
+        'text' => "boo",
+        'entities' => {}}
+        
+        parsed = GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => URI.escape(@body_hash.to_json), :jobid => :id))
+        parsed[:expanded_urls].should == nil
+    end
+    
+    it "should not create :expanded_urls if it would be empty" do
+      @body_hash['twitter_status_update'] = {
+        'text' => "boo",
+        'entities' => {
+          'urls' => [
+            {'display' => 'x'},
+            {'display' => 'y'},
+            {'display' => 'z'}]
+        }}
+        
+        parsed = GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => URI.escape(@body_hash.to_json), :jobid => :id))
+        parsed[:expanded_urls].should == nil
+    end
+    
     it "should pull twitter_status_update from json" do
       @body_hash['twitter_status_update'] = :whatever
       parsed = GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => URI.escape(@body_hash.to_json), :jobid => :id))

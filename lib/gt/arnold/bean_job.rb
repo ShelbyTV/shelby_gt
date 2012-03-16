@@ -47,17 +47,25 @@ module GT
         #Jobs are simple JSON, but beanstalk isn't always happy with all characters, so we URI encode them first
         job_json = JSON.parse(URI.unescape(job.body))
       
-        # parse out the things we expect from a job
-        job_details[:url] =  job_json['url']
+        # parse out the things we expect from a job        
         job_details[:provider_type] =  job_json['provider_type']
         job_details[:provider_user_id] =  job_json['provider_user_id']
+        
         job_details[:twitter_status_update] = job_json['twitter_status_update'] if job_json['twitter_status_update']
         job_details[:facebook_status_update] = job_json['facebook_status_update'] if job_json['facebook_status_update']
-        job_details[:tumblr_status_update] = job_json['tumblr_status_update'] if job_json['tumblr_status_update']
-            
+        job_details[:tumblr_status_update] = job_json['tumblr_status_update'] if job_json['tumblr_status_update']    
         job_details[:has_status] = true if job_details[:twitter_status_update] or job_details[:facebook_status_update] or job_details[:tumblr_status_update]
+        
+        # The traditional, expected url as parsed by Predator
+        job_details[:url] =  job_json['url']
+        # Twitter provided expanded URLs (that we don't need to resolve)
+        if job_details[:twitter_status_update] and job_details[:twitter_status_update]["entities"] and job_details[:twitter_status_update]["entities"]["urls"]
+          expanded_urls = (job_details[:twitter_status_update]["entities"]["urls"].map { |u| u["expanded_url"] }).compact
+          job_details[:expanded_urls] = expanded_urls unless expanded_urls.blank?
+        end
       
-        unless job_details[:url] and job_details[:provider_type] and job_details[:provider_user_id] and job_details[:has_status]
+        # Make sure the job looks good
+        unless (job_details[:url] or job_details[:expanded_urls]) and job_details[:provider_type] and job_details[:provider_user_id] and job_details[:has_status]
           Rails.logger.error("[Arnold::BeanJob#parse_job(job:#{job.jobid})] BAD JOB: could not process: #{job}")
           return false
         end

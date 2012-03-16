@@ -36,44 +36,138 @@ describe GT::UrlHelper do
       GT::UrlHelper.parse_url_for_provider_info("").should == nil
     end
     
-    it "should correctly parse long youtube urls" do
-      GT::UrlHelper.parse_url_for_provider_info("https://www.youtube-nocookie.com/embed/Hl-zzrqQoSE").should == 
-        {:provider_name => "youtube", :provider_id => "Hl-zzrqQoSE"}
-      GT::UrlHelper.parse_url_for_provider_info("https://www.youtube.com/embed/Hl-zzrqQoSE").should == 
-        {:provider_name => "youtube", :provider_id => "Hl-zzrqQoSE"}
-      GT::UrlHelper.parse_url_for_provider_info("https://www.youtube.com/v/Hl-zzrqQoSE").should == 
-        {:provider_name => "youtube", :provider_id => "Hl-zzrqQoSE"}
-      GT::UrlHelper.parse_url_for_provider_info("http://www.youtube-nocookie.com/v/Hl-zzrqQoSE?version=3&amp;hl=en_US&amp;rel=0").should == 
-        {:provider_name => "youtube", :provider_id => "Hl-zzrqQoSE"}
-      GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/v/Hl-zzrqQoSE?version=3&amp;hl=en_US&amp;rel=0").should == 
-        {:provider_name => "youtube", :provider_id => "Hl-zzrqQoSE"}
-      GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/v/p4d-SNTGxLw").should == 
-        {:provider_name => "youtube", :provider_id => "p4d-SNTGxLw"}
-      GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/v/1fouvwilGWc&fs=0&source=uds").should == 
-        {:provider_name => "youtube", :provider_id => "1fouvwilGWc"}
-      GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/watch?v=8lq94xEMMEc&feature=g-vrec&context=G29d54d5RVAAAAAAAAAQ").should == 
-        {:provider_name => "youtube", :provider_id => "8lq94xEMMEc"}
-      GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/watch?v=EK9ccsb8yPg&feature=featured").should == 
-        {:provider_name => "youtube", :provider_id => "EK9ccsb8yPg"}
-      GT::UrlHelper.parse_url_for_provider_info("http://m.youtube.com/watch?gl=US&hl=en&client=mv-google&v=DBjrMNER9gQ").should == 
-        {:provider_name => "youtube", :provider_id => "DBjrMNER9gQ"}
-      GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/e/nTFEUsudhfs").should == 
-        {:provider_name => "youtube", :provider_id => "nTFEUsudhfs"}
-      GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/v/L7jduDKGWUc?version=3").should == 
-        {:provider_name => "youtube", :provider_id => "L7jduDKGWUc"}
-      GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/watch?v=6dncx6O5J4U&feature=youtu.be").should == 
-        {:provider_name => "youtube", :provider_id => "6dncx6O5J4U"}
-    end  
-    
-    it "should correctly parse youtube shortlink urls" do
-      GT::UrlHelper.parse_url_for_provider_info("http://youtu.be/L7jduDKGWUc?version=3").should == 
-        {:provider_name => "youtube", :provider_id => "L7jduDKGWUc"}
-      GT::UrlHelper.parse_url_for_provider_info("http://youtu.be/L7jduDKGWUc").should == 
-        {:provider_name => "youtube", :provider_id => "L7jduDKGWUc"}
-    end
-
     it "should return nil for urls it can't handle" do
+      GT::UrlHelper.parse_url_for_provider_info("http://danspinosa.com/v/Hl-zzrqQoSE").should == nil
       GT::UrlHelper.parse_url_for_provider_info("https://danspinosa.com/v/Hl-zzrqQoSE").should == nil
+    end
+    
+    context "youtube" do
+      it "should parse long youtube urls" do
+        GT::UrlHelper.parse_url_for_provider_info("https://www.youtube-nocookie.com/embed/Hl-zzrqQoSE").should == 
+          {:provider_name => "youtube", :provider_id => "Hl-zzrqQoSE"}
+        GT::UrlHelper.parse_url_for_provider_info("https://www.youtube.com/embed/Hl-zzrqQoSE").should == 
+          {:provider_name => "youtube", :provider_id => "Hl-zzrqQoSE"}
+        GT::UrlHelper.parse_url_for_provider_info("https://www.youtube.com/v/Hl-zzrqQoSE").should == 
+          {:provider_name => "youtube", :provider_id => "Hl-zzrqQoSE"}
+        GT::UrlHelper.parse_url_for_provider_info("http://www.youtube-nocookie.com/v/Hl-zzrqQoSE?version=3&amp;hl=en_US&amp;rel=0").should == 
+          {:provider_name => "youtube", :provider_id => "Hl-zzrqQoSE"}
+        GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/v/Hl-zzrqQoSE?version=3&amp;hl=en_US&amp;rel=0").should == 
+          {:provider_name => "youtube", :provider_id => "Hl-zzrqQoSE"}
+        GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/v/p4d-SNTGxLw").should == 
+          {:provider_name => "youtube", :provider_id => "p4d-SNTGxLw"}
+        GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/v/1fouvwilGWc&fs=0&source=uds").should == 
+          {:provider_name => "youtube", :provider_id => "1fouvwilGWc"}
+        GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/watch?v=8lq94xEMMEc&feature=g-vrec&context=G29d54d5RVAAAAAAAAAQ").should == 
+          {:provider_name => "youtube", :provider_id => "8lq94xEMMEc"}
+        GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/watch?v=EK9ccsb8yPg&feature=featured").should == 
+          {:provider_name => "youtube", :provider_id => "EK9ccsb8yPg"}
+        GT::UrlHelper.parse_url_for_provider_info("http://m.youtube.com/watch?gl=US&hl=en&client=mv-google&v=DBjrMNER9gQ").should == 
+          {:provider_name => "youtube", :provider_id => "DBjrMNER9gQ"}
+        GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/e/nTFEUsudhfs").should == 
+          {:provider_name => "youtube", :provider_id => "nTFEUsudhfs"}
+        GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/v/L7jduDKGWUc?version=3").should == 
+          {:provider_name => "youtube", :provider_id => "L7jduDKGWUc"}
+        GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/watch?v=6dncx6O5J4U&feature=youtu.be").should == 
+          {:provider_name => "youtube", :provider_id => "6dncx6O5J4U"}
+      end  
+    
+      it "should parse youtube shortlink urls" do
+        GT::UrlHelper.parse_url_for_provider_info("http://youtu.be/L7jduDKGWUc?version=3").should == 
+          {:provider_name => "youtube", :provider_id => "L7jduDKGWUc"}
+        GT::UrlHelper.parse_url_for_provider_info("http://youtu.be/L7jduDKGWUc").should == 
+          {:provider_name => "youtube", :provider_id => "L7jduDKGWUc"}
+      end
+    
+      it "should parse youtube embed html" do
+        GT::UrlHelper.parse_url_for_provider_info('<embed src="http://www.youtube.com/e/nTFEUsudhfs" type="application/x-shockwave-flash" ... >').should == 
+          {:provider_name => "youtube", :provider_id => "nTFEUsudhfs"}
+        GT::UrlHelper.parse_url_for_provider_info('...embed src=\"http://www.youtube.com/v/L7jduDKGWUc?version=3\" type=\"applic...').should == 
+          {:provider_name => "youtube", :provider_id => "L7jduDKGWUc"}
+      end
+    end
+    
+    context "vimeo" do
+      it "should parse long vimeo urls" do
+        GT::UrlHelper.parse_url_for_provider_info("http://vimeo.com/19819283").should == 
+          {:provider_name => "vimeo", :provider_id => "19819283"}
+        GT::UrlHelper.parse_url_for_provider_info("http://vimeo.com/hd#19819283").should == 
+          {:provider_name => "vimeo", :provider_id => "19819283"}
+        GT::UrlHelper.parse_url_for_provider_info("http://vimeo.com/groups/aftereffects/videos/19878538").should == 
+          {:provider_name => "vimeo", :provider_id => "19878538"}
+      end
+      
+      it "should parse vimeo iframe embeds" do
+        GT::UrlHelper.parse_url_for_provider_info('<iframe src="http://player.vimeo.com/video/19799531" width="1280" height="720" frameborder="0"></iframe>').should == 
+          {:provider_name => "vimeo", :provider_id => "19799531"}
+      end
+    end
+    
+    context "dailymotion" do
+      it "should parse from url" do
+        GT::UrlHelper.parse_url_for_provider_info('http://www.dailymotion.com/video/xped0i_what-s-up-with-gaga-tell-all-book-biopic-coming_music').should == 
+          {:provider_name => "dailymotion", :provider_id => "xped0i"}
+      end
+      
+      it "should parse from embeds" do
+        GT::UrlHelper.parse_url_for_provider_info('<iframe src=\"http://www.dailymotion.com/embed/video/xh31mt?autoPlay=0\" width=\"480\" height=\"224\" frameborder=\"0\"></iframe>').should == 
+          {:provider_name => "dailymotion", :provider_id => "xh31mt"}
+      end
+    end
+    
+    context "blip.tv" do      
+      it "should parse from embed" do
+        GT::UrlHelper.parse_url_for_provider_info('<iframe src="http://blip.tv/play/AYLu4BYC.html?p=1" width="550" height="443" frameborder="0" allowfullscreen></iframe><embed type="application/x-shockwave-flash" src="http://a.blip.tv/api.swf#AYLu4BYC" style="display:none"></embed>').should == 
+          {:provider_name => "bliptv", :provider_id => "AYLu4BYC"}
+      end
+    end
+    
+    context "techcrunch" do
+      it "should parse from url" do
+        GT::UrlHelper.parse_url_for_provider_info('http://techcrunch.tv/new-and-featured/watch?id=Uwanl4MTohKEfg0NayBoDIQyaybdeRXd').should == 
+          {:provider_name => "techcrunch", :provider_id => "Uwanl4MTohKEfg0NayBoDIQyaybdeRXd"}
+        GT::UrlHelper.parse_url_for_provider_info('http://techcrunch.tv/watch?id=Uwanl4MTohKEfg0NayBoDIQyaybdeRXd').should == 
+          {:provider_name => "techcrunch", :provider_id => "Uwanl4MTohKEfg0NayBoDIQyaybdeRXd"}
+        GT::UrlHelper.parse_url_for_provider_info('http://techcrunch.com/2012/03/15/tctv-in-mobile-travel/#ooid=JjMGNqMzoi3EYOwAtV8uhVfEjmCuCV7j').should == 
+          {:provider_name => "techcrunch", :provider_id => "JjMGNqMzoi3EYOwAtV8uhVfEjmCuCV7j"}
+      end
+    end
+    
+    context "college humor" do
+      it "should parse from url" do
+        GT::UrlHelper.parse_url_for_provider_info('http://www.collegehumor.com/video/6741583/very-mary-kate-dishwasher').should == 
+          {:provider_name => "collegehumor", :provider_id => "6741583"}
+      end
+      
+      it "should parse from embed" do
+        GT::UrlHelper.parse_url_for_provider_info('<iframe src="http://www.collegehumor.com/e/6741583" width="600" height="338" frameborder="0" webkitAllowFullScreen allowFullScreen></iframe>').should == 
+          {:provider_name => "collegehumor", :provider_id => "6741583"}
+        GT::UrlHelper.parse_url_for_provider_info('<object type="application/x-shockwave-flash" data="http://www.collegehumor.com/moogaloop/moogaloop.swf?clip_id=2925369&fullscreen=1&use_node_id=true" width=...').should == 
+          {:provider_name => "collegehumor", :provider_id => "2925369"}
+      end
+    end
+    
+    context "hulu" do
+      it "should parse from url" do
+        GT::UrlHelper.parse_url_for_provider_info('http://www.hulu.com/watch/339016/modern-family-send-out-the-clowns').should == 
+          {:provider_name => "hulu", :provider_id => "339016"}
+      end
+      
+      it "should parse from thumbnail url" do
+        GT::UrlHelper.parse_url_for_provider_info('http://thumbnails.hulu.com/619/40021619/40021619_145x80_generated.jpg').should == 
+          {:provider_name => "hulu", :provider_id => "40021619"}
+      end
+    end
+    
+    context "ooyala" do
+      it "should parse from embed" do
+        # from Bloomberg
+        GT::UrlHelper.parse_url_for_provider_info('<script src="http://player.ooyala.com/player.js?width=640&deepLinkEmbedCode=JiZjMxNDo_k2WncC2C_Jt_n22nA1S1RT&height=360&embedCode=JiZjMxNDo_k2WncC2C_Jt_n22nA1S1RT"></script>').should == 
+          {:provider_name => "ooyala", :provider_id => "JiZjMxNDo_k2WncC2C_Jt_n22nA1S1RT"}
+        
+        #from TechCrunch
+        GT::UrlHelper.parse_url_for_provider_info('<script src="http://player.ooyala.com/player.js?width=640&deepLinkEmbedCode=JjMGNqMzoi3EYOwAtV8uhVfEjmCuCV7j&embedCode=JjMGNqMzoi3EYOwAtV8uhVfEjmCuCV7j&height=360"></script>').should == 
+          {:provider_name => "ooyala", :provider_id => "JjMGNqMzoi3EYOwAtV8uhVfEjmCuCV7j"}
+      end
     end
     
   end

@@ -19,10 +19,34 @@ module GT
     def self.parse_url_for_provider_info(url)
       return nil unless url
       
-      yt = self.parse_url_for_youtube_provider_info(url)
+      yt = parse_url_for_youtube_provider_info(url)
       return yt if yt
       
-      #TODO: import everything else from broadcast.rb
+      vim = parse_url_for_vimeo_provider_info(url)
+      return vim if vim
+      
+      dm = parse_url_for_dailymotion_provider_info(url)
+      return dm if dm
+      
+      # CollegeHumor
+      ch = parse_url_for_collegehumor_provider_info(url)
+      return ch if ch
+      
+      # Ooyala (TechCrunch, Bloomberg embeds)
+      ooyala = parse_url_for_ooyala_embed(url)
+      return ooyala if ooyala
+      
+      # Hulu
+      hu = parse_url_for_hulu_provider_info(url)
+      return hu if hu
+      
+      # TechCrunch
+      tc = parse_url_for_techcrunch_provider_info(url)
+      return tc if tc
+    
+      # Blip
+      bp = parse_url_for_blip_provider_info(url)
+      return bp if bp
       
       return nil
     end
@@ -130,6 +154,7 @@ module GT
       
       ##############################################
       #------ parsing URLs for unique video --------
+      # This could probably be moved into its own file, but I can't think of a good name for it right now...
       ##############################################
       
       # YouTube
@@ -148,7 +173,66 @@ module GT
           return {:provider_name => "youtube", :provider_id => match_data[1]}
         end
       end
+      
+      # Vimeo
+      def self.parse_url_for_vimeo_provider_info(url)
+        match_data = url.match( /vimeo.+(\/|hd#|videos\/)(\d+)(\z|\D)/i )
+        if match_data and match_data.size == 4
+          return {:provider_name => "vimeo", :provider_id => match_data[2]}
+        end
+      end
+      
+      # DailyMotion
+      def self.parse_url_for_dailymotion_provider_info(url)
+        match_data = url.match( /dailymotion.+(video\/)([\w-]{6,9})[_?]+/i )
+        if match_data and match_data.size == 3
+          return {:provider_name => "dailymotion", :provider_id => match_data[2]}
+        end
+      end
+      
+      # CollegeHumor
+      def self.parse_url_for_collegehumor_provider_info(url)
+        match_data = url.match( /collegehumor.+(clip_id=|video\/|e\/)([\d]*)/i )
+        if match_data and match_data.size == 3
+          return {:provider_name => "collegehumor", :provider_id => match_data[2]}
+        end
+      end
+      
+      # Hulu
+      def self.parse_url_for_hulu_provider_info(url)
+        match_data = url.match( /hulu.+\/(\d{6,})\//i )
+        if match_data and match_data.size == 2
+          return {:provider_name => "hulu", :provider_id => match_data[1]}
+        end
+      end
+      
+      # TechCrunch
+      def self.parse_url_for_techcrunch_provider_info(url)
+        #regular URLs
+        match_data = url.match( /techcrunch.+id=([\w-]*)(&+.*\z|\z)/i )
+        if match_data and match_data.size == 3
+          return {:provider_name => "techcrunch", :provider_id => match_data[1]}
+        end
+        
+        # N.B. TechCrunch embeds are detected by ooyala
+      end
+        
+      # Detechs TechCrunch and Bloomberg
+      def self.parse_url_for_ooyala_embed(url)
+        # ooyala player embed
+        match_data = url.match( /player.ooyala.com.+embedCode=([\w-]*)(&+.*\z|\z)/i )
+        if match_data and match_data.size == 3
+          return {:provider_name => "ooyala", :provider_id => match_data[1]}
+        end
+      end
     
+      # Blip
+      def self.parse_url_for_blip_provider_info(url)
+        match_data = url.match( /blip.tv.+(play\/)([\w-]*)/i )
+        if match_data and match_data.size == 3
+          return {:provider_name => "bliptv", :provider_id => match_data[2]}
+        end
+      end
     
   end
 end

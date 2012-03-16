@@ -44,6 +44,26 @@ describe GT::UserManager do
       }.should_not change { User.count }
     end
     
+    it "should add a public roll to existing user if they're missing it" do
+      nick, provider, uid = "whatever--", "fb--", "123uid--"
+      u = User.new(:nickname => nick, :faux => false)
+      auth = Authentication.new
+      auth.provider = provider
+      auth.uid = uid
+      u.authentications << auth
+      u.save
+      
+      u.persisted?.should == true
+      u.public_roll.should == nil
+      
+      lambda {
+        usr = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
+        usr.should == u
+        usr.public_roll.class.should == Roll
+        usr.public_roll.persisted?.should == true
+      }.should_not change { User.count }
+    end
+    
     it "should create a (persisted) faux User" do
       nick, provider, uid = "whatever3", "fb", "123uid3"
       lambda {
