@@ -6,7 +6,7 @@ class V1::UserController < ApplicationController
   # Returns one user, with the given parameters.
   #   REQUIRES AUTHENTICATION
   #
-  # [GET] /v1/users/:id
+  # [GET] /v1/user/:id
   # 
   # @param [Optional, String] id The id of the user, if not present, user is current_user
   # @param [Optional, Boolean] include_auths Include the embedded authorizations
@@ -17,20 +17,20 @@ class V1::UserController < ApplicationController
       @status = 200
     elsif user_signed_in?
       @user = current_user
-      @include_auths = (current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
+      @include_auths = (params[:include_auths] == "true" ) ? true : false
+      @rolls_following = params[:rolls_following] == "true" ? @user.roll_followings : nil
       @status = 200
     else
       @status, @message = 500, "could not find user"
       render 'v1/blank'
     end
-    @rolls_following = params[:rolls_following] == "true" ? @user.roll_followings : nil
   end
   
   ####################################
   # Updates and returns one user, with the given parameters.
   #   REQUIRES AUTHENTICATION
   #
-  # [PUT] /v1/users/:id
+  # [PUT] /v1/user/:id
   # 
   # @param [Required, String] id The id of the user  
   # @param [Required, String] attr The attribute(s) to update
