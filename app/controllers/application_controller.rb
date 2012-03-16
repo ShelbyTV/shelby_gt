@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
 
     def allow_faux_authentication!
       if params[:key] == "1234567890"
-        user = User.find_by_nickname('sztul')
+        user = User.find_by_nickname('henrysztul')
         sign_in(:user, user)
       end
     end
