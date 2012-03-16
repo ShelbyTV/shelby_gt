@@ -14,7 +14,7 @@ class V1::DashboardEntriesController < ApplicationController
   def index
     # default params
     limit = params[:limit] ? params[:limit] : 20
-    #TODO: max number of entries returned
+    #TODO: limit max number of entries returned
     skip = params[:skip] ? params[:skip] : 0
 
     # get user
@@ -30,7 +30,6 @@ class V1::DashboardEntriesController < ApplicationController
     if user
       @entries = DashboardEntry.limit(limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
       @include_children = params[:include_children] != "false" ? true : false
-      
       # return status
       if !@entries.empty?
         @status = 200

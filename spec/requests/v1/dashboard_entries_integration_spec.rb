@@ -3,21 +3,18 @@ require 'spec_helper'
 describe 'v1/dashboard' do
   context 'logged in' do
     before(:each) do
+      MongoMapper::Helper.drop_all_dbs
       @u1 = Factory.create(:user, :authentications => [{:provider => "twitter", :uid => 1234}])
+
       set_omniauth()
-      get '/auth/twitter/callback'
+      get '/auth/twitter/callback'      
     end
-    
-    after(:each) do
-      @u1.destroy
-    end
-    
+
     describe "GET" do
       it "should return dashboard entry on success" do
         @r = Factory.create(:roll, :creator_id => @u1.id)
         @d = Factory.build(:dashboard_entry)
-        @d.user = @u1
-        @d.roll = @r
+        @d.user = @u1; @d.roll = @r
         @d.save
         
         get '/v1/dashboard'
