@@ -12,15 +12,15 @@ describe 'v1/dashboard' do
 
     describe "GET" do
       it "should return dashboard entry on success" do
-        @r = Factory.create(:roll, :creator_id => @u1.id)
+        @f = Factory.create(:frame, :creator_id => @u1.id)
         @d = Factory.build(:dashboard_entry)
-        @d.user = @u1; @d.roll = @r
+        @d.user = @u1; @d.frame = @f
         @d.save
         
         get '/v1/dashboard'
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result")
-        parse_json(response.body)["result"][0]["roll"]["id"].should eq(@r.id.to_s)
+        parse_json(response.body)["result"][0]["frame"]["id"].should eq(@f.id.to_s)
       end
       
       it "should return 500 if no entries exist" do
