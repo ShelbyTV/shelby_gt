@@ -1,6 +1,6 @@
 class V1::UserController < ApplicationController  
   
-  before_filter :authenticate_user!, :except => [:show]
+  before_filter :authenticate_user!, :cors_preflight_check, :except => [:show]
   
   ####################################
   # Returns one user, with the given parameters.

@@ -1,6 +1,6 @@
 class V1::RollController < ApplicationController  
   
-  before_filter :authenticate_user!, :except => [:show]
+  before_filter :cors_preflight_check, :authenticate_user!, :except => [:show]
   
   ##
   # Returns one roll, with the given parameters.

@@ -1,6 +1,6 @@
 class V1::DashboardEntriesController < ApplicationController  
 
-  before_filter :authenticate_user!
+  before_filter :cors_preflight_check, :authenticate_user!
   
   ##
   # Returns dashboad entries, with the given parameters.

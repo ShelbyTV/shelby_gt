@@ -1,11 +1,24 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   
-  before_filter :set_access_control_headers, :allow_faux_authentication!
+  before_filter :allow_faux_authentication!
   after_filter :set_access_control_headers
   
   respond_to :json
 
+  def cors_preflight_check
+    headers['Access-Control-Allow-Origin'] = request.headers['HTTP_ORIGIN']
+    headers['Access-Control-Allow-Methods'] = '*'
+    headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-Prototype-Version, X-CSRF-Token'
+    headers['Access-Control-Allow-Credentials'] = 'true'
+    headers['Access-Control-Max-Age'] = '1000'
+    if !/\/auth\/(twitter|facebook|tumblr)\/callback/.match(request.env['REQUEST_URI']) and request.method == "GET"
+      unless user_signed_in?
+        render(:status => :unauthorized)
+      end
+    end
+  end
+  
   private    
     
     # === These headers are set to allow cross site access and cookies to be sent via ajax
@@ -21,11 +34,12 @@ class ApplicationController < ActionController::Base
       end
       headers['Access-Control-Request-Method'] = '*'
       headers['Access-Control-Allow-Credentials'] = 'true'
+      headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-Prototype-Version, X-CSRF-Token'
     end
-
+    
     def allow_faux_authentication!
       if params[:key] == "1234567890"
-        user = User.find_by_nickname('henrysztul')
+        user = User.find_by_nickname('onshelby')
         sign_in(:user, user)
       end
     end
