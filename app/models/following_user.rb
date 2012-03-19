@@ -10,7 +10,7 @@ class FollowingUser
   timestamps!
   
   # The user following a roll (or collaborative if this is a private roll)
-  belongs_to :user
+  belongs_to :user, :required => true
   key :user_id, ObjectId, :abbr => :a
   
   # People invited to private collaborative rolls
