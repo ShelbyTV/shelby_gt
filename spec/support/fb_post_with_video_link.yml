@@ -1,0 +1,35 @@
+facebook_status_update: 
+  id: "1850281655_372627419426123"
+  from: 
+    name: "Melih Ang"
+    id: "1850281655"
+  story: "Melih Ang shared a link."
+  picture: https://s-external.ak.fbcdn.net/safe_image.php?d=AQA33eqYwKCptOhK&w=130&h=130&url=http%3A%2F%2Fi2.ytimg.com%2Fvi%2FQYtwafDuO0I%2Fhqdefault.jpg
+  link: http://www.youtube.com/watch?v=QYtwafDuO0I&feature=share
+  source: http://www.youtube.com/v/QYtwafDuO0I?version=3&autohide=1&autoplay=1
+  name: DJ Emmo - Club Therapy (Matteo Monero Remix)
+  caption: www.youtube.com
+  description: "Bulgarian-born DJ and producer Emmo has a Ph.D. degree in Microbiology and did his postdoctoral training in Biochemistry, Molecular Biology, and Human Geneti..."
+  icon: https://s-static.ak.facebook.com/rsrc.php/v1/yj/r/v2OnaTyTQZE.gif
+  actions: 
+  - name: Comment
+    link: http://www.facebook.com/1850281655/posts/372627419426123
+  - name: Like
+    link: http://www.facebook.com/1850281655/posts/372627419426123
+  type: video
+  application: 
+    name: Share_bookmarklet
+    id: "5085647995"
+  created_time: "2012-03-19T19:18:02+0000"
+  updated_time: "2012-03-19T19:18:02+0000"
+  likes: 
+    data: 
+    - name: Sabri Baykara
+      id: "1208958255"
+    count: 1
+  comments: 
+    count: 0
+  is_published: true
+url: "http://www.youtube.com/v/QYtwafDuO0I?version=3&autohide=1&autoplay=1"
+provider_type: facebook
+provider_user_id: "674427171"
