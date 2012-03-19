@@ -15,7 +15,7 @@ class ApplicationController < ActionController::Base
     #TODO: When we go live only allow cs_key in staging env
     def preflight_check
       Rails.logger.info "PREFLIGHT CHECK! #{request.method} which is a #{request.method.class}"
-      if request.method == :options or request.method == :get
+      if request.method == "OPTIONS" or request.method == "GET"
         if params[:cs_key] == Settings::ShelbyAPI.cross_site_key
           headers['Access-Control-Allow-Origin'] = request.headers['HTTP_ORIGIN']
         else
