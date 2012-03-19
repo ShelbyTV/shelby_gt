@@ -11,4 +11,11 @@ describe User do
     @user.database.name.should =~ /.*user/
   end
   
+  it "should be able to hold 1000 roll followings" do
+    1000.times do
+      @user.roll_followings << Factory.create(:roll_following)
+    end
+    @user.save #should not raise an error
+  end
+  
 end
