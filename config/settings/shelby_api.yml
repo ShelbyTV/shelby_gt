@@ -1,0 +1,13 @@
+defaults: &defaults
+  allow_origin: "http://108.166.56.26"
+  cross_site_key: "GoatsFTW"
+  
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults
+  

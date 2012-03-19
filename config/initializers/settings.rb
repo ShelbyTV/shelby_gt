@@ -7,6 +7,12 @@
 #
 module Settings
 
+  class ShelbyAPI < Settingslogic
+    source "#{Rails.root}/config/settings/shelby_api.yml"
+    namespace Rails.env
+    load!
+  end
+
   class ExternalAccounts < Settingslogic
     source "#{Rails.root}/config/settings/external_accounts.yml"
     namespace Rails.env
