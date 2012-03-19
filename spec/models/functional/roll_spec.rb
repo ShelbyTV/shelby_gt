@@ -59,6 +59,13 @@ describe Roll do
       @user.following_roll?(@roll).should == true
       @user.unfollowed_roll?(@roll).should == false
     end
+    
+    it "should be able to hold 1000 following users" do
+      1000.times do
+        @roll.add_follower(Factory.create(:user))
+      end
+      @roll.save #should not raise an error
+    end
   
   end
 
