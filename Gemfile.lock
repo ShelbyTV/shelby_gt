@@ -54,8 +54,8 @@ GIT
 
 GIT
   remote: git://github.com/spinosa/mongomapper.git
-  revision: fb0a47aa64a5408935b1baa6722817aaf40efb29
-  branch: key_abbreviation
+  revision: f856b5d6c85b7cbd013d8b98c4c818f139aa1f23
+  branch: embed_doc_no_callbacks
   specs:
     mongo_mapper (0.11.0)
       activemodel (~> 3.0)

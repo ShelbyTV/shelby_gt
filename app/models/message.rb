@@ -36,6 +36,14 @@ class Message
 
   # TODO: do i need to open this up?
   attr_accessible
+  
+  # IMPORTANT NOTE
+  # The way Rails/MongoMapper implements callbacks (validations or otherwise) causes a very deep stack to be created
+  # when using EmbeddedDocuments (even if you don't define any callbacks).  This gets exascerbated in EventMachine b/c of it's stack.
+  # If we see SystemStackError due to "stack level too deep" when saving a Conversation, we may need to disable callbacks on this
+  # embedded document like we have for RollFollowing and FollowingUser.
+  # Uncomment the following line to disable callbacks:
+  # def self.__hack__no_callbacks() true; end
 
 
   ORIGIN_NETWORKS = {
