@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   
-  before_filter :allow_faux_authentication!
+  before_filter :preflight_check, :allow_faux_authentication!
   after_filter :set_access_control_headers
   
   respond_to :json
@@ -13,6 +13,20 @@ class ApplicationController < ActionController::Base
     #         https://developer.mozilla.org/En/Server-Side_Access_Control
     #
     #TODO: When we go live only allow cs_key in staging env
+    def preflight_check
+      if request.method == :options
+        if params[:cs_key] == Settings::ShelbyAPI.cross_site_key
+          headers['Access-Control-Allow-Origin'] = request.headers['HTTP_ORIGIN']
+        else
+          headers['Access-Control-Allow-Origin'] = Settings::ShelbyAPI.allow_origin
+        end
+        headers['Access-Control-Allow-Methods'] = '*'
+        headers['Access-Control-Max-Age'] = '5000'
+        headers['Access-Control-Allow-Credentials'] = 'true'
+        render :text => '', :content_type => 'text/plain'
+      end
+    end
+    
     def set_access_control_headers
       if params[:cs_key] == Settings::ShelbyAPI.cross_site_key
         headers['Access-Control-Allow-Origin'] = request.headers['HTTP_ORIGIN']
