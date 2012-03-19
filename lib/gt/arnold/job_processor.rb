@@ -2,7 +2,7 @@ require 'bean_job'
 require 'video_manager'
 require 'memcached_manager'
 require 'twitter_normalizer'
-#TODO require 'facebook_normalizer'
+require 'facebook_normalizer'
 #TODO require 'tumblr_normalizer'
 require 'social_sorter'
 
@@ -35,7 +35,7 @@ module GT
 		    
 		    # 2) Normalize the incoming social post
         msg = GT::TwitterNormalizer.normalize_tweet(job_details[:twitter_status_update]) if job_details[:twitter_status_update]
-        #TODO msg = GT::FacebookNormalizer.normalize_post(job_details[:facebook_status_update]) if job_details[:facebook_status_update]
+        msg = GT::FacebookNormalizer.normalize_post(job_details[:facebook_status_update]) if job_details[:facebook_status_update]
         #TODO msg = GT::TumblrNormalizer.normalize_blog(job_details[:tumblr_status_update]) if job_details[:tumblr_status_update]
         unless msg
           Rails.logger.error "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No social message. job: #{job}, job_details: #{job_details}"
