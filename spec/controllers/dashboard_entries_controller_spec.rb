@@ -24,9 +24,8 @@ describe V1::DashboardEntriesController do
       message = mock_model(Message)
       conv = mock_model(Conversation, :messages => [message])
       roll = mock_model(Roll)
-      frame = mock_model(Frame, :video => video, :conversation => conv, :roll => roll)
-      user = mock_model(User)
-      entry = mock_model(DashboardEntry, :frame => frame, :roll => roll, :user => user, :video => video)
+      frame = mock_model(Frame, :video => video, :conversation => conv, :roll => roll, :creator => @user)
+      entry = mock_model(DashboardEntry, :frame => frame, :roll => roll, :creator => @user, :video => video)
       
       DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([entry])
       get :index, :include_children => "true", :format => :json
