@@ -25,12 +25,12 @@ describe V1::RollController do
       assigns(:status).should eq(200)
     end
     
-    it "updates a roll unsuccessfuly returning 500" do
+    it "updates a roll unsuccessfuly returning 400" do
       roll = mock_model(Roll, :update_attributes => true)
       Roll.stub(:find) { roll }
       roll.should_receive(:update_attributes!).and_raise(ArgumentError)
       put :update, :id => @roll.id, :public => false, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
     end
   end
   
@@ -48,23 +48,23 @@ describe V1::RollController do
       assigns(:status).should eq(200)
     end
     
-    it "returns 500 if user not signed in" do
+    it "returns 400 if user not signed in" do
       sign_out @u1
       post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :format => :json
       response.should_not be_success
     end
     
-    it "returns 500 if there is no title" do
+    it "returns 400 if there is no title" do
       sign_in @u1
       post :create, :thumbnail_url => "http://foofle", :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("title required")
     end
     
-    it "returns 500 if there is no thumbnail_url" do
+    it "returns 400 if there is no thumbnail_url" do
       sign_in @u1
       post :create, :title => "test", :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("thumbnail_url required")
     end
     
@@ -85,10 +85,10 @@ describe V1::RollController do
       assigns(:status).should eq(200)
     end
     
-    it "unsuccessfuly destroys a roll returning 500" do
+    it "unsuccessfuly destroys a roll returning 400" do
       @roll.should_receive(:destroy).and_return(false)
       delete :destroy, :id => @roll.id, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
     end
   end
   

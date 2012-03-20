@@ -22,7 +22,7 @@ describe 'v1/conversation' do
     
       it "should return error message if roll doesnt exist" do
         get '/v1/conversation/'+@c.id+'xxx'
-        response.body.should be_json_eql(500).at_path("status")
+        response.body.should be_json_eql(400).at_path("status")
       end
       
     end
@@ -37,9 +37,9 @@ describe 'v1/conversation' do
         parse_json(response.body)["result"]["text"].should eq("rock me amadaeus")
       end
       
-      it "should return 500 if there is no text" do
+      it "should return 400 if there is no text" do
         post '/v1/conversation/'+@c.id+'/messages'
-        response.body.should be_json_eql(500).at_path("status")
+        response.body.should be_json_eql(400).at_path("status")
       end
 
     end
@@ -58,7 +58,7 @@ describe 'v1/conversation' do
       
       it "should return an error if a deletion fails" do
         delete '/v1/conversation/'+@c.id+'/messages/'+@m.id+"xxx"
-        response.body.should be_json_eql(500).at_path("status")
+        response.body.should be_json_eql(400).at_path("status")
       end
       
     end

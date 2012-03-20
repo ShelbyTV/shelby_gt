@@ -24,22 +24,22 @@ describe V1::MessagesController do
       assigns(:status).should eq(200)
     end
     
-    it "returns 500 without message text" do
+    it "returns 400 without message text" do
       post :create, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("text of message required")
     end
 
-    it "returns 500 without a user authenticated" do
+    it "returns 400 without a user authenticated" do
       sign_out @user
       post :create, :text => "SOS", :format => :json
       response.should_not be_success
     end
     
-    it "returns 500 if it cant find the conversation" do
+    it "returns 400 if it cant find the conversation" do
       Conversation.stub(:find) { nil }
       post :create, :text => "SOS", :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("could not find that conversation")
     end
     
@@ -59,11 +59,11 @@ describe V1::MessagesController do
       assigns(:status).should eq(200)
     end
     
-    it "unsuccessfuly destroys a roll returning 500" do
+    it "unsuccessfuly destroys a roll returning 400" do
       @conversation.stub(:pull) { true }
       @conversation.stub(:find_message_by_id) { false }
       delete :destroy, :conversation_id => @conversation.id, :id => @message.id, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
     end
   end
   

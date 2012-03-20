@@ -19,7 +19,7 @@ describe 'v1/frame' do
       
         it "should return error message if frame doesnt exist" do
           get '/v1/frame/'+@f.id+'xxx'
-          response.body.should be_json_eql(500).at_path("status")
+          response.body.should be_json_eql(400).at_path("status")
         end
       end
       
@@ -38,7 +38,7 @@ describe 'v1/frame' do
       
         it "should return error message if frame doesnt exist" do
           get '/v1/roll/'+@f.id+'xxx/frames'
-          response.body.should be_json_eql(500).at_path("status")
+          response.body.should be_json_eql(400).at_path("status")
         end        
       end
     end
@@ -75,7 +75,7 @@ describe 'v1/frame' do
       
       it "should return an error if a deletion fails" do
         get '/v1/frame/'+@f.id+'xxx'
-        response.body.should be_json_eql(500).at_path("status")
+        response.body.should be_json_eql(400).at_path("status")
       end
       
     end

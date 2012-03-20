@@ -18,10 +18,10 @@ describe V1::FrameController do
       assigns(:status).should eq(200)
     end
     
-    it "returns 500 if cant find roll" do
+    it "returns 400 if cant find roll" do
       Roll.stub(:find) { nil }
       get :index, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("could not find that roll")
     end
   end
@@ -33,10 +33,10 @@ describe V1::FrameController do
       assigns(:status).should eq(200)
     end
     
-    it "returns 500 when cant find frame" do
+    it "returns 400 when cant find frame" do
       Frame.stub(:find) { nil }
       get :show, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("could not find that frame")
     end
   end
@@ -55,7 +55,7 @@ describe V1::FrameController do
       frame = Factory.create(:frame)
       Frame.stub(:find) { nil }
       post :upvote, :id => frame.id, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
     end
   end
   
@@ -79,17 +79,17 @@ describe V1::FrameController do
       assigns(:frame).should eq(@f2)
     end
     
-    it "returns 500 if it can't re_roll" do
+    it "returns 400 if it can't re_roll" do
       @f1.stub(:re_roll).and_raise(ArgumentError)
       
       post :create, :id => @r2.id, :frame_id => @f1.id, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("could not re_roll: ArgumentError")
     end
 
-    it "returns 500 if it theres no frame_id to re_roll" do
+    it "returns 400 if it theres no frame_id to re_roll" do
       post :create, :id => @r2.id, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("you haven't built me to do anything else yet...")
     end
 
@@ -104,12 +104,12 @@ describe V1::FrameController do
       assigns(:status).should eq(200)
     end
     
-    it "unsuccessfuly destroys a roll returning 500" do
+    it "unsuccessfuly destroys a roll returning 400" do
       frame = mock_model(Frame)
       Frame.stub!(:find).and_return(frame)
       frame.should_receive(:destroy).and_return(false)
       delete :destroy, :id => frame.id, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
     end
   end
   

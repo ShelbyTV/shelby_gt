@@ -14,7 +14,7 @@ class V1::RollController < ApplicationController
       @include_following_users = params[:following_users] == "true" ? true : false
       @status =  200
     else
-      @status, @message = 500, "could not find that roll"
+      @status, @message = 400, "could not find that roll"
       render 'v1/blank', :status => @status
     end
   end
@@ -31,7 +31,7 @@ class V1::RollController < ApplicationController
   # @param [Optional, String] public Is this roll public?
   def create
     if ( !params.include?(:title) or !params.include?(:thumbnail_url) or !user_signed_in?)
-      @status = 500
+      @status = 400
       @message = "title required" unless params.include?(:title)
       @message = "thumbnail_url required" unless params.include?(:thumbnail_url)
       @message = "not authenticated, could not access user" unless user_signed_in?
@@ -42,7 +42,7 @@ class V1::RollController < ApplicationController
       begin        
         @status = 200 if @roll.save!
       rescue => e
-        @status, @message = 500, "could not save roll: #{e}"
+        @status, @message = 400, "could not save roll: #{e}"
         render 'v1/blank', :status => @status
       end
     end
@@ -59,13 +59,13 @@ class V1::RollController < ApplicationController
     id = params.delete(:id)
     @roll = Roll.find(id)
     if !@roll
-      @status, @message = 500, "could not find roll"
+      @status, @message = 400, "could not find roll"
       render 'v1/blank', :status => @status
     else
       begin
         @status = 200 if @roll.update_attributes!(params)
       rescue => e
-        @status, @message = 500, "error while updating roll: #{e}"
+        @status, @message = 400, "error while updating roll: #{e}"
         render 'v1/blank', :status => @status
       end
     end
@@ -80,13 +80,13 @@ class V1::RollController < ApplicationController
   # @param [Required, String] id The id of the roll
   def destroy
     unless @roll = Roll.find(params[:id])
-      @status, @message = 500, "could not find that roll to destroy"
+      @status, @message = 400, "could not find that roll to destroy"
       render 'v1/blank', :status => @status
     end
     if @roll.destroy
       @status =  200
     else
-      @status, @message = 500, "could not destroy that roll"
+      @status, @message = 400, "could not destroy that roll"
       render 'v1/blank', :status => @status
     end
   end

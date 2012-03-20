@@ -15,7 +15,7 @@ class V1::FrameController < ApplicationController
       @frames = @roll.frames.sort(:score.desc)
       @status =  200
     else
-      @status, @message = 500, "could not find that roll"
+      @status, @message = 400, "could not find that roll"
       render 'v1/blank', :status => @status
     end
   end
@@ -33,7 +33,7 @@ class V1::FrameController < ApplicationController
       @status =  200
       @include_frame_children = (params[:include_children] == "true") ? true : false
     else
-      @status, @message = 500, "could not find that frame"
+      @status, @message = 400, "could not find that frame"
       render 'v1/blank', :status => @status
     end
   end
@@ -50,10 +50,10 @@ class V1::FrameController < ApplicationController
     roll = Roll.find(params[:id])
     frame_to_re_roll = Frame.find(params[:frame_id]) if params[:frame_id]
     if !roll
-      @status, @message = 500, "could not find that roll"
+      @status, @message = 400, "could not find that roll"
       render 'v1/blank'
     elsif !frame_to_re_roll
-      @status, @message = 500, "you haven't built me to do anything else yet..."
+      @status, @message = 400, "you haven't built me to do anything else yet..."
       render 'v1/blank', :status => @status
     else
       begin
@@ -61,7 +61,7 @@ class V1::FrameController < ApplicationController
         @frame = @frame[:frame]
         @status = 200
       rescue => e
-        @status, @message = 500, "could not re_roll: #{e}"
+        @status, @message = 400, "could not re_roll: #{e}"
         render 'v1/blank', :status => @status
       end
     end
@@ -79,7 +79,7 @@ class V1::FrameController < ApplicationController
       @status = 200 if @frame.upvote(current_user)
       @frame.reload
     else
-      @status, @message = 500, "could not find frame"
+      @status, @message = 400, "could not find frame"
       render 'v1/blank', :status => @status
     end
   end
@@ -96,8 +96,8 @@ class V1::FrameController < ApplicationController
     if frame = Frame.find(params[:id]) and frame.destroy 
       @status = 200
     else
-      @status, @message = 500, "could not find that frame to destroy" unless frame
-      @status, @message = 500, "could not destroy that frame"
+      @status, @message = 400, "could not find that frame to destroy" unless frame
+      @status, @message = 400, "could not destroy that frame"
       render 'v1/blank', :status => @status
     end
   end
