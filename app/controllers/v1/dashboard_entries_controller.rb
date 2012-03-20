@@ -34,12 +34,12 @@ class V1::DashboardEntriesController < ApplicationController
       if !@entries.empty?
         @status = 200
       else
-        @status, @message = 500, "there are no dashboard entries for this user"
-        render 'v1/blank'
+        @status, @message = 204, "there are no dashboard entries for this user"
+        render 'v1/blank', :status => 204
       end
     else
       @status, @message = 500, "no user info found"
-      render 'v1/blank'
+      render 'v1/blank', :status => 500
     end    
   end
   
@@ -57,11 +57,11 @@ class V1::DashboardEntriesController < ApplicationController
         Rails.logger.info(@dashboard_entry.inspect)
       rescue => e
         @status, @message = 500, "could not update dashboard_entry: #{e}"
-        render 'v1/blank'
+        render 'v1/blank', :status => @status
       end
     else
       @status, @message = 500, "could not find that dashboard_entry"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     end    
   end
 

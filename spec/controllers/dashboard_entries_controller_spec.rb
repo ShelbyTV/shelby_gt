@@ -40,7 +40,7 @@ describe V1::DashboardEntriesController do
       sign_in @user
       DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([])
       get :index, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(204)
       assigns(:message).should eq("there are no dashboard entries for this user")
     end
     
@@ -49,7 +49,7 @@ describe V1::DashboardEntriesController do
       sign_in @user
       DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([])
       get :index, :user_id => @user.id, :format => :json
-      assigns(:status).should eq(500)   
+      assigns(:status).should eq(204)   
     end
     
     it "should return error if could not find any user" do

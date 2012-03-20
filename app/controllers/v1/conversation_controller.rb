@@ -15,7 +15,7 @@ class V1::ConversationController < ApplicationController
       @status = 200
     else
       @status, @message = 500, "could not find conversation"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     end
   end
   

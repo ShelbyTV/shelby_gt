@@ -25,7 +25,7 @@ describe 'v1/dashboard' do
       
       it "should return 500 if no entries exist" do
         get '/v1/dashboard'
-        response.body.should be_json_eql(500).at_path("status")
+        response.status.should eq(204)
       end
       
     end

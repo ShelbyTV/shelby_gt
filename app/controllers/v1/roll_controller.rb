@@ -15,7 +15,7 @@ class V1::RollController < ApplicationController
       @status =  200
     else
       @status, @message = 500, "could not find that roll"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     end
   end
   
@@ -43,7 +43,7 @@ class V1::RollController < ApplicationController
         @status = 200 if @roll.save!
       rescue => e
         @status, @message = 500, "could not save roll: #{e}"
-        render 'v1/blank'
+        render 'v1/blank', :status => @status
       end
     end
   end
@@ -60,13 +60,13 @@ class V1::RollController < ApplicationController
     @roll = Roll.find(id)
     if !@roll
       @status, @message = 500, "could not find roll"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     else
       begin
         @status = 200 if @roll.update_attributes!(params)
       rescue => e
         @status, @message = 500, "error while updating roll: #{e}"
-        render 'v1/blank'
+        render 'v1/blank', :status => @status
       end
     end
   end
@@ -81,13 +81,13 @@ class V1::RollController < ApplicationController
   def destroy
     unless @roll = Roll.find(params[:id])
       @status, @message = 500, "could not find that roll to destroy"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     end
     if @roll.destroy
       @status =  200
     else
       @status, @message = 500, "could not destroy that roll"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     end
   end
 

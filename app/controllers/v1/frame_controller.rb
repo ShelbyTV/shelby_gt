@@ -16,7 +16,7 @@ class V1::FrameController < ApplicationController
       @status =  200
     else
       @status, @message = 500, "could not find that roll"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     end
   end
     
@@ -34,7 +34,7 @@ class V1::FrameController < ApplicationController
       @include_frame_children = (params[:include_children] == "true") ? true : false
     else
       @status, @message = 500, "could not find that frame"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     end
   end
   
@@ -54,7 +54,7 @@ class V1::FrameController < ApplicationController
       render 'v1/blank'
     elsif !frame_to_re_roll
       @status, @message = 500, "you haven't built me to do anything else yet..."
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     else
       begin
         @frame = frame_to_re_roll.re_roll(user, roll)
@@ -62,7 +62,7 @@ class V1::FrameController < ApplicationController
         @status = 200
       rescue => e
         @status, @message = 500, "could not re_roll: #{e}"
-        render 'v1/blank'
+        render 'v1/blank', :status => @status
       end
     end
   end
@@ -80,7 +80,7 @@ class V1::FrameController < ApplicationController
       @frame.reload
     else
       @status, @message = 500, "could not find frame"
-      render 'v1/blank'     
+      render 'v1/blank', :status => @status
     end
   end
   
@@ -98,7 +98,7 @@ class V1::FrameController < ApplicationController
     else
       @status, @message = 500, "could not find that frame to destroy" unless frame
       @status, @message = 500, "could not destroy that frame"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     end
   end
 

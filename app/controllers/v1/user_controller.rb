@@ -22,7 +22,7 @@ class V1::UserController < ApplicationController
       @status = 200
     else
       @status, @message = 500, "could not find user"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     end
   end
   
@@ -44,11 +44,11 @@ class V1::UserController < ApplicationController
         @status = 200
       else
         @status, @message = 500, "error while updating user."
-        render 'v1/blank'        
+        render 'v1/blank', :status => @status
       end
     rescue => e
       @status, @message = 500, "error while updating user: #{e}"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     end
   end
 

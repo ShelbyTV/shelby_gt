@@ -13,7 +13,7 @@ class V1::MessagesController < ApplicationController
   def create
     if !params.include?(:text)
       @status, @message = 500, "text of message required"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     else
       @conversation = Conversation.find(params[:conversation_id])
       if @conversation
@@ -28,11 +28,11 @@ class V1::MessagesController < ApplicationController
           @status = 200 if @conversation.save!
         rescue => e
           @status, @message = 500, e
-          render 'v1/blank'
+          render 'v1/blank', :status => @status
         end
       else
         @status, @message = 500, "could not find that conversation"
-        render 'v1/blank'
+        render 'v1/blank', :status => @status
       end
     end
   end
@@ -51,7 +51,7 @@ class V1::MessagesController < ApplicationController
     message = @conversation.find_message_by_id(message_id)
     unless @conversation and message
       @status, @message = 500, "could not find that conversation"
-      render 'v1/blank'
+      render 'v1/blank', :status => @status
     else
       @conversation.pull(:messages => {:_id => message.id})
       @conversation.reload
