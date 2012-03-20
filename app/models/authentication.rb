@@ -28,6 +28,8 @@ class Authentication
   
   key :permissions, Array
   
+  # we create Authentication's for faux users that won't be "valid"
+  # but since User doesn't validates_associated :authentication this isn't actually run
   validate :ensure_valid_for_provider
 
   def twitter?() provider == "twitter"; end
