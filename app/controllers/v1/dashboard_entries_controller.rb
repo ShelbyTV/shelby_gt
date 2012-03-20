@@ -20,7 +20,7 @@ class V1::DashboardEntriesController < ApplicationController
     # get user
     if params[:user_id]
       unless user = User.find(params[:user_id])
-        @status, @message = 500, "could not find that user"
+        @status, @message = 404, "could not find that user"
       end
     elsif user_signed_in?
       user = current_user
@@ -34,12 +34,12 @@ class V1::DashboardEntriesController < ApplicationController
       if !@entries.empty?
         @status = 200
       else
-        @status, @message = 500, "there are no dashboard entries for this user"
-        render 'v1/blank'
+        @status, @message = 200, "there are no dashboard entries for this user"
+        render 'v1/blank', :status => 200
       end
     else
-      @status, @message = 500, "no user info found"
-      render 'v1/blank'
+      @status, @message = 400, "no user info found"
+      render 'v1/blank', :status => 400
     end    
   end
   
@@ -56,12 +56,12 @@ class V1::DashboardEntriesController < ApplicationController
         @status = 200 if @dashboard_entry.update_attributes!(params)
         Rails.logger.info(@dashboard_entry.inspect)
       rescue => e
-        @status, @message = 500, "could not update dashboard_entry: #{e}"
-        render 'v1/blank'
+        @status, @message = 400, "could not update dashboard_entry: #{e}"
+        render 'v1/blank', :status => @status
       end
     else
-      @status, @message = 500, "could not find that dashboard_entry"
-      render 'v1/blank'
+      @status, @message = 400, "could not find that dashboard_entry"
+      render 'v1/blank', :status => @status
     end    
   end
 

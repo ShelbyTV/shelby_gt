@@ -14,8 +14,8 @@ class V1::ConversationController < ApplicationController
     if @conversation = Conversation.find(params[:id])
       @status = 200
     else
-      @status, @message = 500, "could not find conversation"
-      render 'v1/blank'
+      @status, @message = 400, "could not find conversation"
+      render 'v1/blank', :status => @status
     end
   end
   

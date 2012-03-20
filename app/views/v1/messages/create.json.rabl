@@ -1,3 +1,3 @@
-object @new_message
+object @conversation
 
-attributes :id, :nickname, :realname, :user_image_url, :text, :public
+extends 'v1/conversation/show'

@@ -40,7 +40,7 @@ describe V1::DashboardEntriesController do
       sign_in @user
       DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([])
       get :index, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(200)
       assigns(:message).should eq("there are no dashboard entries for this user")
     end
     
@@ -49,7 +49,7 @@ describe V1::DashboardEntriesController do
       sign_in @user
       DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([])
       get :index, :user_id => @user.id, :format => :json
-      assigns(:status).should eq(500)   
+      assigns(:status).should eq(200)   
     end
     
     it "should return error if could not find any user" do
@@ -77,7 +77,7 @@ describe V1::DashboardEntriesController do
     it "should return error if could not find dashboard entry" do
       DashboardEntry.stub(:find) { nil }
       put :update, :id => @d.id, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("could not find that dashboard_entry")
     end
     
@@ -85,7 +85,7 @@ describe V1::DashboardEntriesController do
       DashboardEntry.stub(:find) { @d }
       @d.should_receive(:update_attributes!).and_raise(ArgumentError)
       put :update, :id => @d.id, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("could not update dashboard_entry: ArgumentError")
     end
   end

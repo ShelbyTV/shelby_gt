@@ -34,7 +34,7 @@ describe 'v1/user' do
       
       it "should return an error if a validation fails" do
         put '/v1/user/'+@u1.id+'?nickname=signout'
-        response.body.should be_json_eql(500).at_path("status")
+        response.body.should be_json_eql(400).at_path("status")
       end
       
     end
@@ -52,7 +52,7 @@ describe 'v1/user' do
       it "should return an error if a user is not found" do
         get '/v1/user'
         response.body.should have_json_type(Integer).at_path("status")
-        response.body.should be_json_eql(500).at_path("status")
+        response.body.should be_json_eql(400).at_path("status")
       end
     end
     

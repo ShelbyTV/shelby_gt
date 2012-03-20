@@ -18,7 +18,7 @@ describe 'v1/video' do
     
     it "should return error message if video doesnt exist" do
       get '/v1/video/'+@v.id+'xxx'
-      response.body.should be_json_eql(500).at_path("status")
+      response.body.should be_json_eql(400).at_path("status")
     end
     
   end

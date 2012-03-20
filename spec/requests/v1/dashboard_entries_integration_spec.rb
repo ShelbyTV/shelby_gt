@@ -23,9 +23,9 @@ describe 'v1/dashboard' do
         parse_json(response.body)["result"][0]["frame"]["id"].should eq(@f.id.to_s)
       end
       
-      it "should return 500 if no entries exist" do
+      it "should return 400 if no entries exist" do
         get '/v1/dashboard'
-        response.body.should be_json_eql(500).at_path("status")
+        response.status.should eq(200)
       end
       
     end
@@ -53,9 +53,9 @@ describe 'v1/dashboard' do
         parse_json(response.body)["result"]["read"].should_not eq("donkeybutt")
       end
       
-      it "should return 500 if entry cant be found" do
+      it "should return 400 if entry cant be found" do
         put '/v1/dashboard/'+@d.id+'xxx?read=true'
-        response.body.should be_json_eql(500).at_path("status")
+        response.body.should be_json_eql(400).at_path("status")
       end
       
     end

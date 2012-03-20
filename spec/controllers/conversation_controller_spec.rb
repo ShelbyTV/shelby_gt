@@ -16,10 +16,10 @@ describe V1::ConversationController do
       assigns(:status).should eq(200)
     end
     
-    it "returns 500 when it cant assign one conversation to @conversation" do
+    it "returns 400 when it cant assign one conversation to @conversation" do
       Conversation.stub!(:find).and_return(nil)
       get :show, :format => :json
-      assigns(:status).should eq(500)
+      assigns(:status).should eq(400)
     end
     
   end
