@@ -2,7 +2,7 @@
 require 'user_manager'
 
 class AuthenticationsController < ApplicationController  
-  #before_filter :authenticate_user!, :only => [:merge_accounts, :do_merge]
+  before_filter :cors_preflight_check, :except => :sign_out #, :authenticate_user!, :only => [:merge_accounts, :do_merge]
   #before_filter :read_user_on_primary_only
 
   def index
@@ -67,6 +67,11 @@ class AuthenticationsController < ApplicationController
         
     @opener_location = new_user_session_path
     render :action => 'redirector', :layout => 'simple'
+  end
+  
+  def sign_out_user
+    sign_out(:user)
+    render :text => "OK", :status => 200
   end
   
 end

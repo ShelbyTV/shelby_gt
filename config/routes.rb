@@ -36,6 +36,8 @@ ShelbyGt::Application.routes.draw do
     
   end
   
+  get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user
+  
   root :to => 'authentications#index'
 
 end

@@ -1,22 +1,25 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   
-  before_filter :allow_faux_authentication!
-  after_filter :set_access_control_headers
+  before_filter :user_signed_in!
+  after_filter :set_access_control_headers, :user_signed_in!
   
   respond_to :json
 
+  def user_signed_in!
+    session[:signed_in] = user_signed_in? ? true : false
+  end
+
   def cors_preflight_check
-    headers['Access-Control-Allow-Origin'] = request.headers['HTTP_ORIGIN']
+    if params[:cs_key] == Settings::ShelbyAPI.cross_site_key
+      headers['Access-Control-Allow-Origin'] = request.headers['HTTP_ORIGIN']
+    else
+      headers['Access-Control-Allow-Origin'] = Settings::ShelbyAPI.allow_origin
+    end
     headers['Access-Control-Allow-Methods'] = '*'
     headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-Prototype-Version, X-CSRF-Token'
     headers['Access-Control-Allow-Credentials'] = 'true'
     headers['Access-Control-Max-Age'] = '1000'
-    if !/\/auth\/(twitter|facebook|tumblr)\/callback/.match(request.env['REQUEST_URI']) and request.method == "GET"
-      unless user_signed_in?
-        render(:status => :unauthorized)
-      end
-    end
   end
   
   private    
@@ -43,5 +46,10 @@ class ApplicationController < ActionController::Base
         sign_in(:user, user)
       end
     end
+    
+    # Overwriting the sign_out redirect path method
+    #def after_sign_out_path_for(resource_or_scope)
+    #  sign_out_path
+    #end
   
 end
