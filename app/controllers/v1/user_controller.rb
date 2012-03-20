@@ -12,9 +12,14 @@ class V1::UserController < ApplicationController
   # @param [Optional, Boolean] include_auths Include the embedded authorizations
   # @param [Optional, Boolean] rolls_following Include the referenced rolls the user is following
   def show
-    if @user = User.find(params[:id])
-      @include_auths = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
-      @status = 200
+    if params[:id]
+      if @user = User.find(params[:id])
+        @include_auths = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
+        @status = 200
+      else
+        @status, @message = 400, "could not find that user"
+        render 'v1/blank', :status => @status        
+      end
     elsif user_signed_in?
       @user = current_user
       @include_auths = (params[:include_auths] == "true" ) ? true : false
