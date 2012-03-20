@@ -12,8 +12,8 @@ ShelbyGt::Application.routes.draw do
   end
 
   resources :authentications
-  match '/auth/:provider/callback' => 'authentications#create'
-  match '/auth/failure' => 'authentications#fail'
+  get '/auth/:provider/callback' => 'authentications#create'
+  get '/auth/failure' => 'authentications#fail'
 
 
   ########################
@@ -29,10 +29,10 @@ ShelbyGt::Application.routes.draw do
       resources :messages, :only => [:create, :destroy]
     end
     
-    match 'user/' => 'user#show', :via => :get
-    match 'frame/:id/upvote' => 'frame#upvote', :via => :post
-    match 'roll/:id/frames' => 'frame#index', :via => :get
-    match 'roll/:id/frames' => 'frame#create', :via => :post	
+    get 'user/' => 'user#show'
+    post 'frame/:id/upvote' => 'frame#upvote'
+    get 'roll/:id/frames' => 'frame#index'
+    post 'roll/:id/frames' => 'frame#create'
     
   end
   

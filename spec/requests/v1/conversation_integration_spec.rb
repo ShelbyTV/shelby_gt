@@ -28,13 +28,13 @@ describe 'v1/conversation' do
     end
     
     describe "POST" do
-      it "should create and return a roll on success" do
+      it "should create and return a conversation on success" do
         params = '?text=rock%20me%20amadaeus'
         post '/v1/conversation/'+@c.id+'/messages'+params
       
         response.body.should be_json_eql(200).at_path("status")
-        response.body.should have_json_path("result/text")
-        parse_json(response.body)["result"]["text"].should eq("rock me amadaeus")
+        response.body.should have_json_path("result/public")
+        parse_json(response.body)["result"]["messages"][0]["text"].should eq("rock me amadaeus")
       end
       
       it "should return 400 if there is no text" do
