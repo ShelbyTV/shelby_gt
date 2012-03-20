@@ -11,8 +11,16 @@ class V1::RollController < ApplicationController
   # @param [Optional, String] following_users Return the following_users?
   def show
     if @roll = Roll.find(params[:id])
-      @include_following_users = params[:following_users] == "true" ? true : false
-      @status =  200
+      if user_signed_in?
+        @include_following_users = params[:following_users] == "true" ? true : false
+        @status =  200
+      elsif @roll.public
+        @include_following_users = params[:following_users] == "true" ? true : false
+        @status =  200        
+      else
+        @status, @message = 401, "you are not authorized to see that roll"
+        render 'v1/blank', :status => @status        
+      end
     else
       @status, @message = 400, "could not find that roll"
       render 'v1/blank', :status => @status
