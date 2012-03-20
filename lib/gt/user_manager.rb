@@ -1,6 +1,6 @@
 # encoding: UTF-8
 require 'authentication_builder'
-require 'video_fetching'
+require 'predator_manager'
 
 
 # This is the one and only place where Users are created.
@@ -18,11 +18,8 @@ module GT
       build_public_roll_for_user(user)
 
       if user.save
-        #TODO: Uncomment update_video_processing when beanstalk server allows communication from gt-API
-        #GT::VideoFetching.initialize_video_processing(user, auth)
-        
-        # Update user count stat
-        #Stats.increment(Stats::TOTAL_USERS)
+        GT::PredatorManager.initialize_video_processing(user, auth)
+
         return user
       else
         puts user.errors.full_messages
@@ -43,7 +40,7 @@ module GT
       new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
       user.authentications << new_auth
       if user.save
-        GT::VideoFetching.initialize_video_processing(user, new_auth)        
+        GT::PredatorManager.initialize_video_processing(user, new_auth)        
         return user
       else
         puts user.errors.full_messages
@@ -132,8 +129,9 @@ module GT
       #TODO: this needs a new name
       def self.update_on_sign_in(u)
         u.authentications.each do |a| 
-          #TODO: Uncomment update_video_processing when beanstalk server allows communication from gt-API
-          #GT::VideoFetching.update_video_processing(u, a)
+          
+          GT::PredatorManager.update_video_processing(u, a)
+          
           if a.provider == "facebook"
             begin
               graph = Koala::Facebook::GraphAPI.new(a.oauth_token)

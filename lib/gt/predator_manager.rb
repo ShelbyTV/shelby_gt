@@ -3,17 +3,18 @@ require 'beanstalk-client'
 
 # TODO: ***Need to test this class*** (if it is tested, move tests into new class)
 module GT
-  #TODO: rename "PredatorManager" 
-  #TODO: add comments (for class) explaining this thing
-  class VideoFetching
+  
+  #This manager puts jobs on our Queue that are accepted by the Predator
+  #  to find links in social postings
+  # 
+  class PredatorManager
     
     # gets as many videos from statuses available and adds user to site streaming
     def self.initialize_video_processing(u, a)
       return unless Settings::Beanstalk.available
 
       begin
-        #TODO FIXME this settins is not _ip it's _url
-        bean = Beanstalk::Connection.new(Settings::Beanstalk.beanstalk_ip)
+        bean = Beanstalk::Connection.new(Settings::Beanstalk.url)
         case a.provider
         when 'twitter'
           tw_add_backfill(a, bean)
@@ -33,7 +34,7 @@ module GT
       return unless Settings::Beanstalk.available
 
       begin
-        beanstalk = Beanstalk::Connection.new(Settings::Beanstalk.beanstalk_ip)
+        beanstalk = Beanstalk::Connection.new(Settings::Beanstalk.url)
         case a.provider
         when 'twitter'
           #unneccssary as twitter doesn't need tokens for site streaming

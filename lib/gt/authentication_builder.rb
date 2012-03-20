@@ -1,4 +1,5 @@
 # encoding: UTF-8
+require 'predator_manager'
 
 module GT
   class AuthenticationBuilder
@@ -110,7 +111,7 @@ module GT
         a.update_attributes!({ :oauth_token => omniauth['credentials']['token'], :oauth_secret => omniauth['credentials']['secret'] })
 
         #and need the node processes to update as well
-        GT::VideoFetching.update_video_processing(u, a)
+        GT::PredatorManager.update_video_processing(u, a)
       end
       return a
     end

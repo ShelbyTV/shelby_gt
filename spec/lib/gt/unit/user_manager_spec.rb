@@ -4,7 +4,7 @@ require 'spec_helper'
 
 require 'user_manager'
 require 'authentication_builder'
-require 'video_fetching'
+require 'predator_manager'
 
 # UNIT test
 describe GT::UserManager do
