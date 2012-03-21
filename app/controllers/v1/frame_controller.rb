@@ -1,7 +1,7 @@
 class V1::FrameController < ApplicationController
 
-  before_filter :cors_preflight_check, :authenticate_user!
-
+  before_filter :cors_preflight_check, :user_authenticated?
+  
   ##
   # Returns all frames in a roll
   #   REQUIRES AUTHENTICATION

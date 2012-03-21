@@ -2,7 +2,7 @@
 require 'user_manager'
 
 class AuthenticationsController < ApplicationController  
-  before_filter :cors_preflight_check, :except => :sign_out #, :authenticate_user!, :only => [:merge_accounts, :do_merge]
+  before_filter :cors_preflight_check #, :authenticate_user!, :only => [:merge_accounts, :do_merge]
   #before_filter :read_user_on_primary_only
 
   def index
@@ -30,7 +30,7 @@ class AuthenticationsController < ApplicationController
       GT::UserManager.start_user_sign_in(user, omniauth, session)
       
       sign_in(:user, user)
-      cookies[:locked_and_loaded] = true
+      cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now }
       
       @opener_location = request.env['omniauth.origin'] || root_path
       
@@ -51,7 +51,7 @@ class AuthenticationsController < ApplicationController
 
       if user.valid?
         sign_in(:user, user)
-        cookies[:locked_and_loaded] = true
+        cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now }
         
         @opener_location = request.env['omniauth.origin'] || root_path
       else
