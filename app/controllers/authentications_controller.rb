@@ -2,7 +2,7 @@
 require 'user_manager'
 
 class AuthenticationsController < ApplicationController  
-  #before_filter :authenticate_user!, :only => [:merge_accounts, :do_merge]
+  before_filter :cors_preflight_check #, :authenticate_user!, :only => [:merge_accounts, :do_merge]
   #before_filter :read_user_on_primary_only
 
   def index
@@ -28,7 +28,9 @@ class AuthenticationsController < ApplicationController
     elsif user
       #TODO: if user.faux == true turn faux user into real user via UserManager
       GT::UserManager.start_user_sign_in(user, omniauth, session)
+      
       sign_in(:user, user)
+      cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now }
       
       @opener_location = request.env['omniauth.origin'] || root_path
       
@@ -49,6 +51,8 @@ class AuthenticationsController < ApplicationController
 
       if user.valid?
         sign_in(:user, user)
+        cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now }
+        
         @opener_location = request.env['omniauth.origin'] || root_path
       else
         Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
@@ -67,6 +71,12 @@ class AuthenticationsController < ApplicationController
         
     @opener_location = new_user_session_path
     render :action => 'redirector', :layout => 'simple'
+  end
+  
+  def sign_out_user
+    sign_out(:user)
+    cookies[:locked_and_loaded] = false
+    redirect_to request.headers['HTTP_REFERER']
   end
   
 end
