@@ -97,6 +97,9 @@ end
 #
 # ---------- Memcached 
 #
+# If install fails, it may be because you're missing some important libs:
+# sudo aptitude install libmemcached-dev libsasl2-dev libmemcached-dbg
+#
 group :arnold, :development, :production do
   #don't want this in tests since it's not required and it's slow as shit
   gem 'memcached', '~>1.4.1'
