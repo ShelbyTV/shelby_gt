@@ -5,6 +5,10 @@ attributes :id, :action, :actor_id, :read
 child :frame do
 	extends 'v1/frame/show'
 	
+	child :creator => :creator do
+		extends 'v1/user/show'
+	end
+	
 	child :roll do
 		extends 'v1/roll/show'
 	end

@@ -8,7 +8,7 @@ if @include_frame_children == true
 		extends 'v1/roll/show'
 	end
 
-	child :creator do
+	child :creator => :creator do
 		extends 'v1/user/show'
 	end
 
