@@ -105,7 +105,10 @@ group :arnold, :development, :production do
   gem 'memcached', '~>1.4.1'
 end
 
-#gem 'jquery-rails'
+#
+# ---------- Formatted Logging
+#
+gem 'formatted_rails_logger'
 
 # Deploy with Capistrano
 gem 'capistrano'

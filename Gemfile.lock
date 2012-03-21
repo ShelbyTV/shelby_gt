@@ -137,6 +137,8 @@ GEM
       addressable (~> 2.2)
       multipart-post (~> 1.1)
       rack (~> 1.1)
+    formatted_rails_logger (0.2.0)
+      rails (~> 3.2.0)
     fssm (0.2.8.1)
     grackle (0.1.10)
       json
@@ -287,6 +289,7 @@ DEPENDENCIES
   eventmachine
   exception_notification
   factory_girl_rails
+  formatted_rails_logger
   grackle
   haml
   httparty
