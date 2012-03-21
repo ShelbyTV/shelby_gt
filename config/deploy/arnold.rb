@@ -17,8 +17,5 @@ set :repository,  "git@github.com:ShelbyTV/shelby_gt.git"
 set :branch, "master"
 set :deploy_via, :remote_cache #keep a local cache to speed up deploys
 
-# Use developer's local ssh keys when git clone/updating on the remote server
-ssh_options[:forward_agent] = true
-
 #TODO: copy lib/etc/arnold_gt.conf to /etc/init/arnold_gt.conf
 #TODO: print message about NOT restarting pump_iron and how to do so w/ upstart
