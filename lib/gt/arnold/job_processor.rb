@@ -36,7 +36,7 @@ module GT
 		    # 2) Normalize the incoming social post
         msg = GT::TwitterNormalizer.normalize_tweet(job_details[:twitter_status_update]) if job_details[:twitter_status_update]
         msg = GT::FacebookNormalizer.normalize_post(job_details[:facebook_status_update]) if job_details[:facebook_status_update]
-        msg = GT::TumblrNormalizer.normalize_blog(job_details[:tumblr_status_update]) if job_details[:tumblr_status_update]
+        msg = GT::TumblrNormalizer.normalize_post(job_details[:tumblr_status_update]) if job_details[:tumblr_status_update]
         unless msg
           Rails.logger.error "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No social message. job: #{job}, job_details: #{job_details}"
           clean_up(job, fibers, max_fibers, job_start_t) and return :no_social_message
