@@ -28,7 +28,9 @@ class AuthenticationsController < ApplicationController
     elsif user
       #TODO: if user.faux == true turn faux user into real user via UserManager
       GT::UserManager.start_user_sign_in(user, omniauth, session)
+      
       sign_in(:user, user)
+      cookies[:locked_and_loaded] = true
       
       @opener_location = request.env['omniauth.origin'] || root_path
       
@@ -49,6 +51,8 @@ class AuthenticationsController < ApplicationController
 
       if user.valid?
         sign_in(:user, user)
+        cookies[:locked_and_loaded] = true
+        
         @opener_location = request.env['omniauth.origin'] || root_path
       else
         Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
@@ -71,7 +75,8 @@ class AuthenticationsController < ApplicationController
   
   def sign_out_user
     sign_out(:user)
-    render :text => "OK", :status => 200
+    cookies[:locked_and_loaded] = false
+    redirect_to request.headers['HTTP_REFERER']
   end
   
 end

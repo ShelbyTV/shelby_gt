@@ -1,14 +1,9 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   
-  before_filter :user_signed_in!
-  after_filter :set_access_control_headers, :user_signed_in!
+  after_filter :set_access_control_headers
   
   respond_to :json
-
-  def user_signed_in!
-    session[:signed_in] = user_signed_in? ? true : false
-  end
 
   def cors_preflight_check
     if params[:cs_key] == Settings::ShelbyAPI.cross_site_key
@@ -46,10 +41,5 @@ class ApplicationController < ActionController::Base
         sign_in(:user, user)
       end
     end
-    
-    # Overwriting the sign_out redirect path method
-    #def after_sign_out_path_for(resource_or_scope)
-    #  sign_out_path
-    #end
-  
+      
 end
