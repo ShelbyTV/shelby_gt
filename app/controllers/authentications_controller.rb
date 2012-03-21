@@ -30,7 +30,7 @@ class AuthenticationsController < ApplicationController
       GT::UserManager.start_user_sign_in(user, omniauth, session)
       
       sign_in(:user, user)
-      cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now, :domain => nil }
+      cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now, :domain => 'localhost:4000' }
       
       @opener_location = request.env['omniauth.origin'] || root_path
       
