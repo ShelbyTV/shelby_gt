@@ -64,6 +64,26 @@ describe GT::UserManager do
       }.should_not change { User.count }
     end
     
+    it "should add a watch_later_roll to existing user if they're missing it" do
+      nick, provider, uid = "whatever--b-", "fb--", "123uid--b-"
+      u = User.new(:nickname => nick, :faux => false)
+      auth = Authentication.new
+      auth.provider = provider
+      auth.uid = uid
+      u.authentications << auth
+      u.save
+      
+      u.persisted?.should == true
+      u.watch_later_roll.should == nil
+      
+      lambda {
+        usr = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
+        usr.should == u
+        usr.watch_later_roll.class.should == Roll
+        usr.watch_later_roll.persisted?.should == true
+      }.should_not change { User.count }
+    end
+    
     it "should create a (persisted) faux User" do
       nick, provider, uid = "whatever3", "fb", "123uid3"
       lambda {
@@ -71,6 +91,29 @@ describe GT::UserManager do
         u.class.should == User
         u.persisted?.should == true
         u.faux.should == true
+      }.should change { User.count }.by(1)
+    end
+    
+    it "should create and persist public and watch_later rolls on faux user when created" do
+      nick, provider, uid = "whatever3-b", "fb", "123uid3-b"
+      lambda {
+        u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
+
+        u.public_roll.class.should == Roll
+        u.public_roll.persisted?.should == true
+        
+        u.watch_later_roll.class.should == Roll
+        u.watch_later_roll.persisted?.should == true
+      }.should change { User.count }.by(1)
+    end
+    
+    it "should have the faux user follow its own public and watch_later rolls" do
+      nick, provider, uid = "whatever3-c", "fb", "123uid3-c"
+      lambda {
+        u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
+        
+        u.following_roll?(u.public_roll).should == true
+        u.following_roll?(u.watch_later_roll).should == true
       }.should change { User.count }.by(1)
     end
     
@@ -82,6 +125,18 @@ describe GT::UserManager do
       r.class.should == Roll
       r.persisted?.should == true
       r.public.should == true
+      r.collaborative.should == false
+      r.creator.should == u
+    end
+    
+    it "should have a (persisted) watch_later roll on the User it creates" do
+      nick, provider, uid = "whatever4-b", "fb", "123uid4-b"
+
+      u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
+      r = u.watch_later_roll
+      r.class.should == Roll
+      r.persisted?.should == true
+      r.public.should == false
       r.collaborative.should == false
       r.creator.should == u
     end
@@ -309,6 +364,23 @@ describe GT::UserManager do
         u.preferences.like_notifications.should == true
         u.preferences.watched_notifications.should == true
         u.preferences.quiet_mode.should == nil
+      end
+      
+      it "should create and persist public and watch_later rolls for new User" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        
+        u.public_roll.class.should == Roll
+        u.public_roll.persisted?.should == true
+        
+        u.watch_later_roll.class.should == Roll
+        u.watch_later_roll.persisted?.should == true
+      end
+      
+      it "should have the user follow their public and watch_later rolls" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        
+        u.following_roll?(u.public_roll).should == true
+        u.following_roll?(u.watch_later_roll).should == true
       end
       
     end

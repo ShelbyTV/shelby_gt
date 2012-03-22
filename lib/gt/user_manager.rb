@@ -14,8 +14,13 @@ module GT
     def self.create_new_user_from_omniauth(omniauth)
       user, auth = build_new_user_and_auth(omniauth)
 
-      # Create the public Roll for this new User
+      # Create the public and watch_later Rolls for this new User
       build_public_roll_for_user(user)
+      build_watch_later_roll_for_user(user)
+      
+      # user should follow their special rolls
+      user.public_roll.add_follower(user)
+      user.watch_later_roll.add_follower(user)
 
       if user.save
         GT::PredatorManager.initialize_video_processing(user, auth)
@@ -65,6 +70,10 @@ module GT
           build_public_roll_for_user(u)
           u.public_roll.save
         end
+        unless u.watch_later_roll
+          build_watch_later_roll_for_user(u)
+          u.watch_later_roll.save
+        end
         return u
       end
       
@@ -80,9 +89,14 @@ module GT
       ensure_valid_unique_nickname!(u)
       u.downcase_nickname = u.nickname.downcase
       
-      # Create the public Roll for this new User
+      # Create the public and watch_later Rolls for this new User
       build_public_roll_for_user(u)
-            
+      build_watch_later_roll_for_user(u)
+      
+      # user should follow their special rolls
+      u.public_roll.add_follower(u)
+      u.watch_later_roll.add_follower(u)
+      
       if u.save
         return u
       else
@@ -170,6 +184,15 @@ module GT
         r.collaborative = false
         r.title = u.nickname
         u.public_roll = r
+      end
+      
+      def self.build_watch_later_roll_for_user(u)
+        r = Roll.new
+        r.creator = u
+        r.public = false
+        r.collaborative = false
+        r.title = "Watch Later"
+        u.watch_later_roll = r
       end
     
   end

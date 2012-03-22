@@ -21,9 +21,13 @@ class User
   # these rolls should not be auto-followed by our system
   key :rolls_unfollowed, Array, :typecase => ObjectId, :abbr => :aa
   
-  # The one special roll for a user: their public roll
+  # A special roll for a user: their public roll
   belongs_to :public_roll, :class_name => 'Roll'
   key :public_roll_id, ObjectId, :abbr => :ab
+  
+  # A special roll for a user: their Watch Later roll
+  belongs_to :watch_later_roll, :class_name => 'Roll'
+  key :watch_later_roll_id, ObjectId, :abbr => :ad
   
   # When we create a User just for their public Roll, we mark them faux=true
   key :faux, Boolean, :default => false, :abbr => :ac
