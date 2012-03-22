@@ -1,5 +1,6 @@
 defaults: &defaults
-  title: Shelby.tv
+  key: "mrw08LmNseqVVIa6i8nO5UEl78fxXOGcaSe978iZyrswS2a8Wj"
+  secret: "mefqdRTB2eNlTE5EnS3U8Raa5oMKFvo3Llhj2yyTAPGqu2Go90"
   
 development:
   <<: *defaults
@@ -9,6 +10,6 @@ test:
 
 production: &production
   <<: *defaults
-
+  
 arnold:
   <<: *production
