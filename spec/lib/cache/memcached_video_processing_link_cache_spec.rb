@@ -21,6 +21,16 @@ describe MemcachedVideoProcessingLinkCache do
       }.should raise_error(ArgumentError)
     end
     
+    it "should check that :embedly_json is a String and not allow Hash" do
+      lambda {
+        MemcachedVideoProcessingLinkCache.create({:url => "a", :embedly_json => {:hash => true}}, @memcache_mock)
+      }.should raise_error(ArgumentError)
+      
+      lambda {
+        MemcachedVideoProcessingLinkCache.create({:url => "a", :embedly_json => 33}, @memcache_mock)
+      }.should raise_error(ArgumentError)
+    end
+    
     it "should try to store the embed.ly json" do
       @memcache_mock.stub(:add).and_return(true)
       MemcachedVideoProcessingLinkCache.create({:url => "a", :embedly_json => "b"}, @memcache_mock)
@@ -52,7 +62,7 @@ describe MemcachedVideoProcessingLinkCache do
     it "should gracefully handle unexpected memcached hash return" do
       @memcache_mock.stub(:get).and_return({:not_expected => "blah"})
       res = MemcachedVideoProcessingLinkCache.find_by_url("blah", @memcache_mock)
-      res.should be_instance_of(MemcachedVideoProcessingLinkCache)
+      res.should == nil
     end
     
     it "should return MemcachedLinkResolvingCache on cache hit" do
@@ -66,6 +76,20 @@ describe MemcachedVideoProcessingLinkCache do
       res = MemcachedVideoProcessingLinkCache.find_by_url("blah", @memcache_mock)
       res.should be_instance_of(MemcachedVideoProcessingLinkCache)
       res.embedly_json.should == "blah2"
+    end
+    
+    it "should detect Hash being returned by Memcached and turn it into json upon return (for downstream compatibility)" do
+      the_hash = {:hash => true}
+      @memcache_mock.stub(:get).and_return({MemcachedVideoProcessingLinkCache::EMBEDLY_FIELD => the_hash})
+      res = MemcachedVideoProcessingLinkCache.find_by_url("blah", @memcache_mock)
+      res.should be_instance_of(MemcachedVideoProcessingLinkCache)
+      res.embedly_json.should == the_hash.to_json
+    end
+    
+    it "should detect non-hash and non-string being returned by Memcached and return nil" do
+      @memcache_mock.stub(:get).and_return({MemcachedVideoProcessingLinkCache::EMBEDLY_FIELD => 44})
+      res = MemcachedVideoProcessingLinkCache.find_by_url("blah", @memcache_mock)
+      res.should == nil
     end
   end
   

@@ -56,9 +56,20 @@ class MemcachedVideoProcessingLinkCache
     end
 
     if resolved and resolved.is_a? Hash
+
       #Building an object to match the old sematics
       obj = MemcachedVideoProcessingLinkCache.new()
-      obj.embedly_json = (resolved.empty? ? nil : resolved[EMBEDLY_FIELD])
+      if resolved.empty?
+        obj.embedly_json = nil
+      elsif resolved[EMBEDLY_FIELD].is_a? String
+        obj.embedly_json = resolved[EMBEDLY_FIELD]
+      elsif resolved[EMBEDLY_FIELD].is_a? Hash
+        #be robust to bad stuff in cache
+        obj.embedly_json = resolved[EMBEDLY_FIELD].to_json
+      else
+        return nil
+      end
+
       return obj
     else
       return nil
