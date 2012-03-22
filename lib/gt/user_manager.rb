@@ -105,7 +105,7 @@ module GT
       end
     end
     
-    # TODO: Going to need to handle faux User becoming *real* User
+    # Handles faux User becoming *real* User
     def self.convert_faux_user_to_real(user, omniauth)
       # create new auth and drop old auth
       user.authentications = []

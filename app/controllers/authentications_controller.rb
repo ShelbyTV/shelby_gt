@@ -1,7 +1,7 @@
 # encoding: UTF-8
 require 'user_manager'
 
-#TODO: Remove the @opener_location stuff here, just use redirect_to
+#TODO: Remove the @opener_location stuff here, just use redirect_to ?
 class AuthenticationsController < ApplicationController  
   before_filter :cors_preflight_check #, :authenticate_user!, :only => [:merge_accounts, :do_merge]
   #before_filter :read_user_on_primary_only
