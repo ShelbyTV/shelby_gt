@@ -21,6 +21,7 @@ describe V1::UserController do
       u1 = mock_model(User, :update_attributes => true)
       User.stub(:find) { u1 }
       u1.should_receive(:update_attributes!).and_return(u1)
+      u1.stub(:preferences){ "preferences" }
       put :update, :id => u1.id, :user => {:nickname=>"nick"}, :format => :json
       assigns(:user).should eq(u1)
       assigns(:status).should eq(200)
