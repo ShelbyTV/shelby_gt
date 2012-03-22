@@ -75,7 +75,6 @@ class V1::UserController < ApplicationController
   # @param [Required, String] id The id of the user
   # @param [Optional, boolean] include_children Return the following_users?
   def rolls
-    Rails.logger.info "#{current_user.id.to_s} == #{params[:id]}; #{current_user.nickname}"
     if current_user.id.to_s == params[:id]
       @rolls = current_user.roll_followings
       @status = 200
