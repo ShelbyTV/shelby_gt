@@ -7,7 +7,7 @@ namespace :gt_migration do
       require "user_manager"
       User.find_each do |u| 
         print '.'
-        GT::UserManager.ensure_users_special_rolls(u)
+        GT::UserManager.ensure_users_special_rolls(u, true)
       end
       puts " done!"
     end

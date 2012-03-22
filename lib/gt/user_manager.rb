@@ -122,6 +122,8 @@ module GT
       build_watch_later_roll_for_user(u) unless u.watch_later_roll
       u.watch_later_roll.add_follower(u) unless u.following_roll?(u.watch_later_roll)
       u.watch_later_roll.save if save
+      
+      u.save if save
     end
       
     # *******************
