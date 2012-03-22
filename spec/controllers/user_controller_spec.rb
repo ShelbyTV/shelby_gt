@@ -35,4 +35,21 @@ describe V1::UserController do
       assigns(:status).should eq(400)
     end
   end
+
+  describe "GET signed_in" do
+    it "returns 200 if signed in" do
+      get :signed_in, :format => :json
+      assigns(:status).should eq(200)      
+      assigns(:signed_in).should eq(true)
+    end
+
+    it "returns 200 if signed out" do
+      sign_out(@u1)
+      get :signed_in, :format => :json
+      assigns(:status).should eq(200)
+      assigns(:signed_in).should eq(false)
+    end
+
+
+  end
 end

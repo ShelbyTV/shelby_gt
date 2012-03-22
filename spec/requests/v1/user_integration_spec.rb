@@ -22,6 +22,13 @@ describe 'v1/user' do
         response.body.should have_json_path("result/nickname")        
       end
       
+      it "should show user is logged in" do
+        get '/v1/signed_in'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result/signed_in")
+        parse_json(response.body)["result"]["signed_in"].should eq(true)
+      end
+      
     end
     
     describe "PUT" do
@@ -54,6 +61,14 @@ describe 'v1/user' do
         response.body.should have_json_type(Integer).at_path("status")
         response.body.should be_json_eql(400).at_path("status")
       end
+      
+      it "should show user is logged in" do
+        get '/v1/signed_in'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result/signed_in")
+        parse_json(response.body)["result"]["signed_in"].should eq(false)
+      end
+      
     end
     
     describe "PUT" do
