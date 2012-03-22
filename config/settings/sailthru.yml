@@ -1,0 +1,17 @@
+defaults: &defaults
+  api_key : "b54e228046cc84b78fcf09140688f3da"
+  api_secret : "4ca74b2aa97c0739f85b6fe9848eed5c"
+  api_url : "http://api.sailthru.com"
+  user_list: 'users'
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+  
+arnold:
+  <<: *production

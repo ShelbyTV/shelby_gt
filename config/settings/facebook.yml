@@ -1,0 +1,20 @@
+defaults: &defaults
+  app_id: "161009453955546"
+  app_key: "1b92299ba1a3969e67cec3b8166705bf"
+  app_secret: "02a4c96905857504312c6bb47772f823"
+  og_base_url: "https://graph.facebook.com/me/"
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+  app_id: "115071338568035"
+  app_key: "972bf758aed0f9c8cf9ce4dc961bcc35"
+  app_secret: "416ce973e4a78ca6a99227731946b27b"
+  
+arnold:
+  <<: *production
