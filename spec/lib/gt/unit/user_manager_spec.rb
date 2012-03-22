@@ -505,5 +505,26 @@ describe GT::UserManager do
     end
   end
   
+  context "helper stuff" do
+    it "should add public and watch later roll w/o saving" do
+      u = Factory.create(:user)
+      u.public_roll.should == nil
+      u.watch_later_roll.should == nil
+      GT::UserManager.ensure_users_special_rolls(u)
+      u.public_roll.class.should == Roll
+      u.watch_later_roll.class.should == Roll
+    end
+    
+    it "should add public and watch later roll and save" do
+      u = Factory.create(:user)
+      u.public_roll.should == nil
+      u.watch_later_roll.should == nil
+      GT::UserManager.ensure_users_special_rolls(u, true)
+      u.public_roll.persisted?.should == true
+      u.watch_later_roll.persisted?.should == true
+    end
+    
+  end
+  
 end
   
