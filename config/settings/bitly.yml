@@ -1,6 +1,7 @@
 defaults: &defaults
-  title: Shelby.tv
-  
+  api_username : "onshelby"
+  api_key : "R_41aac83f2cc30229bded13d2864827d6"
+
 development:
   <<: *defaults
 
@@ -9,6 +10,6 @@ test:
 
 production: &production
   <<: *defaults
-
+  
 arnold:
   <<: *production

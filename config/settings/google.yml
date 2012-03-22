@@ -1,6 +1,7 @@
 defaults: &defaults
-  title: Shelby.tv
-  
+  id: "259310947930.apps.googleusercontent.com"
+  secret: "QJJTX5YTX+07rQqdfwCZu5+I"
+
 development:
   <<: *defaults
 
@@ -9,6 +10,6 @@ test:
 
 production: &production
   <<: *defaults
-
+  
 arnold:
   <<: *production

@@ -13,12 +13,6 @@ module Settings
     load!
   end
 
-  class ExternalAccounts < Settingslogic
-    source "#{Rails.root}/config/settings/external_accounts.yml"
-    namespace Rails.env
-    load!
-  end
-
   class Global < Settingslogic
     source "#{Rails.root}/config/settings/global.yml"
     namespace Rails.env
@@ -87,6 +81,42 @@ module Settings
   
   class Twitter < Settingslogic
     source "#{Rails.root}/config/settings/twitter.yml"
+    namespace Rails.env
+    load!
+  end
+  
+  class Facebook < Settingslogic
+    source "#{Rails.root}/config/settings/facebook.yml"
+    namespace Rails.env
+    load!
+  end
+  
+  class Tumblr < Settingslogic
+    source "#{Rails.root}/config/settings/tumblr.yml"
+    namespace Rails.env
+    load!
+  end
+  
+  class Google < Settingslogic
+    source "#{Rails.root}/config/settings/google.yml"
+    namespace Rails.env
+    load!
+  end
+  
+  class Bitly < Settingslogic
+    source "#{Rails.root}/config/settings/bitly.yml"
+    namespace Rails.env
+    load!
+  end
+  
+  class Sendgrid < Settingslogic
+    source "#{Rails.root}/config/settings/sendgrid.yml"
+    namespace Rails.env
+    load!
+  end
+  
+  class Sailthru < Settingslogic
+    source "#{Rails.root}/config/settings/sailthru.yml"
     namespace Rails.env
     load!
   end

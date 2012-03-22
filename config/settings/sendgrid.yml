@@ -1,6 +1,7 @@
 defaults: &defaults
-  title: Shelby.tv
-  
+  username: "smtp_login@shelby.tv"
+  password: "$h3lby"
+
 development:
   <<: *defaults
 
@@ -9,6 +10,6 @@ test:
 
 production: &production
   <<: *defaults
-
+  
 arnold:
   <<: *production
