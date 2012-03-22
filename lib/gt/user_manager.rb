@@ -96,29 +96,31 @@ module GT
       # create new auth and drop old auth
       user.authentications = []
       
-      auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
+      new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
       
-      GT::AuthenticationBuilder.normalize_user_info(user, auth)
+      GT::AuthenticationBuilder.normalize_user_info(user, new_auth)
       ensure_valid_unique_nickname!(user)
       user.downcase_nickname = user.nickname.downcase
 
-      user.authentications << auth
+      user.authentications << new_auth
 
       #TODO: this is common to user creation, should not be in a specific method like this
       user.preferences = Preferences.new()
 
-      user.faux = User::FAUX_STATUS[:false]
-      user.save!
-      #TODO: initialize_video_processing
-      
-      return user, auth
+      user.faux = User::FAUX_STATUS[:converted]
+      if user.save
+        GT::PredatorManager.initialize_video_processing(user, new_auth)
+        return user, new_auth
+      else
+        puts user.errors.full_messages
+        return user.errors
+      end
     end
       
     # *******************
     # TODO When we know that everythings working, we refactor this shit out of this.
     # *******************
   
-    
     private
       
       # Takes an omniauth hash to build one user, prefs, and an auth to go along with it

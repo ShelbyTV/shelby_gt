@@ -8,9 +8,6 @@ require 'predator_manager'
 
 # UNIT test
 describe GT::UserManager do
-  before(:all) do
-    
-  end
   
   context "get_or_create_faux_user" do
     it "should get real User when one exists" do
@@ -144,19 +141,27 @@ describe GT::UserManager do
         },
         'garbage' => 'truck'
       }
+      
+      nick, provider, uid = "whatever3", "fb", "123uid3"
+      @faux_u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
     end
     
     it "should convert a (persisted) faux User to real user" do
-      @nick, provider, uid = "whatever3", "fb", "123uid3"
-      faux_u = GT::UserManager.get_or_create_faux_user(@nick, provider, uid)      
-      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(faux_u, @omniauth_hash)
+      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
       real_u.class.should == User
       real_u.persisted?.should == true
-      real_u.faux.should == User::FAUX_STATUS[:false]
+      real_u.faux.should == User::FAUX_STATUS[:converted]
     end
 
-    it "should" do
-      
+    it "should have one authentication with an oauth token" do
+      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u.authentications.length.should eq(1)
+      new_auth.oauth_token.should eq(@omniauth_hash["credentials"]["token"])
+    end
+    
+    it "should have preferences set" do
+      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u.preferences.class.should eq(Preferences)
     end
   end
   
