@@ -1,6 +1,6 @@
 class V1::UserController < ApplicationController  
   
-  before_filter :authenticate_user!, :cors_preflight_check, :except => [:signed_in, :show]
+  before_filter :user_authenticated?, :cors_preflight_check, :except => [:signed_in, :show]
   
   ####################################
   # Returns true (false) if user is (not) signed in
@@ -10,7 +10,6 @@ class V1::UserController < ApplicationController
     @status = 200
     @signed_in = user_signed_in? ? true : false
   end
-  
   
   ####################################
   # Returns one user, with the given parameters.
@@ -67,4 +66,18 @@ class V1::UserController < ApplicationController
     end
   end
 
+  ##
+  # Returns the rolls the user is following
+  #
+  # [GET] /v1/rolls
+  # 
+  # @param [Optional, boolean] include_children Return the following_users?
+  def rolls_following
+    if user_signed_in?
+      
+    else
+      @status, @message = 401, "user not lo"
+      render 'v1/blank', :status => @status
+    end
+  end
 end

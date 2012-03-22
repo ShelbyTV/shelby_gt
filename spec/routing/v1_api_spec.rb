@@ -2,14 +2,30 @@ require 'spec_helper'
 
 describe V1::UserController do
   describe "routing" do
-    it "routes for GET" do
+    it "routes for user GET" do
       { :get => "/v1/user/1" }.should route_to(
         :controller => "v1/user",
         :action => "show",
         :format => "json",
         :id => "1"
       )
-    end 
+    end
+    
+    it "routes for signed_in GET" do
+      { :get => "/v1/signed_in" }.should route_to(
+        :controller => "v1/user",
+        :action => "signed_in",
+        :format => "json"
+      )
+    end
+
+    it "routes for signed_in GET" do
+      { :get => "/v1/rolls" }.should route_to(
+        :controller => "v1/user",
+        :action => "rolls_following",
+        :format => "json"
+      )
+    end
 
     it "routes for PUT" do
       { :put => "/v1/user/1" }.should route_to(

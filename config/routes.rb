@@ -29,7 +29,8 @@ ShelbyGt::Application.routes.draw do
       resources :messages, :only => [:create, :destroy]
     end
     
-    get 'user/' => 'user#show'
+    get 'user' => 'user#show'
+    get 'rolls' => 'user#rolls_following'
     get 'signed_in' => 'user#signed_in'
     post 'frame/:id/upvote' => 'frame#upvote'
     get 'roll/:id/frames' => 'frame#index'

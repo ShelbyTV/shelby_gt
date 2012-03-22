@@ -32,8 +32,8 @@ class User
   # When we create a User just for their public Roll, we mark them faux=true
   #  this status allows us to track conversions from faux to real
   FAUX_STATUS = {
-    :true => 0,
-    :false => 1,
+    :false => 0,
+    :true => 1,
     :converted => 2
   }.freeze
   key :faux, Integer, :abbr => :ac, :default => FAUX_STATUS[:false]
