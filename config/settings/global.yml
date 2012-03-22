@@ -1,5 +1,6 @@
 defaults: &defaults
   title: Shelby.tv
+  #TODO: this should be in Settings::Sailthru 
   sailthru_user_list: 'users'
   
 development:
