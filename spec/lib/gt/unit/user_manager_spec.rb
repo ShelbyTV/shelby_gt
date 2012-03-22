@@ -8,13 +8,11 @@ require 'predator_manager'
 
 # UNIT test
 describe GT::UserManager do
-  before(:all) do
-  end
   
   context "get_or_create_faux_user" do
     it "should get real User when one exists" do
       nick, provider, uid = "whatever", "fb", "123uid"
-      u = User.new(:nickname => nick, :faux => false)
+      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid
@@ -30,7 +28,7 @@ describe GT::UserManager do
     
     it "should get faux User when one exists" do
       nick, provider, uid = "whatever2", "fb", "123uid2"
-      u = User.new(:nickname => nick, :faux => true)
+      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:true])
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid
@@ -46,7 +44,7 @@ describe GT::UserManager do
     
     it "should add a public roll to existing user if they're missing it" do
       nick, provider, uid = "whatever--", "fb--", "123uid--"
-      u = User.new(:nickname => nick, :faux => false)
+      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid
@@ -90,7 +88,7 @@ describe GT::UserManager do
         u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
         u.class.should == User
         u.persisted?.should == true
-        u.faux.should == true
+        u.faux.should == User::FAUX_STATUS[:true]
       }.should change { User.count }.by(1)
     end
     
@@ -179,6 +177,47 @@ describe GT::UserManager do
       u.downcase_nickname.should == "whatever1"
     end
     
+  end
+  
+  context "convert_faux_user_to_real" do
+    before(:each) do
+      @omniauth_hash = {
+        'provider' => "twitter",
+        'uid' => '33',
+        'credentials' => {
+          'token' => "somelongtoken",
+          'secret' => 'foreskin'
+        },
+        'info' => {
+          'name' => 'some name',
+          'nickname' => @nickname,
+          'image' => "http://original.com/image_normal.png",
+          'garbage' => 'truck'
+        },
+        'garbage' => 'truck'
+      }
+      
+      nick, provider, uid = "whatever3", "fb", "123uid3"
+      @faux_u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
+    end
+    
+    it "should convert a (persisted) faux User to real user" do
+      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u.class.should == User
+      real_u.persisted?.should == true
+      real_u.faux.should == User::FAUX_STATUS[:converted]
+    end
+
+    it "should have one authentication with an oauth token" do
+      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u.authentications.length.should eq(1)
+      new_auth.oauth_token.should eq(@omniauth_hash["credentials"]["token"])
+    end
+    
+    it "should have preferences set" do
+      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u.preferences.class.should eq(Preferences)
+    end
   end
   
   context "create_user" do

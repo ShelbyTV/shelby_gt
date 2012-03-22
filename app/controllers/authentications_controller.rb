@@ -1,6 +1,7 @@
 # encoding: UTF-8
 require 'user_manager'
 
+#TODO: Remove the @opener_location stuff here, just use redirect_to
 class AuthenticationsController < ApplicationController  
   before_filter :cors_preflight_check #, :authenticate_user!, :only => [:merge_accounts, :do_merge]
   #before_filter :read_user_on_primary_only
@@ -13,10 +14,6 @@ class AuthenticationsController < ApplicationController
     # See if we have a matching user...
     user = User.first( :conditions => { 'authentications.provider' => omniauth['provider'], 'authentications.uid' => omniauth['uid'] } )
     
-    # Frame id saved as cookie when user isn't logged in
-    #referral_frame_id = cookies[:shelby_referral_frame_id]
-    #cookies[:shelby_referral_frame_id] = nil
-    
 #TODO: ---- Current user with two seperate accounts
     if user_signed_in? and user and user != current_user
       # make sure they want to merge "user" into "current_user"
@@ -26,8 +23,11 @@ class AuthenticationsController < ApplicationController
     
 # ---- Current user, just signing in
     elsif user
-      #TODO: if user.faux == true turn faux user into real user via UserManager
-      GT::UserManager.start_user_sign_in(user, omniauth, session)
+      if user.faux == User::FAUX_STATUS[:true]
+        GT::UserManager.convert_faux_user_to_real(user, omniauth)
+      else
+        GT::UserManager.start_user_sign_in(user, omniauth, session)
+      end
       
       sign_in(:user, user)
       cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now }

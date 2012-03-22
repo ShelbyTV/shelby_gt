@@ -80,7 +80,7 @@ module GT
       # No user (faux or real) existed, create a faux user...
       u = User.new
       u.nickname = nickname
-      u.faux = true
+      u.faux = User::FAUX_STATUS[:true]
       
       # This Authentication is how the user will be looked up...
       auth = Authentication.new(:provider => provider, :uid => uid, :nickname => nickname)
@@ -105,15 +105,36 @@ module GT
       end
     end
     
-    
+    # TODO: Going to need to handle faux User becoming *real* User
+    def self.convert_faux_user_to_real(user, omniauth)
+      # create new auth and drop old auth
+      user.authentications = []
+      
+      new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
+      
+      GT::AuthenticationBuilder.normalize_user_info(user, new_auth)
+      ensure_valid_unique_nickname!(user)
+      user.downcase_nickname = user.nickname.downcase
+
+      user.authentications << new_auth
+
+      #TODO: this is common to user creation, should not be in a specific method like this
+      user.preferences = Preferences.new()
+
+      user.faux = User::FAUX_STATUS[:converted]
+      if user.save
+        GT::PredatorManager.initialize_video_processing(user, new_auth)
+        return user, new_auth
+      else
+        puts user.errors.full_messages
+        return user.errors
+      end
+    end
+      
     # *******************
-    # TODO UserManager needs to be DRY and SIMPLE!  After merging w/ the rest of user/auth creation, things will get messy.
-    # TODO That's fine, at first.  Make sure it's well tested and the tests pass.
     # TODO When we know that everythings working, we refactor this shit out of this.
     # *******************
-    
-    # TODO: Going to need to handle faux User becoming *real* User
-    
+  
     private
       
       # Takes an omniauth hash to build one user, prefs, and an auth to go along with it
