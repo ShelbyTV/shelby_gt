@@ -67,17 +67,21 @@ class V1::UserController < ApplicationController
   end
 
   ##
-  # Returns the rolls the user is following
+  # Returns the rolls the current_user is following
+  #   REQUIRES AUTHENTICATION
   #
-  # [GET] /v1/rolls
+  # [GET] /v1/user/:id/rolls
   # 
+  # @param [Required, String] id The id of the user
   # @param [Optional, boolean] include_children Return the following_users?
-  def rolls_following
-    if user_signed_in?
-      
+  def rolls
+    Rails.logger.info "#{current_user.id.to_s} == #{params[:id]}; #{current_user.nickname}"
+    if current_user.id.to_s == params[:id]
+      @rolls = current_user.roll_followings
+      @status = 200
     else
-      @status, @message = 401, "user not lo"
-      render 'v1/blank', :status => @status
+      @status, @message = 401, "you are not authorized to view that users rolls"
     end
   end
+  
 end

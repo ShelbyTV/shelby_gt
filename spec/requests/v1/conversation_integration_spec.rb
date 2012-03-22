@@ -1,7 +1,7 @@
 require 'spec_helper' 
 
 describe 'v1/conversation' do
-  before(:each) do
+  before(:all) do
     @u1 = Factory.create(:user, :authentications => [{:provider => "twitter", :uid => 1234}])
     @c = Factory.create(:conversation)
   end

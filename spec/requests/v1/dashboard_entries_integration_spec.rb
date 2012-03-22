@@ -3,10 +3,8 @@ require 'spec_helper'
 describe 'v1/dashboard' do
   context 'logged in' do
     before(:each) do
-      MongoMapper::Helper.drop_all_dbs
-      @u1 = Factory.create(:user, :authentications => [{:provider => "twitter", :uid => 1234}])
-
-      set_omniauth()
+      @u1 = Factory.create(:user)
+      set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'      
     end
 

@@ -1,13 +1,14 @@
 require 'spec_helper' 
 
 describe 'v1/user' do
-  
+
   context 'logged in' do
     before(:each) do
-      @u1 = Factory.create(:user, :authentications => [{:provider => "twitter", :uid => 1234}])
-      set_omniauth()
+      @u1 = Factory.create(:user)
+      set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
     end
+    
     describe "GET" do
       it "should return user info on success" do
         get '/v1/user'
@@ -27,6 +28,18 @@ describe 'v1/user' do
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result/signed_in")
         parse_json(response.body)["result"]["signed_in"].should eq(true)
+      end
+      
+      it "should show a users rolls if the supplied user_id is the current_users" do
+        get '/v1/user/'+@u1.id+'/rolls'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result/rolls_following")
+      end
+      
+      it "should not show a users rolls if the supplied user_id is NOT the current_users" do
+        u2 = Factory.create(:user)
+        get '/v1/user/'+u2.id+'/rolls'
+        response.body.should be_json_eql(401).at_path("status")
       end
       
     end

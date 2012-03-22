@@ -20,10 +20,11 @@ describe V1::UserController do
     end
 
     it "routes for signed_in GET" do
-      { :get => "/v1/rolls" }.should route_to(
+      { :get => "/v1/user/1/rolls" }.should route_to(
         :controller => "v1/user",
-        :action => "rolls_following",
-        :format => "json"
+        :action => "rolls",
+        :format => "json",
+        :id => "1"
       )
     end
 

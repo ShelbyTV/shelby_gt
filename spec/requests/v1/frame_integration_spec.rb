@@ -3,7 +3,7 @@ require 'spec_helper'
 describe 'v1/frame' do
   
   context 'logged in' do
-    before(:each) do
+    before(:all) do
       @f = Factory.create(:frame)
       @u1 = Factory.create(:user, :authentications => [{:provider => "twitter", :uid => 1234}])
       set_omniauth()

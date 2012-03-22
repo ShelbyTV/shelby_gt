@@ -4,15 +4,29 @@ describe V1::UserController do
   
   before(:each) do
     @u1 = Factory.create(:user)
+    User.stub(:find) { @u1 }
     sign_in @u1
   end
     
   describe "GET show" do
     it "assigns one user to @user" do
-      User.stub(:find) { @u1 }
       get :show, :format => :json
       assigns(:user).should eq(@u1)
       assigns(:status).should eq(200)
+    end
+  end
+
+  describe "GET rolls" do
+    it "returns rolls followed of the authed in user" do
+      get :rolls, :id => @u1.id, :format => :json
+      assigns(:status).should eq(200)
+      assigns(:rolls).class.should eq(Array)
+    end
+    
+    it "returns 401 if the user is not the authed in user" do
+      u2 = Factory.create(:user)
+      get :rolls, :id => u2.id, :format => :json
+      assigns(:status).should eq(401)
     end
   end
   

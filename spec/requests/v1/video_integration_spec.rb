@@ -5,10 +5,6 @@ describe 'v1/video' do
     @v = Factory.create(:video, :title=>"test title")
   end
   
-  after(:each) do
-    @v.destroy
-  end
-  
   describe "GET" do
     it "should return video info on success" do
       get '/v1/video/'+@v.id
