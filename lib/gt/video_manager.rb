@@ -102,7 +102,7 @@ module GT
           provider_name = provider_info[:provider_name]
           provider_id = provider_info[:provider_id]
         else
-          Rails.logger.error("[GT::VideoManager#create_video_for_embedly_hash] could not determine provider name, id based on embed.ly hash #{h}")
+          Rails.logger.error("[GT::VideoManager#find_or_create_video_for_embedly_hash] could not determine provider name, id based on embed.ly hash #{h}")
           return nil
         end
         
