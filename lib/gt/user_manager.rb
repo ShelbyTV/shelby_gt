@@ -71,7 +71,7 @@ module GT
       # No user (faux or real) existed, create a faux user...
       u = User.new
       u.nickname = nickname
-      u.faux = true
+      u.faux = User::FAUX_STATUS[:true]
       
       # This Authentication is how the user will be looked up...
       auth = Authentication.new(:provider => provider, :uid => uid, :nickname => nickname)
@@ -93,9 +93,25 @@ module GT
     
     # TODO: Going to need to handle faux User becoming *real* User
     def self.convert_faux_user_to_real(user, omniauth)
-      #TODO: Either add missing info into current authentication OR create new auth and drop old auth
-      #TODO: Possibly add a watch_later_roll
+      # create new auth and drop old auth
+      user.authentications = []
+      
+      auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
+      
+      GT::AuthenticationBuilder.normalize_user_info(user, auth)
+      ensure_valid_unique_nickname!(user)
+      user.downcase_nickname = user.nickname.downcase
+
+      user.authentications << auth
+
+      #TODO: this is common to user creation, should not be in a specific method like this
+      user.preferences = Preferences.new()
+
+      user.faux = User::FAUX_STATUS[:false]
+      user.save!
       #TODO: initialize_video_processing
+      
+      return user, auth
     end
       
     # *******************

@@ -26,7 +26,13 @@ class User
   key :public_roll_id, ObjectId, :abbr => :ab
   
   # When we create a User just for their public Roll, we mark them faux=true
-  key :faux, Boolean, :default => false, :abbr => :ac
+  #  this status allows us to track conversions from faux to real
+  FAUX_STATUS = {
+    :true => 0,
+    :false => 1,
+    :converted => 2
+  }.freeze
+  key :faux, Integer, :abbr => :ac, :default => FAUX_STATUS[:false]
   
   has_many :dashboard_entries, :foreign_key => :a
 
