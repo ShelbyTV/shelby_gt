@@ -6,7 +6,8 @@ def set_omniauth(opts = {})
                             :email => "foobar@example.com",
                             :first_name => "foo",
                             :last_name => "bar"
-                          }
+                          },
+             :token => "somelongtoken"
             }
 
   credentials = default.merge(opts)
@@ -23,6 +24,7 @@ def set_omniauth(opts = {})
       "email" => user_hash[:email],
       "first_name" => user_hash[:first_name],
       "last_name" => user_hash[:last_name]
-      }
+      },
+    "credentials" =>  {"token" => credentials[:token]}
     }
 end
