@@ -1,6 +1,21 @@
 class V1::RollController < ApplicationController  
   
   before_filter :cors_preflight_check, :authenticate_user!, :except => [:show]
+
+  ##
+  # Returns one roll, with the given parameters.
+  #
+  # [GET] /v1/rolls
+  # 
+  # @param [Required, String] id The id of the roll
+  # @param [Optional, String] following_users Return the following_users?
+  def index
+    if user_signed_in?
+      
+    else
+      
+    end
+  end
   
   ##
   # Returns one roll, with the given parameters.
