@@ -5,26 +5,11 @@ GIT
     beanstalk-client (1.2.0)
 
 GIT
-  remote: git://github.com/ShelbyTV/delayed_job_mongo_mapper.git
-  revision: 9967e81204a3198770119d3dcc1a00e98ea708b3
-  specs:
-    delayed_job_mongo_mapper (1.1.0)
-      delayed_job
-      mongo_mapper (>= 0.9.1)
-
-GIT
   remote: git://github.com/arunagw/omniauth-twitter.git
   revision: 3d0ee54a7bfc843602ad195e47695b1e22f8cbec
   specs:
     omniauth-twitter (0.0.8)
       omniauth-oauth (~> 1.0)
-
-GIT
-  remote: git://github.com/collectiveidea/delayed_job.git
-  revision: 4df5d96be75bc17e98d36234004f6c46dbd04ff4
-  specs:
-    delayed_job (3.0.1)
-      activesupport (~> 3.0)
 
 GIT
   remote: git://github.com/igrigorik/em-http-request.git
@@ -279,8 +264,6 @@ DEPENDENCIES
   bson_ext
   capistrano
   compass (= 0.11.7)
-  delayed_job!
-  delayed_job_mongo_mapper!
   devise (>= 2.0)
   em-http-request!
   em-jack

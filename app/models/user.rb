@@ -182,13 +182,14 @@ class User
   end  
   
   def total_tracker_count() self.social_tracker.inject(:+); end
-    
+  
+  #TODO: re-implement welcome email  
   def send_email_address_to_sailthru(list="#{Settings::Global.sailthru_user_list}")
+    EM.next_tick do
       #client = Bacon::Email.new()
       #client.add_email_address(self.primary_email, list)
-      #TODO: FIXME
+    end
   end
-  handle_asynchronously :send_email_address_to_sailthru
   
   private
         

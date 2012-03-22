@@ -60,12 +60,6 @@ gem "statsd-ruby" # for communicating with graphite server
 gem "beanstalk-client", :git => "git://github.com/ShelbyTV/beanstalk-client-ruby.git"
 
 #
-# ---------- Async Processing
-#
-gem 'delayed_job', :git => 'git://github.com/collectiveidea/delayed_job.git'
-gem 'delayed_job_mongo_mapper', :git => 'git://github.com/ShelbyTV/delayed_job_mongo_mapper.git'
-
-#
 # ---------- TODO: explain what yard is and why it's here
 #
 group :development do
