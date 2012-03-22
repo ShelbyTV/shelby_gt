@@ -82,6 +82,12 @@ describe 'v1/user' do
         parse_json(response.body)["result"]["signed_in"].should eq(false)
       end
       
+      it "should return error if trying to get a users rolls" do
+        u = Factory.create(:user)
+        get '/v1/user/'+u.id+'/rolls'
+        response.body.should be_json_eql(401).at_path("status")
+      end
+      
     end
     
     describe "PUT" do
