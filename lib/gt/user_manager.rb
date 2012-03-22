@@ -14,17 +14,11 @@ module GT
     def self.create_new_user_from_omniauth(omniauth)
       user, auth = build_new_user_and_auth(omniauth)
 
-      # Create the public and watch_later Rolls for this new User
-      build_public_roll_for_user(user)
-      build_watch_later_roll_for_user(user)
-      
-      # user should follow their special rolls
-      user.public_roll.add_follower(user)
-      user.watch_later_roll.add_follower(user)
+      # build, don't save, public and watch_later rolls
+      ensure_users_special_rolls(user)
 
       if user.save
         GT::PredatorManager.initialize_video_processing(user, auth)
-
         return user
       else
         puts user.errors.full_messages
@@ -66,14 +60,7 @@ module GT
     #
     def self.get_or_create_faux_user(nickname, provider, uid)
       if u = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
-        unless u.public_roll
-          build_public_roll_for_user(u)
-          u.public_roll.save
-        end
-        unless u.watch_later_roll
-          build_watch_later_roll_for_user(u)
-          u.watch_later_roll.save
-        end
+        ensure_users_special_rolls(u, true)
         return u
       end
       
@@ -89,13 +76,8 @@ module GT
       ensure_valid_unique_nickname!(u)
       u.downcase_nickname = u.nickname.downcase
       
-      # Create the public and watch_later Rolls for this new User
-      build_public_roll_for_user(u)
-      build_watch_later_roll_for_user(u)
-      
-      # user should follow their special rolls
-      u.public_roll.add_follower(u)
-      u.watch_later_roll.add_follower(u)
+      # build, don't save, public and watch_later rolls
+      ensure_users_special_rolls(u)
       
       if u.save
         return u
@@ -128,6 +110,21 @@ module GT
       else
         puts user.errors.full_messages
         return user.errors
+      end
+    end
+    
+    # Make sure a user has and follows their own public and watch_later Rolls
+    def self.ensure_users_special_rolls(u, save=false)
+      unless u.public_roll
+        build_public_roll_for_user(u)
+        u.public_roll.add_follower(u)
+        u.public_roll.save if save
+      end
+      
+      unless u.watch_later_roll
+        build_watch_later_roll_for_user(u)
+        u.watch_later_roll.add_follower(u)
+        u.watch_later_roll.save if save
       end
     end
       
