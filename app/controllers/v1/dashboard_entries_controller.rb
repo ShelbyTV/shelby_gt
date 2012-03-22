@@ -8,7 +8,7 @@ class V1::DashboardEntriesController < ApplicationController
   # [GET] v1/dashboard.json
   # 
   # @param [Optional, String] user_id The id of the user otherwise user = current_user
-  # @param [Optional, Integer] limit The number of entries to return (default/max 50)
+  # @param [Optional, Integer] limit The number of entries to return (default/max 20)
   # @param [Optional, Integer] skip The number of entries to skip (default 0)
   # @param [Optional, Boolean] include_children if set to true, will not include all goodies, eg roll, frame etc
   def index

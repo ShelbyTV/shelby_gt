@@ -30,6 +30,7 @@ ShelbyGt::Application.routes.draw do
     end
     
     get 'user/' => 'user#show'
+    get 'signed_in' => 'user#signed_in'
     post 'frame/:id/upvote' => 'frame#upvote'
     get 'roll/:id/frames' => 'frame#index'
     post 'roll/:id/frames' => 'frame#create'
