@@ -18,9 +18,12 @@ test:
   host: 'host'
   port: 'port'
 
-production:
+production: &production
   <<: *defaults
   available: true
   url: '10.181.132.217:11300'
   host: '10.181.132.217'
   port: '11300'
+  
+arnold:
+  <<: *production

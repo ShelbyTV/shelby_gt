@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 #TOOD: should probably set this a better way
-ENV["RAILS_ENV"] ||= 'production'
+ENV["RAILS_ENV"] ||= 'arnold'
 
 puts "loading app..."
 require File.dirname(__FILE__) + "/../../../config/application"

@@ -1,3 +1,4 @@
+#TODO: twitter is already in it's own settings class: Twiiter -- Facebook, bit.ly, sailthru, etc. should follow that pattern
 defaults: &defaults
   twitter_consumer_key: 5DNrVZpdIwhQthCJJXCfnQ
   twitter_consumer_secret: Tlb35nblFFTZRidpu36Uo3z9mfcvSVv1MuZZ19SHaU
@@ -29,8 +30,11 @@ test:
   <<: *defaults
   
 
-production:
+production: &production
   <<: *defaults
   facebook_app_id: "115071338568035"
   facebook_app_key: "972bf758aed0f9c8cf9ce4dc961bcc35"
   facebook_app_secret: "416ce973e4a78ca6a99227731946b27b"
+
+arnold:
+  <<: *production

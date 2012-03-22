@@ -7,6 +7,9 @@ development:
 test:
   <<: *defaults
 
-production:
+production: &production
   <<: *defaults
   uri : '10.183.196.168:11211'
+
+arnold:
+  <<: *production

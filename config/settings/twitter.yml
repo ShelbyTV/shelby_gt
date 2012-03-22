@@ -10,5 +10,8 @@ development:
 test:
   <<: *defaults
 
-production:
+production: &production
   <<: *defaults
+  
+arnold:
+  <<: *production

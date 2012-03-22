@@ -11,7 +11,7 @@ test:
   <<: *defaults
   db_name: 'test-gt-dashboard-entry'
 
-production:
+production: &production
   <<: *defaults
   db_name: 'gt-dashboard-entry'
   db_host: '108.166.111.208'
@@ -19,3 +19,7 @@ production:
   #db_hosts: ["host:port", "host:port"]
   db_username: "gt_user"
   db_password: "GT/us3r!!!"
+  
+arnold:
+  <<: *production
+  db_read: :primary
