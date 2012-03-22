@@ -22,4 +22,5 @@ production: &production
   
 arnold:
   <<: *production
-  db_options: {:read => :primary}
+  db_options:
+   :read: :primary
