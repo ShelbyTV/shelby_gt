@@ -32,7 +32,7 @@ class V1::UserController < ApplicationController
     elsif user_signed_in?
       @user = current_user
       @include_auths = (params[:include_auths] == "true" ) ? true : false
-      @roll_followings = (params[:include_rolls] == "true") ? true : false
+      @include_rolls = (params[:include_rolls] == "true") ? true : false
       @status = 200
     else
       @status, @message = 400, "could not find user"
