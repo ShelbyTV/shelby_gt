@@ -12,7 +12,7 @@ if @include_auths == true
 	end	
 end
 
-if @roll_followings
+if @include_rolls == true
 	child :roll_followings do
 		glue :roll do
 			extends 'v1/roll/show'
