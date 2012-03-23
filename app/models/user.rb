@@ -4,6 +4,7 @@
 # New vs. old keys will be clearly listed
 class User
   include MongoMapper::Document
+  safe
     
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::User
@@ -134,6 +135,7 @@ class User
   
   def self.find_by_provider_name_and_id(name,id)
     return nil unless name.is_a? String and !name.blank?
+    return nil unless id.is_a? String and !id.blank?
     User.where('authentications.provider'=> name, 'authentications.uid'=> id).first
   end
   

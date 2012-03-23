@@ -23,6 +23,15 @@ describe User do
       User.find(@user.id).id.should == @user.id
     end
   
+    it "should not save if user w/ same nickname already exists" do
+      lambda {
+        User.exists?(:nickname => @user.nickname).should == true
+        u = User.new(:nickname => @user.nickname)
+        u.save.should == false
+        u.persisted?.should == false
+      }.should change {User.count}.by(0)
+    end
+  
   end
   
   context "rolls" do
