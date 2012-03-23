@@ -75,7 +75,7 @@ class AuthenticationsController < ApplicationController
   
   def sign_out_user
     sign_out(:user)
-    cookies[:locked_and_loaded] = { :value => "false", :domain => '.shelby.tv' }
+    cookies.delete(:locked_and_loaded, :domain => '.shelby.tv')
     redirect_to request.headers['HTTP_REFERER']
   end
   
