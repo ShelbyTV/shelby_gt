@@ -21,7 +21,7 @@ describe MemcachedVideoProcessingLinkCache do
       }.should raise_error(ArgumentError)
     end
     
-    it "should check that :embedly_json is a String and not allow Hash" do
+    it "should check that :embedly_json is a String or nil, and not allow Hash" do
       lambda {
         MemcachedVideoProcessingLinkCache.create({:url => "a", :embedly_json => {:hash => true}}, @memcache_mock)
       }.should raise_error(ArgumentError)
@@ -29,6 +29,16 @@ describe MemcachedVideoProcessingLinkCache do
       lambda {
         MemcachedVideoProcessingLinkCache.create({:url => "a", :embedly_json => 33}, @memcache_mock)
       }.should raise_error(ArgumentError)
+      
+      #string okay
+      lambda {
+        MemcachedVideoProcessingLinkCache.create({:url => "a", :embedly_json => '33'}, @memcache_mock)
+      }.should_not raise_error(ArgumentError)
+      
+      #nil okay
+      lambda {
+        MemcachedVideoProcessingLinkCache.create({:url => "a", :embedly_json => nil}, @memcache_mock)
+      }.should_not raise_error(ArgumentError)
     end
     
     it "should try to store the embed.ly json" do

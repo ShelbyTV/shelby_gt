@@ -21,7 +21,7 @@ module GT
         GT::PredatorManager.initialize_video_processing(user, auth)
         return user
       else
-        puts user.errors.full_messages
+        Rails.logger.error "[GT::UserManager#create_new_user_from_omniauth] Failed to create user: #{user.errors.full_messages.join(',')}"
         return user.errors
       end
     end
@@ -42,7 +42,7 @@ module GT
         GT::PredatorManager.initialize_video_processing(user, new_auth)        
         return user
       else
-        puts user.errors.full_messages
+        Rails.logger.error "[GT::UserManager#add_new_auth_from_omniauth] Failed to save user: #{user.errors.full_messages.join(',')}"
         return false
       end
     end
@@ -59,6 +59,10 @@ module GT
     # Or the Errors, if save failed.
     #
     def self.get_or_create_faux_user(nickname, provider, uid)
+      raise ArgumentError, "must supply valid nickname" unless nickname.is_a?(String) and !nickname.blank?
+      raise ArgumentError, "must supply valid provider" unless provider.is_a?(String) and !provider.blank?
+      raise ArgumentError, "must supply valid uid" unless uid.is_a?(String) and !uid.blank?
+      
       if u = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
         ensure_users_special_rolls(u, true)
         return u
@@ -83,7 +87,7 @@ module GT
       if u.save
         return u
       else
-        puts u.errors.full_messages
+        Rails.logger.error "[GT::UserManager#get_or_create_faux_user] Failed to create user: #{u.errors.full_messages.join(',')}"
         return u.errors
       end
     end
@@ -106,7 +110,7 @@ module GT
         GT::PredatorManager.initialize_video_processing(user, new_auth)
         return user, new_auth
       else
-        puts user.errors.full_messages
+        Rails.logger.error "[GT::UserManager#convert_faux_user_to_real] Failed to save user: #{user.errors.full_messages.join(',')}"
         return user.errors
       end
     end
@@ -121,7 +125,9 @@ module GT
       u.watch_later_roll.add_follower(u) unless u.following_roll?(u.watch_later_roll)
       u.watch_later_roll.save if save
       
-      u.save if save
+      if save and !u.save
+        Rails.logger.error "[GT::UserManager#ensure_users_speical_rolls] Failed to save user: #{u.errors.full_messages.join(',')}"
+      end
     end
     
     private

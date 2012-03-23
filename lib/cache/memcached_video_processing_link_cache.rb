@@ -13,12 +13,12 @@ class MemcachedVideoProcessingLinkCache
   #
   # options -- REQUIRED:
   #  :url  -- REQUIRED -- the URL for which we are storing the result of the call to embed.ly
-  #  :embedly_json  -- REQUIRED -- the raw json returned by embed.ly
+  #  :embedly_json  -- REQUIRED -- the raw json returned by embed.ly (or nil if embed.ly says NO VIDEO via 404)
   # memcached -- REQUIRED -- should be an instance of a Memcached client.  Use GT::Arnold::MemcachedManager.get_client
   #
   def self.create(options, memcached)
-    raise ArgumentError, "options must include :url as String" unless options[:url] and options[:url].is_a? String
-    raise ArgumentError, "options must include :embedly_json as String" unless options[:embedly_json] and options[:embedly_json].is_a? String
+    raise ArgumentError, "options must include :url as String" unless options.include?(:url) and options[:url].is_a? String
+    raise ArgumentError, "options must include :embedly_json as String or nil" unless options.include?(:embedly_json) and (options[:embedly_json] == nil or options[:embedly_json].is_a?(String))
     
     key = get_key_from_url(options[:url])
     
