@@ -24,6 +24,7 @@ class V1::UserController < ApplicationController
     if params[:id]
       if @user = User.find(params[:id])
         @include_auths = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
+        @include_rolls = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true" ) ? true : false
         @status = 200
       else
         @status, @message = 400, "could not find that user"
