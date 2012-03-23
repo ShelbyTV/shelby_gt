@@ -29,7 +29,18 @@ describe User do
         u = User.new(:nickname => @user.nickname)
         u.save.should == false
         u.persisted?.should == false
-      }.should change {User.count}.by(0)
+      }.should_not change {User.count}
+    end
+    
+    it "should not be savable w/o a nickname" do
+      lambda {
+        u = User.new(:nickname => nil)
+        u.save.should == false
+        u.nickname = ''
+        u.save.should == false
+        u.nickname = ' '
+        u.save.should == false
+      }.should_not change {User.count}
     end
   
   end
