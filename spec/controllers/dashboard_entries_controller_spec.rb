@@ -2,10 +2,12 @@ require 'spec_helper'
 
 describe V1::DashboardEntriesController do  
   describe "GET index" do
-    it "should return the dashboard entrys to @entries and return 200 when NOT including children" do
+    before(:each) do
       @user = Factory.create(:user)
       sign_in @user
-      
+    end
+    
+    it "should return the dashboard entrys to @entries and return 200 when NOT including children" do
       video = mock_model(Video)
       frame = mock_model(Frame, :video_id => video.id)
       entry = mock_model(DashboardEntry, :frame => frame)
@@ -17,9 +19,6 @@ describe V1::DashboardEntriesController do
     end
 
     it "should return the dashboard entrys to @entries and return 200 when including children" do
-      @user = Factory.create(:user)
-      sign_in @user
-      
       video = mock_model(Video)
       message = mock_model(Message)
       conv = mock_model(Conversation, :messages => [message])
@@ -32,11 +31,18 @@ describe V1::DashboardEntriesController do
       assigns(:entries).should eq([entry])
       assigns(:status).should eq(200)
     end
-
+    
+    it "should not return more than 20 entries" do
+      30.times do |n|
+        Factory.create(:dashboard_entry, :frame=>Factory.create(:frame))
+      end
+      DashboardEntry.stub_chain(:skip, :sort, :where, :all).and_return(DashboardEntry.first)
+      get :index, :limit => 30, :format => :json
+      assigns(:limit).should eq(20)
+      assigns(:status).should eq(200)
+    end
     
     it "should return error if no entries found" do
-      @user = Factory.create(:user)
-      sign_in @user
       DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([])
       get :index, :format => :json
       assigns(:status).should eq(200)
@@ -44,14 +50,13 @@ describe V1::DashboardEntriesController do
     end
     
     it "should return error if could not find dashboard entry" do
-      @user = Factory.create(:user)
-      sign_in @user
       DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([])
       get :index, :user_id => @user.id, :format => :json
       assigns(:status).should eq(200)   
     end
     
     it "should return error if could not find any user" do
+      sign_out(@user)
       get :index, :format => :json
       response.status.should eq(401)
     end
