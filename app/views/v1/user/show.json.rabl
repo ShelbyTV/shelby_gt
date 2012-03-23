@@ -12,6 +12,10 @@ if @include_auths == true
 	end	
 end
 
-child @rolls_following => :rolls_followings do
-	attributes :id, :title, :thumbnail_url, :public, :collaborative
+if @roll_followings
+	child :roll_followings do
+		glue :roll do
+			extends 'v1/roll/show'
+		end
+	end
 end
