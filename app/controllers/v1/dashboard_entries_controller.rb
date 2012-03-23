@@ -13,7 +13,7 @@ class V1::DashboardEntriesController < ApplicationController
   # @param [Optional, Boolean] include_children if set to true, will not include all goodies, eg roll, frame etc
   def index
     # default params
-    limit = params[:limit] ? params[:limit] : 20
+    @limit = params[:limit] ? params[:limit] : 20
     # put an upper limit on the number of entries returned
     @limit = 20 if limit.to_i > 20
     
