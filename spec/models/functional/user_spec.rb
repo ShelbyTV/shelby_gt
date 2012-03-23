@@ -42,6 +42,17 @@ describe User do
         u.save.should == false
       }.should_not change {User.count}
     end
+    
+    it "should throw error when trying to create a User where index (ie nickname) already exists" do
+      lambda {
+        User.create(:nickname => "this_is_sooooo_unique").persisted?.should == true
+      }.should change {User.count} .by 1
+      lambda {
+        u = User.new
+        u.nickname = "this_is_sooooo_unique"
+        u.save(:validate => false)
+      }.should raise_error Mongo::OperationFailure
+    end
   
   end
   
