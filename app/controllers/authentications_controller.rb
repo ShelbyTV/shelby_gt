@@ -76,7 +76,7 @@ class AuthenticationsController < ApplicationController
   def sign_out_user
     sign_out(:user)
     cookies[:locked_and_loaded] = false
-    render :nothing => true, :status => :ok
+    redirect_to request.headers['HTTP_REFERER']
   end
   
 end
