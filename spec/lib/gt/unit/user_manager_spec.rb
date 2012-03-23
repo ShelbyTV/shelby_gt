@@ -10,6 +10,24 @@ require 'predator_manager'
 describe GT::UserManager do
   
   context "get_or_create_faux_user" do
+    it "should raise an error if nickname is invalid" do
+      lambda {
+        GT::UserManager.get_or_create_faux_user('', 'provider', 'uid')
+      }.should raise_error(ArgumentError)
+    end
+    
+    it "should raise an error if provider is invalid" do
+      lambda {
+        GT::UserManager.get_or_create_faux_user('nick', '', 'uid')
+      }.should raise_error(ArgumentError)
+    end
+    
+    it "should raise an error if uid is invalid" do
+      lambda {
+        GT::UserManager.get_or_create_faux_user('nick', 'provider', '')
+      }.should raise_error(ArgumentError)
+    end
+    
     it "should get real User when one exists" do
       nick, provider, uid = "whatever", "fb", "123uid"
       u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
