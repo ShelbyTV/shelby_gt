@@ -59,6 +59,14 @@ describe V1::FrameController do
     end
   end
   
+  describe "POST watched" do
+    it "creates a FrameAction"
+    
+    it "updates the frame"
+    
+    it "perhaps creates dashboard entry"
+  end
+  
   describe "POST create" do
     before(:each) do
       @f1 = stub_model(Frame)

@@ -19,7 +19,7 @@ describe V1::UserController do
       )
     end
 
-    it "routes for signed_in GET" do
+    it "routes for GET users rolls following" do
       { :get => "/v1/user/1/rolls" }.should route_to(
         :controller => "v1/user",
         :action => "rolls",
@@ -71,7 +71,7 @@ describe V1::FrameController do
       )
     end 
 
-    it "routes for POST" do
+    it "routes for POST upvote" do
       { :post => "/v1/frame/1/upvote" }.should route_to(
         :controller => "v1/frame",
         :action => "upvote",
@@ -79,6 +79,15 @@ describe V1::FrameController do
         :id => "1"
       )
     end 
+    
+    it "routes for POST watched" do
+      { :post => "/v1/frame/1/watched" }.should route_to(
+        :controller => "v1/frame",
+        :action => "watched",
+        :format => "json",
+        :id => "1"
+      )
+    end
     
     it "routes for DELETE" do
       { :delete => "/v1/frame/1" }.should route_to(
