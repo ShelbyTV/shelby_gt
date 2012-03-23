@@ -9,6 +9,7 @@ describe 'v1/frame' do
       set_omniauth()
       get '/auth/twitter/callback'
     end
+    
     describe "GET" do
       context 'one frame' do
         it "should return frame info on success" do
@@ -64,6 +65,10 @@ describe 'v1/frame' do
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/score")
         end
+      end
+      
+      context 'watched frame' do
+        it "should return success and updated frame on watched"
       end
     end
     

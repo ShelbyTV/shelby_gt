@@ -84,6 +84,22 @@ class V1::FrameController < ApplicationController
     end
   end
   
+  #TODO: Fill this is with what it should really be
+  ##
+  # Upvotes a frame and returns XXXX 
+  #   REQUIRES AUTHENTICATION
+  #
+  # [POST] /v1/frame/:id/watched
+  # 
+  # @param [Required, String] id The id of the frame
+  # @param [Optional, String] start_time The start_time of the action on the frame
+  # @param [Optional, String] end_time The end_time of the action on the frame
+  def watched
+    @frame = Frame.find(params[:id])
+    @status, @message = 404, "BUILD ME!"
+    render 'v1/blank', :status => @status
+  end
+  
   ##
   # Destroys one frame, returning Success/Failure
   #   REQUIRES AUTHENTICATION
