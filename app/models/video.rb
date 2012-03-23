@@ -31,4 +31,6 @@ class Video
 
   #nothing needs to be mass-assigned
   attr_accessible
+  
+  def created_at() self.id.generation_time; end
 end
