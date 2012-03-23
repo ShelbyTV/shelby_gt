@@ -29,7 +29,7 @@ module GT
     # Things that happen when a user signs in.
     def self.start_user_sign_in(user, omniauth=nil, session=nil)
       GT::AuthenticationBuilder.update_authentication_tokens!(user, omniauth) if omniauth
-      update_on_sign_in(user)
+      update_token_and_permissions(user)
       # Always remember users, onus is on them to log out
       user.remember_me!
     end
@@ -69,7 +69,7 @@ module GT
       u.server_created_on = "GT::UserManager#get_or_create_faux_user/#{nickname}/#{provider}/#{uid}"
       u.nickname = nickname
       u.faux = User::FAUX_STATUS[:true]
-      
+      u.preferences = Preferences.new()
       # This Authentication is how the user will be looked up...
       auth = Authentication.new(:provider => provider, :uid => uid, :nickname => nickname)
       u.authentications << auth
@@ -101,9 +101,6 @@ module GT
 
       user.authentications << new_auth
 
-      #TODO: this is common to user creation, should not be in a specific method like this
-      user.preferences = Preferences.new()
-
       user.faux = User::FAUX_STATUS[:converted]
       if user.save
         GT::PredatorManager.initialize_video_processing(user, new_auth)
@@ -126,11 +123,7 @@ module GT
       
       u.save if save
     end
-      
-    # *******************
-    # TODO When we know that everythings working, we refactor this shit out of this.
-    # *******************
-  
+    
     private
       
       # Takes an omniauth hash to build one user, prefs, and an auth to go along with it
@@ -152,15 +145,13 @@ module GT
 
         u.authentications << auth
 
-        #TODO: this is common to user creation, should not be in a specific method like this
         u.preferences = Preferences.new()
         
         return u, auth
       end
       
       # If we have an FB authentication, poll on demand... and get updated permissions
-      #TODO: this needs a new name
-      def self.update_on_sign_in(u)
+      def self.update_token_and_permissions(u)
         u.authentications.each do |a| 
           
           GT::PredatorManager.update_video_processing(u, a)
