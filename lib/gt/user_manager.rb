@@ -66,6 +66,7 @@ module GT
       
       # No user (faux or real) existed, create a faux user...
       u = User.new
+      u.server_created_on = "GT::UserManager#get_or_create_faux_user/#{nickname}/#{provider}/#{uid}"
       u.nickname = nickname
       u.faux = User::FAUX_STATUS[:true]
       
@@ -140,6 +141,8 @@ module GT
         u.nickname = omniauth['info']['name'] if u.nickname.blank? or u.nickname.match(/\.php\?/)
 
         u.name = omniauth['info']['name']
+        
+        u.server_created_on = "GT::UserManager#build_new_user_and_auth/#{u.nickname}"
 
         auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
 
