@@ -31,9 +31,12 @@ describe 'v1/user' do
       end
       
       it "should show a users rolls if the supplied user_id is the current_users" do
+        r = Factory.create(:roll, :creator => @u1)
+        r.add_follower(@u1)
+        @u1.save
         get '/v1/user/'+@u1.id+'/rolls'
         response.body.should be_json_eql(200).at_path("status")
-        response.body.should have_json_path("result/rolls_following")
+        response.body.should have_json_path("result/roll_followings")
       end
       
       it "should not show a users rolls if the supplied user_id is NOT the current_users" do

@@ -20,11 +20,10 @@ describe V1::UserController do
     it "returns rolls followed of the authed in user" do
       get :rolls, :id => @u1.id, :format => :json
       assigns(:status).should eq(200)
-      assigns(:rolls).class.should eq(Array)
     end
     
     it "returns 401 if the user is not the authed in user" do
-      u2 = Factory.create(:user)
+      u2 = Factory.create(:user, :nickname => "name")
       get :rolls, :id => u2.id, :format => :json
       assigns(:status).should eq(401)
     end

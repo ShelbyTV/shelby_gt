@@ -80,6 +80,7 @@ class V1::UserController < ApplicationController
       @status = 200
     else
       @status, @message = 401, "you are not authorized to view that users rolls"
+      render 'v1/blank'
     end
   end
   
