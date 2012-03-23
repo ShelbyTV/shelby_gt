@@ -8,10 +8,14 @@ end
 
 if @include_auths == true
 	child :authentications do
-		attributes :uid, :provider, :oauth_token
+		attributes :uid, :provider, :uid, :oauth_token, :oauth_secret
 	end	
 end
 
-child @roll_following => :roll_followings do
-	attributes :id, :title, :thumbnail_url, :public, :collaborative
+if @roll_followings == true
+	child :roll_followings do
+		glue :roll do
+			attributes :id, :title, :thumbnail_url, :public, :collaborative
+		end
+	end
 end
