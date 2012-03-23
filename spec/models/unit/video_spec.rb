@@ -9,5 +9,5 @@ describe Video do
   it "should use the database video" do
     @video.database.name.should =~ /.*video/
   end
-  
+    
 end

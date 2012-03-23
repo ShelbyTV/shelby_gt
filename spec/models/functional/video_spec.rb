@@ -20,4 +20,43 @@ describe Video do
   
   end
   
+  context "validations" do
+    before(:each) do
+      @video = Factory.create(:video)
+    end
+    
+    it "should validate uniqueness of provider_name and provider_id" do
+      v = Video.new
+      v.provider_name = @video.provider_name
+      v.provider_id = @video.provider_id
+      v.valid?.should == false
+      v.save.should == false
+      v.errors.messages.include?(:provider_id).should == true
+    end
+
+    it "should allow overlapping provider_id at different provider_name" do
+      v = Video.new
+      v.provider_name = "#{@video.provider_name}-2"
+      v.provider_id = @video.provider_id
+      v.valid?.should == true
+      v.save.should == true
+    end
+
+    it "should throw error when trying to create a video where index (ie provider_name + provider_id) already exists"  do
+      lambda {
+        v = Video.new
+        v.provider_name = "yt"
+        v.provider_id = 'this_id_is_soooo_unique'
+        v.save
+      }.should change {Video.count} .by 1
+      lambda {
+        v = Video.new
+        v.provider_name = "yt"
+        v.provider_id = 'this_id_is_soooo_unique'
+        v.save(:validate => false)
+      }.should raise_error Mongo::OperationFailure
+    end
+    
+  end
+  
 end

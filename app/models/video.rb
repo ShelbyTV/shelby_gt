@@ -1,5 +1,6 @@
 class Video
   include MongoMapper::Document
+  safe
 
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Video
@@ -28,6 +29,9 @@ class Video
 
   key :source_url, String, :abbr => :o
   key :embed_url, String, :abbr => :p
+  
+  # mongo has a unique key on these as well
+  validates_uniqueness_of :provider_id, :scope => :provider_name
 
   #nothing needs to be mass-assigned
   attr_accessible

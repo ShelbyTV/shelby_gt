@@ -7,7 +7,7 @@ describe GT::Framer do
   
   context "creating Frames" do
     before(:each) do
-      @video = Video.create
+      @video = Factory.create(:video)
       @frame_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
       @message = Message.new
       @message.public = true
