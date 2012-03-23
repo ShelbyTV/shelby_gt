@@ -30,7 +30,7 @@ class AuthenticationsController < ApplicationController
       end
       
       sign_in(:user, user)
-      cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now }
+      cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
       
       @opener_location = request.env['omniauth.origin'] || root_path
       
