@@ -32,7 +32,7 @@ class V1::UserController < ApplicationController
     elsif user_signed_in?
       @user = current_user
       @include_auths = (params[:include_auths] == "true" ) ? true : false
-      @roll_followings = (params[:roll_followings] == "true") ? true : false
+      @roll_followings = (params[:roll_following] == "true") ? true : false
       @status = 200
     else
       @status, @message = 400, "could not find user"
@@ -76,7 +76,7 @@ class V1::UserController < ApplicationController
   # @param [Optional, boolean] include_children Return the following_users?
   def rolls
     if current_user.id.to_s == params[:id]
-      @user = current_user
+      @rolls = current_user.roll_followings
       @status = 200
     else
       @status, @message = 401, "you are not authorized to view that users rolls"
