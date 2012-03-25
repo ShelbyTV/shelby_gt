@@ -37,6 +37,12 @@ module Settings
     load!
   end
   
+  class UserAction < Settingslogic
+    source "#{Rails.root}/config/settings/user_action.yml"
+    namespace Rails.env
+    load!
+  end
+  
   class Roll < Settingslogic
     source "#{Rails.root}/config/settings/roll.yml"
     namespace Rails.env
