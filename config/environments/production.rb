@@ -1,6 +1,8 @@
 ShelbyGt::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb
 
+  config.session_store :cookie_store, {:key => '_shelby_gt_api_session', :domain => '.shelby.tv'}
+
   # Code is not reloaded between requests
   config.cache_classes = true
 

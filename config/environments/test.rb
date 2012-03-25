@@ -1,6 +1,9 @@
 ShelbyGt::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb
 
+  # session domain needs to be set by environment so...
+  config.session_store :cookie_store, {:key => '_shelby_gt_api_session'}
+  
   # The test environment is used exclusively to run your application's
   # test suite. You never need to work with it otherwise. Remember that
   # your test database is "scratch space" for the test suite and is wiped

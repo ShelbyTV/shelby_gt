@@ -1,6 +1,10 @@
 ShelbyGt::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb
 
+  # session domain needs to be set by environment so...
+  config.session_store :cookie_store, {:key => '_shelby_gt_api_session'}
+
+
   # In the development environment your application's code is reloaded on
   # every request. This slows down response time but is perfect for development
   # since you don't have to restart the web server when you make code changes.
@@ -28,4 +32,5 @@ ShelbyGt::Application.configure do
 
   # Expands the lines which load the assets
   config.assets.debug = true
+
 end
