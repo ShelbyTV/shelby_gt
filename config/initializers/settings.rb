@@ -12,7 +12,7 @@ module Settings
     namespace Rails.env
     load!
   end
-
+  
   class Global < Settingslogic
     source "#{Rails.root}/config/settings/global.yml"
     namespace Rails.env
@@ -121,4 +121,10 @@ module Settings
     load!
   end
   
+  class StatsD < Settingslogic
+    source "#{Rails.root}/config/settings/statsd.yml"
+    namespace Rails.env
+    load!
+  end
+
 end

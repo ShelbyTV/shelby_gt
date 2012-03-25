@@ -1,0 +1,17 @@
+defaults: &defaults
+  statsd_server: 'localhost'
+  statsd_port: 8125
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+  statsd_server: '10.181.128.15'
+  statsd_port: 8125
+  
+arnold:
+  <<: *production
