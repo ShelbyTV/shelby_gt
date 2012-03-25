@@ -6,6 +6,7 @@
 module GT
   class UserActionManager
     
+    #TODO: create UserAction when a frame is viewed
     def self.view!(user_id, frame_id, start_s, end_s)
       raise ArgumentError, "user_id must be nil or a valid ObjectId" unless !user_id or BSON::ObjectId.legal? user_id.to_s
       raise ArgumentError, "frame_id must reference valid Frame" unless frame_id and frame = Frame.find(frame_id)
@@ -20,16 +21,13 @@ module GT
       UserAction.create(:type => UserAction::TYPES[:view], :user_id => user_id, :frame_id => frame_id, :video_id => video_id, :start_s => start_s, :end_s => end_s)
     end
 
-    #TODO: called by Frame when an upvote happens
-    #TODO: integration test for that
     def self.upvote!(user_id, frame_id) create_vote_action(user_id, frame_id, UserAction::TYPES[:upvote]); end
     def self.unupvote!(user_id, frame_id) create_vote_action(user_id, frame_id, UserAction::TYPES[:unupvote]); end
 
-    #TODO: called by Roll when a follow happens
-    #TODO: integration test for that
     def self.follow_roll!(user_id, roll_id) create_follow_action(user_id, roll_id, UserAction::TYPES[:follow_roll]); end
     def self.unfollow_roll!(user_id, roll_id) create_follow_action(user_id, roll_id, UserAction::TYPES[:unfollow_roll]); end
 
+    #TODO: create UserAction when a roll is re-rolled to watch_later
     def self.watch_later!(user_id, frame_id) create_watch_later_action(user_id, frame_id, UserAction::TYPES[:watch_later]); end
     def self.unwatch_later!(user_id, frame_id) create_watch_later_action(user_id, frame_id, UserAction::TYPES[:unwatch_later]); end
 

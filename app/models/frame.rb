@@ -1,4 +1,5 @@
 require 'framer'
+require 'user_action_manager'
 
 class Frame
   include MongoMapper::Document
@@ -61,8 +62,11 @@ class Frame
     return false if self.has_voted?(user_id)
     
     self.upvoters << user_id
+    #TODO: add this frame to u.upvoted_roll
   
     update_score
+    
+    GT::UserActionManager.upvote!(u.id, self.id) if u.save
   
     true
   end
