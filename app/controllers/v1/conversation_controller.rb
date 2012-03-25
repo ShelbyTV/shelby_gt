@@ -10,12 +10,13 @@ class V1::ConversationController < ApplicationController
   # 
   # @param [Required, String] id The id of the conversation
   def show
-    Rails.logger.info "conversation: #{params}"
-    if @conversation = Conversation.find(params[:id])
-      @status = 200
-    else
-      @status, @message = 400, "could not find conversation"
-      render 'v1/blank', :status => @status
+    StatsManager::StatsD.client.time('api.gt.conversation.show') do
+      if @conversation = Conversation.find(params[:id])
+        @status = 200
+      else
+        @status, @message = 400, "could not find conversation"
+        render 'v1/blank', :status => @status
+      end
     end
   end
   

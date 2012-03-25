@@ -9,14 +9,16 @@ class V1::FrameController < ApplicationController
   # [GET] /v1/roll/:id/frames
   # @param [Optional, Boolean] include_children if true will return frame children
   def index
-    @roll = Roll.find(params[:id])
-    if @roll
-      @include_frame_children = (params[:include_children] == "true") ? true : false
-      @frames = @roll.frames.sort(:score.desc)
-      @status =  200
-    else
-      @status, @message = 400, "could not find that roll"
-      render 'v1/blank', :status => @status
+    StatsManager::StatsD.client.time('api.gt.frame.index') do
+      @roll = Roll.find(params[:id])
+      if @roll
+        @include_frame_children = (params[:include_children] == "true") ? true : false
+        @frames = @roll.frames.sort(:score.desc)
+        @status =  200
+      else
+        @status, @message = 400, "could not find that roll"
+        render 'v1/blank', :status => @status
+      end
     end
   end
     
@@ -29,12 +31,14 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame
   # @param [Optional, Boolean] include_children Include the referenced roll, video, conv, and rerolls
   def show
-    if @frame = Frame.find(params[:id])
-      @status =  200
-      @include_frame_children = (params[:include_children] == "true") ? true : false
-    else
-      @status, @message = 400, "could not find that frame"
-      render 'v1/blank', :status => @status
+    StatsManager::StatsD.client.time('api.gt.frame.show') do
+      if @frame = Frame.find(params[:id])
+        @status =  200
+        @include_frame_children = (params[:include_children] == "true") ? true : false
+      else
+        @status, @message = 400, "could not find that frame"
+        render 'v1/blank', :status => @status
+      end
     end
   end
   

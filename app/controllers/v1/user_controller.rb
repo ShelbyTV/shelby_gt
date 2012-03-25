@@ -21,7 +21,7 @@ class V1::UserController < ApplicationController
   # @param [Optional, Boolean] include_auths Include the embedded authorizations
   # @param [Optional, Boolean] rolls_following Include the referenced rolls the user is following
   def show
-    StatsManager::StatsD.client.time('api.user.show') do
+    StatsManager::StatsD.client.time('api.gt.user.show') do
       if params[:id]
         if @user = User.find(params[:id])
           @include_auths = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
