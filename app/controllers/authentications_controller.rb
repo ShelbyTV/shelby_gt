@@ -51,7 +51,7 @@ class AuthenticationsController < ApplicationController
 
       if user.valid?
         sign_in(:user, user)
-        cookies[:locked_and_loaded] = v
+        cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
         
         @opener_location = request.env['omniauth.origin'] || root_path
       else
@@ -64,7 +64,7 @@ class AuthenticationsController < ApplicationController
     
     render :action => 'redirector', :layout => 'simple'
   end
-
+  
   def fail
     #if their session is fucked, it will cause bad auth params.
     reset_session
