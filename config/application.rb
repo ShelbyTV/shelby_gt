@@ -76,8 +76,8 @@ module ShelbyGt
       end
       
       allow do
-        origins 'web.gt.shelby.tv', 'localhost:3000', '33.33.33.10:3000'
-        resource '/v1/*', :headers => :any, :methods => :get, :credentials => true
+        origins 'web.gt.shelby.tv'
+        resource '/', :headers => :any, :methods => :get, :credentials => true
       end
     end
     
