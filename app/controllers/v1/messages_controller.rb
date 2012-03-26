@@ -1,6 +1,6 @@
 class V1::MessagesController < ApplicationController  
 
-  before_filter :cors_preflight_check, :authenticate_user!
+  before_filter :authenticate_user!
   
   ##
   # Creates and returns one message, with the given parameters.

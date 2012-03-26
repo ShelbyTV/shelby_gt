@@ -191,6 +191,8 @@ GEM
     rack (1.4.1)
     rack-cache (1.2)
       rack (>= 0.4)
+    rack-cors (0.2.4)
+      rack
     rack-ssl (1.3.2)
       rack
     rack-test (0.6.1)
@@ -286,6 +288,7 @@ DEPENDENCIES
   omniauth-tumblr!
   omniauth-twitter!
   rabl (~> 0.6.0)
+  rack-cors
   rails (= 3.2.2)
   rspec-rails
   sailthru-client

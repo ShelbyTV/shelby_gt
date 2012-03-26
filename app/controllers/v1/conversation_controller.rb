@@ -1,6 +1,6 @@
 class V1::ConversationController < ApplicationController  
   
-  before_filter :cors_preflight_check, :user_authenticated?
+  before_filter :user_authenticated?
   
   ##
   # Returns a conversation including messages, with the given parameters.

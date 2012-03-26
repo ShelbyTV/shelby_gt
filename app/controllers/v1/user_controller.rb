@@ -1,6 +1,6 @@
 class V1::UserController < ApplicationController  
   
-  before_filter :user_authenticated?, :cors_preflight_check, :except => [:signed_in, :show]
+  before_filter :user_authenticated?, :except => [:signed_in, :show]
   
   ####################################
   # Returns true (false) if user is (not) signed in
