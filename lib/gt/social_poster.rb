@@ -23,7 +23,35 @@ module GT
         return false
       end
     end
-  
+    
+    def self.post_to_facebook(from_user, comment, frame)
+      begin
+        return post_fb_comment(from_user, comment, nil, frame)
+      rescue Koala::Facebook::APIError => e
+        Rails.logger.error "[GT::SocialPosting] Koala::Facebook::APIError posting comment to FB: #{e}"
+        return false
+      rescue ArgumentError => fb_error
+        Rails.logger.error "[GT::SocialPosting] ArgumentError posting comment to FB: #{fb_error.to_s}"
+        return false
+      rescue => e
+        Rails.logger.error "[GT::SocialPosting] Error posting comment to FB: #{e}"
+        return false
+      end
+    end
+    
+    #TODO: we need an iframe player for gt before we can post to tumblr!
+    #      This will return false no matter what until we do!
+    def self.post_to_tumblr(from_user, comment, frame)
+      begin
+        # post a tumblr video post
+        return post_tumblr(from_user, comment, frame)
+      rescue => e
+        Rails.logger.error "[GT::SocialPosting] Error posting to Tumblr: #{e}"
+        return false
+      end
+    end
+
+    
     private 
   
       def self.post_tweet(user, message, in_reply_to_tweet_id=nil)
@@ -35,61 +63,36 @@ module GT
           return nil
         end
       end
+      
+      def self.post_fb_comment(user, message, fb_post_id=nil, frame=nil)
+        if user.has_provider('facebook')
+          fb = SocialPosting::Facebook.new(user)
+
+          return fb.post_comment(message, fb_post_id, frame)
+        else
+          return nil
+        end
+      end
+      
+      def self.post_tumblr(user, comment, frame)
+        if user.has_provider('tumblr')
+          tu = SocialPosting::Tumblr.new(user)
+
+          return tu.post_video(comment, frame)
+        else
+          return nil
+        end
+      end
+
     
   #FIXME: Below
 =begin  
-  def self.post_to_facebook(from_user, params)
-    begin
-      comment = params["comment"]
-      # UPDATED: ALWAYS posting new 
-      return post_fb_comment(from_user, comment, nil, params["frame_id"])
-    rescue Koala::Facebook::APIError => e
-      Rails.logger.error "Koala::Facebook::APIError posting comment to FB: #{e}"
-      return false
-    rescue ArgumentError => fb_error
-      Rails.logger.error "ArgumentError posting comment to FB: #{fb_error.to_s}"
-      return false
-    rescue => e
-      Rails.logger.error "Error posting comment to FB: #{e}"
-      return false
-    end
-  end
-  
-  def self.post_to_tumblr(from_user, params)
-    begin
-      # post a tumblr video post
-      return post_tumblr(from_user, params["comment"], params["frame_id"])
-    rescue => e
-      Rails.logger.error "Error posting to Tumblr: #{e}"
-      return false
-    end
-  end
-  
   def self.post_to_email(from_user, params)
     return send_email(from_user, params["to"], params["comment"], params["broadcast_id"])
   end
   
   private 
       
-    def self.post_tumblr(user, comment, frame_id)
-      if user.has_provider('tumblr')
-        tu = SocialPosting::Tumblr.new(user)
-      
-        return tu.post_video(comment, frame_id)
-      else
-        return nil
-      end
-    end
-  
-    def self.post_fb_comment(user, message, fb_post_id=nil, frame_id=nil)
-      if user.has_provider('facebook')
-        fb = SocialPosting::Facebook.new(user)
-        
-        return fb.post_comment(message, fb_post_id, frame_id)
-      else
-        return nil
-      end
-    end
 =end    
     #TODO: BUILD EMAIL SHARING INTO GT
 =begin

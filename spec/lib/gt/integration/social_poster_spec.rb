@@ -13,7 +13,7 @@ describe GT::SocialPoster do
   end
   
   context "posting to twitter" do
-    it "should return the posted tweet if user has twitter acct" do
+    it "should return true if user has twitter acct and tweet is sent" do
       tweet = GT::SocialPoster.post_to_twitter(@from_user, @comment, @frame)
       tweet.should eq(true)
     end
@@ -39,4 +39,11 @@ describe GT::SocialPoster do
     end 
   end
 
+  context "posting to tumblr" do
+    #we need an iframe player for gt before we can post to tumblr!
+  end
+  
+  context "posting to facebook" do
+    
+  end
 end

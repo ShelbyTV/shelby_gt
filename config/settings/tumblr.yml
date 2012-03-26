@@ -1,6 +1,7 @@
 defaults: &defaults
   key: "mrw08LmNseqVVIa6i8nO5UEl78fxXOGcaSe978iZyrswS2a8Wj"
   secret: "mefqdRTB2eNlTE5EnS3U8Raa5oMKFvo3Llhj2yyTAPGqu2Go90"
+  should_send_to_tumblr: false
   
 development:
   <<: *defaults
@@ -10,6 +11,7 @@ test:
 
 production: &production
   <<: *defaults
+  should_send_to_tumblr: false # need an iframe player before we can post!
   
 arnold:
   <<: *production
