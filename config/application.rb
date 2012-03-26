@@ -77,7 +77,7 @@ module ShelbyGt
       
       allow do
         origins 'web.gt.shelby.tv'
-        resource '/', :headers => :any, :methods => :get, :credentials => true
+        resource '*', :headers => :any, :methods => :get
       end
     end
     
