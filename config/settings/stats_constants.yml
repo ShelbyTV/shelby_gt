@@ -1,0 +1,39 @@
+defaults: &defaults
+  dashboard:
+    index: 'api.gt.dashboard.index'
+    update: 'api.gt.dashboard.update'
+  user:
+    show: 'api.gt.user.show'
+    update: 'api.gt.user.update'
+    rolls: 'api.gt.user.rolls'
+  roll:
+    show: 'api.gt.roll.show'
+    create: 'api.gt.roll.create'
+    update: 'api.gt.roll.update'
+    delete: 'api.gt.roll.destroy'
+  frame:
+    index: 'api.gt.frame.index'
+    show: 'api.gt.frame.show'
+    create: 'api.gt.frame.create'
+    upvote: 'api.gt.frame.upvote'
+    watched: 'api.gt.frame.watched'
+    destroy: 'api.gt.frame.destroy'
+  conversation:
+    show: 'api.gt.conversation.show'
+  messages:
+    create: 'api.gt.messages.create'
+    destroy: 'api.gt.messages.destroy'
+  video:
+    show: 'api.gt.video.show'
+    
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+
+arnold:
+  <<: *production

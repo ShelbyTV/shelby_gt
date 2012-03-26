@@ -5,14 +5,14 @@ class V1::DashboardEntriesController < ApplicationController
   ##
   # Returns dashboad entries, with the given parameters.
   #
-  # [GET] v1/dashboard.json
+  # [GET] v1/dashboard
   # 
   # @param [Optional, String] user_id The id of the user otherwise user = current_user
   # @param [Optional, Integer] limit The number of entries to return (default/max 20)
   # @param [Optional, Integer] skip The number of entries to skip (default 0)
   # @param [Optional, Boolean] include_children if set to true, will not include all goodies, eg roll, frame etc
   def index
-    StatsManager::StatsD.client.time('api.gt.dashboard.index') do
+    StatsManager::StatsD.client.time(Settings::StatsNames.dashboard['index']) do
       # default params
       @limit = params[:limit] ? params[:limit] : 20
       # put an upper limit on the number of entries returned
@@ -54,19 +54,21 @@ class V1::DashboardEntriesController < ApplicationController
   # 
   # @param [Required, String] id The id of the dashboard entry
   def update
-    id = params.delete(:id)
-    if @dashboard_entry = DashboardEntry.find(id)
-      begin 
-        @status = 200 if @dashboard_entry.update_attributes!(params)
-        Rails.logger.info(@dashboard_entry.inspect)
-      rescue => e
-        @status, @message = 400, "could not update dashboard_entry: #{e}"
+    StatsManager::StatsD.client.time(Settings::StatsNames.dashboard['update']) do
+      id = params.delete(:id)
+      if @dashboard_entry = DashboardEntry.find(id)
+        begin 
+          @status = 200 if @dashboard_entry.update_attributes!(params)
+          Rails.logger.info(@dashboard_entry.inspect)
+        rescue => e
+          @status, @message = 400, "could not update dashboard_entry: #{e}"
+          render 'v1/blank', :status => @status
+        end
+      else
+        @status, @message = 400, "could not find that dashboard_entry"
         render 'v1/blank', :status => @status
-      end
-    else
-      @status, @message = 400, "could not find that dashboard_entry"
-      render 'v1/blank', :status => @status
-    end    
+      end    
+    end
   end
 
 end

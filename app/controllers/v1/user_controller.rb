@@ -21,7 +21,7 @@ class V1::UserController < ApplicationController
   # @param [Optional, Boolean] include_auths Include the embedded authorizations
   # @param [Optional, Boolean] rolls_following Include the referenced rolls the user is following
   def show
-    StatsManager::StatsD.client.time('api.gt.user.show') do
+    StatsManager::StatsD.client.time(Settings::StatsNames.user['show']) do
       if params[:id]
         if @user = User.find(params[:id])
           @include_auths = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
@@ -52,20 +52,22 @@ class V1::UserController < ApplicationController
   # @param [Required, String] id The id of the user  
   # @param [Required, String] attr The attribute(s) to update
   def update
-    id = params.delete(:id)
-    @user = User.find(id)
-    # allow for email to be removed, not sure if we want this or not...
-    params[:primary_email] = nil if params[:primary_email] = ""
-    begin
-      if @user.update_attributes!(params)
-        @status = 200
-      else
-        @status, @message = 400, "error while updating user."
+    StatsManager::StatsD.client.time(Settings::StatsNames.user['update']) do
+      id = params.delete(:id)
+      @user = User.find(id)
+      # allow for email to be removed, not sure if we want this or not...
+      params[:primary_email] = nil if params[:primary_email] = ""
+      begin
+        if @user.update_attributes!(params)
+          @status = 200
+        else
+          @status, @message = 400, "error while updating user."
+          render 'v1/blank', :status => @status
+        end
+      rescue => e
+        @status, @message = 400, "error while updating user: #{e}"
         render 'v1/blank', :status => @status
       end
-    rescue => e
-      @status, @message = 400, "error while updating user: #{e}"
-      render 'v1/blank', :status => @status
     end
   end
 
@@ -78,12 +80,14 @@ class V1::UserController < ApplicationController
   # @param [Required, String] id The id of the user
   # @param [Optional, boolean] include_children Return the following_users?
   def rolls
-    if current_user.id.to_s == params[:id]
-      @user = current_user
-      @status = 200
-    else
-      @status, @message = 401, "you are not authorized to view that users rolls"
-      render 'v1/blank'
+    StatsManager::StatsD.client.time(Settings::StatsNames.user['rolls']) do
+      if current_user.id.to_s == params[:id]
+        @user = current_user
+        @status = 200
+      else
+        @status, @message = 401, "you are not authorized to view that users rolls"
+        render 'v1/blank'
+      end
     end
   end
   
