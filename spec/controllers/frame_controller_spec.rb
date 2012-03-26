@@ -4,6 +4,7 @@ describe V1::FrameController do
   before(:each) do
     @u1 = Factory.create(:user)
     @u1.upvoted_roll = Factory.create(:roll, :creator => @u1)
+    @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
     @u1.save
     sign_in @u1
     @roll = stub_model(Roll)
@@ -43,7 +44,7 @@ describe V1::FrameController do
     end
   end
   
-  describe "POST upvote" do
+  describe "POST upvote" do    
     it "updates a frame successfuly" do
       @frame = Factory.create(:frame)
       @frame.should_receive(:upvote!).with(@u1).and_return(@frame)
@@ -71,6 +72,30 @@ describe V1::FrameController do
     it "updates the frame"
     
     it "perhaps creates dashboard entry"
+  end
+  
+  describe "POST add_to_watch_later" do
+    before(:each) do    
+      @f2 = Factory.create(:frame)
+    end
+    
+    it "creates a UserAction" do
+      GT::UserActionManager.should_receive(:watch_later!)
+      
+      post :add_to_watch_later, :id => @f2.id, :format => :json
+    end
+    
+    it "creates a new Frame" do
+      GT::UserActionManager.should_receive(:watch_later!)
+      
+      lambda {
+        post :add_to_watch_later, :id => @f2.id, :format => :json
+      }.should change { Frame.count } .by 1
+      
+      assigns(:new_frame).persisted?.should == true
+      assigns(:new_frame).frame_ancestors.include?(@frame.id).should == true
+      assigns(:status).should eq(200)
+    end
   end
   
   describe "POST create" do

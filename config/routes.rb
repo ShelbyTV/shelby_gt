@@ -36,6 +36,7 @@ ShelbyGt::Application.routes.draw do
 
     # Frame related
     post 'frame/:id/upvote' => 'frame#upvote'
+    post 'frame/:id/add_to_watch_later' => 'frame#add_to_watch_later'
     post 'frame/:id/watched' => 'frame#watched'
     get 'roll/:id/frames' => 'frame#index'
     post 'roll/:id/frames' => 'frame#create'

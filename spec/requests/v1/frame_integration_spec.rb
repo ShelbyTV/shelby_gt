@@ -5,10 +5,11 @@ describe 'v1/frame' do
   context 'logged in' do
     before(:all) do
       @f = Factory.create(:frame)
-      @u1 = Factory.create(:user, :authentications => [{:provider => "twitter", :uid => 1234}])
+      @u1 = Factory.create(:user)
       @u1.upvoted_roll = Factory.create(:roll, :creator => @u1)
+      @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
       @u1.save
-      set_omniauth()
+      set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
     end
     
@@ -64,6 +65,7 @@ describe 'v1/frame' do
       context 'frame upvoting' do
         it "should return success and frame on upvote" do
           post '/v1/frame/'+@f.id+'/upvote'
+          
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/score")
         end
@@ -71,6 +73,15 @@ describe 'v1/frame' do
       
       context 'watched frame' do
         it "should return success and updated frame on watched"
+      end
+      
+      context 'add frame to watch later' do
+        it "should return success and the duped frame" do
+          post "/v1/frame/#{@f.id}/add_to_watch_later"
+          
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/upvoters")
+        end
       end
     end
     

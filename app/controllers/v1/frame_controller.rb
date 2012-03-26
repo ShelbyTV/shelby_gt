@@ -95,6 +95,27 @@ class V1::FrameController < ApplicationController
     end
   end
   
+  ##
+  # Adds a dupe of the given Frame to the logged in users watch_later_roll and returns the dupe Frame
+  #   REQUIRES AUTHENTICATION
+  #
+  # [POST] /v1/frame/:id/add_to_watch_later
+  # 
+  # @param [Required, String] id The id of the frame
+  def add_to_watch_later
+    StatsManager::StatsD.client.time(Settings::StatsNames.frame['add_to_watch_later']) do
+      if @frame = Frame.find(params[:id])
+        if @new_frame = @frame.add_to_watch_later!(current_user)
+          @status = 200
+          GT::UserActionManager.watch_later!(current_user.id, @frame.id)
+        end
+      else
+        @status, @message = 400, "could not find frame"
+        render 'v1/blank', :status => @status
+      end
+    end
+  end
+  
   #TODO: Fill this is with what it should really be
   ##
   # Upvotes a frame and returns XXXX 
