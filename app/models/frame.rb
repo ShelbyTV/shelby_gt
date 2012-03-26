@@ -28,9 +28,12 @@ class Frame
   # The users who have upvoted, increasing the score
   key :upvoters, Array, :typecase => ObjectId, :abbr => :f
 
-  # To track the lineage of a Frame (both forward and backward), when Frame F1 gets re-rolled as F2:
+  # To track the *re-roll* lineage of a Frame (both forward and backward); when Frame F1 gets re-rolled as F2:
   # F1.frame_children << F2
-  # (F2.frame_ancestors = F1.frame_ancestors) << F1
+  # F2.frame_ancestors = (F1.frame_ancestors << F1)
+  #
+  # N.B. when a Frame is duped (ie. to be put on WatchLater, Upvoted, or Viewed) we track the new Frame's ancestors, but do not add that new
+  #      dupe Frame to the children of the original, as it's not a re-roll.
   #
   # Track a complete lineage to the original Frame
   key :frame_ancestors, Array, :typecast => 'ObjectId', :abbr => :g
@@ -52,6 +55,13 @@ class Frame
     return GT::Framer.re_roll(self, user, roll)
   end
   
+  #------ Viewing
+  
+  #TODO: on view, add to users viewed roll (unless already copied in there)
+  
+  #------ WatchLater ------
+  
+  #TODO: on view, add to users viewed roll
   
   #------ Voting -------
   
@@ -62,10 +72,11 @@ class Frame
     return false if self.has_voted?(user_id)
     
     self.upvoters << user_id
-    #TODO: add this frame to u.upvoted_roll
+    #TODO: dupe this frame into u.upvoted_roll
   
     update_score
     
+    #TODO: this should be done by controller, not in here
     GT::UserActionManager.upvote!(u.id, self.id) if u.save
   
     true

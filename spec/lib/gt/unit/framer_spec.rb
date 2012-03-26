@@ -236,6 +236,74 @@ describe GT::Framer do
       res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u2.id)
       res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u3.id)
     end
+  end
+  
+  context "duping F1 as F2" do
+    before(:each) do
+      @f1 = Frame.new
+      @f1.creator = Factory.create(:user)
+      @f1.conversation = Conversation.new
+      @f1.video = Factory.create(:video)
+      @f1.roll = Factory.create(:roll, :creator => Factory.create(:user))
+      @f1.save
+      @u = Factory.create(:user)
+      @r2 = Factory.create(:roll, :creator => @u)
+    end
+    
+    it "should require original frame, not allow id" do
+      lambda {
+        GT::Framer.dupe_frame!(nil, @u, @r2)
+      }.should raise_exception(ArgumentError)
+    end    
+    
+    it "should accept user or user_id" do
+      lambda {
+        GT::Framer.dupe_frame!(@f1, @u, @r2)
+      }.should_not raise_exception(ArgumentError)
+      
+      lambda {
+        GT::Framer.dupe_frame!(@f1, @u.id, @r2)
+      }.should_not raise_exception(ArgumentError)
+    end
+    
+    it "should accept roll or roll_id" do
+      lambda {
+        GT::Framer.dupe_frame!(@f1, @u, @r2)
+      }.should_not raise_exception(ArgumentError)
+      
+      lambda {
+        GT::Framer.dupe_frame!(@f1, @u, @r2.id)
+      }.should_not raise_exception(ArgumentError)
+    end
+    
+    it "should copy F1's video_id, and conversation_id but have new roll id" do
+      @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
+      
+      @f2.video_id.should == @f1.video_id
+      @f2.conversation_id.should == @f1.conversation_id
+      @f2.roll_id.should_not == @f1.roll_id
+    end
+      
+    it "should copy F1's score and upvoters" do
+      @f1.upvote(Factory.create(:user))
+      @f1.save
+      @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
+      
+      @f2.score.should == @f1.score
+      @f2.upvoters.should == @f1.upvoters
+    end
+    
+    it "should have the duping user's id" do
+      @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
+      
+      @f2.creator_id.should == @u.id
+    end
+    
+    it "should copy the F1's ancestors, adding itself" do
+      @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
+      
+      @f2.frame_ancestors.should == (@f1.frame_ancestors + [@f1.id])
+    end
     
   end
 
