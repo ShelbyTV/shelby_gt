@@ -76,7 +76,7 @@ describe V1::FrameController do
         :controller => "v1/frame",
         :action => "upvote",
         :format => "json",
-        :id => "1"
+        :frame_id => "1"
       )
     end 
     
@@ -85,7 +85,7 @@ describe V1::FrameController do
         :controller => "v1/frame",
         :action => "watched",
         :format => "json",
-        :id => "1"
+        :frame_id => "1"
       )
     end
     
@@ -103,7 +103,7 @@ describe V1::FrameController do
         :controller => "v1/frame",
         :action => "create",
         :format => "json",
-        :id => "1"
+        :roll_id => "1"
       )
     end
   end
