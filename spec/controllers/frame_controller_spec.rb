@@ -3,6 +3,8 @@ require 'spec_helper'
 describe V1::FrameController do
   before(:each) do
     @u1 = Factory.create(:user)
+    @u1.upvoted_roll = Factory.create(:roll, :creator => @u1)
+    @u1.save
     sign_in @u1
     @roll = stub_model(Roll)
     @frame = stub_model(Frame)
@@ -44,9 +46,13 @@ describe V1::FrameController do
   describe "POST upvote" do
     it "updates a frame successfuly" do
       @frame = Factory.create(:frame)
-      @frame.should_receive(:upvote).and_return(@frame)
+      @frame.should_receive(:upvote!).with(@u1).and_return(@frame)
       @frame.should_receive(:reload).and_return(@frame)
-      post :upvote, :id => @frame.id, :format => :json
+      
+      lambda {
+        post :upvote, :id => @frame.id, :format => :json
+      }.should change { UserAction.count } .by 1
+      
       assigns(:frame).should eq(@frame)
       assigns(:status).should eq(200)
     end

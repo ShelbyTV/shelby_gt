@@ -6,6 +6,8 @@ describe 'v1/frame' do
     before(:all) do
       @f = Factory.create(:frame)
       @u1 = Factory.create(:user, :authentications => [{:provider => "twitter", :uid => 1234}])
+      @u1.upvoted_roll = Factory.create(:roll, :creator => @u1)
+      @u1.save
       set_omniauth()
       get '/auth/twitter/callback'
     end

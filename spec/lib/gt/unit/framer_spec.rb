@@ -285,7 +285,10 @@ describe GT::Framer do
     end
       
     it "should copy F1's score and upvoters" do
-      @f1.upvote(Factory.create(:user))
+      u = Factory.create(:user)
+      u.upvoted_roll = Factory.create(:roll, :creator => u)
+      u.save
+      @f1.upvote!(u)
       @f1.save
       @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
       

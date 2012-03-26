@@ -3,9 +3,14 @@ require 'spec_helper'
 #Functional: hit the database, treat model as black box
 describe Frame do
   before(:each) do
-    @frame = Frame.new
-    @voter1 = User.new
-    @voter2 = User.new
+    @frame = Factory.create(:frame)
+    @voter1 = Factory.create(:user)
+    @voter1.upvoted_roll = Factory.create(:roll, :creator => @voter1)
+    @voter1.save
+    
+    @voter2 = Factory.create(:user)
+    @voter2.upvoted_roll = Factory.create(:roll, :creator => @voter2)
+    @voter2.save
   end
   
   context "database" do
@@ -30,22 +35,26 @@ describe Frame do
     end
   
     it "should update score with each new upvote" do
-      @frame.upvote(@voter1)
+      @frame.upvote!(@voter1)
       score = @frame.score
-      @frame.upvote(@voter2)
+      @frame.upvote!(@voter2)
       @frame.score.should > score
     end
   
-    it "should add upvoting user to upvoters array" do
+    it "should add upvoting user to upvoters array and dupe self into user.upvoted_roll" do
       @frame.has_voted?(@voter1).should == false
-      @frame.upvote(@voter1)
+      
+      lambda {
+        @frame.upvote!(@voter1)
+      }.should change {Frame.count} .by 1
+      
       @frame.has_voted?(@voter1).should == true
     end
   
     it "should not allow user to upvote more than once" do
-      @frame.upvote(@voter1).should == true
+      @frame.upvote!(@voter1).should == true
       score = @frame.score
-      @frame.upvote(@voter1).should == false
+      @frame.upvote!(@voter1).should == false
       @frame.score.should == score
     end
   

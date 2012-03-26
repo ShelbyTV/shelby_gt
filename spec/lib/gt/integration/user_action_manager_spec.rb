@@ -7,13 +7,15 @@ describe GT::UserActionManager do
   context "frame" do
     before(:each) do
       @user = Factory.create(:user)
+      @user.upvoted_roll = Factory.create(:roll, :creator => @user)
+      @user.save
       @frame = Factory.create(:frame)
     end
     
-    it "should add a UserAction for vote on frame.upvote" do
+    it "should not add a UserAction for vote on frame.upvote (that's for the controllers)" do
       lambda {
-        @frame.upvote(@user)
-      }.should change { UserAction.count } .by 1
+        @frame.upvote!(@user)
+      }.should_not change { UserAction.count }
     end
   end
   
