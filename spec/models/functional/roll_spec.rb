@@ -37,6 +37,16 @@ describe Roll do
       @user.following_roll?(@roll).should == true
     end
     
+    it "should not add follower if they're already following" do
+      lambda {
+        @roll.add_follower(@user)
+      }.should change { @roll.following_users.count } .by(1)
+      
+      lambda {
+        @roll.add_follower(@user).should == false
+      }.should_not change { @roll.following_users.count }
+    end
+    
     it "should be able to remove a follower, who then knows they've unfollowed this role" do
       @roll.add_follower(@user)
       @roll.remove_follower(@user)
@@ -44,6 +54,12 @@ describe Roll do
       @roll.followed_by?(@user).should == false
       @user.following_roll?(@roll).should == false
       @user.unfollowed_roll?(@roll).should == true
+    end
+    
+    it "should not remove follower unless they're following" do
+      lambda {
+        @roll.remove_follower(@user).should == false
+      }.should_not change { @roll.following_users.count }
     end
     
     it "should only remove the follower requested" do
