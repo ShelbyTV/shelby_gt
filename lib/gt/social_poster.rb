@@ -1,30 +1,43 @@
 require 'twitter_posting'
-require 'facebook_posting'
-require 'tumblr_posting'
+#require 'facebook_posting'
+#require 'tumblr_posting'
 
-module SocialPoster
-  
-  def self.post_to_twitter(from_user, comment, frame)
-    begin
-      original_message = frame.conversation.messages.first
-      if original_message.origin_network == "twitter"
-        #post as reply to tweet
-        return SocialPosting.post_tweet(from_user, comment, original_message.origin_id)
-      else
-        #post a new tweet
-        return post_tweet(from_user, comment, nil)
+module GT
+  class SocialPoster
+    
+    def self.post_to_twitter(from_user, comment, frame)
+      begin
+        original_message = frame.conversation.messages.first
+        if original_message.origin_network == "twitter"
+          #post as reply to tweet
+          return post_tweet(from_user, comment, original_message.origin_id)
+        else
+          #post a new tweet
+          return post_tweet(from_user, comment, nil)
+        end
+      rescue Grackle::TwitterError => twit_err
+        Rails.logger.error "[GT::SocialPosting] Error posting tweet to twitter via Grackle: #{twit_err.to_s}"
+        return false
+      rescue => e
+        Rails.logger.error "[GT::SocialPosting] Error posting comment to Twitter: #{e}"
+        return false
       end
-    rescue Grackle::TwitterError => twit_err
-      Rails.logger.error "Error posting tweet to twitter via Grackle: #{twit_err.to_s}"
-      return false
-    rescue => e
-      Rails.logger.error "Error posting comment to Twitter: #{e}"
-      return false
     end
-  end
   
+    private 
+  
+      def self.post_tweet(user, message, in_reply_to_tweet_id=nil)
+        if user.has_provider('twitter')
+          tw = SocialPosting::Twitter.new(user)
+        
+          return tw.post_tweet(message, in_reply_to_tweet_id)
+        else
+          return nil
+        end
+      end
+    
   #FIXME: Below
-  
+=begin  
   def self.post_to_facebook(from_user, params)
     begin
       comment = params["comment"]
@@ -57,15 +70,6 @@ module SocialPoster
   end
   
   private 
-    def self.post_tweet(user, message, in_reply_to_tweet_id=nil)
-      if user.has_provider('twitter')
-        tw = SocialPosting::Twitter.new(user)
-        
-        return tw.post_tweet(message, in_reply_to_tweet_id)
-      else
-        return nil
-      end
-    end
       
     def self.post_tumblr(user, comment, frame_id)
       if user.has_provider('tumblr')
@@ -86,7 +90,7 @@ module SocialPoster
         return nil
       end
     end
-    
+=end    
     #TODO: BUILD EMAIL SHARING INTO GT
 =begin
     def self.send_email(user, email_to, message=nil, broadcast_id=nil)
@@ -101,4 +105,5 @@ module SocialPoster
     end
 =end
 
+  end
 end

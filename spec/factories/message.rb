@@ -4,4 +4,3 @@ Factory.define :message do |m|
   m.realname "Fuck You"
   m.user_image_url "http://here.is.my/image.png"
 end
-

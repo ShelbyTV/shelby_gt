@@ -3,7 +3,6 @@ module SocialPosting
   private
   
     class Twitter
-      extend ActiveSupport::Memoizable
 
       def initialize(user)
         raise ArgumentError, 'Must provide User' unless @user = user
@@ -25,7 +24,7 @@ module SocialPosting
       private
     
         def twitter_client
-          Grackle::Client.new(:auth => {
+          @client ||= Grackle::Client.new(:auth => {
               :type => :oauth,
               :consumer_key => Settings::Twitter.consumer_key, 
               :consumer_secret => Settings::Twitter.consumer_secret,
@@ -33,7 +32,6 @@ module SocialPosting
               :token_secret => @twitter_auth.oauth_secret
             })
         end
-        memoize :twitter_client
       
     end
   
