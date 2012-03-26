@@ -3,6 +3,7 @@ defaults: &defaults
   consumer_secret: Tlb35nblFFTZRidpu36Uo3z9mfcvSVv1MuZZ19SHaU
   dev_poller_tweets_per_page: 200
   dev_poller_last_page: 17
+  should_send_tweet: false
 
 development:
   <<: *defaults
@@ -12,6 +13,7 @@ test:
 
 production: &production
   <<: *defaults
+  should_send_tweet: true
   
 arnold:
   <<: *production
