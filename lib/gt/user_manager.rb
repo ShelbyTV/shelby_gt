@@ -125,6 +125,14 @@ module GT
       u.watch_later_roll.add_follower(u) unless u.following_roll?(u.watch_later_roll)
       u.watch_later_roll.save if save
       
+      build_upvoted_roll_for_user(u) unless u.upvoted_roll
+      #users don't follow their upvoted_roll
+      u.upvoted_roll.save if save
+      
+      build_viewed_roll_for_user(u) unless u.viewed_roll
+      #users don't follow their viewed_roll
+      u.viewed_roll.save if save
+      
       if save and !u.save
         Rails.logger.error "[GT::UserManager#ensure_users_speical_rolls] Failed to save user: #{u.errors.full_messages.join(',')}"
       end
@@ -209,6 +217,24 @@ module GT
         r.collaborative = false
         r.title = "Watch Later"
         u.watch_later_roll = r
+      end
+      
+      def self.build_upvoted_roll_for_user(u)
+        r = Roll.new
+        r.creator = u
+        r.public = false
+        r.collaborative = false
+        r.title = "Upvoted"
+        u.upvoted_roll = r
+      end
+      
+      def self.build_viewed_roll_for_user(u)
+        r = Roll.new
+        r.creator = u
+        r.public = false
+        r.collaborative = false
+        r.title = "Viewed"
+        u.viewed_roll = r
       end
     
   end
