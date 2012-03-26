@@ -103,6 +103,7 @@ describe V1::FrameController do
         :controller => "v1/frame",
         :action => "create",
         :format => "json",
+        :contstraints => {"method" => ["OPTIONS", "POST"]},
         :id => "1"
       )
     end
