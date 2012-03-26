@@ -13,19 +13,7 @@ class ApplicationController < ActionController::Base
       render 'v1/blank', :status => @status
     end
   end
-=begin
-  def cors_preflight_check
-    if params[:cs_key] == Settings::ShelbyAPI.cross_site_key
-      headers['Access-Control-Allow-Origin'] = request.headers['HTTP_ORIGIN']
-    else
-      headers['Access-Control-Allow-Origin'] = Settings::ShelbyAPI.allow_origin
-    end
-    headers['Access-Control-Allow-Methods'] = '*'
-    headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-Prototype-Version, X-CSRF-Token'
-    headers['Access-Control-Allow-Credentials'] = 'true'
-    headers['Access-Control-Max-Age'] = '1000'
-  end
-=end
+
   private    
     
     # === These headers are set to allow cross site access and cookies to be sent via ajax

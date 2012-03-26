@@ -77,7 +77,7 @@ describe 'v1/frame' do
       
       context 'add frame to watch later' do
         it "should return success and the duped frame" do
-          post "/v1/frame/#{@f.id}/add_to_watch_later"
+          post '/v1/frame/'+@f.id+'/add_to_watch_later'
           
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/upvoters")
