@@ -74,12 +74,6 @@ module ShelbyGt
           :headers => ['Origin', 'Accept', 'Content-Type'],
           :methods => [:put, :post, :delete]
       end
-      
-      allow do
-        origins 'web.gt.shelby.tv'
-        resource '*', :headers => ['X-Requested-With', 'X-Prototype-Version', 'X-CSRF-Token'],
-                      :methods => [:get, :post, :put, :delete]
-      end
     end
     
   end
