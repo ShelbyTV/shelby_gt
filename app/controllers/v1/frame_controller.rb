@@ -83,7 +83,10 @@ class V1::FrameController < ApplicationController
   def upvote
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['upvote']) do
       if @frame = Frame.find(params[:id])
-        @status = 200 if @frame.upvote(current_user)
+        if @frame.upvote!(current_user)
+          @status = 200
+          GT::UserActionManager.upvote!(current_user.id, @frame.id)
+        end
         @frame.reload
       else
         @status, @message = 400, "could not find frame"

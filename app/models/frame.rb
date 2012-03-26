@@ -59,27 +59,32 @@ class Frame
   
   #TODO: on view, add to users viewed roll (unless already copied in there)
   
-  #------ WatchLater ------
+  #------ Watch Later ------
   
-  #TODO: on view, add to users viewed roll
+  #def add_to_watch_later!(u)
+  #  raise ArgumentError, "must supply user or user_id" unless u
+  #  user_id = (u.is_a?(User) ? u.id : u)
+  #  
+  #  return GT::Framer.dupe_frame!(self, u, u.watch_later_roll)
+  #end
+  
+  # To remove from watch later, destroy the Frame! (don't forget to add a UserAction)
   
   #------ Voting -------
   
-  def upvote(u)
+  def upvote!(u)
     raise ArgumentError, "must supply user or user_id" unless u
     user_id = (u.is_a?(User) ? u.id : u)
     
     return false if self.has_voted?(user_id)
     
     self.upvoters << user_id
-    #TODO: dupe this frame into u.upvoted_roll
+    
+    GT::Framer.dupe_frame!(self, u, u.upvoted_roll)
   
     update_score
-    
-    #TODO: this should be done by controller, not in here
-    GT::UserActionManager.upvote!(u.id, self.id) if u.save
   
-    true
+    self.save
   end
   
   def has_voted?(u)
