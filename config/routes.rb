@@ -38,7 +38,9 @@ ShelbyGt::Application.routes.draw do
     post 'frame/:id/upvote' => 'frame#upvote'
     post 'frame/:id/watched' => 'frame#watched'
     get 'roll/:id/frames' => 'frame#index'
-    post 'roll/:id/frames' => 'frame#create'
+
+    #post 'roll/:id/frames' => 'frame#create'    
+    match 'roll/:id/frames' => 'frame#create', :contstraints => {:method => ['OPTIONS', 'POST']}
     
   end
   
