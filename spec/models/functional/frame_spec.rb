@@ -15,6 +15,60 @@ describe Frame do
     end
   end
   
+  # We're testing a private method here, but it's a pretty fucking important/tricky one and has to be correct
+  context "ancestor search" do
+    it "should find an ancestor when one exists" do
+      @r1 = Factory.create(:roll, :creator => Factory.create(:user))
+      @r2 = Factory.create(:roll, :creator => Factory.create(:user))
+      
+      @orig = Factory.create(:frame, :roll => @r1)
+      @child = Factory.create(:frame, :roll => @r2, :frame_ancestors => [@orig.id])
+      
+      Frame.send(:roll_includes_ancestor_of_frame?, @r2.id, @orig.id, 24.hours.ago).should == true
+    end
+    
+    it "should not find an ancestor if one doesn't exist" do
+      @r1 = Factory.create(:roll, :creator => Factory.create(:user))
+      @r2 = Factory.create(:roll, :creator => Factory.create(:user))
+      
+      @orig = Factory.create(:frame, :roll => @r1)
+      @child = Factory.create(:frame, :roll => @r2, :frame_ancestors => [])
+      
+      Frame.send(:roll_includes_ancestor_of_frame?, @r2.id, @orig.id, 24.hours.ago).should == false
+    end
+    
+    it "should not find an ancestor if it's too old" do
+      @r1 = Factory.create(:roll, :creator => Factory.create(:user))
+      @r2 = Factory.create(:roll, :creator => Factory.create(:user))
+      
+      @orig = Factory.create(:frame, :roll => @r1)
+      @child = Factory.create(:frame, :_id => BSON::ObjectId.from_time(2.days.ago), :roll => @r2, :frame_ancestors => [@orig.id])
+      
+      Frame.send(:roll_includes_ancestor_of_frame?, @r2.id, @orig.id, 24.hours.ago).should == false
+      Frame.send(:roll_includes_ancestor_of_frame?, @r2.id, @orig.id, 3.days.ago).should == true
+    end
+    
+    it "should find an ancestor after duped via Framer" do
+      @r1 = Factory.create(:roll, :creator => Factory.create(:user))
+      @r2 = Factory.create(:roll, :creator => Factory.create(:user))
+      
+      @orig = Factory.create(:frame, :roll => @r1)
+
+      @u = Factory.create(:user)
+      @u.viewed_roll = Factory.create(:roll, :creator => @u)
+      @u.save
+      
+      #should NOT find it now
+      Frame.send(:roll_includes_ancestor_of_frame?, @u.viewed_roll_id, @orig.id, 24.hours.ago).should == false
+      
+      #dupe it
+      GT::Framer.dupe_frame!(@orig, @u.id, @u.viewed_roll_id)
+      
+      #should find it now
+      Frame.send(:roll_includes_ancestor_of_frame?, @u.viewed_roll_id, @orig.id, 24.hours.ago).should == true
+    end
+  end
+  
   context "upvoting" do
     before(:each) do
       @frame = Factory.create(:frame)
@@ -91,6 +145,44 @@ describe Frame do
       f = nil
       lambda {
         f = @frame.add_to_watch_later!(@u1)
+      }.should change { Frame.count } .by 1
+
+      f.creator_id.should == @u1.id
+      f.video_id.should == @frame.video_id
+      f.conversation_id.should == @frame.conversation_id
+      f.frame_ancestors.include?(@frame.id).should == true
+    end
+  end
+  
+  context "viewed" do
+    before(:each) do
+      @frame = Factory.create(:frame)
+      
+      @u1 = Factory.create(:user)
+      @u1.viewed_roll = Factory.create(:roll, :creator => @u1)
+      @u1.save
+    end
+    
+    it "should require full User model, not just id" do
+      lambda {
+        @frame.add_to_viewed_roll!(@u1.id)
+      }.should raise_error(ArgumentError)
+    end
+    
+    it "should dupe the frame into the users viewed_roll, persisted" do
+      f = nil
+      lambda {
+        f = @frame.add_to_viewed_roll!(@u1)
+      }.should change { Frame.count } .by 1
+
+      f.persisted?.should == true      
+      f.roll.should == @u1.viewed_roll
+    end
+    
+    it "should set metadata correctly" do
+      f = nil
+      lambda {
+        f = @frame.add_to_viewed_roll!(@u1)
       }.should change { Frame.count } .by 1
 
       f.creator_id.should == @u1.id

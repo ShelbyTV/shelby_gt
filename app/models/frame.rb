@@ -58,12 +58,21 @@ class Frame
   #------ Viewing
   
   #TODO: on view, add to users viewed roll (unless already copied in there)
+  def add_to_viewed_roll!(u)
+    raise ArgumentError, "must supply User" unless u and u.is_a?(User)
+    
+    # If this Frame hasn't been added to the user's viewed_roll in the last X hours, dupe it now
+    if Frame.roll_includes_ancestor_of_frame?(u.viewed_roll_id, self.id, 24.hours.ago)
+      return false
+    else
+      return GT::Framer.dupe_frame!(self, u.id, u.viewed_roll_id)
+    end
+  end
   
   #------ Watch Later ------
   
   def add_to_watch_later!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
-    user_id = u.id
     
     return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
   end
@@ -114,5 +123,23 @@ class Frame
     
     SHELBY_EPOCH = Time.utc(2012,2,22)
     TIME_DIVISOR = 45_000.0
+    
+    #
+    # Checks for a Frame, with the given roll_id, where frame_ancestors contains frame_id
+    #
+    # DANGEROUS - This has to walk the DB!  It will use the index on Frame.roll_id, but that's it.
+    #             We set created_after to ensure Mongo doesn't have to walk too far, but it will walk,
+    #             checking each frame_ancestors array to see if it contains frame_id
+    def self.roll_includes_ancestor_of_frame?(roll_id, frame_id, created_after)
+      raise ArgumentError, "must supply roll_id" unless roll_id and (roll_id.is_a?(String) or roll_id.is_a?(BSON::ObjectId))
+      raise ArgumentError, "must supply frame_id" unless frame_id and (frame_id.is_a?(String) or frame_id.is_a?(BSON::ObjectId))
+      raise AagumentError, "must supply valid time" unless created_after.is_a? Time
+
+      Frame.where( 
+        :roll_id => roll_id, 
+        :_id.gt => BSON::ObjectId.from_time(created_after),
+        :frame_ancestors => frame_id
+        ).exists?
+    end
   
 end
