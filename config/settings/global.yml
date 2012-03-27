@@ -1,6 +1,7 @@
 defaults: &defaults
-  title: Shelby.tv
-  
+  title: "Shelby.tv"
+  domain: "shelby.tv"
+
 development:
   <<: *defaults
 

@@ -65,6 +65,18 @@ describe GT::SocialPoster do
   end
   
   context "send via email" do
-    it "should send email and return true"
+    before(:all) do
+      @from_user = Factory.create(:user)
+      @from_user.primary_email = "my@email.com"; @from_user.save
+      @comment = "how much would a wood chuck chuck..."
+      video = Factory.create(:video, :thumbnail_url => "http://url.com/123.jpg")
+      @frame = Factory.create(:frame, :creator_id => @from_user.id, :video_id => video.id)
+    end
+    
+    it "should send email and return a Mail::Message" do
+      to_user = "some_other@email.com"
+      email = GT::SocialPoster.post_to_email(@from_user, to_user, @comment, @frame)
+      email.class.should eq(Mail::Message)
+    end
   end
 end

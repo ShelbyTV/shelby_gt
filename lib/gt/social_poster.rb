@@ -88,7 +88,7 @@ module GT
 
       def self.send_email(user, email_to, message=nil, frame=nil)
         from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
-        return SharingMailer.send_frame(user, from_email, email_to, message, frame).deliver
+        return SharingMailer.share_frame(user, from_email, email_to, message, frame).deliver
       end
     
   end
