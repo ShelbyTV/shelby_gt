@@ -54,9 +54,7 @@ class V1::FrameController < ApplicationController
       frame_to_re_roll = Frame.find(params[:frame_id]) if params[:frame_id]
       if !roll
         render_error(404, "could not find that roll")
-      elsif !frame_to_re_roll
-        render_error(404, "you haven't built me to do anything else yet...")
-      else
+      elsif frame_to_re_roll
         begin
           @frame = frame_to_re_roll.re_roll(user, roll)
           @frame = @frame[:frame]
@@ -64,6 +62,8 @@ class V1::FrameController < ApplicationController
         rescue => e
           render_error(404, "could not re_roll: #{e}")
         end
+      else
+        render_error(404, "you haven't built me to do anything else yet...")
       end
     end
   end
