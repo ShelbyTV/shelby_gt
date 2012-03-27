@@ -12,15 +12,17 @@ module SocialPosting
       
       #TODO: we need an iframe player for gt before we can post to tumblr!
       def post_video(comment, bcast_id)
-        return false if Settings::Tumblr.should_send_to_tumblr
+        if Settings::Tumblr.should_send_to_tumblr
 =begin
-        bcast = Broadcast.find(bcast_id)
-        access_token = OAuth::AccessToken.new(tumblr_client, @tumblr_auth.oauth_token, @tumblr_auth.oauth_secret)
-        embed_code = '<iframe src="http://'+ APP_CONFIG[:domain] + '/#!/channels/' + bcast.channel_id.to_s + '/broadcasts/' + bcast_id.to_s + '" width="500" height="375" frameborder="0"></iframe>'
-        post_url = 'http://www.tumblr.com/api/write'
-        post_options = {:type => "video", :embed => embed_code, :caption => comment, :group => site_to_post_to(), :tags => "shelby.tv"}
-        post = access_token.post(post_url, post_options)
+          bcast = Broadcast.find(bcast_id)
+          access_token = OAuth::AccessToken.new(tumblr_client, @tumblr_auth.oauth_token, @tumblr_auth.oauth_secret)
+          embed_code = '<iframe src="http://'+ APP_CONFIG[:domain] + '/#!/channels/' + bcast.channel_id.to_s + '/broadcasts/' + bcast_id.to_s + '" width="500" height="375" frameborder="0"></iframe>'
+          post_url = 'http://www.tumblr.com/api/write'
+          post_options = {:type => "video", :embed => embed_code, :caption => comment, :group => site_to_post_to(), :tags => "shelby.tv"}
+          post = access_token.post(post_url, post_options)
 =end
+      else
+        return false
       end
       
       private

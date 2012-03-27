@@ -1,5 +1,5 @@
 require 'twitter_posting'
-#require 'facebook_posting'
+require 'facebook_posting'
 #require 'tumblr_posting'
 
 module GT
@@ -67,7 +67,6 @@ module GT
       def self.post_fb_comment(user, message, fb_post_id=nil, frame=nil)
         if user.has_provider('facebook')
           fb = SocialPosting::Facebook.new(user)
-
           return fb.post_comment(message, fb_post_id, frame)
         else
           return nil
