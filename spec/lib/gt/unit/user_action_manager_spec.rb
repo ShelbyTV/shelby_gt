@@ -25,7 +25,7 @@ describe GT::UserActionManager do
       GT::UserActionManager.view!(@user.id, @frame.id, 0, 1).should == nil
     end
     
-    it "should require start and end times as Integers" do
+    it "should require start and end times as both nil or both Integers" do
       lambda {
         GT::UserActionManager.view!(@user.id, @frame.id, nil, 1)
       }.should raise_error ArgumentError
@@ -41,6 +41,17 @@ describe GT::UserActionManager do
       lambda {
         GT::UserActionManager.view!(@user.id, @frame.id, 0, "1")
       }.should raise_error ArgumentError
+      
+      #both int okay
+      lambda {
+        GT::UserActionManager.view!(@user.id, @frame.id, 0, 1)
+      }.should_not raise_error ArgumentError
+      
+      #both nil okay
+      lambda {
+        GT::UserActionManager.view!(@user.id, @frame.id, nil, nil)
+        GT::UserActionManager.view!(@user.id, @frame.id)
+      }.should_not raise_error ArgumentError
     end
     
     it "should create correct, persisted UserAction" do

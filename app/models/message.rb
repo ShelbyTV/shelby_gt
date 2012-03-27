@@ -34,7 +34,7 @@ class Message
   # is this public (ie tweet, tumblr post) or private/semi-private (ie Facebook limited share)
   key :public, Boolean, :abbr => :i
 
-  # TODO: do i need to open this up?
+  #don't need anythign mass-assignable (yet)
   attr_accessible
   
   # IMPORTANT NOTE

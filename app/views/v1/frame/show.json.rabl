@@ -20,5 +20,5 @@ if @include_frame_children == true
 		extends 'v1/conversation/show'
 	end
 else
-	attributes :id, :score, :upvoters, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
+	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
 end

@@ -157,6 +157,8 @@ describe Frame do
   context "viewed" do
     before(:each) do
       @frame = Factory.create(:frame)
+      @frame.video = Factory.create(:video)
+      @frame.save
       
       @u1 = Factory.create(:user)
       @u1.viewed_roll = Factory.create(:roll, :creator => @u1)
@@ -165,14 +167,14 @@ describe Frame do
     
     it "should require full User model, not just id" do
       lambda {
-        @frame.add_to_viewed_roll!(@u1.id)
+        @frame.view!(@u1.id)
       }.should raise_error(ArgumentError)
     end
     
     it "should dupe the frame into the users viewed_roll, persisted" do
       f = nil
       lambda {
-        f = @frame.add_to_viewed_roll!(@u1)
+        f = @frame.view!(@u1)
       }.should change { Frame.count } .by 1
 
       f.persisted?.should == true      
@@ -182,13 +184,41 @@ describe Frame do
     it "should set metadata correctly" do
       f = nil
       lambda {
-        f = @frame.add_to_viewed_roll!(@u1)
+        f = @frame.view!(@u1)
       }.should change { Frame.count } .by 1
 
       f.creator_id.should == @u1.id
       f.video_id.should == @frame.video_id
       f.conversation_id.should == @frame.conversation_id
       f.frame_ancestors.include?(@frame.id).should == true
+    end
+    
+    it "should update view_count of Frame" do
+      lambda {
+        @frame.view!(@u1)
+      }.should change { @frame.reload.view_count } .by 1
+      
+      lambda {
+        Frame.should_receive(:roll_includes_ancestor_of_frame?).exactly(4).times.and_return(false)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+      }.should change { @frame.reload.view_count } .by 4
+    end
+    
+    it "should update view_count of Frame's Video" do
+      lambda {
+        @frame.view!(@u1)
+      }.should change { @frame.video.reload.view_count } .by 1
+      
+      lambda {
+        Frame.should_receive(:roll_includes_ancestor_of_frame?).exactly(4).times.and_return(false)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+      }.should change { @frame.video.reload.view_count } .by 4
     end
   end
   
