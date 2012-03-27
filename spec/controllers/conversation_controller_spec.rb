@@ -19,7 +19,7 @@ describe V1::ConversationController do
     it "returns 400 when it cant assign one conversation to @conversation" do
       Conversation.stub!(:find).and_return(nil)
       get :show, :format => :json
-      assigns(:status).should eq(400)
+      assigns(:status).should eq(404)
     end
     
   end

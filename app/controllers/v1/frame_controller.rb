@@ -16,8 +16,7 @@ class V1::FrameController < ApplicationController
         @frames = @roll.frames.sort(:score.desc)
         @status =  200
       else
-        @status, @message = 404, "could not find that roll"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that roll")
       end
     end
   end
@@ -36,8 +35,7 @@ class V1::FrameController < ApplicationController
         @status =  200
         @include_frame_children = (params[:include_children] == "true") ? true : false
       else
-        @status, @message = 404, "could not find that frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that frame")
       end
     end
   end
@@ -55,19 +53,16 @@ class V1::FrameController < ApplicationController
       roll = Roll.find(params[:roll_id])
       frame_to_re_roll = Frame.find(params[:frame_id]) if params[:frame_id]
       if !roll
-        @status, @message = 404, "could not find that roll"
-        render 'v1/blank'
+        render_error(404, "could not find that roll")
       elsif !frame_to_re_roll
-        @status, @message = 404, "you haven't built me to do anything else yet..."
-        render 'v1/blank', :status => @status
+        render_error(404, "you haven't built me to do anything else yet...")
       else
         begin
           @frame = frame_to_re_roll.re_roll(user, roll)
           @frame = @frame[:frame]
           @status = 200
         rescue => e
-          @status, @message = 404, "could not re_roll: #{e}"
-          render 'v1/blank', :status => @status
+          render_error(404, "could not re_roll: #{e}")
         end
       end
     end
@@ -89,8 +84,7 @@ class V1::FrameController < ApplicationController
         end
         @frame.reload
       else
-        @status, @message = 404, "could not find frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find frame")
       end
     end
   end
@@ -110,8 +104,7 @@ class V1::FrameController < ApplicationController
           GT::UserActionManager.watch_later!(current_user.id, @frame.id)
         end
       else
-        @status, @message = 404, "could not find frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find frame")
       end
     end
   end
@@ -141,8 +134,7 @@ class V1::FrameController < ApplicationController
           GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
         end
       else
-        @status, @message = 404, "could not find frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find frame")
       end
     end
   end
@@ -160,9 +152,8 @@ class V1::FrameController < ApplicationController
       if frame = Frame.find(params[:id]) and frame.destroy 
         @status = 200
       else
-        @status, @message = 404, "could not find that frame to destroy" unless frame
-        @status, @message = 404, "could not destroy that frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that frame to destroy") unless frame
+        render_error(404, "could not destroy that frame")
       end
     end
   end

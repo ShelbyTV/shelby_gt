@@ -4,7 +4,12 @@ class ApplicationController < ActionController::Base
   after_filter :set_access_control_headers
   
   respond_to :json
-
+  
+  def render_error(code, message)
+    @status, @message = code, message
+    render 'v1/blank'
+  end
+  
   # === Unlike the default user_authenticated! helper that ships with devise,
   #  We want to render our json response as well as just the http 401 response
   def user_authenticated?

@@ -28,8 +28,7 @@ class V1::UserController < ApplicationController
           @include_rolls = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true" ) ? true : false
           @status = 200
         else
-          @status, @message = 400, "could not find that user"
-          render 'v1/blank', :status => @status        
+          render_error(404, "could not find that user")
         end
       elsif user_signed_in?
         @user = current_user
@@ -38,8 +37,7 @@ class V1::UserController < ApplicationController
         @csrf = session[:_csrf_token]
         @status = 200
       else
-        @status, @message = 400, "could not find user"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that user")
       end
     end
   end
@@ -62,12 +60,10 @@ class V1::UserController < ApplicationController
         if @user.update_attributes!(params)
           @status = 200
         else
-          @status, @message = 400, "error while updating user."
-          render 'v1/blank', :status => @status
+          render_error(404, "error while updating user.")
         end
       rescue => e
-        @status, @message = 400, "error while updating user: #{e}"
-        render 'v1/blank', :status => @status
+        render_error(404, "error while updating user: #{e}")
       end
     end
   end
@@ -86,8 +82,7 @@ class V1::UserController < ApplicationController
         @user = current_user
         @status = 200
       else
-        @status, @message = 401, "you are not authorized to view that users rolls"
-        render 'v1/blank'
+        render_error(401, "you are not authorized to view that users rolls")
       end
     end
   end

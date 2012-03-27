@@ -19,12 +19,10 @@ class V1::RollController < ApplicationController
           @include_following_users = params[:following_users] == "true" ? true : false
           @status =  200        
         else
-          @status, @message = 401, "you are not authorized to see that roll"
-          render 'v1/blank', :status => @status        
+          render_error(401, "you are not authorized to see that roll")
         end
       else
-        @status, @message = 400, "could not find that roll"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that roll")
       end
     end
   end
@@ -42,7 +40,7 @@ class V1::RollController < ApplicationController
   def create
     StatsManager::StatsD.client.time(Settings::StatsNames.roll['create']) do
       if ( !params.include?(:title) or !params.include?(:thumbnail_url) or !user_signed_in?)
-        @status = 400
+        @status = 404
         @message = "title required" unless params.include?(:title)
         @message = "thumbnail_url required" unless params.include?(:thumbnail_url)
         @message = "not authenticated, could not access user" unless user_signed_in?
@@ -53,8 +51,7 @@ class V1::RollController < ApplicationController
         begin        
           @status = 200 if @roll.save!
         rescue => e
-          @status, @message = 400, "could not save roll: #{e}"
-          render 'v1/blank', :status => @status
+          render_error(404, "could not save roll: #{e}")
         end
       end
     end
@@ -72,14 +69,12 @@ class V1::RollController < ApplicationController
       id = params.delete(:id)
       @roll = Roll.find(id)
       if !@roll
-        @status, @message = 400, "could not find roll"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find roll")
       else
         begin
           @status = 200 if @roll.update_attributes!(params)
         rescue => e
-          @status, @message = 400, "error while updating roll: #{e}"
-          render 'v1/blank', :status => @status
+          render_error(404, "error while updating roll: #{e}")
         end
       end
     end
@@ -95,14 +90,12 @@ class V1::RollController < ApplicationController
   def destroy
     StatsManager::StatsD.client.time(Settings::StatsNames.roll['destroy']) do
       unless @roll = Roll.find(params[:id])
-        @status, @message = 400, "could not find that roll to destroy"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that roll to destroy")
       end
       if @roll.destroy
         @status =  200
       else
-        @status, @message = 400, "could not destroy that roll"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not destroy that roll")
       end
     end
   end
