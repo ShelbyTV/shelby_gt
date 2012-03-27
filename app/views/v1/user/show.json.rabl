@@ -1,6 +1,6 @@
 object @user
 
-attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :watch_later_roll_id, :public_roll_id, :upvoted_roll, :viewed_roll
+attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image
 
 child :preferences do
 	attributes :email_updates, :like_notifications, :watched_notifications, :quiet_mode
