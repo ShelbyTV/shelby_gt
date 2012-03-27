@@ -16,13 +16,14 @@ module SocialPosting
 =begin
           bcast = Broadcast.find(bcast_id)
           access_token = OAuth::AccessToken.new(tumblr_client, @tumblr_auth.oauth_token, @tumblr_auth.oauth_secret)
-          embed_code = '<iframe src="http://'+ APP_CONFIG[:domain] + '/#!/channels/' + bcast.channel_id.to_s + '/broadcasts/' + bcast_id.to_s + '" width="500" height="375" frameborder="0"></iframe>'
+          embed_code = '<iframe src="http://'+ Settings::Global.domain + '/#!/channels/' + bcast.channel_id.to_s + '/broadcasts/' + bcast_id.to_s + '" width="500" height="375" frameborder="0"></iframe>'
           post_url = 'http://www.tumblr.com/api/write'
           post_options = {:type => "video", :embed => embed_code, :caption => comment, :group => site_to_post_to(), :tags => "shelby.tv"}
           post = access_token.post(post_url, post_options)
 =end
-      else
-        return false
+        else
+          return false
+        end
       end
       
       private
@@ -38,7 +39,7 @@ module SocialPosting
         end
     
         def tumblr_client
-          @tumblr_client ||= OAuth::Consumer.new(Settings::Tumblr.key], Settings::Tumblr.secret ,{:site => "http://www.tumblr.com"})
+          @tumblr_client ||= OAuth::Consumer.new(Settings::Tumblr.key, Settings::Tumblr.secret ,{:site => "http://www.tumblr.com"})
         end
       
     end

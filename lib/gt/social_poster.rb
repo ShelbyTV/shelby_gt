@@ -1,6 +1,6 @@
 require 'twitter_posting'
 require 'facebook_posting'
-#require 'tumblr_posting'
+require 'tumblr_posting'
 
 module GT
   class SocialPoster
