@@ -51,19 +51,22 @@ class V1::FrameController < ApplicationController
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['create']) do
       user = current_user
       roll = Roll.find(params[:roll_id])
-      frame_to_re_roll = Frame.find(params[:frame_id]) if params[:frame_id]
       if !roll
         render_error(404, "could not find that roll")
-      elsif !frame_to_re_roll
-        render_error(404, "you haven't built me to do anything else yet...")
-      else
-        begin
-          @frame = frame_to_re_roll.re_roll(user, roll)
-          @frame = @frame[:frame]
-          @status = 200
-        rescue => e
-          render_error(404, "could not re_roll: #{e}")
+      elsif params[:frame_id]
+        if frame_to_re_roll = Frame.find(params[:frame_id])
+          begin
+            @frame = frame_to_re_roll.re_roll(user, roll)
+            @frame = @frame[:frame]
+            @status = 200
+          rescue => e
+            render_error(404, "could not re_roll: #{e}")
+          end
+        else
+          render_error(404, "could not find that frame to re-roll")
         end
+      else
+        render_error(404, "you haven't built me to do anything else yet...")
       end
     end
   end
