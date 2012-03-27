@@ -24,7 +24,7 @@ class Conversation
   # The individual messages of the conversation
   many :messages
   
-  #TODO: do i need to open up the mesage itself in here?
+  #don't need anythign mass-assignable (yet)
   attr_accessible
 
   def self.first_including_message_origin_id(mid)
