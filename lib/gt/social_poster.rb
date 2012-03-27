@@ -51,6 +51,9 @@ module GT
       end
     end
 
+    def self.post_to_email(from_user, to_user, comment, frame)
+      return send_email(from_user, to_user, comment, frame)
+    end
     
     private 
   
@@ -83,29 +86,10 @@ module GT
         end
       end
 
-    
-  #FIXME: Below
-=begin  
-  def self.post_to_email(from_user, params)
-    return send_email(from_user, params["to"], params["comment"], params["broadcast_id"])
-  end
-  
-  private 
-      
-=end    
-    #TODO: BUILD EMAIL SHARING INTO GT
-=begin
-    def self.send_email(user, email_to, message=nil, broadcast_id=nil)
-      # rebroadcast to person email is to if they are a shelby user
-      if to_user = User.find_by_email(email_to) 
-        rebroadcast = to_user.find_or_create_rebroadcast!(broadcast, to_user.stream_incoming_channel)
-        rebroadcast.update_attributes({:owner_watch_later => true, :description => message})
+      def self.send_email(user, email_to, message=nil, frame=nil)
+        from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
+        return SharingMailer.send_video(user, from_email, email_to, message, frame).deliver
       end
-      
-      from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
-      return SharingMailer.send_video(user, from_email, email_to, message, broadcast_id).deliver
-    end
-=end
-
+    
   end
 end
