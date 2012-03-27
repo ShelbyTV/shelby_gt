@@ -82,7 +82,7 @@ class V1::UserController < ApplicationController
         @user = current_user
         @status = 200
       else
-        render_error(401, "you are not authorized to view that users rolls")
+        render_error(401, "you are not authorized to view that users rolls.")
       end
     end
   end
