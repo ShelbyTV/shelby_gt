@@ -1,0 +1,16 @@
+defaults: &defaults
+  share_frame:
+    category: "Share Frame"
+    subject: "watch this video"
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+  
+arnold:
+  <<: *production

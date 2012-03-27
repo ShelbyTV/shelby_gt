@@ -138,5 +138,11 @@ module Settings
     namespace Rails.env
     load!
   end
+  
+  class Email < Settingslogic
+    source "#{Rails.root}/config/settings/email.yml"
+    namespace Rails.env
+    load!
+  end
 
 end

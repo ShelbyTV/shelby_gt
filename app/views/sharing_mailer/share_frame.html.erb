@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+		"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+		
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>Video shared via Shelby.TV</title>
+		<style type="text/css">
+				#outlook a { padding: 0; } /* Force Outlook to provide a "view in browser" button. */
+				body { width: 100% !important; } .ReadMsgBody { width: 100%; } .ExternalClass { width: 100%; } /* Force Hotmail to display emails at full width */
+				body { -webkit-text-size-adjust: none; -ms-text-size-adjust: none; } /* Prevent Webkit and Windows Mobile platforms from changing default font sizes. */
+
+				body { margin: 0; padding: 0; }
+				img { height: auto; line-height: 100%; outline: none; text-decoration: none; }
+				#backgroundTable { height: 100% !important; margin: 0; padding: 0; width: 100% !important; }
+
+			 	p {
+					 margin: 1em 0;
+			 	}
+					
+			 	h1, h2, h3, h4, h5, h6 {
+					 color: black !important;
+					 line-height: 100% !important;
+			 	}
+			 
+			 	h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+					 color: white !important;
+			 	}
+			 
+			 	h1 a:active, h2 a:active,	h3 a:active, h4 a:active, h5 a:active, h6 a:active {
+					 color: red !important;
+			 	}
+			 
+			 	h1 a:visited, h2 a:visited,	h3 a:visited, h4 a:visited, h5 a:visited, h6 a:visited {
+					 color: gray !important;
+			 	}
+			
+				a, a:visited { color: red !important; }
+				
+			 	table td {
+					 border-collapse: collapse;
+			 	}
+				
+			 	.yshortcuts, .yshortcuts a, .yshortcuts a:link,.yshortcuts a:visited, .yshortcuts a:hover, .yshortcuts a span { color: black; text-decoration: none !important; border-bottom: none !important; background: none !important; }
+			 
+		</style>
+</head>
+<body>	
+		<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable" style="border-style:solid;background:grey;border-color:black;">
+			<tr>
+				<td> 		 
+					<table cellpadding="0" cellspacing="0" border="5px" style="width:100%;background:black;border-style:solid;border-background:grey;">
+						<!-- video box area -->
+						<tr style="color:white; background: black;">
+							<td colspan="3">
+								<!-- video box -->
+								<table cellpadding="0" cellspacing="0" border="0" style="width:500px;background:#444444;margin: 10px 10px 5px 10px;">
+									<tr>
+										<td colspan="2" style="width:470px;background:black;padding:0px 15px;float:left;">
+											<!-- Thumbnail -->
+											<img src="<%= @frame.video.thumbnail_url %>" title="video_thumbnail" width="200px" height="150px" style="display: block;position:relative;float:left;" />
+											<!-- End Thumbnail -->
+											<!-- Title, Avatar, Description, Button -->
+											<table border="0" cellspacing="0" cellpadding="0" style="width: 50%; display: inline-block; margin-left: 20px;color: white;">
+												<tr>
+													<td>
+														<div class="description" style="margin: 10px 0px; min-height: 50px;">
+															<div class="avatar" style="float: left; min-height: 48px; margin-right: 10px;">
+																	<img src="<%= @user.user_image %>" width="50px" height="50px"/>
+															</div>
+															<div class="text" style="margin-bottom:10px;margin-right: 8px;font-size: 16px;">
+																<span style="color:white !important;">
+																	<%= @message %>																	
+																</span>
+															</div>
+														</div>
+														<div class="title" style="width: 100%; max-width: 245px; padding: 5px 0px; text-transform: uppercase;">
+															<%= @frame.video.title %>
+														</div>
+														<div class="watch button" style="background: #A200B9; padding: 9px 15px; width: 215px; text-align: center;color:white;">
+															watch this video <span style="position: relative;top: 1px;"> ► </span>
+														</div>
+													</td>
+												</tr>
+											</table>
+											<!-- End Title, Avatar, Description, Button -->
+										</td>
+									</tr>
+									<tr>
+										<td style="background:black;">
+											<hr style="background-color:#444;height:2px;border:0px;"/>
+											<div style="padding:5px 10px;background:black;font-size:17px;width:139px;margin:0px auto;">
+												<img src="http://<%= APP_CONFIG[:domain] %>/images/splash-logo.png" alt="Shelby Logo" title="Shelby.TV" width="125px" style="display: block;" />
+											</div>
+										</td>
+									</tr>
+								</table>
+								<!-- end video box -->
+							</td>
+						</tr>
+						<!-- end video box area -->
+					</table>	
+				</td>
+			</tr>
+		</table>
+		<!-- End of wrapper table -->
+</body>
+</html>

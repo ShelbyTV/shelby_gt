@@ -4,7 +4,7 @@ require 'facebook_posting'
 
 module GT
   class SocialPoster
-    
+
     def self.post_to_twitter(from_user, comment, frame)
       begin
         original_message = frame.conversation.messages.first
@@ -88,7 +88,7 @@ module GT
 
       def self.send_email(user, email_to, message=nil, frame=nil)
         from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
-        return SharingMailer.send_video(user, from_email, email_to, message, frame).deliver
+        return SharingMailer.send_frame(user, from_email, email_to, message, frame).deliver
       end
     
   end

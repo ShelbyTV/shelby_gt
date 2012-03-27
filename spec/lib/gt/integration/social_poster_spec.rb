@@ -63,4 +63,8 @@ describe GT::SocialPoster do
   context "posting to tumblr" do
     #we need an iframe player for gt before we can post to tumblr!
   end
+  
+  context "send via email" do
+    it "should send email and return true"
+  end
 end
