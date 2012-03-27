@@ -6,12 +6,10 @@
 module GT
   class UserActionManager
     
-    #TODO: create UserAction when a frame is viewed
-    def self.view!(user_id, frame_id, start_s, end_s)
+    def self.view!(user_id, frame_id, start_s=nil, end_s=nil)
       raise ArgumentError, "user_id must be nil or a valid ObjectId" unless !user_id or BSON::ObjectId.legal? user_id.to_s
       raise ArgumentError, "frame_id must reference valid Frame" unless frame_id and frame = Frame.find(frame_id)
-      raise ArgumentError, "start_s must be an Integer" unless start_s and start_s.is_a?(Integer)
-      raise ArgumentError, "end_s must be an Integer" unless end_s and end_s.is_a?(Integer)
+      raise ArgumentError, "start_s and end_s must both be nil or Integer" unless (start_s == nil and end_s == nil) or (start_s.is_a?(Integer) and end_s.is_a?(Integer))
 
       unless video_id = frame.video_id
         Rails.logger.error("[GT::UserActionManager#view!] Frame had no video_id // user_id #{user_id}, frame_id #{frame_id}, start #{start_s}, end #{end_s}")

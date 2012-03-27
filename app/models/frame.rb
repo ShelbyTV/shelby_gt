@@ -40,6 +40,8 @@ class Frame
   # Track *immediate* children (but not grandchilren, &c.)
   key :frame_children, Array, :typecast => 'ObjectId', :abbr => :h, :default => []
   
+  # Each time a new view is counted (see #view!) we increment this and video.view_count
+  key :view_count, Integer, :abbr => :i, :default => 0
   
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
@@ -57,14 +59,18 @@ class Frame
   
   #------ Viewing
   
-  #TODO: on view, add to users viewed roll (unless already copied in there)
-  def add_to_viewed_roll!(u)
+  # Will add this Frame to the User's viewed_roll if they haven't "viewed" this in the last 24 hours.
+  # Also updates the view_count on this frame and it's video
+  def view!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
     
     # If this Frame hasn't been added to the user's viewed_roll in the last X hours, dupe it now
     if Frame.roll_includes_ancestor_of_frame?(u.viewed_roll_id, self.id, 24.hours.ago)
       return false
     else
+      #update view counts and add dupe for this 'viewing'
+      Frame.increment(self.id, :view_count => 1)
+      Video.increment(self.video_id, :view_count => 1)
       return GT::Framer.dupe_frame!(self, u.id, u.viewed_roll_id)
     end
   end

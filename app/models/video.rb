@@ -30,6 +30,9 @@ class Video
   key :source_url, String, :abbr => :o
   key :embed_url, String, :abbr => :p
   
+  # Each time a new view is counted (see Frame#view!) we increment this and frame.view_count
+  key :view_count, Integer, :abbr => :q, :default => 0
+  
   # mongo has a unique key on these as well
   validates_uniqueness_of :provider_id, :scope => :provider_name
 

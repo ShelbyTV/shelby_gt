@@ -1,6 +1,6 @@
 class V1::FrameController < ApplicationController
 
-  before_filter :user_authenticated?
+  before_filter :user_authenticated?, :except => :watched
   
   ##
   # Returns all frames in a roll
@@ -16,7 +16,7 @@ class V1::FrameController < ApplicationController
         @frames = @roll.frames.sort(:score.desc)
         @status =  200
       else
-        @status, @message = 400, "could not find that roll"
+        @status, @message = 404, "could not find that roll"
         render 'v1/blank', :status => @status
       end
     end
@@ -36,7 +36,7 @@ class V1::FrameController < ApplicationController
         @status =  200
         @include_frame_children = (params[:include_children] == "true") ? true : false
       else
-        @status, @message = 400, "could not find that frame"
+        @status, @message = 404, "could not find that frame"
         render 'v1/blank', :status => @status
       end
     end
@@ -55,10 +55,10 @@ class V1::FrameController < ApplicationController
       roll = Roll.find(params[:roll_id])
       frame_to_re_roll = Frame.find(params[:frame_id]) if params[:frame_id]
       if !roll
-        @status, @message = 400, "could not find that roll"
+        @status, @message = 404, "could not find that roll"
         render 'v1/blank'
       elsif !frame_to_re_roll
-        @status, @message = 400, "you haven't built me to do anything else yet..."
+        @status, @message = 404, "you haven't built me to do anything else yet..."
         render 'v1/blank', :status => @status
       else
         begin
@@ -66,7 +66,7 @@ class V1::FrameController < ApplicationController
           @frame = @frame[:frame]
           @status = 200
         rescue => e
-          @status, @message = 400, "could not re_roll: #{e}"
+          @status, @message = 404, "could not re_roll: #{e}"
           render 'v1/blank', :status => @status
         end
       end
@@ -89,7 +89,7 @@ class V1::FrameController < ApplicationController
         end
         @frame.reload
       else
-        @status, @message = 400, "could not find frame"
+        @status, @message = 404, "could not find frame"
         render 'v1/blank', :status => @status
       end
     end
@@ -110,16 +110,16 @@ class V1::FrameController < ApplicationController
           GT::UserActionManager.watch_later!(current_user.id, @frame.id)
         end
       else
-        @status, @message = 400, "could not find frame"
+        @status, @message = 404, "could not find frame"
         render 'v1/blank', :status => @status
       end
     end
   end
   
-  #TODO: Fill this is with what it should really be
   ##
-  # Upvotes a frame and returns XXXX 
-  #   REQUIRES AUTHENTICATION
+  # For logged in user, update their viewed_roll and view_count on Frame and Video (once per 24 hours per user)
+  # For logged in and non-logged in user, create a UserAction to track this portion of viewing.
+  #   AUTHENTICATION OPTIONAL
   #
   # [POST] /v1/frame/:id/watched
   # 
@@ -128,9 +128,22 @@ class V1::FrameController < ApplicationController
   # @param [Optional, String] end_time The end_time of the action on the frame
   def watched
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['watched']) do
-      @frame = Frame.find(params[:frame_id])
-      @status, @message = 404, "BUILD ME!"
-      render 'v1/blank', :status => @status
+      if @frame = Frame.find(params[:frame_id])
+        @status = 200
+        
+        #conditionally count this as a view (once per 24 hours per user)
+        if current_user
+          @new_frame = @frame.view!(current_user)
+          @frame.reload # to update view_count
+        end
+
+        if params[:start_time] and params[:end_time]
+          GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
+        end
+      else
+        @status, @message = 404, "could not find frame"
+        render 'v1/blank', :status => @status
+      end
     end
   end
   
@@ -147,8 +160,8 @@ class V1::FrameController < ApplicationController
       if frame = Frame.find(params[:id]) and frame.destroy 
         @status = 200
       else
-        @status, @message = 400, "could not find that frame to destroy" unless frame
-        @status, @message = 400, "could not destroy that frame"
+        @status, @message = 404, "could not find that frame to destroy" unless frame
+        @status, @message = 404, "could not destroy that frame"
         render 'v1/blank', :status => @status
       end
     end

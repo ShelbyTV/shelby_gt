@@ -8,6 +8,7 @@ describe 'v1/frame' do
       @u1 = Factory.create(:user)
       @u1.upvoted_roll = Factory.create(:roll, :creator => @u1)
       @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
+      @u1.viewed_roll = Factory.create(:roll, :creator => @u1)
       @u1.save
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
@@ -23,7 +24,7 @@ describe 'v1/frame' do
       
         it "should return error message if frame doesnt exist" do
           get '/v1/frame/'+@f.id+'xxx'
-          response.body.should be_json_eql(400).at_path("status")
+          response.body.should be_json_eql(404).at_path("status")
         end
       end
       
@@ -42,7 +43,7 @@ describe 'v1/frame' do
       
         it "should return error message if frame doesnt exist" do
           get '/v1/roll/'+@f.id+'xxx/frames'
-          response.body.should be_json_eql(400).at_path("status")
+          response.body.should be_json_eql(404).at_path("status")
         end        
       end
     end
@@ -72,7 +73,32 @@ describe 'v1/frame' do
       end
       
       context 'watched frame' do
-        it "should return success and updated frame on watched"
+        it "should return success and updated frame on watched w/ logged in user" do
+          post '/v1/frame/'+@f.id+'/watched?start_time=4&end_time=44'
+          
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/view_count")
+          response.body.should be_json_eql(1).at_path("result/view_count")
+        end
+        
+        it "should return success and updated frame on watched w/o logged in user"  do
+          set_omniauth(:uuid => nil)
+          get '/auth/twitter/callback'
+          
+          @f.should_not_receive(:view!)
+          post '/v1/frame/'+@f.id+'/watched?start_time=4&end_time=44'
+          
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/view_count")
+          response.body.should be_json_eql(1).at_path("result/view_count")
+        end
+        
+        it "should return success and updated frame on watched w/o start/end times" do
+          post '/v1/frame/'+@f.id+'/watched'
+          
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/view_count")
+        end
       end
       
       context 'add frame to watch later' do
@@ -93,7 +119,7 @@ describe 'v1/frame' do
       
       it "should return an error if a deletion fails" do
         get '/v1/frame/'+@f.id+'xxx'
-        response.body.should be_json_eql(400).at_path("status")
+        response.body.should be_json_eql(404).at_path("status")
       end
       
     end
