@@ -29,6 +29,7 @@ ShelbyGt::Application.routes.draw do
     end
     resources :frame, :only => [:show, :destroy] do
       post 'upvote' => 'frame#upvote'
+      post 'add_to_watch_later' => 'frame#add_to_watch_later'
       post 'watched' => 'frame#watched'
     end
     resources :video, :only => [:show]

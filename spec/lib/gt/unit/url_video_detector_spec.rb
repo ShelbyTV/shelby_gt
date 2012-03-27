@@ -68,7 +68,7 @@ describe GT::UrlVideoDetector do
         GT::UrlVideoDetector.examine_url_for_video(@url, true, nil).should == nil
       end
       
-      it "should handle other crap outs" do
+      it "should try 5 times w/ exponential backoff if embed.ly fails" do
         embedly_hash = {"some" => "thing", "fake" => true}
         
         fake_em_http_request = mock_model("FakeEMHttpRequest")
@@ -76,6 +76,8 @@ describe GT::UrlVideoDetector do
           mock_model("FakeEMHttpResponse", :error => true, :response_header => mock_model("FakeResponseHeader", :status => 500), :response => "fuck" )
           )
         EventMachine::HttpRequest.stub( :new ).and_return( fake_em_http_request )
+        
+        EventMachine::Synchrony.should_receive(:sleep).exactly(5).times
         
         GT::UrlVideoDetector.examine_url_for_video(@url, true, nil).should == nil
       end

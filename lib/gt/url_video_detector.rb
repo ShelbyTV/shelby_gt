@@ -73,7 +73,7 @@ module GT
         return use_em ? check_embedly_for_video_with_em(url, embedly_url, memcache_client) : check_embedly_for_video_with_net_http(url, embedly_url, memcache_client)
       end
       
-      def self.check_embedly_for_video_with_em(orig_url, embedly_url, memcache_client)
+      def self.check_embedly_for_video_with_em(orig_url, embedly_url, memcache_client, tries_left=5, sleep_time=2)
         http = EventMachine::HttpRequest.new(embedly_url, :connect_timeout => 5).get({:head=>{'User-Agent'=>Settings::Embedly.user_agent}})
         
         if http.response_header and http.response_header.status == 404
@@ -83,9 +83,16 @@ module GT
         end
 
         if http.error or http.response_header.status != 200
-          # some error, not caching
-          Rails.logger.error( "[GT::UrlVideoDetector#check_embedly_for_video_with_em] http error requesting #{embedly_url} / http.error: #{http.error} / http.response_header: #{http.response_header} / http.response: #{http.response}")
-          return nil
+          if tries_left <= 0
+            # some error, not caching
+            Rails.logger.error( "[GT::UrlVideoDetector#check_embedly_for_video_with_em] http error requesting #{embedly_url} / http.error: #{http.error} / http.response_header: #{http.response_header} / http.response: #{http.response} // DONE RETRYING: tries_left: #{tries_left}, sleep_time: #{sleep_time}")
+            return nil
+          else
+            #pause and retry
+            Rails.logger.debug( "[GT::UrlVideoDetector#check_embedly_for_video_with_em] http error requesting #{embedly_url} / http.error: #{http.error} / http.response_header: #{http.response_header} / http.response: #{http.response} // RETYRING: tries_left: #{tries_left}, sleep_time: #{sleep_time}")
+            EventMachine::Synchrony.sleep(sleep_time)
+            return check_embedly_for_video_with_em(orig_url, embedly_url, memcache_client, tries_left-1, sleep_time*2)
+          end
         end
         
         #valid response is cached above

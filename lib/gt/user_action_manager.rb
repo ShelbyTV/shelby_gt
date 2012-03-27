@@ -27,8 +27,7 @@ module GT
     def self.follow_roll!(user_id, roll_id) create_follow_action(user_id, roll_id, UserAction::TYPES[:follow_roll]); end
     def self.unfollow_roll!(user_id, roll_id) create_follow_action(user_id, roll_id, UserAction::TYPES[:unfollow_roll]); end
 
-    #TODO: create UserAction when a roll is re-rolled to watch_later
-    def self.watch_later!(user_id, frame_id) create_watch_later_action(user_id, frame_id, UserAction::TYPES[:watch_later]); end
+    def self.watch_later!(user_id, orig_frame_id) create_watch_later_action(user_id, orig_frame_id, UserAction::TYPES[:watch_later]); end
     def self.unwatch_later!(user_id, frame_id) create_watch_later_action(user_id, frame_id, UserAction::TYPES[:unwatch_later]); end
 
     private

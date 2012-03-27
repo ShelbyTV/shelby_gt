@@ -36,9 +36,9 @@ class Frame
   #      dupe Frame to the children of the original, as it's not a re-roll.
   #
   # Track a complete lineage to the original Frame
-  key :frame_ancestors, Array, :typecast => 'ObjectId', :abbr => :g
+  key :frame_ancestors, Array, :typecast => 'ObjectId', :abbr => :g, :default => []
   # Track *immediate* children (but not grandchilren, &c.)
-  key :frame_children, Array, :typecast => 'ObjectId', :abbr => :h
+  key :frame_children, Array, :typecast => 'ObjectId', :abbr => :h, :default => []
   
   
   #nothing needs to be mass-assigned (yet?)
@@ -61,26 +61,25 @@ class Frame
   
   #------ Watch Later ------
   
-  #def add_to_watch_later!(u)
-  #  raise ArgumentError, "must supply user or user_id" unless u
-  #  user_id = (u.is_a?(User) ? u.id : u)
-  #  
-  #  return GT::Framer.dupe_frame!(self, u, u.watch_later_roll)
-  #end
+  def add_to_watch_later!(u)
+    raise ArgumentError, "must supply User" unless u and u.is_a?(User)
+    user_id = u.id
+    
+    return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
+  end
   
   # To remove from watch later, destroy the Frame! (don't forget to add a UserAction)
   
   #------ Voting -------
   
   def upvote!(u)
-    raise ArgumentError, "must supply user or user_id" unless u
-    user_id = (u.is_a?(User) ? u.id : u)
+    raise ArgumentError, "must supply User" unless u and u.is_a?(User)
     
-    return false if self.has_voted?(user_id)
+    return false if self.has_voted?(u.id)
     
-    self.upvoters << user_id
+    self.upvoters << u.id
     
-    GT::Framer.dupe_frame!(self, u, u.upvoted_roll)
+    GT::Framer.dupe_frame!(self, u.id, u.upvoted_roll_id)
   
     update_score
   
