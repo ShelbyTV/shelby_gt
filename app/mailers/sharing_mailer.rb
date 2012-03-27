@@ -4,7 +4,7 @@ class SharingMailer < ActionMailer::Base
   sendgrid_enable   :ganalytics, :opentrack, :clicktrack
 
   def share_frame(user, email_from, email_to, message, frame)
-    @user= user
+    @user = user
     @email_to = email_to
     @message = message if message
     @frame = frame if frame

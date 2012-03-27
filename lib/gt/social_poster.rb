@@ -50,7 +50,8 @@ module GT
         return false
       end
     end
-
+    
+    #TODO: we need to re work email share template to reflect gt/rolls
     def self.post_to_email(from_user, to_user, comment, frame)
       return send_email(from_user, to_user, comment, frame)
     end
@@ -85,7 +86,7 @@ module GT
           return nil
         end
       end
-
+      
       def self.send_email(user, email_to, message=nil, frame=nil)
         from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
         return SharingMailer.share_frame(user, from_email, email_to, message, frame).deliver

@@ -76,7 +76,12 @@ describe GT::SocialPoster do
     it "should send email and return a Mail::Message" do
       to_user = "some_other@email.com"
       email = GT::SocialPoster.post_to_email(@from_user, to_user, @comment, @frame)
+      
       email.class.should eq(Mail::Message)
+      email.from.should  eq([@from_user.primary_email])
+      email.to.should  eq([to_user])
     end
+    
+    
   end
 end

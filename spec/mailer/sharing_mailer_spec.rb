@@ -2,32 +2,30 @@ require 'spec_helper'
  
 describe SharingMailer do
   describe 'share frame' do
-    @from_user = Factory.create(:user, :primary_email => 'lucas@email.com') }
-    let(:mail) { Notifier.instructions(user) }
+    before(:all) do
+      @from_user = Factory.create(:user, :primary_email => 'your@mom.com')
+      @to_email = 'your@dad.com'
+      @message = "wassssuuuup!"
+      video = Factory.create(:video, :thumbnail_url => "http://url.com/123.jpg")
+      @frame = Factory.create(:frame, :creator_id => @from_user.id, :video_id => video.id)
+      @email = SharingMailer.share_frame(@from_user, @from_user.primary_email, @to_email, @message, @frame)
+    end
  
-    #ensure that the subject is correct
     it 'renders the subject' do
-      mail.subject.should == 'Instructions'
+      @email.subject.should eq(Settings::Email.share_frame['subject'])
     end
- 
-    #ensure that the receiver is correct
+    
     it 'renders the receiver email' do
-      mail.to.should == [user.email]
+      @email.to.should eq([@to_email])
     end
- 
-    #ensure that the sender is correct
+    
     it 'renders the sender email' do
-      mail.from.should == ['noreply@empresa.com']
+      @email.from.should eq([@from_user.primary_email])
     end
- 
-    #ensure that the @name variable appears in the email body
-    it 'assigns @name' do
-      mail.body.encoded.should match(user.name)
-    end
- 
-    #ensure that the @confirmation_url variable appears in the email body
-    it 'assigns @confirmation_url' do
-      mail.body.encoded.should match("http://aplication_url/#{user.id}/confirmation")
-    end
+    
+    #ensure that the an instance var is assigned properly, eg @confirmation_url variable appears in the email body
+    #it 'assigns @confirmation_url' do
+    #  mail.body.encoded.should match("http://aplication_url/#{user.id}/confirmation")
+    #end
   end
 end
