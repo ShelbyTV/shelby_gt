@@ -1,6 +1,6 @@
 class V1::FrameController < ApplicationController
 
-  before_filter :cors_preflight_check, :user_authenticated?
+  before_filter :user_authenticated?, :except => :watched
   
   ##
   # Returns all frames in a roll
@@ -10,14 +10,13 @@ class V1::FrameController < ApplicationController
   # @param [Optional, Boolean] include_children if true will return frame children
   def index
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['index']) do
-      @roll = Roll.find(params[:id])
+      @roll = Roll.find(params[:roll_id])
       if @roll
         @include_frame_children = (params[:include_children] == "true") ? true : false
         @frames = @roll.frames.sort(:score.desc)
         @status =  200
       else
-        @status, @message = 400, "could not find that roll"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that roll")
       end
     end
   end
@@ -36,8 +35,7 @@ class V1::FrameController < ApplicationController
         @status =  200
         @include_frame_children = (params[:include_children] == "true") ? true : false
       else
-        @status, @message = 400, "could not find that frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that frame")
       end
     end
   end
@@ -46,28 +44,25 @@ class V1::FrameController < ApplicationController
   # Creates and returns one frame, with the given parameters.
   #   REQUIRES AUTHENTICATION
   #
-  # [POST] /v1/roll/:id/frames
+  # [POST] /v1/roll/:roll_id/frames
   #
   # @param [Optional, String] frame_id A frame to be re_rolled
   def create
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['create']) do
       user = current_user
-      roll = Roll.find(params[:id])
+      roll = Roll.find(params[:roll_id])
       frame_to_re_roll = Frame.find(params[:frame_id]) if params[:frame_id]
       if !roll
-        @status, @message = 400, "could not find that roll"
-        render 'v1/blank'
+        render_error(404, "could not find that roll")
       elsif !frame_to_re_roll
-        @status, @message = 400, "you haven't built me to do anything else yet..."
-        render 'v1/blank', :status => @status
+        render_error(404, "you haven't built me to do anything else yet...")
       else
         begin
           @frame = frame_to_re_roll.re_roll(user, roll)
           @frame = @frame[:frame]
           @status = 200
         rescue => e
-          @status, @message = 400, "could not re_roll: #{e}"
-          render 'v1/blank', :status => @status
+          render_error(404, "could not re_roll: #{e}")
         end
       end
     end
@@ -77,25 +72,47 @@ class V1::FrameController < ApplicationController
   # Upvotes a frame and returns the frame back w new score
   #   REQUIRES AUTHENTICATION
   #
-  # [POST] /v1/frame/:id/upvote
+  # [POST] /v1/frame/:frame_id/upvote
   # 
   # @param [Required, String] id The id of the frame
   def upvote
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['upvote']) do
-      if @frame = Frame.find(params[:id])
-        @status = 200 if @frame.upvote(current_user)
+      if @frame = Frame.find(params[:frame_id])
+        if @frame.upvote!(current_user)
+          @status = 200
+          GT::UserActionManager.upvote!(current_user.id, @frame.id)
+        end
         @frame.reload
       else
-        @status, @message = 400, "could not find frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find frame")
       end
     end
   end
   
-  #TODO: Fill this is with what it should really be
   ##
-  # Upvotes a frame and returns XXXX 
+  # Adds a dupe of the given Frame to the logged in users watch_later_roll and returns the dupe Frame
   #   REQUIRES AUTHENTICATION
+  #
+  # [POST] /v1/frame/:id/add_to_watch_later
+  # 
+  # @param [Required, String] id The id of the frame
+  def add_to_watch_later
+    StatsManager::StatsD.client.time(Settings::StatsNames.frame['add_to_watch_later']) do
+      if @frame = Frame.find(params[:frame_id])
+        if @new_frame = @frame.add_to_watch_later!(current_user)
+          @status = 200
+          GT::UserActionManager.watch_later!(current_user.id, @frame.id)
+        end
+      else
+        render_error(404, "could not find frame")
+      end
+    end
+  end
+  
+  ##
+  # For logged in user, update their viewed_roll and view_count on Frame and Video (once per 24 hours per user)
+  # For logged in and non-logged in user, create a UserAction to track this portion of viewing.
+  #   AUTHENTICATION OPTIONAL
   #
   # [POST] /v1/frame/:id/watched
   # 
@@ -104,9 +121,21 @@ class V1::FrameController < ApplicationController
   # @param [Optional, String] end_time The end_time of the action on the frame
   def watched
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['watched']) do
-      @frame = Frame.find(params[:id])
-      @status, @message = 404, "BUILD ME!"
-      render 'v1/blank', :status => @status
+      if @frame = Frame.find(params[:frame_id])
+        @status = 200
+        
+        #conditionally count this as a view (once per 24 hours per user)
+        if current_user
+          @new_frame = @frame.view!(current_user)
+          @frame.reload # to update view_count
+        end
+
+        if params[:start_time] and params[:end_time]
+          GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
+        end
+      else
+        render_error(404, "could not find frame")
+      end
     end
   end
   
@@ -123,9 +152,8 @@ class V1::FrameController < ApplicationController
       if frame = Frame.find(params[:id]) and frame.destroy 
         @status = 200
       else
-        @status, @message = 400, "could not find that frame to destroy" unless frame
-        @status, @message = 400, "could not destroy that frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that frame to destroy") unless frame
+        render_error(404, "could not destroy that frame")
       end
     end
   end

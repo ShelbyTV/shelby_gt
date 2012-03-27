@@ -46,7 +46,7 @@ describe V1::UserController do
       u1.should_receive(:update_attributes!).and_return(false)
       u1.stub(:save!) { false }
       put :update, :id => u1.id, :format => :json
-      assigns(:status).should eq(400)
+      assigns(:status).should eq(404)
     end
   end
 

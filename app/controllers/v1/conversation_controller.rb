@@ -1,6 +1,6 @@
 class V1::ConversationController < ApplicationController  
   
-  before_filter :cors_preflight_check, :user_authenticated?
+  before_filter :user_authenticated?
   
   ##
   # Returns a conversation including messages, with the given parameters.
@@ -14,8 +14,7 @@ class V1::ConversationController < ApplicationController
       if @conversation = Conversation.find(params[:id])
         @status = 200
       else
-        @status, @message = 400, "could not find conversation"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find conversation")
       end
     end
   end

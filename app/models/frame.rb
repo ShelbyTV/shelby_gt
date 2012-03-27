@@ -1,4 +1,5 @@
 require 'framer'
+require 'user_action_manager'
 
 class Frame
   include MongoMapper::Document
@@ -27,15 +28,20 @@ class Frame
   # The users who have upvoted, increasing the score
   key :upvoters, Array, :typecase => ObjectId, :abbr => :f
 
-  # To track the lineage of a Frame (both forward and backward), when Frame F1 gets re-rolled as F2:
+  # To track the *re-roll* lineage of a Frame (both forward and backward); when Frame F1 gets re-rolled as F2:
   # F1.frame_children << F2
-  # (F2.frame_ancestors = F1.frame_ancestors) << F1
+  # F2.frame_ancestors = (F1.frame_ancestors << F1)
+  #
+  # N.B. when a Frame is duped (ie. to be put on WatchLater, Upvoted, or Viewed) we track the new Frame's ancestors, but do not add that new
+  #      dupe Frame to the children of the original, as it's not a re-roll.
   #
   # Track a complete lineage to the original Frame
-  key :frame_ancestors, Array, :typecast => 'ObjectId', :abbr => :g
+  key :frame_ancestors, Array, :typecast => 'ObjectId', :abbr => :g, :default => []
   # Track *immediate* children (but not grandchilren, &c.)
-  key :frame_children, Array, :typecast => 'ObjectId', :abbr => :h
+  key :frame_children, Array, :typecast => 'ObjectId', :abbr => :h, :default => []
   
+  # Each time a new view is counted (see #view!) we increment this and video.view_count
+  key :view_count, Integer, :abbr => :i, :default => 0
   
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
@@ -51,20 +57,48 @@ class Frame
     return GT::Framer.re_roll(self, user, roll)
   end
   
+  #------ Viewing
+  
+  # Will add this Frame to the User's viewed_roll if they haven't "viewed" this in the last 24 hours.
+  # Also updates the view_count on this frame and it's video
+  def view!(u)
+    raise ArgumentError, "must supply User" unless u and u.is_a?(User)
+    
+    # If this Frame hasn't been added to the user's viewed_roll in the last X hours, dupe it now
+    if Frame.roll_includes_ancestor_of_frame?(u.viewed_roll_id, self.id, 24.hours.ago)
+      return false
+    else
+      #update view counts and add dupe for this 'viewing'
+      Frame.increment(self.id, :view_count => 1)
+      Video.increment(self.video_id, :view_count => 1)
+      return GT::Framer.dupe_frame!(self, u.id, u.viewed_roll_id)
+    end
+  end
+  
+  #------ Watch Later ------
+  
+  def add_to_watch_later!(u)
+    raise ArgumentError, "must supply User" unless u and u.is_a?(User)
+    
+    return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
+  end
+  
+  # To remove from watch later, destroy the Frame! (don't forget to add a UserAction)
   
   #------ Voting -------
   
-  def upvote(u)
-    raise ArgumentError, "must supply user or user_id" unless u
-    user_id = (u.is_a?(User) ? u.id : u)
+  def upvote!(u)
+    raise ArgumentError, "must supply User" unless u and u.is_a?(User)
     
-    return false if self.has_voted?(user_id)
+    return false if self.has_voted?(u.id)
     
-    self.upvoters << user_id
+    self.upvoters << u.id
+    
+    GT::Framer.dupe_frame!(self, u.id, u.upvoted_roll_id)
   
     update_score
   
-    true
+    self.save
   end
   
   def has_voted?(u)
@@ -95,5 +129,23 @@ class Frame
     
     SHELBY_EPOCH = Time.utc(2012,2,22)
     TIME_DIVISOR = 45_000.0
+    
+    #
+    # Checks for a Frame, with the given roll_id, where frame_ancestors contains frame_id
+    #
+    # DANGEROUS - This has to walk the DB!  It will use the index on Frame.roll_id, but that's it.
+    #             We set created_after to ensure Mongo doesn't have to walk too far, but it will walk,
+    #             checking each frame_ancestors array to see if it contains frame_id
+    def self.roll_includes_ancestor_of_frame?(roll_id, frame_id, created_after)
+      raise ArgumentError, "must supply roll_id" unless roll_id and (roll_id.is_a?(String) or roll_id.is_a?(BSON::ObjectId))
+      raise ArgumentError, "must supply frame_id" unless frame_id and (frame_id.is_a?(String) or frame_id.is_a?(BSON::ObjectId))
+      raise AagumentError, "must supply valid time" unless created_after.is_a? Time
+
+      Frame.where( 
+        :roll_id => roll_id, 
+        :_id.gt => BSON::ObjectId.from_time(created_after),
+        :frame_ancestors => frame_id
+        ).exists?
+    end
   
 end

@@ -76,16 +76,25 @@ describe V1::FrameController do
         :controller => "v1/frame",
         :action => "upvote",
         :format => "json",
-        :id => "1"
+        :frame_id => "1"
       )
-    end 
+    end
+    
+    it "routes for POST add_to_watch_later" do
+      { :post => "/v1/frame/1/add_to_watch_later" }.should route_to(
+        :controller => "v1/frame",
+        :action => "add_to_watch_later",
+        :format => "json",
+        :frame_id => "1"
+      )
+    end
     
     it "routes for POST watched" do
       { :post => "/v1/frame/1/watched" }.should route_to(
         :controller => "v1/frame",
         :action => "watched",
         :format => "json",
-        :id => "1"
+        :frame_id => "1"
       )
     end
     
@@ -103,7 +112,7 @@ describe V1::FrameController do
         :controller => "v1/frame",
         :action => "create",
         :format => "json",
-        :id => "1"
+        :roll_id => "1"
       )
     end
   end

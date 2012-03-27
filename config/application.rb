@@ -67,5 +67,15 @@ module ShelbyGt
       g.orm :mongo_mapper
     end
     
+    # Setup cors preflight request headers
+    config.middleware.use Rack::Cors do
+      allow do
+        origins 'web.gt.shelby.tv', 'localhost:3000', '33.33.33.10:3000'
+        resource %r{/v1/(roll|frame|user|dashboard|conversation)/\w+},
+          :headers => ['Origin', 'Accept', 'Content-Type', 'X-CSRF-Token'],
+          :methods => [:put, :post, :delete]
+      end
+    end
+    
   end
 end

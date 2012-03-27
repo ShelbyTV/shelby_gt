@@ -33,6 +33,9 @@ module MongoMapper
       User.ensure_index('authentications.uid', :background => true)
       # Get user based on their nickname on a 3rd party network (facebook, twitter)
       User.ensure_index('authentications.nickname', :background => true)
+      
+      # Get UserAction by [user_id, type]
+      UserAction.ensure_index([[:b, 1], [:a, 1]], :background => true)
 
       # Get a video from a provider (ie youtube video 123xyz), make sure they're unique (a == provider_name, b == provider_id)
       Video.ensure_index([[:a, 1], [:b, 1]], :background => true, :unique => true)

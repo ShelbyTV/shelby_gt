@@ -20,9 +20,18 @@ ShelbyGt::Application.routes.draw do
   # Namespace allows for versioning of API
   # NOTE: Must use V1::ControllerName in controllers
   namespace :v1, :defaults => { :format => 'json' } do
-    resources :user, :only => [:show, :update] 
-    resources :roll, :only => [:show, :create, :update, :destroy]
-    resources :frame, :only => [:show, :destroy]
+    resources :user, :only => [:show, :update] do
+      get 'rolls' => 'user#rolls', :on => :member
+    end
+    resources :roll, :only => [:show, :create, :update, :destroy] do
+      get 'frames' => 'frame#index'
+      post 'frames' => 'frame#create'
+    end
+    resources :frame, :only => [:show, :destroy] do
+      post 'upvote' => 'frame#upvote'
+      post 'add_to_watch_later' => 'frame#add_to_watch_later'
+      post 'watched' => 'frame#watched'
+    end
     resources :video, :only => [:show]
     resources :dashboard_entries, :path => "dashboard", :only => [:index, :update]
     resources :conversation, :only => [:show] do 
@@ -31,15 +40,7 @@ ShelbyGt::Application.routes.draw do
     
     # User related
     get 'user' => 'user#show'
-    get 'user/:id/rolls' => 'user#rolls'
     get 'signed_in' => 'user#signed_in'
-
-    # Frame related
-    post 'frame/:id/upvote' => 'frame#upvote'
-    post 'frame/:id/watched' => 'frame#watched'
-    get 'roll/:id/frames' => 'frame#index'
-    post 'roll/:id/frames' => 'frame#create'
-    
   end
   
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user

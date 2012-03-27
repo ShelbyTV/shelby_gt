@@ -4,7 +4,12 @@ class ApplicationController < ActionController::Base
   after_filter :set_access_control_headers
   
   respond_to :json
-
+  
+  def render_error(code, message)
+    @status, @message = code, message
+    render 'v1/blank'
+  end
+  
   # === Unlike the default user_authenticated! helper that ships with devise,
   #  We want to render our json response as well as just the http 401 response
   def user_authenticated?
@@ -14,18 +19,6 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def cors_preflight_check
-    if params[:cs_key] == Settings::ShelbyAPI.cross_site_key
-      headers['Access-Control-Allow-Origin'] = request.headers['HTTP_ORIGIN']
-    else
-      headers['Access-Control-Allow-Origin'] = Settings::ShelbyAPI.allow_origin
-    end
-    headers['Access-Control-Allow-Methods'] = '*'
-    headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-Prototype-Version, X-CSRF-Token'
-    headers['Access-Control-Allow-Credentials'] = 'true'
-    headers['Access-Control-Max-Age'] = '1000'
-  end
-  
   private    
     
     # === These headers are set to allow cross site access and cookies to be sent via ajax

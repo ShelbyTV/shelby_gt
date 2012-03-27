@@ -92,7 +92,43 @@ module GT
       return res
     end
     
+    def self.dupe_frame!(orig_frame, for_user, to_roll)
+      raise ArgumentError, "must supply original Frame" unless orig_frame and orig_frame.is_a? Frame
+      
+      raise ArgumentError, "must supply user or user_id" unless for_user
+      user_id = (for_user.is_a?(User) ? for_user.id : for_user)
+
+      raise ArgumentError, "must supply roll or roll_id" unless to_roll
+      roll_id = (to_roll.is_a?(Roll) ? to_roll.id : to_roll)
+
+      return basic_dupe!(orig_frame, user_id, roll_id)
+    end
+    
     private
+      
+      def self.basic_dupe!(orig_frame, user_id, roll_id)
+        # Dupe it
+        new_frame = Frame.new
+        new_frame.creator_id = user_id
+        new_frame.roll_id = roll_id
+        new_frame.video_id = orig_frame.video_id
+        
+        #copy convo
+        new_frame.conversation_id = orig_frame.conversation_id
+        
+        #copy voting
+        new_frame.score = orig_frame.score
+        new_frame.upvoters = orig_frame.upvoters.clone
+
+        # Track just my history
+        new_frame.frame_ancestors = orig_frame.frame_ancestors.clone
+        new_frame.frame_ancestors << orig_frame.id
+        # *NOT* adding this as a frame_child of original as that only tracks re-rolls, not dupes
+
+        new_frame.save
+        
+        return new_frame
+      end
       
       def self.basic_re_roll(orig_frame, user_id, roll_id)
         # Set up the basics

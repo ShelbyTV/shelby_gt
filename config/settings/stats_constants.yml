@@ -16,6 +16,7 @@ defaults: &defaults
     show: 'api.gt.frame.show'
     create: 'api.gt.frame.create'
     upvote: 'api.gt.frame.upvote'
+    add_to_watch_later: 'api.gt.frame.add_to_wl'
     watched: 'api.gt.frame.watched'
     destroy: 'api.gt.frame.destroy'
   conversation:

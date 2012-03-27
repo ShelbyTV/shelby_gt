@@ -1,6 +1,6 @@
 class V1::DashboardEntriesController < ApplicationController  
 
-  before_filter :cors_preflight_check, :authenticate_user!
+  before_filter :authenticate_user!
   
   ##
   # Returns dashboad entries, with the given parameters.
@@ -23,7 +23,7 @@ class V1::DashboardEntriesController < ApplicationController
       # get user
       if params[:user_id]
         unless user = User.find(params[:user_id])
-          @status, @message = 404, "could not find that user"
+          render_error(404, "could not find that user")
         end
       elsif user_signed_in?
         user = current_user
@@ -37,12 +37,10 @@ class V1::DashboardEntriesController < ApplicationController
         if !@entries.empty?
           @status = 200
         else
-          @status, @message = 200, "there are no dashboard entries for this user"
-          render 'v1/blank', :status => 200
+          render_error(200, "there are no dashboard entries for this user")
         end
       else
-        @status, @message = 400, "no user info found"
-        render 'v1/blank', :status => 400
+        render_error(404, "no user info found")
       end    
     end
   end
@@ -61,12 +59,10 @@ class V1::DashboardEntriesController < ApplicationController
           @status = 200 if @dashboard_entry.update_attributes!(params)
           Rails.logger.info(@dashboard_entry.inspect)
         rescue => e
-          @status, @message = 400, "could not update dashboard_entry: #{e}"
-          render 'v1/blank', :status => @status
+          render_error(404, "could not update dashboard_entry: #{e}")
         end
       else
-        @status, @message = 400, "could not find that dashboard_entry"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that dashboard_entry")
       end    
     end
   end
