@@ -80,7 +80,12 @@ class Frame
   def add_to_watch_later!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
     
-    return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
+    #if it's already in this user's watch later, just return that
+    if prev_dupe = Frame.get_ancestor_of_frame(u.watch_later_roll_id, self.id)
+      return prev_dupe
+    else
+      return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
+    end
   end
   
   # To remove from watch later, destroy the Frame! (don't forget to add a UserAction)
@@ -130,7 +135,6 @@ class Frame
     SHELBY_EPOCH = Time.utc(2012,2,22)
     TIME_DIVISOR = 45_000.0
     
-    #
     # Checks for a Frame, with the given roll_id, where frame_ancestors contains frame_id
     #
     # DANGEROUS - This has to walk the DB!  It will use the index on Frame.roll_id, but that's it.
@@ -146,6 +150,20 @@ class Frame
         :_id.gt => BSON::ObjectId.from_time(created_after),
         :frame_ancestors => frame_id
         ).exists?
+    end
+    
+    # Gets a Frame, with the given roll_id, where frame_ancestors contains frame_id
+    #
+    # DANGEROUS - This has to walk the DB!  It will use the index on Frame.roll_id, but that's it.
+    #             We are assuming the Frame's in user.watch_later_roll will be in the working set and/or small in number, making this safe.s
+    def self.get_ancestor_of_frame(roll_id, frame_id)
+      raise ArgumentError, "must supply roll_id" unless roll_id and (roll_id.is_a?(String) or roll_id.is_a?(BSON::ObjectId))
+      raise ArgumentError, "must supply frame_id" unless frame_id and (frame_id.is_a?(String) or frame_id.is_a?(BSON::ObjectId))
+
+      Frame.where( 
+        :roll_id => roll_id,
+        :frame_ancestors => frame_id
+        ).first
     end
   
 end

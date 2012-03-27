@@ -131,12 +131,14 @@ describe V1::FrameController do
     
     it "creates a UserAction" do
       GT::UserActionManager.should_receive(:watch_later!)
+      Frame.should_receive(:get_ancestor_of_frame).and_return(nil)
       
       post :add_to_watch_later, :frame_id => @f2.id, :format => :json
     end
     
     it "creates a new Frame" do
       GT::UserActionManager.should_receive(:watch_later!)
+      Frame.should_receive(:get_ancestor_of_frame).and_return(nil)
       
       lambda {
         post :add_to_watch_later, :frame_id => @f2.id, :format => :json
