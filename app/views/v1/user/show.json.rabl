@@ -6,6 +6,12 @@ child :preferences do
 	attributes :email_updates, :like_notifications, :watched_notifications, :quiet_mode
 end
 
+if @csrf
+	node :csrf_token do
+		@csrf
+	end
+end
+
 if @include_auths == true
 	child :authentications do
 		attributes :uid, :provider, :oauth_token

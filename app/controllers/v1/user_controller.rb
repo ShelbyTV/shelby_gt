@@ -35,6 +35,7 @@ class V1::UserController < ApplicationController
         @user = current_user
         @include_auths = (params[:include_auths] == "true" ) ? true : false
         @include_rolls = (params[:include_rolls] == "true") ? true : false
+        @csrf = session[:_csrf_token]
         @status = 200
       else
         @status, @message = 400, "could not find user"
