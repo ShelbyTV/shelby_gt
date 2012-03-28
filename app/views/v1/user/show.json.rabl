@@ -12,6 +12,15 @@ if current_user == @user
 			@csrf
 		end
 	end
+	
+	node "watch_later_roll" do
+		@user.watch_later_roll_id
+	end
+	
+	node "public_roll" do
+		@user.watch_later_roll_id
+	end
+	
 end
 
 if @include_auths == true
