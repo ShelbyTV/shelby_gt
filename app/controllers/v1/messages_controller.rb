@@ -1,3 +1,5 @@
+require 'message_manager'
+
 class V1::MessagesController < ApplicationController  
 
   before_filter :authenticate_user!
@@ -17,12 +19,8 @@ class V1::MessagesController < ApplicationController
       else
         @conversation = Conversation.find(params[:conversation_id])
         if @conversation
-          @new_message = Message.new
-          @new_message.text = params[:text]
-          @new_message.user = current_user
-          @new_message.nickname = current_user.nickname
-          @new_message.user_image_url = current_user.user_image
-        
+          msg_opts = {:creator => current_user, :public => true, :text => params[:text]}
+          @new_message = GT::MessageManager.build_message(msg_opts)
           @conversation.messages << @new_message
           begin        
             @status = 200 if @conversation.save!
