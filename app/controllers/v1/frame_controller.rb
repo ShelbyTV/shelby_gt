@@ -85,11 +85,10 @@ class V1::FrameController < ApplicationController
         # and finally create the frame
         r = GT::Framer.create_frame(frame_options)
         
-        @status = 200 if @frame = r[:frame]
-
-        # allow for jsonp callbacks on this method for bookmarklet/extension
-        render 'show', :callback => params[:callback] if params[:callback]
-
+        if @frame = r[:frame]
+          @status = 200          
+          # allow for jsonp callbacks on this method for bookmarklet/extension
+          render 'show', :callback => params[:callback] if params[:callback]
         else
           render_error(404, "something went wrong when creating that frame")
         end
