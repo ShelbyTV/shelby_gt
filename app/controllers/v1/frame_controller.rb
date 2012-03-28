@@ -56,7 +56,7 @@ class V1::FrameController < ApplicationController
   # If trying to add a frame via a url:
   # @param [Required, Escaped String] url A video url
   # @param [Optional, Escaped String] text Message text to via added to the conversation
-  # @param [Optional, String] source The souce could be bookmarklet, webapp, etc
+  # @param [Optional, String] source The source could be bookmarklet, webapp, etc
   def create
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['create']) do
       roll = Roll.find(params[:roll_id])
