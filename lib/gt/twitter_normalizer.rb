@@ -1,3 +1,5 @@
+require 'message_manager'
+
 #
 # Given a tweet, return a normalized Message
 #
