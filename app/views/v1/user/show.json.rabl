@@ -1,6 +1,6 @@
 object @user
 
-attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image
+attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux
 
 if current_user == @user
 	child :preferences => "preferences" do
