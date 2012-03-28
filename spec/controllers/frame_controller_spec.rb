@@ -171,7 +171,7 @@ describe V1::FrameController do
     
     context 'creating new frames from urls' do
       before(:each) do
-        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
+        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return([@video])
         GT::MessageManager.stub(:build_message).and_return(@message)        
       end
       
