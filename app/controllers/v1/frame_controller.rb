@@ -4,6 +4,7 @@ require 'video_manager'
 class V1::FrameController < ApplicationController
 
   before_filter :user_authenticated?, :except => :watched
+  skip_before_filter :verify_authenticity_token, :only => [:create]
   
   ##
   # Returns all frames in a roll
