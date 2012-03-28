@@ -82,15 +82,22 @@ class V1::FrameController < ApplicationController
           return render_error(404, "that action isn't cool.")
         end
         
-        # and finally create the frame
-        r = GT::Framer.create_frame(frame_options)
-        
-        if @frame = r[:frame]
-          @status = 200          
-          # allow for jsonp callbacks on this method for bookmarklet/extension
-          render 'show', :callback => params[:callback] if params[:callback]
+        # only allow roll creation if user is authorized to access the given roll
+        if (roll.creator == current_user) or (roll.public == true)
+          
+          # and finally create the frame
+          r = GT::Framer.create_frame(frame_options)
+
+          if @frame = r[:frame]
+            @status = 200          
+            # allow for jsonp callbacks on this method for bookmarklet/extension
+            render 'show', :callback => params[:callback] if params[:callback]
+          else
+            render_error(404, "something went wrong when creating that frame")
+          end
+          
         else
-          render_error(404, "something went wrong when creating that frame")
+          return render_error(401, "that user cant post to that roll")
         end
         
       # create a new frame by re-rolling a frame from a frame_id

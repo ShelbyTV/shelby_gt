@@ -205,6 +205,16 @@ describe V1::FrameController do
         post :create, :roll_id => @r2.id, :url => @video_url, :source => "fucked_up", :format => :json
         assigns(:status).should eq(404)
       end
+      
+      it "should not create roll if its not the current_users roll" do
+        GT::Framer.stub(:create_frame).and_return({:frame => @f1})
+        new_roll = Factory.create(:roll, :creator => Factory.create(:user), :public => false )
+        Roll.stub(:find) { new_roll }
+        
+        post :create, :roll_id => new_roll.id, :url => @video_url, :format => :json
+        assigns(:status).should eq(401)
+      end
+      
     end
     
     context "new frame by re rolling a frame" do
