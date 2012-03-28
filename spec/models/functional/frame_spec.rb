@@ -69,6 +69,49 @@ describe Frame do
     end
   end
   
+  # We're testing a private method here, but it's a pretty fucking important/tricky one and has to be correct
+  context "get ancestor" do
+    it "should return an ancestor when one exists" do
+      @r1 = Factory.create(:roll, :creator => Factory.create(:user))
+      @r2 = Factory.create(:roll, :creator => Factory.create(:user))
+      
+      @orig = Factory.create(:frame, :roll => @r1)
+      @child = Factory.create(:frame, :roll => @r2, :frame_ancestors => [@orig.id])
+      
+      Frame.send(:get_ancestor_of_frame, @r2.id, @orig.id).should == @child
+    end
+    
+    it "should not find an ancestor if one doesn't exist" do
+      @r1 = Factory.create(:roll, :creator => Factory.create(:user))
+      @r2 = Factory.create(:roll, :creator => Factory.create(:user))
+      
+      @orig = Factory.create(:frame, :roll => @r1)
+      @child = Factory.create(:frame, :roll => @r2, :frame_ancestors => [])
+      
+      Frame.send(:get_ancestor_of_frame, @r2.id, @orig.id).should == nil
+    end
+    
+    it "should find an ancestor after duped via Framer" do
+      @r1 = Factory.create(:roll, :creator => Factory.create(:user))
+      @r2 = Factory.create(:roll, :creator => Factory.create(:user))
+      
+      @orig = Factory.create(:frame, :roll => @r1)
+
+      @u = Factory.create(:user)
+      @u.viewed_roll = Factory.create(:roll, :creator => @u)
+      @u.save
+      
+      #should NOT find it now
+      Frame.send(:get_ancestor_of_frame, @u.viewed_roll_id, @orig.id).should ==  nil
+      
+      #dupe it
+      child = GT::Framer.dupe_frame!(@orig, @u.id, @u.viewed_roll_id)
+      
+      #should find it now
+      Frame.send(:get_ancestor_of_frame, @u.viewed_roll_id, @orig.id).should == child
+    end
+  end
+  
   context "upvoting" do
     before(:each) do
       @frame = Factory.create(:frame)
@@ -151,6 +194,16 @@ describe Frame do
       f.video_id.should == @frame.video_id
       f.conversation_id.should == @frame.conversation_id
       f.frame_ancestors.include?(@frame.id).should == true
+    end
+    
+    it "should be idempotent" do
+      f1, f2 = nil, nil
+      lambda {
+        f1 = @frame.add_to_watch_later!(@u1)
+        f2 = @frame.add_to_watch_later!(@u1)
+      }.should change { Frame.count } .by 1
+      
+      f1.should == f2
     end
   end
   

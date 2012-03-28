@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'video_manager'
+require 'message_manager'
 
 describe V1::FrameController do
   before(:each) do
@@ -132,12 +133,14 @@ describe V1::FrameController do
     
     it "creates a UserAction" do
       GT::UserActionManager.should_receive(:watch_later!)
+      Frame.should_receive(:get_ancestor_of_frame).and_return(nil)
       
       post :add_to_watch_later, :frame_id => @f2.id, :format => :json
     end
     
     it "creates a new Frame" do
       GT::UserActionManager.should_receive(:watch_later!)
+      Frame.should_receive(:get_ancestor_of_frame).and_return(nil)
       
       lambda {
         post :add_to_watch_later, :frame_id => @f2.id, :format => :json
@@ -152,7 +155,8 @@ describe V1::FrameController do
   describe "POST create" do
     before(:each) do
       @video_url = CGI::escape("http://some.video.url.com/of_a_movie_i_like")
-      @message = "boy this is awesome"
+      @message_text = "boy this is awesome"
+      @message = Factory.build(:message, :text => @message_text, :public => true, :nickname => @u1.nickname, :realname => @u1.name, :user_image_url => @u1.user_image)
       @video = Factory.create(:video, :source_url => @video_url)
       
       @f1 = stub_model(Frame, :video => @video)
@@ -164,53 +168,63 @@ describe V1::FrameController do
       Frame.stub(:find) { @f1 }
       Roll.stub(:find) { @r2 }
     end
+    
+    context 'creating new frames from urls' do
+      before(:each) do
+        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
+        GT::MessageManager.stub(:create_message).and_return(@message)        
+      end
+      
+      it "should create a new frame if given valid source, video_url and text params" do
+        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+      
+        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message, :source => "bookmark", :format => :json
+        assigns(:status).should eq(200)
+        assigns(:frame).should eq(@f1)
+      end
+    
+      it "should create a new frame if given video_url and text params" do
+        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+      
+        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message, :format => :json
+        assigns(:status).should eq(200)
+        assigns(:frame).should eq(@f1)
+      end
+    
+      it "should return a new frame if a video_url is given but a message is not" do
+        GT::Framer.stub(:create_frame).and_return({:frame => @f1})
 
-    it "should create a new frame if given valid source, video_url and text params" do
-      GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
-      GT::Framer.stub(:create_frame_from_url).and_return({:frame => @f1})
-      post :create, :roll_id => @r2.id, :url => @video_url, :text => @message, :source => "webapp", :format => :json
-      assigns(:status).should eq(200)
-      assigns(:frame).should eq(@f1)
+        post :create, :roll_id => @r2.id, :url => @video_url, :format => :json
+        assigns(:status).should eq(200)
+        assigns(:frame).should eq(@f1)
+      end
+    
+      it "should be ok if action is f-d up" do
+        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
+        GT::Framer.stub(:create_frame_from_url).and_return({:frame => @f1})
+        post :create, :roll_id => @r2.id, :url => @video_url, :source => "fucked_up", :format => :json
+        assigns(:status).should eq(404)
+      end
     end
     
-    it "should create a new frame if given video_url and text params" do
-      GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
-      GT::Framer.stub(:create_frame_from_url).and_return({:frame => @f1})
-      post :create, :roll_id => @r2.id, :url => @video_url, :text => @message, :format => :json
-      assigns(:status).should eq(200)
-      assigns(:frame).should eq(@f1)
+    context "new frame by re rolling a frame" do
+      it "should re_roll and returns one frame to @frame if given a frame_id param" do
+        @f1.should_receive(:re_roll).and_return({:frame => @f2})
+
+        post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
+        assigns(:status).should eq(200)
+        assigns(:frame).should eq(@f2)
+      end
+
+      it "returns 404 if it can't re_roll" do
+        @f1.stub(:re_roll).and_raise(ArgumentError)
+
+        post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
+        assigns(:status).should eq(404)
+        assigns(:message).should eq("could not re_roll: ArgumentError")
+      end
     end
-    
-    it "should return a new frame if a video_url is given but a message is not" do
-      GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
-      GT::Framer.stub(:create_frame_from_url).and_return({:frame => @f1})
-      post :create, :roll_id => @r2.id, :url => @video_url, :format => :json
-      assigns(:status).should eq(200)
-      assigns(:frame).should eq(@f1)
-    end
-    
-    it "should be ok if action is f-d up" do
-      GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
-      GT::Framer.stub(:create_frame_from_url).and_return({:frame => @f1})
-      post :create, :roll_id => @r2.id, :url => @video_url, :source => "fucked_up", :format => :json
-      assigns(:status).should eq(404)
-    end
-    
-    it "should re_roll and returns one frame to @frame if given a frame_id param" do
-      @f1.should_receive(:re_roll).and_return({:frame => @f2})
-      
-      post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
-      assigns(:status).should eq(200)
-      assigns(:frame).should eq(@f2)
-    end
-    
-    it "returns 404 if it can't re_roll" do
-      @f1.stub(:re_roll).and_raise(ArgumentError)
-      
-      post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
-      assigns(:status).should eq(404)
-      assigns(:message).should eq("could not re_roll: ArgumentError")
-    end
+
 
     it "returns 404 if it theres no frame_id to re_roll or no video_url to make into a frame" do
       post :create, :roll_id => @r2.id, :format => :json

@@ -1,4 +1,5 @@
-require 'framer'
+require 'message_manager'
+require 'video_manager'
 
 class V1::FrameController < ApplicationController
 
@@ -57,31 +58,33 @@ class V1::FrameController < ApplicationController
   # @param [Optional, String] source The souce could be bookmarklet, webapp, etc
   def create
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['create']) do
-      user = current_user
       roll = Roll.find(params[:roll_id])
       render_error(404, "could not find that roll") if !roll
       
       # create frame from a video url
-      if video_url =  params[:url]
+      if video_url = params[:url]
+        frame_options = { :creator => current_user, :roll => roll }
+        # get or create video from url
+        frame_options[:video] = GT::VideoManager.get_or_create_videos_for_url(video_url)
+        
+        # create message
         message_text = params[:text] ? CGI::unescape(params[:text]) : nil
+        frame_options[:message] = GT::MessageManager.create_message(:creator => current_user, :public => true, :text => message_text)
         
         # set the action, defaults to new_bookmark_frame
         case params[:source]
-        when "bookmark", nil, ""         
-          action = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
+        when "bookmark", nil, ""
+          frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
         when "webapp"
-          action = DashboardEntry::ENTRY_TYPE[:new_in_app_frame]
+          frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_in_app_frame]
         else
           return render_error(404, "that action isn't cool.")
         end
         
-        res = GT::Framer.create_frame_from_url( :creator => current_user,
-                                                :video_url => CGI::unescape(video_url),
-                                                :action => action,
-                                                :roll => roll,
-                                                :message_text => message_text )
+        # and finally create the frame
+        r = GT::Framer.create_frame(frame_options)
         
-        if @frame = res[:frame]
+        if @frame = r[:frame]
           @status = 200
         else
           render_error(404, "something went wrong when creating that frame")
@@ -91,7 +94,7 @@ class V1::FrameController < ApplicationController
       elsif params[:frame_id] and ( frame_to_re_roll = Frame.find(params[:frame_id]) )
         
         begin
-          @frame = frame_to_re_roll.re_roll(user, roll)
+          @frame = frame_to_re_roll.re_roll(current_user, roll)
           @frame = @frame[:frame]
           @status = 200
         rescue => e
