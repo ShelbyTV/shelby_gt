@@ -48,7 +48,13 @@ class V1::FrameController < ApplicationController
   #
   # [POST] /v1/roll/:roll_id/frames
   #
-  # @param [Optional, String] frame_id A frame to be re_rolled
+  # If trying to re-roll:
+  # @param [Required, String] frame_id A frame to be re_rolled
+  #
+  # If trying to add a frame via a url:
+  # @param [Required, Escaped String] url A video url
+  # @param [Optional, Escaped String] text Message text to via added to the conversation
+  # @param [Optional, String] source The souce could be bookmarklet, webapp, etc
   def create
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['create']) do
       user = current_user
@@ -56,22 +62,30 @@ class V1::FrameController < ApplicationController
       render_error(404, "could not find that roll") if !roll
       
       # create frame from a video url
-      if video_url = params[:url] 
-        message_text = params[:text] ? params[:text] : nil
-
-        # set the action
-        if params[:action]
-          action = DashboardEntry::ENTRY_TYPE[params[:action].to_sym]
+      if video_url =  params[:url]
+        message_text = params[:text] ? CGI::unescape(params[:text]) : nil
+        
+        # set the action, defaults to new_bookmark_frame
+        case params[:source]
+        when "bookmark", nil, ""         
+          action = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
+        when "webapp"
+          action = DashboardEntry::ENTRY_TYPE[:new_in_app_frame]
         else
-          DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
+          return render_error(404, "that action isn't cool.")
         end
-                  
+        
         res = GT::Framer.create_frame_from_url( :creator => current_user,
-                                                :video_url => video_url,
+                                                :video_url => CGI::unescape(video_url),
                                                 :action => action,
                                                 :roll => roll,
                                                 :message_text => message_text )
-        @frame = res[:frame]
+        
+        if @frame = res[:frame]
+          @status = 200
+        else
+          render_error(404, "something went wrong when creating that frame")
+        end
         
       # create a new frame by re-rolling a frame from a frame_id
       elsif params[:frame_id] and ( frame_to_re_roll = Frame.find(params[:frame_id]) )
