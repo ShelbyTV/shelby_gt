@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'framer'
+require 'video_manager'
 
 # UNIT test
 # N.B. GT::Framer.re_roll is also tested by unit/frame_spec.rb
@@ -306,6 +307,58 @@ describe GT::Framer do
       @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
       
       @f2.frame_ancestors.should == (@f1.frame_ancestors + [@f1.id])
+    end
+    
+  end
+  
+  context "creating a frame from a video url" do
+    before(:each) do
+      @video_url = "http://some.video.url.com/of_a_movie_i_like"
+      @video = Factory.create(:video, :source_url => @video_url)
+      @frame_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+      @message_text = "boy do i like this video"
+      
+      @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+      @roll = Roll.new( :title => "title" )
+      @roll.creator = @roll_creator
+      @roll.save
+      
+      GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
+    end
+    
+    it "should create a frame given from a video url" do
+      GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
+      res = GT::Framer.create_frame_from_url(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video_url => @video_url,
+          :message_text => @message_text,
+          :roll => @roll
+          )
+    
+      res[:frame].persisted?.should == true
+      res[:frame].creator.should == @frame_creator
+      res[:frame].video.should == @video
+      res[:frame].conversation.persisted?.should == true
+      res[:frame].conversation.messages.size.should == 1
+      res[:frame].conversation.messages[0].text.should == @message_text
+      res[:frame].conversation.messages[0].persisted?.should == true
+      res[:frame].roll.should == @roll
+    end
+    
+    it "should create a new frame with no message when without any message text provided" do
+      res = GT::Framer.create_frame_from_url(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video_url => @video_url,
+          :roll => @roll
+          )
+    
+      res[:frame].persisted?.should == true
+      res[:frame].creator.should == @frame_creator
+      res[:frame].video.should == @video
+      res[:frame].conversation.persisted?.should == true
+      res[:frame].conversation.messages.size.should == 0
     end
     
   end

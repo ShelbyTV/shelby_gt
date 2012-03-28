@@ -1,3 +1,4 @@
+require 'video_manager'
 # This is the one and only place where Frames are created.
 #
 # If the user re-rolls a Frame, that goes through us.
@@ -65,6 +66,38 @@ module GT
       return res
     end
     
+    def self.create_frame_from_url(options)
+      raise ArgumentError, "must supply a :creator" unless (creator = options.delete(:creator)).is_a? User
+      raise ArgumentError, "must supply a :video_url" unless (video_url = options.delete(:video_url))
+      raise ArgumentError, "must supply an :action" unless DashboardEntry::ENTRY_TYPE.values.include?(action = options.delete(:action))
+      raise ArgumentError, "must include a :roll" unless (roll = options.delete(:roll)).is_a?(Roll)
+      message_text = options.delete(:message_text)
+
+      # get or create video from url
+      video = GT::VideoManager.get_or_create_videos_for_url(video_url)
+      
+      # create new message if param is given
+      if message_text
+        message = Message.new
+        message.public = true
+        message.nickname = creator.nickname
+        message.realname = creator.name
+        message.user_image_url = creator.user_image
+        message.text = message_text
+      else
+        message = nil
+      end
+      
+      new_frame = create_frame(
+                              :creator => creator,
+                              :video => video,
+                              :message => message,
+                              :roll => roll,
+                              :action => action
+                              )
+      
+    end
+
     # Roll the given Frame for the User into the new Roll
     # orig_frame must be a Frame proper
     # for_user must be a User or the id of a user

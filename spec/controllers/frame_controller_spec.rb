@@ -160,7 +160,15 @@ describe V1::FrameController do
       Roll.stub(:find) { @r2 }
     end
     
-    it "re_roll and returns one frame to @frame" do      
+    it "should create a new frame if given video_url and text params" do
+      video_url = "http://some.video.url.com/of_a_movie_i_like"
+      message = "boy this is awesome"
+      post :create, :roll_id => @r2.id, :url => video_url, :text => message, :format => :json
+      assigns(:status).should eq(200)
+      assigns(:frame).should eq(@f2)
+    end
+    
+    it "should re_roll and returns one frame to @frame if given a frame_id param" do
       @f1.should_receive(:re_roll).and_return({:frame => @f2})
       
       post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json

@@ -1,3 +1,5 @@
+require 'framer'
+
 class V1::FrameController < ApplicationController
 
   before_filter :user_authenticated?, :except => :watched
@@ -51,10 +53,29 @@ class V1::FrameController < ApplicationController
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['create']) do
       user = current_user
       roll = Roll.find(params[:roll_id])
-      frame_to_re_roll = Frame.find(params[:frame_id]) if params[:frame_id]
-      if !roll
-        render_error(404, "could not find that roll")
-      elsif frame_to_re_roll
+      render_error(404, "could not find that roll") if !roll
+      
+      # create frame from a video url
+      if video_url = params[:url] 
+        message_text = params[:text] ? params[:text] : nil
+
+        # set the action
+        if params[:action]
+          action = DashboardEntry::ENTRY_TYPE[params[:action].to_sym]
+        else
+          DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
+        end
+                  
+        res = GT::Framer.create_frame_from_url( :creator => current_user,
+                                                :video_url => video_url,
+                                                :action => action,
+                                                :roll => roll,
+                                                :message_text => message_text )
+        @frame = res[:frame]
+        
+      # create a new frame by re-rolling a frame from a frame_id
+      elsif params[:frame_id] and ( frame_to_re_roll = Frame.find(params[:frame_id]) )
+        
         begin
           @frame = frame_to_re_roll.re_roll(user, roll)
           @frame = @frame[:frame]
@@ -62,8 +83,11 @@ class V1::FrameController < ApplicationController
         rescue => e
           render_error(404, "could not re_roll: #{e}")
         end
+        
       else
+        
         render_error(404, "you haven't built me to do anything else yet...")
+
       end
     end
   end

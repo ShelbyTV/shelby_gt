@@ -25,6 +25,7 @@ class DashboardEntry
   ENTRY_TYPE = {
     :new_social_frame => 0,
     :new_bookmark_frame => 1,
+    :new_in_app_frame => 2,
     :re_roll => 8,
     :watch => 9,
     :comment => 10
