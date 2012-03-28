@@ -83,6 +83,19 @@ describe 'v1/frame' do
           
           response.body.should be_json_eql(404).at_path("status")
         end
+        
+        it "should return 401 if the user is trying to create a frame in a roll that is not theirs" do
+          message_text = "awesome video!"
+          video_url = "http://some.video.url.com/of_a_movie_i_like"
+          video = Factory.create(:video, :source_url => video_url)
+          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return([video])
+          u2 = Factory.create(:user)
+          u2.watch_later_roll = Factory.create(:roll, :creator => u2, :public => false)
+          u2.save
+          post '/v1/roll/'+u2.watch_later_roll_id+'/frames?url='+CGI::escape(video_url)+'&text='+CGI::escape(message_text)
+          
+          response.body.should be_json_eql(401).at_path("status")
+        end
       
       end
       

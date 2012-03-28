@@ -10,6 +10,7 @@ describe V1::FrameController do
     @u1.viewed_roll = Factory.create(:roll, :creator => @u1)
     @u1.save
     sign_in @u1
+    @u2 = Factory.create(:user)
     @roll = stub_model(Roll)
     @frame = stub_model(Frame)
     Roll.stub(:find) { @roll }
@@ -208,7 +209,7 @@ describe V1::FrameController do
       
       it "should not create roll if its not the current_users roll" do
         GT::Framer.stub(:create_frame).and_return({:frame => @f1})
-        new_roll = Factory.create(:roll, :creator => Factory.create(:user), :public => false )
+        new_roll = Factory.create(:roll, :creator => @u2 , :public => false )
         Roll.stub(:find) { new_roll }
         
         post :create, :roll_id => new_roll.id, :url => @video_url, :format => :json
