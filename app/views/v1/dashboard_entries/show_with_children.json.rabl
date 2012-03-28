@@ -2,7 +2,7 @@ object @entry
 
 attributes :id, :action, :actor_id, :read
 
-child :frame do
+child :frame => "frame" do
 	extends 'v1/frame/show'
 	
 	child :creator => "creator" do
