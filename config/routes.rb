@@ -26,6 +26,7 @@ ShelbyGt::Application.routes.draw do
     resources :roll, :only => [:show, :create, :update, :destroy] do
       get 'frames' => 'frame#index'
       post 'frames' => 'frame#create'
+      post 'share' => 'roll#share'
     end
     resources :frame, :only => [:show, :destroy] do
       post 'upvote' => 'frame#upvote'

@@ -1,3 +1,5 @@
+require "social_poster"
+
 class V1::RollController < ApplicationController  
   
   before_filter :user_authenticated?, :except => [:show]
@@ -21,6 +23,46 @@ class V1::RollController < ApplicationController
         else
           render_error(401, "you are not authorized to see that roll")
         end
+      else
+        render_error(404, "could not find that roll")
+      end
+    end
+  end
+  
+  ##
+  # Returns one roll, with the given parameters.
+  #
+  # [GET] /v1/roll/:roll_id/share
+  # 
+  # @param [Required, String] roll_id The id of the roll to share
+  # @param [Required, String] destination Where the roll is being shared to (comma seperated list ok)
+  # @param [Required, Escaped String] comment What the status update of the post is
+  def share
+    StatsManager::StatsD.client.time(Settings::StatsNames.roll['share']) do
+      unless params.keys.include?("destination") and params.keys.include?("comment")
+        return  render_error(404, "a destination and a comment is required to post") 
+      end
+      
+      if roll = Roll.find(params[:roll_id])
+        return render_error(404, "that roll is private, can not share") unless roll.public
+        
+        params[:destination].split(',').each do |d|
+          case d
+          when 'twitter'
+            resp = GT::SocialPoster.post_to_twitter(current_user, params[:comment], roll)
+          when 'facebook'
+            resp = GT::SocialPoster.post_to_facebook(current_user, params[:comment], roll)
+          else
+            return render_error(404, "we dont support that destination yet :(")
+          end
+          
+          if resp
+            @status = 200
+          elsif resp == nil
+            render_error(404, "that user cant post to that destination")
+          end  
+        end
+        
       else
         render_error(404, "could not find that roll")
       end

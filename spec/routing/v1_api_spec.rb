@@ -138,6 +138,15 @@ describe V1::RollController do
       )
     end 
     
+    it "routes for POST" do
+      { :post => "/v1/roll/1/share" }.should route_to(
+        :controller => "v1/roll",
+        :action => "share",
+        :format => "json",
+        :roll_id => "1"
+      )
+    end
+    
     it "routes for DELETE" do
       { :delete => "/v1/roll/1" }.should route_to(
         :controller => "v1/roll",

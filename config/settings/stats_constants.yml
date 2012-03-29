@@ -8,6 +8,7 @@ defaults: &defaults
     rolls: 'api.gt.user.rolls'
   roll:
     show: 'api.gt.roll.show'
+    share: 'api.gt.roll.share'
     create: 'api.gt.roll.create'
     update: 'api.gt.roll.update'
     delete: 'api.gt.roll.destroy'
