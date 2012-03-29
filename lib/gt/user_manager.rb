@@ -115,14 +115,15 @@ module GT
       end
     end
     
-    # Make sure a user has and follows their own public and watch_later Rolls
+    # Make sure a user has public, watch_later, upvoted, and viewed _rolls
+    # should follow just the public roll
     def self.ensure_users_special_rolls(u, save=false)
       build_public_roll_for_user(u) unless u.public_roll
       u.public_roll.add_follower(u) unless u.following_roll?(u.public_roll)
       u.public_roll.save if save
       
       build_watch_later_roll_for_user(u) unless u.watch_later_roll
-      u.watch_later_roll.add_follower(u) unless u.following_roll?(u.watch_later_roll)
+      #users don't follow their watch_later_roll
       u.watch_later_roll.save if save
       
       build_upvoted_roll_for_user(u) unless u.upvoted_roll
