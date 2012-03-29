@@ -1,0 +1,15 @@
+defaults: &defaults
+  domain: 'localhost:3000'  
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+  domain: 'web.gt.shelby.tv'
+  
+arnold:
+  <<: *production

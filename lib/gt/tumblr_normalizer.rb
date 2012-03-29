@@ -1,3 +1,5 @@
+require 'message_manager'
+
 #
 # Given a tweet, return a normalized Message
 #
@@ -10,23 +12,22 @@ module GT
 
       return nil unless post_hash.size > 0
       
-      m = Message.new
-      m.origin_network = Message::ORIGIN_NETWORKS[:tumblr]
-      m.origin_id = post_hash['id']
-      # Tumblr uses your first blog's name as your user id
-      m.origin_user_id = post_hash["blog_name"]
-      m.public = true
-      
-      m.nickname = post_hash["blog_name"]
-      m.realname = m.nickname
-      
       if post_hash["blog_name"].include? "."
-        m.user_image_url = "http://api.tumblr.com/v2/blog/"+ post_hash["blog_name"] + "/avatar/512"
+        user_image_url = "http://api.tumblr.com/v2/blog/"+ post_hash["blog_name"] + "/avatar/512"
       else 
-        m.user_image_url = "http://api.tumblr.com/v2/blog/"+ post_hash["blog_name"] + ".tumblr.com/avatar/512"
+        user_image_url = "http://api.tumblr.com/v2/blog/"+ post_hash["blog_name"] + ".tumblr.com/avatar/512"
       end
       
-      m.text = Sanitize.clean(post_hash["caption"]).strip
+      
+      m = GT::MessageManager.build_message( :origin_network => Message::ORIGIN_NETWORKS[:tumblr],
+                                            :origin_id => post_hash['id'],
+                                            # Tumblr uses your first blog's name as your user id
+                                            :origin_user_id => post_hash["blog_name"],
+                                            :public => true,
+                                            :nickname => post_hash["blog_name"],
+                                            :realname => post_hash["blog_name"],
+                                            :user_image_url => user_image_url,
+                                            :text => Sanitize.clean(post_hash["caption"]).strip )
       
       return m
     end

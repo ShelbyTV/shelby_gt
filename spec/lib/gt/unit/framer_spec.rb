@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'framer'
+require 'video_manager'
 
 # UNIT test
 # N.B. GT::Framer.re_roll is also tested by unit/frame_spec.rb

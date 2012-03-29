@@ -1,0 +1,28 @@
+var shelbyBkmkltDomain = "http://<%= Settings::VideoRadar.domain %>";
+var shelbyExtDomain = document.location.protocol + "//<%= Settings::VideoRadar.domain %>";
+
+<% if @use_case == "bookmarklet" %>
+	var infoEl = document.createElement('div');
+	infoEl.id = 'shelby-bookmarklet';
+	infoEl.style.backgroundImage = 'url("' + shelbyBkmkltDomain + '/images/bkmklt-bar.png")';
+	infoEl.style.zIndex = 100000;
+	infoEl.style.position = 'fixed';
+	infoEl.style.left = '0px';
+	infoEl.style.top = '10px';
+	infoEl.style.width = '189px';
+	infoEl.style.height = '35px';
+	infoEl.innerHTML = '<div style="position:absolute;top:10px;left:4px;color:#f3f3f3;"><span style="float:left;font-size: 12px;font-family: verdana,sans-serif;">Grabbing Videos...</span><img class="shelbyLogo" style="position:absolute;left:140px;top:-13px;" src="'+ shelbyBkmkltDomain +'/images/bkmklt-logo.png"/></div>';
+	infoEl.style.display = 'none';
+
+	if(!document.getElementById('shelby-bookmarklet')) {
+		document.body.appendChild(infoEl);
+	}
+<% end %>
+
+var s2 = document.createElement('script');
+<% if @use_case == "bookmarklet" %>
+	s2.setAttribute('src', shelbyBkmkltDomain + '/radar/load?'+(new Date()).getTime());
+<% elsif @use_case == "extension" %>
+	s2.setAttribute('src', shelbyExtDomain + '/radar/load?chrome_extension=true&'+(new Date()).getTime());
+<% end %>
+document.body.appendChild(s2);

@@ -1,3 +1,5 @@
+require 'message_manager'
+
 class V1::MessagesController < ApplicationController  
 
   before_filter :authenticate_user!
@@ -13,27 +15,20 @@ class V1::MessagesController < ApplicationController
   def create
     StatsManager::StatsD.client.time(Settings::StatsNames.messages['create']) do
       if !params.include?(:text)
-        @status, @message = 400, "text of message required"
-        render 'v1/blank', :status => @status
+        render_error(400, "text of message required")
       else
         @conversation = Conversation.find(params[:conversation_id])
         if @conversation
-          @new_message = Message.new
-          @new_message.text = params[:text]
-          @new_message.user = current_user
-          @new_message.nickname = current_user.nickname
-          @new_message.user_image_url = current_user.user_image
-        
+          msg_opts = {:creator => current_user, :public => true, :text => params[:text]}
+          @new_message = GT::MessageManager.build_message(msg_opts)
           @conversation.messages << @new_message
           begin        
             @status = 200 if @conversation.save!
           rescue => e
-            @status, @message = 400, e
-            render 'v1/blank', :status => @status
+            render_error(404, e)
           end
         else
-          @status, @message = 400, "could not find that conversation"
-          render 'v1/blank', :status => @status
+          render_error(404, "could not find that conversation")
         end
       end
     end
@@ -53,8 +48,7 @@ class V1::MessagesController < ApplicationController
       @conversation = Conversation.find(params[:conversation_id])
       message = @conversation.find_message_by_id(message_id)
       unless @conversation and message
-        @status, @message = 400, "could not find that conversation"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that conversation")
       else
         @conversation.pull(:messages => {:_id => message.id})
         @conversation.reload

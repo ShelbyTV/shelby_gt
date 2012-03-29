@@ -69,6 +69,49 @@ describe Frame do
     end
   end
   
+  # We're testing a private method here, but it's a pretty fucking important/tricky one and has to be correct
+  context "get ancestor" do
+    it "should return an ancestor when one exists" do
+      @r1 = Factory.create(:roll, :creator => Factory.create(:user))
+      @r2 = Factory.create(:roll, :creator => Factory.create(:user))
+      
+      @orig = Factory.create(:frame, :roll => @r1)
+      @child = Factory.create(:frame, :roll => @r2, :frame_ancestors => [@orig.id])
+      
+      Frame.send(:get_ancestor_of_frame, @r2.id, @orig.id).should == @child
+    end
+    
+    it "should not find an ancestor if one doesn't exist" do
+      @r1 = Factory.create(:roll, :creator => Factory.create(:user))
+      @r2 = Factory.create(:roll, :creator => Factory.create(:user))
+      
+      @orig = Factory.create(:frame, :roll => @r1)
+      @child = Factory.create(:frame, :roll => @r2, :frame_ancestors => [])
+      
+      Frame.send(:get_ancestor_of_frame, @r2.id, @orig.id).should == nil
+    end
+    
+    it "should find an ancestor after duped via Framer" do
+      @r1 = Factory.create(:roll, :creator => Factory.create(:user))
+      @r2 = Factory.create(:roll, :creator => Factory.create(:user))
+      
+      @orig = Factory.create(:frame, :roll => @r1)
+
+      @u = Factory.create(:user)
+      @u.viewed_roll = Factory.create(:roll, :creator => @u)
+      @u.save
+      
+      #should NOT find it now
+      Frame.send(:get_ancestor_of_frame, @u.viewed_roll_id, @orig.id).should ==  nil
+      
+      #dupe it
+      child = GT::Framer.dupe_frame!(@orig, @u.id, @u.viewed_roll_id)
+      
+      #should find it now
+      Frame.send(:get_ancestor_of_frame, @u.viewed_roll_id, @orig.id).should == child
+    end
+  end
+  
   context "upvoting" do
     before(:each) do
       @frame = Factory.create(:frame)
@@ -152,11 +195,23 @@ describe Frame do
       f.conversation_id.should == @frame.conversation_id
       f.frame_ancestors.include?(@frame.id).should == true
     end
+    
+    it "should be idempotent" do
+      f1, f2 = nil, nil
+      lambda {
+        f1 = @frame.add_to_watch_later!(@u1)
+        f2 = @frame.add_to_watch_later!(@u1)
+      }.should change { Frame.count } .by 1
+      
+      f1.should == f2
+    end
   end
   
   context "viewed" do
     before(:each) do
       @frame = Factory.create(:frame)
+      @frame.video = Factory.create(:video)
+      @frame.save
       
       @u1 = Factory.create(:user)
       @u1.viewed_roll = Factory.create(:roll, :creator => @u1)
@@ -165,14 +220,14 @@ describe Frame do
     
     it "should require full User model, not just id" do
       lambda {
-        @frame.add_to_viewed_roll!(@u1.id)
+        @frame.view!(@u1.id)
       }.should raise_error(ArgumentError)
     end
     
     it "should dupe the frame into the users viewed_roll, persisted" do
       f = nil
       lambda {
-        f = @frame.add_to_viewed_roll!(@u1)
+        f = @frame.view!(@u1)
       }.should change { Frame.count } .by 1
 
       f.persisted?.should == true      
@@ -182,13 +237,41 @@ describe Frame do
     it "should set metadata correctly" do
       f = nil
       lambda {
-        f = @frame.add_to_viewed_roll!(@u1)
+        f = @frame.view!(@u1)
       }.should change { Frame.count } .by 1
 
       f.creator_id.should == @u1.id
       f.video_id.should == @frame.video_id
       f.conversation_id.should == @frame.conversation_id
       f.frame_ancestors.include?(@frame.id).should == true
+    end
+    
+    it "should update view_count of Frame" do
+      lambda {
+        @frame.view!(@u1)
+      }.should change { @frame.reload.view_count } .by 1
+      
+      lambda {
+        Frame.should_receive(:roll_includes_ancestor_of_frame?).exactly(4).times.and_return(false)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+      }.should change { @frame.reload.view_count } .by 4
+    end
+    
+    it "should update view_count of Frame's Video" do
+      lambda {
+        @frame.view!(@u1)
+      }.should change { @frame.video.reload.view_count } .by 1
+      
+      lambda {
+        Frame.should_receive(:roll_includes_ancestor_of_frame?).exactly(4).times.and_return(false)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+        @frame.view!(@u1)
+      }.should change { @frame.video.reload.view_count } .by 4
     end
   end
   

@@ -1,12 +1,16 @@
 require 'spec_helper'
+require 'video_manager'
+require 'message_manager'
 
 describe V1::FrameController do
   before(:each) do
     @u1 = Factory.create(:user)
     @u1.upvoted_roll = Factory.create(:roll, :creator => @u1)
     @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
+    @u1.viewed_roll = Factory.create(:roll, :creator => @u1)
     @u1.save
     sign_in @u1
+    @u2 = Factory.create(:user)
     @roll = stub_model(Roll)
     @frame = stub_model(Frame)
     Roll.stub(:find) { @roll }
@@ -21,25 +25,25 @@ describe V1::FrameController do
       assigns(:status).should eq(200)
     end
     
-    it "returns 400 if cant find roll" do
+    it "returns 404 if cant find roll" do
       Roll.stub(:find) { nil }
       get :index, :format => :json
-      assigns(:status).should eq(400)
+      assigns(:status).should eq(404)
       assigns(:message).should eq("could not find that roll")
     end
   end
   
   describe "GET show" do
     it "assigns one frame to @frame" do
-      get :show, :id => @frame.id, :format => :json
+      get :show, :frame_id => @frame.id, :format => :json
       assigns(:frame).should eq(@frame)
       assigns(:status).should eq(200)
     end
     
-    it "returns 400 when cant find frame" do
+    it "returns 404 when cant find frame" do
       Frame.stub(:find) { nil }
       get :show, :format => :json
-      assigns(:status).should eq(400)
+      assigns(:status).should eq(404)
       assigns(:message).should eq("could not find that frame")
     end
   end
@@ -51,7 +55,7 @@ describe V1::FrameController do
       @frame.should_receive(:reload).and_return(@frame)
       
       lambda {
-        post :upvote, :id => @frame.id, :format => :json
+        post :upvote, :frame_id => @frame.id, :format => :json
       }.should change { UserAction.count } .by 1
       
       assigns(:frame).should eq(@frame)
@@ -61,17 +65,66 @@ describe V1::FrameController do
     it "updates a frame UNsuccessfuly gracefully" do
       frame = Factory.create(:frame)
       Frame.stub(:find) { nil }
-      post :upvote, :id => frame.id, :format => :json
-      assigns(:status).should eq(400)
+      post :upvote, :frame_id => frame.id, :format => :json
+      assigns(:status).should eq(404)
     end
   end
   
   describe "POST watched" do
-    it "creates a FrameAction"
+    it "creates a UserAction w/ all params" do
+      GT::UserActionManager.should_receive(:view!)
+      Frame.should_receive(:roll_includes_ancestor_of_frame?).and_return(false)
+      @frame.should_receive(:reload).and_return(@frame)
+      
+      post :watched, :frame_id => @frame.id, :start_time => "0", :end_time => "14", :format => :json
+    end
     
-    it "updates the frame"
+    it "creates a new frame w/ all params" do
+      GT::UserActionManager.should_receive(:view!)
+      Frame.should_receive(:roll_includes_ancestor_of_frame?).and_return(false)
+      @frame.should_receive(:reload).and_return(@frame)
+      
+      lambda {
+        post :watched, :frame_id => @frame.id, :start_time => "0", :end_time => "14", :format => :json
+      }.should change { Frame.count } .by 1
+      
+      assigns(:new_frame).persisted?.should == true
+      assigns(:new_frame).frame_ancestors.include?(@frame.id).should == true
+      assigns(:status).should eq(200)
+    end
     
-    it "perhaps creates dashboard entry"
+    it "shouldn't need a logged in user" do
+      GT::UserActionManager.should_receive(:view!)
+      Frame.should_not_receive(:view!)
+      @frame.should_not_receive(:reload)
+      
+      sign_out @u1
+      
+      post :watched, :frame_id => @frame.id, :start_time => "0", :end_time => "14", :format => :json
+    end
+    
+    it "shouldn't need start and end times" do
+      GT::UserActionManager.should_not_receive(:view!)
+      Frame.should_receive(:roll_includes_ancestor_of_frame?).and_return(false)
+      @frame.should_receive(:reload).and_return(@frame)
+      
+      lambda {
+        post :watched, :frame_id => @frame.id, :format => :json
+      }.should change { Frame.count } .by 1
+      
+      assigns(:new_frame).persisted?.should == true
+      assigns(:new_frame).frame_ancestors.include?(@frame.id).should == true
+      assigns(:status).should eq(200)
+    end
+    
+    it "should return 404 if Frame can't be found" do
+      Frame.should_receive(:find).with("somebadid").and_return(nil)
+      lambda {
+        post :watched, :frame_id => "somebadid", :format => :json
+      }.should_not change { Frame.count }
+      
+      assigns(:status).should eq(404)
+    end
   end
   
   describe "POST add_to_watch_later" do
@@ -81,15 +134,17 @@ describe V1::FrameController do
     
     it "creates a UserAction" do
       GT::UserActionManager.should_receive(:watch_later!)
+      Frame.should_receive(:get_ancestor_of_frame).and_return(nil)
       
-      post :add_to_watch_later, :id => @f2.id, :format => :json
+      post :add_to_watch_later, :frame_id => @f2.id, :format => :json
     end
     
     it "creates a new Frame" do
       GT::UserActionManager.should_receive(:watch_later!)
+      Frame.should_receive(:get_ancestor_of_frame).and_return(nil)
       
       lambda {
-        post :add_to_watch_later, :id => @f2.id, :format => :json
+        post :add_to_watch_later, :frame_id => @f2.id, :format => :json
       }.should change { Frame.count } .by 1
       
       assigns(:new_frame).persisted?.should == true
@@ -100,35 +155,91 @@ describe V1::FrameController do
   
   describe "POST create" do
     before(:each) do
-      @f1 = stub_model(Frame)
+      @video_url = CGI::escape("http://some.video.url.com/of_a_movie_i_like")
+      @message_text = "boy this is awesome"
+      @message = Factory.build(:message, :text => @message_text, :public => true, :nickname => @u1.nickname, :realname => @u1.name, :user_image_url => @u1.user_image)
+      @video = Factory.create(:video, :source_url => @video_url)
+      
+      @f1 = stub_model(Frame, :video => @video)
       @f1.conversation = stub_model(Conversation)
 
       @r2 = stub_model(Roll)
       @f2 = stub_model(Frame)
 
-      Frame.stub(:find) { @f1 }      
+      Frame.stub(:find) { @f1 }
       Roll.stub(:find) { @r2 }
     end
     
-    it "re_roll and returns one frame to @frame" do      
-      @f1.should_receive(:re_roll).and_return({:frame => @f2})
+    context 'creating new frames from urls' do
+      before(:each) do
+        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return([@video])
+        GT::MessageManager.stub(:build_message).and_return(@message)        
+      end
       
-      post :create, :id => @r2.id, :frame_id => @f1.id, :format => :json
-      assigns(:status).should eq(200)
-      assigns(:frame).should eq(@f2)
+      it "should create a new frame if given valid source, video_url and text params" do
+        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+      
+        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message, :source => "bookmark", :format => :json
+        assigns(:status).should eq(200)
+        assigns(:frame).should eq(@f1)
+      end
+    
+      it "should create a new frame if given video_url and text params" do
+        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+      
+        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message, :format => :json
+        assigns(:status).should eq(200)
+        assigns(:frame).should eq(@f1)
+      end
+    
+      it "should return a new frame if a video_url is given but a message is not" do
+        GT::Framer.stub(:create_frame).and_return({:frame => @f1})
+
+        post :create, :roll_id => @r2.id, :url => @video_url, :format => :json
+        assigns(:status).should eq(200)
+        assigns(:frame).should eq(@f1)
+      end
+    
+      it "should be ok if action is f-d up" do
+        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
+        GT::Framer.stub(:create_frame_from_url).and_return({:frame => @f1})
+        post :create, :roll_id => @r2.id, :url => @video_url, :source => "fucked_up", :format => :json
+        assigns(:status).should eq(404)
+      end
+      
+      it "should not create roll if its not the current_users roll" do
+        GT::Framer.stub(:create_frame).and_return({:frame => @f1})
+        new_roll = Factory.create(:roll, :creator => @u2 , :public => false )
+        Roll.stub(:find) { new_roll }
+        
+        post :create, :roll_id => new_roll.id, :url => @video_url, :format => :json
+        assigns(:status).should eq(401)
+      end
+      
     end
     
-    it "returns 400 if it can't re_roll" do
-      @f1.stub(:re_roll).and_raise(ArgumentError)
-      
-      post :create, :id => @r2.id, :frame_id => @f1.id, :format => :json
-      assigns(:status).should eq(400)
-      assigns(:message).should eq("could not re_roll: ArgumentError")
+    context "new frame by re rolling a frame" do
+      it "should re_roll and returns one frame to @frame if given a frame_id param" do
+        @f1.should_receive(:re_roll).and_return({:frame => @f2})
+
+        post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
+        assigns(:status).should eq(200)
+        assigns(:frame).should eq(@f2)
+      end
+
+      it "returns 404 if it can't re_roll" do
+        @f1.stub(:re_roll).and_raise(ArgumentError)
+
+        post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
+        assigns(:status).should eq(404)
+        assigns(:message).should eq("could not re_roll: ArgumentError")
+      end
     end
 
-    it "returns 400 if it theres no frame_id to re_roll" do
-      post :create, :id => @r2.id, :format => :json
-      assigns(:status).should eq(400)
+
+    it "returns 404 if it theres no frame_id to re_roll or no video_url to make into a frame" do
+      post :create, :roll_id => @r2.id, :format => :json
+      assigns(:status).should eq(404)
       assigns(:message).should eq("you haven't built me to do anything else yet...")
     end
 
@@ -139,16 +250,16 @@ describe V1::FrameController do
       frame = mock_model(Frame)
       Frame.stub!(:find).and_return(frame)
       frame.should_receive(:destroy).and_return(frame)
-      delete :destroy, :id => frame.id, :format => :json
+      delete :destroy, :frame_id => frame.id, :format => :json
       assigns(:status).should eq(200)
     end
     
-    it "unsuccessfuly destroys a roll returning 400" do
+    it "unsuccessfuly destroys a roll returning 404" do
       frame = mock_model(Frame)
       Frame.stub!(:find).and_return(frame)
       frame.should_receive(:destroy).and_return(false)
-      delete :destroy, :id => frame.id, :format => :json
-      assigns(:status).should eq(400)
+      delete :destroy, :frame_id => frame.id, :format => :json
+      assigns(:status).should eq(404)
     end
   end
   

@@ -13,16 +13,17 @@ class AuthenticationsController < ApplicationController
     omniauth = request.env["omniauth.auth"]
     # See if we have a matching user...
     user = User.first( :conditions => { 'authentications.provider' => omniauth['provider'], 'authentications.uid' => omniauth['uid'] } )
-    
+
+=begin    
 #TODO: ---- Current user with two seperate accounts
-    if user_signed_in? and user and user != current_user
+    if user_signed_in? and  and user != current_user
       # make sure they want to merge "user" into "current_user"
       session[:user_to_merge_in_id] = user.id.to_s
       
       @opener_location = merge_accounts_path
-    
+=end
 # ---- Current user, just signing in
-    elsif user
+    if user
       if user.faux == User::FAUX_STATUS[:true]
         GT::UserManager.convert_faux_user_to_real(user, omniauth)
       else

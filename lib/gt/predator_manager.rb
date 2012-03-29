@@ -1,7 +1,6 @@
 # encoding: UTF-8
 require 'beanstalk-client'
 
-# TODO: ***Need to test this class*** (if it is tested, move tests into new class)
 module GT
   
   #This manager puts jobs on our Queue that are accepted by the Predator
@@ -68,7 +67,7 @@ module GT
 
       def self.tw_add_backfill(a, bean)
         bean.use(Settings::Beanstalk.tubes['twitter_backfill'])      # insures we are using watching tw_backfill tube
-        backfill_job = {:action=>'add_user', :twitter_id => a.uid, :oauth_token => self.oauth_token, :oauth_secret => self.oauth_secret}
+        backfill_job = {:action=>'add_user', :twitter_id => a.uid, :oauth_token => a.oauth_token, :oauth_secret => a.oauth_secret}
         bean.put(backfill_job.to_json)
       end
 

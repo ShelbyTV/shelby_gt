@@ -27,3 +27,4 @@ end
 # Before running tests, drop all the collections across the DBs and re-create the indexes
 MongoMapper::Helper.drop_all_dbs
 MongoMapper::Helper.ensure_all_indexes
+

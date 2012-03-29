@@ -12,8 +12,7 @@ class V1::VideoController < ApplicationController
       if @video = Video.find(params[:id])
         @status =  200
       else
-        @status, @message = 400, "could not find video"
-        render 'v1/blank'
+        render_error(404, "could not find video")
       end
     end
   end

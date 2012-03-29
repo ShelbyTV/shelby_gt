@@ -1,6 +1,10 @@
+require 'message_manager'
+require 'video_manager'
+
 class V1::FrameController < ApplicationController
 
-  before_filter :user_authenticated?
+  before_filter :user_authenticated?, :except => :watched
+  skip_before_filter :verify_authenticity_token, :only => [:create]
   
   ##
   # Returns all frames in a roll
@@ -16,8 +20,7 @@ class V1::FrameController < ApplicationController
         @frames = @roll.frames.sort(:score.desc)
         @status =  200
       else
-        @status, @message = 400, "could not find that roll"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that roll")
       end
     end
   end
@@ -36,8 +39,7 @@ class V1::FrameController < ApplicationController
         @status =  200
         @include_frame_children = (params[:include_children] == "true") ? true : false
       else
-        @status, @message = 400, "could not find that frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that frame")
       end
     end
   end
@@ -48,27 +50,70 @@ class V1::FrameController < ApplicationController
   #
   # [POST] /v1/roll/:roll_id/frames
   #
-  # @param [Optional, String] frame_id A frame to be re_rolled
+  # If trying to re-roll:
+  # @param [Required, String] frame_id A frame to be re_rolled
+  #
+  # If trying to add a frame via a url:
+  # @param [Required, Escaped String] url A video url
+  # @param [Optional, Escaped String] text Message text to via added to the conversation
+  # @param [Optional, String] source The source could be bookmarklet, webapp, etc
   def create
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['create']) do
-      user = current_user
       roll = Roll.find(params[:roll_id])
-      frame_to_re_roll = Frame.find(params[:frame_id]) if params[:frame_id]
-      if !roll
-        @status, @message = 400, "could not find that roll"
-        render 'v1/blank'
-      elsif !frame_to_re_roll
-        @status, @message = 400, "you haven't built me to do anything else yet..."
-        render 'v1/blank', :status => @status
-      else
+      render_error(404, "could not find that roll") if !roll
+      
+      # create frame from a video url
+      if video_url = params[:url]
+        frame_options = { :creator => current_user, :roll => roll }
+        # get or create video from url
+        frame_options[:video] = GT::VideoManager.get_or_create_videos_for_url(video_url)[0]
+        
+        # create message
+        message_text = params[:text] ? CGI::unescape(params[:text]) : nil
+        frame_options[:message] = GT::MessageManager.build_message(:creator => current_user, :public => true, :text => message_text)
+        
+        # set the action, defaults to new_bookmark_frame
+        case params[:source]
+        when "bookmark", nil, ""
+          frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
+        when "webapp"
+          frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_in_app_frame]
+        else
+          return render_error(404, "that action isn't cool.")
+        end
+        
+        # only allow roll creation if user is authorized to access the given roll
+        if roll.postable_by?(current_user)
+          # and finally create the frame
+          r = GT::Framer.create_frame(frame_options)
+
+          if @frame = r[:frame]
+            @status = 200          
+            # allow for jsonp callbacks on this method for bookmarklet/extension
+            render 'show', :callback => params[:callback] if params[:callback]
+          else
+            render_error(404, "something went wrong when creating that frame")
+          end
+          
+        else
+          return render_error(401, "that user cant post to that roll")
+        end
+        
+      # create a new frame by re-rolling a frame from a frame_id
+      elsif params[:frame_id] and ( frame_to_re_roll = Frame.find(params[:frame_id]) )
+        
         begin
-          @frame = frame_to_re_roll.re_roll(user, roll)
+          @frame = frame_to_re_roll.re_roll(current_user, roll)
           @frame = @frame[:frame]
           @status = 200
         rescue => e
-          @status, @message = 400, "could not re_roll: #{e}"
-          render 'v1/blank', :status => @status
+          render_error(404, "could not re_roll: #{e}")
         end
+        
+      else
+        
+        render_error(404, "you haven't built me to do anything else yet...")
+
       end
     end
   end
@@ -89,8 +134,7 @@ class V1::FrameController < ApplicationController
         end
         @frame.reload
       else
-        @status, @message = 400, "could not find frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find frame")
       end
     end
   end
@@ -110,16 +154,15 @@ class V1::FrameController < ApplicationController
           GT::UserActionManager.watch_later!(current_user.id, @frame.id)
         end
       else
-        @status, @message = 400, "could not find frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find frame")
       end
     end
   end
   
-  #TODO: Fill this is with what it should really be
   ##
-  # Upvotes a frame and returns XXXX 
-  #   REQUIRES AUTHENTICATION
+  # For logged in user, update their viewed_roll and view_count on Frame and Video (once per 24 hours per user)
+  # For logged in and non-logged in user, create a UserAction to track this portion of viewing.
+  #   AUTHENTICATION OPTIONAL
   #
   # [POST] /v1/frame/:id/watched
   # 
@@ -128,9 +171,21 @@ class V1::FrameController < ApplicationController
   # @param [Optional, String] end_time The end_time of the action on the frame
   def watched
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['watched']) do
-      @frame = Frame.find(params[:frame_id])
-      @status, @message = 404, "BUILD ME!"
-      render 'v1/blank', :status => @status
+      if @frame = Frame.find(params[:frame_id])
+        @status = 200
+        
+        #conditionally count this as a view (once per 24 hours per user)
+        if current_user
+          @new_frame = @frame.view!(current_user)
+          @frame.reload # to update view_count
+        end
+
+        if params[:start_time] and params[:end_time]
+          GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
+        end
+      else
+        render_error(404, "could not find frame")
+      end
     end
   end
   
@@ -147,9 +202,8 @@ class V1::FrameController < ApplicationController
       if frame = Frame.find(params[:id]) and frame.destroy 
         @status = 200
       else
-        @status, @message = 400, "could not find that frame to destroy" unless frame
-        @status, @message = 400, "could not destroy that frame"
-        render 'v1/blank', :status => @status
+        render_error(404, "could not find that frame to destroy") unless frame
+        render_error(404, "could not destroy that frame")
       end
     end
   end

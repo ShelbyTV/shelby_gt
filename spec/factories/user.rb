@@ -8,16 +8,17 @@ Factory.sequence :uid do |n|
 end
 
 Factory.define :authentication do |a|
-  a.name        "name"
-  a.nickname    "nickname"
-  a.provider    "twitter"
-  a.oauth_token "token"
-  a.oauth_secret "secret"
+  a.name          "name"
+  a.nickname      "nickname"
+  a.provider      "twitter"
+  a.oauth_token   "token"
+  a.oauth_secret  "secret"
   a.uid         { Factory.next :uid }
 end
 
 Factory.define :user do |user|
   user.nickname                 { Factory.next :nickname }
   user.authentications          { [FactoryGirl.create(:authentication)] }
+  user.primary_email "email@domain.com"
 end
 
