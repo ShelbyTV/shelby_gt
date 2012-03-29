@@ -30,7 +30,7 @@ class V1::RollController < ApplicationController
   end
   
   ##
-  # Returns one roll, with the given parameters.
+  # Returns success if roll is shared successfully, with the given parameters.
   #
   # [GET] /v1/roll/:roll_id/share
   # 
