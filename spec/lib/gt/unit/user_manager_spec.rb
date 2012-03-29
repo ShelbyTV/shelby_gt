@@ -135,14 +135,14 @@ describe GT::UserManager do
       }.should change { User.count }.by(1)
     end
     
-    it "should have the faux user follow its own public and watch_later rolls (should not follow viewed and upvoted rolls)" do
+    it "should have the faux user follow its own public roll (should not follow watch_later, viewed, and upvoted rolls)" do
       nick, provider, uid = "whatever3-c", "fb", "123uid3-c"
       lambda {
         u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
         
         u.following_roll?(u.public_roll).should == true
-        u.following_roll?(u.watch_later_roll).should == true
         
+        u.following_roll?(u.watch_later_roll).should == false
         u.following_roll?(u.upvoted_roll).should == false
         u.following_roll?(u.viewed_roll).should == false
       }.should change { User.count }.by(1)
@@ -467,11 +467,11 @@ describe GT::UserManager do
         u.viewed_roll.persisted?.should == true
       end
       
-      it "should have the user follow their public and watch_later rolls (and NOT the upvoted or viewed Rolls)" do
+      it "should have the user follow their public rolls (and NOT the watch_later, upvoted, or viewed Rolls)" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         
         u.following_roll?(u.public_roll).should == true
-        u.following_roll?(u.watch_later_roll).should == true
+        u.following_roll?(u.watch_later_roll).should == false
         u.following_roll?(u.upvoted_roll).should == false
         u.following_roll?(u.viewed_roll).should == false
       end
