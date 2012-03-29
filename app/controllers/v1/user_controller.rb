@@ -18,13 +18,11 @@ class V1::UserController < ApplicationController
   # [GET] /v1/user/:id
   # 
   # @param [Optional, String] id The id of the user, if not present, user is current_user
-  # @param [Optional, Boolean] include_auths Include the embedded authorizations
   # @param [Optional, Boolean] rolls_following Include the referenced rolls the user is following
   def show
     StatsManager::StatsD.client.time(Settings::StatsNames.user['show']) do
       if params[:id]
         if @user = User.find(params[:id])
-          @include_auths = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_auths] == "true" ) ? true : false
           @include_rolls = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true" ) ? true : false
           @status = 200
         else
@@ -32,7 +30,6 @@ class V1::UserController < ApplicationController
         end
       elsif user_signed_in?
         @user = current_user
-        @include_auths = (params[:include_auths] == "true" ) ? true : false
         @include_rolls = (params[:include_rolls] == "true") ? true : false
         @csrf = session[:_csrf_token]
         @status = 200

@@ -3,6 +3,10 @@ object @user
 attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux
 
 if current_user == @user
+	child :authentications do
+		attributes :uid, :provider
+	end	
+	
 	child :preferences => "preferences" do
 		attributes :email_updates, :like_notifications, :watched_notifications, :quiet_mode
 	end
@@ -21,12 +25,6 @@ if current_user == @user
 		@user.public_roll_id
 	end
 	
-end
-
-if @include_auths == true
-	child :authentications do
-		attributes :uid, :provider, :oauth_token
-	end	
 end
 
 if @include_rolls == true
