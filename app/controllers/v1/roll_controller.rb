@@ -46,12 +46,15 @@ class V1::RollController < ApplicationController
       if roll = Roll.find(params[:roll_id])
         return render_error(404, "that roll is private, can not share") unless roll.public
         
+        #TODO: link_to_roll needs to be created
+        comment = params[:comment] #+ link_to_roll
+        
         params[:destination].split(',').each do |d|
           case d
           when 'twitter'
-            resp = GT::SocialPoster.post_to_twitter(current_user, params[:comment], roll)
+            resp = GT::SocialPoster.post_to_twitter(current_user, comment, roll)
           when 'facebook'
-            resp = GT::SocialPoster.post_to_facebook(current_user, params[:comment], roll)
+            resp = GT::SocialPoster.post_to_facebook(current_user, comment, roll)
           else
             return render_error(404, "we dont support that destination yet :(")
           end
