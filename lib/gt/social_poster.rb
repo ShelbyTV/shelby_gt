@@ -81,9 +81,10 @@ module GT
         end
       end
       
+      #TODO: create a versitile mailing action for frames or rolls
       def self.send_email(user, email_to, message=nil, roll=nil)
         from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
-        return SharingMailer.share_roll(user, from_email, email_to, message, roll).deliver
+        return SharingMailer.share_frame(user, from_email, email_to, message, roll).deliver
       end
     
   end

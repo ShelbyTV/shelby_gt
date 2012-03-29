@@ -28,7 +28,7 @@ describe GT::SocialPoster do
       @from_user.save
       
       tweet = GT::SocialPoster.post_to_twitter(@from_user, @comment, nil)
-      tweet.should eq(false)
+      tweet.should eq(nil)
     end 
   end
   
@@ -56,7 +56,7 @@ describe GT::SocialPoster do
       @from_user.save
       
       post = GT::SocialPoster.post_to_twitter(@from_user, @comment, nil)
-      post.should eq(false)
+      post.should eq(nil)
     end
   end
 
