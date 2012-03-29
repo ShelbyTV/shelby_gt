@@ -21,7 +21,8 @@ module SocialPosting
             if roll
               return !!facebook_client.put_object("me","feed",{
                 :message => message, 
-                :link => roll.permalink,
+                #TODO: We need to put in whatever the link will be eventually
+                #:link => roll.permalink,
                 :picture => roll.thumbnail_url,
                 :name => roll.title,
                 :caption => "via Shelby.TV",
