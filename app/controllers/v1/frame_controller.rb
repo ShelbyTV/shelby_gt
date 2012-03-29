@@ -83,7 +83,7 @@ class V1::FrameController < ApplicationController
         end
         
         # only allow roll creation if user is authorized to access the given roll
-        if (roll.creator == current_user) or (roll.public == true)
+        if roll.postable_by?(current_user)
           # and finally create the frame
           r = GT::Framer.create_frame(frame_options)
 

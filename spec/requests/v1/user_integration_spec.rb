@@ -45,6 +45,15 @@ describe 'v1/user' do
         response.body.should be_json_eql(401).at_path("status")
       end
       
+      it "should have correct watch_later and public roll ids returned" do
+        @u1.watch_later_roll_id = 12345
+        @u1.public_roll_id = 54321
+        @u1.save
+        get '/v1/user/'+@u1.id
+        parse_json(response.body)["result"]["watch_later_roll"].should eq(@u1.watch_later_roll_id)
+        parse_json(response.body)["result"]["public_roll"].should eq(@u1.public_roll_id)
+      end
+      
     end
     
     describe "PUT" do

@@ -18,7 +18,7 @@ if current_user == @user
 	end
 	
 	node "public_roll" do
-		@user.watch_later_roll_id
+		@user.public_roll_id
 	end
 	
 end
