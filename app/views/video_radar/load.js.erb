@@ -38,8 +38,19 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 		});
 	<% end %>
 	
-	var shelbyRadar = {
-		findVideos : function(possibleVideos, shelbyJ){		
+	window.shelbyRadar = {
+		signIn: function(shelbyJ, callback){
+			shelbyJ.ajax({
+				type : 'GET',
+				url : 'http://<%= Settings::VideoRadar.domain %>/v1/signed_in',
+				dataType : "jsonp json",
+				crossDomain: true,
+				xhrFields: {withCredentials: true},
+				jsonpCallback : callback
+			});
+		},
+		
+		find : function(possibleVideos, shelbyJ){		
 			var videos_to_add = [];
 			var found_elements = [];
 			for (var i = 0; i < possibleVideos.embeds.length; i++) { found_elements.push(possibleVideos.embeds[i]); }
@@ -116,7 +127,7 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 				}
 			}
 
-			var params = jQuery(obj).children('param');
+			var params = shelbyJ(obj).children('param');
 			for (var i = 0; i < params.length; i++) {
 				if (params[i].name == id) {
 					value += params[i].value;
@@ -127,7 +138,7 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 		},
 
 		shelbyRequest: function(vid, shelbyJ, callback){
-			if (typeof callback === 'undefined'){ callback = "ShelbyRadarCallback" };			
+			if (typeof callback === 'undefined'){ callback = "shelbyRadarCallback" };			
 
 			reqData = { 
 									'url' : document.URL,
@@ -136,12 +147,13 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 								}
 
 			shelbyJ.ajax({
-				type : 'GET',
+				type : 'POST',
 				url : 'http://<%= Settings::VideoRadar.domain %>/bookmarklet/add_url',
 				dataType : "jsonp",
 				async : true,
 				context : vid,
 				data : reqData,
+				xhrFields: {withCredentials: true},
 				jsonpCallback : callback
 			});
 		},
@@ -377,8 +389,11 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 		
 	};
 	
-	var foundVideo = shelbyRadar.findVideos(possibleVideos, shelbyJ);
+	var foundVideo = shelbyRadar.find(possibleVideos, shelbyJ);
 	
+	
+	
+	var watchLaterRollId = 
 	shelbyRadar.sendVidsToShelby(foundVideo, shelbyJ);
 	
 });
