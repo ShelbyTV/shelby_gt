@@ -9,7 +9,7 @@ test:
 
 production: &production
   <<: *defaults
-  domain: 'web.gt.shelby.tv'
+  domain: 'api.gt.shelby.tv'
   
 arnold:
   <<: *production

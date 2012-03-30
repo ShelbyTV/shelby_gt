@@ -4,16 +4,16 @@ var shelbyExtDomain = document.location.protocol + "//<%= Settings::VideoRadar.d
 <% if @use_case == "bookmarklet" %>
 	var infoEl = document.createElement('div');
 	infoEl.id = 'shelby-bookmarklet';
-	infoEl.style.backgroundImage = 'url("' + shelbyBkmkltDomain + '/images/bkmklt-bar.png")';
+	infoEl.style.backgroundImage = 'url("' + shelbyBkmkltDomain + '/assets/bkmklt-bar.png")';
 	infoEl.style.zIndex = 100000;
 	infoEl.style.position = 'fixed';
 	infoEl.style.left = '0px';
 	infoEl.style.top = '10px';
 	infoEl.style.width = '189px';
 	infoEl.style.height = '35px';
-	infoEl.innerHTML = '<div style="position:absolute;top:10px;left:4px;color:#f3f3f3;"><span style="float:left;font-size: 12px;font-family: verdana,sans-serif;">Grabbing Videos...</span><img class="shelbyLogo" style="position:absolute;left:140px;top:-13px;" src="'+ shelbyBkmkltDomain +'/images/bkmklt-logo.png"/></div>';
+	infoEl.innerHTML = '<div style="position:absolute;top:10px;left:4px;color:#f3f3f3;"><span style="float:left;font-size: 12px;font-family: verdana,sans-serif;">Grabbing Videos...</span><img class="shelbyLogo" style="position:absolute;left:140px;top:-13px;" src="'+ shelbyBkmkltDomain +'/assets/bkmklt-logo.png"/></div>';
 	infoEl.style.display = 'none';
-
+	
 	if(!document.getElementById('shelby-bookmarklet')) {
 		document.body.appendChild(infoEl);
 	}

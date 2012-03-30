@@ -144,5 +144,11 @@ module Settings
     namespace Rails.env
     load!
   end
+  
+  class VideoRadar < Settingslogic
+    source "#{Rails.root}/config/settings/video_radar.yml"
+    namespace Rails.env
+    load!
+  end
 
 end

@@ -15,6 +15,10 @@ ShelbyGt::Application.routes.draw do
   get '/auth/:provider/callback' => 'authentications#create'
   get '/auth/failure' => 'authentications#fail'
 
+  ########################
+  # Video Radar / Bookmarklet
+  get '/radar/boot' => 'video_radar#boot', :format => 'js'
+  get '/radar/load' => 'video_radar#load', :format => 'js'
 
   ########################
   # Namespace allows for versioning of API

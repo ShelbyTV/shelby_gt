@@ -16,3 +16,4 @@
 
 # Ignore yard docs
 .yardoc/*
+/*/*/.DS_Store
