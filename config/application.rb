@@ -77,10 +77,10 @@ module ShelbyGt
       end
       
       allow do
-        origins 'web.gt.shelby.tv', 'localhost:3000', 'localhost:4000', '33.33.33.10:3000'
+        origins 'web.gt.shelby.tv'
         resource %r{/v1/(roll|frame|user|dashboard|conversation)/\w+},
           :headers => ['Origin', 'Accept', 'Content-Type', 'X-Requested-With', 'X-Prototype-Version', 'X-CSRF-Token'], 
-          :methods => :any,
+          :methods => :get,
           :credentials => true
       end
     end
