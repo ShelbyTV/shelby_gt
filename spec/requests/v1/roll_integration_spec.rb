@@ -52,12 +52,12 @@ describe 'v1/roll' do
       context "roll sharing" do
         
         it "should return 200 if post is successful" do
-          post '/v1/roll/'+@r.id+'/share?destination=twitter&comment=testing'
+          post '/v1/roll/'+@r.id+'/share?destination[]=twitter&comment=testing'
           response.body.should be_json_eql(200).at_path("status")
         end
         
         it "should return 404 if roll not found" do
-          post '/v1/roll/'+@r.id+'xxx/share?destination=facebook&comment=testing'
+          post '/v1/roll/'+@r.id+'xxx/share?destination[]=facebook&comment=testing'
           
           response.body.should be_json_eql(404).at_path("status")
           response.body.should have_json_path("message")
@@ -65,7 +65,7 @@ describe 'v1/roll' do
         end
         
         it "should return 404 if user cant post to that destination" do
-          post '/v1/roll/'+@r.id+'/share?destination=facebook&comment=testing'
+          post '/v1/roll/'+@r.id+'/share?destination[]=facebook&comment=testing'
           
           response.body.should be_json_eql(404).at_path("status")
           response.body.should have_json_path("message")
@@ -73,7 +73,7 @@ describe 'v1/roll' do
         end
         
         it "should return 404 if destination not supported" do
-          post '/v1/roll/'+@r.id+'/share?destination=fake&comment=testing'
+          post '/v1/roll/'+@r.id+'/share?destination[]=fake&comment=testing'
           
           response.body.should be_json_eql(404).at_path("status")
           response.body.should have_json_path("message")
@@ -82,7 +82,7 @@ describe 'v1/roll' do
         
         it "should return 404 if roll is private" do
           @r = Factory.create(:roll, :creator=>@u1, :public => false)
-          post '/v1/roll/'+@r.id+'/share?destination=twitter&comment=testing'
+          post '/v1/roll/'+@r.id+'/share?destination[]=twitter&comment=testing'
           
           response.body.should be_json_eql(404).at_path("status")
           response.body.should have_json_path("message")
