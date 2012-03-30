@@ -9,6 +9,7 @@ class V1::UserController < ApplicationController
   def signed_in
     @status = 200
     @signed_in = user_signed_in? ? true : false
+    render 'signed_in', :layout => false if params[:callback]
   end
   
   ####################################
