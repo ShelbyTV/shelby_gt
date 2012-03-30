@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   
+  before_filter :allow_faux_authentication!
   after_filter :set_access_control_headers
   
   respond_to :json
