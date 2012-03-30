@@ -34,6 +34,7 @@ class V1::UserController < ApplicationController
         @include_rolls = (params[:include_rolls] == "true") ? true : false
         @csrf = session[:_csrf_token]
         @status = 200
+        render 'show', :layout => 'with_callbacks' if params[:callback]
       else
         render_error(404, "could not find that user")
       end

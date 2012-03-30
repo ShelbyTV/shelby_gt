@@ -59,6 +59,8 @@ class V1::FrameController < ApplicationController
   # @param [Optional, String] source The source could be bookmarklet, webapp, etc
   def create
     StatsManager::StatsD.client.time(Settings::StatsNames.frame['create']) do
+      render_error(404, "this route is for jsonp only.") if request.get? and !params[:callback]
+      
       roll = Roll.find(params[:roll_id])
       render_error(404, "could not find that roll") if !roll
       
@@ -89,8 +91,8 @@ class V1::FrameController < ApplicationController
 
           if @frame = r[:frame]
             @status = 200          
-            # allow for jsonp callbacks on this method for bookmarklet/extension
-            render 'show', :callback => params[:callback] if params[:callback]
+            # allow for jsonp callbacks on this method for video radar
+            render 'show', :layout => 'with_callbacks' if params[:callback]
           else
             render_error(404, "something went wrong when creating that frame")
           end

@@ -11,7 +11,7 @@ function loadScript(url, callback){
 										|| this.readyState == "complete") )
 				{
 						done = true;
-						callback(ShelbyBookmarklet);
+						callback();
 						// Handle memory leak in IE
 						script.onload = script.onreadystatechange = null;
 						body.removeChild( script );
@@ -20,7 +20,7 @@ function loadScript(url, callback){
 		body.appendChild(script);
 };
 
-loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', function(ShelbyBookmarklet){
+loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', function(){
 
 	window.shelbyVideo = {};
 	var	shelbyJ = jQuery.noConflict(),
@@ -31,19 +31,59 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 				iframes : shelbyJ('iframe')
 			};
 	
+	
 	<% if @use_case == "bookmarklet" %>	
 		// load jqui for animations
 		shelbyJ.getScript("https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js", function(){
 			shelbyJ('#shelby-bookmarklet').show('slide', {direction : 'left'}, 'fast');
 		});
 	<% end %>
+
+
+	// GLOBAL SHELBY CALLBACKS //
+	window.shelbySignedInCallback = function(response){
+		window.shelbySignedIn = response.signed_in ? true : false;
+		if (response.signed_in == false){ console.error("You need to sign into Shelby first."); }
+		else {
+			shelbyRadar.getUser(shelbyJ, 'shelbyUserCallback');
+		}
+	};
+	
+	window.shelbyUserCallback = function(response){
+		window.shelbyUser = response;
+		shelbyRadar.sendVidsToShelby(foundVideo, response, shelbyJ);
+	};
+	
+	window.shelbyRequestCallback = function(response){
+		console.log("Shelby GT response:", response);
+		
+		if (typeof response.id !== 'undefined' ){
+			document.title = document.title.slice(14);
+			var url = "http://web.gt.shelby.tv/roll/"+response.roll_id+"/frame/"+response.id
+			console.log("WE GOT ONE!", url);
+		}
+		else { console.error("something got tripped up somewhere. :/"); }
+	};
+	
+	// end global callbacks //
 	
 	window.shelbyRadar = {
-		signIn: function(shelbyJ, callback){
+		signedIn: function(shelbyJ){
 			shelbyJ.ajax({
 				type : 'GET',
 				url : 'http://<%= Settings::VideoRadar.domain %>/v1/signed_in',
-				dataType : "jsonp json",
+				dataType : "jsonp",
+				crossDomain: true,
+				xhrFields: {withCredentials: true},
+				jsonpCallback : 'shelbySignedInCallback'
+			});
+		},
+		
+		getUser: function(shelbyJ, callback){
+			shelbyJ.ajax({
+				type : 'GET',
+				url : 'http://<%= Settings::VideoRadar.domain %>/v1/user',
+				dataType : "jsonp",
 				crossDomain: true,
 				xhrFields: {withCredentials: true},
 				jsonpCallback : callback
@@ -137,28 +177,26 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 			return value;
 		},
 
-		shelbyRequest: function(vid, shelbyJ, callback){
-			if (typeof callback === 'undefined'){ callback = "shelbyRadarCallback" };			
+		shelbyRequest: function(vid, user, shelbyJ, callback){
+			if (typeof callback === 'undefined'){ callback = "shelbyRequestCallback" };			
 
 			reqData = { 
 									'url' : document.URL,
-									'comment' : "I found this video!", 
-									'video_origin': '<%= @use_case %>'
+									'comment' : "I found this video!"
 								}
 
 			shelbyJ.ajax({
 				type : 'POST',
-				url : 'http://<%= Settings::VideoRadar.domain %>/bookmarklet/add_url',
+				url : 'http://<%= Settings::VideoRadar.domain %>/v1/roll/'+shelbyUser.watch_later_roll+'/new_frame',
 				dataType : "jsonp",
 				async : true,
-				context : vid,
 				data : reqData,
 				xhrFields: {withCredentials: true},
 				jsonpCallback : callback
 			});
 		},
 
-		sendVidsToShelby: function(vids, shelbyJ){
+		sendVidsToShelby: function(vids, user, shelbyJ){
 			var self = this;
 
 			if(vids.length === 0) {
@@ -200,7 +238,7 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 						});
 
 						/* send request to shelby backend */
-						this.shelbyRequest(vids[i], shelbyJ);
+						this.shelbyRequest(vids[i], user, shelbyJ);
 					}
 					else { this.noVidsFound(shelbyJ); }
 				}
@@ -391,9 +429,6 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 	
 	var foundVideo = shelbyRadar.find(possibleVideos, shelbyJ);
 	
-	
-	
-	var watchLaterRollId = 
-	shelbyRadar.sendVidsToShelby(foundVideo, shelbyJ);
+	shelbyRadar.signedIn(shelbyJ);
 	
 });
