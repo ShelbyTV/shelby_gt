@@ -112,6 +112,8 @@ describe GT::UrlHelper do
         GT::UrlHelper.parse_url_for_provider_info('<iframe src=\"http://www.dailymotion.com/embed/video/xp47ne\" width=\"480\" height=\"269\" frameborder=\"0\"></iframe>').should == 
           {:provider_name => "dailymotion", :provider_id => "xp47ne"}
         
+        GT::UrlHelper.parse_url_for_provider_info("<iframe src=\"http://www.dailymotion.com/embed/video/xwdcq\" width=\"480\" height=\"288\" frameborder=\"0\"></iframe>").should == 
+          {:provider_name => "dailymotion", :provider_id => "xwdcq"}
       end
       
       it "should parse from embeds" do
