@@ -1,6 +1,8 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   
+  after_filter :set_access_control_headers
+  
   respond_to :json
   
   def render_error(code, message)
