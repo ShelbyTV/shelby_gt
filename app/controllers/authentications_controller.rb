@@ -31,7 +31,7 @@ class AuthenticationsController < ApplicationController
       end
       
       sign_in(:user, user)
-      cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
+      cookies[:signed_in] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
       
       @opener_location = request.env['omniauth.origin'] || root_path
       
@@ -52,7 +52,7 @@ class AuthenticationsController < ApplicationController
 
       if user.valid?
         sign_in(:user, user)
-        cookies[:locked_and_loaded] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
+        cookies[:signed_in] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
         
         @opener_location = request.env['omniauth.origin'] || root_path
       else
@@ -76,7 +76,7 @@ class AuthenticationsController < ApplicationController
   
   def sign_out_user
     sign_out(:user)
-    cookies.delete(:locked_and_loaded, :domain => '.shelby.tv')
+    cookies.delete(:signed_in, :domain => '.shelby.tv')
     redirect_to request.headers['HTTP_REFERER']
   end
   
