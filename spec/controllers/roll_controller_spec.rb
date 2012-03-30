@@ -78,24 +78,29 @@ describe V1::RollController do
     end
     
     it "should return 200 if the user posts succesfully to destination" do
-      post :share, :destination => "twitter", :comment => "testing", :format => :json
+      post :share, :destination => ["twitter"], :comment => "testing", :format => :json
       assigns(:status).should eq(200)      
     end
     
+    it "should return 404 if destination is not an array" do
+      post :share, :destination => "twitter", :comment => "testing", :format => :json
+      assigns(:status).should eq(404)
+    end
+    
     it "should return 404 if the user cant post to the destination" do
-      post :share, :destination => "facebook", :comment => "testing", :format => :json
+      post :share, :destination => ["facebook"], :comment => "testing", :format => :json
       assigns(:status).should eq(404)
       assigns(:message).should eq("that user cant post to that destination")      
     end
     
     it "should not post if the destination is not supported" do
-      post :share, :destination => "awesome_service", :comment => "testing", :format => :json
+      post :share, :destination => ["awesome_service"], :comment => "testing", :format => :json
       assigns(:status).should eq(404)
       assigns(:message).should eq("we dont support that destination yet :(")
     end
     
     it "should return 404 if a comment or destination is not present" do
-      post :share, :destination => "twitter", :format => :json
+      post :share, :destination => ["twitter"], :format => :json
       assigns(:status).should eq(404)
       
       post :share, :comment => "testing", :format => :json
@@ -107,14 +112,14 @@ describe V1::RollController do
     it "should return 404 if roll is private" do
       roll = stub_model(Roll, :public => false)
       Roll.stub!(:find).and_return(roll)
-      post :share, :destination => "twitter", :comment => "testing", :format => :json
+      post :share, :destination => ["twitter"], :comment => "testing", :format => :json
       assigns(:status).should eq(404)
       assigns(:message).should eq("that roll is private, can not share")      
     end
     
     it "should return 404 if roll not found" do
       Roll.stub!(:find).and_return(nil)
-      post :share, :destination => "twitter", :comment => "testing", :format => :json
+      post :share, :destination => ["twitter"], :comment => "testing", :format => :json
       assigns(:status).should eq(404)
       assigns(:message).should eq("could not find that roll")
     end

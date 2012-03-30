@@ -75,6 +75,7 @@ module ShelbyGt
           :headers => ['Origin', 'Accept', 'Content-Type', 'X-CSRF-Token'],
           :methods => [:put, :post, :delete]
       end
+      
     end
     
   end

@@ -43,13 +43,17 @@ class V1::RollController < ApplicationController
         return  render_error(404, "a destination and a comment is required to post") 
       end
       
+      unless params[:destination].is_a? Array
+        return  render_error(404, "destination must be an array of strings") 
+      end
+      
       if roll = Roll.find(params[:roll_id])
         return render_error(404, "that roll is private, can not share") unless roll.public
         
         #TODO: link_to_roll needs to be created
         comment = params[:comment] #+ link_to_roll
         
-        params[:destination].split(',').each do |d|
+        params[:destination].each do |d|
           case d
           when 'twitter'
             resp = GT::SocialPoster.post_to_twitter(current_user, comment, roll)

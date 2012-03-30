@@ -25,7 +25,7 @@ describe AuthenticationsController do
       request.stub!(:env).and_return(@env)
       @fu = Factory.create(:user, :faux => User::FAUX_STATUS[:true], :authentications => [{:provider => "twitter", :uid => 1234}])
       post :create
-      cookies[:locked_and_loaded].should eq("true")
+      cookies[:signed_in].should eq("true")
 =end
     end
     
