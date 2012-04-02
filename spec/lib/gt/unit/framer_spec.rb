@@ -8,7 +8,7 @@ describe GT::Framer do
   
   context "creating Frames" do
     before(:each) do
-      @video = Factory.create(:video)
+      @video = Factory.create(:video, :thumbnail_url => "thum_url")
       @frame_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
       @message = Message.new
       @message.public = true
@@ -36,6 +36,34 @@ describe GT::Framer do
       res[:frame].conversation.messages[0].should == @message
       res[:frame].conversation.messages[0].persisted?.should == true
       res[:frame].roll.should == @roll
+    end
+    
+    it "should set the frame's roll's thumbnail_url if it's nil" do
+      @roll.thumbnail_url.blank?.should == true
+      
+      res = GT::Framer.create_frame(
+        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+        :creator => @frame_creator,
+        :video => @video,
+        :message => @message,
+        :roll => @roll
+        )
+    
+      res[:frame].roll.thumbnail_url.should == @video.thumbnail_url
+    end
+    
+    it "should not touch the frame's roll's thumbnail_url if it's already set" do
+      @roll.update_attribute(:thumbnail_url, "something://el.se")
+      
+      res = GT::Framer.create_frame(
+        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+        :creator => @frame_creator,
+        :video => @video,
+        :message => @message,
+        :roll => @roll
+        )
+    
+      res[:frame].roll.thumbnail_url.should == "something://el.se"
     end
 
     it "should create no DashboardEntries if the roll has no followers" do

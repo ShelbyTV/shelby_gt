@@ -62,6 +62,9 @@ module GT
       
       res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids)
       
+      # Roll - set its thumbnail if missing
+      ensure_roll_metadata!(roll, f) if roll
+      
       return res
     end
     
@@ -165,6 +168,11 @@ module GT
           entries << dbe
         end
         return entries
+      end
+      
+      def self.ensure_roll_metadata!(roll, frame)
+        #rolls need thumbnails (user.public_roll thumbnail is already set as their avatar)
+        roll.update_attribute(:thumbnail_url, frame.video.thumbnail_url) if roll.thumbnail_url.blank?
       end
     
   end
