@@ -34,6 +34,7 @@ defaults: &defaults
     new:
       faux: "user.new.faux"
       real: "user.new.real"
+      converted: "user.new.converted"
       error: "user.new.error"
     signin:
       twitter:
@@ -46,11 +47,13 @@ defaults: &defaults
       twitter: "user.add_service.twitter"
       facebook: "user.add_service.facebook"
       tumblr: "user.add_service.tumblr"
+      error: "user.add_service.error"
     remove_service:
       twitter: "user.remove_service.twitter"
       facebook: "user.remove_service.facebook"
       tumblr: "user.remove_service.tumblr"
-  
+      error: "user.add_service.error"
+    
   frame:
     watch: "frame.watch"
     share:
