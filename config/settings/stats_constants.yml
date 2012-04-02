@@ -37,12 +37,12 @@ defaults: &defaults
       converted: "user.new.converted"
       error: "user.new.error"
     signin:
-      twitter:
-        success: "user.signin.twitter.success"
-        failure: "user.signin.twitter.failure"
-      facebook:
-        success: "user.signin.facebook.success"
-        failure: "user.signin.facebook.failure"
+      success:
+        twitter: "user.signin.success.twitter"
+        facebook: "user.signin.success.facebook"
+      failure: "user.signin.failure"
+    signout:
+      signout: "signout"
     add_service:
       twitter: "user.add_service.twitter"
       facebook: "user.add_service.facebook"

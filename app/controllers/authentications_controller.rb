@@ -32,6 +32,7 @@ class AuthenticationsController < ApplicationController
       
       sign_in(:user, user)
       cookies[:signed_in] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
+      StatsManager::StatsD.increment(Settings::StatsNames.user['signin']['success'][omniauth['provider']])
       
       @opener_location = request.env['omniauth.origin'] || root_path
       
@@ -54,6 +55,8 @@ class AuthenticationsController < ApplicationController
         sign_in(:user, user)
         cookies[:signed_in] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
         
+        StatsManager::StatsD.increment(Settings::StatsNames.user['signin']['success'][omniauth['provider']])
+        
         @opener_location = request.env['omniauth.origin'] || root_path
       else
         Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
@@ -69,7 +72,9 @@ class AuthenticationsController < ApplicationController
   def fail
     #if their session is fucked, it will cause bad auth params.
     reset_session
-        
+    
+    StatsManager::StatsD.increment(Settings::StatsNames.user['signin']['failure'])
+    
     @opener_location = new_user_session_path
     render :action => 'redirector', :layout => 'simple'
   end
@@ -77,6 +82,7 @@ class AuthenticationsController < ApplicationController
   def sign_out_user
     sign_out(:user)
     cookies.delete(:signed_in, :domain => '.shelby.tv')
+    StatsManager::StatsD.increment(Settings::StatsNames.user['signout'])
     redirect_to request.headers['HTTP_REFERER']
   end
   
