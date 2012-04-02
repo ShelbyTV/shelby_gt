@@ -77,8 +77,13 @@ class V1::FrameController < ApplicationController
         # set the action, defaults to new_bookmark_frame
         case params[:source]
         when "bookmark", nil, ""
+          StatsManager::StatsD.increment(Settings::StatsNames.frame["create"]["bookmarklet"], current_user.id, 'frame_create_bookmarklet')
+          frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
+        when "extension"
+          StatsManager::StatsD.increment(Settings::StatsNames.frame["create"]["extionsion"], current_user.id, 'frame_create_extension')
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
         when "webapp"
+          StatsManager::StatsD.increment(Settings::StatsNames.frame["create"]["webapp"], current_user.id, 'frame_create_inapp')
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_in_app_frame]
         else
           return render_error(404, "that action isn't cool.")
@@ -107,6 +112,7 @@ class V1::FrameController < ApplicationController
         begin
           @frame = frame_to_re_roll.re_roll(current_user, roll)
           @frame = @frame[:frame]
+          StatsManager::StatsD.increment(Settings::StatsNames.frame['re_roll'], current_user.id, 'frame_re_roll')
           @status = 200
         rescue => e
           render_error(404, "could not re_roll: #{e}")
@@ -133,6 +139,7 @@ class V1::FrameController < ApplicationController
         if @frame.upvote!(current_user)
           @status = 200
           GT::UserActionManager.upvote!(current_user.id, @frame.id)
+          StatsManager::StatsD.increment(Settings::StatsNames.frame["upvote"], current_user.id, 'frame_upvote')
         end
         @frame.reload
       else
@@ -154,6 +161,7 @@ class V1::FrameController < ApplicationController
         if @new_frame = @frame.add_to_watch_later!(current_user)
           @status = 200
           GT::UserActionManager.watch_later!(current_user.id, @frame.id)
+          StatsManager::StatsD.increment(Settings::StatsNames.frame["watch_later"], current_user.id, 'frame_watch_later')
         end
       else
         render_error(404, "could not find frame")
@@ -184,6 +192,7 @@ class V1::FrameController < ApplicationController
 
         if params[:start_time] and params[:end_time]
           GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
+          StatsManager::StatsD.increment(Settings::StatsNames.frame["watch"], current_user ? current_user.id : nil , 'frame_watch')
         end
       else
         render_error(404, "could not find frame")

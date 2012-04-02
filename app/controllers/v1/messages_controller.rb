@@ -22,8 +22,11 @@ class V1::MessagesController < ApplicationController
           msg_opts = {:creator => current_user, :public => true, :text => params[:text]}
           @new_message = GT::MessageManager.build_message(msg_opts)
           @conversation.messages << @new_message
-          begin        
-            @status = 200 if @conversation.save!
+          begin
+            if @conversation.save!
+              @status = 200 
+              StatsManager::StatsD.increment(Settings::StatsNames.message['create'])
+            end
           rescue => e
             render_error(404, e)
           end
@@ -52,6 +55,7 @@ class V1::MessagesController < ApplicationController
       else
         @conversation.pull(:messages => {:_id => message.id})
         @conversation.reload
+        StatsManager::StatsD.increment(Settings::StatsNames.message['delete'])
         @status = 200
       end
     end

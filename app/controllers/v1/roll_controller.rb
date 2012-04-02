@@ -57,8 +57,10 @@ class V1::RollController < ApplicationController
           case d
           when 'twitter'
             resp = GT::SocialPoster.post_to_twitter(current_user, comment, roll)
+            StatsManager::StatsD.increment(Settings::StatsNames.roll['share'][d], current_user.id, 'roll_share')
           when 'facebook'
             resp = GT::SocialPoster.post_to_facebook(current_user, comment, roll)
+            StatsManager::StatsD.increment(Settings::StatsNames.roll['share'][d], current_user.id, 'roll_share')
           else
             return render_error(404, "we dont support that destination yet :(")
           end
@@ -97,8 +99,12 @@ class V1::RollController < ApplicationController
       else
         @roll = Roll.new(:title => params[:title], :thumbnail_url => params[:thumbnail_url])
         @roll.creator = current_user
-        begin        
-          @status = 200 if @roll.save!
+        begin
+          if @roll.save!
+            roll_type = @roll.public ? 'public' : 'private'
+            StatsManager::StatsD.increment(Settings::StatsNames.roll[:create][roll_type], current_user.id, 'roll_create')
+            @status = 200
+          end
         rescue => e
           render_error(404, "could not save roll: #{e}")
         end

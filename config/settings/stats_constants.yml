@@ -53,7 +53,7 @@ defaults: &defaults
       facebook: "user.remove_service.facebook"
       tumblr: "user.remove_service.tumblr"
       error: "user.add_service.error"
-    
+  
   frame:
     watch: "frame.watch"
     share:
@@ -63,6 +63,11 @@ defaults: &defaults
       email: "frame.share.email"
     upvote: "frame.upvote"
     watch_later: "frame.watch_later"
+    re_roll: "frame.re_roll"
+    create:
+      bookmarklet: "frame.create.bookmarklet"
+      extension: "frame.create.extension"
+      webapp: "frame.create.webapp"
   
   roll:
     create:

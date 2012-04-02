@@ -32,7 +32,7 @@ class AuthenticationsController < ApplicationController
       
       sign_in(:user, user)
       cookies[:signed_in] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
-      StatsManager::StatsD.increment(Settings::StatsNames.user['signin']['success'][omniauth['provider']])
+      StatsManager::StatsD.increment(Settings::StatsNames.user['signin']['success'][omniauth['provider'].to_s])
       
       @opener_location = request.env['omniauth.origin'] || root_path
       
@@ -55,7 +55,7 @@ class AuthenticationsController < ApplicationController
         sign_in(:user, user)
         cookies[:signed_in] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
         
-        StatsManager::StatsD.increment(Settings::StatsNames.user['signin']['success'][omniauth['provider']])
+        StatsManager::StatsD.increment(Settings::StatsNames.user['signin']['success'][omniauth['provider'].to_s])
         
         @opener_location = request.env['omniauth.origin'] || root_path
       else
