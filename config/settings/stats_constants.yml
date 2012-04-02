@@ -1,33 +1,88 @@
 defaults: &defaults
-  dashboard:
-    index: 'api.gt.dashboard.index'
-    update: 'api.gt.dashboard.update'
+  api:
+    dashboard:
+      index: 'dashboard.index'
+      update: 'dashboard.update'
+    user:
+      show: 'user.show'
+      update: 'user.update'
+      rolls: 'user.rolls'
+    roll:
+      show: 'roll.show'
+      share: 'roll.share'
+      create: 'roll.create'
+      update: 'roll.update'
+      delete: 'roll.destroy'
+    frame:
+      index: 'frame.index'
+      show: 'frame.show'
+      create: 'frame.create'
+      upvote: 'frame.upvote'
+      add_to_watch_later: 'frame.add_to_wl'
+      watched: 'frame.watched'
+      destroy: 'frame.destroy'
+    conversation:
+      show: 'conversation.show'
+    messages:
+      create: 'messages.create'
+      destroy: 'messages.destroy'
+    video:
+      show: 'video.show'
+  
+  
   user:
-    show: 'api.gt.user.show'
-    update: 'api.gt.user.update'
-    rolls: 'api.gt.user.rolls'
-  roll:
-    show: 'api.gt.roll.show'
-    share: 'api.gt.roll.share'
-    create: 'api.gt.roll.create'
-    update: 'api.gt.roll.update'
-    delete: 'api.gt.roll.destroy'
+    new:
+      faux: "user.new.faux"
+      real: "user.new.real"
+      error: "user.new.error"
+    signin:
+      twitter:
+        success: "user.signin.twitter.success"
+        failure: "user.signin.twitter.failure"
+      facebook:
+        success: "user.signin.facebook.success"
+        failure: "user.signin.facebook.failure"
+    add_service:
+      twitter: "user.add_service.twitter"
+      facebook: "user.add_service.facebook"
+      tumblr: "user.add_service.tumblr"
+    remove_service:
+      twitter: "user.remove_service.twitter"
+      facebook: "user.remove_service.facebook"
+      tumblr: "user.remove_service.tumblr"
+  
   frame:
-    index: 'api.gt.frame.index'
-    show: 'api.gt.frame.show'
-    create: 'api.gt.frame.create'
-    upvote: 'api.gt.frame.upvote'
-    add_to_watch_later: 'api.gt.frame.add_to_wl'
-    watched: 'api.gt.frame.watched'
-    destroy: 'api.gt.frame.destroy'
-  conversation:
-    show: 'api.gt.conversation.show'
-  messages:
-    create: 'api.gt.messages.create'
-    destroy: 'api.gt.messages.destroy'
-  video:
-    show: 'api.gt.video.show'
-    
+    watch: "frame.watch"
+    share:
+      twitter: "frame.share.twitter"
+      facebook: "frame.share.facebook"
+      tumblr: "frame.share.tumblr"
+      email: "frame.share.email"
+    upvote: "frame.upvote"
+    watch_later: "frame.watch_later"
+  
+  roll:
+    create:
+      public: "roll.create.public"
+      private: "roll.create.private"
+    share:
+      twitter: "roll.share.twitter"
+      facebook: "roll.share.facebook"
+      tumblr: "roll.share.tumblr"
+      email: "roll.share.email"
+    join: "roll.join"
+    leave: "roll.leave"
+  
+  message:
+    create: "message.create"
+    delete: "message.delete"
+  
+  facebook:
+    opengraph:
+      watch: "facebook.opengraph.watch"
+      roll: "facebook.opengraph.roll"
+      upvote: "facebook.opengraph.upvote"
+  
 development:
   <<: *defaults
 

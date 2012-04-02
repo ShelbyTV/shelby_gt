@@ -186,7 +186,7 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 								}
 
 			shelbyJ.ajax({
-				type : 'POST',
+				type : 'GET',
 				url : 'http://<%= Settings::VideoRadar.domain %>/v1/roll/'+shelbyUser.public_roll+'/new_frame',
 				dataType : "jsonp",
 				async : true,

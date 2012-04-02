@@ -13,7 +13,7 @@ class V1::FrameController < ApplicationController
   # [GET] /v1/roll/:id/frames
   # @param [Optional, Boolean] include_children if true will return frame children
   def index
-    StatsManager::StatsD.client.time(Settings::StatsNames.frame['index']) do
+    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['index']) do
       @roll = Roll.find(params[:roll_id])
       if @roll
         @include_frame_children = (params[:include_children] == "true") ? true : false
@@ -34,7 +34,7 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame
   # @param [Optional, Boolean] include_children Include the referenced roll, video, conv, and rerolls
   def show
-    StatsManager::StatsD.client.time(Settings::StatsNames.frame['show']) do
+    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['show']) do
       if @frame = Frame.find(params[:id])
         @status =  200
         @include_frame_children = (params[:include_children] == "true") ? true : false
@@ -58,7 +58,7 @@ class V1::FrameController < ApplicationController
   # @param [Optional, Escaped String] text Message text to via added to the conversation
   # @param [Optional, String] source The source could be bookmarklet, webapp, etc
   def create
-    StatsManager::StatsD.client.time(Settings::StatsNames.frame['create']) do
+    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['create']) do
       render_error(404, "this route is for jsonp only.") if request.get? and !params[:callback]
       
       roll = Roll.find(params[:roll_id])
@@ -128,7 +128,7 @@ class V1::FrameController < ApplicationController
   # 
   # @param [Required, String] id The id of the frame
   def upvote
-    StatsManager::StatsD.client.time(Settings::StatsNames.frame['upvote']) do
+    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['upvote']) do
       if @frame = Frame.find(params[:frame_id])
         if @frame.upvote!(current_user)
           @status = 200
@@ -149,7 +149,7 @@ class V1::FrameController < ApplicationController
   # 
   # @param [Required, String] id The id of the frame
   def add_to_watch_later
-    StatsManager::StatsD.client.time(Settings::StatsNames.frame['add_to_watch_later']) do
+    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['add_to_watch_later']) do
       if @frame = Frame.find(params[:frame_id])
         if @new_frame = @frame.add_to_watch_later!(current_user)
           @status = 200
@@ -172,7 +172,7 @@ class V1::FrameController < ApplicationController
   # @param [Optional, String] start_time The start_time of the action on the frame
   # @param [Optional, String] end_time The end_time of the action on the frame
   def watched
-    StatsManager::StatsD.client.time(Settings::StatsNames.frame['watched']) do
+    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['watched']) do
       if @frame = Frame.find(params[:frame_id])
         @status = 200
         
@@ -200,7 +200,7 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame to destroy.
   # @return [Integer] Whether request was successful or not.
   def destroy
-    StatsManager::StatsD.client.time(Settings::StatsNames.frame['destroy']) do
+    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['destroy']) do
       if frame = Frame.find(params[:id]) and frame.destroy 
         @status = 200
       else

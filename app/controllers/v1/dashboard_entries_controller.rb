@@ -12,7 +12,7 @@ class V1::DashboardEntriesController < ApplicationController
   # @param [Optional, Integer] skip The number of entries to skip (default 0)
   # @param [Optional, Boolean] include_children if set to true, will not include all goodies, eg roll, frame etc
   def index
-    StatsManager::StatsD.client.time(Settings::StatsNames.dashboard['index']) do
+    StatsManager::StatsD.client.time(Settings::StatsNames.api['dashboard']['index']) do
       # default params
       @limit = params[:limit] ? params[:limit] : 20
       # put an upper limit on the number of entries returned
@@ -52,7 +52,7 @@ class V1::DashboardEntriesController < ApplicationController
   # 
   # @param [Required, String] id The id of the dashboard entry
   def update
-    StatsManager::StatsD.client.time(Settings::StatsNames.dashboard['update']) do
+    StatsManager::StatsD.client.time(Settings::StatsNames.api['dashboard']['update']) do
       id = params.delete(:id)
       if @dashboard_entry = DashboardEntry.find(id)
         begin 

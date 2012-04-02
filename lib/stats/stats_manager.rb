@@ -1,6 +1,11 @@
 module StatsManager
   class StatsD
-  
+    
+    SERVER_NAME = "gt"
+    VERSION = "v1"
+    DEVICE = "web"
+    STAT_PREFIX = "api.#{VERSION}.#{SERVER_NAME}.#{DEVICE}."
+    
     @@client = nil
     def self.client
       #server is localhost when not in production
@@ -8,21 +13,25 @@ module StatsManager
     end
     
     def self.increment(stat, uid=false, action=false)
+      stat = STAT_PREFIX + stat
       stat = "#{stat}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.increment(stat)
     end
   
     def self.decrement(stat, uid=false, action=false)
+      stat = STAT_PREFIX + stat
       stat = "#{stat}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.decrement(stat)
     end
   
     def self.timing(bucket, time, uid=false, action=false)
+      stat = STAT_PREFIX + stat
       bucket = "#{bucket}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.timing(bucket, time)
     end
   
     def self.count(stat, amount, uid=false, action=false)
+      stat = STAT_PREFIX + stat
       stat = "#{stat}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.count(stat, amount)
     end
