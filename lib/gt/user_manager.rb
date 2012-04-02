@@ -53,12 +53,14 @@ module GT
     # nickname => REQUIRED the unclean nickname for this user
     # provider => REQUIRED the name of the fucking social network
     # uid => REQUIRED the id given to the user by the social network
+    # options => OPTIONAL accepts:
+    #   :user_thumbnail_url => will set this on a newly created user, which will propagate to their special rolls as thumbnails
     #
     # --returns--
     # a User - which may be an actual User or a faux User - with a public Roll
     # Or the Errors, if save failed.
     #
-    def self.get_or_create_faux_user(nickname, provider, uid)
+    def self.get_or_create_faux_user(nickname, provider, uid, options = {})
       raise ArgumentError, "must supply valid nickname" unless nickname.is_a?(String) and !nickname.blank?
       raise ArgumentError, "must supply valid provider" unless provider.is_a?(String) and !provider.blank?
       raise ArgumentError, "must supply valid uid" unless uid.is_a?(String) and !uid.blank?
@@ -72,6 +74,7 @@ module GT
       u = User.new
       u.server_created_on = "GT::UserManager#get_or_create_faux_user/#{nickname}/#{provider}/#{uid}"
       u.nickname = nickname
+      u.user_image = u.user_image_original = options[:user_thumbnail_url]
       u.faux = User::FAUX_STATUS[:true]
       u.preferences = Preferences.new()
       # This Authentication is how the user will be looked up...
@@ -208,6 +211,7 @@ module GT
         r.public = true
         r.collaborative = false
         r.title = u.nickname
+        r.thumbnail_url = u.user_image || u.user_image_original
         u.public_roll = r
       end
       
