@@ -80,9 +80,11 @@ describe GT::UserManager do
       }.should_not change { User.count }
     end
     
-    it "should add a watch_later_roll, upvoted_roll, viewed_roll to existing user if they're missing it" do
+    it "should add a watch_later_roll, upvoted_roll, viewed_roll, public_roll to existing user if they're missing it" do
       nick, provider, uid = "whatever--b-", "fb--", "123uid--b-"
+      thumb_url = "some://thumb.url"
       u = User.new(:nickname => nick, :faux => false)
+      u.user_image = thumb_url
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid
@@ -103,16 +105,22 @@ describe GT::UserManager do
         
         usr.viewed_roll.class.should == Roll
         usr.viewed_roll.persisted?.should == true
+        
+        usr.public_roll.class.should == Roll
+        usr.public_roll.persisted?.should == true
+        usr.public_roll.thumbnail_url.should == thumb_url
       }.should_not change { User.count }
     end
     
     it "should create a (persisted) faux User" do
       nick, provider, uid = "whatever3", "fb", "123uid3"
+      thumb_url = "some:://thumb.url"
       lambda {
-        u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
+        u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, {:user_thumbnail_url => thumb_url})
         u.class.should == User
         u.persisted?.should == true
         u.faux.should == User::FAUX_STATUS[:true]
+        u.user_image.should == thumb_url
       }.should change { User.count }.by(1)
     end
     
@@ -133,6 +141,15 @@ describe GT::UserManager do
         u.viewed_roll.class.should == Roll
         u.viewed_roll.persisted?.should == true
       }.should change { User.count }.by(1)
+    end
+    
+    it "should set the faux user's public_roll's thumbnail and network to those of the creator" do
+      thumb_url = "some://thumb.url"
+      nick, provider, uid = "whatever3--c", "fb", "123uid3--c"
+      u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, {:user_thumbnail_url => thumb_url})
+      
+      u.public_roll.thumbnail_url.should == thumb_url
+      u.public_roll.origin_network.should == "fb"
     end
     
     it "should have the faux user follow its own public roll (should not follow watch_later, viewed, and upvoted rolls)" do
@@ -292,7 +309,9 @@ describe GT::UserManager do
       
       it "should build a valid user itself from omniauth hash" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        u.valid?.should == true
         u.nickname.should eq(@nickname)
+        u.user_image.should == @omniauth_hash['info']['image']
       end
       
       it "should change nickname if it's taken" do
@@ -465,6 +484,12 @@ describe GT::UserManager do
         
         u.viewed_roll.class.should == Roll
         u.viewed_roll.persisted?.should == true
+      end
+      
+      it "should set the public_roll's thumbnail to the creator's avatar" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        
+        u.public_roll.thumbnail_url.should == @omniauth_hash['info']['image']
       end
       
       it "should have the user follow their public rolls (and NOT the watch_later, upvoted, or viewed Rolls)" do

@@ -184,7 +184,7 @@ module GT
       
       # DailyMotion
       def self.parse_url_for_dailymotion_provider_info(url)
-        match_data = url.match( /dailymotion.+(video\/)([\w-]{6,9})[_?\\"']+/i )
+        match_data = url.match( /dailymotion.+(video\/)([\w-]{5,9})[_?\\"']+/i )
         if match_data and match_data.size == 3
           return {:provider_name => "dailymotion", :provider_id => match_data[2]}
         end
