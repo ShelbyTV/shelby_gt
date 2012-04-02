@@ -32,6 +32,8 @@ ShelbyGt::Application.routes.draw do
       get 'new_frame' => 'frame#create' #NOTE: this is for jsonp, cross domain requests made by video radar
       post 'frames' => 'frame#create'
       post 'share' => 'roll#share'
+      post 'join' => 'roll#join'
+      post 'leave' => 'roll#leave'
     end
     resources :frame, :only => [:show, :destroy] do
       post 'upvote' => 'frame#upvote'

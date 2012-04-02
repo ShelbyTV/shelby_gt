@@ -138,10 +138,28 @@ describe V1::RollController do
       )
     end 
     
-    it "routes for POST" do
+    it "routes for share roll POST" do
       { :post => "/v1/roll/1/share" }.should route_to(
         :controller => "v1/roll",
         :action => "share",
+        :format => "json",
+        :roll_id => "1"
+      )
+    end
+
+    it "routes for join roll POST" do
+      { :post => "/v1/roll/1/join" }.should route_to(
+        :controller => "v1/roll",
+        :action => "join",
+        :format => "json",
+        :roll_id => "1"
+      )
+    end
+
+    it "routes for create leave POST" do
+      { :post => "/v1/roll/1/leave" }.should route_to(
+        :controller => "v1/roll",
+        :action => "leave",
         :format => "json",
         :roll_id => "1"
       )

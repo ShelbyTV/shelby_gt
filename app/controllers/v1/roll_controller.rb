@@ -113,6 +113,49 @@ class V1::RollController < ApplicationController
   end
   
   ##
+  # Joins a roll. Returns success/failure + the roll w updated followers
+  #   REQUIRES AUTHENTICATION
+  # 
+  # [POST] /v1/roll/:roll_id/join
+  def join
+    StatsManager::StatsD.client.time(Settings::StatsNames.api['roll']['join']) do
+      if @roll = Roll.find(params[:roll_id])
+        @roll.add_follower(current_user)
+        if @roll.save
+          @status = 200
+          StatsManager::StatsD.increment(Settings::StatsNames.roll['join'], current_user.id, 'roll_join')
+        else
+          render_error(404, "something went wrong joining that roll.")
+        end
+      else
+        render_error(404, "can't find that roll dude.")
+      end
+    end
+  end
+  
+  ##
+  # Leaves a roll. Returns success/failure + the roll w updated followers
+  #   REQUIRES AUTHENTICATION
+  # 
+  # [POST] /v1/roll/:roll_id/leave
+  def leave
+    StatsManager::StatsD.client.time(Settings::StatsNames.api['roll']['leave']) do
+      if @roll = Roll.find(params[:roll_id])
+        @roll.remove_follower(current_user)
+        if @roll.save
+          @status = 200
+          StatsManager::StatsD.increment(Settings::StatsNames.roll['leave'], current_user.id, 'roll_leave')
+        else
+          render_error(404, "something went wrong leaving that roll.")
+        end
+      else
+        render_error(404, "can't find that roll dude.")
+      end
+    end
+  end
+  
+  
+  ##
   # Updates and returns one roll, with the given parameters.
   #   REQUIRES AUTHENTICATION
   # 

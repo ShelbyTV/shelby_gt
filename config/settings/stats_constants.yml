@@ -11,6 +11,8 @@ defaults: &defaults
       show: 'roll.show'
       share: 'roll.share'
       create: 'roll.create'
+      join: 'roll.join'
+      leave: 'roll.leave'
       update: 'roll.update'
       delete: 'roll.destroy'
     frame:

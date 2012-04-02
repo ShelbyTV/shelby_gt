@@ -96,6 +96,32 @@ describe 'v1/roll' do
           parse_json(response.body)["message"].should eq("a destination and a comment is required to post")
         end        
       end
+
+      context "join roll" do
+        it "should return the roll if it was joined" do
+          post '/v1/roll/'+@r.id+'/join'
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/title")
+        end
+        
+        it "should return 404 if roll cant be found" do
+          post '/v1/roll/'+@r.id+'123/join'
+          response.body.should be_json_eql(404).at_path("status")                  
+        end
+      end
+      
+      context "leave roll" do
+        it "should return the roll if it was left" do
+          post '/v1/roll/'+@r.id+'/leave'
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/title")
+        end
+        
+        it "should return 404 if roll cant be found" do
+          post '/v1/roll/'+@r.id+'123/leave'
+          response.body.should be_json_eql(404).at_path("status")                  
+        end        
+      end
     end
     
     describe "PUT" do
