@@ -87,6 +87,9 @@ module GT
       # build, don't save, public and watch_later rolls
       ensure_users_special_rolls(u)
       
+      #additional meta-data for faux user public roll
+      u.public_roll.origin_network = provider
+      
       if u.save
         return u
       else

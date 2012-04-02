@@ -143,12 +143,13 @@ describe GT::UserManager do
       }.should change { User.count }.by(1)
     end
     
-    it "should set the public_roll's thumbnail to the creator's avatar" do
+    it "should set the faux user's public_roll's thumbnail and network to those of the creator" do
       thumb_url = "some://thumb.url"
       nick, provider, uid = "whatever3--c", "fb", "123uid3--c"
       u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, {:user_thumbnail_url => thumb_url})
       
       u.public_roll.thumbnail_url.should == thumb_url
+      u.public_roll.origin_network.should == "fb"
     end
     
     it "should have the faux user follow its own public roll (should not follow watch_later, viewed, and upvoted rolls)" do

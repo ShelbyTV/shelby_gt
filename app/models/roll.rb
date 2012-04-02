@@ -26,6 +26,9 @@ class Roll
   # collaborative rolls can be posted to by users other than creator, further spcified by public? (above)
   # non-collaborative rolls can only be posted to by creator
   key :collaborative,   Boolean,  :default => true,    :abbr => :e
+  
+  # faux-users get public Rolls, we denormalize the network into the roll
+  key :origin_network,  String, :abbr => :f
 
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
