@@ -49,6 +49,8 @@ class V1::UserController < ApplicationController
   # 
   # @param [Required, String] id The id of the user  
   # @param [Required, String] attr The attribute(s) to update
+  #
+  #TODO: Do not user update_attributes, instead only allow updating specific attrs
   def update
     StatsManager::StatsD.client.time(Settings::StatsNames.api['user']['update']) do
       id = params.delete(:id)

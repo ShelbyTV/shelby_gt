@@ -162,6 +162,8 @@ class V1::RollController < ApplicationController
   # [PUT] /v1/roll/:id
   # 
   # @param [Required, String] id The id of the roll
+  #
+  #TODO: Do not user update_attributes, instead only allow updating specific attrs
   def update
     StatsManager::StatsD.client.time(Settings::StatsNames.api['roll']['update']) do
       id = params.delete(:id)

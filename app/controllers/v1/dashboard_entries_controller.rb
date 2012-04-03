@@ -51,6 +51,8 @@ class V1::DashboardEntriesController < ApplicationController
   # [PUT] v1/dashboard/:id.json
   # 
   # @param [Required, String] id The id of the dashboard entry
+  #
+  #TODO: Do not user update_attributes, instead only allow updating specific attrs
   def update
     StatsManager::StatsD.client.time(Settings::StatsNames.api['dashboard']['update']) do
       id = params.delete(:id)
