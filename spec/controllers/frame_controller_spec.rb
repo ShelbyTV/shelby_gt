@@ -20,8 +20,10 @@ describe V1::FrameController do
 
   describe "GET index" do
     it "assigns all frames in a roll to @frames" do
+      @roll.stub_chain(:frames,:limit, :skip, :sort).and_return([@frame])
       get :index, :format => :json
       assigns(:roll).should eq(@roll)
+      assigns(:frames).should eq([@frame])
       assigns(:status).should eq(200)
     end
     

@@ -12,12 +12,21 @@ class V1::FrameController < ApplicationController
   #
   # [GET] /v1/roll/:id/frames
   # @param [Optional, Boolean] include_children if true will return frame children
+  # @param [Optional, Integer] limit limit the number of frames returned, default 10
+  # @param [Optional, Integer] skip the number of frames to skip, default 0
   def index
     StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['index']) do
+      # default params
+      @limit = params[:limit] ? params[:limit] : 10
+      # put an upper limit on the number of entries returned
+      @limit = 20 if @limit.to_i > 20
+  
+      skip = params[:skip] ? params[:skip] : 0
+      
       @roll = Roll.find(params[:roll_id])
       if @roll
         @include_frame_children = (params[:include_children] == "true") ? true : false
-        @frames = @roll.frames.sort(:score.desc)
+        @frames = @roll.frames.limit(@limit).skip(skip).sort(:score.desc)
         @status =  200
       else
         render_error(404, "could not find that roll")
