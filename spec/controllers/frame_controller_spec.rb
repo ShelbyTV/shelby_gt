@@ -228,7 +228,19 @@ describe V1::FrameController do
         assigns(:status).should eq(200)
         assigns(:frame).should eq(@f2)
       end
-
+      
+      it "returns 404 if user can re_roll to that roll" do
+        r = stub_model(Roll, :public => false)
+        Roll.stub(:find) { r }
+        
+        u = Factory.create(:user)
+        sign_in u
+        
+        post :create, :roll_id => r.id, :frame_id => @f1.id, :format => :json
+        assigns(:status).should eq(401)
+        assigns(:message).should eq("that user cant post to that roll")
+      end
+      
       it "returns 404 if it can't re_roll" do
         @f1.stub(:re_roll).and_raise(ArgumentError)
 

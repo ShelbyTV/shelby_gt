@@ -84,6 +84,17 @@ describe 'v1/frame' do
           response.body.should be_json_eql(404).at_path("status")
         end
         
+        it "should return 401 if the user is trying to reroll a frame in a roll that is not theirs to roll into" do
+          video_url = "http://some.video.url.com/of_a_movie_i_like"
+          f = Factory.create(:frame)
+          u2 = Factory.create(:user)
+          u2.watch_later_roll = Factory.create(:roll, :creator => u2, :public => false)
+          u2.save
+          post '/v1/roll/'+u2.watch_later_roll_id+'/frames?frame_id='+f.id
+          
+          response.body.should be_json_eql(401).at_path("status")
+        end
+        
         it "should return 401 if the user is trying to create a frame in a roll that is not theirs" do
           message_text = "awesome video!"
           video_url = "http://some.video.url.com/of_a_movie_i_like"

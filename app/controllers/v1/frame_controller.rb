@@ -119,10 +119,15 @@ class V1::FrameController < ApplicationController
       elsif params[:frame_id] and ( frame_to_re_roll = Frame.find(params[:frame_id]) )
         
         begin
-          @frame = frame_to_re_roll.re_roll(current_user, roll)
-          @frame = @frame[:frame]
-          StatsManager::StatsD.increment(Settings::StatsNames.frame['re_roll'], current_user.id, 'frame_re_roll')
-          @status = 200
+          # only allow roll creation if user is authorized to access the given roll
+          if roll.postable_by?(current_user)
+            @frame = frame_to_re_roll.re_roll(current_user, roll)
+            @frame = @frame[:frame]
+            StatsManager::StatsD.increment(Settings::StatsNames.frame['re_roll'], current_user.id, 'frame_re_roll')
+            @status = 200
+          else
+            render_error(401, "that user cant post to that roll")
+          end
         rescue => e
           render_error(404, "could not re_roll: #{e}")
         end
