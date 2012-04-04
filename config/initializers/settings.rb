@@ -133,7 +133,7 @@ module Settings
     load!
   end
 
-  class StatsNames < Settingslogic
+  class StatsConstants < Settingslogic
     source "#{Rails.root}/config/settings/stats_constants.yml"
     namespace Rails.env
     load!

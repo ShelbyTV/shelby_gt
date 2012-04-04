@@ -15,7 +15,7 @@ class V1::FrameController < ApplicationController
   # @param [Optional, Integer] limit limit the number of frames returned, default 10
   # @param [Optional, Integer] skip the number of frames to skip, default 0
   def index
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['index']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['index']) do
       # default params
       @limit = params[:limit] ? params[:limit] : 10
       # put an upper limit on the number of entries returned
@@ -43,7 +43,7 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame
   # @param [Optional, Boolean] include_children Include the referenced roll, video, conv, and rerolls
   def show
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['show']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['show']) do
       if @frame = Frame.find(params[:id])
         @status =  200
         @include_frame_children = (params[:include_children] == "true") ? true : false
@@ -67,7 +67,7 @@ class V1::FrameController < ApplicationController
   # @param [Optional, Escaped String] text Message text to via added to the conversation
   # @param [Optional, String] source The source could be bookmarklet, webapp, etc
   def create
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['create']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['create']) do
       render_error(404, "this route is for jsonp only.") if request.get? and !params[:callback]
       
       roll = Roll.find(params[:roll_id])
@@ -86,13 +86,13 @@ class V1::FrameController < ApplicationController
         # set the action, defaults to new_bookmark_frame
         case params[:source]
         when "bookmark", nil, ""
-          StatsManager::StatsD.increment(Settings::StatsNames.frame["create"]["bookmarklet"], current_user.id, 'frame_create_bookmarklet')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["bookmarklet"], current_user.id, 'frame_create_bookmarklet')
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
         when "extension"
-          StatsManager::StatsD.increment(Settings::StatsNames.frame["create"]["extionsion"], current_user.id, 'frame_create_extension')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["extionsion"], current_user.id, 'frame_create_extension')
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
         when "webapp"
-          StatsManager::StatsD.increment(Settings::StatsNames.frame["create"]["webapp"], current_user.id, 'frame_create_inapp')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["webapp"], current_user.id, 'frame_create_inapp')
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_in_app_frame]
         else
           return render_error(404, "that action isn't cool.")
@@ -123,7 +123,7 @@ class V1::FrameController < ApplicationController
           if roll.postable_by?(current_user)
             @frame = frame_to_re_roll.re_roll(current_user, roll)
             @frame = @frame[:frame]
-            StatsManager::StatsD.increment(Settings::StatsNames.frame['re_roll'], current_user.id, 'frame_re_roll')
+            StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'], current_user.id, 'frame_re_roll')
             @status = 200
           else
             render_error(401, "that user cant post to that roll")
@@ -148,12 +148,12 @@ class V1::FrameController < ApplicationController
   # 
   # @param [Required, String] id The id of the frame
   def upvote
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['upvote']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['upvote']) do
       if @frame = Frame.find(params[:frame_id])
         if @frame.upvote!(current_user)
           @status = 200
           GT::UserActionManager.upvote!(current_user.id, @frame.id)
-          StatsManager::StatsD.increment(Settings::StatsNames.frame["upvote"], current_user.id, 'frame_upvote')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote')
         end
         @frame.reload
       else
@@ -170,12 +170,12 @@ class V1::FrameController < ApplicationController
   # 
   # @param [Required, String] id The id of the frame
   def add_to_watch_later
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['add_to_watch_later']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['add_to_watch_later']) do
       if @frame = Frame.find(params[:frame_id])
         if @new_frame = @frame.add_to_watch_later!(current_user)
           @status = 200
           GT::UserActionManager.watch_later!(current_user.id, @frame.id)
-          StatsManager::StatsD.increment(Settings::StatsNames.frame["watch_later"], current_user.id, 'frame_watch_later')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch_later"], current_user.id, 'frame_watch_later')
         end
       else
         render_error(404, "could not find frame")
@@ -194,7 +194,7 @@ class V1::FrameController < ApplicationController
   # @param [Optional, String] start_time The start_time of the action on the frame
   # @param [Optional, String] end_time The end_time of the action on the frame
   def watched
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['watched']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['watched']) do
       if @frame = Frame.find(params[:frame_id])
         @status = 200
         
@@ -206,7 +206,7 @@ class V1::FrameController < ApplicationController
 
         if params[:start_time] and params[:end_time]
           GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
-          StatsManager::StatsD.increment(Settings::StatsNames.frame["watch"], current_user ? current_user.id : nil , 'frame_watch')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch"], current_user ? current_user.id : nil , 'frame_watch')
         end
       else
         render_error(404, "could not find frame")
@@ -223,7 +223,7 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame to destroy.
   # @return [Integer] Whether request was successful or not.
   def destroy
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['frame']['destroy']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['destroy']) do
       if frame = Frame.find(params[:id]) and frame.destroy 
         @status = 200
       else

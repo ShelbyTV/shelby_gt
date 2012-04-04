@@ -13,7 +13,7 @@ class V1::MessagesController < ApplicationController
   # @param [Required, String] text the text for the message
   # @return [Integer] returns the entire conversation.
   def create
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['messages']['create']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['messages']['create']) do
       if !params.include?(:text)
         render_error(400, "text of message required")
       else
@@ -25,7 +25,7 @@ class V1::MessagesController < ApplicationController
           begin
             if @conversation.save!
               @status = 200 
-              StatsManager::StatsD.increment(Settings::StatsNames.message['create'])
+              StatsManager::StatsD.increment(Settings::StatsConstants.message['create'])
             end
           rescue => e
             render_error(404, e)
@@ -46,7 +46,7 @@ class V1::MessagesController < ApplicationController
   # @param [Required, String] id the id of the message to destroy.
   # @return [Integer] messages remaining in conversation.
   def destroy
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['messages']['destroy']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['messages']['destroy']) do
       message_id = params[:id]
       @conversation = Conversation.find(params[:conversation_id])
       message = @conversation.find_message_by_id(message_id)
@@ -55,7 +55,7 @@ class V1::MessagesController < ApplicationController
       else
         @conversation.pull(:messages => {:_id => message.id})
         @conversation.reload
-        StatsManager::StatsD.increment(Settings::StatsNames.message['delete'])
+        StatsManager::StatsD.increment(Settings::StatsConstants.message['delete'])
         @status = 200
       end
     end

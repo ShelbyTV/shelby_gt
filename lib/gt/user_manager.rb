@@ -20,12 +20,12 @@ module GT
       if user.save
         GT::PredatorManager.initialize_video_processing(user, auth)
         
-        StatsManager::StatsD.increment(Settings::StatsNames.user['new']['real'], user.id, 'signup')
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'], user.id, 'signup')
         
         return user
       else
         
-        StatsManager::StatsD.increment(Settings::StatsNames.user['new']['error'])
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
         
         Rails.logger.error "[GT::UserManager#create_new_user_from_omniauth] Failed to create user: #{user.errors.full_messages.join(',')}"
         return user.errors
@@ -47,11 +47,11 @@ module GT
       if user.save
         GT::PredatorManager.initialize_video_processing(user, new_auth)        
         
-        StatsManager::StatsD.increment(Settings::StatsNames.user['add_service'][new_auth.provider], user.id, 'add_service')
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['add_service'][new_auth.provider], user.id, 'add_service')
         
         return user
       else
-        StatsManager::StatsD.increment(Settings::StatsNames.user['add_service']['error'])
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['add_service']['error'])
                 
         Rails.logger.error "[GT::UserManager#add_new_auth_from_omniauth] Failed to save user: #{user.errors.full_messages.join(',')}"
         return false
@@ -102,10 +102,10 @@ module GT
       u.public_roll.origin_network = provider
       
       if u.save
-        StatsManager::StatsD.increment(Settings::StatsNames.user['new']['faux'])
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['faux'])
         return u
       else
-        StatsManager::StatsD.increment(Settings::StatsNames.user['new']['error'])
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
         Rails.logger.error "[GT::UserManager#get_or_create_faux_user] Failed to create user: #{u.errors.full_messages.join(',')}"
         return u.errors
       end
@@ -127,10 +127,10 @@ module GT
       user.faux = User::FAUX_STATUS[:converted]
       if user.save
         GT::PredatorManager.initialize_video_processing(user, new_auth)
-        StatsManager::StatsD.increment(Settings::StatsNames.user['new']['converted'], user.id, 'signup')
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'], user.id, 'signup')
         return user, new_auth
       else
-        StatsManager::StatsD.increment(Settings::StatsNames.user['new']['error'])        
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])        
         Rails.logger.error "[GT::UserManager#convert_faux_user_to_real] Failed to save user: #{user.errors.full_messages.join(',')}"
         return user.errors
       end
