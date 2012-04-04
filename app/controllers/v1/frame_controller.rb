@@ -86,13 +86,13 @@ class V1::FrameController < ApplicationController
         # set the action, defaults to new_bookmark_frame
         case params[:source]
         when "bookmark", nil, ""
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["bookmarklet"], current_user.id, 'frame_create_bookmarklet')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["bookmarklet"], current_user.id, 'frame_create_bookmarklet', request)
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
         when "extension"
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["extionsion"], current_user.id, 'frame_create_extension')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["extionsion"], current_user.id, 'frame_create_extension', request)
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
         when "webapp"
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["webapp"], current_user.id, 'frame_create_inapp')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["webapp"], current_user.id, 'frame_create_inapp', request)
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_in_app_frame]
         else
           return render_error(404, "that action isn't cool.")
@@ -123,7 +123,7 @@ class V1::FrameController < ApplicationController
           if roll.postable_by?(current_user)
             @frame = frame_to_re_roll.re_roll(current_user, roll)
             @frame = @frame[:frame]
-            StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'], current_user.id, 'frame_re_roll')
+            StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'], current_user.id, 'frame_re_roll', request)
             @status = 200
           else
             render_error(401, "that user cant post to that roll")
@@ -153,7 +153,7 @@ class V1::FrameController < ApplicationController
         if @frame.upvote!(current_user)
           @status = 200
           GT::UserActionManager.upvote!(current_user.id, @frame.id)
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote', request)
         end
         @frame.reload
       else
@@ -175,7 +175,7 @@ class V1::FrameController < ApplicationController
         if @new_frame = @frame.add_to_watch_later!(current_user)
           @status = 200
           GT::UserActionManager.watch_later!(current_user.id, @frame.id)
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch_later"], current_user.id, 'frame_watch_later')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch_later"], current_user.id, 'frame_watch_later', request)
         end
       else
         render_error(404, "could not find frame")
@@ -206,7 +206,7 @@ class V1::FrameController < ApplicationController
 
         if params[:start_time] and params[:end_time]
           GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch"], current_user ? current_user.id : nil , 'frame_watch')
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch"], current_user ? current_user.id : nil , 'frame_watch', request)
         end
       else
         render_error(404, "could not find frame")

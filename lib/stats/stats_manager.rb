@@ -3,8 +3,7 @@ module StatsManager
     
     SERVER_NAME = "gt"
     VERSION = "v1"
-    DEVICE = "web"
-    STAT_PREFIX = "api.#{VERSION}.#{SERVER_NAME}.#{DEVICE}."
+    STAT_PREFIX = "api.#{VERSION}.#{SERVER_NAME}.web"
     
     @@client = nil
     def self.client
@@ -12,7 +11,8 @@ module StatsManager
       @@client ||= Statsd.new(Settings::StatsD.statsd_server, Settings::StatsD.statsd_port)
     end
     
-    def self.increment(stat, uid=false, action=false)
+    def self.increment(stat, uid=false, action=false, request=false)
+      # source = request if request
       stat = STAT_PREFIX + stat
       stat = "#{stat}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.increment(stat)

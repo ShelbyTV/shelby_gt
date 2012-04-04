@@ -57,10 +57,10 @@ class V1::RollController < ApplicationController
           case d
           when 'twitter'
             resp = GT::SocialPoster.post_to_twitter(current_user, comment, roll)
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share')
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           when 'facebook'
             resp = GT::SocialPoster.post_to_facebook(current_user, comment, roll)
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share')
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           else
             return render_error(404, "we dont support that destination yet :(")
           end
@@ -102,7 +102,7 @@ class V1::RollController < ApplicationController
         begin
           if @roll.save!
             roll_type = @roll.public ? 'public' : 'private'
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll[:create][roll_type], current_user.id, 'roll_create')
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll[:create][roll_type], current_user.id, 'roll_create', request)
             @status = 200
           end
         rescue => e
@@ -123,7 +123,7 @@ class V1::RollController < ApplicationController
         @roll.add_follower(current_user)
         if @roll.save
           @status = 200
-          StatsManager::StatsD.increment(Settings::StatsConstants.roll['join'], current_user.id, 'roll_join')
+          StatsManager::StatsD.increment(Settings::StatsConstants.roll['join'], current_user.id, 'roll_join', request)
         else
           render_error(404, "something went wrong joining that roll.")
         end
@@ -144,7 +144,7 @@ class V1::RollController < ApplicationController
         @roll.remove_follower(current_user)
         if @roll.save
           @status = 200
-          StatsManager::StatsD.increment(Settings::StatsConstants.roll['leave'], current_user.id, 'roll_leave')
+          StatsManager::StatsD.increment(Settings::StatsConstants.roll['leave'], current_user.id, 'roll_leave', request)
         else
           render_error(404, "something went wrong leaving that roll.")
         end

@@ -35,7 +35,7 @@ class ApplicationController < ActionController::Base
       end
       headers['Access-Control-Request-Method'] = '*'
       headers['Access-Control-Allow-Credentials'] = 'true'
-      headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-Prototype-Version, X-CSRF-Token'
+      headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-Prototype-Version, X-CSRF-Token, X-Shelby-User-Agent'
     end
     
     def allow_faux_authentication!
