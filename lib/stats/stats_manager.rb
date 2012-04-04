@@ -25,6 +25,7 @@ module StatsManager
     end
   
     def self.timing(bucket, time, uid=false, action=false)
+      # TODO: henry: why aren't we prefixing the stat here?
       bucket = "#{bucket}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.timing(bucket, time)
     end

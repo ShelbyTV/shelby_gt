@@ -1,4 +1,5 @@
 defaults: &defaults
+  # TODO: henry: why are these prefixed with api.gt and the others aren't?
   api:
     dashboard:
       index: 'api.gt.dashboard.index'
@@ -33,6 +34,11 @@ defaults: &defaults
   
   
   # api.gt prefix added in stats manager
+  arnold:
+    job:
+      processed: 'arnold.job.processed'
+      time: 'arnold.job.time'
+  
   user:
     new:
       faux: "user.new.faux"
