@@ -25,7 +25,6 @@ module StatsManager
     end
   
     def self.timing(bucket, time, uid=false, action=false)
-      bucket = STAT_PREFIX + stat
       bucket = "#{bucket}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.timing(bucket, time)
     end

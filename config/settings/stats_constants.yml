@@ -1,37 +1,38 @@
 defaults: &defaults
   api:
     dashboard:
-      index: 'dashboard.index'
-      update: 'dashboard.update'
+      index: 'api.gt.dashboard.index'
+      update: 'api.gt.dashboard.update'
     user:
-      show: 'user.show'
-      update: 'user.update'
-      rolls: 'user.rolls'
+      show: 'api.gt.user.show'
+      update: 'api.gt.user.update'
+      rolls: 'api.gt.user.rolls'
     roll:
-      show: 'roll.show'
-      share: 'roll.share'
-      create: 'roll.create'
-      join: 'roll.join'
-      leave: 'roll.leave'
-      update: 'roll.update'
-      delete: 'roll.destroy'
+      show: 'api.gt.roll.show'
+      share: 'api.gt.roll.share'
+      create: 'api.gt.roll.create'
+      join: 'api.gt.roll.join'
+      leave: 'api.gt.roll.leave'
+      update: 'api.gt.roll.update'
+      delete: 'api.gt.roll.destroy'
     frame:
-      index: 'frame.index'
-      show: 'frame.show'
-      create: 'frame.create'
-      upvote: 'frame.upvote'
-      add_to_watch_later: 'frame.add_to_wl'
-      watched: 'frame.watched'
-      destroy: 'frame.destroy'
+      index: 'api.gt.frame.index'
+      show: 'api.gt.frame.show'
+      create: 'api.gt.frame.create'
+      upvote: 'api.gt.frame.upvote'
+      add_to_watch_later: 'api.gt.frame.add_to_wl'
+      watched: 'api.gt.frame.watched'
+      destroy: 'api.gt.frame.destroy'
     conversation:
-      show: 'conversation.show'
+      show: 'api.gt.conversation.show'
     messages:
-      create: 'messages.create'
-      destroy: 'messages.destroy'
+      create: 'api.gt.messages.create'
+      destroy: 'api.gt.messages.destroy'
     video:
-      show: 'video.show'
+      show: 'api.gt.video.show'
   
   
+  # api.gt prefix added in stats manager
   user:
     new:
       faux: "user.new.faux"
