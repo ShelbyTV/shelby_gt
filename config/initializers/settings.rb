@@ -134,7 +134,7 @@ module Settings
   end
 
   class StatsNames < Settingslogic
-    source "#{Rails.root}/config/settings/stats_constants.yml"
+    source "#{Rails.root}/config/settings/stats_names.yml"
     namespace Rails.env
     load!
   end
