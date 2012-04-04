@@ -81,33 +81,37 @@ module GT
         return u
       end
       
-      # No user (faux or real) existed, create a faux user...
-      u = User.new
-      u.server_created_on = "GT::UserManager#get_or_create_faux_user/#{nickname}/#{provider}/#{uid}"
-      u.nickname = nickname
-      u.user_image = u.user_image_original = options[:user_thumbnail_url]
-      u.faux = User::FAUX_STATUS[:true]
-      u.preferences = Preferences.new()
-      # This Authentication is how the user will be looked up...
-      auth = Authentication.new(:provider => provider, :uid => uid, :nickname => nickname)
-      u.authentications << auth
+      begin
+        # No user (faux or real) existed, create a faux user...
+        u = User.new
+        u.server_created_on = "GT::UserManager#get_or_create_faux_user/#{nickname}/#{provider}/#{uid}"
+        u.nickname = nickname
+        u.user_image = u.user_image_original = options[:user_thumbnail_url]
+        u.faux = User::FAUX_STATUS[:true]
+        u.preferences = Preferences.new()
+        # This Authentication is how the user will be looked up...
+        auth = Authentication.new(:provider => provider, :uid => uid, :nickname => nickname)
+        u.authentications << auth
       
-      ensure_valid_unique_nickname!(u)
-      u.downcase_nickname = u.nickname.downcase
+        ensure_valid_unique_nickname!(u)
+        u.downcase_nickname = u.nickname.downcase
       
-      # build, don't save, public and watch_later rolls
-      ensure_users_special_rolls(u)
+        ensure_users_special_rolls(u)
+
+        #additional meta-data for faux user public roll
+        u.public_roll.origin_network = provider
       
-      #additional meta-data for faux user public roll
-      u.public_roll.origin_network = provider
-      
-      if u.save
-        StatsManager::StatsD.increment(Settings::StatsNames.user['new']['faux'])
-        return u
-      else
-        StatsManager::StatsD.increment(Settings::StatsNames.user['new']['error'])
-        Rails.logger.error "[GT::UserManager#get_or_create_faux_user] Failed to create user: #{u.errors.full_messages.join(',')}"
-        return u.errors
+        if u.save
+          StatsManager::StatsD.increment(Settings::StatsNames.user['new']['faux'])
+          return u
+        else
+          StatsManager::StatsD.increment(Settings::StatsNames.user['new']['error'])
+          Rails.logger.error "[GT::UserManager#get_or_create_faux_user] Failed to create user: #{u.errors.full_messages.join(',')}"
+          return u.errors
+        end
+      rescue Mongo::OperationFailure => e
+        Rails.logger.error "[GT::UserManager#get_or_create_faux_user] rescuing Mongo::OperationFailure #{e}"
+        return nil
       end
     end
     

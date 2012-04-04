@@ -28,9 +28,10 @@ module MongoMapper
       User.ensure_index(:downcase_nickname, :background => true)
       # Get a user by their primary email
       User.ensure_index(:primary_email, :background => true)
-      # Compound index on authentications.provider and authentications.uid would create an innefficient BTree (could reverse order)
-      # The following is good enuf, very little overlap between providers
+      # the old index was on authentications.uid, now also have a unique index on uid and provider to make sure we don't overlap
       User.ensure_index('authentications.uid', :background => true)
+      # sparse true allows documents to be missing these fields (otherwise, null is not unique from any other null)
+      User.ensure_index([['authentications.uid', 1], ['authentications.provider', 1]], :background => true, :unique => true, :sparse => true)
       # Get user based on their nickname on a 3rd party network (facebook, twitter)
       User.ensure_index('authentications.nickname', :background => true)
       

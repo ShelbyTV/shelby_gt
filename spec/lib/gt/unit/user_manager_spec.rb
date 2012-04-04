@@ -124,6 +124,18 @@ describe GT::UserManager do
       }.should change { User.count }.by(1)
     end
     
+    it "should handle Mongo::OperationFailure (due to duplicate nickname on user) when creating a faux User" do
+      GT::UserManager.should_receive(:ensure_users_special_rolls).and_raise(Mongo::OperationFailure)
+      
+      nick, provider, uid = "whatever3", "fb", "123uid3--xx--"
+      thumb_url = "some:://thumb.url"
+      
+      lambda {
+        u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, {:user_thumbnail_url => thumb_url})
+        u.should == nil
+      }.should_not raise_error(Mongo::OperationFailure)
+    end
+    
     it "should create and persist public, watch_later, upvoted, viewed rolls on faux user when created" do
       nick, provider, uid = "whatever3-b", "fb", "123uid3-b"
       lambda {
@@ -246,7 +258,7 @@ describe GT::UserManager do
     before(:each) do
       @omniauth_hash = {
         'provider' => "twitter",
-        'uid' => '33',
+        'uid' => rand.to_s,
         'credentials' => {
           'token' => "somelongtoken",
           'secret' => 'foreskin'
@@ -290,7 +302,7 @@ describe GT::UserManager do
         @nickname = "nick-#{rand.to_s}"
         @omniauth_hash = {
           'provider' => "twitter",
-          'uid' => '33',
+          'uid' => "#{rand.to_s}-#{Time.now.to_f}",
           'credentials' => {
             'token' => "somelongtoken",
             'secret' => 'foreskin',
@@ -316,6 +328,7 @@ describe GT::UserManager do
       
       it "should change nickname if it's taken" do
         current_user = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        @omniauth_hash['uid'] += "2"
         GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).nickname.should_not == current_user.nickname
       end
       
@@ -325,16 +338,19 @@ describe GT::UserManager do
         u.valid?.should eql(true)
         u.nickname.should eql("dan_spinosa")
 
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash["info"]["nickname"] = " spinosa"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should eql(true)
         u.nickname.should eql("_spinosa")
 
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash["info"]["nickname"] = "spinosa "
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should eql(true)
         u.nickname.should eql("spinosa_")
 
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash["info"]["nickname"] = "spinDr"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should eql(true)
@@ -346,6 +362,7 @@ describe GT::UserManager do
         u.valid?.should == true
         u.nickname.should == "dans"
 
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash["info"]["nickname"] = "'Astrid_Carolina_Valdez"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should == true
@@ -353,40 +370,75 @@ describe GT::UserManager do
       end
       
       it "should validate nickname w/ utf8 support, dot, underscore and/or hyphen" do
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "J.Marie_Teis-Sèdre"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "보통그냥"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "Boris Šebošík"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "Олег_Бородин"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "Станислав_Станислав"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "厚任_賴厚任"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "Thập_Lục_Thập"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "ธีระพงษ์_อารีเอื้อ"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "鎮順_陳鎮順"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "Андрей_Бабакاسي"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "ابراهي_اليم"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "Παναγής_Μέγαρα"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "அன்புடன்_ஆனந்தகுமார்"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "אבו_ודיע"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "ომარი_დევიძე"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "みさお_みさお"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "たくや_たくや"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
+        
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash['info']['nickname'] = "ヴィクタ"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash).should_not == nil
 
@@ -447,6 +499,7 @@ describe GT::UserManager do
         User.find_by_nickname("spinOSa").should be_a(User)
         User.find_by_nickname("spin osa").should be(nil)
 
+        @omniauth_hash['uid'] += "2"
         @omniauth_hash["info"]["nickname"] = "Frank_Lazio_JR"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         User.find_by_nickname("frank_lazio_jr").should be_a(User)
@@ -527,7 +580,7 @@ describe GT::UserManager do
       @nickname = "nick-#{rand.to_s}"
       @omniauth_hash = {
         'provider' => "twitter",
-        'uid' => '33',
+        'uid' => "#{rand.to_s}-#{Time.now.to_f}",
         'credentials' => {
           'token' => "somelongtoken",
           'secret' => 'foreskin',
@@ -543,6 +596,7 @@ describe GT::UserManager do
       }
 
     end
+    
     it "should be able to update auth tokens" do
       u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
       
@@ -552,10 +606,10 @@ describe GT::UserManager do
       
       GT::UserManager.start_user_sign_in(u, @omniauth_hash)
 
-      auth = GT::AuthenticationBuilder.authentication_by_provider_and_uid(u, "twitter", "33" )
+      auth = GT::AuthenticationBuilder.authentication_by_provider_and_uid(u, "twitter", @omniauth_hash['uid'] )
       auth.should_not == nil
       auth.provider.should == "twitter"
-      auth.uid.should == "33"
+      auth.uid.should == @omniauth_hash['uid']
       auth.oauth_token.should == "NEW--token"
       auth.oauth_secret.should == "NEW--secret"
     end
@@ -565,7 +619,7 @@ describe GT::UserManager do
 
       new_omniauth_hash = {
         'provider' => "facebook",
-        'uid' => '33',
+        'uid' => '333',
         'credentials' => {
           'token' => "somelongtoken",
           'secret' => 'foreskin',
