@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   
   def render_error(code, message)
     @status, @message = code, message
-    render 'v1/blank'
+    render 'v1/blank', :status => @status
   end
   
   # === Unlike the default user_authenticated! helper that ships with devise,
