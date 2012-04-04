@@ -83,7 +83,9 @@ class AuthenticationsController < ApplicationController
     sign_out(:user)
     cookies.delete(:signed_in, :domain => '.shelby.tv')
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signout'])
-    redirect_to request.headers['HTTP_REFERER']
+    #TODO: really should redirect to http://shelby.tv/
+    #TODO: should probalby redirect to http://shelby.tv/ all over this file
+    redirect_to request.headers['HTTP_REFERER'] || root_path
   end
   
 end
