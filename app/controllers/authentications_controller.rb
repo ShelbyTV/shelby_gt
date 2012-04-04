@@ -32,7 +32,7 @@ class AuthenticationsController < ApplicationController
       
       sign_in(:user, user)
       cookies[:signed_in] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
-      StatsManager::StatsD.increment(Settings::StatsNames.user['signin']['success'][omniauth['provider'].to_s])
+      StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
       
       @opener_location = request.env['omniauth.origin'] || root_path
       
@@ -55,7 +55,7 @@ class AuthenticationsController < ApplicationController
         sign_in(:user, user)
         cookies[:signed_in] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
         
-        StatsManager::StatsD.increment(Settings::StatsNames.user['signin']['success'][omniauth['provider'].to_s])
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
         
         @opener_location = request.env['omniauth.origin'] || root_path
       else
@@ -73,7 +73,7 @@ class AuthenticationsController < ApplicationController
     #if their session is fucked, it will cause bad auth params.
     reset_session
     
-    StatsManager::StatsD.increment(Settings::StatsNames.user['signin']['failure'])
+    StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['failure'])
     
     @opener_location = new_user_session_path
     render :action => 'redirector', :layout => 'simple'
@@ -82,7 +82,7 @@ class AuthenticationsController < ApplicationController
   def sign_out_user
     sign_out(:user)
     cookies.delete(:signed_in, :domain => '.shelby.tv')
-    StatsManager::StatsD.increment(Settings::StatsNames.user['signout']['signout'])
+    StatsManager::StatsD.increment(Settings::StatsConstants.user['signout'])
     #TODO: really should redirect to http://shelby.tv/
     #TODO: should probalby redirect to http://shelby.tv/ all over this file
     redirect_to request.headers['HTTP_REFERER'] || root_path

@@ -12,7 +12,7 @@ class V1::RollController < ApplicationController
   # @param [Required, String] id The id of the roll
   # @param [Optional, String] following_users Return the following_users?
   def show
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['roll']['show']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['roll']['show']) do
       if @roll = Roll.find(params[:id])
         if user_signed_in?
           @include_following_users = params[:following_users] == "true" ? true : false
@@ -38,7 +38,7 @@ class V1::RollController < ApplicationController
   # @param [Required, String] destination Where the roll is being shared to (comma seperated list ok)
   # @param [Required, Escaped String] comment What the status update of the post is
   def share
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['roll']['share']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['roll']['share']) do
       unless params.keys.include?("destination") and params.keys.include?("comment")
         return  render_error(404, "a destination and a comment is required to post") 
       end
@@ -57,10 +57,10 @@ class V1::RollController < ApplicationController
           case d
           when 'twitter'
             resp = GT::SocialPoster.post_to_twitter(current_user, comment, roll)
-            StatsManager::StatsD.increment(Settings::StatsNames.roll['share'][d], current_user.id, 'roll_share')
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           when 'facebook'
             resp = GT::SocialPoster.post_to_facebook(current_user, comment, roll)
-            StatsManager::StatsD.increment(Settings::StatsNames.roll['share'][d], current_user.id, 'roll_share')
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           else
             return render_error(404, "we dont support that destination yet :(")
           end
@@ -89,7 +89,7 @@ class V1::RollController < ApplicationController
   # @param [Optional, String] collaborative Is this roll collaborative?
   # @param [Optional, String] public Is this roll public?
   def create
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['roll']['create']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['roll']['create']) do
       if ( !params.include?(:title) or !params.include?(:thumbnail_url) or !user_signed_in?)
         @status = 404
         @message = "title required" unless params.include?(:title)
@@ -102,7 +102,7 @@ class V1::RollController < ApplicationController
         begin
           if @roll.save!
             roll_type = @roll.public ? 'public' : 'private'
-            StatsManager::StatsD.increment(Settings::StatsNames.roll[:create][roll_type], current_user.id, 'roll_create')
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll[:create][roll_type], current_user.id, 'roll_create', request)
             @status = 200
           end
         rescue => e
@@ -118,12 +118,12 @@ class V1::RollController < ApplicationController
   # 
   # [POST] /v1/roll/:roll_id/join
   def join
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['roll']['join']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['roll']['join']) do
       if @roll = Roll.find(params[:roll_id])
         @roll.add_follower(current_user)
         if @roll.save
           @status = 200
-          StatsManager::StatsD.increment(Settings::StatsNames.roll['join'], current_user.id, 'roll_join')
+          StatsManager::StatsD.increment(Settings::StatsConstants.roll['join'], current_user.id, 'roll_join', request)
         else
           render_error(404, "something went wrong joining that roll.")
         end
@@ -139,12 +139,12 @@ class V1::RollController < ApplicationController
   # 
   # [POST] /v1/roll/:roll_id/leave
   def leave
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['roll']['leave']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['roll']['leave']) do
       if @roll = Roll.find(params[:roll_id])
         @roll.remove_follower(current_user)
         if @roll.save
           @status = 200
-          StatsManager::StatsD.increment(Settings::StatsNames.roll['leave'], current_user.id, 'roll_leave')
+          StatsManager::StatsD.increment(Settings::StatsConstants.roll['leave'], current_user.id, 'roll_leave', request)
         else
           render_error(404, "something went wrong leaving that roll.")
         end
@@ -165,7 +165,7 @@ class V1::RollController < ApplicationController
   #
   #TODO: Do not user update_attributes, instead only allow updating specific attrs
   def update
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['roll']['update']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['roll']['update']) do
       id = params.delete(:id)
       @roll = Roll.find(id)
       if !@roll
@@ -188,7 +188,7 @@ class V1::RollController < ApplicationController
   # 
   # @param [Required, String] id The id of the roll
   def destroy
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['roll']['destroy']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['roll']['destroy']) do
       unless @roll = Roll.find(params[:id])
         render_error(404, "could not find that roll to destroy")
       end

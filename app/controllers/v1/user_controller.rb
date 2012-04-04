@@ -21,7 +21,7 @@ class V1::UserController < ApplicationController
   # @param [Optional, String] id The id of the user, if not present, user is current_user
   # @param [Optional, Boolean] rolls_following Include the referenced rolls the user is following
   def show
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['user']['show']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['user']['show']) do
       if params[:id]
         if @user = User.find(params[:id])
           @include_rolls = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true" ) ? true : false
@@ -52,7 +52,7 @@ class V1::UserController < ApplicationController
   #
   #TODO: Do not user update_attributes, instead only allow updating specific attrs
   def update
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['user']['update']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['user']['update']) do
       id = params.delete(:id)
       @user = User.find(id)
       # allow for email to be removed, not sure if we want this or not...
@@ -78,7 +78,7 @@ class V1::UserController < ApplicationController
   # @param [Required, String] id The id of the user
   # @param [Optional, boolean] include_children Return the following_users?
   def rolls
-    StatsManager::StatsD.client.time(Settings::StatsNames.api['user']['rolls']) do
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['user']['rolls']) do
       if current_user.id.to_s == params[:id]
         @user = current_user
         @status = 200

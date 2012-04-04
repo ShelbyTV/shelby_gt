@@ -2,7 +2,7 @@ module Bitly
   class API
     
     def self.get_shorten_call(url)
-      "http://api.bitly.com/v3/shorten?longUrl="+ CGI.escape(url) +"&login="+ Settings::Bitly.api_username +"&apiKey=" + Settings::Bitly.api_key
+      "http://api.bitly.com/v3/shorten?longUrl="+ CGI.escape(url) +"&login="+Settings::Bitly.api_username+"&apiKey="+Settings::Bitly.api_key
     end
     
     def self.do_single_threaded_shorten!(url)
