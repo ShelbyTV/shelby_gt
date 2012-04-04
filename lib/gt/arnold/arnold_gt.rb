@@ -7,7 +7,7 @@ puts "loading app..."
 require File.dirname(__FILE__) + "/../../../config/application"
 Rails.application.require_environment!
 #TODO: turn arnold logger.level back to 1 for production
-Rails.logger.level = 0 #0:DEBUG, 1:INFO, 2:WARN, 3:ERROR, 4:FATAL
+Rails.logger.level = 1 #0:DEBUG, 1:INFO, 2:WARN, 3:ERROR, 4:FATAL
 Rails.logger.auto_flushing = true
 
 # For cleanly exiting
@@ -32,7 +32,7 @@ require 'em-jack'
 
 #Our knobs to turn
 #TODO: turn MAX_FIBERS back to 1000 for production
-$MAX_FIBERS = 1 # <-- 1k seems to be good for LP1 (running w/ 2K hit a Segfault & deadlock in library code)
+$MAX_FIBERS = 1000 # <-- 1k seems to be good for LP1 (running w/ 2K hit a Segfault & deadlock in library code)
 $fibers = []
 $http_timeout = 60
 $max_redirects = 5
