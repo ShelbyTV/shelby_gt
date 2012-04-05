@@ -3,7 +3,7 @@ module StatsManager
     
     SERVER_NAME = "gt"
     VERSION = "v1"
-    STAT_PREFIX = "api.#{VERSION}.#{SERVER_NAME}.web"
+    STAT_PREFIX = "api.#{VERSION}.#{SERVER_NAME}.web."
     
     @@client = nil
     def self.client
