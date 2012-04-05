@@ -137,6 +137,7 @@ module GT
           v = Video.where(:provider_name => provider_name, :provider_id => provider_id).first
           return v if v
           Rails.logger.error "[GT::VideoManager#find_or_create_video_for_embedly_hash] rescuing Mongo::OperationFailure #{e}"
+          return nil
         end
       end
     
