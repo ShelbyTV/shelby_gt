@@ -129,6 +129,15 @@ describe Roll do
       @roll.invitable_to_by?(@stranger).should == true
       @roll.postable_by?(@stranger).should == true
     end
+    
+    it "should be leavable iff user is not the creator" do
+      @roll.leavable_by?(@stranger).should == true
+    end
+    
+    it "should not be leavable if the user is the creator" do
+      @roll.creator = @user
+      @roll.leavable_by?(@user).should == false
+    end
   
   end
   

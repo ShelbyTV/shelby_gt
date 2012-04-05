@@ -3,7 +3,7 @@ require 'spec_helper'
 describe 'v1/roll' do
   before(:each) do
     @u1 = Factory.create(:user)
-    @r = Factory.create(:roll, :creator => @u1)
+    @r = Factory.create(:roll, :creator => Factory.create(:user))
   end
   
   context 'logged in' do
@@ -116,6 +116,14 @@ describe 'v1/roll' do
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/title")
         end
+
+        it "should return 404 if roll can't be left" do
+          u = Factory.create(:user)
+          r = Factory.create(:roll, :creator => u)
+          puts r.creator.id, u.id
+          post '/v1/roll/'+r.id+'/leave'
+          response.body.should be_json_eql(404).at_path("status")                  
+        end        
         
         it "should return 404 if roll cant be found" do
           post '/v1/roll/'+@r.id+'123/leave'

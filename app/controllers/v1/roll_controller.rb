@@ -141,7 +141,12 @@ class V1::RollController < ApplicationController
   def leave
     StatsManager::StatsD.client.time(Settings::StatsConstants.api['roll']['leave']) do
       if @roll = Roll.find(params[:roll_id])
-        @roll.remove_follower(current_user)
+        puts @roll.leavable_by?(current_user)
+        if @roll.leavable_by?(current_user)
+          @roll.remove_follower(current_user)
+        else
+          return render_error(404, "the creator of a roll can not leave a roll.")
+        end
         if @roll.save
           @status = 200
           StatsManager::StatsD.increment(Settings::StatsConstants.roll['leave'], current_user.id, 'roll_leave', request)
