@@ -27,7 +27,7 @@ module GT
         
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
         
-        Rails.logger.error "[GT::UserManager#create_new_user_from_omniauth] Failed to create user: #{user.errors.full_messages.join(',')} / user looks like: #{user}"
+        Rails.logger.error "[GT::UserManager#create_new_user_from_omniauth] Failed to create user: #{user.errors.full_messages.join(',')} / user looks like: #{user.inspect}"
         return user.errors
       end
     end
@@ -107,7 +107,7 @@ module GT
         else
           # IMPROVEMENT: to be really robust, we would re-queue this job on a delay (b/c most fails are timing issues w/ new users)
           StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
-          Rails.logger.error "[GT::UserManager#get_or_create_faux_user] Failed to create user: #{u.errors.full_messages.join(',')} / user looks like: #{u}"
+          Rails.logger.error "[GT::UserManager#get_or_create_faux_user] Failed to create user: #{u.errors.full_messages.join(',')} / user looks like: #{u.inspect}"
           return u.errors
         end
       rescue Mongo::OperationFailure => e
