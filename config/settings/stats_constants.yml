@@ -25,6 +25,7 @@ defaults: &defaults
       add_to_watch_later: 'api.gt.frame.add_to_wl'
       watched: 'api.gt.frame.watched'
       destroy: 'api.gt.frame.destroy'
+      share: 'api.gt.frame.share'
     conversation:
       show: 'api.gt.conversation.show'
     messages:

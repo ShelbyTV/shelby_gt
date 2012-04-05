@@ -98,6 +98,15 @@ describe V1::FrameController do
       )
     end
     
+    it "routes for share frame POST" do
+      { :post => "/v1/frame/1/share" }.should route_to(
+        :controller => "v1/frame",
+        :action => "share",
+        :format => "json",
+        :frame_id => "1"
+      )
+    end
+    
     it "routes for DELETE" do
       { :delete => "/v1/frame/1" }.should route_to(
         :controller => "v1/frame",
