@@ -105,12 +105,15 @@ module GT
           StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['faux'])
           return u
         else
-          # TODO: to be really robust, we would re-queue this job on a delay (b/c most fails are timing issues w/ new users)
+          # IMPROVEMENT: to be really robust, we would re-queue this job on a delay (b/c most fails are timing issues w/ new users)
           StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
           Rails.logger.error "[GT::UserManager#get_or_create_faux_user] Failed to create user: #{u.errors.full_messages.join(',')} / user looks like: #{u}"
           return u.errors
         end
       rescue Mongo::OperationFailure => e
+        # If this was a timing issue, and User got created after we checked, that means the User exists now.  See if we can't recover...
+        u = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
+        return u if u
         Rails.logger.error "[GT::UserManager#get_or_create_faux_user] rescuing Mongo::OperationFailure #{e}"
         return nil
       end

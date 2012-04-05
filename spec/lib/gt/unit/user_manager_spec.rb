@@ -130,10 +130,27 @@ describe GT::UserManager do
       nick, provider, uid = "whatever3", "fb", "123uid3--xx--"
       thumb_url = "some:://thumb.url"
       
+      u = "blah"
       lambda {
         u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, {:user_thumbnail_url => thumb_url})
-        u.should == nil
       }.should_not raise_error(Mongo::OperationFailure)
+      u.should == nil
+    end
+    
+    it "should handle Mongo::OperationFailure (due to timing issue) and recover by returning the correct user" do
+      GT::UserManager.should_receive(:ensure_users_special_rolls).and_raise(Mongo::OperationFailure)
+      
+      #User.first(...) will first return nil, then will return a User, we want that User!
+      User.should_receive(:first).and_return(nil, :the_user)
+      
+      nick, provider, uid = "whatever3", "fb", "123uid3--xx--"
+      thumb_url = "some:://thumb.url"
+      
+      u = nil
+      lambda {
+        u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, {:user_thumbnail_url => thumb_url})
+      }.should_not raise_error(Mongo::OperationFailure)
+      u.should == :the_user
     end
     
     it "should create and persist public, watch_later, upvoted, viewed rolls on faux user when created" do
