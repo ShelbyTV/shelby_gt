@@ -129,8 +129,16 @@ module GT
         # v.tags
         # v.categories
         
-        v.save
-        return v
+        begin
+          v.save
+          return v
+        rescue Mongo::OperationFailure => e
+          # If this was a timing issue, and Video got created after we checked, that means the Video exists now.  See if we can't recover...
+          v = Video.where(:provider_name => provider_name, :provider_id => provider_id).first
+          return v if v
+          Rails.logger.error "[GT::VideoManager#find_or_create_video_for_embedly_hash] rescuing Mongo::OperationFailure #{e}"
+          return nil
+        end
       end
     
   end
