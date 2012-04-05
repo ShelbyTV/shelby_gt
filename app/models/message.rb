@@ -29,7 +29,7 @@ class Message
   key :user_image_url, String, :required => true, :abbr => :g
   
   # The message itself
-  key :text, String, :required => true, :abbr => :h
+  key :text, String, :abbr => :h
   
   # is this public (ie tweet, tumblr post) or private/semi-private (ie Facebook limited share)
   key :public, Boolean, :abbr => :i

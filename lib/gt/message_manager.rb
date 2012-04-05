@@ -13,20 +13,16 @@ module GT
       # if there is no text, no biggie, just return nil as the message
       text = options.delete(:text)
       
-      if text
-        message = Message.new
-        message.public = options[:public]
-        message.nickname = options[:nickname] || creator.nickname
-        message.realname = options[:realname] || creator.name
-        message.user_image_url = options[:user_image_url] || creator.user_image
-        message.text = text
-        
-        message.origin_network = options[:origin_network] if options[:origin_network]
-        message.origin_id = options[:origin_id] if options[:origin_id]
-        message.origin_user_id = options[:origin_user_id] if options[:origin_user_id]
-      else
-        message = nil
-      end
+      message = Message.new
+      message.public = options[:public]
+      message.nickname = options[:nickname] || creator.nickname
+      message.realname = options[:realname] || creator.name
+      message.user_image_url = options[:user_image_url] || creator.user_image
+      message.text = text
+      
+      message.origin_network = options[:origin_network] if options[:origin_network]
+      message.origin_id = options[:origin_id] if options[:origin_id]
+      message.origin_user_id = options[:origin_user_id] if options[:origin_user_id]
       
       return message 
     end
