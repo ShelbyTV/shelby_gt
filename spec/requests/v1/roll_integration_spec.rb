@@ -4,12 +4,12 @@ describe 'v1/roll' do
   before(:all) do
     @u1 = Factory.create(:user)
     @u2 = Factory.create(:user)
-    @r = Factory.create(:roll, :creator => @u2)
+    @r = Factory.create(:roll, :creator => @u1)
   end
   
   context 'logged in' do
     before(:all) do
-      set_omniauth()
+      set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
     end
     
@@ -113,15 +113,14 @@ describe 'v1/roll' do
       
       context "leave roll" do
         it "should return the roll if it was left" do
-          post '/v1/roll/'+@r.id+'/leave'
+          r = Factory.create(:roll, :creator => @u2, :following_users=>[{:user_id=>@u1.id}])
+          post '/v1/roll/'+r.id+'/leave'
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/title")
         end
 
         it "should return 404 if roll can't be left" do
-          r = Factory.create(:roll, :creator => @u1)
-          puts "test: ", r.creator.id == @u1.id
-          post '/v1/roll/'+r.id+'/leave'
+          post '/v1/roll/'+@r.id+'/leave'
           response.body.should be_json_eql(404).at_path("status")                  
         end        
         
@@ -165,10 +164,11 @@ describe 'v1/roll' do
 
     describe "GET" do
       it "should return roll info on success" do
-        get '/v1/roll/'+@r.id
+        r = Factory.create(:roll, :creator_id => @u1.id)
+        get '/v1/roll/'+r.id
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result/title")
-        parse_json(response.body)["result"]["title"].should eq(@r.title)
+        parse_json(response.body)["result"]["title"].should eq(r.title)
       end
     
       it "should return error message if roll doesnt exist" do

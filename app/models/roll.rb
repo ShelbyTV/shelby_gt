@@ -104,7 +104,7 @@ class Roll
   def leavable_by?(u)
     raise ArgumentError, "must supply user or user_id" unless u
     user_id = (u.is_a?(User) ? u.id : u)
-    puts "model: ", user_id, self.creator_id
+    
     return self.creator_id != user_id
   end
 

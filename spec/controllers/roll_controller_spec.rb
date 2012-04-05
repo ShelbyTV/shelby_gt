@@ -128,7 +128,9 @@ describe V1::RollController do
   
   describe "POST join/leave" do
     before(:each) do
-      @r = Factory.create(:roll, :creator => Factory.create(:user) )
+      @u = Factory.create(:user)
+      @fu = Factory.create(:user)
+      @r = Factory.create(:roll, :creator => @u, :following_users=>[{:user_id=>@u1.id}] )
       Roll.stub!(:find).and_return(@r)
     end
     
@@ -143,7 +145,7 @@ describe V1::RollController do
     end
     
     it "should return 404 if user isn't allowed to leave a roll" do
-      @r.creator = @u1
+      @r.following_users=[{:user_id=>@fu.id}]; @r.save
       post :leave, :roll_id => @r.id, :format => :json
       assigns(:status).should eq(404)
     end
