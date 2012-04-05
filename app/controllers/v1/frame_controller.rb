@@ -161,14 +161,14 @@ class V1::FrameController < ApplicationController
       if frame = Frame.find(params[:frame_id])
         
         #TODO: link_to_frame needs to be created
-        comment = params[:text] #+ link_to_frame
+        text = params[:text] #+ link_to_frame
         
         params[:destination].each do |d|
           case d
           when 'twitter'
-            resp = GT::SocialPoster.post_to_twitter(current_user, comment, frame)
+            resp = GT::SocialPoster.post_to_twitter(current_user, text, frame)
           when 'facebook'
-            resp = GT::SocialPoster.post_to_facebook(current_user, comment, frame)
+            resp = GT::SocialPoster.post_to_facebook(current_user, text, frame)
           else
             return render_error(404, "we dont support that destination yet :(")
           end

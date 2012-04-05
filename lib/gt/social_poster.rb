@@ -5,40 +5,40 @@ require 'tumblr_posting'
 module GT
   class SocialPoster
 
-    def self.post_to_twitter(from_user, comment, roll)
+    def self.post_to_twitter(from_user, text, roll)
       begin
         #post a new tweet
-        return post_tweet(from_user, comment, nil)
+        return post_tweet(from_user, text, nil)
       rescue Grackle::TwitterError => twit_err
         Rails.logger.error "[GT::SocialPosting] Error posting tweet to twitter via Grackle: #{twit_err.to_s}"
         return false
       rescue => e
-        Rails.logger.error "[GT::SocialPosting] Error posting comment to Twitter: #{e}"
+        Rails.logger.error "[GT::SocialPosting] Error posting text to Twitter: #{e}"
         return false
       end
     end
     
-    def self.post_to_facebook(from_user, comment, roll)
+    def self.post_to_facebook(from_user, text, roll)
       begin
-        return post_fb_comment(from_user, comment, nil, roll)
+        return post_fb_comment(from_user, text, nil, roll)
       rescue Koala::Facebook::APIError => e
-        Rails.logger.error "[GT::SocialPosting] Koala::Facebook::APIError posting comment to FB: #{e}"
+        Rails.logger.error "[GT::SocialPosting] Koala::Facebook::APIError posting text to FB: #{e}"
         return false
       rescue ArgumentError => fb_error
-        Rails.logger.error "[GT::SocialPosting] ArgumentError posting comment to FB: #{fb_error.to_s}"
+        Rails.logger.error "[GT::SocialPosting] ArgumentError posting text to FB: #{fb_error.to_s}"
         return false
       rescue => e
-        Rails.logger.error "[GT::SocialPosting] Error posting comment to FB: #{e}"
+        Rails.logger.error "[GT::SocialPosting] Error posting text to FB: #{e}"
         return false
       end
     end
     
     #TODO: we need an iframe player for gt before we can post to tumblr!
     #      This will return false no matter what until we do!
-    def self.post_to_tumblr(from_user, comment, roll)
+    def self.post_to_tumblr(from_user, text, roll)
       begin
         # post a tumblr video post
-        return post_tumblr(from_user, comment, roll)
+        return post_tumblr(from_user, text, roll)
       rescue => e
         Rails.logger.error "[GT::SocialPosting] Error posting to Tumblr: #{e}"
         return false
@@ -46,8 +46,8 @@ module GT
     end
     
     #TODO: we need to re work email share template to reflect gt/rolls
-    def self.post_to_email(from_user, to_user, comment, roll)
-      return send_email(from_user, to_user, comment, roll)
+    def self.post_to_email(from_user, to_user, text, roll)
+      return send_email(from_user, to_user, text, roll)
     end
     
     private 
@@ -71,11 +71,11 @@ module GT
         end
       end
       
-      def self.post_tumblr(user, comment, roll)
+      def self.post_tumblr(user, text, roll)
         if user.has_provider('tumblr')
           tu = SocialPosting::Tumblr.new(user)
 
-          return tu.post_video(comment, roll)
+          return tu.post_video(text, roll)
         else
           return nil
         end

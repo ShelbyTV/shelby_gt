@@ -36,11 +36,11 @@ class V1::RollController < ApplicationController
   # 
   # @param [Required, String] roll_id The id of the roll to share
   # @param [Required, String] destination Where the roll is being shared to (comma seperated list ok)
-  # @param [Required, Escaped String] comment What the status update of the post is
+  # @param [Required, Escaped String] text What the status update of the post is
   def share
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['share']) do
-      unless params.keys.include?("destination") and params.keys.include?("comment")
-        return  render_error(404, "a destination and a comment is required to post") 
+      unless params.keys.include?("destination") and params.keys.include?("text")
+        return  render_error(404, "a destination and a text is required to post") 
       end
       
       unless params[:destination].is_a? Array
@@ -51,15 +51,15 @@ class V1::RollController < ApplicationController
         return render_error(404, "that roll is private, can not share") unless roll.public
         
         #TODO: link_to_roll needs to be created
-        comment = params[:comment] #+ link_to_roll
+        text = params[:text] #+ link_to_roll
         
         params[:destination].each do |d|
           case d
           when 'twitter'
-            resp = GT::SocialPoster.post_to_twitter(current_user, comment, roll)
+            resp = GT::SocialPoster.post_to_twitter(current_user, text, roll)
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           when 'facebook'
-            resp = GT::SocialPoster.post_to_facebook(current_user, comment, roll)
+            resp = GT::SocialPoster.post_to_facebook(current_user, text, roll)
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           else
             return render_error(404, "we dont support that destination yet :(")
