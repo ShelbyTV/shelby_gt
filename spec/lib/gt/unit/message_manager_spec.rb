@@ -20,18 +20,20 @@ describe GT::MessageManager do
     message.public.should eq(@public)
   end
   
+  it "should create a message even without text" do
+    options = { :creator => @u, :public => @public }
+    message = GT::MessageManager.build_message(options)    
+    message.should be_valid
+    message.nickname.should eq(@u.nickname)
+    message.public.should eq(@public)
+  end
+  
   it "should return error if no user, public attr or text is passed" do
     options = { :public => true, :text => @text }
     lambda { GT::MessageManager.build_message(options) }.should raise_error(ArgumentError)
     
     options = { :creator => @u, :text => @text }
     lambda { GT::MessageManager.build_message(options) }.should raise_error(ArgumentError)    
-  end
-  
-  it "should return a nil message if no text" do
-    options = { :creator => @u, :public => @public }
-    message = GT::MessageManager.build_message(options)    
-    message.should eq(nil)
   end
   
 end

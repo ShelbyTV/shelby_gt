@@ -96,6 +96,11 @@ describe GT::UrlHelper do
           {:provider_name => "vimeo", :provider_id => "19878538"}
       end
       
+      it "should parse vimeo moogaloop with clip_id" do
+        GT::UrlHelper.parse_url_for_provider_info("http://vimeo.com/moogaloop.swf?clip_id=39752759&autoplay=1").should == 
+          {:provider_name => "vimeo", :provider_id => "39752759"}
+      end
+      
       it "should parse vimeo iframe embeds" do
         GT::UrlHelper.parse_url_for_provider_info('<iframe src="http://player.vimeo.com/video/19799531" width="1280" height="720" frameborder="0"></iframe>').should == 
           {:provider_name => "vimeo", :provider_id => "19799531"}
