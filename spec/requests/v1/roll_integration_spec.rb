@@ -1,13 +1,14 @@
 require 'spec_helper' 
 
 describe 'v1/roll' do
-  before(:each) do
+  before(:all) do
     @u1 = Factory.create(:user)
-    @r = Factory.create(:roll, :creator => Factory.create(:user))
+    @u2 = Factory.create(:user)
+    @r = Factory.create(:roll, :creator => @u2)
   end
   
   context 'logged in' do
-    before(:each) do
+    before(:all) do
       set_omniauth()
       get '/auth/twitter/callback'
     end
@@ -118,9 +119,8 @@ describe 'v1/roll' do
         end
 
         it "should return 404 if roll can't be left" do
-          u = Factory.create(:user)
-          r = Factory.create(:roll, :creator => u)
-          puts r.creator.id, u.id
+          r = Factory.create(:roll, :creator => @u1)
+          puts "test: ", r.creator.id == @u1.id
           post '/v1/roll/'+r.id+'/leave'
           response.body.should be_json_eql(404).at_path("status")                  
         end        

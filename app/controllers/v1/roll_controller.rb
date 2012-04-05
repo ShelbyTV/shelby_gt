@@ -141,7 +141,7 @@ class V1::RollController < ApplicationController
   def leave
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['leave']) do
       if @roll = Roll.find(params[:roll_id])
-        puts @roll.leavable_by?(current_user)
+        puts "controller: ", @roll.leavable_by?(current_user), current_user.id
         if @roll.leavable_by?(current_user)
           @roll.remove_follower(current_user)
         else
