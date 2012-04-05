@@ -26,6 +26,7 @@ module StatsManager
   
     def self.timing(bucket, time, uid=false, action=false)
       # TODO: henry: why aren't we prefixing the stat here?
+      # TODO: dan: because the timing blocks in the controllers don't use this method, they use the clients time method. we could be prefixing stats here, but i didnt want to change anything that you had setup in arnold.
       bucket = "#{bucket}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.timing(bucket, time)
     end

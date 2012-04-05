@@ -1,5 +1,6 @@
 defaults: &defaults
   # TODO: henry: why are these prefixed with api.gt and the others aren't?
+  # TODO: dan: because the timing blocks in the controllers use the native 'time' method of the statsd gem.
   api:
     dashboard:
       index: 'api.gt.dashboard.index'
