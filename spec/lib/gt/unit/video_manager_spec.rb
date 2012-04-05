@@ -170,6 +170,53 @@ describe GT::VideoManager do
       end
       
     end
+   
+    context "mongo failure due to timing issue" do
+      before(:each) do
+        @h = {
+          'provider_name' => 'utewb',
+          'title' => 'of the book',
+          'name' => 'george',
+          'description' => 'just something im testing',
+          'author_name' => 'espinosa',
+          'height' => '400px',
+          'width' => '800px',
+          'thumbnail_url' => 'http://thu.mb',
+          'thumbnail_height' => '40px',
+          'thumbnail_width' => '80px',
+          'url' => 'the_url',
+          'html' => '-iframe src=\'whatever\' /-'
+        }
+      end
+      
+      it "should return correct Video if it gets created after checking for existance but before trying to save" do
+        # In this scenario, GT::VideoManager.find_or_create_video_for_embedly_hash looks for Video, finds nothing.
+        #
+        # So it creates that Video and saved, but mongo raises Mongo::OperationFailure b/c that Video has been created by
+        # another Arnold in the time it took me to create and try to save.
+        #
+        # --> In this case, i should return the Video that was created
+
+        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@h['url']).and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
+
+        #on first Video.where(...).first need to return NIL
+        #on second Video.where(...).first needs to return @v
+        timing_issue_video_class = mock_model("Video")
+        timing_issue_video_class.stub(:first).and_return(nil, @v)
+        Video.stub(:where).and_return(timing_issue_video_class)
+
+        #then on v.save need to throw Mongo::OperationFailure
+        exception_throwing_vid = double("vid", :provider_name= => nil, :provider_id= => nil, :title= =>nil, :name= => nil, :description= => nil, :author= => nil, :video_height= => nil, :video_width= => nil, :thumbnail_url= => nil, :thumbnail_height= => nil, :thumbnail_width= => nil, :source_url= => nil, :embed_url= => nil)
+        exception_throwing_vid.should_receive(:save).and_raise(Mongo::OperationFailure)
+        Video.should_receive(:new).and_return(exception_throwing_vid)
+
+        v = nil
+        lambda {
+          v = GT::VideoManager.send(:find_or_create_video_for_embedly_hash, @h).should
+        }.should_not raise_error(Mongo::OperationFailure)
+        v.should == @v
+      end
+    end
     
     context "shelby hash" do
       #TODO when it's implemented
