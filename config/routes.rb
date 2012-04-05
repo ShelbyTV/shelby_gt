@@ -39,6 +39,7 @@ ShelbyGt::Application.routes.draw do
       post 'upvote' => 'frame#upvote'
       post 'add_to_watch_later' => 'frame#add_to_watch_later'
       post 'watched' => 'frame#watched'
+      post 'share' => 'frame#share'
     end
     resources :video, :only => [:show]
     resources :dashboard_entries, :path => "dashboard", :only => [:index, :update]

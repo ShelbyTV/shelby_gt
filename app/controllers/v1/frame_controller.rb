@@ -141,6 +141,53 @@ class V1::FrameController < ApplicationController
   end
   
   ##
+  # Returns success if frame is shared successfully, with the given parameters.
+  #
+  # [GET] /v1/frame/:frame_id/share
+  # 
+  # @param [Required, String] frame_id The id of the frame to share
+  # @param [Required, String] destination Where the frame is being shared to (comma seperated list ok)
+  # @param [Required, Escaped String] text What the status update of the post is
+  def share
+    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['share']) do
+      unless params.keys.include?("destination") and params.keys.include?("text")
+        return  render_error(404, "a destination and text is required to post") 
+      end
+      
+      unless params[:destination].is_a? Array
+        return  render_error(404, "destination must be an array of strings") 
+      end
+      
+      if frame = Frame.find(params[:frame_id])
+        
+        #TODO: link_to_frame needs to be created
+        comment = params[:text] #+ link_to_frame
+        
+        params[:destination].each do |d|
+          case d
+          when 'twitter'
+            resp = GT::SocialPoster.post_to_twitter(current_user, comment, frame)
+          when 'facebook'
+            resp = GT::SocialPoster.post_to_facebook(current_user, comment, frame)
+          else
+            return render_error(404, "we dont support that destination yet :(")
+          end
+          
+          if resp
+            @status = 200
+            StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d], current_user.id, 'frame_share', request)
+          elsif resp == nil
+            render_error(404, "that user cant post to that destination")
+          end  
+        end
+        
+      else
+        render_error(404, "could not find that frame")
+      end
+    end
+  end
+  
+  ##
   # Upvotes a frame and returns the frame back w new score
   #   REQUIRES AUTHENTICATION
   #

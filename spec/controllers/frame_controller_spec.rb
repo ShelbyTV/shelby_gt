@@ -129,6 +129,54 @@ describe V1::FrameController do
     end
   end
   
+  describe "POST share" do
+    before(:each) do
+      sign_in @u1
+      @frame = stub_model(Frame)
+      Frame.stub!(:find).and_return(@frame)
+    end
+    
+    it "should return 200 if the user posts succesfully to destination" do
+      post :share, :destination => ["twitter"], :text => "testing", :format => :json
+      assigns(:status).should eq(200)      
+    end
+    
+    it "should return 404 if destination is not an array" do
+      post :share, :destination => "twitter", :text => "testing", :format => :json
+      assigns(:status).should eq(404)
+    end
+    
+    it "should return 404 if the user cant post to the destination" do
+      post :share, :destination => ["facebook"], :text => "testing", :format => :json
+      assigns(:status).should eq(404)
+      assigns(:message).should eq("that user cant post to that destination")      
+    end
+    
+    it "should not post if the destination is not supported" do
+      post :share, :destination => ["awesome_service"], :text => "testing", :format => :json
+      assigns(:status).should eq(404)
+      assigns(:message).should eq("we dont support that destination yet :(")
+    end
+    
+    it "should return 404 if a comment or destination is not present" do
+      post :share, :destination => ["twitter"], :format => :json
+      assigns(:status).should eq(404)
+      
+      post :share, :text => "testing", :format => :json
+      assigns(:status).should eq(404)
+      
+      assigns(:message).should eq("a destination and text is required to post")
+    end
+        
+    it "should return 404 if roll not found" do
+      Frame.stub!(:find).and_return(nil)
+      post :share, :destination => ["twitter"], :text => "testing", :format => :json
+      assigns(:status).should eq(404)
+      assigns(:message).should eq("could not find that frame")
+    end
+    
+  end
+  
   describe "POST add_to_watch_later" do
     before(:each) do    
       @f2 = Factory.create(:frame)

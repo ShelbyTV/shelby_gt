@@ -24,6 +24,7 @@ defaults: &defaults
       add_to_watch_later: 'frame.add_to_wl'
       watched: 'frame.watched'
       destroy: 'frame.destroy'
+      share: 'frame.share'
     conversation:
       show: 'conversation.show'
     messages:

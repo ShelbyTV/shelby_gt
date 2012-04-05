@@ -156,6 +156,44 @@ describe 'v1/frame' do
           response.body.should have_json_path("result/upvoters")
         end
       end
+
+      context "share frame" do
+        it "should return 200 if post is successful" do
+          post '/v1/frame/'+@f.id+'/share?destination[]=twitter&text=testing'
+          response.body.should be_json_eql(200).at_path("status")
+        end
+
+        it "should return 404 if roll not found" do
+          post '/v1/frame/'+@f.id+'xxx/share?destination[]=facebook&text=testing'
+
+          response.body.should be_json_eql(404).at_path("status")
+          response.body.should have_json_path("message")
+          parse_json(response.body)["message"].should eq("could not find that frame")
+        end
+
+        it "should return 404 if user cant post to that destination" do
+          post '/v1/frame/'+@f.id+'/share?destination[]=facebook&text=testing'
+
+          response.body.should be_json_eql(404).at_path("status")
+          response.body.should have_json_path("message")
+          parse_json(response.body)["message"].should eq("that user cant post to that destination")
+        end
+
+        it "should return 404 if destination not supported" do
+          post '/v1/frame/'+@f.id+'/share?destination[]=fake&text=testing'
+
+          response.body.should be_json_eql(404).at_path("status")
+          response.body.should have_json_path("message")
+          parse_json(response.body)["message"].should eq("we dont support that destination yet :(")
+        end
+        
+        it "should return 404 if destination and/or comment not incld" do
+          post '/v1/frame/'+@f.id+'/share'
+          response.body.should be_json_eql(404).at_path("status")
+          response.body.should have_json_path("message")
+          parse_json(response.body)["message"].should eq("a destination and text is required to post")
+        end
+      end
     end
     
     describe "DELETE" do
