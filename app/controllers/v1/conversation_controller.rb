@@ -10,7 +10,7 @@ class V1::ConversationController < ApplicationController
   # 
   # @param [Required, String] id The id of the conversation
   def show
-    StatsManager::StatsD.client.time(Settings::StatsConstants.api['video']['show']) do
+    StatsManager::StatsD.time(Settings::StatsConstants.api['video']['show']) do
       if @conversation = Conversation.find(params[:id])
         @status = 200
       else

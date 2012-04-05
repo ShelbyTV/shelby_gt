@@ -40,9 +40,10 @@ $max_redirects = 5
 #get machine name from command line options
 machine = ARGV.select { |i| i =~ /^--machine_name=/ }
 machine_name = (machine and machine[0].is_a? String) ? machine[0].slice(15,3) : "arnold"
+arnold_version = "v1"
 #stats buckets
-$statsd_job_timing_bucket = "link_processor.#{machine_name}.job_time"
-$statsd_jobs_processed_bucket = "link_processor.#{machine_name}.jobs_processed"
+$statsd_job_timing_bucket = "arnold.#{arnold_version}.#{machine_name}.job.time"
+$statsd_jobs_processed_bucket = "arnold.#{arnold_version}.#{machine_name}.job.processed"
 
 # To make sure the consumer isn't hung, and kill ourselves if it is
 $consumer_turns = 0

@@ -13,7 +13,7 @@ class V1::MessagesController < ApplicationController
   # @param [Required, String] text the text for the message
   # @return [Integer] returns the entire conversation.
   def create
-    StatsManager::StatsD.client.time(Settings::StatsConstants.api['messages']['create']) do
+    StatsManager::StatsD.time(Settings::StatsConstants.api['messages']['create']) do
       if !params.include?(:text)
         render_error(400, "text of message required")
       else
@@ -46,7 +46,7 @@ class V1::MessagesController < ApplicationController
   # @param [Required, String] id the id of the message to destroy.
   # @return [Integer] messages remaining in conversation.
   def destroy
-    StatsManager::StatsD.client.time(Settings::StatsConstants.api['messages']['destroy']) do
+    StatsManager::StatsD.time(Settings::StatsConstants.api['messages']['destroy']) do
       message_id = params[:id]
       @conversation = Conversation.find(params[:conversation_id])
       message = @conversation.find_message_by_id(message_id)

@@ -24,11 +24,19 @@ module StatsManager
       client.decrement(stat)
     end
   
-    def self.timing(bucket, time, uid=false, action=false)
-      # TODO: henry: why aren't we prefixing the stat here?
-      # TODO: dan: because the timing blocks in the controllers don't use this method, they use the clients time method. we could be prefixing stats here, but i didnt want to change anything that you had setup in arnold.
-      bucket = "#{bucket}/?uid=#{uid.to_s}&action=#{action}" if uid and action
-      client.timing(bucket, time)
+    def self.timing(stat, time, uid=false, action=false)
+      stat = STAT_PREFIX + stat
+      stat = "#{stat}/?uid=#{uid.to_s}&action=#{action}" if uid and action
+      client.timing(stat, time)
+    end
+    
+    def self.time(stat, uid=false, action=false, &block)
+      start_t = Time.now
+      yield block
+      end_t = Time.now
+      
+      stat = STAT_PREFIX + stat
+      client.timing(stat, end_t - start_t)
     end
   
     def self.count(stat, amount, uid=false, action=false)

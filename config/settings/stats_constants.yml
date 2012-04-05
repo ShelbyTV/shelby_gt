@@ -1,44 +1,36 @@
 defaults: &defaults
-  # TODO: henry: why are these prefixed with api.gt and the others aren't?
-  # TODO: dan: because the timing blocks in the controllers use the native 'time' method of the statsd gem.
+  # api.VER.gt.web prefix added in StatsManager  
   api:
     dashboard:
-      index: 'api.gt.dashboard.index'
-      update: 'api.gt.dashboard.update'
+      index: 'dashboard.index'
+      update: 'dashboard.update'
     user:
-      show: 'api.gt.user.show'
-      update: 'api.gt.user.update'
-      rolls: 'api.gt.user.rolls'
+      show: 'user.show'
+      update: 'user.update'
+      rolls: 'user.rolls'
     roll:
-      show: 'api.gt.roll.show'
-      share: 'api.gt.roll.share'
-      create: 'api.gt.roll.create'
-      join: 'api.gt.roll.join'
-      leave: 'api.gt.roll.leave'
-      update: 'api.gt.roll.update'
-      delete: 'api.gt.roll.destroy'
+      show: 'roll.show'
+      share: 'roll.share'
+      create: 'roll.create'
+      join: 'roll.join'
+      leave: 'roll.leave'
+      update: 'roll.update'
+      destroy: 'roll.destroy'
     frame:
-      index: 'api.gt.frame.index'
-      show: 'api.gt.frame.show'
-      create: 'api.gt.frame.create'
-      upvote: 'api.gt.frame.upvote'
-      add_to_watch_later: 'api.gt.frame.add_to_wl'
-      watched: 'api.gt.frame.watched'
-      destroy: 'api.gt.frame.destroy'
+      index: 'frame.index'
+      show: 'frame.show'
+      create: 'frame.create'
+      upvote: 'frame.upvote'
+      add_to_watch_later: 'frame.add_to_wl'
+      watched: 'frame.watched'
+      destroy: 'frame.destroy'
     conversation:
-      show: 'api.gt.conversation.show'
+      show: 'conversation.show'
     messages:
-      create: 'api.gt.messages.create'
-      destroy: 'api.gt.messages.destroy'
+      create: 'messages.create'
+      destroy: 'messages.destroy'
     video:
-      show: 'api.gt.video.show'
-  
-  
-  # api.gt prefix added in stats manager
-  arnold:
-    job:
-      processed: 'arnold.job.processed'
-      time: 'arnold.job.time'
+      show: 'video.show'
   
   user:
     new:

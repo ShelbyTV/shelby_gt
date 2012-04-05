@@ -61,8 +61,8 @@ module GT
       
         def self.clean_up(job, fibers, max_fibers, job_start_t)
 		      # -- stats --
-    		  StatsManager::StatsD.increment(Settings::StatsConstants.arnold['job']['processed'])
-    		  StatsManager::StatsD.timing(Settings::StatsConstants.arnold['job']['time'], Time.now - job_start_t)
+    		  StatsManager::StatsD.client.increment($statsd_jobs_processed_bucket)
+    		  StatsManager::StatsD.client.timing($statsd_job_timing_bucket, Time.now - job_start_t)
 
     		  # -- cleanup --
     		  fibers.delete(Fiber.current)
