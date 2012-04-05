@@ -15,7 +15,7 @@ class V1::FrameController < ApplicationController
   # @param [Optional, Integer] limit limit the number of frames returned, default 10
   # @param [Optional, Integer] skip the number of frames to skip, default 0
   def index
-    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['index']) do
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['index']) do
       # default params
       @limit = params[:limit] ? params[:limit] : 10
       # put an upper limit on the number of entries returned
@@ -43,7 +43,7 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame
   # @param [Optional, Boolean] include_children Include the referenced roll, video, conv, and rerolls
   def show
-    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['show']) do
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['show']) do
       if @frame = Frame.find(params[:id])
         @status =  200
         @include_frame_children = (params[:include_children] == "true") ? true : false
@@ -67,7 +67,7 @@ class V1::FrameController < ApplicationController
   # @param [Optional, Escaped String] text Message text to via added to the conversation
   # @param [Optional, String] source The source could be bookmarklet, webapp, etc
   def create
-    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['create']) do
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['create']) do
       render_error(404, "this route is for jsonp only.") if request.get? and !params[:callback]
       
       roll = Roll.find(params[:roll_id])
@@ -161,14 +161,14 @@ class V1::FrameController < ApplicationController
       if frame = Frame.find(params[:frame_id])
         
         #TODO: link_to_frame needs to be created
-        comment = params[:text] #+ link_to_frame
+        text = params[:text] #+ link_to_frame
         
         params[:destination].each do |d|
           case d
           when 'twitter'
-            resp = GT::SocialPoster.post_to_twitter(current_user, comment, frame)
+            resp = GT::SocialPoster.post_to_twitter(current_user, text)
           when 'facebook'
-            resp = GT::SocialPoster.post_to_facebook(current_user, comment, frame)
+            resp = GT::SocialPoster.post_to_facebook(current_user, text, frame)
           else
             return render_error(404, "we dont support that destination yet :(")
           end
@@ -195,7 +195,7 @@ class V1::FrameController < ApplicationController
   # 
   # @param [Required, String] id The id of the frame
   def upvote
-    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['upvote']) do
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['upvote']) do
       if @frame = Frame.find(params[:frame_id])
         if @frame.upvote!(current_user)
           @status = 200
@@ -217,7 +217,7 @@ class V1::FrameController < ApplicationController
   # 
   # @param [Required, String] id The id of the frame
   def add_to_watch_later
-    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['add_to_watch_later']) do
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['add_to_watch_later']) do
       if @frame = Frame.find(params[:frame_id])
         if @new_frame = @frame.add_to_watch_later!(current_user)
           @status = 200
@@ -241,7 +241,7 @@ class V1::FrameController < ApplicationController
   # @param [Optional, String] start_time The start_time of the action on the frame
   # @param [Optional, String] end_time The end_time of the action on the frame
   def watched
-    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['watched']) do
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['watched']) do
       if @frame = Frame.find(params[:frame_id])
         @status = 200
         
@@ -270,7 +270,7 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame to destroy.
   # @return [Integer] Whether request was successful or not.
   def destroy
-    StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['destroy']) do
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['destroy']) do
       if frame = Frame.find(params[:id]) and frame.destroy 
         @status = 200
       else

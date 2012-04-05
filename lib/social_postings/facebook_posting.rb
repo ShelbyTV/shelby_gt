@@ -10,7 +10,7 @@ module SocialPosting
         raise ArgumentError, 'User must have facebook authentication' unless @facebook_auth
       end
       
-      def post_comment(message, fb_post_id=nil, roll=nil)
+      def post_comment(message, fb_post_id=nil, entity=nil)
         if Settings::Facebook.should_send_post
           if fb_post_id
             return !!facebook_client.put_comment(fb_post_id, {
@@ -18,7 +18,7 @@ module SocialPosting
               :attribution => Settings::Facebook.app_name
               })
           else
-            if roll
+            if entity.is_a? Roll
               return !!facebook_client.put_object("me","feed",{
                 :message => message, 
                 #TODO: We need to put in whatever the link will be eventually
@@ -27,6 +27,18 @@ module SocialPosting
                 :name => roll.title,
                 :caption => "via Shelby.TV",
                 :description => roll.title,
+                :application => Settings::Facebook.app_name,
+                :icon => Settings::Facebook.fb_application_icon
+                })
+            elsif entity.is_a? Frame
+              return !!facebook_client.put_object("me","feed",{
+                :message => message, 
+                #TODO: We need to put in whatever the link will be eventually
+                #:link => roll.permalink,
+                :picture => frame.video.thumbnail_url,
+                :name => frame.video.title,
+                :caption => "via Shelby.TV",
+                :description => frame.video.title,
                 :application => Settings::Facebook.app_name,
                 :icon => Settings::Facebook.fb_application_icon
                 })

@@ -14,12 +14,12 @@ describe GT::SocialPoster do
     end
     
     it "should return true if user has twitter acct and tweet is sent" do
-      tweet = GT::SocialPoster.post_to_twitter(@from_user, @comment, @frame)
+      tweet = GT::SocialPoster.post_to_twitter(@from_user, @comment)
       tweet.should eq(true)
     end
     
     it "should return false if a parameter isn't given" do
-      tweet = GT::SocialPoster.post_to_twitter(nil, @comment, @frame)
+      tweet = GT::SocialPoster.post_to_twitter(nil, @comment)
       tweet.should eq(false)
     end
 
@@ -27,7 +27,7 @@ describe GT::SocialPoster do
       @from_user.authentications.first.provider = 'not_twitter'
       @from_user.save
       
-      tweet = GT::SocialPoster.post_to_twitter(@from_user, @comment, nil)
+      tweet = GT::SocialPoster.post_to_twitter(@from_user, @comment)
       tweet.should eq(nil)
     end 
   end
@@ -55,13 +55,14 @@ describe GT::SocialPoster do
       @from_user.authentications.first.provider = 'bookface'
       @from_user.save
       
-      post = GT::SocialPoster.post_to_twitter(@from_user, @comment, nil)
+      post = GT::SocialPoster.post_to_facebook(@from_user, @comment, nil)
       post.should eq(nil)
     end
   end
 
   context "posting to tumblr" do
     #we need an iframe player for gt before we can post to tumblr!
+    it 'should post to tumblr'
   end
   
   context "send via email" do
@@ -73,7 +74,7 @@ describe GT::SocialPoster do
       @frame = Factory.create(:frame, :creator_id => @from_user.id, :video_id => video.id)
     end
     
-    it "should send email and return a Mail::Message" do
+    it "should send email of a frame and return a Mail::Message" do
       to_user = "some_other@email.com"
       email = GT::SocialPoster.post_to_email(@from_user, to_user, @comment, @frame)
       
@@ -81,6 +82,8 @@ describe GT::SocialPoster do
       email.from.should  eq([@from_user.primary_email])
       email.to.should  eq([to_user])
     end
+    
+    it "should send email of a roll and return a Mail::Message"
     
     
   end
