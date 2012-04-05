@@ -85,7 +85,10 @@ class AuthenticationsController < ApplicationController
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signout'])
     #TODO: really should redirect to http://shelby.tv/
     #TODO: should probalby redirect to http://shelby.tv/ all over this file
-    redirect_to request.headers['HTTP_REFERER'] || root_path
+    
+    # TEMP
+    redirect_to "http://web.gt.shelby.tv" 
+    #redirect_to request.headers['HTTP_REFERER'] || root_path
   end
   
 end
