@@ -141,12 +141,16 @@ class V1::RollController < ApplicationController
   def leave
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['leave']) do
       if @roll = Roll.find(params[:roll_id])
-        @roll.remove_follower(current_user)
-        if @roll.save
-          @status = 200
-          StatsManager::StatsD.increment(Settings::StatsConstants.roll['leave'], current_user.id, 'roll_leave', request)
+        if @roll.leavable_by?(current_user)
+          
+          if @roll.remove_follower(current_user)
+            @status = 200
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll['leave'], current_user.id, 'roll_leave', request)
+          else
+            return render_error(404, "something went wrong leaving that roll.")
+          end
         else
-          render_error(404, "something went wrong leaving that roll.")
+          return render_error(404, "the creator of a roll can not leave a roll.")
         end
       else
         render_error(404, "can't find that roll dude.")

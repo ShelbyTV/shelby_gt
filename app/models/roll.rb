@@ -98,6 +98,15 @@ class Roll
     # private collaborative roll, must be a follower to post
     return self.following_users.any? { |fu| fu.user_id == user_id }
   end
+  
+  # The creator of a roll can not leave a roll.
+  # To leave a roll a user must delete it.
+  def leavable_by?(u)
+    raise ArgumentError, "must supply user or user_id" unless u
+    user_id = (u.is_a?(User) ? u.id : u)
+    
+    return self.creator_id != user_id
+  end
 
   # if you can view it, you can invite to it
   def invitable_to_by?(u) viewable_by?(u); end

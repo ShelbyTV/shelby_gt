@@ -128,20 +128,26 @@ describe V1::RollController do
   
   describe "POST join/leave" do
     before(:each) do
-      @r = Factory.create(:roll, :creator => @u1)
+      @u = Factory.create(:user)
+      @fu = Factory.create(:user)
+      @r = Factory.create(:roll, :creator => @u, :following_users=>[{:user_id=>@u1.id}] )
       Roll.stub!(:find).and_return(@r)
     end
     
     it "should return 200 if the user joins a roll succesfully" do
-      @r.should_receive(:add_follower).with(@u1).and_return(@r)
       post :join, :roll_id => @r.id, :format => :json
       assigns(:status).should eq(200)
     end
     
     it "should return 200 if the user leaves a roll succesfully" do
-      @r.should_receive(:remove_follower).with(@u1).and_return(@r)
-      post :leave, :roll_id => @r.id.to_s, :format => :json
+      post :leave, :roll_id => @r.id, :format => :json
       assigns(:status).should eq(200)
+    end
+    
+    it "should return 404 if user isn't allowed to leave a roll" do
+      @r.following_users=[{:user_id=>@fu.id}]; @r.save
+      post :leave, :roll_id => @r.id, :format => :json
+      assigns(:status).should eq(404)
     end
     
     it "should return 404 if roll is not found" do
