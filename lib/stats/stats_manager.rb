@@ -36,7 +36,7 @@ module StatsManager
       end_t = Time.now
       
       stat = STAT_PREFIX + stat
-      client.timing(stat, end_t - start_t)
+      client.timing(stat, ((end_t - start_t)*1000).round)
     end
   
     def self.count(stat, amount, uid=false, action=false)
