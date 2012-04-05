@@ -56,7 +56,7 @@ class V1::RollController < ApplicationController
         params[:destination].each do |d|
           case d
           when 'twitter'
-            resp = GT::SocialPoster.post_to_twitter(current_user, text, roll)
+            resp = GT::SocialPoster.post_to_twitter(current_user, text)
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           when 'facebook'
             resp = GT::SocialPoster.post_to_facebook(current_user, text, roll)

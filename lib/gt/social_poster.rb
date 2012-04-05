@@ -5,7 +5,7 @@ require 'tumblr_posting'
 module GT
   class SocialPoster
 
-    def self.post_to_twitter(from_user, text, roll)
+    def self.post_to_twitter(from_user, text)
       begin
         #post a new tweet
         return post_tweet(from_user, text, nil)
@@ -18,9 +18,9 @@ module GT
       end
     end
     
-    def self.post_to_facebook(from_user, text, roll)
+    def self.post_to_facebook(from_user, text, entity)
       begin
-        return post_fb_comment(from_user, text, nil, roll)
+        return post_fb_comment(from_user, text, nil, entity)
       rescue Koala::Facebook::APIError => e
         Rails.logger.error "[GT::SocialPosting] Koala::Facebook::APIError posting text to FB: #{e}"
         return false
@@ -35,10 +35,10 @@ module GT
     
     #TODO: we need an iframe player for gt before we can post to tumblr!
     #      This will return false no matter what until we do!
-    def self.post_to_tumblr(from_user, text, roll)
+    def self.post_to_tumblr(from_user, text, entity)
       begin
         # post a tumblr video post
-        return post_tumblr(from_user, text, roll)
+        return post_tumblr(from_user, text, entity)
       rescue => e
         Rails.logger.error "[GT::SocialPosting] Error posting to Tumblr: #{e}"
         return false
@@ -46,8 +46,8 @@ module GT
     end
     
     #TODO: we need to re work email share template to reflect gt/rolls
-    def self.post_to_email(from_user, to_user, text, roll)
-      return send_email(from_user, to_user, text, roll)
+    def self.post_to_email(from_user, to_user, text, entity)
+      return send_email(from_user, to_user, text, entity)
     end
     
     private 
@@ -62,29 +62,33 @@ module GT
         end
       end
       
-      def self.post_fb_comment(user, message, fb_post_id=nil, roll=nil)
+      def self.post_fb_comment(user, message, fb_post_id=nil, entity=nil)
         if user.has_provider('facebook')
           fb = SocialPosting::Facebook.new(user)
-          return fb.post_comment(message, fb_post_id, roll)
+          return fb.post_comment(message, fb_post_id, entity)
         else
           return nil
         end
       end
       
-      def self.post_tumblr(user, text, roll)
+      def self.post_tumblr(user, text, entity)
         if user.has_provider('tumblr')
           tu = SocialPosting::Tumblr.new(user)
 
-          return tu.post_video(text, roll)
+          return tu.post_video(text, entity)
         else
           return nil
         end
       end
       
       #TODO: create a versitile mailing action for frames or rolls
-      def self.send_email(user, email_to, message=nil, roll=nil)
+      def self.send_email(user, email_to, message=nil, entity=nil)
         from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
-        return SharingMailer.share_frame(user, from_email, email_to, message, roll).deliver
+        if entity.is_a? Roll
+          return SharingMailer.share_roll(user, from_email, email_to, message, entity).deliver
+        elsif entity.is_a? Frame
+          return SharingMailer.share_frame(user, from_email, email_to, message, entity).deliver
+        end
       end
     
   end

@@ -166,7 +166,7 @@ class V1::FrameController < ApplicationController
         params[:destination].each do |d|
           case d
           when 'twitter'
-            resp = GT::SocialPoster.post_to_twitter(current_user, text, frame)
+            resp = GT::SocialPoster.post_to_twitter(current_user, text)
           when 'facebook'
             resp = GT::SocialPoster.post_to_facebook(current_user, text, frame)
           else
