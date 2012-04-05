@@ -120,8 +120,7 @@ class V1::RollController < ApplicationController
   def join
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['join']) do
       if @roll = Roll.find(params[:roll_id])
-        @roll.add_follower(current_user)
-        if @roll.save
+        if @roll.add_follower(current_user)
           @status = 200
           StatsManager::StatsD.increment(Settings::StatsConstants.roll['join'], current_user.id, 'roll_join', request)
         else
@@ -142,7 +141,6 @@ class V1::RollController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['leave']) do
       if @roll = Roll.find(params[:roll_id])
         if @roll.leavable_by?(current_user)
-          
           if @roll.remove_follower(current_user)
             @status = 200
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['leave'], current_user.id, 'roll_leave', request)

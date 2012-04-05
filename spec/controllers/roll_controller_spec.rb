@@ -135,6 +135,7 @@ describe V1::RollController do
     end
     
     it "should return 200 if the user joins a roll succesfully" do
+      @r.following_users=[]; @r.save
       post :join, :roll_id => @r.id, :format => :json
       assigns(:status).should eq(200)
     end
