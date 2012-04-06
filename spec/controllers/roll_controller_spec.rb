@@ -5,6 +5,7 @@ describe V1::RollController do
     @u1 = Factory.create(:user)
     sign_in @u1
     @roll = stub_model(Roll)
+    @roll.public = false
     Roll.stub!(:find).and_return(@roll)
   end
   
@@ -12,6 +13,14 @@ describe V1::RollController do
     it "assigns one roll to @roll" do
       get :show, :format => :json
       assigns(:roll).should eq(@roll)
+    end
+    
+    it "will show a public roll if you're not signed in" do
+      @roll.public = true
+      sign_out @u1
+      
+      get :show, :format => :json
+      assigns(:status).should eq(200)
     end
   end
   

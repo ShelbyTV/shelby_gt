@@ -87,10 +87,12 @@ describe Roll do
 
   context "permissions" do
     
-    it "should be viewable & invitable to by anybody if +public" do
+    it "should be viewable & invitable to by anybody (even non-logged in) if +public" do
       @roll.creator = @user
       @roll.public = true
-    
+
+      @roll.viewable_by?(nil).should == true
+      
       @roll.viewable_by?(@user).should == true
       @roll.invitable_to_by?(@user).should == true
       @roll.viewable_by?(@stranger).should == true
@@ -101,6 +103,7 @@ describe Roll do
       @roll.public = true
       @roll.collaborative = true
     
+      @roll.postable_by?(nil).should == true
       @roll.postable_by?(@stranger).should == true
     end
 
@@ -111,6 +114,7 @@ describe Roll do
     
       @roll.postable_by?(@user).should == true
       @roll.postable_by?(@stranger).should == false
+      @roll.postable_by?(nil).should == false
     end
   
     it "should be viewable, postable and invitable-to by followers if it's -public and +collaborative" do
@@ -121,6 +125,7 @@ describe Roll do
       @roll.viewable_by?(@stranger).should == false
       @roll.invitable_to_by?(@stranger).should == false
       @roll.postable_by?(@stranger).should == false
+      @roll.postable_by?(nil).should == false
     
       #get to know that stranger...
       # ie add them as a follower to a private collaborative roll

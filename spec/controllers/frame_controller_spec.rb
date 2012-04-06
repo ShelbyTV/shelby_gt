@@ -13,6 +13,7 @@ describe V1::FrameController do
     @u2 = Factory.create(:user)
     @roll = stub_model(Roll)
     @frame = stub_model(Frame)
+    @frame.roll = @roll
     Roll.stub(:find) { @roll }
     Frame.stub(:find) { @frame }
     @roll.stub_chain(:frames, :sort) { [@frame] }
@@ -27,12 +28,32 @@ describe V1::FrameController do
       assigns(:status).should eq(200)
     end
     
+    it "should allow you to get frame for public roll w/o being signed in" do
+      sign_out @u1
+      
+      @roll.stub_chain(:frames,:limit, :skip, :sort).and_return([@frame])
+      get :index, :format => :json
+      assigns(:roll).should eq(@roll)
+      assigns(:frames).should eq([@frame])
+      assigns(:status).should eq(200)
+    end
+    
+    it "should not allow you to get frame for non-public roll w/o being signed in" do
+      @roll.public = false
+      sign_out @u1
+      
+      @roll.stub_chain(:frames, :limit, :skip, :sort).and_return([@frame])
+      get :index, :format => :json
+      assigns(:status).should eq(404)
+    end
+    
     it "returns 404 if cant find roll" do
       Roll.stub(:find) { nil }
       get :index, :format => :json
       assigns(:status).should eq(404)
       assigns(:message).should eq("could not find that roll")
     end
+    
   end
   
   describe "GET show" do
@@ -40,6 +61,22 @@ describe V1::FrameController do
       get :show, :frame_id => @frame.id, :format => :json
       assigns(:frame).should eq(@frame)
       assigns(:status).should eq(200)
+    end
+    
+    it "should allow non logged in user to see frame is roll is public" do
+      sign_out @u1
+      
+      get :show, :frame_id => @frame.id, :format => :json
+      assigns(:frame).should eq(@frame)
+      assigns(:status).should eq(200)
+    end
+    
+    it "should not allow non logged in user to see frame is roll is not public" do
+      @roll.public = false
+      sign_out @u1
+      
+      get :show, :frame_id => @frame.id, :format => :json
+      assigns(:status).should eq(404)
     end
     
     it "returns 404 when cant find frame" do

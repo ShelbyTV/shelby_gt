@@ -71,10 +71,9 @@ class Roll
   # Creator of a roll can always view it
   # Private rolls are only viewable by followers
   def viewable_by?(u)
-    raise ArgumentError, "must supply user or user_id" unless u
-    user_id = (u.is_a?(User) ? u.id : u)
-    
     return true if self.public?
+    return false unless u
+    user_id = (u.is_a?(User) ? u.id : u)
     
     return true if self.creator_id == user_id
     
@@ -86,7 +85,9 @@ class Roll
   # Anybody can post to public collaborative roll
   # Only followers can post to private, collaborative roll
   def postable_by?(u)
-    raise ArgumentError, "must supply user or user_id" unless u
+    return true if self.public? and self.collaborative?
+    return false unless u
+    
     user_id = (u.is_a?(User) ? u.id : u)
     
     return true if self.creator_id == user_id

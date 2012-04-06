@@ -3,12 +3,12 @@ require 'video_manager'
 
 class V1::FrameController < ApplicationController
 
-  before_filter :user_authenticated?, :except => :watched
+  before_filter :user_authenticated?, :except => [:index, :show, :watched]
   skip_before_filter :verify_authenticity_token, :only => [:create]
   
   ##
   # Returns all frames in a roll
-  #   REQUIRES AUTHENTICATION
+  #   AUTHENTICATION OPTIONAL
   #
   # [GET] /v1/roll/:id/frames
   # @param [Optional, Boolean] include_children if true will return frame children
@@ -24,7 +24,7 @@ class V1::FrameController < ApplicationController
       skip = params[:skip] ? params[:skip] : 0
       
       @roll = Roll.find(params[:roll_id])
-      if @roll
+      if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
         @frames = @roll.frames.limit(@limit).skip(skip).sort(:score.desc)
         @status =  200
@@ -36,7 +36,7 @@ class V1::FrameController < ApplicationController
     
   ##
   # Returns one frame
-  #   REQUIRES AUTHENTICATION
+  #   AUTHENTICATION OPTIONAL
   #
   # [GET] /v1/frame/:id
   # 
@@ -44,7 +44,8 @@ class V1::FrameController < ApplicationController
   # @param [Optional, Boolean] include_children Include the referenced roll, video, conv, and rerolls
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['show']) do
-      if @frame = Frame.find(params[:id])
+      @frame = Frame.find(params[:id])
+      if @frame and @frame.roll and @frame.roll.viewable_by?(current_user)
         @status =  200
         @include_frame_children = (params[:include_children] == "true") ? true : false
       else
