@@ -52,29 +52,46 @@ describe V1::RollController do
     it "creates and assigns one roll to @roll" do
       Roll.stub!(:new).and_return(@roll)
       @roll.stub(:valid?).and_return(true)
-      post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :format => :json
+      post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :public => false, :collaborative => false, :format => :json
+      assigns(:roll).should eq(@roll)
+      assigns(:roll).public?.should == false
+      assigns(:roll).collaborative.should == false
+      assigns(:status).should eq(200)
+    end
+    
+    it "creates and assigns one roll to @roll without thumbnail" do
+      Roll.stub!(:new).and_return(@roll)
+      @roll.stub(:valid?).and_return(true)
+      post :create, :title =>"foo", :public => false, :collaborative => false, :format => :json
       assigns(:roll).should eq(@roll)
       assigns(:status).should eq(200)
     end
     
     it "returns 404 if user not signed in" do
       sign_out @u1
-      post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :format => :json
+      post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :public => false, :collaborative => false, :format => :json
       response.should_not be_success
     end
     
     it "returns 404 if there is no title" do
       sign_in @u1
-      post :create, :thumbnail_url => "http://foofle", :format => :json
+      post :create, :thumbnail_url => "http://foofle", :public => false, :collaborative => false, :format => :json
       assigns(:status).should eq(404)
       assigns(:message).should eq("title required")
     end
     
-    it "returns 404 if there is no thumbnail_url" do
+    it "returns 404 if public is not set" do
       sign_in @u1
-      post :create, :title => "test", :format => :json
+      post :create, :title => "title", :collaborative => true, :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("thumbnail_url required")
+      assigns(:message).should eq("public required")
+    end
+    
+    it "returns 404 if collaborative is not set" do
+      sign_in @u1
+      post :create, :title => "title", :public => true, :format => :json
+      assigns(:status).should eq(404)
+      assigns(:message).should eq("collaborative required")
     end
     
   end

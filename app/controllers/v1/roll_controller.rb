@@ -85,20 +85,24 @@ class V1::RollController < ApplicationController
   # [POST] /v1/roll
   # 
   # @param [Required, String] title The title of the roll
-  # @param [Required, String] thumbnail_url The thumbnail_url for the url
-  # @param [Optional, String] collaborative Is this roll collaborative?
-  # @param [Optional, String] public Is this roll public?
+  # @param [Optional, String] thumbnail_url The thumbnail_url for the url
+  # @param [Required, String] collaborative Is this roll collaborative?
+  # @param [Required, String] public Is this roll public?
   def create
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['create']) do
-      if ( !params.include?(:title) or !params.include?(:thumbnail_url) or !user_signed_in?)
+      if ![:title, :public, :collaborative].all? { |p| params.include?(p) }
         @status = 404
         @message = "title required" unless params.include?(:title)
-        @message = "thumbnail_url required" unless params.include?(:thumbnail_url)
+        @message = "public required" unless params.include?(:public)
+        @message = "collaborative required" unless params.include?(:collaborative)
         @message = "not authenticated, could not access user" unless user_signed_in?
         render 'v1/blank'
       else
         @roll = Roll.new(:title => params[:title], :thumbnail_url => params[:thumbnail_url])
         @roll.creator = current_user
+        @roll.public = params[:public]
+        @roll.collaborative = params[:collaborative]
+        
         begin
           if @roll.save!
             roll_type = @roll.public ? 'public' : 'private'
