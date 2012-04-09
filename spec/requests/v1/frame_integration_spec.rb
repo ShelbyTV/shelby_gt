@@ -227,7 +227,7 @@ describe 'v1/frame' do
   context "not logged in" do
 
     it "should return 404 Not Found on SHOW if frame isn't part of public roll" do
-      f = Factory.create(:frame)
+      f = Factory.create(:frame, :roll => Factory.create(:roll, :public=>false, :creator=>Factory.create(:user)))
       get '/v1/frame/'+f.id
       response.status.should eq(404)
     end
