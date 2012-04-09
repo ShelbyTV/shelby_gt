@@ -18,7 +18,7 @@ if current_user == @user
 	end
 	
 	node "watch_later_roll" do
-		@user.watch_later_roll_id
+		@user.watch_later_roll_id if @user.faux != 1
 	end
 	
 	node "public_roll" do
