@@ -12,7 +12,7 @@ describe V1::FrameController do
     sign_in @u1
     @u2 = Factory.create(:user)
     @roll = stub_model(Roll)
-    @frame = stub_model(Frame)
+    @frame = Factory.create(:frame, :creator => @u1)
     Roll.stub(:find) { @roll }
     Frame.stub(:find) { @frame }
     @roll.stub_chain(:frames, :sort) { [@frame] }
@@ -25,6 +25,23 @@ describe V1::FrameController do
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])
       assigns(:status).should eq(200)
+    end
+
+    it "should return error if user isnt logged in and roll is private" do
+      sign_out @u1
+      @roll.public = false; @roll.save
+      @roll.stub_chain(:frames,:limit, :skip, :sort).and_return([@frame])
+      get :index, :format => :json
+      assigns(:status).should eq(404)
+      assigns(:message).should eq("current user can't view this roll")
+    end
+    
+    it "should return error if current user cant view roll" do
+      @roll.creator = Factory.create(:user); @roll.public = false; @roll.save
+      @roll.stub_chain(:frames,:limit, :skip, :sort).and_return([@frame])
+      get :index, :format => :json
+      assigns(:status).should eq(404)
+      assigns(:message).should eq("current user can't view this roll")      
     end
     
     it "returns 404 if cant find roll" do

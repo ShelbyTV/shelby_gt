@@ -3,12 +3,12 @@ require 'video_manager'
 
 class V1::FrameController < ApplicationController
 
-  before_filter :user_authenticated?, :except => :watched
+  before_filter :user_authenticated?, :except => [:watched, :index]
   skip_before_filter :verify_authenticity_token, :only => [:create]
   
   ##
   # Returns all frames in a roll
-  #   REQUIRES AUTHENTICATION
+  #   AUTHENTICATION OPTIONAL
   #
   # [GET] /v1/roll/:id/frames
   # @param [Optional, Boolean] include_children if true will return frame children
@@ -25,9 +25,13 @@ class V1::FrameController < ApplicationController
       
       @roll = Roll.find(params[:roll_id])
       if @roll
-        @include_frame_children = (params[:include_children] == "true") ? true : false
-        @frames = @roll.frames.limit(@limit).skip(skip).sort(:score.desc)
-        @status =  200
+        if (current_user and @roll.viewable_by?(current_user)) or @roll.public
+          @include_frame_children = (params[:include_children] == "true") ? true : false
+          @frames = @roll.frames.limit(@limit).skip(skip).sort(:score.desc)
+          @status =  200
+        else
+          render_error(404, "current user can't view this roll")
+        end
       else
         render_error(404, "could not find that roll")
       end

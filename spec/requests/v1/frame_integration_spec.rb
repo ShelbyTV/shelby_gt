@@ -41,6 +41,15 @@ describe 'v1/frame' do
           parse_json(response.body)["result"]["creator_id"].should eq(@u1.id.to_s)
           response.body.should have_json_size(2).at_path("result/frames")
         end
+        
+        it "should return 404 if cant access frames in a roll" do
+          roll = Factory.create(:roll, :creator_id => Factory.create(:user).id, :public => false)
+          @f.roll_id = roll.id; @f.save
+          Factory.create(:frame, :roll_id => roll.id)
+          get '/v1/roll/'+roll.id.to_s+'/frames'
+          
+          response.body.should be_json_eql(404).at_path("status")
+        end
       
         it "should return error message if frame doesnt exist" do
           get '/v1/roll/'+@f.id+'xxx/frames'
