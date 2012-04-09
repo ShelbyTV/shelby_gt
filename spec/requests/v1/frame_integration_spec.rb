@@ -5,12 +5,17 @@ describe 'v1/frame' do
   
   context 'logged in' do
     before(:all) do
-      @f = Factory.create(:frame)
       @u1 = Factory.create(:user)
       @u1.upvoted_roll = Factory.create(:roll, :creator => @u1)
       @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
       @u1.viewed_roll = Factory.create(:roll, :creator => @u1)
       @u1.save
+      
+      @r = Factory.create(:roll, :creator => @u1, :public => false)
+      @f = Factory.create(:frame)
+      @f.roll = @r
+      @f.save
+
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
     end
@@ -221,12 +226,10 @@ describe 'v1/frame' do
   
   context "not logged in" do
 
-    describe "All API Routes" do
-      it "should return 401 Unauthorized" do
-        f = Factory.create(:frame)
-        get '/v1/frame/'+f.id
-        response.status.should eq(401)
-      end
+    it "should return 404 Not Found on SHOW if frame isn't part of public roll" do
+      f = Factory.create(:frame)
+      get '/v1/frame/'+f.id
+      response.status.should eq(404)
     end
     
   end

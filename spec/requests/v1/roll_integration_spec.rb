@@ -31,7 +31,7 @@ describe 'v1/roll' do
     describe "POST" do
       context "roll creation" do
         it "should create and return a roll on success" do
-          post '/v1/roll?title=Roll%20me%20baby&thumbnail_url=http://bar.com'
+          post '/v1/roll?title=Roll%20me%20baby&thumbnail_url=http://bar.com&public=0&collaborative=1'
 
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/title")
