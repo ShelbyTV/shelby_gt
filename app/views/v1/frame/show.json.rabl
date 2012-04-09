@@ -9,7 +9,7 @@ if @include_frame_children == true
 	end
 
 	child :creator => "creator" do
-		extends 'v1/user/show'
+		attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux
 	end
 
 	child :video => "video" do
