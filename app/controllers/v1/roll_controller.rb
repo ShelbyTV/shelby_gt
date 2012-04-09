@@ -104,7 +104,7 @@ class V1::RollController < ApplicationController
         @roll.collaborative = params[:collaborative]
         
         begin
-          if @roll.save!
+          if @roll.save! and @roll.add_follower(current_user)
             roll_type = @roll.public ? 'public' : 'private'
             StatsManager::StatsD.increment(Settings::StatsConstants.roll[:create][roll_type], current_user.id, 'roll_create', request)
             @status = 200
