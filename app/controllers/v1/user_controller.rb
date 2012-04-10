@@ -47,22 +47,13 @@ class V1::UserController < ApplicationController
   #
   # [PUT] /v1/user/:id
   # 
-  # @param [Required, String] id The id of the user  
   # @param [Required, String] attr The attribute(s) to update
-  #
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['update']) do
-      id = params.delete(:id)
-      @user = User.find(id)
-      # allow for email to be removed, not sure if we want this or not...
-      params[:primary_email] = nil if params[:primary_email] = ""
-      
-      @user.primary_email = params[:primary_email] if params[:primary_email]
-      @user.nickname = params[:nickname] if params[:nickname]
-      @user.preferences = params[:preferences] if params[:preferences]
-      
+      @user = current_user
+      params.keep_if {|key,value| [:name, :nickname, :primary_email, :preferences].include?key.to_sym}
       begin
-        if @user.save!
+        if @user.update_attributes!(params)
           @status = 200
         else
           render_error(404, "error while updating user.")
@@ -70,7 +61,6 @@ class V1::UserController < ApplicationController
       rescue => e
         render_error(404, "error while updating user: #{e}")
       end
-      
     end
   end
 
