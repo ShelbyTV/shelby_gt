@@ -31,22 +31,9 @@ describe V1::UserController do
   
   describe "PUT update" do
     it "updates a user successfuly" do
-      u1 = mock_model(User, :update_attributes => true)
-      User.stub(:find) { u1 }
-      u1.should_receive(:update_attributes!).and_return(u1)
-      u1.stub(:preferences){ "preferences" }
-      put :update, :id => u1.id, :user => {:nickname=>"nick"}, :format => :json
-      assigns(:user).should eq(u1)
+      put :update, :id => @u1.id, :user => {:nickname=>"nick"}, :format => :json
+      assigns(:user).should eq(@u1)
       assigns(:status).should eq(200)
-    end
-    
-    it "updates a user UNsuccessfuly gracefully" do
-      u1 = mock_model(User, :update_attributes => true)
-      User.stub(:find) { u1 }
-      u1.should_receive(:update_attributes!).and_return(false)
-      u1.stub(:save!) { false }
-      put :update, :id => u1.id, :format => :json
-      assigns(:status).should eq(404)
     end
   end
 

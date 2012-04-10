@@ -45,7 +45,7 @@ describe V1::RollController do
   
   describe "POST create" do
     before(:each) do
-      @roll = stub_model(Roll)
+      @roll = Factory.create(:roll, :creator_id => @u1.id)
       Roll.stub!(:find).and_return(@roll)
     end
     
