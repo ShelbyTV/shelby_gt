@@ -4,7 +4,7 @@ attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_im
 
 if current_user == @user
 	child :authentications do
-		attributes :uid, :provider
+		attributes :uid, :provider, :name, :nickname
 	end	
 	
 	child :preferences => "preferences" do
