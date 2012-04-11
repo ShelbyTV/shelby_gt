@@ -87,7 +87,7 @@ class User
   # [twitter, facebook, email, tumblr]
   key :social_tracker,        Array, :default => [0, 0, 0, 0]
 
-  attr_accessible :name, :nickname, :primary_email
+  attr_accessible :name, :nickname, :primary_email, :preferences
   
   validates_uniqueness_of :nickname, :case_sensitive => false
   
