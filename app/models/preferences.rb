@@ -7,6 +7,9 @@ class Preferences
   key :email_updates,           Boolean, :default => true
   key :like_notifications,      Boolean, :default => true
   key :watched_notifications,   Boolean, :default => true
+  key :upvote_notifications,    Boolean, :default => true
+  key :comment_notifications,   Boolean, :default => true
+  key :reroll_notifications,    Boolean, :default => true  
   key :quiet_mode,              Boolean
   
   
