@@ -11,7 +11,7 @@ module GT
       NotificationMailer.upvote_notification(user, frame.creator, frame).deliver
     end
     
-    def self.check_and_send_conversation_notification(user, conversation)
+    def self.check_and_send_comment_notification(user, conversation)
       raise ArgumentError, "must supply valid user" unless user.is_a?(User) and !user.blank?
       raise ArgumentError, "must supply valid conversation" unless conversation.is_a?(Conversation) and !conversation.blank?
       
