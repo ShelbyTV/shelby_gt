@@ -1,7 +1,10 @@
 defaults: &defaults
+  # Sharing
   share_frame:
     category: "Share Frame"
     subject: "watch this video"
+  # Notifications
+  notification_sender: "notifications@shelby.tv"
   comment_notification:
     category: "Comment Notifications"
     subject: "the video you shared received a comment!"

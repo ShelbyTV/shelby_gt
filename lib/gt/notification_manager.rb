@@ -1,5 +1,5 @@
 module GT
-  class SocialPoster
+  class NotificationManager
     
     def self.check_and_send_upvote_notification(user, frame)
       raise ArgumentError, "must supply valid user" unless user.is_a?(User) and !user.blank?

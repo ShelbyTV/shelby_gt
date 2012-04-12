@@ -8,7 +8,7 @@ class NotificationMailer < ActionMailer::Base
       @user_to = user_to
       @user_from = user_from
       @conversation = conversation
-      mail :from => "notifications@shelby.tv", :to => user_to.primary_email, :subject => Settings::Email.comment_notification['subject']
+      mail :from => Settings::Email.notification_sender, :to => user_to.primary_email, :subject => Settings::Email.comment_notification['subject']
     end
   end
 
