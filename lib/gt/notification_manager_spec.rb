@@ -44,7 +44,7 @@ describe GT::NotificationManager do
     it "should should queue email to deliver"
     
     it "should return nil if first message in a conv is from a faux user" do
-      
+      @conversation.messages.first
       r = GT::NotificationManager.check_and_send_comment_notification(@user, @conversation)
       r.should eq(nil)
     end
