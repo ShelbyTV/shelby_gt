@@ -2,6 +2,8 @@ ShelbyGt::Application.routes.draw do
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
+  #for blitz.io
+  get '/mu-4a3bea60-210d9ed2-38279c19-649e9064' => 'home#verification'
   
   ########################
   # Authentication and User Managment
