@@ -4,8 +4,8 @@ module GT
     # builds a valid message, but it is not persisted to database here. 
     #  that is left for another manager...
     def self.build_message(options)
-      unless ( creator = options.delete(:creator) ) or (options.has_key?(:nickname) and options.has_key?(:realname) and options.has_key?(:user_image_url) )
-        raise ArgumentError, "must supply a :creator or a :nickname, :realname, and :user_image_url"
+      unless ( creator = options.delete(:user) ) or (options.has_key?(:nickname) and options.has_key?(:realname) and options.has_key?(:user_image_url) )
+        raise ArgumentError, "must supply a :user or a :nickname, :realname, and :user_image_url"
       end
       
       raise ArgumentError, "must supply :public" unless options.has_key?(:public)

@@ -19,7 +19,7 @@ class V1::MessagesController < ApplicationController
       else
         @conversation = Conversation.find(params[:conversation_id])
         if @conversation
-          msg_opts = {:creator => current_user, :public => true, :text => params[:text]}
+          msg_opts = {:user => current_user, :public => true, :text => params[:text]}
           @new_message = GT::MessageManager.build_message(msg_opts)
           @conversation.messages << @new_message
           begin

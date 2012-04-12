@@ -43,13 +43,19 @@ describe GT::NotificationManager do
     
     it "should should queue email to deliver"
     
+    it "should return nil if first message in a conv is from a faux user" do
+      
+      r = GT::NotificationManager.check_and_send_comment_notification(@user, @conversation)
+      r.should eq(nil)
+    end
+    
     it "should raise error with bad frame or user" do
       lambda {
         GT::NotificationManager.check_and_send_comment_notification(@user) 
       }.should raise_error(ArgumentError)
       
       lambda { 
-        GT::NotificationManager.check_and_send_comment_notification(@frame, @frame) 
+        GT::NotificationManager.check_and_send_comment_notification(@conversation) 
       }.should raise_error(ArgumentError)
     end
   end

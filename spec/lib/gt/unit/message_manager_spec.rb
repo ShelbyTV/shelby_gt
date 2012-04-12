@@ -12,7 +12,7 @@ describe GT::MessageManager do
   end
   
   it "should build and return a valid message" do
-    options = { :creator => @u, :public => true, :text => @text }
+    options = { :user => @u, :public => true, :text => @text }
     message = GT::MessageManager.build_message(options)
     message.should be_valid
     message.text.should eq(@text)
@@ -21,7 +21,7 @@ describe GT::MessageManager do
   end
   
   it "should create a message even without text" do
-    options = { :creator => @u, :public => @public }
+    options = { :user => @u, :public => @public }
     message = GT::MessageManager.build_message(options)    
     message.should be_valid
     message.nickname.should eq(@u.nickname)
