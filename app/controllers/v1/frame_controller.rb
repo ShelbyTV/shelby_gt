@@ -82,7 +82,7 @@ class V1::FrameController < ApplicationController
         
         # create message
         message_text = params[:text] ? CGI::unescape(params[:text]) : nil
-        frame_options[:message] = GT::MessageManager.build_message(:creator => current_user, :public => true, :text => message_text)
+        frame_options[:message] = GT::MessageManager.build_message(:user => current_user, :public => true, :text => message_text)
         
         # set the action, defaults to new_bookmark_frame
         case params[:source]
