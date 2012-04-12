@@ -3,8 +3,8 @@ ShelbyGt::Application.routes.draw do
   # first created -> highest priority.
 
   #for blitz.io
-  get '/mu-4a3bea60-210d9ed2-38279c19-649e9064' => 'home#verification'
-  
+  #get '/mu-4a3bea60-210d9ed2-38279c19-649e9064' => 'home#verification'
+
   ########################
   # Authentication and User Managment
   devise_for :user, :skip => [:sessions]
