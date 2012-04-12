@@ -1,5 +1,6 @@
 require 'framer'
 require 'user_action_manager'
+require 'notification_manager'
 
 class Frame
   include MongoMapper::Document
