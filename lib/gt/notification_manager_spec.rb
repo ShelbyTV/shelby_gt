@@ -38,13 +38,17 @@ describe GT::NotificationManager do
     before(:all) do
       @user = Factory.create(:user)
       @comment = "how much would a wood chuck chuck..."
-      @conversation = Factory.create(:conversation, :messages => [Factory.create(:message, :text => @comment)])      
+      @conversation = Factory.create(:conversation, :messages => [Factory.create(:message, :text => @comment, :user => @user)])      
     end
     
-    it "should should queue email to deliver"
+    it "should should queue email to deliver" do
+      lambda {
+        GT::NotificationManager.check_and_send_comment_notification(@user, @conversation)
+      }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
     
     it "should return nil if first message in a conv is from a faux user" do
-      @conversation.messages.first
+      @conversation.messages.first.user = nil; @conversation.save
       r = GT::NotificationManager.check_and_send_comment_notification(@user, @conversation)
       r.should eq(nil)
     end
