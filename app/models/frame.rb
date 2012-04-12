@@ -100,9 +100,9 @@ class Frame
     self.upvoters << u.id
     
     GT::Framer.dupe_frame!(self, u.id, u.upvoted_roll_id)
-  
+    
     update_score
-  
+    
     self.save
   end
   

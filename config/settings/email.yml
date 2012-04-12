@@ -2,6 +2,12 @@ defaults: &defaults
   share_frame:
     category: "Share Frame"
     subject: "watch this video"
+  comment_notification:
+    category: "Comment Notifications"
+    subject: "the video you shared received a comment!"
+  upvote_notification:
+    category: "Comment Notifications"
+    subject: "the video you shared received an upvote!"
 
 development:
   <<: *defaults
