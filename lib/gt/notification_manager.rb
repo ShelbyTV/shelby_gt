@@ -8,7 +8,12 @@ module GT
       # don't email the creator if they are the upvoting user!
       return unless (user.id != frame.creator_id) and user.primary_email
       
-      NotificationMailer.upvote_notification(user, frame.creator, frame).deliver
+      if Rails.env == "production"
+        # only sending notifications for a select few for now
+        return unless ["henry", "reece", "onshelby"].include?(frame.creator.nickname)
+      end
+      
+      NotificationMailer.upvote_notification(frame.creator, user, frame).deliver
     end
     
     def self.check_and_send_comment_notification(user, conversation)
@@ -20,7 +25,12 @@ module GT
       # cant email anyone if we dont have their email address :)
       return unless first_message and first_message.user and first_message.user.primary_email
       
-      NotificationMailer.comment_notification(user, first_message.user, conversation).deliver
+      if Rails.env == "production"
+        # only sending notifications for a select few for now
+        return unless ["henry", "reece", "onshelby"].include?(first_message.user.nickname)
+      end
+      
+      NotificationMailer.comment_notification(first_message.user, user, conversation).deliver
     end
     
   end

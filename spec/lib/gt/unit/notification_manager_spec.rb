@@ -7,7 +7,7 @@ describe GT::NotificationManager do
   describe "upvote notifications" do
     before(:all) do
       @user = Factory.create(:user)
-      @frame = Factory.create(:frame)
+      @frame = Factory.create(:frame, :creator => Factory.create(:user))
     end
     
     it "should should queue email to deliver" do

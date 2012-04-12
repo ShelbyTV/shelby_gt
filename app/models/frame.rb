@@ -103,6 +103,8 @@ class Frame
     
     update_score
     
+    EM.next_tick { GT::NotificationManager.check_and_send_upvote_notification(u, self) }
+    
     self.save
   end
   
