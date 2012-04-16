@@ -1,4 +1,5 @@
 object @user
+cache @user
 
 attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux
 
