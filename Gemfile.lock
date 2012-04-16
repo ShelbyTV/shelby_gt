@@ -216,6 +216,9 @@ GEM
     rake (0.9.2.2)
     rdoc (3.12)
       json (~> 1.4)
+    rpm_contrib (2.1.8)
+      newrelic_rpm (>= 3.1.1)
+      newrelic_rpm (>= 3.1.1)
     rspec (2.8.0)
       rspec-core (~> 2.8.0)
       rspec-expectations (~> 2.8.0)
@@ -292,6 +295,7 @@ DEPENDENCIES
   rabl (~> 0.6.0)
   rack-cors
   rails (= 3.2.2)
+  rpm_contrib
   rspec-rails
   sailthru-client
   sanitize
