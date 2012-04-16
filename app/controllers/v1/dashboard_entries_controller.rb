@@ -33,6 +33,24 @@ class V1::DashboardEntriesController < ApplicationController
       # get and render dashboard entries
       if user
         @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
+
+        #########
+        # solving the N+1 problem with loading all children of a dashboard_entry
+        @entries_frame_ids = @entries.map {|e| e.frame_id }.uniq
+        @entries_roll_ids = @entries.map {|e| e.roll_id }.uniq
+        @entries_user_ids = @entries.map {|e| e.user_id }.uniq
+        
+        @frames = Frame.find(@entries_frame_ids)
+        @rolls = Roll.find(@entries_roll_ids)
+        @users = User.find(@entries_user_ids)
+        
+        @entries_conversation_ids = @frames.map {|f| f.conversation_id }.uniq
+        @entries_video_ids = @frames.map {|f| f.video_id }.uniq
+        
+        @videos = Roll.find(@entries_video_ids)
+        @conversations = Frame.find(@entries_conversation_ids)
+        ##########
+        
         @include_children = params[:include_children] != "false" ? true : false
         # return status
         if !@entries.empty?

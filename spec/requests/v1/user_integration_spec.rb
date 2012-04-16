@@ -50,8 +50,8 @@ describe 'v1/user' do
         @u1.public_roll_id = 54321
         @u1.save
         get '/v1/user/'+@u1.id
-        parse_json(response.body)["result"]["watch_later_roll"].should eq(@u1.watch_later_roll_id)
-        parse_json(response.body)["result"]["public_roll"].should eq(@u1.public_roll_id)
+        parse_json(response.body)["result"]["watch_later_roll_id"].should eq(@u1.watch_later_roll_id)
+        parse_json(response.body)["result"]["public_roll_id"].should eq(@u1.public_roll_id)
       end
       
     end
