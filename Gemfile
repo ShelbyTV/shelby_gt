@@ -55,6 +55,7 @@ gem "sailthru-client"
 gem "sanitize" # for sanitizing html in models
 gem "statsd-ruby" # for communicating with graphite server
 
+gem 'newrelic_rpm'
 
 #
 # ---------- Beanstalk (non-Event Machine, non-Arnold)
