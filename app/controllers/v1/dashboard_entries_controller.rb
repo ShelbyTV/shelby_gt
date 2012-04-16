@@ -47,8 +47,8 @@ class V1::DashboardEntriesController < ApplicationController
         @entries_conversation_ids = @frames.map {|f| f.conversation_id }.uniq
         @entries_video_ids = @frames.map {|f| f.video_id }.uniq
         
-        @videos = Roll.find(@entries_video_ids)
-        @conversations = Frame.find(@entries_conversation_ids)
+        @videos = Video.find(@entries_video_ids)
+        @conversations = Conversation.find(@entries_conversation_ids)
         ##########
         
         @include_children = params[:include_children] != "false" ? true : false
