@@ -1,5 +1,8 @@
 class V1::DashboardEntriesController < ApplicationController  
-
+  include NewRelic::Agent::MethodTracer
+  
+  add_method_tracer :index
+  
   before_filter :authenticate_user!
   
   ##
