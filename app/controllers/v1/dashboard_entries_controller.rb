@@ -1,8 +1,6 @@
 class V1::DashboardEntriesController < ApplicationController  
   include NewRelic::Agent::MethodTracer
   
-  add_method_tracer :index
-  
   before_filter :authenticate_user!
   
   ##
@@ -47,6 +45,8 @@ class V1::DashboardEntriesController < ApplicationController
       end    
     end
   end
+  
+  add_method_tracer :index
   
   ##
   # Updates and returns one dashboard entry, with the given parameters.
