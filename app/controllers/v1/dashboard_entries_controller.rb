@@ -1,7 +1,5 @@
 class V1::DashboardEntriesController < ApplicationController  
-  include NewRelic::Agent::MethodTracer
-  extend NewRelic::Agent::MethodTracer
-  
+    
   before_filter :authenticate_user!
   
   ##
@@ -56,11 +54,6 @@ class V1::DashboardEntriesController < ApplicationController
         # return status
         if !@entries.empty?
           @status = 200
-          #make sure cache is clear:
-          Rabl.reset_source_cache!
-          self.class.trace_execution_scoped(['Custom/dashboard_entries_index/render_index']) do
-            render 'index'
-          end
         else
           render_error(200, "there are no dashboard entries for this user")
         end
@@ -69,9 +62,7 @@ class V1::DashboardEntriesController < ApplicationController
       end    
     end
   end
-  
-  add_method_tracer :index
-  
+
   ##
   # Updates and returns one dashboard entry, with the given parameters.
   #
