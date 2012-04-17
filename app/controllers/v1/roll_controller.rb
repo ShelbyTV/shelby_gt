@@ -14,15 +14,19 @@ class V1::RollController < ApplicationController
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
       if @roll = Roll.find(params[:id])
-        if user_signed_in?
-          @include_following_users = params[:following_users] == "true" ? true : false
+        @include_following_users = params[:following_users] == "true" ? true : false
+        if user_signed_in? and @roll.viewable_by?(current_user)
           @status =  200
         elsif @roll.public
-          @include_following_users = params[:following_users] == "true" ? true : false
-          @status =  200        
+          @status =  200
         else
-          render_error(401, "you are not authorized to see that roll")
+          render_error(404, "you are not authorized to see that roll")
         end
+      elsif params[:public_roll] and user_signed_in? #this is for the aliased route to get users public roll
+        user = User.find(params[:user_id])
+        @roll = user.public_roll
+        @include_following_users = params[:following_users] == "true" ? true : false
+        @status = 200
       else
         render_error(404, "could not find that roll")
       end
