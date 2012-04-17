@@ -260,6 +260,24 @@ describe GT::UserManager do
         nick, provider, uid = "whatever 6", "fb", "123uid82"
         GT::UserManager.get_or_create_faux_user(nick, provider, uid).nickname.should_not == "whatever_6"
       end
+      
+      it "should convert all sorts of funky nicknames to something acceptable" do
+        #commas
+        nick, provider, uid = "Nature, Love and Art", "fb", 123
+        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "Nature__Love_and_Art"
+
+        #tildes
+        nick = "~weird"
+        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "_weird"
+
+        #only junk
+        nick = "~,':&"
+        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "____"
+
+        #unnaceptable characters
+        nick = "ヅللمسلمين فقط ! بالله عليك إذا كنت مسلم و رأيت هذه الصفحة أدخل إليها๑۞๑"
+        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "ヅللمسلمين_فقط__بالله_عليك_إذا_كنت_مسلم_و_رأيت_هذه_الصفحة_أدخل_إليها๑۞๑"
+      end
     end
     
     it "should set downcase nickname" do
