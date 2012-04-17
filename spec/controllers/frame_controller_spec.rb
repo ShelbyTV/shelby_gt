@@ -11,8 +11,8 @@ describe V1::FrameController do
     @u1.save
     sign_in @u1
     @u2 = Factory.create(:user)
-    @roll = stub_model(Roll)
-    @frame = stub_model(Frame)
+    @roll = Factory.create(:roll, :creator => @u1)
+    @frame = Factory.create(:frame)
     @frame.roll = @roll
     Roll.stub(:find) { @roll }
     Frame.stub(:find) { @frame }
@@ -21,7 +21,7 @@ describe V1::FrameController do
 
   describe "GET index" do
     it "assigns all frames in a roll to @frames" do
-      @roll.stub_chain(:frames,:limit, :skip, :sort).and_return([@frame])
+      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
       get :index, :format => :json
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])
@@ -31,14 +31,14 @@ describe V1::FrameController do
     it "should return error if user isnt logged in and roll is private" do
       sign_out @u1
       @roll.public = false; @roll.save
-      @roll.stub_chain(:frames,:limit, :skip, :sort).and_return([@frame])
+      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
       get :index, :format => :json
       assigns(:status).should eq(404)
     end
     
     it "should return error if current user cant view roll" do
       @roll.creator = Factory.create(:user); @roll.public = false; @roll.save
-      @roll.stub_chain(:frames,:limit, :skip, :sort).and_return([@frame])
+      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
       get :index, :format => :json
       assigns(:status).should eq(404)
     end
@@ -46,7 +46,7 @@ describe V1::FrameController do
     it "should allow you to get frame for public roll w/o being signed in" do
       sign_out @u1
       
-      @roll.stub_chain(:frames,:limit, :skip, :sort).and_return([@frame])
+      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
       get :index, :format => :json
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])

@@ -12,12 +12,12 @@ class V1::FrameController < ApplicationController
   #
   # [GET] /v1/roll/:id/frames
   # @param [Optional, Boolean] include_children if true will return frame children
-  # @param [Optional, Integer] limit limit the number of frames returned, default 10
+  # @param [Optional, Integer] limit limit the number of frames returned, default 20
   # @param [Optional, Integer] skip the number of frames to skip, default 0
   def index
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['index']) do
       # default params
-      @limit = params[:limit] ? params[:limit] : 10
+      @limit = params[:limit] ? params[:limit] : 20
       # put an upper limit on the number of entries returned
       @limit = 20 if @limit.to_i > 20
   
@@ -26,7 +26,7 @@ class V1::FrameController < ApplicationController
       @roll = Roll.find(params[:roll_id])
       if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
-        @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id)
+        @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id).all
         
         #########
         # solving the N+1 problem with eager loading all children of a frame
