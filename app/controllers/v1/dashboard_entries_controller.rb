@@ -36,14 +36,14 @@ class V1::DashboardEntriesController < ApplicationController
 
         #########
         # solving the N+1 problem with loading all children of a dashboard_entry
-        @entries_frame_ids = @entries.map {|e| e.frame_id }.uniq
+        @entries_frame_ids = @entries.map {|e| e.frame_id }.compact.uniq
                 
         @frames = Frame.find(@entries_frame_ids)
 
-        @entries_roll_ids = @frames.map {|f| f.roll_id }.uniq
-        @entries_creator_ids = @frames.map {|f| f.creator_id }.uniq        
-        @entries_conversation_ids = @frames.map {|f| f.conversation_id }.uniq
-        @entries_video_ids = @frames.map {|f| f.video_id }.uniq
+        @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
+        @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq        
+        @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
+        @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
 
         @rolls = Roll.find(@entries_roll_ids)
         @creators = User.find(@entries_user_ids)        
