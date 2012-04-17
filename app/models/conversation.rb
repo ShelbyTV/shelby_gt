@@ -9,6 +9,8 @@ class Conversation
 
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Conversation
+
+  plugin MongoMapper::Plugins::IdentityMap
   
   # A Conversation only references a single Frame, and each Frame has only one Conversation
   # If a tweet (or other *external* social post) comes in that references more than one video: multiple Conversation will be created, referencing different Frames and Videos.

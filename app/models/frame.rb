@@ -6,6 +6,8 @@ class Frame
 
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Frame
+  
+  plugin MongoMapper::Plugins::IdentityMap
 
   # A Frame is contained by exactly one Roll, first and foremost.
   # In some special cases, a Frame may *not* have a Roll (ie a private Facebook post creates a Frame that only attaches to DashboardEntry)
