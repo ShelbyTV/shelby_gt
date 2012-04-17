@@ -27,6 +27,20 @@ class V1::FrameController < ApplicationController
       if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
         @frames = @roll.frames.limit(@limit).skip(skip).sort(:score.desc)
+        
+        #########
+        # solving the N+1 problem with eager loading all children of a frame
+        @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
+        @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq        
+        @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
+        @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
+
+        @rolls = Roll.find(@entries_roll_ids)
+        @creators = User.find(@entries_user_ids)        
+        @videos = Video.find(@entries_video_ids)
+        @conversations = Conversation.find(@entries_conversation_ids)
+        ##########
+        
         @status =  200
       else
         render_error(404, "could not find that roll")
