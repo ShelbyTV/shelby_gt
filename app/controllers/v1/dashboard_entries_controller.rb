@@ -56,6 +56,8 @@ class V1::DashboardEntriesController < ApplicationController
         # return status
         if !@entries.empty?
           @status = 200
+          #make sure cache is clear:
+          Rabl.reset_source_cache!
           self.class.trace_execution_scoped(['Custom/dashboard_entries_index/render_index']) do
             render 'index'
           end
