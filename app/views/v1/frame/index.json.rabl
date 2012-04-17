@@ -1,6 +1,6 @@
 object @roll
 
-extends 'v1/roll/show'
+attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url
 
 child @frames do
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
