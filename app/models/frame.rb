@@ -73,6 +73,10 @@ class Frame
       #update view counts and add dupe for this 'viewing'
       Frame.increment(self.id, :view_count => 1)
       Video.increment(self.video_id, :view_count => 1)
+
+      # when a frame.video.reload happens we want to get the real doc that is reloaded, not the cached one.
+      MongoMapper::Plugins::IdentityMap.clear
+
       return GT::Framer.dupe_frame!(self, u.id, u.viewed_roll_id)
     end
   end

@@ -39,7 +39,7 @@ class V1::DashboardEntriesController < ApplicationController
         @entries_frame_ids = @entries.map {|e| e.frame_id }.compact.uniq
                 
         @frames = Frame.find(@entries_frame_ids)
-
+        
         @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
         @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq        
         @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
