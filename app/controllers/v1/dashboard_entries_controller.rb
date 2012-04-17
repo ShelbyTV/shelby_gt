@@ -33,34 +33,30 @@ class V1::DashboardEntriesController < ApplicationController
     
       # get and render dashboard entries
       if user
-        self.class.trace_execution_scoped(['Custom/dashboard_entries_index/find_entries']) do
-          @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
-        end
+        @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
         
-        self.class.trace_execution_scoped(['Custom/dashboard_entries_index/eager_load']) do
-          #########
-          # solving the N+1 problem with loading all children of a dashboard_entry
-          @entries_frame_ids = @entries.map {|e| e.frame_id }.compact.uniq
-                
-          @frames = Frame.find(@entries_frame_ids)
-        
-          @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
-          @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq        
-          @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
-          @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
+        #########
+        # solving the N+1 problem with loading all children of a dashboard_entry
+        @entries_frame_ids = @entries.map {|e| e.frame_id }.compact.uniq
+              
+        @frames = Frame.find(@entries_frame_ids)
+      
+        @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
+        @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq        
+        @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
+        @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
 
-          @rolls = Roll.find(@entries_roll_ids)
-          @creators = User.find(@entries_user_ids)        
-          @videos = Video.find(@entries_video_ids)
-          @conversations = Conversation.find(@entries_conversation_ids)
-          ##########
-        end
+        @rolls = Roll.find(@entries_roll_ids)
+        @creators = User.find(@entries_user_ids)        
+        @videos = Video.find(@entries_video_ids)
+        @conversations = Conversation.find(@entries_conversation_ids)
+        ##########
         
         @include_children = params[:include_children] != "false" ? true : false
         # return status
         if !@entries.empty?
           @status = 200
-          self.class.trace_execution_scoped(['Custom/dashboar_entries_index/render_index']) do
+          self.class.trace_execution_scoped(['Custom/dashboard_entries_index/render_index']) do
             render 'index'
           end
         else
