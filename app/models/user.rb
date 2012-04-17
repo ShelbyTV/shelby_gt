@@ -106,7 +106,10 @@ class User
   # Katakana:                       \u30a0 - \u30ff /  
   # CJK Unified Ideographs:         \u4e00 - \u9fcf
   # Hangul Syllables:               \uac00 - \ud7af
-  validates_format_of :nickname, :with => /\A[a-zA-Z0-9_\.\-\u4e00-\u9fcf\u0400-\u04ff\u00c0-\u02ae\uac00-\ud7af\u1e00-\u1eff\u0e00-\u0e7f\u0600-\u06ff\u0370-\u03ff\u0b80-\u0bff\u0590-\u05ff\u10a0-\u10ff\u3040-\u30ff]+\Z/
+  NICKNAME_ACCEPTABLE_REGEX = /\A[a-zA-Z0-9_\.\-\u4e00-\u9fcf\u0400-\u04ff\u00c0-\u02ae\uac00-\ud7af\u1e00-\u1eff\u0e00-\u0e7f\u0600-\u06ff\u0370-\u03ff\u0b80-\u0bff\u0590-\u05ff\u10a0-\u10ff\u3040-\u30ff]+\Z/
+  NICKNAME_UNACCEPTABLE_CHAR_REGEX = /[^a-zA-Z0-9_\.\-\u4e00-\u9fcf\u0400-\u04ff\u00c0-\u02ae\uac00-\ud7af\u1e00-\u1eff\u0e00-\u0e7f\u0600-\u06ff\u0370-\u03ff\u0b80-\u0bff\u0590-\u05ff\u10a0-\u10ff\u3040-\u30ff]/
+  validates_format_of :nickname, :with => NICKNAME_ACCEPTABLE_REGEX
+  
   
   RESERVED_NICNAMES = %w(admin system anonymous shelby)
   ROUTE_PREFIXES = %w(signout login users user authentication authentications auth setup bookmarklet pages images javascripts robots stylesheets favicon)
