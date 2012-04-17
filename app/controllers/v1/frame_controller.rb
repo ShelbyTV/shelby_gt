@@ -23,7 +23,12 @@ class V1::FrameController < ApplicationController
   
       skip = params[:skip] ? params[:skip] : 0
       
-      @roll = Roll.find(params[:roll_id])
+      if params[:roll_id] 
+        @roll = Roll.find(params[:roll_id])
+      elsif params[:public_roll]
+        user = User.find(params[:user_id])
+        @roll = user.public_roll
+      end
       if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
         @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id).all

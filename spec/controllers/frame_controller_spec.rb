@@ -22,7 +22,17 @@ describe V1::FrameController do
   describe "GET index" do
     it "assigns all frames in a roll to @frames" do
       Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
-      get :index, :format => :json
+      get :index, :roll_id => @roll.id, :format => :json
+      assigns(:roll).should eq(@roll)
+      assigns(:frames).should eq([@frame])
+      assigns(:status).should eq(200)
+    end
+    
+    it "properly aliases for users public roll" do
+      User.stub(:find) { @u1 }
+      @u1.stub(:public_roll) { @roll }
+      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
+      get :index, :user_id => @u1.id, :public_roll => true, :format => :json
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])
       assigns(:status).should eq(200)
@@ -47,7 +57,7 @@ describe V1::FrameController do
       sign_out @u1
       
       Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
-      get :index, :format => :json
+      get :index, :roll_id => @roll.id, :format => :json
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])
       assigns(:status).should eq(200)
