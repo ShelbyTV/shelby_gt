@@ -25,6 +25,7 @@ class V1::FrameController < ApplicationController
       
       @roll = Roll.find(params[:roll_id])
       if @roll and @roll.viewable_by?(current_user)
+        Rabl.reset_source_cache!
         @include_frame_children = (params[:include_children] == "true") ? true : false
         @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id).all
         
