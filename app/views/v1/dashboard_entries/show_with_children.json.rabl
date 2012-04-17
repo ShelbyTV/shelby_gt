@@ -1,10 +1,9 @@
 object @entry
+cache @entry
 
 attributes :id, :action, :actor_id, :read
 
-child :frame => "frame" do
-	cache self
-	
+child :frame => "frame" do |f|
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
 	
 	child :creator => "creator" do
