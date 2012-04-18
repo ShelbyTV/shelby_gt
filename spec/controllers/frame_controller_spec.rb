@@ -79,6 +79,17 @@ describe V1::FrameController do
       assigns(:message).should eq("could not find that roll")
     end
     
+    it "should properly render frames if a since_i is included" do
+      f1 = Factory.create(:frame)
+      f2 = Factory.create(:frame)
+      f3 = Factory.create(:frame)
+      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([f2, f3])
+      get :index, :roll_id => @roll.id, :since_id => f2.id.to_s,:format => :json
+      assigns(:roll).should eq(@roll)
+      assigns(:frames).should eq([f2,f3])
+      assigns(:status).should eq(200)
+    end
+    
   end
   
   describe "GET show" do

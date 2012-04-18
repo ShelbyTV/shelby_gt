@@ -13,8 +13,11 @@ describe 'v1/frame' do
       
       @r = Factory.create(:roll, :creator => @u1, :public => false)
       @f = Factory.create(:frame)
-      @f.roll = @r
-      @f.save
+      @f2 = Factory.create(:frame)
+      @f3 = Factory.create(:frame)
+      @f.roll = @r; @f.save
+      @f2.roll = @r; @f2.save
+      @f3.roll = @r; @f3.save
 
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
@@ -40,6 +43,20 @@ describe 'v1/frame' do
           @f.roll_id = roll.id; @f.save
           Factory.create(:frame, :roll_id => roll.id)
           get '/v1/roll/'+roll.id.to_s+'/frames'
+          
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/creator_id")
+          parse_json(response.body)["result"]["creator_id"].should eq(@u1.id.to_s)
+          response.body.should have_json_size(2).at_path("result/frames")
+        end
+        
+        it "should return frame info with a since_id" do
+          roll = Factory.create(:roll, :creator_id => @u1.id)
+          @f.roll_id = roll.id; @f.save
+          @f2.roll_id = roll.id; @f2.save
+          @f3.roll_id = roll.id; @f3.save
+          
+          get '/v1/roll/'+roll.id.to_s+'/frames?since_id='+@f2.id.to_s
           
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/creator_id")
