@@ -1,5 +1,5 @@
 object @entry
-#cache @entry
+cache @entry
 
 attributes :id, :action, :actor_id, :read
 

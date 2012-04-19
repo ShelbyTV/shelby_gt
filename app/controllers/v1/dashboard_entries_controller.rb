@@ -31,6 +31,8 @@ class V1::DashboardEntriesController < ApplicationController
     
       # get and render dashboard entries
       if user
+        Rabl.reset_source_cache!
+        
         @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
         
         #########

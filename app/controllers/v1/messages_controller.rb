@@ -17,7 +17,6 @@ class V1::MessagesController < ApplicationController
       if !params.include?(:text)
         render_error(400, "text of message required")
       else
-        
         @conversation = Conversation.find(params[:conversation_id])
         if @conversation
           msg_opts = {:user => current_user, :public => true, :text => params[:text]}
