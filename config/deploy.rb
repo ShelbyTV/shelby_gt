@@ -55,6 +55,6 @@ end
 #	Multistage Deploy via capistrano-ext
 #############################################################
 
-set :stages, %w(production arnold)
+set :stages, %w(production arnold1 arnold2)
 set :default_stage, 'production'
 require 'capistrano/ext/multistage'
