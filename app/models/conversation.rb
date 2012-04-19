@@ -29,7 +29,7 @@ class Conversation
   #don't need anythign mass-assignable (yet)
   attr_accessible
   
-  before_save :remove_from_identity_map
+  before_update :remove_from_identity_map
 
   def self.first_including_message_origin_id(mid)
     Conversation.first( :conditions => { 'messages.b' => mid } )
@@ -40,7 +40,7 @@ class Conversation
   end
   
   def remove_from_identity_map
-    Rails.logger.info("trying to delete map: #{Conversation.identity_map.delete(self.id)}")
+    MongoMapper::Plugins::IdentityMap.clear
   end
 
 end
