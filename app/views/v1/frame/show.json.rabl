@@ -4,8 +4,8 @@ if @include_frame_children == true
 
 	attributes :id, :score, :upvoters, :frame_ancestors, :frame_children
 	
-	code :created_at do |c|
-		time_ago_in_words(c.created_at) + ' ago' if c.created_at
+	code :created_at do |f|
+		time_ago_in_words(f.created_at) + ' ago' if f.created_at
 	end
 	
 	child :roll => "roll" do

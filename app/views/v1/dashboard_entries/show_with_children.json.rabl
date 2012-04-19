@@ -5,8 +5,8 @@ attributes :id, :action, :actor_id, :read
 child :frame => "frame" do |f|
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
 	
-	code :created_at do |c|
-		time_ago_in_words(c.created_at) + ' ago' if c.created_at
+	code :created_at do |f|
+		time_ago_in_words(f.created_at) + ' ago' if f.created_at
 	end
 	
 	child :creator => "creator" do

@@ -283,11 +283,11 @@ describe V1::FrameController do
       @message = Factory.build(:message, :text => @message_text, :public => true, :nickname => @u1.nickname, :realname => @u1.name, :user_image_url => @u1.user_image)
       @video = Factory.create(:video, :source_url => @video_url)
       
-      @f1 = stub_model(Frame, :video => @video)
+      @f1 = Factory.create(:frame, :video => @video)
       @f1.conversation = stub_model(Conversation)
 
       @r2 = stub_model(Roll)
-      @f2 = stub_model(Frame)
+      @f2 = Factory.create(:frame)
 
       Frame.stub(:find) { @f1 }
       Roll.stub(:find) { @r2 }
