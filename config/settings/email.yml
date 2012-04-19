@@ -1,5 +1,5 @@
 defaults: &defaults
-  web_url_base: "http://web.gt.shelby.tv/"
+  web_url_base: "http://web.gt.shelby.tv"
   # Sharing
   share_frame:
     category: "Share Frame"

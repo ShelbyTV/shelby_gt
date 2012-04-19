@@ -34,7 +34,8 @@ describe NotificationMailer do
       @user_to = Factory.create(:user, :primary_email => 'your@mom.com')
       @user_from = Factory.create(:user, :primary_email => 'my@mom.com')
       @video = Factory.create(:video)
-      @frame = Factory.create(:frame, :video => @video)
+      @roll = Factory.create(:roll, :creator => @user_to)
+      @frame = Factory.create(:frame, :video => @video, :roll => @roll)
       @email = NotificationMailer.upvote_notification(@user_to, @user_from, @frame)
     end
  

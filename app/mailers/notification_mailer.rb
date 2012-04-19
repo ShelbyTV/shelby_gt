@@ -20,6 +20,7 @@ class NotificationMailer < ActionMailer::Base
       @user_to = user_to
       @user_from = user_from
       @frame = frame
+      @permalink = "#{Settings::Email.web_url_base}/roll/#{@frame.roll.id}/frame/#{@frame.id}"
       mail :from => "notifications@shelby.tv", :to => user_to.primary_email, :subject => Settings::Email.upvote_notification['subject']
     end
   end

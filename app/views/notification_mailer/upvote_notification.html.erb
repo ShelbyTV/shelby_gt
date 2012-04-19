@@ -202,7 +202,7 @@
 	<tr>
 		<td valign="top" class="shelby-email-lining"> 
 			<h1 class="shelby-logo">
-				<a href="http://gt.shelby.tv">
+				<a href="<%= Settings::Email.web_url_base %>">
 					<img class="image_fix" src="<%= image_path('shelby_logo.png') %>" alt="Shelby.tv logo" title="Shelby.tv" width="156" height="42" />
 				</a>
 			</h1>
@@ -213,28 +213,11 @@
 					</td>
 					<td>
 						<p>
-							<%= @user_from.name %> commented on your video "<%= @frame.video.title %>"
+							<%= @user_from.name %> upvoted your video <a href="<%= @permalink %>">"<%= @frame.video.title %>"</a>
 						</p>
 						<p>
-							What's a <a href="#comment">comment</a>?
+							What's an <a href="#comment">upvote</a>?
 						</p>
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2">
-						<h2 class="shelby-email-subhead">
-							Comment
-						</h2>
-						<blockquote class="shelby-email-message-quote">
-							"the comment goes here, it talks about how cool I thought this video was and I want to share it with my grandmother!"
-						</blockquote>
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2" align="center">
-						<a href="#" class="shelby-email-button">
-							Comment back!
-						</a>
 					</td>
 				</tr>
 				<tr>
