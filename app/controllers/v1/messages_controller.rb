@@ -23,6 +23,7 @@ class V1::MessagesController < ApplicationController
           @new_message = GT::MessageManager.build_message(msg_opts)
           @conversation.messages << @new_message
           begin
+            
             if @conversation.save!
               #TODO: Send bacon emails to those users associated w the conversation. 
               #TODO:  find those users to send emails to by nickname (in the message)

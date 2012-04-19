@@ -10,8 +10,7 @@ class Conversation
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Conversation
   
-  #TODO: We want to be using identity maps as much as possible, but we need to be intelligently clearing caches first!
-  #plugin MongoMapper::Plugins::IdentityMap
+  plugin MongoMapper::Plugins::IdentityMap
   
   # A Conversation only references a single Frame, and each Frame has only one Conversation
   # If a tweet (or other *external* social post) comes in that references more than one video: multiple Conversation will be created, referencing different Frames and Videos.
@@ -29,6 +28,8 @@ class Conversation
   
   #don't need anythign mass-assignable (yet)
   attr_accessible
+  
+  before_save :remove_from_identity_map
 
   def self.first_including_message_origin_id(mid)
     Conversation.first( :conditions => { 'messages.b' => mid } )
@@ -36,6 +37,10 @@ class Conversation
   
   def find_message_by_id(id)
     self.messages.select { |m| m.id.to_s == id } .first
+  end
+  
+  def remove_from_identity_map
+    Conversation.identity_map.delete_if {|k,v| k == self.id }
   end
 
 end
