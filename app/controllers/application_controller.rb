@@ -44,5 +44,5 @@ class ApplicationController < ActionController::Base
         sign_in(:user, user)
       end
     end
-      
+          
 end

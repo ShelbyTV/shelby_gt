@@ -3,9 +3,12 @@ object @roll
 attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url
 
 child @frames do
-	cache @frames
 		
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
+	
+	code :created_at do |f|
+		time_ago_in_words(f.created_at) + ' ago' if f.created_at
+	end
 	
 	child :creator => "creator" do
 		attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id
