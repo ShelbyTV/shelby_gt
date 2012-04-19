@@ -3,7 +3,11 @@ object @frame
 if @include_frame_children == true
 
 	attributes :id, :score, :upvoters, :frame_ancestors, :frame_children
-
+	
+	code :created_at do |c|
+		time_ago_in_words(c.created_at) + ' ago' if c.created_at
+	end
+	
 	child :roll => "roll" do
 		extends 'v1/roll/show'
 	end
@@ -21,4 +25,9 @@ if @include_frame_children == true
 	end
 else
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
+	
+	code :created_at do |c|
+		time_ago_in_words(c.created_at) + ' ago' if c.created_at
+	end
+	
 end

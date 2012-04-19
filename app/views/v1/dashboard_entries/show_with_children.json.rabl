@@ -1,10 +1,13 @@
 object @entry
-cache @entry
 
 attributes :id, :action, :actor_id, :read
 
 child :frame => "frame" do |f|
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
+	
+	code :created_at do |c|
+		time_ago_in_words(c.created_at) + ' ago' if c.created_at
+	end
 	
 	child :creator => "creator" do
 		attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id
