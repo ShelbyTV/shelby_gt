@@ -40,7 +40,8 @@ class Conversation
   end
   
   def remove_from_identity_map
-    Conversation.identity_map.delete_if {|k,v| k == self.id }
+    Rails.logger.info("trying to delete map: #{Conversation.identity_map}")
+    Conversation.identity_map.delete(self.id)
   end
 
 end
