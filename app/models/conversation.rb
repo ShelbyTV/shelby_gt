@@ -9,7 +9,8 @@ class Conversation
 
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Conversation
-
+  
+  #TODO: We want to be using identity maps as much as possible, but we need to be intelligently clearing caches first!
   #plugin MongoMapper::Plugins::IdentityMap
   
   # A Conversation only references a single Frame, and each Frame has only one Conversation
