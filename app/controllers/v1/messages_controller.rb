@@ -17,13 +17,15 @@ class V1::MessagesController < ApplicationController
       if !params.include?(:text)
         render_error(400, "text of message required")
       else
+        
+        Conversation.identity_map.clear
+        
         @conversation = Conversation.find(params[:conversation_id])
         if @conversation
           msg_opts = {:user => current_user, :public => true, :text => params[:text]}
           @new_message = GT::MessageManager.build_message(msg_opts)
           @conversation.messages << @new_message
           begin
-            
             if @conversation.save!
               #TODO: Send bacon emails to those users associated w the conversation. 
               #TODO:  find those users to send emails to by nickname (in the message)
