@@ -1,7 +1,17 @@
 defaults: &defaults
+  web_url_base: "http://web.gt.shelby.tv"
+  # Sharing
   share_frame:
     category: "Share Frame"
     subject: "watch this video"
+  # Notifications
+  notification_sender: "notifications@shelby.tv"
+  comment_notification:
+    category: "Comment Notifications"
+    subject: "the video you shared received a comment!"
+  upvote_notification:
+    category: "Comment Notifications"
+    subject: "the video you shared received an upvote!"
 
 development:
   <<: *defaults

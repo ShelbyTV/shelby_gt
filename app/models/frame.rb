@@ -1,5 +1,6 @@
 require 'framer'
 require 'user_action_manager'
+require 'notification_manager'
 
 class Frame
   include MongoMapper::Document
@@ -106,9 +107,12 @@ class Frame
     self.upvoters << u.id
     
     GT::Framer.dupe_frame!(self, u.id, u.upvoted_roll_id)
-  
+    
     update_score
-  
+    
+    # send email notification in a non-blocking manor
+    #EM.next_tick {GT::NotificationManager.check_and_send_upvote_notification(u, self)}
+    
     self.save
   end
   
