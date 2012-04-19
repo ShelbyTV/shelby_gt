@@ -6,7 +6,7 @@ module GT
       raise ArgumentError, "must supply valid frame" unless frame.is_a?(Frame) and !frame.blank?
       
       # don't email the creator if they are the upvoting user!
-      #return unless (user.id != frame.creator_id) and user.primary_email
+      return unless (user.id != frame.creator_id) and user.primary_email
       
       if Rails.env == "production"
         # only sending notifications for a select few for now

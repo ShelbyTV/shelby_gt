@@ -20,7 +20,7 @@ describe GT::NotificationManager do
     it "should return nil if user is creator of the frame" do
       @frame.creator = @user; @frame.save
       r = GT::NotificationManager.check_and_send_upvote_notification(@user, @frame)
-      #r.should eq(nil)
+      r.should eq(nil)
     end
     
     it "should raise error with bad frame or user" do
