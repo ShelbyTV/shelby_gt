@@ -18,9 +18,6 @@ class V1::MessagesController < ApplicationController
         render_error(400, "text of message required")
       else
         
-        Conversation.identity_map.clear
-        Rabl.reset_source_cache!
-        
         @conversation = Conversation.find(params[:conversation_id])
         if @conversation
           msg_opts = {:user => current_user, :public => true, :text => params[:text]}
