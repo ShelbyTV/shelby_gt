@@ -4,4 +4,9 @@ class HomeController < ApplicationController
     
   end
   
+  #for blitz.io
+  #def verification
+  #  render :text => "42"
+  #end
+  
 end

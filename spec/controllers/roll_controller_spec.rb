@@ -14,6 +14,11 @@ describe V1::RollController do
       get :show, :format => :json
       assigns(:roll).should eq(@roll)
     end
+
+    it "gets a users public roll if its asked for" do
+      get :show, :user_id => @u1.id, :public_roll => true, :format => :json
+      assigns(:roll).should eq(@roll)
+    end
     
     it "will show a public roll if you're not signed in" do
       @roll.public = true

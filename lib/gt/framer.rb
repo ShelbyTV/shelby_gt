@@ -90,7 +90,8 @@ module GT
 
       res[:frame] = basic_re_roll(orig_frame, user_id, roll_id)
       
-      res[:dashboard_entries] = create_dashboard_entries(res[:frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids)
+      #create dashboard entries for all roll followers *except* the user who just re-rolled
+      res[:dashboard_entries] = create_dashboard_entries(res[:frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
       
       return res
     end

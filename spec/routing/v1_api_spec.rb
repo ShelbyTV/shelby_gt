@@ -70,6 +70,16 @@ describe V1::FrameController do
         :id => "1"
       )
     end 
+    
+    it "alias for GET INDEX" do
+      { :get => "/v1/user/1/public_roll/frames" }.should route_to(
+        :controller => "v1/frame",
+        :action => "index",
+        :format => "json",
+        :user_id => "1",
+        :public_roll => true
+      )
+    end
 
     it "routes for POST upvote" do
       { :post => "/v1/frame/1/upvote" }.should route_to(
@@ -135,6 +145,16 @@ describe V1::RollController do
         :action => "show",
         :format => "json",
         :id => "1"
+      )
+    end 
+    
+    it "alias for GET" do
+      { :get => "/v1/user/1/public_roll" }.should route_to(
+        :controller => "v1/roll",
+        :action => "show",
+        :format => "json",
+        :user_id => "1",
+        :public_roll => true
       )
     end 
 

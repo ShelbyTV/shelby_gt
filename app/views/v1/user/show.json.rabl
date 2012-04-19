@@ -1,6 +1,6 @@
 object @user
 
-attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux
+attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id
 
 if current_user == @user
 	child :authentications do
@@ -17,12 +17,8 @@ if current_user == @user
 		end
 	end
 	
-	node "watch_later_roll" do
+	node "watch_later_roll_id" do
 		@user.watch_later_roll_id
-	end
-	
-	node "public_roll" do
-		@user.public_roll_id
 	end
 	
 end

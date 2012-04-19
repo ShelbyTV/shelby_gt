@@ -8,6 +8,8 @@ class Roll
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Roll
   
+  plugin MongoMapper::Plugins::IdentityMap
+  
   # A Roll has many Frames, first and foremost
   many :frames, :foreign_key => :a
   

@@ -7,6 +7,8 @@ class Frame
 
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Frame
+  
+  plugin MongoMapper::Plugins::IdentityMap
 
   # A Frame is contained by exactly one Roll, first and foremost.
   # In some special cases, a Frame may *not* have a Roll (ie a private Facebook post creates a Frame that only attaches to DashboardEntry)
@@ -72,6 +74,10 @@ class Frame
       #update view counts and add dupe for this 'viewing'
       Frame.increment(self.id, :view_count => 1)
       Video.increment(self.video_id, :view_count => 1)
+
+      # when a frame.video.reload happens we want to get the real doc that is reloaded, not the cached one.
+      MongoMapper::Plugins::IdentityMap.clear
+
       return GT::Framer.dupe_frame!(self, u.id, u.viewed_roll_id)
     end
   end

@@ -2,7 +2,9 @@ ShelbyGt::Application.routes.draw do
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
-  
+  #for blitz.io
+  #get '/mu-4a3bea60-210d9ed2-38279c19-649e9064' => 'home#verification'
+
   ########################
   # Authentication and User Managment
   devise_for :user, :skip => [:sessions]
@@ -26,6 +28,8 @@ ShelbyGt::Application.routes.draw do
   namespace :v1, :defaults => { :format => 'json' } do
     resources :user, :only => [:show, :update] do
       get 'rolls' => 'user#rolls', :on => :member
+      get 'public_roll' => 'roll#show', :defaults => {:public_roll => true}
+      get 'public_roll/frames' => 'frame#index', :defaults => {:public_roll => true}
     end
     resources :roll, :only => [:show, :create, :update, :destroy] do
       get 'frames' => 'frame#index'

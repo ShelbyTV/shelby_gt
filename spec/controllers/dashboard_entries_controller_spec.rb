@@ -9,7 +9,7 @@ describe V1::DashboardEntriesController do
     
     it "should return the dashboard entrys to @entries and return 200 when NOT including children" do
       video = mock_model(Video)
-      frame = mock_model(Frame, :video_id => video.id)
+      frame = Factory.create(:frame, :video_id => video.id)
       entry = mock_model(DashboardEntry, :frame => frame)
       
       DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([entry])
@@ -23,7 +23,7 @@ describe V1::DashboardEntriesController do
       message = mock_model(Message)
       conv = mock_model(Conversation, :messages => [message])
       roll = mock_model(Roll)
-      frame = mock_model(Frame, :video => video, :conversation => conv, :roll => roll, :creator => @user)
+      frame = Factory.create(:frame, :video => video, :conversation => conv, :roll => roll, :creator => @user)
       entry = mock_model(DashboardEntry, :frame => frame, :roll => roll, :creator => @user, :video => video)
       
       DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([entry])

@@ -221,10 +221,10 @@ module GT
       
       # Makes sure a nickname is valid and unique!
       def self.ensure_valid_unique_nickname!(user)
-        #replace whitespace with underscore
-        user.nickname = user.nickname.gsub(' ','_');
-        #remove punctuation
-        user.nickname = user.nickname.gsub(/['‘’"`]/,'');
+        #replace standard junk with underscore
+        user.nickname = user.nickname.gsub(/[ ,:&~]/,'_');
+        #remove anything not in the set of valid characters
+        user.nickname = user.nickname.gsub(User::NICKNAME_UNACCEPTABLE_CHAR_REGEX, '')
         
         orig_nick = user.nickname
         i = 2

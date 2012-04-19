@@ -237,7 +237,7 @@ describe GT::Framer do
     
     it "should set the DashboardEntry metadata correctly" do
       @roll.add_follower(@roll_creator)
-      res = GT::Framer.re_roll(@f1, @roll_creator, @roll)
+      res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
       
       res[:dashboard_entries].size.should == 1
       res[:dashboard_entries][0].user.should == @roll_creator
@@ -247,7 +247,7 @@ describe GT::Framer do
       res[:dashboard_entries][0].roll.should == res[:frame].roll
     end
     
-    it "should create DashboardEntries for all users following the Roll a Frame is re-rolled to" do
+    it "should create DashboardEntries for all users (except the re-reroller) following the Roll a Frame is re-rolled to" do
       @roll.add_follower(@roll_creator)
       @roll.add_follower(u1 = User.create)
       @roll.add_follower(u2 = User.create)
@@ -258,9 +258,9 @@ describe GT::Framer do
       res = GT::Framer.re_roll(@f1, @roll_creator, @roll)
       
       # all roll followers should have a DashboardEntry
-      res[:dashboard_entries].size.should == 4
+      res[:dashboard_entries].size.should == 3
       res[:dashboard_entries].each { |dbe| dbe.persisted?.should == true }
-      res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(@roll_creator.id)
+      res[:dashboard_entries].map { |dbe| dbe.user_id }.should_not include(@roll_creator.id)
       res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u1.id)
       res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u2.id)
       res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u3.id)

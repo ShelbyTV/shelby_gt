@@ -32,7 +32,7 @@ describe GT::MessageManager do
     options = { :public => true, :text => @text }
     lambda { GT::MessageManager.build_message(options) }.should raise_error(ArgumentError)
     
-    options = { :creator => @u, :text => @text }
+    options = { :user => @u, :text => @text }
     lambda { GT::MessageManager.build_message(options) }.should raise_error(ArgumentError)    
   end
   

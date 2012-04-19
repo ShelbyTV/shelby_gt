@@ -12,15 +12,10 @@ test:
   <<: *defaults
   db_name: 'test-gt-user'
 
-#TODO: change these to the regular Users server config values
 production: &production
   <<: *defaults
-  db_name: 'gt-user'          # 'nos-production'
-  #db_hosts: ["10.181.135.130:27018", "10.180.131.101:27018", "10.181.131.114:27018"]
-  db_host: '108.166.111.208'  # DROP
-  db_port: '27017'            # DROP
-  db_username: "gt_user"      # DROP
-  db_password: "GT/us3r!!!"   # DROP
+  db_name: 'nos-production'
+  db_hosts: ["10.181.135.130:27018", "10.180.131.101:27018", "10.181.131.114:27018"]
 
 arnold:
   <<: *production
