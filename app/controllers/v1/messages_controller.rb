@@ -19,6 +19,7 @@ class V1::MessagesController < ApplicationController
       else
         
         Conversation.identity_map.clear
+        Rabl.reset_source_cache!
         
         @conversation = Conversation.find(params[:conversation_id])
         if @conversation
