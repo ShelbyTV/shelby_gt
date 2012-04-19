@@ -6,8 +6,9 @@ describe NotificationMailer do
       @user_to = Factory.create(:user, :primary_email => 'your@mom.com')
       @user_from = Factory.create(:user, :primary_email => 'my@mom.com')
       @comment = "how much would a wood chuck chuck..."
-      @conversation = Factory.create(:conversation, :messages => [Factory.create(:message, :text => @comment)])
-      @email = NotificationMailer.comment_notification(@user_to, @user_from, @conversation)
+      @message = Factory.create(:message, :text => @comment)
+      @conversation = Factory.create(:conversation, :messages => [@message])
+      @email = NotificationMailer.comment_notification(@user_to, @user_from, @conversation, @message)
     end
  
     it 'renders the subject' do
@@ -32,7 +33,8 @@ describe NotificationMailer do
     before(:all) do
       @user_to = Factory.create(:user, :primary_email => 'your@mom.com')
       @user_from = Factory.create(:user, :primary_email => 'my@mom.com')
-      @frame = Factory.create(:frame)
+      @video = Factory.create(:video)
+      @frame = Factory.create(:frame, :video => @video)
       @email = NotificationMailer.upvote_notification(@user_to, @user_from, @frame)
     end
  
