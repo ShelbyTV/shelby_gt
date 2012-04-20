@@ -28,8 +28,8 @@ ShelbyGt::Application.routes.draw do
   namespace :v1, :defaults => { :format => 'json' } do
     resources :user, :only => [:show, :update] do
       get 'rolls' => 'user#rolls', :on => :member
-      get 'public_roll' => 'roll#show', :defaults => {:public_roll => true}
-      get 'public_roll/frames' => 'frame#index', :defaults => {:public_roll => true}
+      get 'personal_roll' => 'roll#show', :defaults => {:public_roll => true}
+      get 'personal_roll/frames' => 'frame#index', :defaults => {:public_roll => true}
     end
     resources :roll, :only => [:show, :create, :update, :destroy] do
       get 'frames' => 'frame#index'

@@ -1,6 +1,7 @@
 defaults: &defaults
   web_url_base: "http://web.gt.shelby.tv"
   shelby_logo: "http://api.gt.shelby.tv/shelby.png"
+  preferences_link: "http://web.gt.shelby.tv/preferences"
   # Sharing
   share_frame:
     category: "Share Frame"

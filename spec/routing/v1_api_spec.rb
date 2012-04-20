@@ -72,7 +72,7 @@ describe V1::FrameController do
     end 
     
     it "alias for GET INDEX" do
-      { :get => "/v1/user/1/public_roll/frames" }.should route_to(
+      { :get => "/v1/user/1/personal_roll/frames" }.should route_to(
         :controller => "v1/frame",
         :action => "index",
         :format => "json",
@@ -149,7 +149,7 @@ describe V1::RollController do
     end 
     
     it "alias for GET" do
-      { :get => "/v1/user/1/public_roll" }.should route_to(
+      { :get => "/v1/user/1/personal_roll" }.should route_to(
         :controller => "v1/roll",
         :action => "show",
         :format => "json",

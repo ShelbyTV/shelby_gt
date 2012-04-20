@@ -10,8 +10,8 @@ class NotificationMailer < ActionMailer::Base
       @message = message
       @frame = frame
       
-      # only send email if we find the frame
-      @permalink = "#{Settings::Email.web_url_base}/roll/#{@frame.roll.id}/frame/#{@frame.id}"
+      @frame_permalink = "#{Settings::Email.web_url_base}/roll/#{@frame.roll.id}/frame/#{@frame.id}"
+      @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.nickname}/roll"
       mail :from => Settings::Email.notification_sender, :to => user_to.primary_email, :subject => Settings::Email.comment_notification['subject']
       
     end

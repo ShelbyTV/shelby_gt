@@ -207,32 +207,29 @@
 				</a>
 			</h1>
 			<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:1px solid #b5b5b5; padding:20px; width:100%;">
-				<tr>
-					<td width="120">
-						<img class="image_fix" src="<%= @user_from.user_image %>" alt="user_image" title="user_image" width="80" height="80" />
+				<tr height="90">
+					<td width="70">
+						<img class="image_fix" src="<%= @user_from.user_image %>" alt="user_image" title="user_image" width="60" height="60" />
 					</td>
 					<td>
 						<p>
-							<%= @user_from.name %> commented on your activity on the video: 
+							<a href="<%= @user_permalink %>"><%= @user_from.name %></a> commented on your activity on the video: 
 						</p>
 						<p style="font-weight: bold;">
-							"<%= @frame.video.title %>"
+							"<a href="<%= @frame_permalink %>"><%= @frame.video.title %></a>"
 						</p>
 					</td>
 				</tr>
 				<tr>
 					<td colspan="2">
-						<h2 class="shelby-email-subhead" style="font-size:18px;">
-							Comment
-						</h2>
-						<p class="shelby-email-message-quote" style="font-size:16px;">
-							"<%= @message.text %>"
+						<p class="shelby-email-subhead" style="font-size:18px;">
+							They wrote: <span style="font-style: bold;">"<%= @message.text %>"</span>
 						</p>
 					</td>
 				</tr>
 				<tr>
 					<td colspan="2" align="center">
-						<a href="<%= @permalink %>" class="shelby-email-button" style="background:#0d90c5; border:1px outset #ddd; color:white; display:inline-block; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-size:17px; font-weight:700; line-height:1.231; margin:20px; padding:14px 22px; text-decoration:none;">
+						<a href="<%= @frame_permalink %>" class="shelby-email-button" style="background:#0d90c5; border:1px outset #ddd; color:white; display:inline-block; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-size:17px; font-weight:700; line-height:1.2321; margin:20px; padding:14px 22px; text-decoration:none;">
 							See the comment thread
 						</a>
 					</td>
@@ -240,7 +237,7 @@
 				<tr>
 					<td colspan="2">
 						<small class="shelby-email-message-footer" style="font-size:11px; margin-top: 10px;">
-							Please remember you can always go into your <a href="#preferences">Preferences</a> page and adjust your account and contact info, privacy controls and emails preferences.
+							Please remember you can always go into your <a href="<%= Settings::Email.preferences_link %>">Preferences</a> page and adjust your account and contact info, privacy controls and emails preferences.
 						</small>
 					</td>
 				</tr>
