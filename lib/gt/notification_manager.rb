@@ -11,7 +11,9 @@ module GT
       return if (user.id == frame.creator_id) or !user.primary_email or (user.primary_email == "")
       
       # only sending notifications for a select few for now
-      return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(frame.creator.nickname)
+      if Rails.env == "production"
+        return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(frame.creator.nickname)
+      end
       
       NotificationMailer.upvote_notification(frame.creator, user, frame).deliver
     end
@@ -34,8 +36,10 @@ module GT
         # cant email anyone if we dont have their email address :)
         break unless old_message.user and old_message.user.primary_email
         
-        break unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(old_message.user.nickname)
-                
+        if Rails.env == "production"
+          break unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(old_message.user.nickname)
+        end
+        
         NotificationMailer.comment_notification(old_message.user, new_message.user, frame, new_message).deliver
       end
     end

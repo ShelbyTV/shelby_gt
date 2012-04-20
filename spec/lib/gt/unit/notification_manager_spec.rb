@@ -8,7 +8,7 @@ describe GT::NotificationManager do
     before(:all) do
       @user = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @user)
-      @frame = Factory.create(:frame, :creator => Factory.create(:user), :video=>Factory.create(:video), :roll => @roll)
+      @frame = Factory.create(:frame, :creator => Factory.create(:user),  :video=>Factory.create(:video), :roll => @roll)
     end
     
     it "should should queue email to deliver" do
@@ -40,7 +40,9 @@ describe GT::NotificationManager do
       @user2 = Factory.create(:user)
       @comment = "how much would a wood chuck chuck..."
       @message = Factory.create(:message, :text => @comment, :user => @user2)
+      @video = Factory.create(:video)
       @conversation = Factory.create(:conversation, :messages => [@message])      
+      @frame = Factory.create(:frame, :roll=> Factory.create(:roll, :creator => @user), :video => @video, :conversation => @conversation)
     end
     
     it "should should queue email to deliver" do

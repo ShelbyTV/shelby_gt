@@ -8,7 +8,9 @@ describe NotificationMailer do
       @comment = "how much would a wood chuck chuck..."
       @message = Factory.create(:message, :text => @comment, :user => @user_to)
       @conversation = Factory.create(:conversation, :messages => [@message])
-      @email = NotificationMailer.comment_notification(@user_to, @user_from, @conversation, @message)
+      @video = Factory.create(:video)
+      @frame = Factory.create(:frame, :roll=> Factory.create(:roll, :creator => @user_to), :video => @video)
+      @email = NotificationMailer.comment_notification(@user_to, @user_from, @frame, @message)
     end
  
     it 'renders the subject' do
