@@ -7,150 +7,21 @@
 #
 module Settings
   
-  #TODO: load *everything* in "#{Rails.root}/config/settings/" and use the filename to camel case to create the settings class
-
-  class ShelbyAPI < Settingslogic
-    source "#{Rails.root}/config/settings/shelby_api.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Global < Settingslogic
-    source "#{Rails.root}/config/settings/global.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Beanstalk < Settingslogic
-    source "#{Rails.root}/config/settings/beanstalk.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Memcached < Settingslogic
-    source "#{Rails.root}/config/settings/memcached.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class User < Settingslogic
-    source "#{Rails.root}/config/settings/user.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class UserAction < Settingslogic
-    source "#{Rails.root}/config/settings/user_action.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Roll < Settingslogic
-    source "#{Rails.root}/config/settings/roll.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Frame < Settingslogic
-    source "#{Rails.root}/config/settings/frame.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Video < Settingslogic
-    source "#{Rails.root}/config/settings/video.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Conversation < Settingslogic
-    source "#{Rails.root}/config/settings/conversation.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class DashboardEntry < Settingslogic
-    source "#{Rails.root}/config/settings/dashboard_entry.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Embedly < Settingslogic
-    source "#{Rails.root}/config/settings/embedly.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class EventMachine < Settingslogic
-    source "#{Rails.root}/config/settings/event_machine.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Twitter < Settingslogic
-    source "#{Rails.root}/config/settings/twitter.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Facebook < Settingslogic
-    source "#{Rails.root}/config/settings/facebook.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Tumblr < Settingslogic
-    source "#{Rails.root}/config/settings/tumblr.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Google < Settingslogic
-    source "#{Rails.root}/config/settings/google.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Bitly < Settingslogic
-    source "#{Rails.root}/config/settings/bitly.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Sendgrid < Settingslogic
-    source "#{Rails.root}/config/settings/sendgrid.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Sailthru < Settingslogic
-    source "#{Rails.root}/config/settings/sailthru.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class StatsD < Settingslogic
-    source "#{Rails.root}/config/settings/statsd.yml"
-    namespace Rails.env
-    load!
+  Dir.glob("#{Rails.root}/config/settings/*.yml").each do |filename|
+    klass = Class.new(Settingslogic) do
+      source filename
+      namespace Rails.env
+      load!
+    end
+    Settings.const_set File.basename(filename, ".yml").camelcase, klass
   end
 
-  class StatsConstants < Settingslogic
-    source "#{Rails.root}/config/settings/stats_constants.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Email < Settingslogic
-    source "#{Rails.root}/config/settings/email.yml"
-    namespace Rails.env
-    load!
-  end
-  
-  class Performance < Settingslogic
-    source "#{Rails.root}/config/settings/performance.yml"
-    namespace Rails.env
-    load!
-  end
+  # The above is equivalent to writing the following for every yml file in the settings directory:
+  #
+  #class Global < Settingslogic
+  #  source "#{Rails.root}/config/settings/global.yml"
+  #  namespace Rails.env
+  #  load!
+  #end
 
 end
