@@ -91,7 +91,14 @@ class User
 
   attr_accessible :name, :nickname, :primary_email, :preferences
   
-  validates_uniqueness_of :nickname, :case_sensitive => false
+  # Arnold does a *shit ton* of user saving, which runs this validation, which turns out to be very expensive 
+  # (see shelby_gt/etc/performance/unique_nickname_realtime_profile.gif)
+  # This validations is technically unnecessary because there is a unique index on user.nickname in the database.
+  # Additionally: 1) Arnold performans manual validation on User create. 2) This doesn't even gurantee uniqueness (timing issues)
+  # So, we turn this validation off for performance reasons inside of Arnold
+  if Settings::Performance.validate_uniqueness_user_nickname
+    validates_uniqueness_of :nickname, :case_sensitive => false
+  end
   
   # Latin-1 and other extensions:   \u00c0 - \u02ae
   # Greek, Coptic:                  \u0370 - \u03ff 
