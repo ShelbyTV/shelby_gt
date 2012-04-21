@@ -12,7 +12,7 @@ class NotificationMailer < ActionMailer::Base
       
       @frame_permalink = "#{Settings::Email.web_url_base}/roll/#{@frame.roll.id}/frame/#{@frame.id}"
       @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
-      mail :from => Settings::Email.notification_sender, :to => user_to.primary_email, :subject => Settings::Email.comment_notification['subject']
+      mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", :to => user_to.primary_email, :subject => Settings::Email.comment_notification['subject']
       
     end
   end
@@ -26,7 +26,7 @@ class NotificationMailer < ActionMailer::Base
       @permalink = "#{Settings::Email.web_url_base}/roll/#{@frame.roll.id}/frame/#{@frame.id}"
       @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
       
-      mail :from => Settings::Email.notification_sender, :to => user_to.primary_email, :subject => Settings::Email.upvote_notification['subject']
+      mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", :to => user_to.primary_email, :subject => Settings::Email.upvote_notification['subject']
     end
   end
 
