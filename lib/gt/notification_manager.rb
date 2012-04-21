@@ -10,7 +10,7 @@ module GT
       # don't email the creator if they are the upvoting user or they dont have an email address!
       return if (user.id == frame.creator_id) or !user.primary_email or (user.primary_email == "")
       
-      # only sending notifications for a select few for now
+      # Temp: for now only send emails to us
       if Rails.env == "production"
         return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(frame.creator.nickname)
       end
@@ -36,6 +36,7 @@ module GT
         # cant email anyone if we dont have their email address :)
         break unless old_message.user and old_message.user.primary_email
         
+        # Temp: for now only send emails to us
         if Rails.env == "production"
           break unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(old_message.user.nickname)
         end
