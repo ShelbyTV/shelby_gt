@@ -6,6 +6,8 @@
 #      along with default blocks.
 #
 module Settings
+  
+  #TODO: load *everything* in "#{Rails.root}/config/settings/" and use the filename to camel case to create the settings class
 
   class ShelbyAPI < Settingslogic
     source "#{Rails.root}/config/settings/shelby_api.yml"
@@ -141,6 +143,12 @@ module Settings
   
   class Email < Settingslogic
     source "#{Rails.root}/config/settings/email.yml"
+    namespace Rails.env
+    load!
+  end
+  
+  class Performance < Settingslogic
+    source "#{Rails.root}/config/settings/performance.yml"
     namespace Rails.env
     load!
   end
