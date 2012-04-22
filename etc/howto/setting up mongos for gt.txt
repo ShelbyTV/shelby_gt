@@ -1,0 +1,43 @@
+root passwd
+sudo apt-get install htop
+
+
+0) edit /etc/mongodb.conf setting replSet name
+
+1) create key
+echo -e "base64 secret key fuck you asshole love spinosa" > mongodb.key;
+sudo mv mongodb.key /etc/;
+sudo chmod 700 /etc/mongodb.key;
+sudo chown mongodb:mongodb /etc/mongodb.key;
+
+2) add this to /etc/init/mongodb.conf
+--keyFile /etc/mongodb.key
+
+3) restart mongo w/o data
+sudo service mongodb stop;
+sudo rm -rf /var/lib/mongodb/*
+sudo service mongodb start
+
+
+4) setup replica set  (do we have to setup /etc/hosts ???)
+rs.initiate();
+rs.add("IP:PORT")
+rs.status();
+
+
+5) setup admin
+use admin;
+db.addUser("gt_admin", 'Ov3rt1m3#4#');
+db.auth("gt_admin", 'Ov3rt1m3#4#');
+
+
+6) setup db
+use THE_DB_NAME
+db.addUser("gt_user", "GT/us3r!!!")
+db.auth("gt_user", "GT/us3r!!!")
+
+
+-------DUMP-------
+[from the target DB server]
+mongodump --host 10.183.74.78 --db gt-user-action -u gt_user -p
+mongorestore dump/ -u gt_admin -p
