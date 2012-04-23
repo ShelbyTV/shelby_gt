@@ -1,6 +1,10 @@
 object @user
 
-attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id
+attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux
+
+node :personal_roll_id do |u|
+	u.public_roll_id
+end
 
 if current_user == @user
 	child :authentications do

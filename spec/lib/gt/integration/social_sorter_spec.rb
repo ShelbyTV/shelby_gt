@@ -41,6 +41,12 @@ describe GT::SocialSorter do
       }.should change { @existing_user.public_roll.reload.frames.count }.by(1)
     end
     
+    it "should set existing User on the Message" do
+      res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+      res[:frame].conversation.messages[0].user.should == @existing_user
+      res[:frame].conversation.messages[0].user.should == res[:frame].creator
+    end
+    
     it "should add to public Roll of new faux User"  do
       m = Message.new
       m.nickname = "FakeNick001"
@@ -53,6 +59,18 @@ describe GT::SocialSorter do
         res = GT::SocialSorter.sort(m, @video, @observer)
         res[:frame].creator.nickname.should == "FakeNick001"
       }.should change { User.count }.by(1)
+    end
+    
+    it "should set faux User on the Message" do
+      m = Message.new
+      m.nickname = "FakeNick001"
+      m.origin_network = "FakeNet"
+      m.origin_user_id = "RandomId001--b"
+      m.origin_id = "RandomId998--b"
+      m.public = true
+      
+      res = GT::SocialSorter.sort(m, @video, @observer)
+      res[:frame].conversation.messages[0].user.should == res[:frame].creator
     end
     
     it "should do nothing if this social posting has already been posted to User's public Roll" do

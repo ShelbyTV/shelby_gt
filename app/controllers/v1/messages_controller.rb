@@ -24,10 +24,11 @@ class V1::MessagesController < ApplicationController
           @conversation.messages << @new_message
           begin
             if @conversation.save!
-              #TODO: Send bacon emails to those users associated w the conversation. 
-              #TODO:  find those users to send emails to by nickname (in the message)
+
               # send email notification in a non-blocking manor
-              #GT::NotificationManager.check_and_send_comment_notification(current_user, @conversation, @new_message)
+              EM.next_tick do 
+                GT::NotificationManager.check_and_send_comment_notification(current_user, @conversation, @new_message)
+              end
 
               @status = 200 
               StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)

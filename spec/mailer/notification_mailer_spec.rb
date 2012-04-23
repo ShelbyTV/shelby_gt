@@ -6,9 +6,11 @@ describe NotificationMailer do
       @user_to = Factory.create(:user, :primary_email => 'your@mom.com')
       @user_from = Factory.create(:user, :primary_email => 'my@mom.com')
       @comment = "how much would a wood chuck chuck..."
-      @message = Factory.create(:message, :text => @comment)
+      @message = Factory.create(:message, :text => @comment, :user => @user_to)
       @conversation = Factory.create(:conversation, :messages => [@message])
-      @email = NotificationMailer.comment_notification(@user_to, @user_from, @conversation, @message)
+      @video = Factory.create(:video)
+      @frame = Factory.create(:frame, :roll=> Factory.create(:roll, :creator => @user_to), :video => @video)
+      @email = NotificationMailer.comment_notification(@user_to, @user_from, @frame, @message)
     end
  
     it 'renders the subject' do

@@ -7,10 +7,12 @@ module GT
       # don't email the creator if they are the upvoting user or they dont have an email address!
       return if (user.id == frame.creator_id) or !user.primary_email or (user.primary_email == "")
       
+      # don't email the creator if they are the upvoting user or they dont have an email address!
+      return if (user.id == frame.creator_id) or !user.primary_email or (user.primary_email == "")
+      
       # Temp: for now only send emails to us
       if Rails.env == "production"
-        # only sending notifications for a select few for now
-        return unless ["henrysztul"].include?(frame.creator.nickname)
+        return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(frame.creator.nickname)
       end
       
       NotificationMailer.upvote_notification(frame.creator, user, frame).deliver
@@ -32,10 +34,10 @@ module GT
       NotificationMailer.reroll_notification(new_frame, old_frame).deliver
     end
     
-    def self.check_and_send_comment_notification(user, c, message)
-      raise ArgumentError, "must supply valid user" unless user.is_a?(User) and !user.blank?
+    def self.check_and_send_comment_notification(u, c, new_message)
+      raise ArgumentError, "must supply valid user" unless u.is_a?(User) and !u.blank?
       raise ArgumentError, "must supply valid conversation" unless c.is_a?(Conversation) and !c.blank?
-      raise ArgumentError, "must supply valid message" unless message.is_a?(Message) and !message.blank?
+      raise ArgumentError, "must supply valid message" unless new_message.is_a?(Message) and !new_message.blank?
       
       # stop if the message user is the user taking the action
       return if new_message.user == u
@@ -46,14 +48,14 @@ module GT
       
       c.messages.each do |old_message|
         # cant email anyone if we dont have their email address :)
-        break unless m and m.user and m.user.primary_email
+        break unless old_message.user and old_message.user.primary_email
         
+        # Temp: for now only send emails to us
         if Rails.env == "production"
-          # only sending notifications for a select few for now
-          break unless ["henrysztul"].include?(m.user.nickname)
+          break unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(old_message.user.nickname)
         end
         
-        NotificationMailer.comment_notification(first_message.user, m.user, c, m).deliver
+        NotificationMailer.comment_notification(old_message.user, new_message.user, frame, new_message).deliver
       end
     end
   end

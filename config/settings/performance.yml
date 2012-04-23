@@ -1,0 +1,15 @@
+defaults: &defaults
+  validate_uniqueness_user_nickname: true
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+  
+arnold:
+  <<: *production
+  validate_uniqueness_user_nickname: false

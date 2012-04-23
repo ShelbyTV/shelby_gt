@@ -9,7 +9,7 @@ describe GT::SocialPoster do
     before(:all) do
       @from_user = Factory.create(:user)
       @comment = "how much would a wood chuck chuck..."
-      @conversation = Factory.create(:conversation, :messages => [Factory.create(:message, :text => @comment)])
+      @conversation = Factory.create(:conversation, :messages => [Factory.create(:message, :text => @comment, :user => Factory.create(:user))])
       @frame = Factory.create(:frame, :creator_id => @from_user.id, :conversation_id => @conversation.id)
     end
     
@@ -37,7 +37,7 @@ describe GT::SocialPoster do
       @from_user = Factory.create(:user)
       @from_user.authentications.first.provider = "facebook"; @from_user.save
       @comment = "how much would a wood chuck chuck..."
-      @conversation = Factory.create(:conversation, :messages => [Factory.create(:message, :text => @comment)])
+      @conversation = Factory.create(:conversation, :messages => [Factory.create(:message, :text => @comment, :user => Factory.create(:user))])
       @frame = Factory.create(:frame, :creator_id => @from_user.id, :conversation_id => @conversation.id)
     end
     

@@ -194,7 +194,7 @@ class V1::RollController < ApplicationController
   # Destroys one roll, returning Success/Failure
   #   REQUIRES AUTHENTICATION
   # 
-  # [DELETE] /v1/roll/:id.json
+  # [DELETE] /v1/roll/:id
   # 
   # @param [Required, String] id The id of the roll
   def destroy

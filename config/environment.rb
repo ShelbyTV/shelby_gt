@@ -4,6 +4,8 @@ require File.expand_path('../application', __FILE__)
 # Initialize the rails application
 ShelbyGt::Application.initialize!
 
+#############
+# Email Setup via Sendgrid:
 ActionMailer::Base.smtp_settings = {
   :address => "smtp.sendgrid.net",
   :port => 25,
@@ -12,3 +14,5 @@ ActionMailer::Base.smtp_settings = {
   :user_name => Settings::Sendgrid.username,
   :password => Settings::Sendgrid.password
 }
+# FYI: if port 25 blocked by isp use:
+# port 587 with :enable_starttls_auto => true

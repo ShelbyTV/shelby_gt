@@ -46,7 +46,7 @@ describe 'v1/conversation' do
         
     describe "DELETE" do
       before(:each) do
-        @m = Factory.create(:message, :text => ".evol si siht")
+        @m = Factory.create(:message, :text => ".evol si siht", :user => Factory.create(:user))
         @c.messages << @m
         @c.save
       end

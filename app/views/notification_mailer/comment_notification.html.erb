@@ -3,7 +3,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-	<title>Your Message Subject or Title</title>
+	<title>Someone commented on a frame you</title>
 	<style type="text/css">
 		/* Based on The MailChimp Reset INLINE: Yes. */  
 		/* Client-specific Styles */
@@ -198,49 +198,43 @@
 </head>
 <body class="shelby">
 <!-- Wrapper/Container Table: Use a wrapper table to control the width and the background color consistently of your email. Use this approach instead of setting attributes on the body tag. -->
-<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email">
+<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#f6f6f6; border:1px solid #b5b5b5; color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
 	<tr>
-		<td valign="top" class="shelby-email-lining"> 
-			<h1 class="shelby-logo">
-				<a href="http://gt.shelby.tv">
-					<img class="image_fix" src="<%= image_path('shelby_logo.png') %>" alt="Shelby.tv logo" title="Shelby.tv" width="156" height="42" />
+		<td valign="top" class="shelby-email-lining" style="padding:20px;"> 
+			<h1 class="shelby-logo" style="margin-top:5px;">
+				<a href="<%= Settings::Email.web_url_base %>">
+					<img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv logo" title="Shelby.tv" width="156" height="42" />
 				</a>
 			</h1>
-			<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0">
-				<tr>
-					<td width="120">
-						<img class="image_fix" src="<%= @user_from.user_image %>" alt="user_image" title="user_image" width="100" height="100" />
-					</td>
-					<td>
-						<p>
-							<%= @user_from.name %> commented on your video "VIDEO TITLE HERE!"
-						</p>
-						<p>
-							What's a <a href="#comment">comment</a>?
-						</p>
+			<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:1px solid #b5b5b5; padding:20px; width:100%;">
+				<tr height="65">
+					<td valign="top">
+						<div>
+							<a href="<%= @user_permalink %>"><%= @user_from.name %></a> commented on your activity on the video: 
+						</div>
+						<div style="font-weight: bold;padding: 8px 0px;">
+							"<a href="<%= @frame_permalink %>"><%= @frame.video.title %></a>"
+						</div>
 					</td>
 				</tr>
 				<tr>
 					<td colspan="2">
-						<h2 class="shelby-email-subhead">
-							Comment
-						</h2>
-						<blockquote class="shelby-email-message-quote">
-							"<%= @message.text %>"
-						</blockquote>
+						<div class="shelby-email-subhead" style="font-size:18px;">
+							Comment: <span style="font-weight: bold;">"<%= @message.text %>"</span>
+						</div>
 					</td>
 				</tr>
 				<tr>
 					<td colspan="2" align="center">
-						<a href="http://<%= Settings::Email.web_url_base %>/" class="shelby-email-button">
-							Comment back!
+						<a href="<%= @frame_permalink %>" class="shelby-email-button" style="background:#0d90c5; border:1px outset #ddd; color:white; display:inline-block; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-size:14px; font-weight:bold; margin:15px auto; padding:12px 33px; text-decoration:none; width: 165px">
+							See the comment thread
 						</a>
 					</td>
 				</tr>
 				<tr>
 					<td colspan="2">
-						<small class="shelby-email-message-footer">
-							Please remember you can always go into your <a href="#preferences">Preferences</a> page and adjust your account and contact info, privacy controls and emails preferences.
+						<small class="shelby-email-message-footer" style="font-size:11px; margin-top: 10px;">
+							Please remember you can always go into your <a href="<%= Settings::Email.preferences_link %>">Preferences</a> page and adjust your account and contact info, privacy controls and emails preferences.
 						</small>
 					</td>
 				</tr>

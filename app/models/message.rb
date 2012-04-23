@@ -15,9 +15,9 @@ class Message
   # and the user's ID on that network
   key :origin_user_id, String, :abbr => :c
   
-  # If this is a Shelby message, the user_id as an Object 
+  # The user_id of the real Shelby user or the faux user
   belongs_to :user
-  key :user_id, ObjectId, :abbr => :d
+  key :user_id, ObjectId, :abbr => :d, :required => true
   
   # The Shelby or external nickname
   key :nickname, String, :required => true, :abbr => :e
