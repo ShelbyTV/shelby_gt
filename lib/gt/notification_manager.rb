@@ -4,15 +4,14 @@ module GT
     def self.check_and_send_upvote_notification(user, frame)
       raise ArgumentError, "must supply valid user" unless user.is_a?(User) and !user.blank?
       raise ArgumentError, "must supply valid frame" unless frame.is_a?(Frame) and !frame.blank?
-      
-      Rails.logger.info("[NotificationManager : Event Machine] check_and_send_upvote_notification")
-      
+            
       # don't email the creator if they are the upvoting user or they dont have an email address!
-      return if (user.id == frame.creator_id) or !user.primary_email or (user.primary_email == "")
+      user_to = frame.creator_id
+      return if (user.id == user_to) or !user_to.primary_email or (user_to.primary_email == "")
       
       # Temp: for now only send emails to us
       if Rails.env == "production"
-        #return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(frame.creator.nickname)
+        return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(frame.creator.nickname)
       end
       
       NotificationMailer.upvote_notification(frame.creator, user, frame).deliver
@@ -23,8 +22,8 @@ module GT
       raise ArgumentError, "must supply valid old frame" unless old_frame.is_a?(Frame) and !old_frame.blank?
       
       # don't email the creator if they are the upvoting user or they dont have an email address!
-      user = new_frame.creator
-      return if (new_frame.creator_id == old_frame.creator_id) or !user.primary_email or (user.primary_email == "")
+      user_to = new_frame.creator
+      return if (new_frame.creator_id == old_frame.creator_id) or !user_to.primary_email or (user_to.primary_email == "")
       
       # Temp: for now only send emails to us
       if Rails.env == "production"

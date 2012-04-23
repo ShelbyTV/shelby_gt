@@ -111,10 +111,7 @@ class Frame
     update_score
     
     # send email notification in a non-blocking manor
-    EM.next_tick do
-      Rails.logger.info("[Frame.rb : Event Machine] next tick")
-      GT::NotificationManager.check_and_send_upvote_notification(u, self)
-    end
+    EM.next_tick {GT::NotificationManager.check_and_send_upvote_notification(u, self)}
     
     self.save
   end
