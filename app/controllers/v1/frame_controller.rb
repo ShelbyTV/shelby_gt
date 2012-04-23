@@ -27,8 +27,9 @@ class V1::FrameController < ApplicationController
       if params[:roll_id] 
         @roll = Roll.find(params[:roll_id])
       elsif params[:public_roll]
-        user = User.find(params[:user_id])
-        @roll = user.public_roll
+        if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
+          @roll = user.public_roll 
+        end
       end
       
       if @roll and @roll.viewable_by?(current_user)

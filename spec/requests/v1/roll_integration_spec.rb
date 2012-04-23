@@ -20,6 +20,11 @@ describe 'v1/roll' do
         response.body.should have_json_path("result/title")
         parse_json(response.body)["result"]["title"].should eq(@r.title)
       end
+      
+      it "should return personal roll of user when given a nickname" do
+        get 'v1/user/'+@u2.nickname+'/personal_roll'
+        response.body.should be_json_eql(200).at_path("status")
+      end
     
       it "should return error message if roll doesnt exist" do
         get '/v1/roll/'+@r.id+'xxx'

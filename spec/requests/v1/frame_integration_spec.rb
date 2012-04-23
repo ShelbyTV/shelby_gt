@@ -64,6 +64,14 @@ describe 'v1/frame' do
           response.body.should have_json_size(2).at_path("result/frames")
         end
         
+        it "should return frames of personal roll of user when given a nickname" do
+          u2 = Factory.create(:user)
+          r2 = Factory.create(:roll, :creator => u2, :public => true)
+          u2.public_roll_id = r2.id; u2.save
+          get 'v1/user/'+u2.nickname+'/personal_roll/frames'
+          response.body.should be_json_eql(200).at_path("status")
+        end
+        
         it "should return 404 if cant access frames in a roll" do
           roll = Factory.create(:roll, :creator_id => Factory.create(:user).id, :public => false)
           @f.roll_id = roll.id; @f.save

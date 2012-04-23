@@ -23,10 +23,13 @@ class V1::RollController < ApplicationController
           render_error(404, "you are not authorized to see that roll")
         end
       elsif params[:public_roll] and user_signed_in? #this is for the aliased route to get users public roll
-        user = User.find(params[:user_id])
-        @roll = user.public_roll
-        @include_following_users = params[:following_users] == "true" ? true : false
-        @status = 200
+        if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
+          @roll = user.public_roll
+          @include_following_users = params[:following_users] == "true" ? true : false
+          @status = 200
+        else
+          render_error(404, "could not find the roll of the user specified")
+        end
       else
         render_error(404, "could not find that roll")
       end
