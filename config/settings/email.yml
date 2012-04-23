@@ -12,7 +12,7 @@ defaults: &defaults
   upvote_notification:
     category: "Comment Notifications"
     subject: "the video you shared received an upvote!"
-  upvote_notification:
+  reroll_notification:
     category: "Reroll Notifications"
     subject: "the video you shared was re-rolled!"
 
