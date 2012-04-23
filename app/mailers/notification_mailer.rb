@@ -1,6 +1,6 @@
 class NotificationMailer < ActionMailer::Base
   include SendGrid
-  sendgrid_enable   :ganalytics, :opentrack, :clicktrack
+  sendgrid_enable   :opentrack, :clicktrack #, :ganalytics #commented out due to web client not handling ? params
 
   def comment_notification(user_to, user_from, frame, message)
     sendgrid_category Settings::Email.comment_notification["category"]

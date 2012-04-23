@@ -40,7 +40,7 @@ describe V1::UserController do
   describe "GET signed_in" do
     it "returns 200 if signed in" do
       get :signed_in, :format => :json
-      assigns(:status).should eq(200)      
+      assigns(:status).should eq(200)
       assigns(:signed_in).should eq(true)
     end
 
