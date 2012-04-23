@@ -23,14 +23,13 @@ class V1::UserController < ApplicationController
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['show']) do
       if params[:id]
-        if @user = User.find(params[:id])
+        if @user = User.find(params[:id]) or @user = User.find_by_nickname(params[:id])
           @include_rolls = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true" ) ? true : false
           @status = 200
         else
           render_error(404, "could not find that user")
         end
-      elsif user_signed_in?
-        @user = current_user
+      elsif user_signed_in? and @user = current_user
         @include_rolls = (params[:include_rolls] == "true") ? true : false
         @csrf = session[:_csrf_token]
         @status = 200

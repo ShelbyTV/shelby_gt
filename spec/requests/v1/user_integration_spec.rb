@@ -23,6 +23,13 @@ describe 'v1/user' do
         response.body.should have_json_path("result/nickname")        
       end
       
+      it "should get a user by querying by nickname" do
+        u2 = Factory.create(:user)
+        get '/v1/user/'+u2.nickname
+        response.body.should be_json_eql(200).at_path("status")
+        parse_json(response.body)["result"]["nickname"].should eq(u2.nickname)
+      end
+      
       it "should show user is logged in" do
         get '/v1/signed_in'
         response.body.should be_json_eql(200).at_path("status")
