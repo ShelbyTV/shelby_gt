@@ -20,5 +20,6 @@ Factory.define :user do |user|
   user.nickname                 { Factory.next :nickname }
   user.authentications          { [FactoryGirl.create(:authentication)] }
   user.primary_email "email@domain.com"
+  user.preferences  Preferences.new
 end
 

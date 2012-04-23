@@ -14,7 +14,9 @@ module GT
         return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(frame.creator.nickname)
       end
       
-      NotificationMailer.upvote_notification(frame.creator, user, frame).deliver
+      return unless user_to.preferences.upvote_notifications
+      
+      NotificationMailer.upvote_notification(user_to, user, frame).deliver
     end
 
     def self.check_and_send_reroll_notification(old_frame, new_frame)
@@ -22,13 +24,15 @@ module GT
       raise ArgumentError, "must supply valid old frame" unless old_frame.is_a?(Frame) and !old_frame.blank?
       
       # don't email the creator if they are the upvoting user or they dont have an email address!
-      user_to = new_frame.creator
+      user_to = old_frame.creator
       return if (new_frame.creator_id == old_frame.creator_id) or !user_to.primary_email or (user_to.primary_email == "")
       
       # Temp: for now only send emails to us
       if Rails.env == "production"
-        return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(old_frame.creator.nickname)
+        return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(user_to.nickname)
       end
+      
+      return unless user_to.preferences.reroll_notifications
       
       NotificationMailer.reroll_notification(new_frame, old_frame).deliver
     end
@@ -58,7 +62,9 @@ module GT
         if Rails.env == "production"
           break unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(old_message.user.nickname)
         end
-        
+
+        return unless old_message.user.preferences.comment_notifications
+
         NotificationMailer.comment_notification(old_message.user, new_message.user, frame, new_message).deliver
       end
     end
