@@ -51,6 +51,8 @@ ShelbyGt::Application.routes.draw do
       resources :messages, :only => [:create, :destroy]
     end
     
+    resources :gt_interest, :only => [:create]
+    
     # User related
     get 'user' => 'user#show'
     get 'signed_in' => 'user#signed_in'
