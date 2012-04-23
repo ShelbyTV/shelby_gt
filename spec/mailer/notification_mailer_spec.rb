@@ -58,4 +58,34 @@ describe NotificationMailer do
     #  mail.body.encoded.should match("http://aplication_url/#{user.id}/confirmation")
     #end
   end
+  
+  describe 'reroll notifications' do
+    before(:all) do
+      @old_user = Factory.create(:user)
+      @new_user = Factory.create(:user)
+      @old_roll = Factory.create(:roll, :creator => @old_user)
+      @new_roll = Factory.create(:roll, :creator => @new_user)
+      @video = Factory.create(:video)
+      @old_frame = Factory.create(:frame, :creator => @old_user, :video => @video, :roll => @old_roll)
+      @new_frame = Factory.create(:frame, :creator => @new_user, :video => @video, :roll => @new_roll)
+      @email = NotificationMailer.reroll_notification(@old_frame, @new_frame)
+    end
+ 
+    it 'renders the subject' do
+      @email.subject.should eq(Settings::Email.reroll_notification['subject'])
+    end
+    
+    it 'renders the receiver email' do
+      @email.to.should eq([@old_user.primary_email])
+    end
+    
+    it 'renders the sender email' do
+      @email.from.should eq([Settings::Email.notification_sender])
+    end
+    
+    #ensure that the an instance var is assigned properly, eg @confirmation_url variable appears in the email body
+    #it 'assigns @confirmation_url' do
+    #  mail.body.encoded.should match("http://aplication_url/#{user.id}/confirmation")
+    #end
+  end
 end
