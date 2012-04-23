@@ -47,13 +47,13 @@ describe GT::NotificationManager do
     
     it "should should queue email to deliver" do
       lambda {
-        GT::NotificationManager.check_and_send_comment_notification(@user, @conversation, @message)
+        GT::NotificationManager.check_and_send_comment_notification(@conversation, @message)
       }.should change(ActionMailer::Base.deliveries,:size).by(1)
     end
     
     it "should return nil if first message in a conv is from a faux user" do
       @conversation.messages.first.user = nil; @conversation.save
-      r = GT::NotificationManager.check_and_send_comment_notification(@user, @conversation, @message)
+      r = GT::NotificationManager.check_and_send_comment_notification(@conversation, @message)
       r.should eq(nil)
     end
     

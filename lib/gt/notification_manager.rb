@@ -33,21 +33,26 @@ module GT
       NotificationMailer.reroll_notification(new_frame, old_frame).deliver
     end
     
-    def self.check_and_send_comment_notification(u, c, new_message)
-      raise ArgumentError, "must supply valid user" unless u.is_a?(User) and !u.blank?
+    def self.check_and_send_comment_notification(c, new_message)
       raise ArgumentError, "must supply valid conversation" unless c.is_a?(Conversation) and !c.blank?
       raise ArgumentError, "must supply valid message" unless new_message.is_a?(Message) and !new_message.blank?
       
-      # stop if the message user is the user taking the action
-      return if new_message.user == u
-
       # stop if we don't get the frame (otherwise we won't have a permalink for the email)      
       #TODO: This is probably not the *best* way to get the conversations frame, so find a  better way...
       return unless frame = Frame.where(:conversation_id => c.id).first
       
+      # an array to check against emails already sent for block below
+      users_in_conversation = []
+      
       c.messages.each do |old_message|
         # cant email anyone if we dont have their email address :)
         break unless old_message.user and old_message.user.primary_email
+        
+        # dont send an email to a user that we've just emaild wrt this new message
+        break if users_in_conversation.include?(old_message.user_id)
+        
+        # add this user to that array
+        users_in_conversation << old_message.user_id
         
         # Temp: for now only send emails to us
         if Rails.env == "production"

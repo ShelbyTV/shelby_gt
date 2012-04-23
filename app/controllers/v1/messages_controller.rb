@@ -27,7 +27,7 @@ class V1::MessagesController < ApplicationController
 
               # send email notification in a non-blocking manor
               EM.next_tick do 
-                GT::NotificationManager.check_and_send_comment_notification(current_user, @conversation, @new_message)
+                GT::NotificationManager.check_and_send_comment_notification(@conversation, @new_message)
               end
 
               @status = 200 
