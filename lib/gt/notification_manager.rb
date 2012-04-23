@@ -12,7 +12,7 @@ module GT
       
       # Temp: for now only send emails to us
       if Rails.env == "production"
-        return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(frame.creator.nickname)
+        #return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(frame.creator.nickname)
       end
       
       NotificationMailer.upvote_notification(frame.creator, user, frame).deliver
