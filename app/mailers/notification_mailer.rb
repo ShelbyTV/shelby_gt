@@ -19,6 +19,7 @@ class NotificationMailer < ActionMailer::Base
 
   def upvote_notification(user_to, user_from, frame)
     sendgrid_category Settings::Email.upvote_notification["category"]
+    Rails.logger.info("[NotificationMailer : Event Machine] composing email")
     if user_to.primary_email
       @user_to = user_to
       @user_from = user_from

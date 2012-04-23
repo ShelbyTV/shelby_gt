@@ -4,8 +4,8 @@ module GT
     def self.check_and_send_upvote_notification(user, frame)
       raise ArgumentError, "must supply valid user" unless user.is_a?(User) and !user.blank?
       raise ArgumentError, "must supply valid frame" unless frame.is_a?(Frame) and !frame.blank?
-      # don't email the creator if they are the upvoting user or they dont have an email address!
-      return if (user.id == frame.creator_id) or !user.primary_email or (user.primary_email == "")
+      
+      Rails.logger.info("[NotificationManager : Event Machine] check_and_send_upvote_notification")
       
       # don't email the creator if they are the upvoting user or they dont have an email address!
       return if (user.id == frame.creator_id) or !user.primary_email or (user.primary_email == "")
