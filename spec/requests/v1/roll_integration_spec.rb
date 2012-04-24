@@ -4,6 +4,8 @@ describe 'v1/roll' do
   before(:all) do
     @u1 = Factory.create(:user)
     @u2 = Factory.create(:user)
+    @u2.downcase_nickname = @u2.nickname.downcase
+    @u2.save
     @r = Factory.create(:roll, :creator => @u1)
   end
   

@@ -25,6 +25,8 @@ describe 'v1/user' do
       
       it "should get a user by querying by nickname" do
         u2 = Factory.create(:user)
+        u2.downcase_nickname = u2.nickname.downcase
+        u2.save
         get '/v1/user/'+u2.nickname
         response.body.should be_json_eql(200).at_path("status")
         parse_json(response.body)["result"]["nickname"].should eq(u2.nickname)

@@ -66,6 +66,8 @@ describe 'v1/frame' do
         
         it "should return frames of personal roll of user when given a nickname" do
           u2 = Factory.create(:user)
+          u2.downcase_nickname = u2.nickname.downcase
+          u2.save
           r2 = Factory.create(:roll, :creator => u2, :public => true)
           u2.public_roll_id = r2.id; u2.save
           get 'v1/user/'+u2.nickname+'/personal_roll/frames'
