@@ -225,6 +225,7 @@ module GT
         user.nickname = user.nickname.gsub(/[ ,:&~]/,'_');
         #remove anything not in the set of valid characters
         user.nickname = user.nickname.gsub(User::NICKNAME_UNACCEPTABLE_CHAR_REGEX, '')
+        user.nickname = "cobra" if user.nickname.blank?
         
         orig_nick = user.nickname
         i = 2

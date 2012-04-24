@@ -277,6 +277,10 @@ describe GT::UserManager do
         #unnaceptable characters
         nick = "ヅللمسلمين فقط ! بالله عليك إذا كنت مسلم و رأيت هذه الصفحة أدخل إليها๑۞๑"
         GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "ヅللمسلمين_فقط__بالله_عليك_إذا_كنت_مسلم_و_رأيت_هذه_الصفحة_أدخل_إليها๑۞๑"
+        
+        #only unnaceptable characters
+        nick = "Անվանագիրք"
+        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "cobra"
       end
     end
     
