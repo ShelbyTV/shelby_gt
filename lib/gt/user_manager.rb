@@ -118,7 +118,7 @@ module GT
         u = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
         return u if u
         
-        Rails.logger.error "[GT::UserManager#get_or_create_faux_user] rescuing Mongo::OperationFailure #{e}"
+        Rails.logger.error "[GT::UserManager#get_or_create_faux_user] rescuing Mongo::OperationFailure #{e} / ODD: could not find user from #{provider} with id #{uid}"
         return nil
       end
     end
