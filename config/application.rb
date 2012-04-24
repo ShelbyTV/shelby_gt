@@ -70,7 +70,7 @@ module ShelbyGt
     # Setup cors preflight request headers
     config.middleware.use Rack::Cors do
       allow do
-        origins 'web.gt.shelby.tv', 'localhost.shelby.tv', 'localhost:3000', '33.33.33.10:3000'
+        origins 'web.gt.shelby.tv', 'localhost.shelby.tv:3000', 'localhost:3000', '33.33.33.10:3000'
         resource %r{/v1/(roll|frame|user|dashboard|conversation)\w*},
           :headers => ['Origin', 'Accept', 'Content-Type', 'X-CSRF-Token', 'X-Shelby-User-Agent'],
           :methods => [:put, :post, :delete]
