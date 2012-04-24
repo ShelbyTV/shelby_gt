@@ -36,4 +36,9 @@ describe GT::MessageManager do
     lambda { GT::MessageManager.build_message(options) }.should raise_error(ArgumentError)    
   end
   
+  it "should not crash with funky input" do
+    options = { :public => true, :text => false, :nickname => false, :realname => false, :user_image_url => false }
+    GT::MessageManager.build_message(options)
+  end
+  
 end

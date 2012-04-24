@@ -16,14 +16,14 @@ module GT
       message = Message.new
       message.user = user if user
       message.public = options[:public]
-      message.nickname = options[:nickname] || user.nickname
-      message.realname = options[:realname] || user.name
-      message.user_image_url = options[:user_image_url] || user.user_image
+      message.nickname = options.has_key?(:nickname) ? options[:nickname].to_s : user.nickname
+      message.realname = options.has_key?(:realname) ? options[:realname].to_s : user.name
+      message.user_image_url = options.has_key?(:user_image_url) ? options[:user_image_url].to_s : user.user_image
       message.text = text
       
-      message.origin_network = options[:origin_network] if options[:origin_network]
-      message.origin_id = options[:origin_id] if options[:origin_id]
-      message.origin_user_id = options[:origin_user_id] if options[:origin_user_id]
+      message.origin_network = options[:origin_network] if options.has_key?(:origin_network)
+      message.origin_id = options[:origin_id] if options.has_key?(:origin_id)
+      message.origin_user_id = options[:origin_user_id] if options.has_key?(:origin_user_id)
       
       return message 
     end
