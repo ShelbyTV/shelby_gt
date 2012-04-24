@@ -60,18 +60,23 @@ class AuthenticationsController < ApplicationController
       # we read that common cookie here
       #OTHERWISE: @opener_location = "#{Settings::ShelbyAPI.web_root}/?access=nos"
       
-      user = GT::UserManager.create_new_user_from_omniauth(omniauth)
+      if false #do they have the access token in a cookie?
+        user = GT::UserManager.create_new_user_from_omniauth(omniauth)
 
-      if user.valid?
-        sign_in(:user, user)
+        if user.valid?
+          sign_in(:user, user)
         
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
         
-        @opener_location = request.env['omniauth.origin'] || web_root_url
+          @opener_location = request.env['omniauth.origin'] || web_root_url
+        else
+          Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
+        
+          @opener_location = web_root_url
+        end
       else
-        Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
-        
-        @opener_location = web_root_url
+        # NO GT FOR YOU, just redirect to error page w/o creating account
+        @opener_location = "#{Settings::ShelbyAPI.web_root}/?access=nos"
       end
       
     end
