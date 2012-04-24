@@ -1,5 +1,5 @@
 defaults: &defaults  
-  cross_site_key: "GoatsFTW"
+  web_root: "http://web.gt.shelby.tv"
   
 development:
   <<: *defaults

@@ -24,44 +24,54 @@ class AuthenticationsController < ApplicationController
 =end
 # ---- Current user, just signing in
     if user
-      if user.faux == User::FAUX_STATUS[:true]
-        GT::UserManager.convert_faux_user_to_real(user, omniauth)
+      
+      if user.gt_enabled        
+        if user.faux == User::FAUX_STATUS[:true]
+          GT::UserManager.convert_faux_user_to_real(user, omniauth)
+        else
+          GT::UserManager.start_user_sign_in(user, omniauth, session)
+        end
+      
+        sign_in(:user, user)
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
+      
+        @opener_location = request.env['omniauth.origin'] || web_root_url
       else
-        GT::UserManager.start_user_sign_in(user, omniauth, session)
+        # NO GT FOR YOU, just redirect to error page w/o signing in
+        @opener_location = "#{Settings::ShelbyAPI.web_root}/?access=nos"
       end
-      
-      sign_in(:user, user)
-      cookies[:signed_in] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
-      StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
-      
-      @opener_location = request.env['omniauth.origin'] || root_path
       
 # ---- Adding new authentication to current user
     elsif user_signed_in?
       new_auth = GT::UserManager.add_new_auth_from_omniauth(current_user, omniauth)
       
       if new_auth
-        @opener_reload = true
+        @opener_location = request.env['omniauth.origin'] || web_root_url
       else
         Rails.logger.error "AuthenticationsController#create - ERROR - tried to add authentication to #{current_user.id}, user.save failed with #{current_user.errors.full_messages.join(', ')}"
-        @opener_location = new_user_session_path
+        @opener_location = web_root_url
       end
 
 # ---- New User signing up!
     else
+      #TODO: check if they have GtInterest set in the common cookie as expected
+      # email link has token as a param
+      # shelby-web rails app stores it into common cookie
+      # we read that common cookie here
+      #OTHERWISE: @opener_location = "#{Settings::ShelbyAPI.web_root}/?access=nos"
+      
       user = GT::UserManager.create_new_user_from_omniauth(omniauth)
 
       if user.valid?
         sign_in(:user, user)
-        cookies[:signed_in] = { :value => "true", :expires => 1.week.from_now, :domain => '.shelby.tv' }
         
         StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
         
-        @opener_location = request.env['omniauth.origin'] || root_path
+        @opener_location = request.env['omniauth.origin'] || web_root_url
       else
         Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
         
-        @opener_location = new_user_session_path
+        @opener_location = web_root_url
       end
       
     end
