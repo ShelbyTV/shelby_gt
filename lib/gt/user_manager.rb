@@ -45,7 +45,7 @@ module GT
       
       # Always remember users, onus is on them to log out
       self.class.trace_execution_scoped(['Custom/user_manager/remember_me']) do
-        user.remember_me!
+        user.remember_me!(true)
       end
     end
     
