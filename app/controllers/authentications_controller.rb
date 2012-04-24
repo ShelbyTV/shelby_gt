@@ -26,7 +26,7 @@ class AuthenticationsController < ApplicationController
 # ---- Current user, just signing in
     if user
       
-      if user.gt_enabled        
+      if user.gt_enabled
         if user.faux == User::FAUX_STATUS[:true]
           GT::UserManager.convert_faux_user_to_real(user, omniauth)
         else
