@@ -46,7 +46,7 @@ module GT
         unless observing_user = User.find_by_provider_name_and_id(job_details[:provider_type].to_s, job_details[:provider_user_id].to_s)
           # In production, this is certainly an error (how are we getting jobs for Users not in the DB?)
           # But while testing, we're not using the real User DB, so this is expected
-          Rails.logger.error "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No observing_user for provider '#{job_details[:provider_type]}' with id '#{job_details[:provider_user_id]}'. job: #{job}, job_details: #{job_details}"
+          Rails.logger.error "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No observing_user for provider '#{job_details[:provider_type]}' with id '#{job_details[:provider_user_id]}'"
           clean_up(job, fibers, max_fibers, job_start_t) and return :no_observing_user
         end
         
