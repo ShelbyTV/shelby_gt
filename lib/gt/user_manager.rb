@@ -9,6 +9,7 @@ require 'predator_manager'
 #
 module GT
   class UserManager
+    extend NewRelic::Agent::MethodTracer
     
     # Creates a real User on signup
     def self.create_new_user_from_omniauth(omniauth)
@@ -34,10 +35,18 @@ module GT
     
     # Things that happen when a user signs in.
     def self.start_user_sign_in(user, omniauth=nil, session=nil)
-      GT::AuthenticationBuilder.update_authentication_tokens!(user, omniauth) if omniauth
-      update_token_and_permissions(user)
+      self.class.trace_execution_scoped(['Custom/user_manager/update_authentication_tokens']) do
+        GT::AuthenticationBuilder.update_authentication_tokens!(user, omniauth) if omniauth
+      end
+      
+      self.class.trace_execution_scoped(['Custom/user_manager/update_token_and_permissions']) do
+        update_token_and_permissions(user)
+      end
+      
       # Always remember users, onus is on them to log out
-      user.remember_me!
+      self.class.trace_execution_scoped(['Custom/user_manager/remember_me']) do
+        user.remember_me!
+      end
     end
     
     # Adds a new auth to an existing user
