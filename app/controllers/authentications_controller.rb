@@ -88,7 +88,7 @@ class AuthenticationsController < ApplicationController
     
     # TEMP
     #redirect_to "http://web.gt.shelby.tv" 
-    redirect_to request.headers['HTTP_REFERER']
+    redirect_to request.headers['HTTP_REFERER'] || root_path
   end
   
 end
