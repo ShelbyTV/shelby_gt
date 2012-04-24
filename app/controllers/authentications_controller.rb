@@ -5,7 +5,8 @@ require 'user_manager'
 class AuthenticationsController < ApplicationController  
   before_filter #, :authenticate_user!, :only => [:merge_accounts, :do_merge]
   #before_filter :read_user_on_primary_only
-
+  include NewRelic::Agent::MethodTracer
+ 
   def index
   end
   
@@ -78,6 +79,7 @@ class AuthenticationsController < ApplicationController
     
     render :action => 'redirector', :layout => 'simple'
   end
+  add_method_tracer :create
   
   def fail
     #if their session is fucked, it will cause bad auth params.
