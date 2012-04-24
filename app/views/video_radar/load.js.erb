@@ -59,7 +59,7 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 		
 		if (typeof response.id !== 'undefined' ){
 			document.title = document.title.slice(14);
-			var url = "http://web.gt.shelby.tv/roll/"+response.roll_id+"/frame/"+response.id
+			var url = "http://gt.shelby.tv/roll/"+response.roll_id+"/frame/"+response.id
 			console.log("WE GOT ONE!", url);
 		}
 		else { console.error("something got tripped up somewhere. :/"); }

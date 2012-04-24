@@ -59,7 +59,7 @@ ShelbyGt::Application.routes.draw do
   end
   
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user
-  get '/web_root' => redirect('http://web.gt.shelby.tv'), :as => :web_root
+  get '/web_root' => redirect('http://gt.shelby.tv'), :as => :web_root
   
   root :to => 'authentications#index'
 
