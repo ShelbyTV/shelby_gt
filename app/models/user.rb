@@ -54,6 +54,9 @@ class User
   
   has_many :dashboard_entries, :foreign_key => :a
 
+  # has this user been granted access to Shelby GT?
+  key :gt_enabled, Boolean, :abbr => :ag, :default => false
+
   #--old keys--
   many :authentications
   
@@ -97,7 +100,7 @@ class User
   # Additionally: 1) Arnold performans manual validation on User create. 2) This doesn't even gurantee uniqueness (timing issues)
   # So, we turn this validation off for performance reasons inside of Arnold
   if Settings::Performance.validate_uniqueness_user_nickname
-    validates_uniqueness_of :nickname, :case_sensitive => false
+    validates_uniqueness_of :nickname
   end
   
   # Latin-1 and other extensions:   \u00c0 - \u02ae
