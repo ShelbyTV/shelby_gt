@@ -83,7 +83,7 @@ class AuthenticationsController < ApplicationController
     sign_out(:user)
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signout'])
     
-    redirect_to request.headers['HTTP_REFERER'] || "http://web.gt.shelby.tv"
+    redirect_to web_root_url
   end
   
 end

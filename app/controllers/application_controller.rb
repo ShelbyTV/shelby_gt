@@ -28,7 +28,7 @@ class ApplicationController < ActionController::Base
     #
     #TODO: When we go live only allow cs_key in staging env    
     def set_access_control_headers
-      headers['Access-Control-Allow-Origin'] = Settings::ShelbyAPI.allow_origin
+      headers['Access-Control-Allow-Origin'] = '*'
       headers['Access-Control-Request-Method'] = '*'
       headers['Access-Control-Allow-Credentials'] = 'true'
       headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-Prototype-Version, X-CSRF-Token, X-Shelby-User-Agent'

@@ -1,5 +1,4 @@
-defaults: &defaults
-  allow_origin: "http://web.gt.shelby.tv"
+defaults: &defaults  
   cross_site_key: "GoatsFTW"
   
 development:
