@@ -10,7 +10,7 @@ child :frame => "frame" do |f|
 	end
 	
 	child :creator => "creator" do
-		attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id
+		attributes :id, :name, :nickname, :user_image_original, :user_image, :faux, :public_roll_id
 	end
 	
 	child :roll => "roll" do

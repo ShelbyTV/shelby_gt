@@ -35,13 +35,9 @@ module GT
     
     # Things that happen when a user signs in.
     def self.start_user_sign_in(user, omniauth=nil, session=nil)
-      self.class.trace_execution_scoped(['Custom/user_manager/update_authentication_tokens']) do
-        GT::AuthenticationBuilder.update_authentication_tokens!(user, omniauth) if omniauth
-      end
+      GT::AuthenticationBuilder.update_authentication_tokens!(user, omniauth) if omniauth
       
-      self.class.trace_execution_scoped(['Custom/user_manager/update_token_and_permissions']) do
-        update_token_and_permissions(user)
-      end
+      update_token_and_permissions(user)
       
       # Always remember users, onus is on them to log out
       self.class.trace_execution_scoped(['Custom/user_manager/remember_me']) do
