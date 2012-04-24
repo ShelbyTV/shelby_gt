@@ -87,8 +87,8 @@ class AuthenticationsController < ApplicationController
     #TODO: should probalby redirect to http://shelby.tv/ all over this file
     
     # TEMP
-    redirect_to "http://web.gt.shelby.tv" 
-    #redirect_to request.headers['HTTP_REFERER'] || root_path
+    #redirect_to "http://web.gt.shelby.tv" 
+    redirect_to request.headers['HTTP_REFERER']
   end
   
 end
