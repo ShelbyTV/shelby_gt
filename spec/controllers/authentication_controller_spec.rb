@@ -32,20 +32,6 @@ describe AuthenticationsController do
     
   end
   
-  context "current user, signing out" do
-    before(:each) do
-      @u = Factory.create(:user)
-      sign_in @u
-    end
-    
-    it "should remove the signed_in cookie" do
-      cookies.should_receive(:delete).with("remember_user_token", {}) #from omniauth
-      cookies.should_receive(:delete).with(:signed_in, :domain => '.shelby.tv') #from auth
-      
-      get :sign_out_user, :format => :json
-    end
-  end
-
   context "Adding new authentication to current user" do
 
     it "should do the correct things when a user adds an auth"
