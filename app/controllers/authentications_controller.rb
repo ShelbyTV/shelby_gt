@@ -38,7 +38,7 @@ class AuthenticationsController < ApplicationController
         @opener_location = request.env['omniauth.origin'] || web_root_url
       else
         # NO GT FOR YOU, just redirect to error page w/o signing in
-        @opener_location = "#{web_root_url}/?access=nos"
+        @opener_location = "#{Settings::ShelbyAPI.web_root}/?access=nos"
       end
       
 # ---- Adding new authentication to current user
@@ -58,7 +58,7 @@ class AuthenticationsController < ApplicationController
       # email link has token as a param
       # shelby-web rails app stores it into common cookie
       # we read that common cookie here
-      #OTHERWISE: @opener_location = "#{web_root_url}/?access=nos"
+      #OTHERWISE: @opener_location = "#{Settings::ShelbyAPI.web_root}/?access=nos"
       
       user = GT::UserManager.create_new_user_from_omniauth(omniauth)
 
