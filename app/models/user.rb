@@ -150,7 +150,7 @@ class User
   # -- Old Methods --   
   def self.find_by_nickname(n)
     return nil unless n.is_a? String and !n.blank?
-    User.first(:conditions=>{:downcase_nickname => n.downcase}) || User.first(:conditions=>{:nickname => /^#{n.downcase}$/i})
+    User.first(:conditions=>{:downcase_nickname => n.downcase})
   end
 
   def self.find_by_email(n)
