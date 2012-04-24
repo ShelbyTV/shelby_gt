@@ -1,6 +1,8 @@
 class GtInterestMailer < ActionMailer::Base
   include SendGrid
   sendgrid_enable   :ganalytics, :opentrack, :clicktrack
+  
+  helper :mail
 
   def interest_autoresponse(email_to)
     sendgrid_category Settings::Email.gt_interest_autoresponse["category"]
