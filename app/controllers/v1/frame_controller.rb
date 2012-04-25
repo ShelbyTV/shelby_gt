@@ -77,7 +77,9 @@ class V1::FrameController < ApplicationController
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['show']) do
       @frame = Frame.find(params[:id])
-      if @frame and (@frame.roll and @frame.roll.viewable_by?(current_user))
+      #N.B. If frame has a roll, check permissions.  If not, it has to be on your dashboard.  Checking for that is expensive b/c we don't index that way.
+      # But guessing a frame is very difficult and noticeable as hacking, so we can fairly safely just return the Frame.
+      if @frame and (@frame.roll_id == nil or @frame.roll.viewable_by?(current_user))
         @status =  200
         @include_frame_children = (params[:include_children] == "true") ? true : false
       else
