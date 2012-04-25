@@ -226,7 +226,7 @@ class User
       #client.add_email_address(self.primary_email, list)
     end
   end
-  
+    
   private
         
     def check_to_send_email_address_to_sailthru
