@@ -214,7 +214,7 @@ module GT
               graph = Koala::Facebook::GraphAPI.new(a.oauth_token)
               fb_permissions = graph.get_connections("me","permissions")
               a['permissions'] = fb_permissions if fb_permissions
-              u.save!(:validate => false)
+              u.save(:validate => false)
             rescue Koala::Facebook::APIError => e
               Rails.logger.error "ERROR with getting Facebook Permissions: #{e}"
             rescue => e
