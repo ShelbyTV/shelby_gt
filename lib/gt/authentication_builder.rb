@@ -34,7 +34,7 @@ module GT
       # Extra user hash (from services like twitter)
       if omniauth['extra']
         auth.user_hash = omniauth['extra']['user_hash'] if omniauth['extra']['user_hash']      
-        if omniauth['provider'] == 'facebook'
+        if omniauth['provider'] == 'facebook' and omniauth['extra']['user_hash']
           #from FB
           auth.email = omniauth['extra']['user_hash']['email'] if omniauth['extra']['user_hash']['email']
           auth.first_name = omniauth['extra']['user_hash']['first_name'] if omniauth['extra']['user_hash']['first_name']
