@@ -45,6 +45,8 @@ class MemcachedVideoProcessingLinkCache
   # nil on cache miss.
   #
   def self.find_by_url(url, memcached)
+    return nil if url == nil
+    
     key = get_key_from_url(url)
     
     #resolved is nil if there's nothing in memcached, the raw embedly json, or empty string if embedly returned nothing
