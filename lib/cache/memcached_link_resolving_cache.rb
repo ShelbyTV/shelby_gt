@@ -41,6 +41,8 @@ class MemcachedLinkResolvingCache
   # nil on cache miss.
   #
   def self.find_by_original_url(url, memcached)
+    return nil if url == nil
+    
     key = get_key_from_url(url)
     begin
       resolved = memcached.get key

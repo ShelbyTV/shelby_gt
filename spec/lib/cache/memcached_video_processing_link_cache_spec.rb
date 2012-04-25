@@ -101,6 +101,11 @@ describe MemcachedVideoProcessingLinkCache do
       res = MemcachedVideoProcessingLinkCache.find_by_url("blah", @memcache_mock)
       res.should == nil
     end
+    
+    it "should handle nil url" do
+      res = MemcachedVideoProcessingLinkCache.find_by_url(nil, @memcache_mock)
+      res.should == nil
+    end
   end
   
 end

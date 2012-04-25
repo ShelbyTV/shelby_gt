@@ -66,6 +66,11 @@ describe MemcachedLinkResolvingCache do
       res.should be_instance_of(MemcachedLinkResolvingCache)
       res.resolved_url.should == "blah2"
     end
+    
+    it "should handle nil url" do
+      res = MemcachedLinkResolvingCache.find_by_original_url(nil, @memcache_mock)
+      res.should be_nil
+    end
   end
   
 end
