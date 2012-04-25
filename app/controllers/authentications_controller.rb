@@ -54,17 +54,15 @@ class AuthenticationsController < ApplicationController
 
 # ---- New User signing up!
     else
-      #TODO: check if they have GtInterest set in the common cookie as expected
-      # email link has token as a param
-      # shelby-web rails app stores it into common cookie
-      # we read that common cookie here
-      #OTHERWISE: @opener_location = "#{Settings::ShelbyAPI.web_root}/?access=nos"
+      # if they have a GtInterest access token, and they've been allowed entry, create the user and update the GtInterest
+      gt_interest = GtInterest.find(cookies[:gt_access_token])
       
-      if false #do they have the access token in a cookie?
+      if gt_interest and gt.allow_entry?
         user = GT::UserManager.create_new_user_from_omniauth(omniauth)
 
         if user.valid?
           sign_in(:user, user)
+          gt_interest.used!(user)
         
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
         
@@ -75,7 +73,7 @@ class AuthenticationsController < ApplicationController
           @opener_location = web_root_url
         end
       else
-        # NO GT FOR YOU, just redirect to error page w/o creating account
+        # ...otherwise NO GT FOR YOU!  Just redirect to error page w/o creating account
         @opener_location = "#{Settings::ShelbyAPI.web_root}/?access=nos"
       end
       
