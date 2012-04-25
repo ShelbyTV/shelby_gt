@@ -77,7 +77,7 @@ class V1::FrameController < ApplicationController
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['show']) do
       @frame = Frame.find(params[:id])
-      if @frame and ((@frame.roll and @frame.roll.viewable_by?(current_user)) or @frame.roll.public)
+      if @frame and (@frame.roll and @frame.roll.viewable_by?(current_user))
         @status =  200
         @include_frame_children = (params[:include_children] == "true") ? true : false
       else
