@@ -85,7 +85,10 @@ describe User do
       @user.remember_token.class.should eq(String)
     end
     
-    it "should not hit db when calling remember_me"
+    it "should not hit db when calling remember_me" do
+      User.should_receive(:first).exactly(0).times
+      @user.remember_me!
+    end
     
   end
   
