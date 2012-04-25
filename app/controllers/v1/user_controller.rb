@@ -31,7 +31,6 @@ class V1::UserController < ApplicationController
         end
       elsif user_signed_in? and @user = current_user
         @include_rolls = (params[:include_rolls] == "true") ? true : false
-        @csrf = session[:_csrf_token]
         @status = 200
         render 'show', :layout => 'with_callbacks' if params[:callback]
       else

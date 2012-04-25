@@ -14,12 +14,6 @@ if current_user == @user
 	child :preferences => "preferences" do
 		attributes :email_updates, :like_notifications, :watched_notifications, :quiet_mode, :comment_notifications, :upvote_notifications, :reroll_notifications
 	end
-
-	if @csrf
-		node :csrf_token do
-			@csrf
-		end
-	end
 	
 	node "watch_later_roll_id" do
 		@user.watch_later_roll_id
