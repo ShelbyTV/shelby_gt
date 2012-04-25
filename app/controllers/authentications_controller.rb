@@ -96,7 +96,7 @@ class AuthenticationsController < ApplicationController
     sign_out(:user)
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signout'])
     
-    redirect_to web_root_url
+    redirect_to request.referer || web_root_url
   end
   
 end
