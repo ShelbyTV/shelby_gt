@@ -78,4 +78,15 @@ describe User do
     
   end
   
+  context "devise" do
+    
+    it "should call remember_me and return a string" do
+      @user.remember_me!
+      @user.remember_token.class.should eq(String)
+    end
+    
+    it "should not hit db when calling remember_me"
+    
+  end
+  
 end

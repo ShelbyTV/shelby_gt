@@ -1,3 +1,19 @@
+module Devise
+  module Models
+    module Rememberable
+      
+      require 'SecureRandom' # to generate a UUID
+      
+      def remember_me!(extend_period=false)
+        self.remember_token = SecureRandom.uuid if generate_remember_token?
+        self.remember_created_at = Time.now.utc if generate_remember_timestamp?(extend_period)
+        save(:validate => false)
+      end
+      
+    end
+  end
+end
+
 # Use this hook to configure devise mailer, warden hooks and so forth.
 # Many of these configuration options can be set straight in your model.
 Devise.setup do |config|
