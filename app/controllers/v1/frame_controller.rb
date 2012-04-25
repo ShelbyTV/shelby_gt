@@ -37,7 +37,7 @@ class V1::FrameController < ApplicationController
         
         if since_id = params[:since_id] and since_id.is_a? String
           since_id = BSON::ObjectId.from_string(since_id)
-          @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id, :id.lte => since_id, ).all
+          @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id, :id.lte => since_id).all
         else
           @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id).all
         end

@@ -21,6 +21,25 @@ describe 'v1/dashboard' do
         parse_json(response.body)["result"][0]["frame"]["id"].should eq(@f.id.to_s)
       end
       
+      it "should return dashboard entries with a since_id" do
+        @f1 = Factory.create(:frame, :creator_id => @u1.id)
+        @d1 = Factory.build(:dashboard_entry)
+        @d1.user = @u1; @d1.frame = @f1; @d1.save
+
+        @f2 = Factory.create(:frame, :creator_id => @u1.id)
+        @d2 = Factory.build(:dashboard_entry)
+        @d2.user = @u1; @d2.frame = @f2; @d2.save
+        
+        @f3 = Factory.create(:frame, :creator_id => @u1.id)
+        @d3 = Factory.build(:dashboard_entry)
+        @d3.user = @u1; @d3.frame = @f3; @d3.save
+                
+        get '/v1/dashboard?since_id='+@d2.id.to_s
+        
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_size(2).at_path("result")
+      end
+      
       it "should return 200 if no entries exist" do
         get '/v1/dashboard'
         response.status.should eq(200)

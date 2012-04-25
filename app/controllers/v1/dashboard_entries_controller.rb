@@ -31,7 +31,12 @@ class V1::DashboardEntriesController < ApplicationController
     
       # get and render dashboard entries
       if user
-        @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
+        if since_id = params[:since_id] and since_id.is_a? String
+          since_id = BSON::ObjectId.from_string(since_id)
+          @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.lte => since_id).all
+        else
+          @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
+        end
         
         #########
         # solving the N+1 problem with loading all children of a dashboard_entry
