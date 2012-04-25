@@ -19,6 +19,19 @@ class ApplicationController < ActionController::Base
       render 'v1/blank', :status => @status
     end
   end
+  
+  def cookie_to_hash(c, delim=",", split="=")
+    entries = c.blank? ? nil : c.split(delim)
+    h = {}
+    return h if entries.blank?
+    
+    entries.each do |entry|
+      key, val = entry.split("=", 2)
+      h[key.to_sym] = val
+    end
+    
+    h
+  end
 
   private    
     
