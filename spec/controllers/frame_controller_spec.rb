@@ -107,12 +107,21 @@ describe V1::FrameController do
       assigns(:status).should eq(200)
     end
     
-    it "should not allow non logged in user to see frame is roll is not public" do
+    it "should not allow non logged in user to see frame if roll is not public" do
       @roll.public = false
       sign_out @u1
       
       get :show, :frame_id => @frame.id, :format => :json
       assigns(:status).should eq(404)
+    end
+    
+    it "should allow non logged in user to see frame if it's not on a roll" do
+      @frame.roll_id = nil
+      @frame.save
+      sign_out @u1
+      
+      get :show, :frame_id => @frame.id, :format => :json
+      assigns(:status).should eq(200)
     end
     
     it "returns 404 when cant find frame" do
