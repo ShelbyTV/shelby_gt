@@ -43,7 +43,7 @@ describe GT::Arnold::JobProcessor do
   it "should return :no_observing_user if there a user could not be found" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "bad://url", :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => true}])
-    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(true)
+    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(mock_model(Message, :nickname => "nick"))
     
     # fail to find user...
     User.stub(:find_by_provider_name_and_id).with('pt', 'puid').once.and_return(nil)
@@ -54,7 +54,7 @@ describe GT::Arnold::JobProcessor do
   it "should get the correct observing user from job_details" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "bad://url", :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => true}])
-    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(true)
+    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(mock_model(Message, :nickname => "nick"))
     
     # make sure we try to find user w/ correct details
     User.stub(:find_by_provider_name_and_id).with('pt', 'puid').once.and_return(@user)
@@ -66,7 +66,7 @@ describe GT::Arnold::JobProcessor do
   it "should SocialSort multiple videos from :url" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "ok://url", :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => 1}, {:fake => 2}])
-    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(true)
+    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(mock_model(Message, :nickname => "nick"))
     User.stub(:find_by_provider_name_and_id).with('pt', 'puid').and_return(@user)
     GT::SocialSorter.stub(:sort).and_return(:sorted)
     
@@ -77,7 +77,7 @@ describe GT::Arnold::JobProcessor do
   it "should SocialSort multiple videos from :expanded_urls" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:expanded_urls => ["ok://url1", "ok://url2"], :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => 1}, {:fake => 2}])
-    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(true)
+    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(mock_model(Message, :nickname => "nick"))
     User.stub(:find_by_provider_name_and_id).with('pt', 'puid').and_return(@user)
     GT::SocialSorter.stub(:sort).and_return(:sorted)
     
@@ -88,7 +88,7 @@ describe GT::Arnold::JobProcessor do
   it "should remove it's controlling fiber from fibers array"  do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "ok://url", :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => true}])
-    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(true)
+    GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(mock_model(Message, :nickname => "nick"))
     User.stub(:find_by_provider_name_and_id).with('pt', 'puid').and_return(@user)
     GT::SocialSorter.stub(:sort).and_return(:sorted)
     
