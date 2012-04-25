@@ -57,7 +57,7 @@ class AuthenticationsController < ApplicationController
       # if they have a GtInterest access token, and they've been allowed entry, create the user and update the GtInterest
       gt_interest = GtInterest.find(cookies[:gt_access_token])
       
-      if gt_interest and gt.allow_entry?
+      if gt_interest and gt_interest.allow_entry?
         user = GT::UserManager.create_new_user_from_omniauth(omniauth)
 
         if user.valid?
