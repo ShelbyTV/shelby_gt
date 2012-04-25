@@ -20,7 +20,7 @@ defaults: &defaults
   # GtInterest
   gt_interest_autoresponse:
     category: "Submit GT Interest"
-    subject: "Shelby GT wants you!"
+    subject: "How to cut the Shelby GT line"
     from: "Shelby GT <contact+gt@shelby.tv>"
 
 development:
