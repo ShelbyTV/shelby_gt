@@ -2,7 +2,7 @@ module Devise
   module Models
     module Rememberable
       
-      require 'SecureRandom' # to generate a UUID
+      require 'securerandom' # to generate a UUID
       
       def remember_me!(extend_period=false)
         self.remember_token = SecureRandom.uuid if generate_remember_token?
