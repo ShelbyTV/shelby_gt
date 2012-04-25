@@ -22,4 +22,14 @@ class GtInterest
   belongs_to :user
   key :user_id, ObjectId, :abbr => :e
   
+  def allow_entry?
+    !!(self.invited_at and self.invited_at < Time.now and !self.user_created?)
+  end
+  
+  def used!(user)
+    self.user_created = true
+    self.user = user
+    self.save(:validate => false)
+  end
+  
 end
