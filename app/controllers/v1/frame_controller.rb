@@ -22,7 +22,7 @@ class V1::FrameController < ApplicationController
       # put an upper limit on the number of entries returned
       @limit = 20 if @limit.to_i > 20
   
-      skip = params[:skip] ? params[:skip] : 0
+      skip = params[:skip] ? params[:skip].to_i : 0
       
       if params[:roll_id] 
         @roll = Roll.find(params[:roll_id])
@@ -35,9 +35,13 @@ class V1::FrameController < ApplicationController
       if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
         
-        if since_id = params[:since_id] and since_id.is_a? String
-          since_id = BSON::ObjectId.from_string(since_id)
-          @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id, :id.lte => since_id).all
+        if since_id = params[:since_id] and since_id.is_a? String and since_id = BSON::ObjectId.from_string(since_id)
+          if skip < 0
+            @limit -= 1
+            @frames = Frame.limit(@limit).skip(skip.abs).sort(:$natural=>-1).sort(:score.desc).where(:roll_id => @roll.id, :id.lte => since_id).all
+          else
+            @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id, :id.lte => since_id).all
+          end
         else
           @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id).all
         end

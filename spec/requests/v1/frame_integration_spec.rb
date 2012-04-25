@@ -15,9 +15,11 @@ describe 'v1/frame' do
       @f = Factory.create(:frame)
       @f2 = Factory.create(:frame)
       @f3 = Factory.create(:frame)
+      @f4 = Factory.create(:frame)
       @f.roll = @r; @f.save
       @f2.roll = @r; @f2.save
       @f3.roll = @r; @f3.save
+      @f4.roll = @r; @f4.save
 
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
@@ -56,12 +58,25 @@ describe 'v1/frame' do
           @f2.roll_id = roll.id; @f2.save
           @f3.roll_id = roll.id; @f3.save
           
-          get '/v1/roll/'+roll.id.to_s+'/frames?since_id='+@f2.id.to_s
+          get '/v1/roll/'+roll.id.to_s+'/frames?since_id='+@f.id.to_s
+                    
+          response.body.should be_json_eql(200).at_path("status")
+          parse_json(response.body)["result"]["frames"][0]["id"].should eq(@f.id.to_s)
+          response.body.should have_json_size(1).at_path("result/frames")
+        end
+        
+        it "should return frame info with a since_id AND skip" do
+          roll = Factory.create(:roll, :creator_id => @u1.id)
+          @f.roll_id = roll.id; @f.save
+          @f2.roll_id = roll.id; @f2.save
+          @f3.roll_id = roll.id; @f3.save
+          @f4.roll_id = roll.id; @f4.save
+          
+          get '/v1/roll/'+roll.id.to_s+'/frames?since_id='+@f3.id.to_s+'&skip=-1'
           
           response.body.should be_json_eql(200).at_path("status")
-          response.body.should have_json_path("result/creator_id")
-          parse_json(response.body)["result"]["creator_id"].should eq(@u1.id.to_s)
           response.body.should have_json_size(2).at_path("result/frames")
+          parse_json(response.body)["result"]["frames"][0]["id"].should eq(@f2.id.to_s)
         end
         
         it "should return frames of personal roll of user when given a nickname" do

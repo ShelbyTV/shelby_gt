@@ -79,7 +79,7 @@ describe V1::FrameController do
       assigns(:message).should eq("could not find that roll")
     end
     
-    it "should properly render frames if a since_i is included" do
+    it "should properly render frames if a since_id is included" do
       f1 = Factory.create(:frame)
       f2 = Factory.create(:frame)
       f3 = Factory.create(:frame)
