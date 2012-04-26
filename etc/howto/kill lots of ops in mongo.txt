@@ -1,0 +1,14 @@
+//MongoDB: kill all current ops for a particular namespace
+// ** The namespace part is very important! ** - there are some ops that do syncing and replicating and must not be killed.
+
+namespace = "nos-production.users"
+t = db.currentOp()['inprog'];
+k = new Array(); 
+
+for(i=0; i < t.length; i++) {
+   if(t[i]["ns"] === namespace ){ k.push(t[i]['opid']); }
+}
+
+for(j=0; j < k.length; j++) {
+	db.killOp(k[j]);
+}
