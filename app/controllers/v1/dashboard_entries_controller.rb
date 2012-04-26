@@ -31,9 +31,16 @@ class V1::DashboardEntriesController < ApplicationController
     
       # get and render dashboard entries
       if user
-        if since_id = params[:since_id] and since_id.is_a? String
-          since_id = BSON::ObjectId.from_string(since_id)
-          @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.lte => since_id).all
+        if params[:since_id]
+          
+          return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:since_id])
+          
+          case params[:order]
+          when "1", nil, "forward"
+            @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.lte => since_id).all
+          when "-1", "reverse", "backward"
+            @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.gt => since_id).all
+          end
         else
           @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
         end

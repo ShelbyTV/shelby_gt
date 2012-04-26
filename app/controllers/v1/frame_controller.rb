@@ -15,6 +15,7 @@ class V1::FrameController < ApplicationController
   # @param [Optional, Integer] limit limit the number of frames returned, default 20
   # @param [Optional, Integer] skip the number of frames to skip, default 0
   # @param [Optional, Integer] since_id the frame to start from
+  # @param [Optional, String] order which way to go: 1, -1, forward, reverse (nil ok too)
   def index
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['index']) do
       # default params

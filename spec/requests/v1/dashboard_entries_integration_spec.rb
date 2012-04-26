@@ -40,6 +40,12 @@ describe 'v1/dashboard' do
         response.body.should have_json_size(2).at_path("result")
       end
       
+      it "should return 404 if non valid id is given" do
+        get '/v1/dashboard?since_id=12345'
+        response.body.should be_json_eql(404).at_path("status")
+        parse_json(response.body)["message"].should eq("please specify a valid id")
+      end
+      
       it "should return 200 if no entries exist" do
         get '/v1/dashboard'
         response.status.should eq(200)
