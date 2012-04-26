@@ -141,7 +141,7 @@ class V1::FrameController < ApplicationController
         # only allow roll creation if user is authorized to access the given roll
         if roll.postable_by?(current_user)
           # and finally create the frame
-          r = GT::Framer.create_frame(frame_options)
+          r = frame_options[:video] ? GT::Framer.create_frame(frame_options) : {}
 
           if @frame = r[:frame]
             @status = 200          
