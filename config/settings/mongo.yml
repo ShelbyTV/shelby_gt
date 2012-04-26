@@ -1,0 +1,19 @@
+defaults: &defaults
+  db_options:
+   :poolsize: 1
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+  db_options:
+   :poolsize: 10
+  
+arnold:
+  <<: *production
+  db_options:
+   :poolsize: 25
