@@ -11,9 +11,9 @@ test:
 production: &production
   <<: *defaults
   db_options:
-   :poolsize: 10
+   :poolsize: 5
   
 arnold:
   <<: *production
   db_options:
-   :poolsize: 25
+   :poolsize: 5
