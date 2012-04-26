@@ -25,6 +25,7 @@ describe GT::UrlHelper do
       GT::UrlHelper.get_clean_url("nyti.ms").should == nil
       GT::UrlHelper.get_clean_url("plixi.com").should == nil
       GT::UrlHelper.get_clean_url("instagr.am").should == nil
+      GT::UrlHelper.get_clean_url("facebook.com").should == nil
     end
     
   end

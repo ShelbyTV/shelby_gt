@@ -85,7 +85,7 @@ module GT
       VIMEO_URL_REGEX = /(http:\/\/vimeo.com\/\D*\#)(\d*)/       
    
       # we see lots of these, don't want to waste time resolving them
-      BLACKLIST_REGEX = /freq\.ly|yfrog\.|4sq\.com|twitpic\.com|nyti\.ms|plixi\.com|instagr\.am/i
+      BLACKLIST_REGEX = /freq\.ly|yfrog\.|4sq\.com|twitpic\.com|nyti\.ms|plixi\.com|instagr\.am|facebook\.com/i
       def self.url_is_blacklisted?(url)
         url.match(BLACKLIST_REGEX) != nil
       end

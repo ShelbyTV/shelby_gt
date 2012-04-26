@@ -53,11 +53,13 @@ describe GT::SocialSorter do
       m.origin_network = "FakeNet"
       m.origin_user_id = "RandomId001"
       m.origin_id = "RandomId998"
+      m.user_image_url = "img"
       m.public = true
       
       lambda {
         res = GT::SocialSorter.sort(m, @video, @observer)
         res[:frame].creator.nickname.should == "FakeNick001"
+        res[:frame].creator.user_image.should == "img"
       }.should change { User.count }.by(1)
     end
     
