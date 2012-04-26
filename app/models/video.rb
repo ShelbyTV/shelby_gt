@@ -35,6 +35,9 @@ class Video
   # Each time a new view is counted (see Frame#view!) we increment this and frame.view_count
   key :view_count, Integer, :abbr => :q, :default => 0
   
+  # Reserved for item share based filtering edges
+  key :recommendations, Array, :abbr => :r
+  
   # mongo has a unique key on these as well
   validates_uniqueness_of :provider_id, :scope => :provider_name
 
