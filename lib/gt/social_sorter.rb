@@ -83,7 +83,7 @@ module GT
       
       def self.get_or_create_posting_user_for(message)
         begin
-          GT::UserManager.get_or_create_faux_user(message.nickname, message.origin_network, message.origin_user_id)
+          GT::UserManager.get_or_create_faux_user(message.nickname, message.origin_network, message.origin_user_id, :user_thumbnail_url => message.user_image_url)
         rescue => e
           Rails.logger.fatal("[GT::SocialSorter#get_or_create_posting_user_for] rescued but re-raising #{e} for message #{message.inspect}")
           raise e
