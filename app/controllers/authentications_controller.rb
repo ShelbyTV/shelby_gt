@@ -88,7 +88,7 @@ class AuthenticationsController < ApplicationController
     
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['failure'])
     
-    @opener_location = new_user_session_path
+    @opener_location = web_root_url
     render :action => 'redirector', :layout => 'simple'
   end
   
