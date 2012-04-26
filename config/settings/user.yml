@@ -20,4 +20,4 @@ production: &production
 arnold:
   <<: *production
   db_options:
-   :read: :primary
+   :read: :secondary
