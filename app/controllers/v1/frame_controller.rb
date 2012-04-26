@@ -35,30 +35,35 @@ class V1::FrameController < ApplicationController
       if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
         
-        if since_id = params[:since_id] and since_id.is_a? String and since_id = BSON::ObjectId.from_string(since_id)
-          if skip < 0
-            @limit -= 1
-            @frames = Frame.limit(@limit).skip(skip.abs).sort(:$natural=>-1).sort(:score.desc).where(:roll_id => @roll.id, :id.lte => since_id).all
-          else
-            @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id, :id.lte => since_id).all
+        if params[:since_id] and since_id = BSON::ObjectId.from_string(params[:since_id])
+          if since_id_frame = Frame.find(since_id)
+            case params[:order]
+            when 1, nil, "forward"
+              #puts "since_id : #{since_id}, frame : #{since_id_frame.id}"
+              @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.lte => since_id_frame.score).all
+              #puts "frames: #{@frames.length}"
+            when -1, "reverse"
+              @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.gte => since_id_frame.score).all
+            end
           end
         else
-          @frames = Frame.limit(@limit).skip(skip).sort(:score.desc).where(:roll_id => @roll.id).all
+          @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id).all
         end
         
-        #########
-        # solving the N+1 problem with eager loading all children of a frame
-        @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
-        @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq        
-        @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
-        @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
+        if @frames
+          #########
+          # solving the N+1 problem with eager loading all children of a frame
+          @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
+          @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq        
+          @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
+          @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
 
-        @rolls = Roll.find(@entries_roll_ids)
-        @creators = User.find(@entries_user_ids)        
-        @videos = Video.find(@entries_video_ids)
-        @conversations = Conversation.find(@entries_conversation_ids)
-        ##########
-        
+          @rolls = Roll.find(@entries_roll_ids)
+          @creators = User.find(@entries_user_ids)        
+          @videos = Video.find(@entries_video_ids)
+          @conversations = Conversation.find(@entries_conversation_ids)
+          ##########
+        end        
         @status =  200
       else
         render_error(404, "could not find that roll")

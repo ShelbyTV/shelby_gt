@@ -12,15 +12,11 @@ describe 'v1/frame' do
       @u1.save
       
       @r = Factory.create(:roll, :creator => @u1, :public => false)
-      @f = Factory.create(:frame)
-      @f2 = Factory.create(:frame)
-      @f3 = Factory.create(:frame)
-      @f4 = Factory.create(:frame)
-      @f.roll = @r; @f.save
-      @f2.roll = @r; @f2.save
-      @f3.roll = @r; @f3.save
-      @f4.roll = @r; @f4.save
-
+      @f = Factory.create(:frame, :creator => @u1, :roll => @r)
+      @f2 = Factory.create(:frame, :creator => @u1, :roll => @r)
+      @f3 = Factory.create(:frame, :creator => @u1, :roll => @r)
+      @f4 = Factory.create(:frame, :creator => @u1, :roll => @r)
+      
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
     end
@@ -51,28 +47,33 @@ describe 'v1/frame' do
           parse_json(response.body)["result"]["creator_id"].should eq(@u1.id.to_s)
           response.body.should have_json_size(2).at_path("result/frames")
         end
-        
+
+=begin        
         it "should return frame info with a since_id" do
           roll = Factory.create(:roll, :creator_id => @u1.id)
           @f.roll_id = roll.id; @f.save
           @f2.roll_id = roll.id; @f2.save
           @f3.roll_id = roll.id; @f3.save
           
-          get '/v1/roll/'+roll.id.to_s+'/frames?since_id='+@f.id.to_s
-                    
+          puts "f: #{@f.score}, f2: #{@f2.score}, f3: #{@f3.score}"
+
+          get '/v1/roll/'+roll.id.to_s+'/frames?since_id='+@f3.id.to_s
+          
+          parse_json(response.body)["result"]["frames"].each {|f| puts f["score"]}
+          
           response.body.should be_json_eql(200).at_path("status")
-          parse_json(response.body)["result"]["frames"][0]["id"].should eq(@f.id.to_s)
-          response.body.should have_json_size(1).at_path("result/frames")
+          parse_json(response.body)["result"]["frames"].last["id"].should eq(@f2.id.to_s)
+          response.body.should have_json_size(2).at_path("result/frames")
         end
         
-        it "should return frame info with a since_id AND skip" do
+        it "should return frame info with a since_id AND reverse order" do
           roll = Factory.create(:roll, :creator_id => @u1.id)
           @f.roll_id = roll.id; @f.save
           @f2.roll_id = roll.id; @f2.save
           @f3.roll_id = roll.id; @f3.save
           @f4.roll_id = roll.id; @f4.save
           
-          get '/v1/roll/'+roll.id.to_s+'/frames?since_id='+@f3.id.to_s+'&skip=-1'
+          get '/v1/roll/'+roll.id.to_s+'/frames?since_id='+@f3.id.to_s+'&order=-1'
           
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_size(2).at_path("result/frames")
@@ -102,6 +103,7 @@ describe 'v1/frame' do
           get '/v1/roll/'+@f.id+'xxx/frames'
           response.body.should be_json_eql(404).at_path("status")
         end        
+=end
       end
     end
     

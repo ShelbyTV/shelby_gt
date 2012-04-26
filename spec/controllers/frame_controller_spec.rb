@@ -21,8 +21,9 @@ describe V1::FrameController do
 
   describe "GET index" do
     it "assigns all frames in a roll to @frames" do
-      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
       get :index, :roll_id => @roll.id, :format => :json
+      
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])
       assigns(:status).should eq(200)
@@ -31,7 +32,7 @@ describe V1::FrameController do
     it "properly aliases for users public roll" do
       User.stub(:find) { @u1 }
       @u1.stub(:public_roll) { @roll }
-      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
       get :index, :user_id => @u1.id, :public_roll => true, :format => :json
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])
@@ -41,14 +42,14 @@ describe V1::FrameController do
     it "should return error if user isnt logged in and roll is private" do
       sign_out @u1
       @roll.public = false; @roll.save
-      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
       get :index, :format => :json
       assigns(:status).should eq(404)
     end
     
     it "should return error if current user cant view roll" do
       @roll.creator = Factory.create(:user); @roll.public = false; @roll.save
-      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
       get :index, :format => :json
       assigns(:status).should eq(404)
     end
@@ -56,7 +57,7 @@ describe V1::FrameController do
     it "should allow you to get frame for public roll w/o being signed in" do
       sign_out @u1
       
-      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([@frame])
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
       get :index, :roll_id => @roll.id, :format => :json
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])
@@ -67,7 +68,7 @@ describe V1::FrameController do
       @roll.public = false
       sign_out @u1
       
-      @roll.stub_chain(:frames, :limit, :skip, :sort).and_return([@frame])
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
       get :index, :format => :json
       assigns(:status).should eq(404)
     end
@@ -83,7 +84,7 @@ describe V1::FrameController do
       f1 = Factory.create(:frame)
       f2 = Factory.create(:frame)
       f3 = Factory.create(:frame)
-      Frame.stub_chain(:limit, :skip, :sort, :where, :all).and_return([f2, f3])
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([f2, f3])
       get :index, :roll_id => @roll.id, :since_id => f2.id.to_s,:format => :json
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([f2,f3])
