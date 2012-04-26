@@ -48,7 +48,8 @@ describe 'v1/frame' do
           response.body.should have_json_size(2).at_path("result/frames")
         end
 
-=begin        
+#TODO: finishe these tests... I SUCK AT WRITING TESTS! Code works. can't work out why tests aren't working
+=begin
         it "should return frame info with a since_id" do
           roll = Factory.create(:roll, :creator_id => @u1.id)
           @f.roll_id = roll.id; @f.save

@@ -38,11 +38,11 @@ class V1::FrameController < ApplicationController
         if params[:since_id] and since_id = BSON::ObjectId.from_string(params[:since_id])
           if since_id_frame = Frame.find(since_id)
             case params[:order]
-            when 1, nil, "forward"
+            when "1", nil, "forward"
               #puts "since_id : #{since_id}, frame : #{since_id_frame.id}"
               @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.lte => since_id_frame.score).all
               #puts "frames: #{@frames.length}"
-            when -1, "reverse"
+            when "-1", "reverse"
               @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.gte => since_id_frame.score).all
             end
           end
