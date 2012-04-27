@@ -14,7 +14,7 @@ class V1::DashboardEntriesController < ApplicationController
   def index
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['index']) do
       # default params
-      @limit = params[:limit] ? params[:limit] : 20
+      @limit = params[:limit] ? params[:limit].to_i : 20
       # put an upper limit on the number of entries returned
       @limit = 20 if @limit.to_i > 20
           
