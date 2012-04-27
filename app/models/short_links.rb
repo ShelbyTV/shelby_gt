@@ -1,4 +1,4 @@
-class ShortLink
+class ShortLinks
   include MongoMapper::EmbeddedDocument
   plugin MongoMapper::Plugins::Timestamps
   

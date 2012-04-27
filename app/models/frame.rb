@@ -47,7 +47,7 @@ class Frame
   key :view_count, Integer, :abbr => :i, :default => 0
   
   # The shortlinks created for each type of share, eg twitter, tumvlr, email, facebook
-  many :short_links
+  one :short_links
   
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
