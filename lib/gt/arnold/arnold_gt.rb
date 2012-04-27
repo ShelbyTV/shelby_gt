@@ -47,7 +47,7 @@ $statsd_jobs_processed_bucket = "arnold.#{arnold_version}.#{machine_name}.job.pr
 
 # To make sure the consumer isn't hung, and kill ourselves if it is
 $consumer_turns = 0
-GT::Arnold::ConsumerMonitor.monitor()
+GT::Arnold::ConsumerMonitor.monitor(1.minute)
 
 puts "running EM..."
 EventMachine.synchrony do
