@@ -8,7 +8,16 @@ describe GT::NotificationManager do
     before(:all) do
       @user = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @user)
-      @frame = Factory.create(:frame, :creator => Factory.create(:user),  :video=>Factory.create(:video), :roll => @roll)
+      @f_creator = Factory.create(:user, :gt_enabled => true)
+      @frame = Factory.create(:frame, :creator => @f_creator,  :video=>Factory.create(:video), :roll => @roll)
+    end
+    
+    it "should not send email to any non-gt_enabled users" do
+      @f_creator = Factory.create(:user, :gt_enabled => false)
+      @frame = Factory.create(:frame, :creator => @f_creator,  :video=>Factory.create(:video), :roll => @roll)
+      lambda {
+        GT::NotificationManager.check_and_send_upvote_notification(@user, @frame)
+      }.should change(ActionMailer::Base.deliveries,:size).by(0)      
     end
     
     it "should should queue email to deliver" do
@@ -70,8 +79,8 @@ describe GT::NotificationManager do
 
   describe "reroll notifications" do
     before(:all) do
-      @old_user = Factory.create(:user)
-      @new_user = Factory.create(:user)
+      @old_user = Factory.create(:user, :gt_enabled => true)
+      @new_user = Factory.create(:user, :gt_enabled => true)
       @old_roll = Factory.create(:roll, :creator => @old_user)
       @new_roll = Factory.create(:roll, :creator => @new_user)
       @video = Factory.create(:video)
@@ -83,6 +92,14 @@ describe GT::NotificationManager do
       lambda {
         GT::NotificationManager.check_and_send_reroll_notification(@old_frame, @new_frame)
       }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+    
+    it "should not send email to any non-gt_enabled users" do
+      @old_user.gt_enabled = false; @old_user.save
+      @old_frame = Factory.create(:frame, :creator => @old_user, :video => @video, :roll => @old_roll)
+      lambda {
+        GT::NotificationManager.check_and_send_reroll_notification(@old_frame, @new_frame)
+      }.should change(ActionMailer::Base.deliveries,:size).by(0)      
     end
     
     it "should return nil if user is creator of the frame" do

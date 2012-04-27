@@ -9,10 +9,8 @@ module GT
       user_to = frame.creator
       return if (user == user_to) or !user_to.primary_email or (user_to.primary_email == "")
       
-      # Temp: for now only send emails to us
-      if Rails.env == "production"
-        return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(frame.creator.nickname)
-      end
+      # Temp: for now only send emails to gt_enabled users
+      return unless frame.creator.gt_enabled
       
       return unless user_to.preferences.upvote_notifications
       
@@ -27,10 +25,8 @@ module GT
       user_to = old_frame.creator
       return if (new_frame.creator_id == old_frame.creator_id) or !user_to.primary_email or (user_to.primary_email == "")
       
-      # Temp: for now only send emails to us
-      if Rails.env == "production"
-        return unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(user_to.nickname)
-      end
+      # Temp: for now only send emails to gt_enabled users
+      return unless user_to.gt_enabled
       
       return unless user_to.preferences.reroll_notifications
       
@@ -58,12 +54,10 @@ module GT
         # add this user to that array
         users_in_conversation << old_message.user_id
         
-        # Temp: for now only send emails to us
-        if Rails.env == "production"
-          break unless ["henry", "spinosa", "reece", "mmatyus", "chris"].include?(old_message.user.nickname)
-        end
+        # Temp: for now only send emails to gt_enabled users
+        break unless old_message.user.gt_enabled
 
-        return unless old_message.user.preferences.comment_notifications
+        break unless old_message.user.preferences.comment_notifications
 
         NotificationMailer.comment_notification(old_message.user, new_message.user, frame, new_message).deliver
       end
