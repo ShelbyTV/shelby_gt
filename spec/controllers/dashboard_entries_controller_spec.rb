@@ -46,7 +46,7 @@ describe V1::DashboardEntriesController do
       DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([])
       get :index, :format => :json
       assigns(:status).should eq(200)
-      assigns(:message).should eq("there are no dashboard entries for this user")
+      assigns(:entries).should eq([])
     end
     
     it "should return error if could not find dashboard entry" do

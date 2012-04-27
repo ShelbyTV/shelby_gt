@@ -17,6 +17,12 @@ class V1::DashboardEntriesController < ApplicationController
       @limit = params[:limit] ? params[:limit] : 20
       # put an upper limit on the number of entries returned
       @limit = 20 if @limit.to_i > 20
+      
+      if @limit == 0
+        @status = 200
+        @entries = []
+        return render 'index'
+      end
     
       skip = params[:skip] ? params[:skip] : 0
 
@@ -63,12 +69,7 @@ class V1::DashboardEntriesController < ApplicationController
         ##########
         
         @include_children = params[:include_children] != "false" ? true : false
-        # return status
-        if !@entries.empty?
-          @status = 200
-        else
-          render_error(200, "there are no dashboard entries for this user")
-        end
+        @status = 200
       else
         render_error(404, "no user info found")
       end    
