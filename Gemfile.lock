@@ -47,6 +47,15 @@ GIT
       activesupport (~> 3.0)
       plucky (~> 0.4.0)
 
+GIT
+  remote: git@github.com:ShelbyTV/awesm.git
+  revision: 95ab278a7186e5c5fd97fc80554bf6c96df6d298
+  specs:
+    awesm (0.1.8)
+      hashie
+      httparty
+      json
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -266,6 +275,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  awesm!
   beanstalk-client!
   bson_ext
   capistrano
