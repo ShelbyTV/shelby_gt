@@ -21,6 +21,13 @@ describe 'v1/dashboard' do
         parse_json(response.body)["result"][0]["frame"]["id"].should eq(@f.id.to_s)
       end
       
+      it "should return an empty array if limit = 0" do
+        get '/v1/dashboard?limit=0'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        parse_json(response.body)["result"].should eq([])
+      end
+      
       it "should return dashboard entries with a since_id" do
         @f1 = Factory.create(:frame, :creator_id => @u1.id)
         @d1 = Factory.build(:dashboard_entry)

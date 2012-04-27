@@ -17,13 +17,7 @@ class V1::DashboardEntriesController < ApplicationController
       @limit = params[:limit] ? params[:limit] : 20
       # put an upper limit on the number of entries returned
       @limit = 20 if @limit.to_i > 20
-      
-      if @limit == 0
-        @status = 200
-        @entries = []
-        return render 'index'
-      end
-    
+          
       skip = params[:skip] ? params[:skip] : 0
 
       # get user
@@ -37,6 +31,15 @@ class V1::DashboardEntriesController < ApplicationController
     
       # get and render dashboard entries
       if user
+        
+        if @limit == 0
+          @status = 200
+          @entries = []
+          render 'index'
+          return
+        end
+        
+        
         if params[:since_id]
           
           return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:since_id])
