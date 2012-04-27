@@ -120,6 +120,7 @@ module GT
         end
       rescue Mongo::OperationFailure => e
         # If this was a timing issue, and User got created after we initially checked, that means the User we want exists now.  See if we can't recover...
+        EventMachine::Synchrony.sleep(1) # allow some time for the user get written and sync'd
         u = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
         return u if u
         
