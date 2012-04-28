@@ -199,6 +199,7 @@ class V1::FrameController < ApplicationController
       end
       
       if frame = Frame.find(params[:frame_id])
+        # truncate text so that our link can fit fo sure
         text = params[:text]
         
         # params[:destination] is an array of destinations, 
@@ -208,6 +209,8 @@ class V1::FrameController < ApplicationController
         params[:destination].each do |d|
           case d
           when 'twitter'
+            # truncate text so that our link can fit fo sure and be < 140
+            text = params[:text].length > 119 ? "#{params[:text][0..119]}..." : params[:text]
             text += " #{short_links["twitter"]}" if short_links["twitter"]
             resp = GT::SocialPoster.post_to_twitter(current_user, text)
           when 'facebook'
