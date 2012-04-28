@@ -21,7 +21,7 @@ module SocialPosting
             if entity.is_a? Roll
               return !!facebook_client.put_object("me","feed",{
                 :message => message, 
-                :link => "http://gt.shelby.tv/roll/#{roll.id}",
+                :link => entity.short_link[:facebook],
                 :picture => entity.thumbnail_url,
                 :name => entity.title,
                 :caption => "via Shelby.TV",
