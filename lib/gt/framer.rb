@@ -46,6 +46,7 @@ module GT
       f.video = video
       f.roll = roll if roll
       f.conversation = Conversation.new
+      f.conversation.frame = f
       if message
         f.conversation.messages << message
         f.conversation.public = message.public

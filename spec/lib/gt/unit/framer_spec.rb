@@ -38,6 +38,18 @@ describe GT::Framer do
       res[:frame].roll.should == @roll
     end
     
+    it "should track the Frame in the Conversation" do
+      res = GT::Framer.create_frame(
+        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+        :creator => @frame_creator,
+        :video => @video,
+        :message => @message,
+        :roll => @roll
+        )
+    
+      res[:frame].conversation.frame.should == res[:frame]
+    end
+    
     it "should set the frame's roll's thumbnail_url if it's nil" do
       @roll.thumbnail_url.blank?.should == true
       
