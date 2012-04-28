@@ -138,7 +138,7 @@ class Frame
     # 2. if d_copy is not empty, create whatever short link that is missing form frames hash of short_links    
     links = {}
     if !d_copy.empty?
-      params = {  :url => "http://gt.shelby.tv/roll/#{self.roll_id}/frame/#{self.id}",
+      params = {  :url => "http://#{Settings::ShelbyAPI.web_root}/roll/#{self.roll_id}/frame/#{self.id}",
                   :channel => destinations,
                   :key=> Settings::Awesm.api_key,
                   :tool => Settings::Awesm.tool_key 

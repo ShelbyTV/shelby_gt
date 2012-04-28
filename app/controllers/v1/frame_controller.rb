@@ -213,9 +213,11 @@ class V1::FrameController < ApplicationController
             text = params[:text].length > 119 ? "#{params[:text][0..119]}..." : params[:text]
             text += " #{short_links["twitter"]}" if short_links["twitter"]
             resp = GT::SocialPoster.post_to_twitter(current_user, text)
+            StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d], current_user.id, 'frame_share', request)
           when 'facebook'
             text += " #{short_links["facebook"]}" if short_links["facebook"]
             resp = GT::SocialPoster.post_to_facebook(current_user, text, frame)
+            StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d], current_user.id, 'frame_share', request)
           else
             return render_error(404, "we dont support that destination yet :(")
           end

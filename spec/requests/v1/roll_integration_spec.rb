@@ -58,6 +58,10 @@ describe 'v1/roll' do
       end
       
       context "roll sharing" do
+        before(:each) do
+          resp = {"awesm_urls" => [{"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"}]}
+          Awesm::Url.stub(:batch).and_return([200, resp])
+        end
         
         it "should return 200 if post is successful" do
           post '/v1/roll/'+@r.id+'/share?destination[]=twitter&text=testing'

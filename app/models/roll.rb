@@ -31,6 +31,9 @@ class Roll
   
   # faux-users get public Rolls, we denormalize the network into the roll
   key :origin_network,  String, :abbr => :f
+  
+  # The shortlinks created for each type of share, eg twitter, tumvlr, email, facebook
+  key :short_links, Hash, :abbr => :g, :default => {}
 
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
@@ -113,5 +116,44 @@ class Roll
 
   # if you can view it, you can invite to it
   def invitable_to_by?(u) viewable_by?(u); end
+  
+  # Destination can be a comma delimited list, eg "twitter,email"
+  def get_or_create_shortlink(destinations)
+    raise ArgumentError, "must supply at least one destination" unless destinations and destinations.is_a?(Array)
+    
+    d_copy = Array.new(destinations)
+    
+    # 1. check if a destination exists for each destination given, delete if we have it already
+    d_copy.delete_if { |d| self.short_links[d] != nil }
+
+    # 2. if d_copy is not empty, create whatever short link that is missing form frames hash of short_links    
+    links = {}
+    if !d_copy.empty?
+      params = {  :url => "http://#{Settings::ShelbyAPI.web_root}/roll/#{self.id}",
+                  :channel => destinations,
+                  :key=> Settings::Awesm.api_key,
+                  :tool => Settings::Awesm.tool_key 
+                }
+      code, resp = Awesm::Url.batch( params )
+      if code == 200
+        resp["awesm_urls"].each do |u|
+          case u["channel"]
+          when "twitter"
+            self.short_links[:twitter] = u["awesm_url"]
+          when "facbeook-post"
+            self.short_links[:facbeook] = u["awesm_url"]
+          when "tumblr-video"
+            self.short_links[:tumblr] = u["awesm_url"]
+          when "email"
+            self.short_links[:email] = u["awesm_url"]
+          end
+        end
+        self.save
+      end
+    end
+    # 3. return the short_links with the requested destinations
+    destinations.each { |d| links[d] = self.short_links[d.to_sym] }
+    return links
+  end
 
 end
