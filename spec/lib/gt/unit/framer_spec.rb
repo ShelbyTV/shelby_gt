@@ -351,4 +351,28 @@ describe GT::Framer do
     
   end
 
+  context "creating a DashboardEntry" do
+    before(:each) do
+      @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+      @roll = Roll.new( :title => "title" )
+      @roll.creator = @roll_creator
+      @roll.save
+      
+      @frame = Factory.create(:frame)
+    end
+    
+    it "should create a DashboardEntry when given a Frame, action and User" do
+      observer = Factory.create(:user)
+      
+      d = nil
+      lambda {
+        d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], observer)
+      }.should change { DashboardEntry.count } .by 1
+      
+      d.size.should == 1
+      d[0].persisted?.should == true
+      d[0].frame.should == @frame
+      d[0].user.should == observer
+    end
+  end
 end
