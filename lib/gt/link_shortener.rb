@@ -1,5 +1,5 @@
 module GT
-  class LinkShortner
+  class Linkshortener
    
    def self.get_or_create_shortlink(obj, destinations)
      raise ArgumentError, "must supply at least one destination" unless destinations and destinations.is_a?(Array)

@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'video_manager'
 require 'message_manager'
-require "link_shortner"
+require "link_shortener"
 
 describe V1::FrameController do
   before(:each) do
