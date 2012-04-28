@@ -1,4 +1,5 @@
 require 'spec_helper'
+require "link_shortner"
 
 describe V1::RollController do
   before(:each) do

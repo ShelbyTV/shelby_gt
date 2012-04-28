@@ -1,5 +1,6 @@
 require 'message_manager'
 require 'video_manager'
+require "link_shortner"
 
 class V1::FrameController < ApplicationController
 
@@ -204,7 +205,7 @@ class V1::FrameController < ApplicationController
         
         # params[:destination] is an array of destinations, 
         #  short_links will be a hash of desinations/links
-        short_links = frame.get_or_create_shortlink(params[:destination])
+        short_links = GT::LinkShortner.get_or_create_shortlink(frame, params[:destination])
         
         params[:destination].each do |d|
           case d
