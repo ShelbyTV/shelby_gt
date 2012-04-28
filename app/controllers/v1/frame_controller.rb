@@ -40,7 +40,6 @@ class V1::FrameController < ApplicationController
           if since_id_frame = Frame.find(since_id)
             case params[:order]
             when "1", nil, "forward"
-              #puts "since_id : #{since_id}, frame : #{since_id_frame.id}"
               @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.lte => since_id_frame.score).all
               #puts "frames: #{@frames.length}"
             when "-1", "reverse"
@@ -201,14 +200,15 @@ class V1::FrameController < ApplicationController
       
       if frame = Frame.find(params[:frame_id])
         
-        #TODO: link_to_frame needs to be created
-        text = params[:text] #+ link_to_frame
+        short_links = frame.get_or_create_shortlink(params[:destination])
         
         params[:destination].each do |d|
           case d
           when 'twitter'
+            text = params[:text] + short_links[:twitter]
             resp = GT::SocialPoster.post_to_twitter(current_user, text)
           when 'facebook'
+            text = params[:text] + short_links[:facebook]
             resp = GT::SocialPoster.post_to_facebook(current_user, text, frame)
           else
             return render_error(404, "we dont support that destination yet :(")

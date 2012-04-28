@@ -126,6 +126,24 @@ class Frame
     return self.upvoters.any? { |uid| uid == user_id }
   end
   
+  def get_or_create_shortlink(d)
+    # get
+    if links = self.short_links
+      return links
+    else
+      # create
+      params = {  :url => "http://gt.shelby.tv/roll/#{self.roll_id}/frame/#{self.id}",
+                  :channel => d,
+                  :key=> Settings::Awesm.api_key,
+                  :tool => Settings::Awesm.tool_key }
+      code, resp = Awesm::Url.batch( params )
+      if code == 200
+        links = {}
+        resp["awesm_urls"].each {|u| links[ u["channel"] ] = u["awesm_url"] }
+      end
+    end
+  end
+  
   private
     
     # Score increases linearly with time, logarithmically with votes
