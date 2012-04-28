@@ -217,6 +217,11 @@ describe 'v1/frame' do
       end
 
       context "share frame" do
+        before(:each) do
+          resp = {"awesm_urls" => [{"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"}]}
+          Awesm::Url.stub(:batch).and_return([200, resp])
+        end
+        
         it "should return 200 if post is successful" do
           post '/v1/frame/'+@f.id+'/share?destination[]=twitter&text=testing'
           response.body.should be_json_eql(200).at_path("status")

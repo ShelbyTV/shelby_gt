@@ -199,16 +199,19 @@ class V1::FrameController < ApplicationController
       end
       
       if frame = Frame.find(params[:frame_id])
+        text = params[:text]
         
+        # params[:destination] is an array of destinations, 
+        #short_links will be a hash of desinations/links
         short_links = frame.get_or_create_shortlink(params[:destination])
         
         params[:destination].each do |d|
           case d
           when 'twitter'
-            text = params[:text] + short_links[:twitter]
+            text += " #{short_links[:twitter]}" if short_links[:twitter]
             resp = GT::SocialPoster.post_to_twitter(current_user, text)
           when 'facebook'
-            text = params[:text] + short_links[:facebook]
+            text += " #{short_links[:facebook]}" if short_links[:facebook]
             resp = GT::SocialPoster.post_to_facebook(current_user, text, frame)
           else
             return render_error(404, "we dont support that destination yet :(")

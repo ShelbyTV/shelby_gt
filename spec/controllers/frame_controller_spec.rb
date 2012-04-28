@@ -215,8 +215,10 @@ describe V1::FrameController do
   describe "POST share" do
     before(:each) do
       sign_in @u1
-      @frame = stub_model(Frame)
+      @frame = Factory.create(:frame)
       Frame.stub!(:find).and_return(@frame)
+      resp = {"awesm_urls" => [{"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"}]}
+      Awesm::Url.stub(:batch).and_return([200, resp])
     end
     
     it "should return 200 if the user posts succesfully to destination" do

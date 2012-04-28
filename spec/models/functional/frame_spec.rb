@@ -275,4 +275,28 @@ describe Frame do
     end
   end
   
+  context "get or create short links" do
+    before(:each) do
+      @frame = Factory.create(:frame)
+    end
+    
+    it "should return a short link that we have already" do
+      @frame.short_links[:twitter] = "http://i.ro.ck"; @frame.save
+      r = @frame.get_or_create_shortlink(["twitter"])
+      r.should eq(@frame.short_links)
+    end
+    
+    it "should get a new short link if it doesnt exist" do
+      resp = {"awesm_urls" => [{"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"}]}
+      Awesm::Url.stub(:batch).and_return([200, resp])
+      r = @frame.get_or_create_shortlink(["twitter"])
+      r["twitter"].should eq(resp["awesm_urls"].first["awesm_url"])
+    end
+    
+    it "should return error if we dont pass an array" do
+      lambda { @frame.get_or_create_shortlink("test") }.should raise_error(ArgumentError)
+    end
+    
+  end
+  
 end

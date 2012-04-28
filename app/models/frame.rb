@@ -47,7 +47,7 @@ class Frame
   key :view_count, Integer, :abbr => :i, :default => 0
   
   # The shortlinks created for each type of share, eg twitter, tumvlr, email, facebook
-  one :short_links
+  key :short_links, Hash, :abbr => :j, :default => {}
   
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
@@ -126,22 +126,43 @@ class Frame
     return self.upvoters.any? { |uid| uid == user_id }
   end
   
-  def get_or_create_shortlink(d)
-    # get
-    if links = self.short_links
-      return links
-    else
-      # create
+  # Destination can be a comma delimited list, eg "twitter,email"
+  def get_or_create_shortlink(destinations)
+    raise ArgumentError, "must supply at least one destination" unless destinations and destinations.is_a?(Array)
+    
+    d_copy = Array.new(destinations)
+    
+    # 1. check if a destination exists for each destination given, delete if we have it already
+    d_copy.delete_if { |d| self.short_links[d] != nil }
+
+    # 2. if d_copy is not empty, create whatever short link that is missing form frames hash of short_links    
+    links = {}
+    if !d_copy.empty?
       params = {  :url => "http://gt.shelby.tv/roll/#{self.roll_id}/frame/#{self.id}",
-                  :channel => d,
+                  :channel => destinations,
                   :key=> Settings::Awesm.api_key,
-                  :tool => Settings::Awesm.tool_key }
+                  :tool => Settings::Awesm.tool_key 
+                }
       code, resp = Awesm::Url.batch( params )
       if code == 200
-        links = {}
-        resp["awesm_urls"].each {|u| links[ u["channel"] ] = u["awesm_url"] }
+        resp["awesm_urls"].each do |u|
+          case u["channel"]
+          when "twitter"
+            self.short_links[:twitter] = u["awesm_url"]
+          when "facbeook-post"
+            self.short_links[:facbeook] = u["awesm_url"]
+          when "tumblr-video"
+            self.short_links[:tumblr] = u["awesm_url"]
+          when "email"
+            self.short_links[:email] = u["awesm_url"]
+          end
+        end
+        self.save
       end
     end
+    # 3. return the short_links with the requested destinations
+    destinations.each { |d| links[d] = self.short_links[d.to_sym] }
+    return links
   end
   
   private
