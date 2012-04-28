@@ -13,10 +13,6 @@ class Conversation
   #TODO: We want to be using identity maps as much as possible, but we need to be intelligently clearing caches first!
   #plugin MongoMapper::Plugins::IdentityMap
   
-  # A Conversation only references a single Frame, and each Frame has only one Conversation
-  # If a tweet (or other *external* social post) comes in that references more than one video: multiple Conversation will be created, referencing different Frames and Videos.
-  has_one :frame, :foreign_key => :c, :required => true
-
   # It must reference a video (the same video that the Frame references)
   belongs_to :video, :required => true
   key :video_id, ObjectId, :abbr => :a
@@ -26,6 +22,12 @@ class Conversation
   
   # The individual messages of the conversation
   many :messages
+  
+  # A Conversation references it's original Frame, and each Frame has only one Conversation
+  # If a tweet (or other *external* social post) comes in that references more than one video: multiple Conversations will be created, referencing different Frames, Videos
+  # Although Frames can be dupe'd, and each dupe'd Frame will reference the same Conversation, from the Conversation's POV we only care about the original Frame
+  belongs_to :frame
+  key :frame_id, ObjectId, :abbr => :c
   
   #don't need anythign mass-assignable (yet)
   attr_accessible

@@ -49,14 +49,23 @@ module GT
         
         #observing_user should be following the posting_user's public roll, unless they specifically unfollowed it
         unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)  
-          posting_user.public_roll.add_follower(observing_user) 
+          posting_user.public_roll.add_follower(observing_user)
+          new_following = true
           
           posting_user.public_roll.save
           observing_user.save
         end
         
-        # Don't re-post
-        return false if already_posted?(message, posting_user.public_roll)
+        if convo = already_posted?(message, posting_user.public_roll)
+          # This has already been posted, so we're not going to create a Frame.
+          #  BUT if observing_user was just added as a follower of posting_user's public_roll, 
+          #      a DashboardEntry was never created for this Frame/observing_user...
+          if new_following and original_frame = convo.frame
+            GT::Framer.create_dashboard_entry(original_frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], observing_user)
+          end
+
+          return false
+        end
         
         #Add Frame to posting_user's public roll
         GT::Framer.create_frame(
@@ -93,7 +102,7 @@ module GT
       def self.already_posted?(message, roll)
         # See if there is a conversation that has a matching message
         if c = Conversation.first_including_message_origin_id(message.origin_id)
-          return c.messages.any? { |m| m.origin_network == message.origin_network and m.origin_id == message.origin_id }
+          return c if c.messages.any? { |m| m.origin_network == message.origin_network and m.origin_id == message.origin_id }
         end
         return false
       end

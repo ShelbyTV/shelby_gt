@@ -46,6 +46,7 @@ module GT
       f.video = video
       f.roll = roll if roll
       f.conversation = Conversation.new
+      f.conversation.frame = f
       if message
         f.conversation.messages << message
         f.conversation.public = message.public
@@ -106,6 +107,13 @@ module GT
       roll_id = (to_roll.is_a?(Roll) ? to_roll.id : to_roll)
 
       return basic_dupe!(orig_frame, user_id, roll_id)
+    end
+    
+    def self.create_dashboard_entry(frame, action, user)
+      raise ArgumentError, "must supply a Frame" unless frame.is_a? Frame
+      raise ArgumentError, "must supply an action" unless action
+      raise ArgumentError, "must supply a User" unless user.is_a? User
+      self.create_dashboard_entries(frame, action, [user.id])
     end
     
     private

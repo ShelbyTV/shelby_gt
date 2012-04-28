@@ -33,6 +33,13 @@ class AuthenticationsController < ApplicationController
         end
       
         sign_in(:user, user)
+        Rails.logger.info("TOKEN: #{form_authenticity_token}")
+        # ensure csrf_token in cookie
+        cookies[:_shelby_gt_common] = {
+          :value => "authenticated_user_id=#{user.id.to_s},csrf_token=#{form_authenticity_token}",
+          :expires => 1.week.from_now,
+          :domain => '.shelby.tv'
+        }
         StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
       
         @opener_location = request.env['omniauth.origin'] || web_root_url
@@ -63,7 +70,12 @@ class AuthenticationsController < ApplicationController
         if user.valid?
           sign_in(:user, user)
           gt_interest.used!(user)
-        
+          # ensure csrf_token in cookie
+          cookies[:_shelby_gt_common] = {
+            :value => "authenticated_user_id=#{user.id.to_s},csrf_token=#{session[:_csrf_token]}",
+            :expires => 1.week.from_now,
+            :domain => '.shelby.tv'
+          }
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
         
           @opener_location = request.env['omniauth.origin'] || web_root_url

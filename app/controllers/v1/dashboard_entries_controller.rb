@@ -14,10 +14,10 @@ class V1::DashboardEntriesController < ApplicationController
   def index
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['index']) do
       # default params
-      @limit = params[:limit] ? params[:limit] : 20
+      @limit = params[:limit] ? params[:limit].to_i : 20
       # put an upper limit on the number of entries returned
       @limit = 20 if @limit.to_i > 20
-    
+          
       skip = params[:skip] ? params[:skip] : 0
 
       # get user
@@ -31,6 +31,15 @@ class V1::DashboardEntriesController < ApplicationController
     
       # get and render dashboard entries
       if user
+        
+        if @limit == 0
+          @status = 200
+          @entries = []
+          render 'index'
+          return
+        end
+        
+        
         if params[:since_id]
           
           return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:since_id])
@@ -63,12 +72,7 @@ class V1::DashboardEntriesController < ApplicationController
         ##########
         
         @include_children = params[:include_children] != "false" ? true : false
-        # return status
-        if !@entries.empty?
-          @status = 200
-        else
-          render_error(200, "there are no dashboard entries for this user")
-        end
+        @status = 200
       else
         render_error(404, "no user info found")
       end    
