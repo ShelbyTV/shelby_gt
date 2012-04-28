@@ -1,5 +1,6 @@
 require "social_poster"
 require "link_shortener"
+require "social_post_formatter"
 
 class V1::RollController < ApplicationController  
   
@@ -62,19 +63,16 @@ class V1::RollController < ApplicationController
         
         # params[:destination] is an array of destinations, 
         #  short_links will be a hash of desinations/links
-        short_links = GT::Linkshortener.get_or_create_shortlink(roll, params[:destination])
+        short_links = GT::LinkShortener.get_or_create_shortlinks(roll, params[:destination])
         
         params[:destination].each do |d|
           case d
           when 'twitter'
-            # truncate text so that our link can fit fo sure and be < 140
-            text = params[:text].length > 119 ? "#{params[:text][0..119]}..." : params[:text]
-            text += " #{short_links["twitter"]}" if short_links["twitter"]
+            text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
             resp = GT::SocialPoster.post_to_twitter(current_user, text)
-
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           when 'facebook'
-            text += " #{short_links["facebook"]}" if short_links["facebook"]
+            text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
             resp = GT::SocialPoster.post_to_facebook(current_user, text, roll)
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           else

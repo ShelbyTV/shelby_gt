@@ -126,6 +126,14 @@ class Frame
     return self.upvoters.any? { |uid| uid == user_id }
   end
   
+  def permalink()
+    if self.roll
+      "http://#{Settings::ShelbyAPI.web_root}/roll/#{self.roll_id}/frame/#{self.id}"
+    else
+      "http://#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{self.id}"
+    end
+  end
+  
   private
     
     # Score increases linearly with time, logarithmically with votes

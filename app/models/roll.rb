@@ -116,5 +116,7 @@ class Roll
 
   # if you can view it, you can invite to it
   def invitable_to_by?(u) viewable_by?(u); end
+
+  def permalink() "http://#{Settings::ShelbyAPI.web_root}/roll/#{self.id}"; end
   
 end
