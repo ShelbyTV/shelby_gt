@@ -3,6 +3,8 @@ class SharingMailer < ActionMailer::Base
   sendgrid_category Settings::Email.share_frame["category"]
   sendgrid_enable   :ganalytics, :opentrack, :clicktrack
 
+  helper :mail
+
   def share_frame(user_from, email_from, email_to, message, frame)
     @user_from = user_from
     @email_to = email_to
