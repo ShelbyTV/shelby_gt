@@ -70,8 +70,9 @@ describe GT::SocialPoster do
       @from_user = Factory.create(:user)
       @from_user.primary_email = "my@email.com"; @from_user.save
       @comment = "how much would a wood chuck chuck..."
-      video = Factory.create(:video, :thumbnail_url => "http://url.com/123.jpg")
-      @frame = Factory.create(:frame, :creator_id => @from_user.id, :video_id => video.id)
+      video = Factory.create(:video, :thumbnail_url => "http://url.com/123.jpg", :title=>"blah")
+      roll = Factory.create(:roll, :creator => @from_user, :title => "good roll")
+      @frame = Factory.create(:frame, :creator_id => @from_user.id, :video_id => video.id, :roll => roll)
     end
     
     it "should send an email to 1 addess of a frame and return a Mail::Message" do

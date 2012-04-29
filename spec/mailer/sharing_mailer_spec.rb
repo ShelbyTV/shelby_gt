@@ -6,8 +6,9 @@ describe SharingMailer do
       @from_user = Factory.create(:user, :primary_email => 'your@mom.com')
       @to_email = 'your@dad.com'
       @message = "wassssuuuup!"
-      video = Factory.create(:video, :thumbnail_url => "http://url.com/123.jpg")
-      @frame = Factory.create(:frame, :creator_id => @from_user.id, :video_id => video.id)
+      video = Factory.create(:video, :thumbnail_url => "http://url.com/123.jpg", :title=>"blah")
+      roll = Factory.create(:roll, :creator => @from_user, :title => "good roll")
+      @frame = Factory.create(:frame, :creator_id => @from_user.id, :video_id => video.id, :roll => roll)
       @email = SharingMailer.share_frame(@from_user, @from_user.primary_email, @to_email, @message, @frame)
     end
  
