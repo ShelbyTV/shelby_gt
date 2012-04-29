@@ -72,7 +72,7 @@ class V1::RollController < ApplicationController
             resp = GT::SocialPoster.post_to_twitter(current_user, text)
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           when 'facebook'
-            text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
+            text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
             resp = GT::SocialPoster.post_to_facebook(current_user, text, roll)
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           else
