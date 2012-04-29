@@ -127,7 +127,7 @@ class Frame
   end
   
   def permalink()
-    if self.roll
+    if self.roll_id
       "http://#{Settings::ShelbyAPI.web_root}/roll/#{self.roll_id}/frame/#{self.id}"
     else
       "http://#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{self.id}"
