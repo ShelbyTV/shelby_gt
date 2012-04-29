@@ -12,7 +12,8 @@ class SharingMailer < ActionMailer::Base
     @email_to = email_to
     @message = message ? message : ""
     @frame = frame
-    @frame_short_link = GT::LinkShortener.get_or_create_shortlinks(frame, "email")
+    link = GT::LinkShortener.get_or_create_shortlinks(frame, "email")
+    @frame_short_link = link["email"]
     mail :from => email_from, :to => email_to, :subject => Settings::Email.share_frame['subject']
   end
 
