@@ -147,6 +147,8 @@ class User
     rolls_unfollowed.include? roll_id
   end
   
+  def permalink() "#{Settings::ShelbyAPI.web_root}/user/#{self.nickname}/personal_roll"; end
+  
   # -- Old Methods --   
   def self.find_by_nickname(n)
     return nil unless n.is_a? String and !n.blank?

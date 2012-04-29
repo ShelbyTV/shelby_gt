@@ -213,19 +213,15 @@ class V1::FrameController < ApplicationController
           when 'twitter'
             text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
             resp = GT::SocialPoster.post_to_twitter(current_user, text)
-            StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d], current_user.id, 'frame_share', request)
           when 'facebook'
             text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
             resp = GT::SocialPoster.post_to_facebook(current_user, text, frame)
-            StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d], current_user.id, 'frame_share', request)
-=begin
           when 'email'
-            #TODO handle email sharing of frame
             #NB if frame is on a private roll, this is a private roll invite.  Otherwise, it's just a Frame share
             email_addresses = params[:addresses]
             return render_error(404, "you must provide addresses") if email_addresses.blank?
-            resp = !email_addresses.blank?
-=end
+            
+            resp = GT::SocialPoster.post_to_email(current_user, params[:addresses], frame)
           else
             return render_error(404, "we dont support that destination yet :(")
           end

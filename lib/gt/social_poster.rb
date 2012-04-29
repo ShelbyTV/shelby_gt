@@ -45,9 +45,9 @@ module GT
       end
     end
     
-    #TODO: we need to re work email share template to reflect gt/rolls
-    def self.post_to_email(from_user, to_user, text, entity)
-      return send_email(from_user, to_user, text, entity)
+    # to_emails is an array of email addresses
+    def self.post_to_email(from_user, to_emails, text, entity)
+      return send_email(from_user, to_emails, text, entity)
     end
     
     private 
@@ -81,14 +81,20 @@ module GT
         end
       end
       
-      #TODO: create a versitile mailing action for frames or rolls
-      def self.send_email(user, email_to, message=nil, entity=nil)
+      # to_emails is an array of email addresses
+      def self.send_email(user, to_emails, message=nil, entity=nil)
         from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
-        if entity.is_a? Roll
-          return SharingMailer.share_roll(user, from_email, email_to, message, entity).deliver
-        elsif entity.is_a? Frame
-          return SharingMailer.share_frame(user, from_email, email_to, message, entity).deliver
+
+        res = []
+        # send email to anyone in the array of emails provided
+        to_emails.each do |email|
+          if entity.is_a? Roll
+            res << SharingMailer.share_roll(user, from_email, email, message, entity).deliver
+          elsif entity.is_a? Frame
+            res << SharingMailer.share_frame(user, from_email, email, message, entity).deliver
+          end
         end
+        res
       end
     
   end

@@ -1,108 +1,55 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-		"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
-		
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>Video shared via Shelby.TV</title>
-		<style type="text/css">
-				#outlook a { padding: 0; } /* Force Outlook to provide a "view in browser" button. */
-				body { width: 100% !important; } .ReadMsgBody { width: 100%; } .ExternalClass { width: 100%; } /* Force Hotmail to display emails at full width */
-				body { -webkit-text-size-adjust: none; -ms-text-size-adjust: none; } /* Prevent Webkit and Windows Mobile platforms from changing default font sizes. */
-
-				body { margin: 0; padding: 0; }
-				img { height: auto; line-height: 100%; outline: none; text-decoration: none; }
-				#backgroundTable { height: 100% !important; margin: 0; padding: 0; width: 100% !important; }
-
-			 	p {
-					 margin: 1em 0;
-			 	}
-					
-			 	h1, h2, h3, h4, h5, h6 {
-					 color: black !important;
-					 line-height: 100% !important;
-			 	}
-			 
-			 	h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
-					 color: white !important;
-			 	}
-			 
-			 	h1 a:active, h2 a:active,	h3 a:active, h4 a:active, h5 a:active, h6 a:active {
-					 color: red !important;
-			 	}
-			 
-			 	h1 a:visited, h2 a:visited,	h3 a:visited, h4 a:visited, h5 a:visited, h6 a:visited {
-					 color: gray !important;
-			 	}
-			
-				a, a:visited { color: red !important; }
-				
-			 	table td {
-					 border-collapse: collapse;
-			 	}
-				
-			 	.yshortcuts, .yshortcuts a, .yshortcuts a:link,.yshortcuts a:visited, .yshortcuts a:hover, .yshortcuts a span { color: black; text-decoration: none !important; border-bottom: none !important; background: none !important; }
-			 
-		</style>
-</head>
-<body>	
-		<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable" style="border-style:solid;background:grey;border-color:black;">
-			<tr>
-				<td> 		 
-					<table cellpadding="0" cellspacing="0" border="5px" style="width:100%;background:black;border-style:solid;border-background:grey;">
-						<!-- video box area -->
-						<tr style="color:white; background: black;">
-							<td colspan="3">
-								<!-- video box -->
-								<table cellpadding="0" cellspacing="0" border="0" style="width:500px;background:#444444;margin: 10px 10px 5px 10px;">
-									<tr>
-										<td colspan="2" style="width:470px;background:black;padding:0px 15px;float:left;">
-											<!-- Thumbnail -->
-											<img src="<%= @frame.video.thumbnail_url %>" title="video_thumbnail" width="200px" height="150px" style="display: block;position:relative;float:left;" />
-											<!-- End Thumbnail -->
-											<!-- Title, Avatar, Description, Button -->
-											<table border="0" cellspacing="0" cellpadding="0" style="width: 50%; display: inline-block; margin-left: 20px;color: white;">
-												<tr>
-													<td>
-														<div class="description" style="margin: 10px 0px; min-height: 50px;">
-															<div class="avatar" style="float: left; min-height: 48px; margin-right: 10px;">
-																	<img src="<%= @user.user_image %>" width="50px" height="50px"/>
-															</div>
-															<div class="text" style="margin-bottom:10px;margin-right: 8px;font-size: 16px;">
-																<span style="color:white !important;">
-																	<%= @message %>																	
-																</span>
-															</div>
-														</div>
-														<div class="title" style="width: 100%; max-width: 245px; padding: 5px 0px; text-transform: uppercase;">
-															<%= @frame.video.title %>
-														</div>
-														<div class="watch button" style="background: #A200B9; padding: 9px 15px; width: 215px; text-align: center;color:white;">
-															watch this video <span style="position: relative;top: 1px;"> ► </span>
-														</div>
-													</td>
-												</tr>
-											</table>
-											<!-- End Title, Avatar, Description, Button -->
-										</td>
-									</tr>
-									<tr>
-										<td style="background:black;">
-											<hr style="background-color:#444;height:2px;border:0px;"/>
-											<div style="padding:5px 10px;background:black;font-size:17px;width:139px;margin:0px auto;">
-												<img src="http://<%= Settings::Global.domain %>/images/splash-logo.png" alt="Shelby Logo" title="Shelby.TV" width="125px" style="display: block;" />
-											</div>
-										</td>
-									</tr>
-								</table>
-								<!-- end video box -->
-							</td>
-						</tr>
-						<!-- end video box area -->
-					</table>	
-				</td>
-			</tr>
-		</table>
-		<!-- End of wrapper table -->
-</body>
-</html>
+<% standard_html_email_wrapper do %>
+	<!-- Wrapper/Container Table: Use a wrapper table to control the width and the background color consistently of your email. Use this approach instead of setting attributes on the body tag. -->
+	<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#f6f6f6; border:1px solid #b5b5b5; color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
+		<tr>
+			<td valign="top" class="shelby-email-lining" style="padding:20px;">
+				<h1 class="shelby-logo" style="margin-top:5px;">
+					<a href="<%= Settings::Email.web_url_base %>">
+						<img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv logo" title="Shelby.tv" width="156" height="42" />
+					</a>
+				</h1>
+				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:1px solid #b5b5b5; padding:20px; width:100%;">
+					<tr height="75">
+						<td width="75"  valign="top">
+							<a href="<%= @user_from.permalink %>"><img class="image_fix" src="<%= @user_from.user_image_original %>" alt="user_image" title="user_image" width="60" height="60" /></a>
+						</td>
+						<td  valign="top">
+							<div>
+								<a href="<%= @user_from.permalink %>"><%= @user_from.name %></a> has invited you to join a private roll: <span style="font-weight:bold;">"<%= @frame.roll.title %>"
+							</div>
+							<p>
+								What's a <a href="<%= Settings::ShelbyAPI.web_root %>/help">private roll</a>?
+							</p>
+						</td>
+					</tr>
+				</table>
+				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:0px; padding:0px 0px 15px 20px; width:100%;">
+					<tr>
+						<td width="185"  valign="top">
+							<a href="<%= @frame.permalink %>" style="float:left; padding-right:10px; padding-bottom: 10px;"><img class="image_fix" src="<%= @frame.video.thumbnail_url %>" alt="user_image" title="user_image" width="175" /></a>
+							<div style="float:left; width: 66%">
+								<div style="font-weight:bold;">Check out a video in this roll:</div>
+								<p><%= @frame.video.description %></p>	
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2" align="center">
+							<a href="<%= @frame.permalink %>" class="shelby-email-button" style="background:#69BD46; border:1px outset #ddd; color:white; display:inline-block; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-size:16px; font-weight:bold; margin:15px auto; padding:12px 33px; text-decoration:none; width: 165px">
+								Watch Now
+							</a>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2" style="padding-top:10px;">
+							<small class="shelby-email-message-footer" style="font-size:11px; margin-top: 10px;">
+								Please remember you can always go into your <a href="<%= Settings::ShelbyAPI.web_root %>/preferences">Preferences</a> page and adjust your account and contact info, privacy controls and emails preferences.
+							</small>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>  
+	<!-- End of wrapper table -->
+<% end %>
