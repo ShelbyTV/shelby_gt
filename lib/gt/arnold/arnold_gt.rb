@@ -42,7 +42,9 @@ machine = ARGV.select { |i| i =~ /^--machine_name=/ }
 machine_name = (machine and machine[0].is_a? String) ? machine[0].slice(15,3) : "arnold"
 arnold_version = "v1"
 #stats buckets
-$statsd_job_timing_bucket = "arnold.#{arnold_version}.#{machine_name}.job.time"
+$statsd_job_timing_bucket =         "arnold.#{arnold_version}.#{machine_name}.job.time"
+$statsd_job_reserve_timing_bucket = "arnold.#{arnold_version}.#{machine_name}.job_reserve.time"
+$statsd_em_turn_timing_bucket = "arnold.#{arnold_version}.#{machine_name}.em_turn.time"
 $statsd_jobs_processed_bucket = "arnold.#{arnold_version}.#{machine_name}.job.processed"
 
 # To make sure the consumer isn't hung, and kill ourselves if it is
@@ -55,6 +57,8 @@ EventMachine.synchrony do
 
   Fiber.new {
   	while($running) do
+  	  turn_start_t = Time.now
+  	  
       #Make sure we don't create too many fibers
   		next unless GT::Arnold::EventLoop.should_pull_a_job($fibers, $MAX_FIBERS)
   		
@@ -62,7 +66,9 @@ EventMachine.synchrony do
   	  $consumer_turns += 1
 
       # pull the job (w/o blocking reactor)
+      pre_job_t = Time.now
   		job = GT::Arnold::BeanJob.get_and_delete_job
+  		StatsManager::StatsD.client.timing($statsd_job_reserve_timing_bucket, Time.now - pre_job_t)
 
       if job
         Rails.logger.debug "[Arnold Main] got job (job:#{job.jobid}), handing off to fiber. looks like: #{job.inspect}"
@@ -72,9 +78,10 @@ EventMachine.synchrony do
         $fibers << f
         f.resume(job)
       else
-        Rails.logger.debug "[Arnold Main] No job returned for processing, normal when reserving with timeout.  Looping..."
+        Rails.logger.fatal "[Arnold Main] No job returned for processing. Fiber count: #{$fibers.size}"
       end
 
+      StatsManager::StatsD.client.timing($statsd_em_turn_timing_bucket, Time.now - turn_start_t)
   	end
   	
   	# We've been asked to exit, try to allow fibers to finish up
