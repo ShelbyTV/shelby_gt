@@ -37,6 +37,11 @@ describe ApplicationController do
       c = "crap=crap,authenticated_user_id=someid,csrf_token=lkjasdf897sa@$%==@$5wef=@$%"
       @ac.cookie_to_hash(c)[:csrf_token].should == "lkjasdf897sa@$%==@$5wef=@$%"
     end
+    
+    it "should be able to pull :csrf_token from cookie when it ends with equals sign" do
+      c = "authenticated_user_id=4d7a8942f6db247853000001,csrf_token=Zp1YApVGLga+NNJFTA2p2WYurq7+pAdP3Ynmb6VLTh0="
+      @ac.cookie_to_hash(c)[:csrf_token].should == "Zp1YApVGLga+NNJFTA2p2WYurq7+pAdP3Ynmb6VLTh0="
+    end
   end
   
 end
