@@ -26,7 +26,7 @@
 				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:0px; padding:0px 0px 15px 20px; width:100%;">
 					<tr>
 						<td width="185"  valign="top">
-							<a href="<%= @frame_short_link %>" style="float:left; padding-right:10px; padding-bottom: 10px;"><img class="image_fix" src="<%= @frame.video.thumbnail_url %>" alt="user_image" title="user_image" width="175" /></a>
+							<a href="<%= @frame_permalink %>" style="float:left; padding-right:10px; padding-bottom: 10px;"><img class="image_fix" src="<%= @frame.video.thumbnail_url %>" alt="user_image" title="user_image" width="175" /></a>
 							<div style="float:left; width: 66%">
 								<div style="font-weight:bold;">Check out a video in this roll:</div>
 								<p><%= @frame.video.description %></p>	
@@ -35,7 +35,7 @@
 					</tr>
 					<tr>
 						<td colspan="2" align="center">
-							<a href="<%= @frame_short_link %>" class="shelby-email-button" style="background:#69BD46; border:1px outset #ddd; color:white; display:inline-block; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-size:16px; font-weight:bold; margin:15px auto; padding:12px 33px; text-decoration:none; width: 165px">
+							<a href="<%= @frame_permalink %>" class="shelby-email-button" style="background:#69BD46; border:1px outset #ddd; color:white; display:inline-block; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-size:16px; font-weight:bold; margin:15px auto; padding:12px 33px; text-decoration:none; width: 165px">
 								Watch Now
 							</a>
 						</td>
