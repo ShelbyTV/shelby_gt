@@ -3,7 +3,7 @@ module GT
     
     def self.format_for_twitter(text, links)
       # truncate text so that our link can fit fo sure and be < 140
-      text = text.length > 119 ? "#{text[0..119]}..." : text
+      text = text.length > 115 ? "#{text[0..114]}..." : text
       text += " #{links["twitter"]}" if links["twitter"]
     end
     
