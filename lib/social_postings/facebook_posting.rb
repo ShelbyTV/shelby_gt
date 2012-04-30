@@ -32,7 +32,7 @@ module SocialPosting
             elsif entity.is_a? Frame
               return !!facebook_client.put_object("me","feed",{
                 :message => message, 
-                :link => entity.short_link[:facebook],
+                :link => entity.short_links[:facebook],
                 :picture => entity.video.thumbnail_url,
                 :name => entity.video.title,
                 :caption => "via Shelby.TV",
