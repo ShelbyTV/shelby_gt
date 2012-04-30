@@ -16,6 +16,11 @@ module GT
 
      # 1. check if a destination exists for each destination given, delete if we have it already
      d_copy.delete_if { |d| linkable.short_links[d.to_sym] != nil }
+
+     d_copy.each do |d|
+       d_copy[d_copy.index(d)] = "facebook-post" if d == "facebook"
+       d_copy[d_copy.index(d)] = "tumblr-video" if d == "tumblr"
+     end
      
      # 2. if d_copy is not empty, create whatever short link that is missing form frames hash of short_links    
      links = {}
@@ -39,8 +44,8 @@ module GT
            case u["channel"]
            when "twitter"
              linkable.short_links[:twitter] = awesm_url
-           when "facbeook-post"
-             linkable.short_links[:facbeook] = awesm_url
+           when "facebook-post"
+             linkable.short_links[:facebook] = awesm_url
            when "tumblr-video"
              linkable.short_links[:tumblr] = awesm_url
            when "email"
@@ -54,6 +59,12 @@ module GT
      end
      # 4. return the short_links with the requested destinations
      destinations.each { |d| links[d] = linkable.short_links[d.to_sym] }
+     
+     links.each do |l|
+       links[links.index(l)] = "facebook" if l == "facebook-post"
+       links[links.index(l)] = "tumblr" if l == "tumblr-video"
+     end
+
      return links
    end
    
