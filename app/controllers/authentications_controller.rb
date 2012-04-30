@@ -1,5 +1,6 @@
 # encoding: UTF-8
 require 'user_manager'
+require 'invitation_manager'
 
 #TODO: Remove the @opener_location stuff here, just use redirect_to ?
 class AuthenticationsController < ApplicationController  
@@ -33,7 +34,21 @@ class AuthenticationsController < ApplicationController
         end
       
         sign_in(:user, user)
-        Rails.logger.info("TOKEN: #{form_authenticity_token}")
+        
+        # ensure csrf_token in cookie
+        cookies[:_shelby_gt_common] = {
+          :value => "authenticated_user_id=#{user.id.to_s},csrf_token=#{form_authenticity_token}",
+          :expires => 1.week.from_now,
+          :domain => '.shelby.tv'
+        }
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
+      
+        @opener_location = request.env['omniauth.origin'] || web_root_url
+
+      elsif cookies[:gt_access_token] # if they were invited via private roll, they get in
+        GT::InvitationManager.private_roll_invite(user, cookies[:gt_access_token])
+        sign_in(:user, user)
+        
         # ensure csrf_token in cookie
         cookies[:_shelby_gt_common] = {
           :value => "authenticated_user_id=#{user.id.to_s},csrf_token=#{form_authenticity_token}",
@@ -64,12 +79,24 @@ class AuthenticationsController < ApplicationController
       # if they have a GtInterest access token, and they've been allowed entry, create the user and update the GtInterest
       gt_interest = GtInterest.find(cookies[:gt_access_token])
       
-      if gt_interest and gt_interest.allow_entry?
+      # if they are invited by someone via an invitation to join a private roll, and the inviter is gt_enabled, let em in!
+      # gt_roll_invite consists of "inviter uid, invitee email address"
+      if private_invite = cookies[:gt_roll_invite] and invite_info = cookies[:gt_roll_invite].split(',')
+        inviter = User.find(invite_info[0])
+      end
+      
+      if (gt_interest and gt_interest.allow_entry?) or (private_invite and inviter.gt_enabled)
         user = GT::UserManager.create_new_user_from_omniauth(omniauth)
-
+        
         if user.valid?
           sign_in(:user, user)
-          gt_interest.used!(user)
+          
+          if gt_interest
+            gt_interest.used!(user)
+          elsif private_invite
+            GT::InvitationManager.private_roll_invite(user, private_invite)
+          end
+          
           # ensure csrf_token in cookie
           cookies[:_shelby_gt_common] = {
             :value => "authenticated_user_id=#{user.id.to_s},csrf_token=#{session[:_csrf_token]}",
