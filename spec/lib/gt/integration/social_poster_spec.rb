@@ -86,7 +86,7 @@ describe GT::SocialPoster do
     end
     
     it "should send more than one emails if asked to" do
-      email_address = ["some_other@email.com", "tit@tat.com", "jack@sprat.edu"]
+      email_address = "some_other@email.com,tit@tat.com,jack@sprat.edu"
       email = GT::SocialPoster.post_to_email(@from_user, email_address, @comment, @frame)
       email.length.should eq(3)
     end

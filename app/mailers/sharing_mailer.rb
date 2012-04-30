@@ -10,9 +10,10 @@ class SharingMailer < ActionMailer::Base
   def share_frame(user_from, email_from, email_to, message, frame)
     @user_from = user_from
     @email_to = email_to
-    @message = message ? message : ""
+    @message = message ? message : frame.video.description
     @frame = frame
-    @frame_permalink = frame.permalink + "?gt_ref_uid=#{user_from.id.to_s}&gt_ref_email=#{email_to}"
+    params = "?gt_ref_uid=#{user_from.id.to_s}&gt_ref_email=#{email_to}&gt_ref_roll=#{frame.roll_id}"
+    @frame_permalink = frame.permalink + params
     mail :from => email_from, :to => email_to, :subject => Settings::Email.share_frame['subject']
   end
 
