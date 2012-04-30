@@ -221,7 +221,7 @@ class V1::FrameController < ApplicationController
             email_addresses = params[:addresses]
             return render_error(404, "you must provide addresses") if email_addresses.blank?
             
-            resp = GT::SocialPoster.post_to_email(current_user, params[:addresses], frame)
+            resp = GT::SocialPoster.post_to_email(current_user, params[:addresses], text, frame)
           else
             return render_error(404, "we dont support that destination yet :(")
           end
