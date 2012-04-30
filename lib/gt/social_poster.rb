@@ -84,7 +84,8 @@ module GT
       # to_emails is an array of email addresses
       def self.send_email(user, to_emails, message=nil, entity=nil)
         from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
-
+        
+        to_emails.split(',')
         res = []
         # send email to anyone in the array of emails provided
         to_emails.each do |email|
