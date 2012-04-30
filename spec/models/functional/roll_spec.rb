@@ -145,5 +145,5 @@ describe Roll do
     end
   
   end
-  
+    
 end

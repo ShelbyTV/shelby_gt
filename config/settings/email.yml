@@ -5,7 +5,7 @@ defaults: &defaults
   # Sharing
   share_frame:
     category: "Share Frame"
-    subject: "watch this video"
+    subject: "Private roll invitation"
   # Notifications
   notification_sender: "notifications@shelby.tv"
   comment_notification:

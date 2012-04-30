@@ -31,6 +31,9 @@ class Roll
   
   # faux-users get public Rolls, we denormalize the network into the roll
   key :origin_network,  String, :abbr => :f
+  
+  # The shortlinks created for each type of share, eg twitter, tumvlr, email, facebook
+  key :short_links, Hash, :abbr => :g, :default => {}
 
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
@@ -114,4 +117,6 @@ class Roll
   # if you can view it, you can invite to it
   def invitable_to_by?(u) viewable_by?(u); end
 
+  def permalink() "http://#{Settings::ShelbyAPI.web_root}/roll/#{self.id}"; end
+  
 end

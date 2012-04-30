@@ -1,0 +1,17 @@
+defaults: &defaults
+  api_key: 'f12748410531715013799111011faecae481d592388431170984c908fde92c30'
+  tool_key: 'Vgdhwf'
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+  
+
+arnold:
+  <<: *production
+  

@@ -70,20 +70,26 @@ describe GT::SocialPoster do
       @from_user = Factory.create(:user)
       @from_user.primary_email = "my@email.com"; @from_user.save
       @comment = "how much would a wood chuck chuck..."
-      video = Factory.create(:video, :thumbnail_url => "http://url.com/123.jpg")
-      @frame = Factory.create(:frame, :creator_id => @from_user.id, :video_id => video.id)
+      video = Factory.create(:video, :thumbnail_url => "http://url.com/123.jpg", :title=>"blah")
+      roll = Factory.create(:roll, :creator => @from_user, :title => "good roll")
+      @frame = Factory.create(:frame, :creator_id => @from_user.id, :video_id => video.id, :roll => roll)
     end
     
-    it "should send email of a frame and return a Mail::Message" do
-      to_user = "some_other@email.com"
-      email = GT::SocialPoster.post_to_email(@from_user, to_user, @comment, @frame)
-      
-      email.class.should eq(Mail::Message)
-      email.from.should  eq([@from_user.primary_email])
-      email.to.should  eq([to_user])
+    it "should send an email to 1 addess of a frame and return a Mail::Message" do
+      email_address = ["some_other@email.com"]
+      email = GT::SocialPoster.post_to_email(@from_user, email_address, @comment, @frame)
+
+      email.length.should eq(1)
+      email.first.class.should eq(Mail::Message)
+      email.first.from.should  eq([@from_user.primary_email])
+      email.first.to.should  eq(email_address)
     end
     
-    it "should send email of a roll and return a Mail::Message"
+    it "should send more than one emails if asked to" do
+      email_address = ["some_other@email.com", "tit@tat.com", "jack@sprat.edu"]
+      email = GT::SocialPoster.post_to_email(@from_user, email_address, @comment, @frame)
+      email.length.should eq(3)
+    end
     
     
   end

@@ -46,6 +46,9 @@ class Frame
   # Each time a new view is counted (see #view!) we increment this and video.view_count
   key :view_count, Integer, :abbr => :i, :default => 0
   
+  # The shortlinks created for each type of share, eg twitter, tumvlr, email, facebook
+  key :short_links, Hash, :abbr => :j, :default => {}
+  
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
   
@@ -121,6 +124,14 @@ class Frame
     user_id = (u.is_a?(User) ? u.id : u)
     
     return self.upvoters.any? { |uid| uid == user_id }
+  end
+  
+  def permalink()
+    if self.roll_id
+      "#{Settings::ShelbyAPI.web_root}/roll/#{self.roll_id}/frame/#{self.id}"
+    else
+      "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{self.id}"
+    end
   end
   
   private

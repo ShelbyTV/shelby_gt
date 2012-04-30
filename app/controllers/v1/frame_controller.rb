@@ -1,5 +1,7 @@
 require 'message_manager'
 require 'video_manager'
+require 'link_shortener'
+require 'social_post_formatter'
 
 class V1::FrameController < ApplicationController
 
@@ -40,7 +42,6 @@ class V1::FrameController < ApplicationController
           if since_id_frame = Frame.find(since_id)
             case params[:order]
             when "1", nil, "forward"
-              #puts "since_id : #{since_id}, frame : #{since_id_frame.id}"
               @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.lte => since_id_frame.score).all
               #puts "frames: #{@frames.length}"
             when "-1", "reverse"
@@ -200,22 +201,27 @@ class V1::FrameController < ApplicationController
       end
       
       if frame = Frame.find(params[:frame_id])
+        # truncate text so that our link can fit fo sure
+        text = params[:text]
         
-        #TODO: link_to_frame needs to be created
-        text = params[:text] #+ link_to_frame
+        # params[:destination] is an array of destinations, 
+        #  short_links will be a hash of desinations/links
+        short_links = GT::LinkShortener.get_or_create_shortlinks(frame, params[:destination].join(','))
         
         params[:destination].each do |d|
           case d
           when 'twitter'
+            text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
             resp = GT::SocialPoster.post_to_twitter(current_user, text)
           when 'facebook'
+            text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
             resp = GT::SocialPoster.post_to_facebook(current_user, text, frame)
           when 'email'
-            #TODO handle email sharing of frame
             #NB if frame is on a private roll, this is a private roll invite.  Otherwise, it's just a Frame share
             email_addresses = params[:addresses]
             return render_error(404, "you must provide addresses") if email_addresses.blank?
-            resp = !email_addresses.blank?
+            
+            resp = GT::SocialPoster.post_to_email(current_user, params[:addresses], frame)
           else
             return render_error(404, "we dont support that destination yet :(")
           end

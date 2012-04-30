@@ -21,24 +21,22 @@ module SocialPosting
             if entity.is_a? Roll
               return !!facebook_client.put_object("me","feed",{
                 :message => message, 
-                #TODO: We need to put in whatever the link will be eventually
-                #:link => roll.permalink,
-                :picture => roll.thumbnail_url,
-                :name => roll.title,
+                :link => entity.short_link[:facebook],
+                :picture => entity.thumbnail_url,
+                :name => entity.title,
                 :caption => "via Shelby.TV",
-                :description => roll.title,
+                :description => entity.title,
                 :application => Settings::Facebook.app_name,
                 :icon => Settings::Facebook.fb_application_icon
                 })
             elsif entity.is_a? Frame
               return !!facebook_client.put_object("me","feed",{
                 :message => message, 
-                #TODO: We need to put in whatever the link will be eventually
-                #:link => roll.permalink,
-                :picture => frame.video.thumbnail_url,
-                :name => frame.video.title,
+                :link => entity.short_link[:facebook],
+                :picture => entity.video.thumbnail_url,
+                :name => entity.video.title,
                 :caption => "via Shelby.TV",
-                :description => frame.video.title,
+                :description => entity.video.description,
                 :application => Settings::Facebook.app_name,
                 :icon => Settings::Facebook.fb_application_icon
                 })

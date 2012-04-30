@@ -51,6 +51,7 @@ gem "grackle" 		# twitter
 gem "koala"				# facebook
 gem "sendgrid" 		# email
 gem "sailthru-client"
+gem "awesm", :git => 'git@github.com:ShelbyTV/awesm.git'
 
 gem "sanitize" # for sanitizing html in models
 gem "statsd-ruby" # for communicating with graphite server

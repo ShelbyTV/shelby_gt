@@ -1,4 +1,6 @@
 require "social_poster"
+require "link_shortener"
+require "social_post_formatter"
 
 class V1::RollController < ApplicationController  
   
@@ -57,15 +59,20 @@ class V1::RollController < ApplicationController
       if roll = Roll.find(params[:roll_id])
         return render_error(404, "that roll is private, can not share") unless roll.public
         
-        #TODO: link_to_roll needs to be created
-        text = params[:text] #+ link_to_roll
+        text = params[:text]
+        
+        # params[:destination] is an array of destinations, 
+        #  short_links will be a hash of desinations/links
+        short_links = GT::LinkShortener.get_or_create_shortlinks(roll, params[:destination].join(','))
         
         params[:destination].each do |d|
           case d
           when 'twitter'
+            text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
             resp = GT::SocialPoster.post_to_twitter(current_user, text)
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           when 'facebook'
+            text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
             resp = GT::SocialPoster.post_to_facebook(current_user, text, roll)
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           else

@@ -1,4 +1,5 @@
 require 'spec_helper'
+require "link_shortener"
 
 describe V1::RollController do
   before(:each) do
@@ -106,6 +107,8 @@ describe V1::RollController do
       sign_in @u1
       @roll = stub_model(Roll)
       Roll.stub!(:find).and_return(@roll)
+      resp = {"awesm_urls" => [{"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"}]}
+      Awesm::Url.stub(:batch).and_return([200, resp])
     end
     
     it "should return 200 if the user posts succesfully to destination" do

@@ -1,6 +1,6 @@
 class NotificationMailer < ActionMailer::Base
   include SendGrid
-  sendgrid_enable   :opentrack, :clicktrack #, :ganalytics #commented out due to web client not handling ? params
+  sendgrid_enable   :opentrack, :clicktrack, :ganalytics
   
   helper :mail
 
@@ -12,7 +12,7 @@ class NotificationMailer < ActionMailer::Base
       @message = message
       @frame = frame
       
-      @frame_permalink = "#{Settings::Email.web_url_base}/roll/#{@frame.roll.id}/frame/#{@frame.id}"
+      @frame_permalink = @frame.permalink
       @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
       mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", :to => user_to.primary_email, :subject => Settings::Email.comment_notification['subject']
       
@@ -26,7 +26,7 @@ class NotificationMailer < ActionMailer::Base
       @user_to = user_to
       @user_from = user_from
       @frame = frame
-      @permalink = "#{Settings::Email.web_url_base}/roll/#{@frame.roll.id}/frame/#{@frame.id}"
+      @permalink = @frame.permalink
       @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
       
       mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", :to => user_to.primary_email, :subject => Settings::Email.upvote_notification['subject']
@@ -42,7 +42,7 @@ class NotificationMailer < ActionMailer::Base
     if @user_to.primary_email
       @old_frame = old_frame
       @new_frame = new_frame
-      @new_frame_permalink = "#{Settings::Email.web_url_base}/roll/#{@new_frame.roll.id}/frame/#{@new_frame.id}"
+      @new_frame_permalink = @new_frame.permalink
       @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
       
       mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", :to => @user_to.primary_email, :subject => Settings::Email.reroll_notification['subject']
