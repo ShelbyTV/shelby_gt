@@ -63,7 +63,7 @@ class V1::RollController < ApplicationController
         
         # params[:destination] is an array of destinations, 
         #  short_links will be a hash of desinations/links
-        short_links = GT::LinkShortener.get_or_create_shortlinks(roll, params[:destination])
+        short_links = GT::LinkShortener.get_or_create_shortlinks(roll, params[:destination].join(','))
         
         params[:destination].each do |d|
           case d
