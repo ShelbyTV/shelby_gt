@@ -23,14 +23,17 @@ module GT
           sleep(boot_grace)
         
           Thread.current[:last_consumer_turns] = 0
+          Thread.current[:suicide_time] = rand(8..12).minutes.from_now
         
           while($running) do
             sleep(turn_period)
           
-            #make sure consumer_turns increases after each turn_period
-            if $consumer_turns > Thread.current[:last_consumer_turns]
+            if Time.now > Thread.current[:suicide_time]
+              Rails.logger.fatal "[Arnold::ConsumerMonitor.monitor] Killing myself as quick fix for GC issue.  Goodbye, world."
+              self.kill_process
+            elsif $consumer_turns > Thread.current[:last_consumer_turns]
               Rails.logger.debug "[Arnold::ConsumerMonitor.monitor] We're healthy.  Turns was #{Thread.current[:last_consumer_turns]} is now #{$consumer_turns}"
-              Thread.current[:last_consumer_turns] = $consumer_turns
+              Thread.current[:last_consumer_turns] = $consumer_turns  
             else
               Rails.logger.fatal "[Arnold::ConsumerMonitor.monitor] We seem hung.  Turns was #{Thread.current[:last_consumer_turns]} is now #{$consumer_turns}."
               self.kill_process
