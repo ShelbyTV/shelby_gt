@@ -28,6 +28,8 @@ module MongoMapper
       User.ensure_index(:downcase_nickname, :background => true)
       # Get a user by their primary email
       User.ensure_index(:primary_email, :background => true)
+      # Get a user by their authentication_token
+      User.ensure_index(:ah, :background => true, :unique => true)
       # the old index was on authentications.uid, now also have a unique index on uid and provider to make sure we don't overlap
       User.ensure_index('authentications.uid', :background => true)
       # sparse true allows documents to be missing these fields (otherwise, null is not unique from any other null)
