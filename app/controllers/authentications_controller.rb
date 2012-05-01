@@ -46,10 +46,7 @@ class AuthenticationsController < ApplicationController
         @opener_location = request.env['omniauth.origin'] || web_root_url
 
       elsif private_invite = cookies[:gt_roll_invite] # if they were invited via private roll, they get in
-        invite_info = cookies[:gt_roll_invite].split(',')
-        roll = Roll.find(invite_info[2])
-        
-        GT::InvitationManager.private_roll_invite(user, roll, private_invite)
+        GT::InvitationManager.private_roll_invite(user, private_invite)
         sign_in(:user, user)
         
         # ensure csrf_token in cookie
