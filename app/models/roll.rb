@@ -31,6 +31,7 @@ class Roll
   
   # faux-users get public Rolls, we denormalize the network into the roll
   key :origin_network,  String, :abbr => :f
+  SHELBY_USER_PUBLIC_ROLL = "shelby_person"
   
   # The shortlinks created for each type of share, eg twitter, tumvlr, email, facebook
   key :short_links, Hash, :abbr => :g, :default => {}

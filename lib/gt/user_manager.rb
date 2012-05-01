@@ -17,6 +17,9 @@ module GT
 
       # build, don't save, public and watch_later rolls
       ensure_users_special_rolls(user)
+      
+      #additional meta-data for faux user public roll
+      user.public_roll.origin_network = Roll::SHELBY_USER_PUBLIC_ROLL
 
       if user.save
         GT::PredatorManager.initialize_video_processing(user, auth)

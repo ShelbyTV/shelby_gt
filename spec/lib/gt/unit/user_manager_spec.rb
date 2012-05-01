@@ -584,6 +584,12 @@ describe GT::UserManager do
         u.public_roll.thumbnail_url.should == @omniauth_hash['info']['image']
       end
       
+      it "should set the origin_network on the user's public roll" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        
+        u.public_roll.origin_network.should == Roll::SHELBY_USER_PUBLIC_ROLL
+      end
+      
       it "should have the user follow their public rolls (and NOT the watch_later, upvoted, or viewed Rolls)" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         
