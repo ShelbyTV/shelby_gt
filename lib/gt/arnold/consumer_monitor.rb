@@ -23,12 +23,12 @@ module GT
           sleep(boot_grace)
         
           Thread.current[:last_consumer_turns] = 0
-          Thread.currnet[:suicide_time] = rand(8..12).minutes.from_now
+          Thread.current[:suicide_time] = rand(8..12).minutes.from_now
         
           while($running) do
             sleep(turn_period)
           
-            if Time.now > Thread.currnet[:suicide_time]
+            if Time.now > Thread.current[:suicide_time]
               Rails.logger.fatal "[Arnold::ConsumerMonitor.monitor] Killing myself as quick fix for GC issue.  Goodbye, world."
               self.kill_process
             elsif $consumer_turns > Thread.current[:last_consumer_turns]
