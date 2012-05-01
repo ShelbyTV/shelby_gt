@@ -11,7 +11,7 @@ class User
   
   plugin MongoMapper::Plugins::IdentityMap
 
-  devise  :rememberable, :trackable, :remember_for => 1.week
+  devise  :rememberable, :trackable, :token_authenticatable, :remember_for => 1.week
   #devise includes root in json which fucked up backbone models, need to undo that...
   def self.include_root_in_json() nil; end
 
@@ -53,6 +53,9 @@ class User
   key :faux, Integer, :abbr => :ac, :default => FAUX_STATUS[:false]
   
   has_many :dashboard_entries, :foreign_key => :a
+
+  #for mobile token authentication
+  key :authentication_token, String, :abbr => :ah
 
   # has this user been granted access to Shelby GT?
   key :gt_enabled, Boolean, :abbr => :ag, :default => false

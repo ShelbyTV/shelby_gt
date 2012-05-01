@@ -1,6 +1,26 @@
 require 'spec_helper'
 
-describe V1::DashboardEntriesController do  
+describe V1::DashboardEntriesController do
+  describe "test token authenticable" do
+    before(:each) do
+      @user = Factory.create(:user)
+      @user.ensure_authentication_token!
+    end
+    
+    it "should validate request when auth token is included" do
+      video = mock_model(Video)
+      frame = Factory.create(:frame, :video_id => video.id)
+      entry = mock_model(DashboardEntry, :frame => frame)
+      DashboardEntry.stub_chain(:limit, :skip, :sort, :where, :all).and_return([entry])
+      #---
+      
+      @user.authentication_token.should_not == nil
+      get :index, :auth_token => @user.authentication_token, :format => :json
+      assigns(:status).should eq(200)
+    end
+    
+  end
+  
   describe "GET index" do
     before(:each) do
       @user = Factory.create(:user)
