@@ -88,4 +88,32 @@ describe NotificationMailer do
     #  mail.body.encoded.should match("http://aplication_url/#{user.id}/confirmation")
     #end
   end
+
+  describe 'join roll notifications' do
+    before(:all) do
+      @user_joined = Factory.create(:user)
+      @roll_owner = Factory.create(:user)
+      @roll = Factory.create(:roll, :creator => @roll_owner)
+      @video = Factory.create(:video)
+      @email = NotificationMailer.join_roll_notification(@user_joined, @roll)
+    end
+ 
+    it 'renders the subject' do
+      @email.subject.should eq(Settings::Email.join_roll_notification['subject'])
+    end
+    
+    it 'renders the receiver email' do
+      @email.to.should eq([@roll_owner.primary_email])
+    end
+    
+    it 'renders the sender email' do
+      @email.from.should eq([Settings::Email.notification_sender])
+    end
+    
+    #ensure that the an instance var is assigned properly, eg @confirmation_url variable appears in the email body
+    #it 'assigns @confirmation_url' do
+    #  mail.body.encoded.should match("http://aplication_url/#{user.id}/confirmation")
+    #end
+  end
+
 end

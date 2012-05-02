@@ -48,5 +48,21 @@ module GT
       
       users_to_email.each { |u| NotificationMailer.comment_notification(u, new_message.user, frame, new_message).deliver unless u.primary_email.blank? }
     end
+
+    def self.check_and_send_join_roll_notification(user, roll)
+      raise ArgumentError, "must supply valid user" unless user.is_a?(User) and !user.blank?
+      raise ArgumentError, "must supply valid roll" unless roll.is_a?(Roll) and !roll.blank?
+      
+      # for now only send emails to gt_enabled users
+      return unless roll.creator.gt_enabled
+            
+      # don't email the creator if they are the user joining or they dont have an email address!
+      user_to = roll.creator
+      return if (user == user_to) or !user_to.primary_email or (user_to.primary_email == "")
+      
+      return unless user_to.preferences.roll_activity_notifications
+      
+      NotificationMailer.join_roll_notification(user_to, roll).deliver
+    end
   end
 end

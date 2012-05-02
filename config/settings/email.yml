@@ -17,6 +17,9 @@ defaults: &defaults
   reroll_notification:
     category: "Reroll Notifications"
     subject: "the video you shared was re-rolled!"
+  join_roll_notification:
+    category: "Join Roll Notifications"
+    subject: "someone joined a roll you created!"
   # GtInterest
   gt_interest_autoresponse:
     category: "Submit GT Interest"

@@ -5,7 +5,7 @@ require 'notification_manager'
 describe GT::NotificationManager do
 
   describe "upvote notifications" do
-    before(:all) do
+    before(:each) do
       @user = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @user)
       @f_creator = Factory.create(:user, :gt_enabled => true)
@@ -119,7 +119,7 @@ describe GT::NotificationManager do
   end
 
   describe "reroll notifications" do
-    before(:all) do
+    before(:each) do
       @old_user = Factory.create(:user, :gt_enabled => true)
       @new_user = Factory.create(:user, :gt_enabled => true)
       @old_roll = Factory.create(:roll, :creator => @old_user)
@@ -155,5 +155,44 @@ describe GT::NotificationManager do
       }.should raise_error(ArgumentError)
     end
   end
+
+  describe "join roll notifications" do
+    before(:each) do
+      @user_joined = Factory.create(:user)
+      @roll_owner = Factory.create(:user, :gt_enabled => true)
+      @roll = Factory.create(:roll, :creator => @roll_owner)
+    end
+    
+    it "should not send email to any non-gt_enabled users" do
+      u = Factory.create(:user, :gt_enabled => false)
+      r = Factory.create(:roll, :creator => u)
+      lambda {
+        GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, r)
+      }.should change(ActionMailer::Base.deliveries,:size).by(0)      
+    end
+    
+    it "should should queue email to deliver" do
+      lambda {
+        GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll)
+      }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+    
+    it "should return nil if user is creator of the roll" do
+      @roll.creator = @user_joined; @roll.save
+      r = GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll)
+      r.should eq(nil)
+    end
+    
+    it "should raise error with bad roll or user" do
+      lambda {
+        GT::NotificationManager.check_and_send_join_roll_notification(@user) 
+      }.should raise_error(ArgumentError)
+      
+      lambda { 
+        GT::NotificationManager.check_and_send_join_roll_notification(@roll) 
+      }.should raise_error(ArgumentError)
+    end
+  end
+
 
 end
