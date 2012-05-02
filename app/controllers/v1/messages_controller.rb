@@ -25,10 +25,9 @@ class V1::MessagesController < ApplicationController
           begin
             if @conversation.save!
 
-              # send email notification in a non-blocking manor
-              #EM.next_tick do 
-              #  GT::NotificationManager.check_and_send_comment_notification(@conversation, @new_message)
-              #end
+              EM.next_tick do 
+                GT::NotificationManager.send_new_message_notifications(@conversation, @new_message)
+              end
 
               @status = 200 
               StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)

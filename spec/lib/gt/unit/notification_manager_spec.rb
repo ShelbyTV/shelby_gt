@@ -45,36 +45,59 @@ describe GT::NotificationManager do
 
   describe "conversation notifications" do
     before(:all) do
-      @user = Factory.create(:user)
+      @frame_creator = Factory.create(:user)
+      @roll_creator = Factory.create(:user)
       @user2 = Factory.create(:user)
-      @comment = "how much would a wood chuck chuck..."
-      @message = Factory.create(:message, :text => @comment, :user => @user2)
-      @video = Factory.create(:video)
+      
+      @message = Factory.create(:message, :text => "foo", :user => @user2)
       @conversation = Factory.create(:conversation, :messages => [@message])      
-      @frame = Factory.create(:frame, :roll=> Factory.create(:roll, :creator => @user), :video => @video, :conversation => @conversation)
-    end
-    
-    it "should should queue email to deliver" do
-      lambda {
-        GT::NotificationManager.check_and_send_comment_notification(@conversation, @message)
-      }.should change(ActionMailer::Base.deliveries,:size).by(1)
-    end
-    
-    it "should return nil if first message in a conv is from a faux user" do
-      @conversation.messages.first.user = nil; @conversation.save
-      r = GT::NotificationManager.check_and_send_comment_notification(@conversation, @message)
-      r.should eq(nil)
+      @frame = Factory.create(:frame, 
+        :creator => @frame_creator,
+        :roll=> Factory.create(:roll, :creator => @roll_creator), 
+        :video => Factory.create(:video), 
+        :conversation => @conversation)
+      @conversation.frame = @frame
+      @conversation.save
     end
     
     it "should raise error with bad frame or user" do
       lambda {
-        GT::NotificationManager.check_and_send_comment_notification(@user) 
+        GT::NotificationManager.send_new_message_notifications(@user) 
       }.should raise_error(ArgumentError)
       
       lambda { 
-        GT::NotificationManager.check_and_send_comment_notification(@conversation) 
+        GT::NotificationManager.send_new_message_notifications(@conversation) 
       }.should raise_error(ArgumentError)
     end
+    
+    it "should email Frame creator even if they didn't post a message" do
+      lambda {
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+      }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+    
+    it "should send notifications even if Frame is from a faux User" do
+      @frame_creator.faux = User::FAUX_STATUS[:true]
+      @frame_creator.save
+      
+      lambda {
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+      }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+    
+    it "should send emails to other Message creators" do
+      #will email these two as well as frame creator
+      @conversation.messages << Factory.create(:message, :text => "d", :user => Factory.create(:user))
+      @conversation.messages << Factory.create(:message, :text => "s", :user => Factory.create(:user))
+      
+      #won't email this guy
+      @conversation.messages << Factory.create(:message, :text => "s", :user => Factory.create(:user, :primary_email => nil))
+      
+      lambda {
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+      }.should change(ActionMailer::Base.deliveries,:size).by(3)
+    end
+    
   end
 
   describe "reroll notifications" do
