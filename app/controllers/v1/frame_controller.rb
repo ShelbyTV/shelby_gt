@@ -147,8 +147,6 @@ class V1::FrameController < ApplicationController
 
           if @frame = r[:frame]
             @status = 200          
-            # allow for jsonp callbacks on this method for video radar
-            render 'show', :layout => 'with_callbacks' if params[:callback]
           else
             render_error(404, "something went wrong when creating that frame")
           end

@@ -9,7 +9,6 @@ class V1::UserController < ApplicationController
   def signed_in
     @status = 200
     @signed_in = user_signed_in? ? true : false
-    render 'signed_in', :layout => 'with_callbacks' if params[:callback]
   end
   
   ####################################
@@ -33,7 +32,6 @@ class V1::UserController < ApplicationController
       elsif user_signed_in? and @user = current_user
         @include_rolls = (params[:include_rolls] == "true") ? true : false
         @status = 200
-        render 'show', :layout => 'with_callbacks' if params[:callback]
       else
         render_error(404, "could not find that user")
       end
