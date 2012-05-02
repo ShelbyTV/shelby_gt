@@ -44,7 +44,7 @@ describe GT::NotificationManager do
   end
 
   describe "conversation notifications" do
-    before(:all) do
+    before(:each) do
       @frame_creator = Factory.create(:user)
       @roll_creator = Factory.create(:user)
       @user2 = Factory.create(:user)
@@ -90,12 +90,30 @@ describe GT::NotificationManager do
       @conversation.messages << Factory.create(:message, :text => "d", :user => Factory.create(:user))
       @conversation.messages << Factory.create(:message, :text => "s", :user => Factory.create(:user))
       
-      #won't email this guy
+      lambda {
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+      }.should change(ActionMailer::Base.deliveries,:size).by(3)
+    end
+    
+    it "should not email somebody w/o a primary_email" do
+      #won't email this guy b/c no email
       @conversation.messages << Factory.create(:message, :text => "s", :user => Factory.create(:user, :primary_email => nil))
       
       lambda {
         GT::NotificationManager.send_new_message_notifications(@conversation, @message)
-      }.should change(ActionMailer::Base.deliveries,:size).by(3)
+      }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+    
+    it "should not email somebody w/ preferences set nto to send comment notifications" do
+      #won't email this guy b/c of preferences
+      u = Factory.create(:user)
+      u.preferences.comment_notifications = false
+      u.save
+      @conversation.messages << Factory.create(:message, :text => "s", :user => u)
+      
+      lambda {
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+      }.should change(ActionMailer::Base.deliveries,:size).by(1)
     end
     
   end
