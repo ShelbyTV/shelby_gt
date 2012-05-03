@@ -221,30 +221,32 @@ class V1::FrameController < ApplicationController
         #  short_links will be a hash of desinations/links
         short_links = GT::LinkShortener.get_or_create_shortlinks(frame, params[:destination].join(','))
         
+        resp = true
+        
         params[:destination].each do |d|
           case d
           when 'twitter'
-            text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
-            resp = GT::SocialPoster.post_to_twitter(current_user, text)
+            t = GT::SocialPostFormatter.format_for_twitter(text, short_links)
+            resp &= GT::SocialPoster.post_to_twitter(current_user, t)
           when 'facebook'
-            text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
-            resp = GT::SocialPoster.post_to_facebook(current_user, text, frame)
+            t = GT::SocialPostFormatter.format_for_facebook(text, short_links)
+            resp &= GT::SocialPoster.post_to_facebook(current_user, t, frame)
           when 'email'
             #NB if frame is on a private roll, this is a private roll invite.  Otherwise, it's just a Frame share
             email_addresses = params[:addresses]
             return render_error(404, "you must provide addresses") if email_addresses.blank?
             
-            resp = GT::SocialPoster.post_to_email(current_user, params[:addresses], text, frame)
+            resp &= GT::SocialPoster.post_to_email(current_user, params[:addresses], text, frame)
           else
             return render_error(404, "we dont support that destination yet :(")
           end
-          
-          if resp
-            @status = 200
-            StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d], current_user.id, 'frame_share', request)
-          elsif resp == nil
-            render_error(404, "that user cant post to that destination")
-          end  
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d], current_user.id, 'frame_share', request)
+        end
+        
+        if resp
+          @status = 200
+        else
+          render_error(404, "that user cant post to that destination")
         end
         
       else

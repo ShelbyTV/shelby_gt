@@ -30,6 +30,18 @@ describe GT::LinkShortener do
       r["facebook"].should eq(resp["awesm_urls"].first["awesm_url"])
     end
     
+    it "should get links for twitter and facebook simultaneously" do
+      resp = {
+        "awesm_urls" => [
+          {"service"=>"facebook", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"facebook-post", "domain"=>"shl.by"},
+          {"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"}]}
+      Awesm::Url.stub(:batch).and_return([200, resp])
+      r = GT::LinkShortener.get_or_create_shortlinks(@frame, "twitter,facebook")
+      
+      r["facebook"].should eq(resp["awesm_urls"][0]["awesm_url"])
+      r["twitter"].should eq(resp["awesm_urls"][1]["awesm_url"])
+    end
+    
     it "should return error if we dont pass an array" do
       lambda { GT::LinkShortener.get_or_create_shortlinks("test") }.should raise_error(ArgumentError)
     end
