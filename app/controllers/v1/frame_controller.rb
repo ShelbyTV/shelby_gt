@@ -26,9 +26,11 @@ class V1::FrameController < ApplicationController
       @limit = 20 if @limit.to_i > 20
   
       skip = params[:skip] ? params[:skip].to_i : 0
-      
-      if params[:roll_id] 
-        @roll = Roll.find(params[:roll_id])
+            
+      if params[:roll_id]
+        return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:roll_id]))
+        
+        @roll = Roll.find(roll_id)
       elsif params[:public_roll]
         if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
           @roll = user.public_roll 
@@ -37,8 +39,11 @@ class V1::FrameController < ApplicationController
       
       if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
-        
-        if params[:since_id] and since_id = BSON::ObjectId.from_string(params[:since_id])
+                
+        if params[:since_id]
+          
+          return render_error(404, "please specify a valid since_id") unless (since_id = ensure_valid_bson_id(params[:since_id]))
+          
           if since_id_frame = Frame.find(since_id)
             case params[:order]
             when "1", nil, "forward"
@@ -83,14 +88,20 @@ class V1::FrameController < ApplicationController
   # @param [Optional, Boolean] include_children Include the referenced roll, video, conv, and rerolls
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['show']) do
-      @frame = Frame.find(params[:id])
-      #N.B. If frame has a roll, check permissions.  If not, it has to be on your dashboard.  Checking for that is expensive b/c we don't index that way.
-      # But guessing a frame is very difficult and noticeable as hacking, so we can fairly safely just return the Frame.
-      if @frame and (@frame.roll_id == nil or @frame.roll.viewable_by?(current_user))
-        @status =  200
-        @include_frame_children = (params[:include_children] == "true") ? true : false
+      if params[:id]
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:id]))
+        
+        @frame = Frame.find(frame_id)
+        #N.B. If frame has a roll, check permissions.  If not, it has to be on your dashboard.  Checking for that is expensive b/c we don't index that way.
+        # But guessing a frame is very difficult and noticeable as hacking, so we can fairly safely just return the Frame.
+        if @frame and (@frame.roll_id == nil or @frame.roll.viewable_by?(current_user))
+          @status =  200
+          @include_frame_children = (params[:include_children] == "true") ? true : false
+        else
+          render_error(404, "could not find that frame")
+        end
       else
-        render_error(404, "could not find that frame")
+        render_error(404, "must supply an id")
       end
     end
   end
@@ -198,7 +209,11 @@ class V1::FrameController < ApplicationController
         return  render_error(404, "destination must be an array of strings") 
       end
       
-      if frame = Frame.find(params[:frame_id])
+      if params[:frame_id]
+        
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:frame_id]))
+         
+        frame = Frame.find(frame_id)
         # truncate text so that our link can fit fo sure
         text = params[:text]
         
@@ -247,15 +262,20 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame
   def upvote
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['upvote']) do
-      if @frame = Frame.find(params[:frame_id])
-        if @frame.upvote!(current_user)
+      if params[:frame_id]
+        
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:frame_id]))
+        
+        if @frame = Frame.find(frame_id) and @frame.upvote!(current_user)
           @status = 200
           GT::UserActionManager.upvote!(current_user.id, @frame.id)
           StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote', request)
+          @frame.reload
+        else
+          render_error(404, "could not find frame")
         end
-        @frame.reload
       else
-        render_error(404, "could not find frame")
+        render_error(404, "please specify an id")
       end
     end
   end
@@ -269,7 +289,10 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame
   def add_to_watch_later
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['add_to_watch_later']) do
-      if @frame = Frame.find(params[:frame_id])
+      if params[:frame_id]
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:frame_id]))
+        
+        @frame = Frame.find(params[:frame_id])
         if @new_frame = @frame.add_to_watch_later!(current_user)
           @status = 200
           GT::UserActionManager.watch_later!(current_user.id, @frame.id)
@@ -293,7 +316,10 @@ class V1::FrameController < ApplicationController
   # @param [Optional, String] end_time The end_time of the action on the frame
   def watched
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['watched']) do
-      if @frame = Frame.find(params[:frame_id])
+      if params[:frame_id]
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:frame_id]))
+        
+        @frame = Frame.find(frame_id)
         @status = 200
         
         #conditionally count this as a view (once per 24 hours per user)
@@ -322,11 +348,15 @@ class V1::FrameController < ApplicationController
   # @return [Integer] Whether request was successful or not.
   def destroy
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['destroy']) do
-      if frame = Frame.find(params[:id]) and frame.destroy 
-        @status = 200
-      else
-        render_error(404, "could not find that frame to destroy") unless frame
-        render_error(404, "could not destroy that frame")
+      if params[:id]
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:id]))
+        
+        if frame = Frame.find(frame_id) and frame.destroy 
+          @status = 200
+        else
+          render_error(404, "could not find that frame to destroy") unless frame
+          render_error(404, "could not destroy that frame")
+        end
       end
     end
   end

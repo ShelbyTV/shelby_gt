@@ -232,7 +232,7 @@ describe 'v1/frame' do
 
           response.body.should be_json_eql(404).at_path("status")
           response.body.should have_json_path("message")
-          parse_json(response.body)["message"].should eq("could not find that frame")
+          parse_json(response.body)["message"].should eq("please specify a valid id")
         end
 
         it "should return 404 if user cant post to that destination" do
