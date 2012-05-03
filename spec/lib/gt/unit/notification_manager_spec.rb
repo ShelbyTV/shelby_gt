@@ -159,7 +159,7 @@ describe GT::NotificationManager do
   describe "join roll notifications" do
     before(:each) do
       @user_joined = Factory.create(:user)
-      @roll_owner = Factory.create(:user, :gt_enabled => true, :user_image_original => "http://f.off.com.jpg")
+      @roll_owner = Factory.create(:user, :gt_enabled => true, :user_image => "http://f.off.com.jpg")
       @roll = Factory.create(:roll, :creator => @roll_owner)
     end
     
