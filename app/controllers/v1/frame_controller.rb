@@ -163,7 +163,7 @@ class V1::FrameController < ApplicationController
           end
           
         else
-          return render_error(401, "that user cant post to that roll")
+          return render_error(403, "that user cant post to that roll")
         end
         
       # create a new frame by re-rolling a frame from a frame_id
@@ -177,7 +177,7 @@ class V1::FrameController < ApplicationController
             StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'], current_user.id, 'frame_re_roll', request)
             @status = 200
           else
-            render_error(401, "that user cant post to that roll")
+            render_error(403, "that user cant post to that roll")
           end
         rescue => e
           render_error(404, "could not re_roll: #{e}")
