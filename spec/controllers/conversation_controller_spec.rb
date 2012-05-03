@@ -9,9 +9,9 @@ describe V1::ConversationController do
     end
     
     it "assigns one conversation to @conversation" do
-      @conversation = stub_model(Conversation)
+      @conversation = Factory.create(:conversation)
       Conversation.stub!(:find).and_return(@conversation)
-      get :show, :format => :json
+      get :show, :id => @conversation.id.to_s, :format => :json
       assigns(:conversation).should eq(@conversation)
       assigns(:status).should eq(200)
     end
