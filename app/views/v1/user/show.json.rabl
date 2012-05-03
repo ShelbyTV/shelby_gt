@@ -12,7 +12,7 @@ if current_user == @user
 	end	
 	
 	child :preferences => "preferences" do
-		attributes :email_updates, :like_notifications, :watched_notifications, :quiet_mode, :comment_notifications, :upvote_notifications, :reroll_notifications
+		attributes :email_updates, :like_notifications, :watched_notifications, :quiet_mode, :comment_notifications, :upvote_notifications, :reroll_notifications, :roll_activity_notifications
 	end
 	
 	node "watch_later_roll_id" do
