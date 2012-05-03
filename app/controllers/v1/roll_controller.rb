@@ -15,7 +15,9 @@ class V1::RollController < ApplicationController
   # @param [Optional, String] following_users Return the following_users?
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
-      if @roll = Roll.find(params[:id])
+      if params[:id]
+        return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:id]))
+        @roll = Roll.find(roll_id)
         @include_following_users = params[:following_users] == "true" ? true : false
         if user_signed_in? and @roll.viewable_by?(current_user)
           @status =  200
@@ -56,38 +58,43 @@ class V1::RollController < ApplicationController
         return  render_error(404, "destination must be an array of strings") 
       end
       
-      if roll = Roll.find(params[:roll_id])
-        return render_error(404, "that roll is private, can not share") unless roll.public
+      if params[:roll_id]
+        return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:roll_id]))
         
-        text = params[:text]
+        if roll = Roll.find(roll_id)
+          return render_error(404, "that roll is private, can not share") unless roll.public
         
-        # params[:destination] is an array of destinations, 
-        #  short_links will be a hash of desinations/links
-        short_links = GT::LinkShortener.get_or_create_shortlinks(roll, params[:destination].join(','))
+          text = params[:text]
         
-        params[:destination].each do |d|
-          case d
-          when 'twitter'
-            text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
-            resp = GT::SocialPoster.post_to_twitter(current_user, text)
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
-          when 'facebook'
-            text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
-            resp = GT::SocialPoster.post_to_facebook(current_user, text, roll)
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
-          else
-            return render_error(404, "we dont support that destination yet :(")
-          end
+          # params[:destination] is an array of destinations, 
+          #  short_links will be a hash of desinations/links
+          short_links = GT::LinkShortener.get_or_create_shortlinks(roll, params[:destination].join(','))
+        
+          params[:destination].each do |d|
+            case d
+            when 'twitter'
+              text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
+              resp = GT::SocialPoster.post_to_twitter(current_user, text)
+              StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
+            when 'facebook'
+              text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
+              resp = GT::SocialPoster.post_to_facebook(current_user, text, roll)
+              StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
+            else
+              return render_error(404, "we dont support that destination yet :(")
+            end
           
-          if resp
-            @status = 200
-          elsif resp == nil
-            render_error(404, "that user cant post to that destination")
-          end  
+            if resp
+              @status = 200
+            elsif resp == nil
+              render_error(404, "that user cant post to that destination")
+            end  
+          end
+        else
+          render_error(404, "could not find that roll dude.")
         end
-        
       else
-        render_error(404, "could not find that roll")
+        render_error(404, "must specify a roll_id")
       end
     end
   end
@@ -137,8 +144,10 @@ class V1::RollController < ApplicationController
   # [POST] /v1/roll/:roll_id/join
   def join
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['join']) do
-      if @roll = Roll.find(params[:roll_id])
-        if @roll.add_follower(current_user)
+      if params[:roll_id]
+        return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:roll_id]))
+        
+        if @roll = Roll.find(roll_id) and @roll.add_follower(current_user)
           @status = 200
           StatsManager::StatsD.increment(Settings::StatsConstants.roll['join'], current_user.id, 'roll_join', request)
         else
@@ -157,19 +166,24 @@ class V1::RollController < ApplicationController
   # [POST] /v1/roll/:roll_id/leave
   def leave
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['leave']) do
-      if @roll = Roll.find(params[:roll_id])
-        if @roll.leavable_by?(current_user)
-          if @roll.remove_follower(current_user)
-            @status = 200
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll['leave'], current_user.id, 'roll_leave', request)
+      if params[:roll_id]
+        return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:roll_id]))
+        if @roll = Roll.find(params[:roll_id])
+          if @roll.leavable_by?(current_user)
+            if @roll.remove_follower(current_user)
+              @status = 200
+              StatsManager::StatsD.increment(Settings::StatsConstants.roll['leave'], current_user.id, 'roll_leave', request)
+            else
+              return render_error(404, "something went wrong leaving that roll.")
+            end
           else
-            return render_error(404, "something went wrong leaving that roll.")
+            return render_error(404, "the creator of a roll can not leave a roll.")
           end
         else
-          return render_error(404, "the creator of a roll can not leave a roll.")
+          render_error(404, "can't find that roll dude.")
         end
       else
-        render_error(404, "can't find that roll dude.")
+        render_error(404, "please specify a roll_id")
       end
     end
   end
@@ -187,15 +201,21 @@ class V1::RollController < ApplicationController
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['update']) do
       id = params.delete(:id)
-      @roll = Roll.find(id)
-      if !@roll
-        render_error(404, "could not find roll")
-      else
-        begin
-          @status = 200 if @roll.update_attributes!(params)
-        rescue => e
-          render_error(404, "error while updating roll: #{e}")
+      if id
+        return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(id))
+        
+        @roll = Roll.find(roll_id)
+        if !@roll
+          render_error(404, "could not find roll")
+        else
+          begin
+            @status = 200 if @roll.update_attributes!(params)
+          rescue => e
+            render_error(404, "error while updating roll: #{e}")
+          end
         end
+      else
+        render_error(404, "must specify an id")
       end
     end
   end
@@ -209,13 +229,16 @@ class V1::RollController < ApplicationController
   # @param [Required, String] id The id of the roll
   def destroy
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['destroy']) do
-      unless @roll = Roll.find(params[:id])
-        render_error(404, "could not find that roll to destroy")
-      end
-      if @roll.destroy
-        @status =  200
+      if params[:id]
+        return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:id]))
+        return render_error(404, "could not find that roll to destroy") unless @roll = Roll.find(roll_id)
+        if @roll.destroy
+          @status =  200
+        else
+          render_error(404, "could not destroy that roll")
+        end
       else
-        render_error(404, "could not destroy that roll")
+        render_error(404, "must specify an id")
       end
     end
   end
