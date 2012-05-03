@@ -11,11 +11,11 @@
 				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:1px solid #b5b5b5; padding:20px; width:100%;">
 					<tr height="95">
 						<td width="75"  valign="top">
-							<a href="<%= @user_permalink %>"><img class="image_fix" src="<%= @user_from.user_image_original %>" alt="user_image" title="user_image" width="60" height="60" /></a>
+							<a href="<%= @user_permalink %>"><img class="image_fix" src="<%= @user_joined.user_image_original %>" alt="user_image" title="user_image" width="60" height="60" /></a>
 						</td>
 						<td  valign="top">
 							<div>
-								<a href="<%= @user_permalink %>"><%= @user_from.name %></a> joined your roll:
+								<a href="<%= @user_permalink %>"><%= @user_joined.name %></a> joined your roll:
 							</div>
 							<div style="font-weight: bold;padding: 8px 0px;">
 							 <a href="<%= @roll_permalink %>">"<%= @roll.title %>"</a>

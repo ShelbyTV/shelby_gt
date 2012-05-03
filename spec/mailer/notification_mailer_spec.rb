@@ -95,7 +95,7 @@ describe NotificationMailer do
       @roll_owner = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @roll_owner)
       @video = Factory.create(:video)
-      @email = NotificationMailer.join_roll_notification(@user_joined, @roll)
+      @email = NotificationMailer.join_roll_notification(@roll_owner, @user_joined, @roll)
     end
  
     it 'renders the subject' do

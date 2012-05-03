@@ -43,11 +43,11 @@ class NotificationMailer < ActionMailer::Base
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", :to => @user_to.primary_email, :subject => Settings::Email.reroll_notification['subject']
   end
 
-  def join_roll_notification(user, roll)
+  def join_roll_notification(user_to, user_from, roll)
     sendgrid_category Settings::Email.join_roll_notification["category"]
 
-    @user_to = roll.creator
-    @user_joined = user
+    @user_to = user_to
+    @user_joined = user_from
 
     @roll = roll
     @roll_permalink = @roll.permalink
