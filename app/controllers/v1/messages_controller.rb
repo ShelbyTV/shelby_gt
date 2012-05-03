@@ -17,26 +17,30 @@ class V1::MessagesController < ApplicationController
       if !params.include?(:text)
         render_error(400, "text of message required")
       else
-        @conversation = Conversation.find(params[:conversation_id])
-        if @conversation
-          msg_opts = {:user => current_user, :public => true, :text => params[:text]}
-          @new_message = GT::MessageManager.build_message(msg_opts)
-          @conversation.messages << @new_message
-          begin
-            if @conversation.save!
+        if params[:conversation_id]
+          return render_error(404, "please specify a valid conversation_id") unless (conversation_id = ensure_valid_bson_id(params[:conversation_id]))
+          if @conversation = Conversation.find(conversation_id)
+            msg_opts = {:user => current_user, :public => true, :text => params[:text]}
+            @new_message = GT::MessageManager.build_message(msg_opts)
+            @conversation.messages << @new_message
+            begin
+              if @conversation.save!
 
-              EM.next_tick do 
-                GT::NotificationManager.send_new_message_notifications(@conversation, @new_message)
+                EM.next_tick do 
+                  GT::NotificationManager.send_new_message_notifications(@conversation, @new_message)
+                end
+
+                @status = 200 
+                StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)
               end
-
-              @status = 200 
-              StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)
+            rescue => e
+              render_error(404, e)
             end
-          rescue => e
-            render_error(404, e)
+          else
+            render_error(404, "could not find that conversation")
           end
         else
-          render_error(404, "could not find that conversation")
+          render_error(404, "must specify a conversation_id")
         end
       end
     end

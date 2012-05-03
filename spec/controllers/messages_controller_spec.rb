@@ -2,9 +2,11 @@ require 'spec_helper'
 
 describe V1::MessagesController do
   before(:each) do
-    @conversation = stub_model(Conversation)
-    @message1 = stub_model(Message)
-    @message = stub_model(Message)
+    @comment = "how much would a wood chuck chuck..."
+    @message1 = Factory.create(:message, :text => @comment, :user => Factory.create(:user))
+    @message = Factory.create(:message, :text => @comment, :user => Factory.create(:user))
+    @conversation = Factory.create(:conversation, :messages => [@message1, @message])
+    
     Conversation.stub(:find) { @conversation }
     @conversation.stub(:messages) { [@message, @message1] }
     @conversation.stub(:find_message_by_id) { @message }
@@ -19,9 +21,9 @@ describe V1::MessagesController do
     it "creates and assigns one message to @new_message" do
       Message.stub!(:new).and_return(@message)
       @conversation.stub(:valid?).and_return(true)
-      post :create, :text => "SOS", :format => :json
-      assigns(:new_message).should eq(@message)
+      post :create, :conversation_id => @conversation.id.to_s, :text => "SOS", :format => :json
       assigns(:status).should eq(200)
+      assigns(:new_message).should eq(@message)
     end
     
     it "returns 400 without message text" do
@@ -40,7 +42,7 @@ describe V1::MessagesController do
       Conversation.stub(:find) { nil }
       post :create, :text => "SOS", :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("could not find that conversation")
+      assigns(:message).should eq("must specify a conversation_id")
     end
     
   end
