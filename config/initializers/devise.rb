@@ -122,7 +122,7 @@ Devise.setup do |config|
 
   # ==> Configuration for :rememberable
   # The time the user will be remembered without asking for credentials again.
-  config.remember_for = 1.weeks
+  config.remember_for = 8.weeks
 
   # If true, extends the user's remember period when remembered via cookie.
   config.extend_remember_period = true

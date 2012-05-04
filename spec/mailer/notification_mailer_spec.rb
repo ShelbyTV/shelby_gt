@@ -91,15 +91,16 @@ describe NotificationMailer do
 
   describe 'join roll notifications' do
     before(:all) do
-      @user_joined = Factory.create(:user)
+      @user_joined = Factory.create(:user, :name => "dan")
       @roll_owner = Factory.create(:user)
-      @roll = Factory.create(:roll, :creator => @roll_owner)
+      @roll = Factory.create(:roll, :creator => @roll_owner, :public => false)
       @video = Factory.create(:video)
       @email = NotificationMailer.join_roll_notification(@roll_owner, @user_joined, @roll)
     end
  
     it 'renders the subject' do
-      @email.subject.should eq(Settings::Email.join_roll_notification['subject'])
+      subj = Settings::Email.join_roll_notification['subject'] % {:users_name =>"dan", :roll_description => "group roll"}
+      @email.subject.should eq(subj)
     end
     
     it 'renders the receiver email' do

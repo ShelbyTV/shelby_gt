@@ -22,10 +22,10 @@ describe V1::UserController do
       assigns(:status).should eq(200)
     end
     
-    it "returns 401 if the user is not the authed in user" do
+    it "returns 403 if the user is not the authed in user" do
       u2 = Factory.create(:user, :nickname => "name")
       get :rolls, :id => u2.id, :format => :json
-      assigns(:status).should eq(401)
+      assigns(:status).should eq(403)
     end
   end
   

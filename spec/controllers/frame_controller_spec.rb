@@ -354,7 +354,7 @@ describe V1::FrameController do
         Roll.stub(:find) { new_roll }
         
         post :create, :roll_id => new_roll.id, :url => @video_url, :format => :json
-        assigns(:status).should eq(401)
+        assigns(:status).should eq(403)
       end
       
     end
@@ -368,7 +368,7 @@ describe V1::FrameController do
         assigns(:frame).should eq(@f2)
       end
       
-      it "returns 404 if user can re_roll to that roll" do
+      it "returns 403 if user can re_roll to that roll" do
         r = stub_model(Roll, :public => false)
         Roll.stub(:find) { r }
         
@@ -376,7 +376,7 @@ describe V1::FrameController do
         sign_in u
         
         post :create, :roll_id => r.id, :frame_id => @f1.id, :format => :json
-        assigns(:status).should eq(401)
+        assigns(:status).should eq(403)
         assigns(:message).should eq("that user cant post to that roll")
       end
       
