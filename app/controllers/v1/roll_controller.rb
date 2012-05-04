@@ -147,7 +147,8 @@ class V1::RollController < ApplicationController
       if params[:roll_id]
         return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:roll_id]))
         
-        if @roll = Roll.find(roll_id) and @roll.add_follower(current_user)
+        if @roll = Roll.find(roll_id)
+          @roll.add_follower(current_user)
           @status = 200
           StatsManager::StatsD.increment(Settings::StatsConstants.roll['join'], current_user.id, 'roll_join', request)
         else

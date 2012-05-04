@@ -176,6 +176,14 @@ describe V1::RollController do
       assigns(:status).should eq(200)
     end
     
+    it "should return 200 if user is already a memeber of the roll" do
+      @r.add_follower(@fu)
+      @r.save
+      sign_in(@fu)
+      post :join, :roll_id => @r.id, :format => :json
+      assigns(:status).should eq(200)
+    end
+    
     it "should return 404 if user isn't allowed to leave a roll" do
       @r.following_users=[{:user_id=>@fu.id}]; @r.save
       post :leave, :roll_id => @r.id, :format => :json
