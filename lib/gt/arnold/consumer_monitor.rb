@@ -47,17 +47,17 @@ module GT
     
     
       def self.kill_process
-        Rails.logger.fatal "[Arnold::ConsumerMonitor.kill_process] Gracefully killing (running=false, sleep for 2 minutes)..."
+        Rails.logger.fatal "[Arnold::ConsumerMonitor.kill_process] Gracefully killing (running=false, sleep for 10s)..."
         $running = false
       
         #if EM and main thread exit gracefully, make sure to exit w/ a fail status code
         $exit_code = false
       
         #give Arnold some time to gracefully shut down
-        sleep(1.minute)
+        sleep(10.seconds)
       
         if EventMachine.reactor_running?
-          Rails.logger.fatal "[Arnold::ConsumerMonitor.kill_process] EM Reactor still running after 1 minute, forcefully killing process via Kernel.exit!(false)..."
+          Rails.logger.fatal "[Arnold::ConsumerMonitor.kill_process] EM Reactor still running after 10s, forcefully killing process via Kernel.exit!(false)..."
           Kernel.exit!($exit_code)
         else
           Rails.logger.fatal "[Arnold::ConsumerMonitor.kill_process] EM Reactor stopped, exiting w/ Kernel.exit(false)..."
