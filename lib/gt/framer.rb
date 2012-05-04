@@ -94,6 +94,9 @@ module GT
       #create dashboard entries for all roll followers *except* the user who just re-rolled
       res[:dashboard_entries] = create_dashboard_entries(res[:frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
       
+      # Roll - set its thumbnail if missing
+      ensure_roll_metadata!(Roll.find(roll_id), res[:frame])
+      
       return res
     end
     
@@ -181,7 +184,7 @@ module GT
       
       def self.ensure_roll_metadata!(roll, frame)
         #rolls need thumbnails (user.public_roll thumbnail is already set as their avatar)
-        roll.update_attribute(:thumbnail_url, frame.video.thumbnail_url) if roll.thumbnail_url.blank?
+        roll.update_attribute(:thumbnail_url, frame.video.thumbnail_url) if (roll and roll.thumbnail_url.blank?) and (frame and frame.video)
       end
     
   end

@@ -239,7 +239,8 @@ describe GT::Framer do
 
   context "re-rolling" do
     before(:each) do
-      @f1 = Frame.create
+      @video = Factory.create(:video, :thumbnail_url => "thum_url")
+      @f1 = Factory.create(:frame, :video => @video)
       
       @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
       @roll = Roll.new( :title => "title" )
@@ -276,6 +277,22 @@ describe GT::Framer do
       res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u1.id)
       res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u2.id)
       res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u3.id)
+    end
+    
+    it "should set the frame's roll's thumbnail_url if it's nil" do
+      @roll.thumbnail_url.blank?.should == true
+      
+      res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
+    
+      res[:frame].roll.thumbnail_url.should == @video.thumbnail_url
+    end
+    
+    it "should not touch the frame's roll's thumbnail_url if it's already set" do
+      @roll.update_attribute(:thumbnail_url, "something://el.se")
+      
+      res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
+    
+      res[:frame].roll.thumbnail_url.should == "something://el.se"
     end
   end
   
