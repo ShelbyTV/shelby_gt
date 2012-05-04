@@ -82,6 +82,38 @@ describe Roll do
       end
       @roll.save #should not raise an error
     end
+    
+    it "should return array of all followers' ids" do
+      u1 = Factory.create(:user)
+      @roll.add_follower(u1)
+      u2 = Factory.create(:user)
+      @roll.add_follower(u2)
+      u3 = Factory.create(:user)
+      @roll.add_follower(u3)
+      
+      user_ids = @roll.following_users_ids
+      
+      user_ids[0].should be_a(BSON::ObjectId)
+      user_ids.include?(u1.id).should == true
+      user_ids.include?(u2.id).should == true
+      user_ids.include?(u3.id).should == true
+    end
+    
+    it "should return array of all follower' models" do
+      u1 = Factory.create(:user)
+      @roll.add_follower(u1)
+      u2 = Factory.create(:user)
+      @roll.add_follower(u2)
+      u3 = Factory.create(:user)
+      @roll.add_follower(u3)
+      
+      user_models = @roll.following_users_models
+      
+      user_models[0].should be_a(User)
+      user_models.include?(u1).should == true
+      user_models.include?(u2).should == true
+      user_models.include?(u3).should == true
+    end
   
   end
 

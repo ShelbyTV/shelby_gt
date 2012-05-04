@@ -39,8 +39,16 @@ module GT
       
       return false unless frame = c.frame
       
-      # Email everybody in the conversation
-      users_to_email = ([frame.creator] + c.messages.map { |m| m.user } ).uniq.compact
+      # Email everybody...
+      if c.frame and c.frame.roll and !c.frame.roll.public?
+        # ...following a private roll
+        users_to_email = c.frame.roll.following_users_models
+      else
+        # ..in the conversation (for a public roll)
+        users_to_email = [frame.creator] + c.messages.map { |m| m.user }
+      end
+      users_to_email = users_to_email.uniq.compact
+      
       # except for the person who just wrote this new message
       users_to_email -= [new_message.user]
       # and those who don't wish to receive comment notifications

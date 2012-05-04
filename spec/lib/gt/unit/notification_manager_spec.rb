@@ -49,11 +49,14 @@ describe GT::NotificationManager do
       @roll_creator = Factory.create(:user)
       @user2 = Factory.create(:user)
       
+      @roll = Factory.create(:roll, :creator => @roll_creator)
+      @roll.add_follower(@roll_creator)
+      
       @message = Factory.create(:message, :text => "foo", :user => @user2)
       @conversation = Factory.create(:conversation, :messages => [@message])      
       @frame = Factory.create(:frame, 
         :creator => @frame_creator,
-        :roll=> Factory.create(:roll, :creator => @roll_creator), 
+        :roll=> @roll, 
         :video => Factory.create(:video), 
         :conversation => @conversation)
       @conversation.frame = @frame
@@ -114,6 +117,16 @@ describe GT::NotificationManager do
       lambda {
         GT::NotificationManager.send_new_message_notifications(@conversation, @message)
       }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+    
+    it "should email all members of a private roll when there's a new comment (even if they haven't participated in this convo)" do
+      @roll.public = false
+      @roll.add_follower(Factory.create(:user))
+      @roll.add_follower(Factory.create(:user))
+      
+      lambda {
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+      }.should change(ActionMailer::Base.deliveries,:size).by(3)
     end
     
   end
