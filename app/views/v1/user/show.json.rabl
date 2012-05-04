@@ -2,6 +2,9 @@ object @user
 
 attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux
 
+#NOTE: This is a temp node for user education. Will be real when it gets completed
+node(:app_progress) { |u| {} }
+
 node :personal_roll_id do |u|
 	u.public_roll_id
 end
