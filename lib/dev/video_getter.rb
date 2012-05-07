@@ -44,6 +44,7 @@ module Dev
           if url
             v = GT::VideoManager.get_or_create_videos_for_url(url, false, mem_client, false)
             count += v.size
+            puts "no video found at #{url}" if v.empty?
           end
           
           if line % 10 == 0
