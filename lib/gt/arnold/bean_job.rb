@@ -75,7 +75,7 @@ module GT
           return false
         end
       
-        Rails.logger.debug("[Arnold::BeanJob#parse_job(job:#{job.jobid})] Parsed Job: #{job_details}")
+        #Rails.logger.debug("[Arnold::BeanJob#parse_job(job:#{job.jobid})] Parsed Job: #{job_details}")
         return job_details
       end
     

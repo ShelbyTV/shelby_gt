@@ -29,7 +29,7 @@ module GT
         end
         
         if vids.empty?
-		      Rails.logger.debug "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No videos found for #{job_details}"
+		      #Rails.logger.debug "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No videos found for #{job_details}"
 		      clean_up(job, fibers, max_fibers, job_start_t) and return :no_videos
 	      end
 		    
@@ -66,7 +66,7 @@ module GT
 
     		  # -- cleanup --
     		  fibers.delete(Fiber.current)
-    		  Rails.logger.debug "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] done with job, removed me from fibers, we're done here.  fibers: #{fibers.size} / #{max_fibers}"
+    		  #Rails.logger.debug "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] done with job, removed me from fibers, we're done here.  fibers: #{fibers.size} / #{max_fibers}"
 	      end
     
     end

@@ -7,9 +7,9 @@ module GT
       #Make sure we only create 1,000 fibers and safely sleep for a little while if we have to
       def self.should_pull_a_job(fibers, max)
       	return true if fibers.size < max
-      	Rails.logger.debug "[Arnold::EventLoop#pace_car] Too many fibers (#{fibers.size}), sleeping for 1..."
+      	#Rails.logger.debug "[Arnold::EventLoop#pace_car] Too many fibers (#{fibers.size}), sleeping for 1..."
       	EventMachine::Synchrony.sleep(1)
-      	Rails.logger.debug "[Arnold::EventLoop#pace_car] done sleeping."
+      	#Rails.logger.debug "[Arnold::EventLoop#pace_car] done sleeping."
       	return false
       end
     

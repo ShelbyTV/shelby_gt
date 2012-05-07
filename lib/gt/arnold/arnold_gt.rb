@@ -71,7 +71,7 @@ EventMachine.synchrony do
   		StatsManager::StatsD.client.timing($statsd_job_reserve_timing_bucket, Time.now - pre_job_t)
 
       if job
-        Rails.logger.debug "[Arnold Main] got job (job:#{job.jobid}), handing off to fiber. looks like: #{job.inspect}"
+        #Rails.logger.debug "[Arnold Main] got job (job:#{job.jobid}), handing off to fiber. looks like: #{job.inspect}"
     		f = Fiber.new { |job|
     		  GT::Arnold::JobProcessor.process_job(job, $fibers, $MAX_FIBERS)
         }
