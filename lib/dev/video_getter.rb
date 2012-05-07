@@ -1,4 +1,5 @@
 require 'video_manager'
+require 'memcached_manager'
 
 # 
 # The video DB doesn't have 2/3rds of the videos from NOS
@@ -15,24 +16,33 @@ youtube,HXHkCn-HtUg
 module Dev
   class VideoGetter
     
-    def self.get_from_file(filename)
+    def self.get_from_file(filename, starting_line=0, use_memcached=true)
       count = 0
       line = 0
       
+      mem_client = use_memcached ? GT::Arnold::MemcachedManager.get_client : nil
+      
       File.open(filename, "r") do |file_handle|
-        file_handle.each do |l|
-          line += 1
+        enum = file_handle.lines
+        starting_line.times{ enum.next }
+        line += starting_line
+        
+        enum.each do |l|
           provider_name, provider_id = l.chomp.split(',')
           
           case provider_name
           when 'youtube'
-            v = GT::VideoManager.get_or_create_videos_for_url("http://youtube.com/v/#{provider_id}")
-            count += v.size
+            url = "http://youtube.com/v/#{provider_id}"
           when 'vimeo'
-            v = GT::VideoManager.get_or_create_videos_for_url("http://vimeo.com/#{provider_id}")
-            count += v.size
+            url = "http://vimeo.com/#{provider_id}"
           when 'collegehumor'
-            v = GT::VideoManager.get_or_create_videos_for_url("http://www.collegehumor.com/video/#{provider_id}")
+            url = "http://www.collegehumor.com/video/#{provider_id}"
+          else
+            url = nil
+          end
+          
+          if url
+            v = GT::VideoManager.get_or_create_videos_for_url(url, false, mem_client, false)
             count += v.size
           end
           
@@ -41,6 +51,7 @@ module Dev
             sleep(1)
           end
           
+          line += 1
         end
       end
     
