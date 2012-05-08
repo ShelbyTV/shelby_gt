@@ -44,8 +44,13 @@ module GT
       def self.parse_job(job)
         job_details = {}
       
-        #Jobs are simple JSON, but beanstalk isn't always happy with all characters, so we URI encode them first
-        job_json = JSON.parse(URI.unescape(job.body))
+        begin
+          #Jobs are simple JSON, but beanstalk isn't always happy with all characters, so we URI encode them first
+          job_json = JSON.parse(URI.unescape(job.body))
+        rescue => e
+          Rails.logger.error("[Arnold::BeanJob#parse_job(job:#{job.jobid})] BAD JOB: could not process: #{job}")
+          return false
+        end
       
         # parse out the things we expect from a job        
         job_details[:provider_type] =  job_json['provider_type']

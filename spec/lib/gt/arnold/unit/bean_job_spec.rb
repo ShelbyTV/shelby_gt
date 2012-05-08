@@ -50,6 +50,18 @@ describe GT::Arnold::BeanJob do
       GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => :job_body, :jobid => :id))
     end
     
+    it "should return false if URI.unescape throws" do
+      URI.stub(:unescape).with(:job_body).and_return(:job_body_unescaped)
+      JSON.stub(:parse).with(:job_body_unescaped).and_throw(JSON::ParserError)
+      GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => :job_body, :jobid => :id)).should == false
+    end
+    
+    it "should return false if JSON.parse throws" do
+      URI.stub(:unescape).with(:job_body).and_return(:job_body_unescaped)
+      JSON.stub(:parse).with(:job_body_unescaped).and_return(@body_hash)
+      GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => :job_body, :jobid => :id)).should == false
+    end
+    
     it "should pull url, provider_type, provider_user_id from json" do
       @body_hash['twitter_status_update'] = :whatever
       parsed = GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => URI.escape(@body_hash.to_json), :jobid => :id))
