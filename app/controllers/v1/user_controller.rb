@@ -68,11 +68,11 @@ class V1::UserController < ApplicationController
   # Returns the rolls the current_user is following
   #   REQUIRES AUTHENTICATION
   #
-  # [GET] /v1/user/:id/rolls
+  # [GET] /v1/user/:id/roll_followings
   # 
   # @param [Required, String] id The id of the user
   # @param [Optional, boolean] include_children Return the following_users?
-  def rolls
+  def roll_followings
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
       if current_user.id.to_s == params[:id]
         

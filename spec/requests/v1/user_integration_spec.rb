@@ -48,7 +48,7 @@ describe 'v1/user' do
         r = Factory.create(:roll, :creator => @u1)
         r.add_follower(@u1)
         @u1.save
-        get '/v1/user/'+@u1.id+'/rolls'
+        get '/v1/user/'+@u1.id+'/roll_followings'
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result/roll_followings")
       end

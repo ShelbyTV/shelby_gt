@@ -18,13 +18,13 @@ describe V1::UserController do
 
   describe "GET rolls" do
     it "returns rolls followed of the authed in user" do
-      get :rolls, :id => @u1.id, :format => :json
+      get :roll_followings, :id => @u1.id, :format => :json
       assigns(:status).should eq(200)
     end
     
     it "returns 403 if the user is not the authed in user" do
       u2 = Factory.create(:user, :nickname => "name")
-      get :rolls, :id => u2.id, :format => :json
+      get :roll_followings, :id => u2.id, :format => :json
       assigns(:status).should eq(403)
     end
   end
