@@ -15,7 +15,8 @@ module GT
   		  
   		  unless job_details = GT::Arnold::BeanJob.parse_job(job)
   		    Rails.logger.error "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No job_details.  Indicates some issue during job parsing."
-  		    clean_up(job, fibers, max_fibers, job_start_t) and return :bad_job
+  		    clean_up(job, fibers, max_fibers, job_start_t)
+  		    return :bad_job
 		    end
 		    
 		    # 1) Get videos at that URL
@@ -30,7 +31,8 @@ module GT
         
         if vids.empty?
 		      #Rails.logger.debug "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No videos found for #{job_details}"
-		      clean_up(job, fibers, max_fibers, job_start_t) and return :no_videos
+		      clean_up(job, fibers, max_fibers, job_start_t) 
+		      return :no_videos
 	      end
 		    
 		    # 2) Normalize the incoming social post
@@ -39,7 +41,8 @@ module GT
         msg = GT::TumblrNormalizer.normalize_post(job_details[:tumblr_status_update]) if job_details[:tumblr_status_update]
         if msg == nil or msg.nickname.blank?
           Rails.logger.fatal "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] Invalid social message. job: #{job}, job_details: #{job_details}, message: #{msg}"
-          clean_up(job, fibers, max_fibers, job_start_t) and return :no_social_message
+          clean_up(job, fibers, max_fibers, job_start_t)
+          return :no_social_message
         end
         
         # 3) get the observing user
@@ -47,14 +50,16 @@ module GT
           # In production, this is certainly an error (how are we getting jobs for Users not in the DB?)
           # But while testing, we're not using the real User DB, so this is expected
           Rails.logger.error "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No observing_user for provider '#{job_details[:provider_type]}' with id '#{job_details[:provider_user_id]}'"
-          clean_up(job, fibers, max_fibers, job_start_t) and return :no_observing_user
+          clean_up(job, fibers, max_fibers, job_start_t) 
+          return :no_observing_user
         end
         
         # 4) For each video, post it into the system
         res = []
         vids.each { |v| res << GT::SocialSorter.sort(msg, v, observing_user) }
   		  
-  		  clean_up(job, fibers, max_fibers, job_start_t) and return res
+  		  clean_up(job, fibers, max_fibers, job_start_t) 
+  		  return res
       end
     
       private
