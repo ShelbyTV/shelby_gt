@@ -45,8 +45,20 @@ module GT
         job_details = {}
       
         begin
-          #Jobs are simple JSON, but beanstalk isn't always happy with all characters, so we URI encode them first
-          job_json = JSON.parse(URI.unescape(job.body))
+          #Jobs are simple JSON
+          # For some reason, we thought beanstalk wasn't always happy with all characters, so we URI encoded them first
+          #job_json = JSON.parse(URI.unescape(job.body))
+          #
+          # But the unescaping is particularly non-performant, so we're now trying things w/o the URI escaping
+          job_json = JSON.parse(job.body)
+        rescue JSON::ParserError => e
+          # some jobs are still URI escaped...
+          begin
+            job_json = JSON.parse(URI.unescape(job.body))
+          rescue => e
+            Rails.logger.error("[Arnold::BeanJob#parse_job(job:#{job.jobid})] BAD JOB: tried to URI.unescape but still could not process: #{job}")
+            return false
+          end
         rescue => e
           Rails.logger.error("[Arnold::BeanJob#parse_job(job:#{job.jobid})] BAD JOB: could not process: #{job}")
           return false

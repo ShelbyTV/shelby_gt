@@ -44,22 +44,26 @@ describe GT::Arnold::BeanJob do
         }
     end
     
-    it "should URI unescape then JSON parse the job" do
-      URI.stub(:unescape).with(:job_body).and_return(:job_body_unescaped)
-      JSON.stub(:parse).with(:job_body_unescaped).and_return(@body_hash)
+    it "should only JSON parse the job" do
+      JSON.stub(:parse).with(:job_body).and_return(@body_hash)
       GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => :job_body, :jobid => :id))
     end
     
-    it "should return false if URI.unescape throws" do
-      URI.stub(:unescape).with(:job_body).and_return(:job_body_unescaped)
-      JSON.stub(:parse).with(:job_body_unescaped).and_throw(JSON::ParserError)
-      GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => :job_body, :jobid => :id)).should == false
-    end
-    
-    it "should return false if JSON.parse throws" do
+    it "should try to URI.unescape if JSON.parse throws" do
+      JSON.stub(:parse).with(:job_body).and_throw(JSON::ParserError)
+      
       URI.stub(:unescape).with(:job_body).and_return(:job_body_unescaped)
       JSON.stub(:parse).with(:job_body_unescaped).and_return(@body_hash)
-      GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => :job_body, :jobid => :id)).should == false
+      
+      GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => :job_body, :jobid => :id))
+    end
+    
+    it "should return false if URI.unescape throws after JSON.parse throws" do
+      JSON.stub(:parse).with(:job_body).and_throw(JSON::ParserError)
+      
+      URI.stub(:unescape).with(:job_body).and_throw(Exception)
+      
+      GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => :job_body, :jobid => :id))
     end
     
     it "should pull url, provider_type, provider_user_id from json" do
