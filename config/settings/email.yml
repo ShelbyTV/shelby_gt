@@ -11,13 +11,13 @@ defaults: &defaults
   notification_sender: "notifications@shelby.tv"
   comment_notification:
     category: "Comment Notifications"
-    subject: "the video you shared received a comment!"
+    subject: "%{commenters_name} commented on %{video_title}"
   upvote_notification:
     category: "Comment Notifications"
-    subject: "the video you shared received an upvote!"
+    subject: "%{upvoters_name} upvoted %{video_title}"
   reroll_notification:
     category: "Reroll Notifications"
-    subject: "the video you shared was re-rolled!"
+    subject: "%{re_rollers_name} re-rolled %{video_title}"
   join_roll_notification:
     category: "Join Roll Notifications"
     subject: "%{users_name} joined the %{roll_description} you started!"
