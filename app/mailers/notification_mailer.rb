@@ -60,7 +60,7 @@ class NotificationMailer < ActionMailer::Base
     @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_joined.id}/personal_roll"
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
       :to => @user_to.primary_email, 
-      :subject => (Settings::Email.join_roll_notification['subject'] % { :users_name => (@user_joined.name || @user_joined.nickname), :roll_description => (@roll.public ? 'roll' : 'group roll') })
+      :subject => (Settings::Email.join_roll_notification['subject'] % { :users_name => (@user_joined.name || @user_joined.nickname), :roll_title => @roll.title })
   end
 
 end

@@ -20,7 +20,7 @@ defaults: &defaults
     subject: "%{re_rollers_name} re-rolled %{video_title}"
   join_roll_notification:
     category: "Join Roll Notifications"
-    subject: "%{users_name} joined the %{roll_description} you started!"
+    subject: "%{users_name} joined %{roll_title}!"
   # GtInterest
   gt_interest_autoresponse:
     category: "Submit GT Interest"
