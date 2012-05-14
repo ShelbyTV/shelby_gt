@@ -29,7 +29,7 @@ end
 if @include_rolls == true
 	child :roll_followings => "roll_followings" do
 		glue :roll do
-			extends 'v1/roll/show'
+			attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url, :origin_network
 		end
 	end
 end
