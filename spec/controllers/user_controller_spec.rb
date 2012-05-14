@@ -30,9 +30,17 @@ describe V1::UserController do
   end
   
   describe "PUT update" do
-    it "updates a user successfuly" do
+    it "updates a users nickname successfuly" do
       put :update, :id => @u1.id, :user => {:nickname=>"nick"}, :format => :json
       assigns(:user).should eq(@u1)
+      assigns(:status).should eq(200)
+    end
+    
+    it "updates a users preferences successfuly" do
+      @u1.preferences.email_updates = true; @u1.save
+      put :update, :id => @u1.id, :preferences => {:email_updates=>false}, :format => :json
+      puts assigns(:user).preferences.email_updates
+      assigns(:user).preferences.email_updates.should eq(false)
       assigns(:status).should eq(200)
     end
   end

@@ -60,6 +60,8 @@ class User
   # has this user been granted access to Shelby GT?
   key :gt_enabled, Boolean, :abbr => :ag, :default => false
 
+  one :app_progress
+
   #--old keys--
   many :authentications
   

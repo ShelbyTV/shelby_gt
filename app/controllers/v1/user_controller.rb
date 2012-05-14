@@ -52,9 +52,6 @@ class V1::UserController < ApplicationController
       begin
         if @user.update_attributes!(params)
           @status = 200
-        elsif params[:preferences]
-          @user.preferences.update_attributes!(params[:preferences])
-          @status = 200
         else
           render_error(404, "error while updating user.")
         end

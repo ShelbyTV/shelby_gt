@@ -9,7 +9,7 @@ end
 if current_user == @user
 
 	#NOTE: This is a temp node for user education. Will be real when it gets completed
-	node(:app_progress) { |u| {} }
+	node(:app_progress) {|u| u.app_progress }
 
 
 	child :authentications do
