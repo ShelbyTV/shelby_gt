@@ -152,6 +152,13 @@ class User
   
   def permalink() "#{Settings::ShelbyAPI.web_root}/user/#{self.nickname}/personal_roll"; end
   
+  # Use this to convert User's created on NOS to GT
+  # When we move everyone to GT, use the rake task in gt_migration.rb
+  def gt_enable!
+    self.gt_enabled = true
+    GT::UserManager.ensure_users_special_rolls(self, true)
+  end
+  
   # -- Old Methods --   
   def self.find_by_nickname(n)
     return nil unless n.is_a? String and !n.blank?

@@ -14,7 +14,9 @@ class NotificationMailer < ActionMailer::Base
     
     @frame_permalink = @frame.permalink
     @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
-    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", :to => user_to.primary_email, :subject => Settings::Email.comment_notification['subject']
+    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
+      :to => user_to.primary_email, 
+      :subject => Settings::Email.comment_notification['subject'] % { :commenters_name => (@user_from.name || @user_from.nickname), :video_title => @frame.video.title }
   end
 
   def upvote_notification(user_to, user_from, frame)
@@ -26,7 +28,9 @@ class NotificationMailer < ActionMailer::Base
     @permalink = @frame.permalink
     @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
     
-    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", :to => user_to.primary_email, :subject => Settings::Email.upvote_notification['subject']
+    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
+      :to => user_to.primary_email, 
+      :subject => Settings::Email.upvote_notification['subject'] % { :upvoters_name => (@user_from.name || @user_from.nickname), :video_title => @frame.video.title }
   end
 
   def reroll_notification(old_frame, new_frame)
@@ -40,7 +44,9 @@ class NotificationMailer < ActionMailer::Base
     @new_frame_permalink = @new_frame.permalink
     @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
     
-    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", :to => @user_to.primary_email, :subject => Settings::Email.reroll_notification['subject']
+    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
+      :to => @user_to.primary_email, 
+      :subject => Settings::Email.reroll_notification['subject'] % { :re_rollers_name => (@user_from.name || @user_from.nickname), :video_title => @new_frame.video.title }
   end
 
   def join_roll_notification(user_to, user_from, roll)
@@ -54,7 +60,7 @@ class NotificationMailer < ActionMailer::Base
     @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_joined.id}/personal_roll"
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
       :to => @user_to.primary_email, 
-      :subject => (Settings::Email.join_roll_notification['subject'] % { :users_name => (@user_joined.name || @user_joined.nickname), :roll_description => (@roll.public ? 'roll' : 'group roll') })
+      :subject => (Settings::Email.join_roll_notification['subject'] % { :users_name => (@user_joined.name || @user_joined.nickname), :roll_title => @roll.title })
   end
 
 end
