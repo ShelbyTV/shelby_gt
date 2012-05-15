@@ -22,29 +22,24 @@ class V1::UserController < ApplicationController
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['show']) do
       if params[:id]
-        
-        if @user = User.find(params[:id]) or @user = User.find_by_nickname(params[:id])
-          if (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true" )
-            @include_rolls = true
-            @roll_followings = @user.roll_followings.map {|r| r.roll}
-          else
-            @include_rolls= false
-          end
-          @status = 200
-        else
-          render_error(404, "could not find that user")
+        unless @user = User.find(params[:id]) or @user = User.find_by_nickname(params[:id])
+          return render_error(404, "could not find that user")
         end
-      elsif user_signed_in? and @user = current_user
-        if params[:include_rolls] == "true"
-          @include_rolls = true
-          @roll_followings = @user.roll_followings.map {|r| r.roll}
-        else
-          @include_rolls= false
-        end
-        @status = 200
+      elsif user_signed_in?
+        @user = current_user
       else
-        render_error(404, "could not find that user")
+        return render_error(404, "could not find that user")
       end
+      
+      a = user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true"
+      b = user_signed_in? and @user = current_user
+      if a or b
+        @include_rolls = true
+        @roll_followings = @user.roll_followings.map {|r| r.roll}
+      else
+        @include_rolls= false
+      end
+      @status = 200
     end
   end
   
