@@ -48,7 +48,7 @@ class V1::UserController < ApplicationController
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['update']) do
       @user = current_user
-      params.keep_if {|key,value| [:name, :nickname, :primary_email, :preferences].include?key.to_sym}
+      params.keep_if {|key,value| [:name, :nickname, :primary_email, :preferences, :app_progress].include?key.to_sym}
       begin
         if @user.update_attributes!(params)
           @status = 200

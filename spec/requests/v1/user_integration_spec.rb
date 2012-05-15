@@ -16,6 +16,11 @@ describe 'v1/user' do
         response.body.should have_json_path("result/nickname")
       end
       
+      it "should have a user app progress attr" do
+        get '/v1/user'
+        response.body.should have_json_path("result/app_progress")
+      end
+      
       it "should wrap with callback when requesting via jsonp" do
         get '/v1/user/?callback=jQuery17108599677098863208_1335973680689&include_rolls=true&_=1335973682178'
         response.body.should =~ /^\W*jQuery17108599677098863208_1335973680689/
@@ -81,6 +86,14 @@ describe 'v1/user' do
       it "should return an error if a validation fails" do
         put '/v1/user/'+@u1.id+'?nickname=signout'
         response.body.should be_json_eql(404).at_path("status")
+      end
+      
+      it "should update a users app_progress successfuly" do
+        put '/v1/user/'+@u1.id+'?app_progress[test]=2'
+        puts parse_json(response.body)["result"]
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result/app_progress")
+        parse_json(response.body)["result"]["app_progress"]["test"].should eq("2")
       end
       
     end
