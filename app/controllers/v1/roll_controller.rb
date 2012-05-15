@@ -202,6 +202,7 @@ class V1::RollController < ApplicationController
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['update']) do
       id = params.delete(:id)
+      params.keep_if {|key,value| [:title].include?key.to_sym}
       if id
         return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(id))
         
