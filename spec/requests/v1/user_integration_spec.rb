@@ -90,7 +90,6 @@ describe 'v1/user' do
       
       it "should update a users app_progress successfuly" do
         put '/v1/user/'+@u1.id+'?app_progress[test]=2'
-        puts parse_json(response.body)["result"]
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result/app_progress")
         parse_json(response.body)["result"]["app_progress"]["test"].should eq("2")
