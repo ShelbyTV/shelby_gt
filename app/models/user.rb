@@ -97,7 +97,7 @@ class User
   # [twitter, facebook, email, tumblr]
   key :social_tracker,        Array, :default => [0, 0, 0, 0]
 
-  attr_accessible :name, :nickname, :primary_email, :preferences
+  attr_accessible :name, :nickname, :primary_email, :preferences, :app_progress
   
   # Arnold does a *shit ton* of user saving, which runs this validation, which turns out to be very expensive 
   # (see shelby_gt/etc/performance/unique_nickname_realtime_profile.gif)

@@ -9,7 +9,6 @@ require 'predator_manager'
 #
 module GT
   class UserManager
-    extend NewRelic::Agent::MethodTracer
     
     # Creates a real User on signup
     def self.create_new_user_from_omniauth(omniauth)
@@ -42,10 +41,10 @@ module GT
       
       update_token_and_permissions(user)
       
+      ensure_app_progress_created(user)
+      
       # Always remember users, onus is on them to log out
-      self.class.trace_execution_scoped(['Custom/user_manager/remember_me']) do
-        user.remember_me!(true)
-      end
+      user.remember_me!(true)
     end
     
     # Adds a new auth to an existing user
@@ -97,6 +96,7 @@ module GT
         u.user_image = u.user_image_original = options[:user_thumbnail_url]
         u.faux = User::FAUX_STATUS[:true]
         u.preferences = Preferences.new()
+        u.app_progress = AppProgress.new()
         # This Authentication is how the user will be looked up...
         auth = Authentication.new(:provider => provider, :uid => uid, :nickname => nickname)
         u.authentications << auth
@@ -203,6 +203,7 @@ module GT
         u.authentications << auth
 
         u.preferences = Preferences.new()
+        u.app_progress = AppProgress.new()
         
         return u, auth
       end
@@ -281,6 +282,11 @@ module GT
         r.title = "Viewed"
         u.viewed_roll = r
       end
-    
+      
+      def self.ensure_app_progress_created(u)
+        return if u.app_progress
+        u.app_progress = AppProgress.new
+        u.save
+      end
   end
 end

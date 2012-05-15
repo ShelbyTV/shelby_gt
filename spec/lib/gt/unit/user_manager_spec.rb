@@ -332,6 +332,11 @@ describe GT::UserManager do
       real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
       real_u.preferences.class.should eq(Preferences)
     end
+    
+    it "should have app_progrss set" do
+      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u.app_progress.class.should eq(AppProgress)
+    end
   end
   
   context "create_user" do
@@ -561,6 +566,11 @@ describe GT::UserManager do
         u.preferences.watched_notifications.should == true
         u.preferences.quiet_mode.should == nil
       end
+
+      it "should always have preferences once created" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        u.app_progress.class.should eq(AppProgress)
+      end
       
       it "should create and persist public, watch_later, upvoted, viwed Rolls for new User" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
@@ -680,6 +690,13 @@ describe GT::UserManager do
       
       updated_u = GT::UserManager.add_new_auth_from_omniauth(u, new_omniauth_hash)
       u.id.should == updated_u.id
+    end
+
+    it "should create app_progress if it doesnt exist" do
+      u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+      u.app_progress = nil; u.save
+      GT::UserManager.start_user_sign_in(u, @omniauth_hash)
+      u.app_progress.class.should eq(AppProgress)
     end
   end
   
