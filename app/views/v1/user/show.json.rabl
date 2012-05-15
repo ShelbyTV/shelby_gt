@@ -27,9 +27,7 @@ if current_user == @user
 end
 
 if @include_rolls == true
-	child :roll_followings => "roll_followings" do
-		glue :roll do
-			attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url, :origin_network
-		end
+	child @roll_followings => "roll_followings" do |r|
+		attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url, :origin_network
 	end
 end

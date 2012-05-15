@@ -30,7 +30,12 @@ class V1::UserController < ApplicationController
           render_error(404, "could not find that user")
         end
       elsif user_signed_in? and @user = current_user
-        @include_rolls = (params[:include_rolls] == "true") ? true : false
+        if params[:include_rolls] == "true"
+          @include_rolls = true
+          @roll_followings = @user.roll_followings.map {|r| r.roll}
+        else
+          @include_rolls= false
+        end
         @status = 200
       else
         render_error(404, "could not find that user")
