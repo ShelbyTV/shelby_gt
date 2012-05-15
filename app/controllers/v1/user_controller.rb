@@ -32,7 +32,7 @@ class V1::UserController < ApplicationController
       end
       
       a = user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true"
-      b = user_signed_in? and @user = current_user
+      b = !a and (user_signed_in? and @user = current_user)
       if a or b
         @include_rolls = true
         @roll_followings = @user.roll_followings.map {|r| r.roll}
