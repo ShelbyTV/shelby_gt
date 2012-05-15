@@ -24,7 +24,12 @@ class V1::UserController < ApplicationController
       if params[:id]
         
         if @user = User.find(params[:id]) or @user = User.find_by_nickname(params[:id])
-          @include_rolls = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true" ) ? true : false
+          if (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true" )
+            @include_rolls = true
+            @roll_followings = @user.roll_followings.map {|r| r.roll}
+          else
+            @include_rolls= false
+          end
           @status = 200
         else
           render_error(404, "could not find that user")
