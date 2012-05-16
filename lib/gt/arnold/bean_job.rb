@@ -94,8 +94,8 @@ module GT
         end
         
         #XXX TRACER
-        if job_details[:provider_user_id] == "279185282" #shelbytest on twitter
-          Rails.logger.fatal("[Arnold::BeanJob#parse_job(job:#{job.jobid})] Tracing ShelbyTest job.  jobs_details=#{job_details} // job: #{job}")
+        if job_details[:provider_user_id] == 279185282 #shelbytest on twitter
+          Rails.logger.fatal("[Arnold::BeanJob#parse_job(job:#{job.jobid})] TRACESHELBYTEST - job.  jobs_details=#{job_details} // job: #{job}")
         end
       
         #Rails.logger.debug("[Arnold::BeanJob#parse_job(job:#{job.jobid})] Parsed Job: #{job_details}")
