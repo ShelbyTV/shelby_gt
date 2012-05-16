@@ -38,20 +38,23 @@ module GT
       if (provider_info = GT::UrlHelper.parse_url_for_provider_info(url))
         v = Video.where(:provider_name => provider_info[:provider_name], :provider_id => provider_info[:provider_id]).first
         return [v] if v
-      end
+      else
+        
+        # couldn't determine provider from URL; try resolving it and trying again
+        # (if we did find provider info, just didn't have a Video, no need to resolve and look again)
+
+        begin
+          url = GT::UrlHelper.resolve_url(url, use_em, memcache_client) if should_resolve_url
+          url = GT::UrlHelper.post_process_url(url)
+        rescue
+          return []
+        end
       
-      # No video? Resolve it and then look again
-      begin
-        url = GT::UrlHelper.resolve_url(url, use_em, memcache_client) if should_resolve_url
-        url = GT::UrlHelper.post_process_url(url)
-      rescue
-        return []
-      end
-      
-      # Is the final URL looking at a known provider that has a unique video at this url?
-      if (provider_info = GT::UrlHelper.parse_url_for_provider_info(url))
-        v = Video.where(:provider_name => provider_info[:provider_name], :provider_id => provider_info[:provider_id]).first
-        return [v] if v
+        # Is the new, resolved URL of a known provider that has a unique video at this url?
+        if (provider_info = GT::UrlHelper.parse_url_for_provider_info(url))
+          v = Video.where(:provider_name => provider_info[:provider_name], :provider_id => provider_info[:provider_id]).first
+          return [v] if v
+        end
       end
       
       ##### -- -- -- -- >>>

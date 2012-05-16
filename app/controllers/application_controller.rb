@@ -48,7 +48,9 @@ class ApplicationController < ActionController::Base
     # - see: http://www.tsheffler.com/blog/?p=428 and
     #         https://developer.mozilla.org/En/Server-Side_Access_Control
     #
-    #TODO: When we go live only allow cs_key in staging env    
+    # N.B. "when responding to a credentialed request,  server must specify a domain, and cannot use wild carding."
+    # via https://developer.mozilla.org/En/HTTP_access_control#Requests_with_credentials
+    # ...but Access-Control-Allow-Origin will be overridden if origin is on of ours: see config/application.rb
     def set_access_control_headers
       headers['Access-Control-Allow-Origin'] = '*'
       headers['Access-Control-Request-Method'] = '*'

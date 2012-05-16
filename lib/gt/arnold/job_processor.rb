@@ -23,7 +23,8 @@ module GT
 		    if job_details[:expanded_urls].is_a?(Array)
 		      vids = []
 		      job_details[:expanded_urls].each do |url|
-		        vids += GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, false)
+		        # Experimentation has shown that we cannot rely on these URLs to actually be expanded
+		        vids += GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client)
 	        end
 	      else
   		    vids = GT::VideoManager.get_or_create_videos_for_url(job_details[:url], true, GT::Arnold::MemcachedManager.get_client)
