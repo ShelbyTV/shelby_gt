@@ -76,6 +76,7 @@ module GT
         # The traditional, expected url as parsed by Predator
         job_details[:url] =  job_json['url']
         # Twitter provided expanded URLs (that we don't need to resolve)
+        # ***FALSE*** Some research has shown that we cannot trust twitter to return these expanded (updated JobProcessor based on this)
         if job_details[:twitter_status_update] and job_details[:twitter_status_update]["entities"] and job_details[:twitter_status_update]["entities"]["urls"]
           expanded_urls = (job_details[:twitter_status_update]["entities"]["urls"].map { |u| u["expanded_url"] }).compact
           job_details[:expanded_urls] = expanded_urls unless expanded_urls.blank?
