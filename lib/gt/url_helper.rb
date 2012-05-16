@@ -160,7 +160,7 @@ module GT
       # YouTube
       def self.parse_url_for_youtube_provider_info(url)
         #normal, long youtube links
-        match_data = url.match( /youtube.*\/([ev]|embed)+\/([\w-]*)|v=([\w-]*)(&+.*\z|\z)/i )
+        match_data = url.match( /youtube.*\/([ev]|embed)+\/([\w-]*)|v=([\w-]*)([&%]+.*\z|\z)/i )
         if match_data and match_data.size >= 2
           id = match_data[2] unless match_data[2].blank?
           id = match_data[3] unless match_data[3].blank?
