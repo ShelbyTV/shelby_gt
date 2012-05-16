@@ -92,6 +92,11 @@ module GT
           Rails.logger.error("[Arnold::BeanJob#parse_job(job:#{job.jobid})] BAD JOB: tumblr status is a Fixnum, should be a hash. // job: #{job} // job.body: #{job.body} // job_json: #{job_json}")
           return false
         end
+        
+        #XXX TRACER
+        if job_details[:provider_user_id] == "279185282" #shelbytest on twitter
+          Rails.logger.fatal("[Arnold::BeanJob#parse_job(job:#{job.jobid})] Tracing ShelbyTest job.  jobs_details=#{job_details} // job: #{job}")
+        end
       
         #Rails.logger.debug("[Arnold::BeanJob#parse_job(job:#{job.jobid})] Parsed Job: #{job_details}")
         return job_details

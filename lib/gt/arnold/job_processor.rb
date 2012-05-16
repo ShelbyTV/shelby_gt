@@ -31,6 +31,12 @@ module GT
         end
         
         if vids.empty?
+          
+          #XXX TRACER
+          if job_details[:provider_user_id] == "279185282" #shelbytest on twitter
+            Rails.logger.fatal "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No videos found for #{job_details}"
+          end
+          
 		      #Rails.logger.debug "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No videos found for #{job_details}"
 		      clean_up(job, fibers, max_fibers, job_start_t) 
 		      return :no_videos
