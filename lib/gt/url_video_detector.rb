@@ -14,7 +14,7 @@ module GT
           return [{:embedly_hash => JSON.parse(cache.embedly_json)}] if cache.embedly_json
           #return [{:shelby_hash => cache.shelby_hash}] if cache.shelby_hash
         rescue JSON::ParserError => e
-          Rails.logger.error("[GT::UrlVideoDetector#examine_url_for_video] JSON::ParserError on embedly_json=#{cache.embedly_json} / returning nil") if cache.embedly_json
+          Rails.logger.error("[GT::UrlVideoDetector#examine_url_for_video] JSON::ParserError on embedly_json=#{cache.embedly_json} / returning nil")
           return nil
         end
         return nil
