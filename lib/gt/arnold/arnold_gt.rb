@@ -73,7 +73,11 @@ EventMachine.synchrony do
       if job
         #Rails.logger.debug "[Arnold Main] got job (job:#{job.jobid}), handing off to fiber. looks like: #{job.inspect}"
     		f = Fiber.new { |job|
-    		  GT::Arnold::JobProcessor.process_job(job, $fibers, $MAX_FIBERS)
+    		  begin
+    		    GT::Arnold::JobProcessor.process_job(job, $fibers, $MAX_FIBERS)
+    		  rescue => e
+    		    Rails.logger.fatal "[Arnold Main Fiber] unhandled exception #{e} / BACKTRACE: #{e.backtrace.join('\n')}"
+    		  end
         }
         $fibers << f
         f.resume(job)
