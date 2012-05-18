@@ -22,7 +22,7 @@ class Frame
   belongs_to :conversation, :required => true
   key :conversation_id, ObjectId, :abbr => :c
   
-  belongs_to :creator,  :class_name => 'User', :required => true
+  belongs_to :creator,  :class_name => 'User'
   key :creator_id,      ObjectId,   :abbr => :d
   
   # Frames will be ordered in Rolls based on their score
