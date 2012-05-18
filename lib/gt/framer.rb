@@ -28,7 +28,7 @@ module GT
     # { :frame => newly_created_frame, :dashboard_entries => [1 or more DashboardEntry, ...] }
     #
     def self.create_frame(options)
-      raise ArgumentError, "must supply a :creator" unless (creator = options.delete(:creator)).is_a? User
+      creator = options.delete(:creator)
       raise ArgumentError, "must supply a :video" unless (video = options.delete(:video)).is_a? Video
       raise ArgumentError, "must supply an :action" unless DashboardEntry::ENTRY_TYPE.values.include?(action = options.delete(:action))
       roll = options.delete(:roll)
