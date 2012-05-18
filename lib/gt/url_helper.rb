@@ -25,6 +25,10 @@ module GT
       vim = parse_url_for_vimeo_provider_info(url)
       return vim if vim
       
+      # ESPN
+      es = parse_url_for_espn_provider_info(url)
+      return es if es
+      
       dm = parse_url_for_dailymotion_provider_info(url)
       return dm if dm
       
@@ -231,6 +235,14 @@ module GT
         match_data = url.match( /blip.tv.+(play\/)([\w-]*)/i )
         if match_data and match_data.size == 3
           return {:provider_name => "bliptv", :provider_id => match_data[2]}
+        end
+      end
+      
+      # ESPN
+      def self.parse_url_for_espn_provider_info(url)
+        match_data = url.match( /espn.go.com\/video\/clip.+id=([\w-]*)(&+.*\z|\z)/i )
+        if match_data and match_data.size == 3
+          return {:provider_name => "espn", :provider_id => match_data[1]}
         end
       end
     
