@@ -112,6 +112,19 @@ module GT
       return basic_dupe!(orig_frame, user_id, roll_id)
     end
     
+    def self.backfill_dashboard_entries(user, roll, frame_count=5)
+      raise ArgumentError, "must supply a User" unless user.is_a? User
+      raise ArgumentError, "must supply a Roll" unless roll.is_a? Roll
+      raise ArgumentError, "count must be >= 0" if frame_count < 0
+      
+      res = []
+      roll.frames.sort(:score.desc).limit(frame_count).all.reverse.each do |frame|
+        res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user)
+      end
+      
+      return res.flatten
+    end
+    
     def self.create_dashboard_entry(frame, action, user)
       raise ArgumentError, "must supply a Frame" unless frame.is_a? Frame
       raise ArgumentError, "must supply an action" unless action
