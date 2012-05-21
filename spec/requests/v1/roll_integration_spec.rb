@@ -33,6 +33,17 @@ describe 'v1/roll' do
         response.body.should be_json_eql(404).at_path("status")
       end
       
+      it "should return a list of rolls to browse" do
+        @r1 = Factory.create(:roll, :creator => @u1)
+        @r2 = Factory.create(:roll, :creator => @u1)
+        @r3 = Factory.create(:roll, :creator => @u1)
+        @r4 = Factory.create(:roll, :creator => @u1)
+        roll_arry = [@r1,@r2,@r3,@r4].map!{|r| "rolls[]=#{r.id.to_s}"}
+        
+        get 'v1/roll/browse?'+roll_arry.join('&')
+        response.body.should be_json_eql(200).at_path("status")
+      end
+      
     end
     
     describe "POST" do
