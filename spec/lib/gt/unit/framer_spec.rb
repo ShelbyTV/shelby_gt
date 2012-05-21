@@ -392,4 +392,51 @@ describe GT::Framer do
       d[0].user.should == observer
     end
   end
+
+  context "backfilling DashboardEntries" do
+    before(:each) do
+      @roll_creator = Factory.create(:user)
+      @roll = Factory.create(:roll, :title => "title", :creator => @roll_creator )
+      
+      @frame3 = Factory.create(:frame, :roll => @roll, :score => 10)
+      @frame2 = Factory.create(:frame, :roll => @roll, :score => 11)
+      @frame1 = Factory.create(:frame, :roll => @roll, :score => 12)
+      @frame0 = Factory.create(:frame, :roll => @roll, :score => 13)
+      
+      @frame3.update_attribute(:score, 13)
+      @frame2.update_attribute(:score, 14)
+      @frame1.update_attribute(:score, 15)
+      @frame0.update_attribute(:score, 16)
+      
+      @user = Factory.create(:user)
+    end
+    
+    it "should backfill User's dashboard with 2 frames" do
+      lambda {
+        res = GT::Framer.backfill_dashboard_entries(@user, @roll, 2)
+      }.should change { @user.dashboard_entries.count } .by 2
+    end
+    
+    it "should backfill User's dashboard with 2 frames in the correct order" do
+      GT::Framer.backfill_dashboard_entries(@user, @roll, 2)
+      @user.dashboard_entries.count.should == 2
+      @user.dashboard_entries[0].frame.should == @frame0
+      @user.dashboard_entries[1].frame.should == @frame1
+    end
+    
+    it "should backfill even if there aren't enough Frames" do
+      lambda {
+        res = GT::Framer.backfill_dashboard_entries(@user, @roll, 20)
+      }.should change { @user.dashboard_entries.count } .by 4
+    end
+    
+    it "shouldn't die if there aren't any frames" do
+      empty_roll = Factory.create(:roll, :title => "title", :creator => @roll_creator )
+       
+      lambda {
+        res = GT::Framer.backfill_dashboard_entries(@user, empty_roll, 20)
+      }.should change { @user.dashboard_entries.count } .by 0
+    end
+  end
+
 end
