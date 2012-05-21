@@ -41,6 +41,7 @@ ShelbyGt::Application.routes.draw do
       get 'personal_roll' => 'roll#show', :defaults => {:public_roll => true}
       get 'personal_roll/frames' => 'frame#index', :defaults => {:public_roll => true}
     end
+    get 'roll/browse' => 'roll#browse'
     resources :roll, :only => [:show, :create, :update, :destroy] do
       get 'frames' => 'frame#index'
       post 'frames' => 'frame#create'

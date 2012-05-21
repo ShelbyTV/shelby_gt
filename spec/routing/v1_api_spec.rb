@@ -167,6 +167,14 @@ describe V1::RollController do
         :public_roll => true
       )
     end 
+    
+    it "route to browser roll" do
+      { :get => "/v1/roll/browse" }.should route_to(
+        :controller => "v1/roll",
+        :action => "browse",
+        :format => "json"
+      )
+    end
 
     it "routes for PUT" do
       { :put => "/v1/roll/1" }.should route_to(
