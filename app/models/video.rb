@@ -26,8 +26,8 @@ class Video
   key :thumbnail_url, String, :abbr => :j
   key :thumbnail_height, String, :abbr => :k
   key :thumbnail_width, String, :abbr => :l
-  key :tags, Array, :typecase => String, :abbr => :m
-  key :categories, Array, :typecase => String, :abbr => :n
+  key :tags, Array, :typecast => 'String', :abbr => :m
+  key :categories, Array, :typecast => 'String', :abbr => :n
 
   key :source_url, String, :abbr => :o
   key :embed_url, String, :abbr => :p

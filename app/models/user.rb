@@ -22,7 +22,7 @@ class User
   
   # Rolls this user has unfollowed
   # these rolls should not be auto-followed by our system
-  key :rolls_unfollowed, Array, :typecase => ObjectId, :abbr => :aa
+  key :rolls_unfollowed, Array, :typecast => 'ObjectId', :abbr => :aa, :default => []
   
   # A special roll for a user: their public roll
   belongs_to :public_roll, :class_name => 'Roll'

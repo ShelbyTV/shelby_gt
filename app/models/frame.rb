@@ -29,7 +29,7 @@ class Frame
   key :score,  Float, :required => true, :abbr => :e
   
   # The users who have upvoted, increasing the score
-  key :upvoters, Array, :typecase => ObjectId, :abbr => :f
+  key :upvoters, Array, :typecast => 'ObjectId', :abbr => :f, :default => []
 
   # To track the *re-roll* lineage of a Frame (both forward and backward); when Frame F1 gets re-rolled as F2:
   # F1.frame_children << F2
