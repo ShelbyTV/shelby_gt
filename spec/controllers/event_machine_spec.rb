@@ -30,7 +30,22 @@ describe ShelbyGT_EM do
   
   
   context "doing actual work" do
-    it "should call methods of objects in the background" do
+    
+    it "should execute block in then background when next_tick is not overridden" do
+      @some_job = mock_model("MJob")
+      @some_job.should_receive(:run)
+      ShelbyGT_EM.next_tick { @some_job.run }
+      sleep(0.3)
+    end
+    
+    it "should execute block immediately when next_tick is overridden" do
+      Settings::Global[:override_em_next_tick] = true
+      @some_job = mock_model("MJob")
+      @some_job.should_receive(:run)
+      ShelbyGT_EM.next_tick { @some_job.run }
+    end
+    
+    it "should call methods of objects in the background via EM even when our next_tick is overridden" do
       @some_job = mock_model("MJob")
       @some_job.should_receive(:run)
       EM.next_tick { @some_job.run }
@@ -39,7 +54,7 @@ describe ShelbyGT_EM do
     
     it "should set local variables in background (though we would never do this)" do
       should_be_true = false
-      EM.next_tick { should_be_true = true }
+      ShelbyGT_EM.next_tick { should_be_true = true }
       sleep(0.3) #nope, not happy about this
       should_be_true.should == true
     end

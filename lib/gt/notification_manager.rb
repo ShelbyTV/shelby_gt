@@ -7,7 +7,7 @@ module GT
             
       # don't email the creator if they are the upvoting user or they dont have an email address!
       user_to = frame.creator
-      return if (user == user_to) or !user_to.primary_email or (user_to.primary_email == "")
+      return if !user_to or (user == user_to) or !user_to.primary_email or (user_to.primary_email == "")
       
       # Temp: for now only send emails to gt_enabled users
       return unless frame.creator.gt_enabled

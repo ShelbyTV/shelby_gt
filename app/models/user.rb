@@ -235,7 +235,7 @@ class User
   def total_tracker_count() self.social_tracker.inject(:+); end
   
   def send_email_address_to_sailthru(list=Settings::Sailthru.user_list)
-    EM.next_tick do
+    ShelbyGT_EM.next_tick do
       #client = Bacon::Email.new()
       #client.add_email_address(self.primary_email, list)
     end

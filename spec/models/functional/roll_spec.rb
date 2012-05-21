@@ -3,9 +3,9 @@ require 'spec_helper'
 #Functional: hit the database, treat model as black box
 describe Roll do
   before(:each) do
-    @roll = Roll.new
-    @user = User.new
-    @stranger = User.new
+    @roll = Factory.create(:roll, :creator => Factory.create(:user))
+    @user = Factory.create(:user)
+    @stranger = Factory.create(:user)
   end
   
   context "database" do

@@ -26,9 +26,7 @@ class V1::MessagesController < ApplicationController
             begin
               if @conversation.save!
 
-                EM.next_tick do 
-                  GT::NotificationManager.send_new_message_notifications(@conversation, @new_message)
-                end
+                ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(@conversation, @new_message) }
 
                 @status = 200 
                 StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)

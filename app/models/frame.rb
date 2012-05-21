@@ -114,7 +114,7 @@ class Frame
     update_score
     
     # send email notification in a non-blocking manor
-    EM.next_tick { GT::NotificationManager.check_and_send_upvote_notification(u, self) }
+    ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_upvote_notification(u, self) }
     
     self.save
   end

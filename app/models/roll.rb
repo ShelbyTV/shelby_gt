@@ -61,7 +61,7 @@ class Roll
     u.roll_followings << RollFollowing.new(:roll => self)
 
     # send email notification in a non-blocking manor
-    EM.next_tick { GT::NotificationManager.check_and_send_join_roll_notification(u, self) }
+    ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_join_roll_notification(u, self) }
     
     GT::UserActionManager.follow_roll!(u.id, self.id) if u.save and self.save
   end
