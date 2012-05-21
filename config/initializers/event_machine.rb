@@ -27,7 +27,7 @@ end
 # Will only run our EM if PhusionPassenger is defined, so this won't interfere w/ Arnold.
 if defined?(PhusionPassenger)
   ShelbyGT_EM.start
-elsif EM.reactor_running?
+elsif Settings::Global.override_em_next_tick
   #override EM.next_tick to just execute the block now b/c Arnold can't yield from main Fiber (See https://github.com/ShelbyTV/shelby_gt/issues/50)
   module EM
     def self.next_tick pr=nil, &block
