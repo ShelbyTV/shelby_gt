@@ -77,8 +77,10 @@ describe Roll do
     end
     
     it "should be able to hold 1000 following users" do
+      u = Factory.create(:user)
+      
       1000.times do
-        @roll.add_follower(Factory.create(:user))
+        @roll.following_users << FollowingUser.new(:user => u)
       end
       @roll.save #should not raise an error
     end
