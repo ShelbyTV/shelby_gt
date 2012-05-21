@@ -29,6 +29,18 @@ describe V1::RollController do
       get :show, :id=> @roll.id.to_s, :format => :json
       assigns(:status).should eq(200)
     end
+    
+    it "returns rolls when browse is called" do
+      @r1 = Factory.create(:roll, :creator => @u1)
+      @r2 = Factory.create(:roll, :creator => @u1)
+      @r3 = Factory.create(:roll, :creator => @u1)
+      @r4 = Factory.create(:roll, :creator => @u1)
+      roll_arry = [@r1,@r2,@r3,@r4]
+      Roll.stub!(:find).and_return(roll_arry)
+      
+      get :browse, :rolls => [@r1.id, @r2.id, @r3.id, @r4.id], :format => :json
+      assigns(:rolls).should eq(roll_arry)
+    end
   end
   
   describe "PUT update" do
