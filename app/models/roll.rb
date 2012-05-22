@@ -60,15 +60,19 @@ class Roll
     
     return false if self.followed_by?(u)
   
-    self.following_users << FollowingUser.new(:user => u)
-    u.roll_followings << RollFollowing.new(:roll => self)
+    self.push :following_users => FollowingUser.new(:user => u).to_mongo
+    u.push :roll_followings => RollFollowing.new(:roll => self).to_mongo
+    
+    #need to reload so the local copy is up to date for future operations
+    self.reload 
+    u.reload
 
     if send_notification
       # send email notification in a non-blocking manor
       ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_join_roll_notification(u, self) }
     end
     
-    GT::UserActionManager.follow_roll!(u.id, self.id) if u.save and self.save
+    GT::UserActionManager.follow_roll!(u.id, self.id)
   end
   
   def remove_follower(u)
