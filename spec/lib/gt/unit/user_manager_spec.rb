@@ -125,7 +125,7 @@ describe GT::UserManager do
     end
     
     it "should handle Mongo::OperationFailure (due to duplicate nickname on user) when creating a faux User" do
-      GT::UserManager.should_receive(:ensure_users_special_rolls).and_raise(Mongo::OperationFailure)
+      GT::UserManager.should_receive(:ensure_valid_unique_nickname!).and_raise(Mongo::OperationFailure)
       
       nick, provider, uid = "whatever3", "fb", "123uid3--xx--"
       thumb_url = "some:://thumb.url"
@@ -138,7 +138,7 @@ describe GT::UserManager do
     end
     
     it "should handle Mongo::OperationFailure (due to timing issue) and recover by returning the correct user" do
-      GT::UserManager.should_receive(:ensure_users_special_rolls).and_raise(Mongo::OperationFailure)
+      GT::UserManager.should_receive(:ensure_valid_unique_nickname!).and_raise(Mongo::OperationFailure)
       
       #User.first(...) will first return nil, then will return a User, we want that User!
       User.should_receive(:first).and_return(nil, :the_user)

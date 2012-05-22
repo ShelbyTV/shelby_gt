@@ -14,13 +14,12 @@ module GT
     def self.create_new_user_from_omniauth(omniauth)
       user, auth = build_new_user_and_auth(omniauth)
 
-      # build, don't save, public and watch_later rolls
-      ensure_users_special_rolls(user)
-      
-      #additional meta-data for faux user public roll
-      user.public_roll.origin_network = Roll::SHELBY_USER_PUBLIC_ROLL
-
       if user.save
+        # Need to ensure special rolls after saving user b/c of the way add_follower works
+        ensure_users_special_rolls(user, true)
+        #additional meta-data for faux user public roll
+        user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
+        
         GT::PredatorManager.initialize_video_processing(user, auth)
         
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'], user.id, 'signup')
@@ -104,12 +103,12 @@ module GT
         ensure_valid_unique_nickname!(u)
         u.downcase_nickname = u.nickname.downcase
       
-        ensure_users_special_rolls(u)
-
-        #additional meta-data for faux user public roll
-        u.public_roll.origin_network = provider
-      
         if u.save
+          # Need to ensure special rolls after saving user b/c of the way add_follower works
+          ensure_users_special_rolls(u, true)
+          #additional meta-data for faux user public roll
+          u.public_roll.update_attribute(:origin_network, provider)
+          
           StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['faux'])
           return u
         else
@@ -161,8 +160,10 @@ module GT
     # should follow just the public roll
     def self.ensure_users_special_rolls(u, save=false)
       build_public_roll_for_user(u) unless u.public_roll
-      u.public_roll.add_follower(u) unless u.following_roll?(u.public_roll)
-      u.public_roll.save if save
+      # Must save the user (which will persistes the public roll, set that id in user, then persist the user)
+      # b/c add_follower does an atomic push and reloads the roll and user
+      u.save if save
+      u.public_roll.add_follower(u) if save and !u.following_roll?(u.public_roll)
       
       build_watch_later_roll_for_user(u) unless u.watch_later_roll
       #users don't follow their watch_later_roll

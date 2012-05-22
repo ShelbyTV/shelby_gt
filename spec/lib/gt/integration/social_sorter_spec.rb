@@ -4,20 +4,21 @@ require 'social_sorter'
 
 # INTEGRATION test (b/c it relies on and implicitly tests UserManager)
 describe GT::SocialSorter do
-  before(:all) do
-    @observer = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+  before(:each) do
+    @observer = Factory.create(:user)
     
-    @existing_user = User.new( :nickname => "#{rand.to_s}-#{Time.now.to_f}")
-    @existing_user_nick, @existing_user_provider, @existing_user_uid = "nick1", "ss_1", "uid001"
+    @existing_user = Factory.create(:user)
+    @existing_user_nick, @existing_user_provider, @existing_user_uid = "nick1", "ss_1#{rand.to_s}", "uid001#{rand.to_s}"
     auth = Authentication.new
     auth.provider = @existing_user_provider
     auth.uid = @existing_user_uid
     @existing_user.authentications << auth
-    @existing_user.public_roll = Roll.new(:title => "yup")
-    @existing_user.public_roll.creator = @existing_user
     @existing_user.save
-    @existing_user.public_roll.save
     
+    @existing_user_public_roll = Factory.create(:roll, :creator => @existing_user, :title => "yup")
+    @existing_user.public_roll = @existing_user_public_roll
+    @existing_user.save
+
     @video = Video.create
   end
   
@@ -116,14 +117,17 @@ describe GT::SocialSorter do
     end
     
     it "should not make observing User auto-follow public Roll if they've unfollowed it" do
+      #need to follow first
+      @existing_user.public_roll.add_follower(@observer)
+      #can now un-follow
       @existing_user.public_roll.remove_follower(@observer)
       @existing_user.public_roll.save
       @observer.save
 
+      @observer.following_roll?(@existing_user.public_roll).should == false
       res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
       @observer.following_roll?(@existing_user.public_roll).should == false
-      @observer.reload.following_roll?(@existing_user.public_roll).should == false
-      @existing_user.public_roll.reload.followed_by?(@observer).should == false
+      @existing_user.public_roll.followed_by?(@observer).should == false
       @observer.following_roll?(res[:frame].roll).should == false
     end
     
