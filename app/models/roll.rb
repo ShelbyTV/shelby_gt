@@ -52,7 +52,7 @@ class Roll
   
   def following_users_models() following_users.map { |fu| fu.user }; end
   
-  def add_follower(u)
+  def add_follower(u, send_notification=true)
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
     
     return false if self.followed_by?(u)
@@ -60,8 +60,10 @@ class Roll
     self.following_users << FollowingUser.new(:user => u)
     u.roll_followings << RollFollowing.new(:roll => self)
 
-    # send email notification in a non-blocking manor
-    ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_join_roll_notification(u, self) }
+    if send_notification
+      # send email notification in a non-blocking manor
+      ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_join_roll_notification(u, self) }
+    end
     
     GT::UserActionManager.follow_roll!(u.id, self.id) if u.save and self.save
   end

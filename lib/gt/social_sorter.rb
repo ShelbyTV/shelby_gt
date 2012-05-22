@@ -49,7 +49,7 @@ module GT
         
         #observing_user should be following the posting_user's public roll, unless they specifically unfollowed it
         unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)  
-          posting_user.public_roll.add_follower(observing_user)
+          posting_user.public_roll.add_follower(observing_user, false)
           new_following = true
           
           posting_user.public_roll.save
