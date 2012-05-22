@@ -229,16 +229,6 @@ describe GT::Framer do
         ) }.should raise_error(ArgumentError)
     end
   
-    it "should not create a Frame without Creator" do
-      lambda { GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => nil,
-        :video => @video,
-        :message => @message,
-        :roll => @roll
-        ) }.should raise_error(ArgumentError)
-    end
-    
     it "should not create a Frame without action" do
       lambda { GT::Framer.create_frame(
         :action => nil,
