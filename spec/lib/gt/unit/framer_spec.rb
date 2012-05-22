@@ -365,7 +365,7 @@ describe GT::Framer do
       @f1.save
       @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
       
-      @f2.score.should == @f1.score
+      @f2.score.should be_within(0.001).of(@f1.score)
       @f2.upvoters.should == @f1.upvoters
     end
     
