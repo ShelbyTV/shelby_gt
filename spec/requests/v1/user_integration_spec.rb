@@ -55,7 +55,7 @@ describe 'v1/user' do
         @u1.save
         get '/v1/user/'+@u1.id+'/roll_followings'
         response.body.should be_json_eql(200).at_path("status")
-        response.body.should have_json_path("result/roll_followings")
+        parse_json(response.body)["result"].class.should eq(Array)
       end
       
       it "should not show a users rolls if the supplied user_id is NOT the current_users" do
