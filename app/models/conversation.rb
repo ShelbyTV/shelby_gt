@@ -31,6 +31,8 @@ class Conversation
   
   #don't need anythign mass-assignable (yet)
   attr_accessible
+  
+  def created_at() self.id.generation_time; end
 
   def self.first_including_message_origin_id(mid)
     Conversation.first( :conditions => { 'messages.b' => mid } )
