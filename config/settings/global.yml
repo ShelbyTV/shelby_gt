@@ -8,6 +8,7 @@ development:
 
 test:
   <<: *defaults
+  override_em_next_tick: true
 
 production: &production
   <<: *defaults

@@ -37,6 +37,18 @@ describe Roll do
       @user.following_roll?(@roll).should == true
     end
     
+    it "should email on add follower" do
+      lambda {
+        @roll.add_follower(@user)
+      }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+    
+    it "should not email on add follower if send_notification=false" do
+      lambda {
+        @roll.add_follower(@user, false)
+      }.should change(ActionMailer::Base.deliveries,:size).by(0)
+    end
+    
     it "should not add follower if they're already following" do
       lambda {
         @roll.add_follower(@user)
