@@ -1,7 +1,5 @@
-object @user
+collection @roll_followings
 
-child :roll_followings do
-	glue :roll do
-		extends 'v1/roll/show'
-	end
+glue :roll do
+	extends 'v1/roll/show'
 end
