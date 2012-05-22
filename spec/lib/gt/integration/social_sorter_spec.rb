@@ -182,10 +182,10 @@ describe GT::SocialSorter do
     
     it "should make observing User auto-follow Roll even if this Message has already been posted to a Roll, and observering User should get a DashboardEntry" do
       lambda {
-        GT::SocialSorter.sort(@existing_user_random_msg, @video, User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
+        GT::SocialSorter.sort(@existing_user_random_msg, @video, Factory.create(:user))
       }.should change { Frame.count }.by(1)
 
-      new_observer = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+      new_observer = Factory.create(:user)
       
       new_observer.following_roll?(@existing_user.public_roll).should == false
       lambda {
