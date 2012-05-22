@@ -49,6 +49,9 @@ ShelbyGt::Application.routes.draw do
       post 'join' => 'roll#join'
       post 'leave' => 'roll#leave'
     end
+    namespace :roll do
+       resources :genius, :only => [:create]
+    end
     resources :frame, :only => [:show, :destroy] do
       post 'upvote' => 'frame#upvote'
       post 'add_to_watch_later' => 'frame#add_to_watch_later'
@@ -79,6 +82,8 @@ ShelbyGt::Application.routes.draw do
     get 'POST/roll' => 'roll#create'
     get 'PUT/roll/:id' => 'roll#update'
     get 'DELETE/roll/:id' => 'roll#destroy'
+    # genius
+    get 'POST/roll/genius' => 'genius#create'
     # frame
     get 'POST/roll/:roll_id/frames' => "frame#create"
     get 'POST/frame/:frame_id/upvote' => 'frame#upvote'

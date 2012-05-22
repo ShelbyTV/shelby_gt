@@ -223,6 +223,18 @@ describe V1::RollController do
   end
 end
 
+describe V1::Roll::GeniusController do
+  describe "routing" do
+    it "routes for PUT" do
+      { :post => "/v1/roll/genius" }.should route_to(
+        :controller => "v1/roll/genius",
+        :action => "create",
+        :format => "json"
+      )
+    end 
+  end
+end 
+
 describe V1::VideoController do
   describe "routing" do
     it "routes for GET" do
