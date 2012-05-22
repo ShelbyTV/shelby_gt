@@ -48,12 +48,10 @@ module GT
       def self.sort_public_message(message, video, observing_user, posting_user)
         
         #observing_user should be following the posting_user's public roll, unless they specifically unfollowed it
-        unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)  
+        unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)
           posting_user.public_roll.add_follower(observing_user, false)
-          new_following = true
           
-          posting_user.public_roll.save
-          observing_user.save
+          new_following = true
         end
         
         if convo = already_posted?(message, posting_user.public_roll)

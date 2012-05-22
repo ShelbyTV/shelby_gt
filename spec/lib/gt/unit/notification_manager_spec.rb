@@ -121,6 +121,7 @@ describe GT::NotificationManager do
     
     it "should email all members of a private roll when there's a new comment (even if they haven't participated in this convo)" do
       @roll.public = false
+      @roll.save
       @roll.add_follower(Factory.create(:user))
       @roll.add_follower(Factory.create(:user))
       

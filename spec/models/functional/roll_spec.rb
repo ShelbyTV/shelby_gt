@@ -27,14 +27,14 @@ describe Roll do
       @roll.followed_by?(@user).should == false
     
       @roll.add_follower(@user)
-      @roll.followed_by?(@user).should == true
+      @roll.reload.followed_by?(@user).should == true
     end
   
     it "should be able to add a follower, who should then know they're following this role" do
       @roll.add_follower(@user)
     
-      @roll.followed_by?(@user).should == true
-      @user.following_roll?(@roll).should == true
+      @roll.reload.followed_by?(@user).should == true
+      @user.reload.following_roll?(@roll).should == true
     end
     
     it "should email on add follower" do
@@ -52,11 +52,11 @@ describe Roll do
     it "should not add follower if they're already following" do
       lambda {
         @roll.add_follower(@user)
-      }.should change { @roll.following_users.count } .by(1)
+      }.should change { @roll.reload.following_users.count } .by(1)
       
       lambda {
         @roll.add_follower(@user).should == false
-      }.should_not change { @roll.following_users.count }
+      }.should_not change { @roll.reload.following_users.count }
     end
     
     it "should be able to remove a follower, who then knows they've unfollowed this role" do

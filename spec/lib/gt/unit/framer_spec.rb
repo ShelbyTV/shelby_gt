@@ -115,9 +115,9 @@ describe GT::Framer do
     end
   
     it "should create DashboardEntries for all followers of Roll" do
-      @roll.add_follower(u1 = User.create)
-      @roll.add_follower(u2 = User.create)
-      @roll.add_follower(u3 = User.create)
+      @roll.add_follower(u1 = Factory.create(:user))
+      @roll.add_follower(u2 = Factory.create(:user))
+      @roll.add_follower(u3 = Factory.create(:user))
       user_ids = [u1.id, u2.id, u3.id]
       
       res = GT::Framer.create_frame(
@@ -262,9 +262,9 @@ describe GT::Framer do
     
     it "should create DashboardEntries for all users (except the re-reroller) following the Roll a Frame is re-rolled to" do
       @roll.add_follower(@roll_creator)
-      @roll.add_follower(u1 = User.create)
-      @roll.add_follower(u2 = User.create)
-      @roll.add_follower(u3 = User.create)
+      @roll.add_follower(u1 = Factory.create(:user))
+      @roll.add_follower(u2 = Factory.create(:user))
+      @roll.add_follower(u3 = Factory.create(:user))
       user_ids = [@roll_creator.id, u1.id, u2.id, u3.id]
       
       # Re-roll some random frame on the roll this user created
