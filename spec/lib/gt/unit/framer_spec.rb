@@ -38,6 +38,31 @@ describe GT::Framer do
       res[:frame].roll.should == @roll
     end
     
+    it "should return false if safe save failed due to duplicate key" do
+      @message.origin_id = "12345"
+      lambda {
+        res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :roll => @roll
+          )
+        res[:frame].class.should == Frame
+      }.should change { Frame.count } .by(1)
+        
+      lambda {
+        res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :roll => @roll
+          )
+        res.should == false
+      }.should_not change { Frame.count }
+    end
+    
     it "should track the Frame in the Conversation" do
       res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],

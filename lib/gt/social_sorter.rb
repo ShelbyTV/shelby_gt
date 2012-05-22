@@ -53,9 +53,20 @@ module GT
           
           new_following = true
         end
-        
-        if convo = already_posted?(message, posting_user.public_roll)
-          # This has already been posted, so we're not going to create a Frame.
+
+        #Add Frame to posting_user's public roll
+        res = GT::Framer.create_frame(
+          :creator => posting_user,
+          :video => video,
+          :message => message,
+          :roll => posting_user.public_roll,
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame]
+          )
+
+        if !res
+          # conversation was already posted
+          convo = Conversation.first_including_message_origin_id(message.origin_id)
+          # This has already been posted, so we weren't able to create a Frame.
           #  BUT if observing_user was just added as a follower of posting_user's public_roll, 
           #      a DashboardEntry was never created for this Frame/observing_user...
           if new_following and original_frame = convo.frame
@@ -64,15 +75,8 @@ module GT
 
           return false
         end
-        
-        #Add Frame to posting_user's public roll
-        GT::Framer.create_frame(
-          :creator => posting_user,
-          :video => video,
-          :message => message,
-          :roll => posting_user.public_roll,
-          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame]
-          )
+
+        return res
       end
       
       # This is a private message: don't put it on the public roll of the posting user.
@@ -95,14 +99,6 @@ module GT
           Rails.logger.fatal("[GT::SocialSorter#get_or_create_posting_user_for] rescued but re-raising #{e} for message #{message.inspect}")
           raise e
         end
-      end
-      
-      def self.already_posted?(message, roll)
-        # See if there is a conversation that has a matching message
-        if c = Conversation.first_including_message_origin_id(message.origin_id)
-          return c if c.messages.any? { |m| m.origin_network == message.origin_network and m.origin_id == message.origin_id }
-        end
-        return false
       end
        
   end
