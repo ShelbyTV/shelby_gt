@@ -80,8 +80,7 @@ class V1::UserController < ApplicationController
         
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
-        @user = current_user
-        @roll_followings = @user.roll_followings
+        @rolls = current_user.roll_followings.map! {|r| r.roll }
         @status = 200
       else
         render_error(403, "you are not authorized to view that users rolls.")
