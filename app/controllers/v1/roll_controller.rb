@@ -262,7 +262,7 @@ class V1::RollController < ApplicationController
       if params[:id]
         return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:id]))
         return render_error(404, "could not find that roll to destroy") unless @roll = Roll.find(roll_id)
-        if @roll.destroy
+        if @roll.following_users.each { |fu| @roll.remove_follower(fu.user) } and @roll.destroy
           @status =  200
         else
           render_error(404, "could not destroy that roll")
