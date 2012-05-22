@@ -1,5 +1,3 @@
-collection @roll_followings
+collection @rolls
 
-glue :roll do
-	extends 'v1/roll/show'
-end
+attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url, :origin_network
