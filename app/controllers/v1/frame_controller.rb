@@ -94,9 +94,15 @@ class V1::FrameController < ApplicationController
         @frame = Frame.find(frame_id)
         #N.B. If frame has a roll, check permissions.  If not, it has to be on your dashboard.  Checking for that is expensive b/c we don't index that way.
         # But guessing a frame is very difficult and noticeable as hacking, so we can fairly safely just return the Frame.
-        if @frame and (@frame.roll_id == nil or @frame.roll.viewable_by?(current_user))
-          @status =  200
-          @include_frame_children = (params[:include_children] == "true") ? true : false
+        if @frame 
+          # make sure the frame has a roll so this doesn't get all 'so i married an axe murderer' on the consumer.
+          frame_viewable_by = (@frame.roll and @frame.roll.viewable_by?(current_user))
+          if (@frame.roll_id == nil or frame_viewable_by)
+            @status =  200
+            @include_frame_children = (params[:include_children] == "true") ? true : false
+          else
+            render_error(404, "that frame isn't viewable or has a bad roll")
+          end
         else
           render_error(404, "could not find that frame")
         end
