@@ -96,7 +96,7 @@ class V1::FrameController < ApplicationController
         # But guessing a frame is very difficult and noticeable as hacking, so we can fairly safely just return the Frame.
         if @frame 
           # make sure the frame has a roll so this doesn't get all 'so i married an axe murderer' on the consumer.
-          frame_viewable_by = (@frame.roll and @frame.roll.viewable_by?(current_user))
+          frame_viewable_by = (@frame.roll.viewable_by?(current_user)) # testing taking this out: @frame.roll and 
           if (@frame.roll_id == nil or frame_viewable_by)
             @status =  200
             @include_frame_children = (params[:include_children] == "true") ? true : false
