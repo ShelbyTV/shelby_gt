@@ -33,6 +33,12 @@ describe 'v1/frame' do
           get '/v1/frame/'+@f.id+'xxx'
           response.body.should be_json_eql(404).at_path("status")
         end
+        
+        it "should return 404 if a frame doesnt have a roll but has a roll_id" do
+          @f.roll = nil; @f.roll_id = 2; @f.save
+          get '/v1/frame/'+@f.id
+          response.body.should be_json_eql(404).at_path("status")
+        end
       end
       
       context 'all frames in a roll' do
