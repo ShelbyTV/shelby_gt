@@ -9,12 +9,14 @@ describe GT::VideoManager do
   before(:all) do
     @short_url = "http://danspinosa.com/xyz"
     @url1 = "http://danspinosa.com/watch/xyz1234/this-is-the-name"
-    
+    @url2 = "deadwildroses.wordpress.com/2012/05/21/another-light-blogging-week-moving/"
     @v = Video.new
     @v.provider_name = "pro1"
     @v.provider_id = "330033"
     @v.save
+
   end
+
 
   context "get_or_create_videos_for_url" do
     
@@ -23,7 +25,11 @@ describe GT::VideoManager do
       GT::VideoManager.get_or_create_videos_for_url("dan").should == []
       GT::VideoManager.get_or_create_videos_for_url("http://4sq.com/xyz").should == []
     end
-    
+
+    it "should find deep stuff" do
+        print GT::VideoManager.get_or_create_videos_for_url(@url2)
+      end
+
     it "should find Video already in DB" do
       GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
       

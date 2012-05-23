@@ -1,5 +1,6 @@
 require 'url_helper'
 require 'url_video_detector'
+require 'deep_link_parser'
 
 # This is the one and only place where Videos are created.
 # VideoManager handles the URLs resolution/parsing in the background
@@ -27,7 +28,7 @@ module GT
     #
     # [Video] --- and Array of 0 or more Videos, persisted.
     # 
-    def self.get_or_create_videos_for_url(url, use_em=false, memcache_client=nil, should_resolve_url=true)
+    def self.get_or_create_videos_for_url(url, use_em=false, memcache_client=nil, should_resolve_url=true, check_deep=true)
       begin
         return [] unless (url = GT::UrlHelper.get_clean_url(url))
       rescue
@@ -61,8 +62,17 @@ module GT
       # In the future, if we deep-examine pages for video, would have a cross-references DB that we would look at right now
       # For a given URL, it would return an array of id's for Videos which we could then return
       ##### -- -- -- -- >>>
-      
-      # Still no video...
+      if check_deep && deep_urls = GT::DeepLinkParser.find_deep_link(url)
+        puts deep_urls
+        deep_videos = []
+        deep_urls.each do |deep_url| 
+          deep_video = get_or_create_videos_for_url(deep_url, false)
+          deep_videos += deep_video
+        end
+        return deep_videos
+      end
+          
+	  # Still no video...
       # Examine that URL (via our cache, our service, or external service like embed.ly), looking for video
       video_hashes = GT::UrlVideoDetector.examine_url_for_video(url, use_em, memcache_client)
       
@@ -88,7 +98,8 @@ module GT
             videos << v if v
           end
         end
-        
+
+
         return videos
       end
       
@@ -143,6 +154,5 @@ module GT
           return nil
         end
       end
-    
+    end
   end
-end
