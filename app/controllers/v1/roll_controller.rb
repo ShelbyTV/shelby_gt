@@ -17,14 +17,17 @@ class V1::RollController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
       if params[:id]
         return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:id]))
-        @roll = Roll.find(roll_id)
         @include_following_users = params[:following_users] == "true" ? true : false
-        if user_signed_in? and @roll.viewable_by?(current_user)
-          @status =  200
-        elsif @roll.public
-          @status =  200
+        if @roll = Roll.find(roll_id)
+          if user_signed_in? and @roll.viewable_by?(current_user)
+            @status =  200
+          elsif @roll.public
+            @status =  200
+          else
+            render_error(404, "you are not authorized to see that roll")
+          end
         else
-          render_error(404, "you are not authorized to see that roll")
+          render_error(404, "that roll does not exist")
         end
       elsif params[:public_roll] and user_signed_in? #this is for the aliased route to get users public roll
         if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
