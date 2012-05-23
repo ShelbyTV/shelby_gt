@@ -38,6 +38,31 @@ describe GT::Framer do
       res[:frame].roll.should == @roll
     end
     
+    it "should return false if safe save failed due to duplicate key" do
+      @message.origin_id = "12345"
+      lambda {
+        res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :roll => @roll
+          )
+        res[:frame].class.should == Frame
+      }.should change { Frame.count } .by(1)
+        
+      lambda {
+        res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :roll => @roll
+          )
+        res.should == false
+      }.should_not change { Frame.count }
+    end
+    
     it "should track the Frame in the Conversation" do
       res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
@@ -204,16 +229,6 @@ describe GT::Framer do
         ) }.should raise_error(ArgumentError)
     end
   
-    it "should not create a Frame without Creator" do
-      lambda { GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => nil,
-        :video => @video,
-        :message => @message,
-        :roll => @roll
-        ) }.should raise_error(ArgumentError)
-    end
-    
     it "should not create a Frame without action" do
       lambda { GT::Framer.create_frame(
         :action => nil,
@@ -350,7 +365,7 @@ describe GT::Framer do
       @f1.save
       @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
       
-      @f2.score.should == @f1.score
+      @f2.score.should be_within(0.001).of(@f1.score)
       @f2.upvoters.should == @f1.upvoters
     end
     

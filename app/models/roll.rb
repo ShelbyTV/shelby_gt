@@ -15,7 +15,7 @@ class Roll
   
   # it was created by somebody
   belongs_to :creator,  :class_name => 'User', :required => true
-  key :creator_id,      ObjectId, :required => true, :abbr => :a
+  key :creator_id,      ObjectId, :abbr => :a
   
   # it has some basic categorical info
   key :title,           String, :required => true, :abbr => :b
@@ -33,8 +33,11 @@ class Roll
   key :origin_network,  String, :abbr => :f
   SHELBY_USER_PUBLIC_ROLL = "shelby_person"
   
-  # The shortlinks created for each type of share, eg twitter, tumvlr, email, facebook
+  # The shortlinks created for each type of share, eg twitter, tumblr, email, facebook
   key :short_links, Hash, :abbr => :g, :default => {}
+
+  # boolean indicating whether this roll is a genius roll
+  key :genius,          Boolean, :abbr => :h
 
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
