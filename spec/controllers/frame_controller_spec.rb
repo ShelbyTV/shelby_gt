@@ -41,6 +41,17 @@ describe V1::FrameController do
       assigns(:status).should eq(200)
     end
 
+    it "properly aliases for users heart roll" do
+      User.stub(:find) { @u1 }
+      @u1.stub(:upvoted_roll) { @roll }
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
+      get :index, :user_id => @u1.id, :heart_roll => true, :format => :json
+      
+      assigns(:roll).should eq(@roll)
+      assigns(:frames).should eq([@frame])
+      assigns(:status).should eq(200)
+    end
+
     it "should return error if user isnt logged in and roll is private" do
       sign_out @u1
       @roll.public = false; @roll.save
