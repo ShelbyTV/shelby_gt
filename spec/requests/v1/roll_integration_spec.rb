@@ -2,8 +2,10 @@ require 'spec_helper'
 
 describe 'v1/roll' do
   before(:all) do
-    @u1 = Factory.create(:user)
-    @u2 = Factory.create(:user)
+    @uv_roll = Factory.create(:roll, :creator => @u1)
+    @pub_roll = Factory.create(:roll, :creator => @u1)
+    @u1 = Factory.create(:user, :public_roll => @pub_roll, :upvoted_roll => @uv_roll)
+    @u2 = Factory.create(:user, :public_roll => @pub_roll, :upvoted_roll => @uv_roll)
     @u2.downcase_nickname = @u2.nickname.downcase
     @u2.save
     @r = Factory.create(:roll, :creator => @u1)
@@ -31,6 +33,7 @@ describe 'v1/roll' do
       it "should return heart roll of user when given a nickname" do
         get 'v1/user/'+@u2.nickname+'/heart_roll'
         response.body.should be_json_eql(200).at_path("status")
+        parse_json(response.body)["result"]["title"].should eq("hearted")
       end
     
       it "should return error message if roll doesnt exist" do
