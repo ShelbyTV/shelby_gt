@@ -31,9 +31,13 @@ class V1::FrameController < ApplicationController
         return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:roll_id]))
         
         @roll = Roll.find(roll_id)
-      elsif params[:public_roll]
+      elsif (params[:public_roll] or params[:heart_roll])
         if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
-          @roll = user.public_roll 
+          if params[:public_roll]
+            @roll = user.public_roll
+          elsif params[:heart_roll]
+            @roll = user.upvoted_roll
+          end
         end
       end
       
