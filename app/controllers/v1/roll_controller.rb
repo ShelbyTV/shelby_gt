@@ -20,6 +20,7 @@ class V1::RollController < ApplicationController
         @include_following_users = params[:following_users] == "true" ? true : false
         if @roll = Roll.find(roll_id)
           if user_signed_in? and @roll.viewable_by?(current_user)
+            params[:heart_roll] = true if @roll.id == current_user.upvoted_roll_id
             @status =  200
           elsif @roll.public
             @status =  200
