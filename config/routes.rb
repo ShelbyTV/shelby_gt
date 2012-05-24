@@ -40,6 +40,8 @@ ShelbyGt::Application.routes.draw do
       get 'roll_followings' => 'user#roll_followings', :on => :member
       get 'personal_roll' => 'roll#show', :defaults => {:public_roll => true}
       get 'personal_roll/frames' => 'frame#index', :defaults => {:public_roll => true}
+      get 'heart_roll' => 'roll#show', :defaults => {:heart_roll => true}
+      get 'heart_roll/frames' => 'frame#index', :defaults => {:heart_roll => true}
     end
     get 'roll/browse' => 'roll#browse'
     resources :roll, :only => [:show, :create, :update, :destroy] do

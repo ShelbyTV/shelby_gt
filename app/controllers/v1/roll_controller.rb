@@ -29,9 +29,13 @@ class V1::RollController < ApplicationController
         else
           render_error(404, "that roll does not exist")
         end
-      elsif params[:public_roll] and user_signed_in? #this is for the aliased route to get users public roll
+      elsif (params[:public_roll] or params[:heart_roll]) and user_signed_in? #this is for the aliased route to get users public roll
         if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
-          @roll = user.public_roll
+          if params[:public_roll]
+            @roll = user.public_roll
+          elsif params[:heart_roll]
+            @roll = user.upvoted_roll
+          end
           @include_following_users = params[:following_users] == "true" ? true : false
           @status = 200
         else

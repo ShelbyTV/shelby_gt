@@ -86,7 +86,7 @@ describe 'v1/frame' do
           response.body.should have_json_size(2).at_path("result/frames")
           parse_json(response.body)["result"]["frames"][0]["id"].should eq(@f2.id.to_s)
         end
-        
+=end
         it "should return frames of personal roll of user when given a nickname" do
           u2 = Factory.create(:user)
           u2.downcase_nickname = u2.nickname.downcase
@@ -94,6 +94,16 @@ describe 'v1/frame' do
           r2 = Factory.create(:roll, :creator => u2, :public => true)
           u2.public_roll_id = r2.id; u2.save
           get 'v1/user/'+u2.nickname+'/personal_roll/frames'
+          response.body.should be_json_eql(200).at_path("status")
+        end
+
+        it "should return frames of heart roll of user when given a nickname" do
+          u2 = Factory.create(:user)
+          u2.downcase_nickname = u2.nickname.downcase
+          u2.save
+          r2 = Factory.create(:roll, :creator => u2, :public => true)
+          u2.upvoted_roll_id = r2.id; u2.save
+          get 'v1/user/'+u2.nickname+'/heart_roll/frames'
           response.body.should be_json_eql(200).at_path("status")
         end
         
@@ -110,7 +120,6 @@ describe 'v1/frame' do
           get '/v1/roll/'+@f.id+'xxx/frames'
           response.body.should be_json_eql(404).at_path("status")
         end        
-=end
       end
     end
     
