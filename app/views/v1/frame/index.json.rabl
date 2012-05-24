@@ -1,6 +1,14 @@
 object @roll
 
-attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url
+attributes :id, :collaborative, :public, :creator_id, :title
+
+code :thumbnail_url do |r|
+	if params[:heart_roll]
+		Settings::ShelbyAPI.web_root + "/images/assets/favorite_roll_avatar.png"
+	else
+		r.thumbnail_url
+	end
+end
 
 child @frames do
 		
