@@ -20,8 +20,8 @@ if current_user == @user
 		@user.watch_later_roll_id
 	end
 	
-	code :heart_roll_id do |u|
-		u.upvoted_roll_id
+	node "heart_roll_id" do
+		@user.upvoted_roll_id
 	end
 
 	code :app_progress do |u|
