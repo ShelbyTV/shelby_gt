@@ -100,12 +100,12 @@ describe GT::UserManager do
         usr.watch_later_roll.class.should == Roll
         usr.watch_later_roll.persisted?.should == true
         
-        usr.upvoted_roll.class.should == Roll
-        usr.upvoted_roll.persisted?.should == true
-        
         usr.viewed_roll.class.should == Roll
         usr.viewed_roll.persisted?.should == true
-        
+
+        usr.upvoted_roll.class.should == Roll
+        usr.upvoted_roll.persisted?.should == true
+                
         usr.public_roll.class.should == Roll
         usr.public_roll.persisted?.should == true
         usr.public_roll.thumbnail_url.should == thumb_url
@@ -187,9 +187,9 @@ describe GT::UserManager do
         u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
         
         u.following_roll?(u.public_roll).should == true
+        u.following_roll?(u.upvoted_roll).should == true
         
         u.following_roll?(u.watch_later_roll).should == false
-        u.following_roll?(u.upvoted_roll).should == false
         u.following_roll?(u.viewed_roll).should == false
       }.should change { User.count }.by(1)
     end
@@ -604,8 +604,8 @@ describe GT::UserManager do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         
         u.following_roll?(u.public_roll).should == true
+        u.following_roll?(u.upvoted_roll).should == true
         u.following_roll?(u.watch_later_roll).should == false
-        u.following_roll?(u.upvoted_roll).should == false
         u.following_roll?(u.viewed_roll).should == false
       end
       
