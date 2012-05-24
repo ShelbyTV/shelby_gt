@@ -31,6 +31,7 @@ class V1::FrameController < ApplicationController
         return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:roll_id]))
         
         @roll = Roll.find(roll_id)
+        
       elsif (params[:public_roll] or params[:heart_roll])
         if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
           if params[:public_roll]
@@ -43,7 +44,9 @@ class V1::FrameController < ApplicationController
       
       if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
-                
+        # lets the view show appropriate information, eg thumbnail_url
+        params[:heart_roll] = true if (user_signed_in? and @roll.id == current_user.upvoted_roll_id)
+
         if params[:since_id]
           
           return render_error(404, "please specify a valid since_id") unless (since_id = ensure_valid_bson_id(params[:since_id]))
@@ -52,7 +55,6 @@ class V1::FrameController < ApplicationController
             case params[:order]
             when "1", nil, "forward"
               @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.lte => since_id_frame.score).all
-              #puts "frames: #{@frames.length}"
             when "-1", "reverse"
               @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.gte => since_id_frame.score).all
             end

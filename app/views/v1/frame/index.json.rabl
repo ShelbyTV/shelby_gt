@@ -1,6 +1,14 @@
 object @roll
 
-attributes :id, :collaborative, :public, :creator_id, :title
+attributes :id, :collaborative, :public, :creator_id
+
+code :title do |r|
+	if params[:heart_roll]
+		"hearted"
+	else
+		r.title
+	end
+end
 
 code :thumbnail_url do |r|
 	if params[:heart_roll]
