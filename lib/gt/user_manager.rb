@@ -273,8 +273,7 @@ module GT
         r.creator = u
         r.public = false
         r.collaborative = false
-        r.title = "Hearted"
-        r.thumbnail_url = u.user_image || u.user_image_original
+        r.title = "&hearts;'d Roll"
         u.upvoted_roll = r
       end
       
