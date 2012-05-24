@@ -81,13 +81,23 @@ describe V1::FrameController do
       )
     end 
     
-    it "alias for GET INDEX" do
+    it "alias to GET INDEX of personal_roll" do
       { :get => "/v1/user/1/personal_roll/frames" }.should route_to(
         :controller => "v1/frame",
         :action => "index",
         :format => "json",
         :user_id => "1",
         :public_roll => true
+      )
+    end
+
+    it "alias to GET INDEX of heart_roll" do
+      { :get => "/v1/user/1/heart_roll/frames" }.should route_to(
+        :controller => "v1/frame",
+        :action => "index",
+        :format => "json",
+        :user_id => "1",
+        :heart_roll => true
       )
     end
 
@@ -158,7 +168,7 @@ describe V1::RollController do
       )
     end 
     
-    it "alias for GET" do
+    it "alias to GET personal_roll" do
       { :get => "/v1/user/1/personal_roll" }.should route_to(
         :controller => "v1/roll",
         :action => "show",
@@ -167,6 +177,16 @@ describe V1::RollController do
         :public_roll => true
       )
     end 
+    
+    it "alias to GET hearted roll" do
+      { :get => "/v1/user/1/heart_roll" }.should route_to(
+        :controller => "v1/roll",
+        :action => "show",
+        :format => "json",
+        :user_id => "1",
+        :heart_roll => true
+      )
+    end
     
     it "route to browser roll" do
       { :get => "/v1/roll/browse" }.should route_to(
