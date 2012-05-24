@@ -23,7 +23,7 @@ module GT
           sleep(boot_grace)
         
           Thread.current[:last_consumer_turns] = 0
-          Thread.current[:suicide_time] = rand(20..30).minutes.from_now
+          Thread.current[:suicide_time] = rand(15..25).minutes.from_now
         
           while($running) do
             sleep(turn_period)
