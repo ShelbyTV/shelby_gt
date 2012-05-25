@@ -100,12 +100,12 @@ describe GT::UserManager do
         usr.watch_later_roll.class.should == Roll
         usr.watch_later_roll.persisted?.should == true
         
-        usr.upvoted_roll.class.should == Roll
-        usr.upvoted_roll.persisted?.should == true
-        
         usr.viewed_roll.class.should == Roll
         usr.viewed_roll.persisted?.should == true
-        
+
+        usr.upvoted_roll.class.should == Roll
+        usr.upvoted_roll.persisted?.should == true
+                
         usr.public_roll.class.should == Roll
         usr.public_roll.persisted?.should == true
         usr.public_roll.thumbnail_url.should == thumb_url
@@ -125,7 +125,7 @@ describe GT::UserManager do
     end
     
     it "should handle Mongo::OperationFailure (due to duplicate nickname on user) when creating a faux User" do
-      GT::UserManager.should_receive(:ensure_users_special_rolls).and_raise(Mongo::OperationFailure)
+      GT::UserManager.should_receive(:ensure_valid_unique_nickname!).and_raise(Mongo::OperationFailure)
       
       nick, provider, uid = "whatever3", "fb", "123uid3--xx--"
       thumb_url = "some:://thumb.url"
@@ -138,7 +138,7 @@ describe GT::UserManager do
     end
     
     it "should handle Mongo::OperationFailure (due to timing issue) and recover by returning the correct user" do
-      GT::UserManager.should_receive(:ensure_users_special_rolls).and_raise(Mongo::OperationFailure)
+      GT::UserManager.should_receive(:ensure_valid_unique_nickname!).and_raise(Mongo::OperationFailure)
       
       #User.first(...) will first return nil, then will return a User, we want that User!
       User.should_receive(:first).and_return(nil, :the_user)
@@ -187,9 +187,9 @@ describe GT::UserManager do
         u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
         
         u.following_roll?(u.public_roll).should == true
+        u.following_roll?(u.upvoted_roll).should == true
         
         u.following_roll?(u.watch_later_roll).should == false
-        u.following_roll?(u.upvoted_roll).should == false
         u.following_roll?(u.viewed_roll).should == false
       }.should change { User.count }.by(1)
     end
@@ -604,8 +604,8 @@ describe GT::UserManager do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         
         u.following_roll?(u.public_roll).should == true
+        u.following_roll?(u.upvoted_roll).should == true
         u.following_roll?(u.watch_later_roll).should == false
-        u.following_roll?(u.upvoted_roll).should == false
         u.following_roll?(u.viewed_roll).should == false
       end
       

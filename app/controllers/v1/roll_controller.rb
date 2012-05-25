@@ -17,18 +17,26 @@ class V1::RollController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
       if params[:id]
         return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:id]))
-        @roll = Roll.find(roll_id)
         @include_following_users = params[:following_users] == "true" ? true : false
-        if user_signed_in? and @roll.viewable_by?(current_user)
-          @status =  200
-        elsif @roll.public
-          @status =  200
+        if @roll = Roll.find(roll_id)
+          if user_signed_in? and @roll.viewable_by?(current_user)
+            params[:heart_roll] = true if @roll.id == current_user.upvoted_roll_id
+            @status =  200
+          elsif @roll.public
+            @status =  200
+          else
+            render_error(404, "you are not authorized to see that roll")
+          end
         else
-          render_error(404, "you are not authorized to see that roll")
+          render_error(404, "that roll does not exist")
         end
-      elsif params[:public_roll] and user_signed_in? #this is for the aliased route to get users public roll
+      elsif (params[:public_roll] or params[:heart_roll]) and user_signed_in? #this is for the aliased route to get users public roll
         if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
-          @roll = user.public_roll
+          if params[:public_roll]
+            @roll = user.public_roll
+          elsif params[:heart_roll]
+            @roll = user.upvoted_roll
+          end
           @include_following_users = params[:following_users] == "true" ? true : false
           @status = 200
         else
@@ -50,7 +58,7 @@ class V1::RollController < ApplicationController
       
       case Rails.env
       when 'production'
-        hot_rolls = ['4f901bd8b415cc466a0008ec','4f900cf5b415cc466a0005bb', '4fa03429b415cc18bf0007b2', '4f8f7f08b415cc4762000172', '4f8f7f17b415cc4762000262', '4f8fac9ab415cc661401317b', '4f9d5d0a9a725b3d5f002c14', '4f90223bb415cc466a00091c', '4f8fac9ab415cc661401317b']
+        hot_rolls = ['4f901bd8b415cc466a0008ec','4f900cf5b415cc466a0005bb', '4fa03429b415cc18bf0007b2', '4f8f7f08b415cc4762000172', '4f8f7f17b415cc4762000262', '4f8fac9ab415cc661401317b', '4f9d5d0a9a725b3d5f002c14', '4f90223bb415cc466a00091c', '4f8fac9ab415cc661401317b', '4fbe42069a725b686300004a']
       when 'development'
         hot_rolls = [Roll.all[0].id, Roll.all[1].id]
       else
@@ -262,7 +270,7 @@ class V1::RollController < ApplicationController
       if params[:id]
         return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:id]))
         return render_error(404, "could not find that roll to destroy") unless @roll = Roll.find(roll_id)
-        if @roll.destroy
+        if @roll.following_users.each { |fu| @roll.remove_follower(fu.user) } and @roll.destroy
           @status =  200
         else
           render_error(404, "could not destroy that roll")

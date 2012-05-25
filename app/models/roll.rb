@@ -15,7 +15,7 @@ class Roll
   
   # it was created by somebody
   belongs_to :creator,  :class_name => 'User', :required => true
-  key :creator_id,      ObjectId, :required => true, :abbr => :a
+  key :creator_id,      ObjectId, :abbr => :a
   
   # it has some basic categorical info
   key :title,           String, :required => true, :abbr => :b
@@ -33,8 +33,11 @@ class Roll
   key :origin_network,  String, :abbr => :f
   SHELBY_USER_PUBLIC_ROLL = "shelby_person"
   
-  # The shortlinks created for each type of share, eg twitter, tumvlr, email, facebook
+  # The shortlinks created for each type of share, eg twitter, tumblr, email, facebook
   key :short_links, Hash, :abbr => :g, :default => {}
+
+  # boolean indicating whether this roll is a genius roll
+  key :genius,          Boolean, :abbr => :h
 
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
@@ -57,15 +60,19 @@ class Roll
     
     return false if self.followed_by?(u)
   
-    self.following_users << FollowingUser.new(:user => u)
-    u.roll_followings << RollFollowing.new(:roll => self)
+    self.push :following_users => FollowingUser.new(:user => u).to_mongo
+    u.push :roll_followings => RollFollowing.new(:roll => self).to_mongo
+    
+    #need to reload so the local copy is up to date for future operations
+    self.reload 
+    u.reload
 
     if send_notification
       # send email notification in a non-blocking manor
       ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_join_roll_notification(u, self) }
     end
     
-    GT::UserActionManager.follow_roll!(u.id, self.id) if u.save and self.save
+    GT::UserActionManager.follow_roll!(u.id, self.id)
   end
   
   def remove_follower(u)

@@ -20,4 +20,5 @@ production: &production
 arnold:
   <<: *production
   db_options:
-   :read: :secondary
+   :read: :primary
+   #timing issues when creating new (faux) Users require that Arnold read from primary for User

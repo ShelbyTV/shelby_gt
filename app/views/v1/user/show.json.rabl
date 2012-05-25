@@ -19,6 +19,10 @@ if current_user == @user
 	node "watch_later_roll_id" do
 		@user.watch_later_roll_id
 	end
+	
+	node "heart_roll_id" do
+		@user.upvoted_roll_id
+	end
 
 	code :app_progress do |u|
 		u.app_progress ? u.app_progress.as_json : {}

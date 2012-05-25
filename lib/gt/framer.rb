@@ -10,6 +10,8 @@ module GT
     #  If adding to a Roll, create DashboardEntries for all followers of Roll.
     #  If not adding to a Roll, create single DashboardEntry for the given dashboard owner.
     #
+    # N.B. If a conversation with a message with the same origin_id exists, conversation save will fail and this
+    #  will return false.  This prevents timing issues between threads receiving the same tweets for different observers.
     #
     # --options--
     #
@@ -25,10 +27,11 @@ module GT
     #
     # --returns--
     #
+    # false if message.origin_id already exists in DB's unique index
     # { :frame => newly_created_frame, :dashboard_entries => [1 or more DashboardEntry, ...] }
     #
     def self.create_frame(options)
-      raise ArgumentError, "must supply a :creator" unless (creator = options.delete(:creator)).is_a? User
+      creator = options.delete(:creator)
       raise ArgumentError, "must supply a :video" unless (video = options.delete(:video)).is_a? Video
       raise ArgumentError, "must supply an :action" unless DashboardEntry::ENTRY_TYPE.values.include?(action = options.delete(:action))
       roll = options.delete(:roll)
@@ -36,6 +39,19 @@ module GT
       raise ArgumentError, "must include a :roll or :dashboard_user_id" unless roll.is_a?(Roll) or dashboard_user_id.is_a?(BSON::ObjectId)
       message = options.delete(:message)
       raise ArgumentError, ":message must be a Message" if message and !message.is_a?(Message)
+      
+      # Try to safely create conversation
+      convo = Conversation.new
+      if message
+        convo.messages << message
+        convo.public = message.public
+      end
+      begin
+        convo.save(:safe => true)
+      rescue Mongo::OperationFailure
+        # unique key failure due to duplicate
+        return false
+      end
       
       res = { :frame => nil, :dashboard_entries => [] }
       
@@ -45,14 +61,12 @@ module GT
       f.creator = creator
       f.video = video
       f.roll = roll if roll
-      f.conversation = Conversation.new
-      f.conversation.frame = f
-      if message
-        f.conversation.messages << message
-        f.conversation.public = message.public
-      end
-      f.conversation.save
+      f.conversation = convo
       f.save
+      
+      #track the original frame in the convo
+      convo.update_attribute(:frame_id, f.id)
+      
       res[:frame] = f
       
       # DashboardEntry

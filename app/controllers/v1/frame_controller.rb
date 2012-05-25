@@ -31,15 +31,22 @@ class V1::FrameController < ApplicationController
         return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:roll_id]))
         
         @roll = Roll.find(roll_id)
-      elsif params[:public_roll]
+        
+      elsif (params[:public_roll] or params[:heart_roll])
         if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
-          @roll = user.public_roll 
+          if params[:public_roll]
+            @roll = user.public_roll
+          elsif params[:heart_roll]
+            @roll = user.upvoted_roll
+          end
         end
       end
       
       if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
-                
+        # lets the view show appropriate information, eg thumbnail_url
+        params[:heart_roll] = true if (user_signed_in? and @roll.id == current_user.upvoted_roll_id)
+
         if params[:since_id]
           
           return render_error(404, "please specify a valid since_id") unless (since_id = ensure_valid_bson_id(params[:since_id]))
@@ -48,7 +55,6 @@ class V1::FrameController < ApplicationController
             case params[:order]
             when "1", nil, "forward"
               @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.lte => since_id_frame.score).all
-              #puts "frames: #{@frames.length}"
             when "-1", "reverse"
               @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.gte => since_id_frame.score).all
             end
@@ -94,9 +100,15 @@ class V1::FrameController < ApplicationController
         @frame = Frame.find(frame_id)
         #N.B. If frame has a roll, check permissions.  If not, it has to be on your dashboard.  Checking for that is expensive b/c we don't index that way.
         # But guessing a frame is very difficult and noticeable as hacking, so we can fairly safely just return the Frame.
-        if @frame and (@frame.roll_id == nil or @frame.roll.viewable_by?(current_user))
-          @status =  200
-          @include_frame_children = (params[:include_children] == "true") ? true : false
+        if @frame 
+          # make sure the frame has a roll so this doesn't get all 'so i married an axe murderer' on the consumer.
+          frame_viewable_by = (@frame.roll and @frame.roll.viewable_by?(current_user))
+          if (@frame.roll_id == nil or frame_viewable_by)
+            @status =  200
+            @include_frame_children = (params[:include_children] == "true") ? true : false
+          else
+            render_error(404, "that frame isn't viewable or has a bad roll")
+          end
         else
           render_error(404, "could not find that frame")
         end

@@ -68,11 +68,6 @@ module GT
         job_details[:provider_type] =  job_json['provider_type']
         job_details[:provider_user_id] =  job_json['provider_user_id']
         
-        #XXX TRACER
-        if job_details[:provider_user_id] == 279185282 #shelbytest on twitter
-          Rails.logger.fatal("[Arnold::BeanJob#parse_job(job:#{job.jobid})] TRACESHELBYTEST - pre-parsed job: #{job}")
-        end
-        
         job_details[:twitter_status_update] = job_json['twitter_status_update'] if job_json['twitter_status_update']
         job_details[:facebook_status_update] = job_json['facebook_status_update'] if job_json['facebook_status_update']
         job_details[:tumblr_status_update] = job_json['tumblr_status_update'] if job_json['tumblr_status_update']    
@@ -96,11 +91,6 @@ module GT
         if job_details[:tumblr_status_update].class == Fixnum
           Rails.logger.error("[Arnold::BeanJob#parse_job(job:#{job.jobid})] BAD JOB: tumblr status is a Fixnum, should be a hash. // job: #{job} // job.body: #{job.body} // job_json: #{job_json}")
           return false
-        end
-        
-        #XXX TRACER
-        if job_details[:provider_user_id] == 279185282 #shelbytest on twitter
-          Rails.logger.fatal("[Arnold::BeanJob#parse_job(job:#{job.jobid})] TRACESHELBYTEST - job.  jobs_details=#{job_details} // job: #{job}")
         end
       
         #Rails.logger.debug("[Arnold::BeanJob#parse_job(job:#{job.jobid})] Parsed Job: #{job_details}")

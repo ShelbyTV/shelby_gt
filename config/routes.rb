@@ -36,10 +36,12 @@ ShelbyGt::Application.routes.draw do
     # Sometimes we have the same route do different things depending on the verb, and that doens't play nice w/ jsonp.
     
     resources :user, :only => [:show, :update] do
-      get 'rolls' => 'user#roll_followings', :on => :member
+      get 'rolls/following' => 'user#roll_followings', :on => :member
       get 'roll_followings' => 'user#roll_followings', :on => :member
       get 'personal_roll' => 'roll#show', :defaults => {:public_roll => true}
       get 'personal_roll/frames' => 'frame#index', :defaults => {:public_roll => true}
+      get 'heart_roll' => 'roll#show', :defaults => {:heart_roll => true}
+      get 'heart_roll/frames' => 'frame#index', :defaults => {:heart_roll => true}
     end
     get 'roll/browse' => 'roll#browse'
     resources :roll, :only => [:show, :create, :update, :destroy] do
@@ -48,6 +50,9 @@ ShelbyGt::Application.routes.draw do
       post 'share' => 'roll#share'
       post 'join' => 'roll#join'
       post 'leave' => 'roll#leave'
+    end
+    namespace :roll do
+       resources :genius, :only => [:create]
     end
     resources :frame, :only => [:show, :destroy] do
       post 'upvote' => 'frame#upvote'
@@ -79,6 +84,8 @@ ShelbyGt::Application.routes.draw do
     get 'POST/roll' => 'roll#create'
     get 'PUT/roll/:id' => 'roll#update'
     get 'DELETE/roll/:id' => 'roll#destroy'
+    # genius
+    get 'POST/roll/genius' => 'genius#create'
     # frame
     get 'POST/roll/:roll_id/frames' => "frame#create"
     get 'POST/frame/:frame_id/upvote' => 'frame#upvote'
