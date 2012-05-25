@@ -18,7 +18,6 @@ class V1::UserController < ApplicationController
   # [GET] /v1/user/:id
   # 
   # @param [Optional, String] id The id of the user, if not present, user is current_user
-  # @param [Optional, Boolean] rolls_following Include the referenced rolls the user is following
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['show']) do
       if params[:id]
@@ -30,15 +29,7 @@ class V1::UserController < ApplicationController
       else
         return render_error(404, "could not find that user")
       end
-      
-      a = user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true"
-      b = !a and (user_signed_in? and @user = current_user)
-      if a or b
-        @include_rolls = true
-        @roll_followings = @user.roll_followings.map {|r| r.roll}
-      else
-        @include_rolls= false
-      end
+
       @status = 200
     end
   end
