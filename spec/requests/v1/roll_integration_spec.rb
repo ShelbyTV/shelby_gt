@@ -33,7 +33,7 @@ describe 'v1/roll' do
       it "should return heart roll of user when given a nickname" do
         get 'v1/user/'+@u2.nickname+'/heart_roll'
         response.body.should be_json_eql(200).at_path("status")
-        parse_json(response.body)["result"]["title"].should eq("hearted")
+        parse_json(response.body)["result"]["title"].should eq("<3 Roll")
       end
     
       it "should return error message if roll doesnt exist" do
