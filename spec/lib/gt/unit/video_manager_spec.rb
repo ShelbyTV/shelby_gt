@@ -9,26 +9,72 @@ describe GT::VideoManager do
   before(:all) do
     @short_url = "http://danspinosa.com/xyz"
     @url1 = "http://danspinosa.com/watch/xyz1234/this-is-the-name"
-    @url2 = "deadwildroses.wordpress.com/2012/05/21/another-light-blogging-week-moving/"
     @v = Video.new
     @v.provider_name = "pro1"
     @v.provider_id = "330033"
     @v.save
+    
+
+    @deep_url = "http://www.youtube.com/embed/lMBMcMf85ow?version=3&rel=1&fs=1&showsearch=0&showinfo=1&iv_load_policy=1&wmode=transparent"
+    @dl = DeeplinkCache.new
+    @dl.url = @deep_url
+    @dl.videos = [@v[:_id]]
+    @dl.save
+
+    @urlhaslink = "http://www.thisurlhaslink.com/hello"
+    @urlnolink = "http://www.thisurlnolinkk.com/hello"
+
 
   end
 
+  context "get_deep_url" do
+    it "should find cached deep" do
+      vids = GT::VideoManager.get_or_create_videos_for_url(@deep_url, false, nil, true, true)
+      vids.should == [@v]
+    end
+
+    it "should find deep" do
+      fake_em_http_request = mock_model("FakeEMHttpRequest")
+      fake_em_http_request.stub(:get).and_return(
+          mock_model("FakeEMHttpResonse", :error => false,
+            :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open("testdeepfiles/rant.html")))
+        EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
+      vids = GT::VideoManager.get_or_create_videos_for_url(@urlhaslink, false, nil, true, true)
+      vids.size.should == 1
+    end
+
+    it "should be cached" do
+      cached = DeeplinkCache.where(:url => @urlhaslink).first
+      cached[:url].should == @urlhaslink
+    end
+
+    it "should find nothing" do
+      fake_em_http_request = mock_model("FakeEMHttpRequest")
+      fake_em_http_request.stub(:get).and_return(
+          mock_model("FakeEMHttpResonse", :error => false,
+            :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open("testdeepfiles/google.html")))
+        EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
+      vids = GT::VideoManager.get_or_create_videos_for_url(@urlnolink, false, nil, true, true)
+      vids.should == []
+    end
+
+    it "the nothing deep should be cached" do
+      cached = DeeplinkCache.where(:url => @urlnolink).first
+      cached[:url].should == @urlnolink
+      cached[:videos].should == []
+    end
+        
+
+    
+  end
 
   context "get_or_create_videos_for_url" do
-    
+   
     it "should return [] with crappy url" do
       GT::VideoManager.get_or_create_videos_for_url(nil).should == []
       GT::VideoManager.get_or_create_videos_for_url("dan").should == []
       GT::VideoManager.get_or_create_videos_for_url("http://4sq.com/xyz").should == []
     end
-
-    it "should find deep stuff" do
-        print GT::VideoManager.get_or_create_videos_for_url(@url2)
-      end
 
     it "should find Video already in DB" do
       GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})

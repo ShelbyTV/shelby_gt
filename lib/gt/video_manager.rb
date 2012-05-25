@@ -1,6 +1,6 @@
 require 'url_helper'
 require 'url_video_detector'
-require 'deep_link_parser'
+require 'deeplink_parser'
 
 # This is the one and only place where Videos are created.
 # VideoManager handles the URLs resolution/parsing in the background
@@ -28,7 +28,7 @@ module GT
     #
     # [Video] --- and Array of 0 or more Videos, persisted.
     # 
-    def self.get_or_create_videos_for_url(url, use_em=false, memcache_client=nil, should_resolve_url=true, check_deep=true)
+    def self.get_or_create_videos_for_url(url, use_em=false, memcache_client=nil, should_resolve_url=true, check_deep=false)
       begin
         return [] unless (url = GT::UrlHelper.get_clean_url(url))
       rescue
@@ -62,13 +62,40 @@ module GT
       # In the future, if we deep-examine pages for video, would have a cross-references DB that we would look at right now
       # For a given URL, it would return an array of id's for Videos which we could then return
       ##### -- -- -- -- >>>
-      if check_deep && deep_urls = GT::DeepLinkParser.find_deep_link(url)
-        puts deep_urls
+      
+      # first check cached
+
+      checkcached = DeeplinkCache.where(:url => url).first
+      
+      if checkcached 
+        vid_ids = checkcached[:videos]
+        deep_videos = Video.find(vid_ids)
+        return deep_videos
+      end
+
+      # if can't check cache go deep
+      
+      
+      if check_deep
+
+        deep_urls, to_cache = GT::DeeplinkParser.find_deep_link(url)
+        deep_video_ids = []
         deep_videos = []
         deep_urls.each do |deep_url| 
           deep_video = get_or_create_videos_for_url(deep_url, false)
           deep_videos += deep_video
         end
+        deep_videos.each do |video|
+          deep_video_ids << video.id
+        end
+        #cache
+        if to_cache
+          cachedlinks = DeeplinkCache.new
+          cachedlinks.url = url
+          cachedlinks.videos = deep_video_ids
+          cachedlinks.save
+        end
+            
         return deep_videos
       end
           

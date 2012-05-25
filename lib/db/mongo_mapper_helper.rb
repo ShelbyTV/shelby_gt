@@ -2,7 +2,7 @@ module MongoMapper
   class Helper
     
     def self.drop_all_dbs
-      [DashboardEntry, Frame, Conversation, Roll, User, Video].each do |model|
+      [DashboardEntry, DeeplinkCache, Frame, Conversation, Roll, User, Video].each do |model|
         model.database.collections.select {|c| c.name !~ /system/ }.each(&:drop)
       end
     end
@@ -15,7 +15,10 @@ module MongoMapper
       
       # Get the newest dashboard entries for a user (a == user_id)
       DashboardEntry.ensure_index([[:a, 1], [:_id, -1]], :background => false)
-      
+
+      # Index over urls
+      DeeplinkCache.ensure_index([[:a,1]], :background => true, :unique=>true)
+
       # Get the highest scored frame for a given roll (a == roll_id; e == score)
       Frame.ensure_index([[:a, 1], [:e, -1]], :background => true)
       

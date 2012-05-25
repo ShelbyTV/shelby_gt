@@ -19,36 +19,36 @@ module GT
     
     # Try to pull the provider's name and id so we can check out DB
     # return nil if we can't
-    def self.parse_url_for_provider_info(url, with_url=false)
+    def self.parse_url_for_provider_info(url)
       return nil unless url
       
-      yt = parse_url_for_youtube_provider_info(url, with_url)
+      yt = parse_url_for_youtube_provider_info(url)
       return yt if yt
       
-      vim = parse_url_for_vimeo_provider_info(url, with_url)
+      vim = parse_url_for_vimeo_provider_info(url)
       return vim if vim
       
-      dm = parse_url_for_dailymotion_provider_info(url, with_url)
+      dm = parse_url_for_dailymotion_provider_info(url)
       return dm if dm
       
       # CollegeHumor
-      ch = parse_url_for_collegehumor_provider_info(url, with_url)
+      ch = parse_url_for_collegehumor_provider_info(url)
       return ch if ch
       
       # Ooyala (TechCrunch, Bloomberg embeds)
-      ooyala = parse_url_for_ooyala_embed(url, with_url)
+      ooyala = parse_url_for_ooyala_embed(url)
       return ooyala if ooyala
       
       # Hulu
-      hu = parse_url_for_hulu_provider_info(url, with_url)
+      hu = parse_url_for_hulu_provider_info(url)
       return hu if hu
       
       # TechCrunch
-      tc = parse_url_for_techcrunch_provider_info(url, with_url)
+      tc = parse_url_for_techcrunch_provider_info(url)
       return tc if tc
     
       # Blip
-      bp = parse_url_for_blip_provider_info(url, with_url)
+      bp = parse_url_for_blip_provider_info(url)
       return bp if bp
       
       return nil
@@ -82,18 +82,18 @@ module GT
       url.match(SHELBY_URL_REGEX) != nil
     end
     
-      
+    # also using it for deep link parsing  
+    # we see lots of these, don't want to waste time resolving them
+    BLACKLIST_REGEX = /freq\.ly|yfrog\.|4sq\.com|twitpic\.com|nyti\.ms|plixi\.com|instagr\.am|facebook\.com/i
+    def self.url_is_blacklisted?(url)
+      url.match(BLACKLIST_REGEX) != nil
+    end
+ 
     private
-    
+
       SHELBY_URL_REGEX = /shel\.tv|shelby\.tv/i
       VIMEO_URL_REGEX = /(http:\/\/vimeo.com\/\D*\#)(\d*)/       
-   
-      # we see lots of these, don't want to waste time resolving them
-      BLACKLIST_REGEX = /freq\.ly|yfrog\.|4sq\.com|twitpic\.com|nyti\.ms|plixi\.com|instagr\.am|facebook\.com/i
-      def self.url_is_blacklisted?(url)
-        url.match(BLACKLIST_REGEX) != nil
-      end
-   
+
       # we see URLs w/o scheme and it kills em-http-request / addressable
       # so, if the URL doesn't have a scheme, we default it to http
       VALID_URL_REGEX = /^(http:\/\/|https:\/\/)/i
@@ -164,115 +164,79 @@ module GT
       ##############################################
       
       # YouTube
-      def self.parse_url_for_youtube_provider_info(url, with_url=false)
+      def self.parse_url_for_youtube_provider_info(url)
         #normal, long youtube links
         match_data = url.match( /youtube.*\/([ev]|embed)+\/([\w-]*)|v=([\w-]*)([&%]+.*\z|\z)/i )
         if match_data and match_data.size >= 2
           id = match_data[2] unless match_data[2].blank?
           id = match_data[3] unless match_data[3].blank?
-          if with_url
-            return {:url => match_data[0], :provider_name => "youtube", :provider_id => id}
-          else
-            return {:provider_name => "youtube", :provider_id => id}
-          end
+          return {:provider_name => "youtube", :provider_id => id}
         end
         
         #youtu.be short links
         match_data = url.match( /youtu\.be\/([\w-]*)(\?+.*\z|\z)/i )
         if match_data and match_data.size >= 1
-          if with_url
-            return {:url => match_data[0], :provider_name => "youtube", :provider_id => match_data[1]}
-          else
-            return {:provider_name => "youtube", :provider_id => match_data[1]}
-          end
+          return {:provider_name => "youtube", :provider_id => match_data[1]}
         end
       end
       
       # Vimeo
-      def self.parse_url_for_vimeo_provider_info(url, with_url=false)
+      def self.parse_url_for_vimeo_provider_info(url)
         match_data = url.match( /vimeo.+(\/|hd#|videos\/|clip_id=)(\d+)(\z|\D)/i )
         if match_data and match_data.size == 4
-          if with_url
-            return {:url => match_data[0], :provider_name => "vimeo", :provider_id => match_data[2]}
-          else
-            return {:provider_name => "vimeo", :provider_id => match_data[2]}
-          end
+          return {:provider_name => "vimeo", :provider_id => match_data[2]}
         end
       end
       
       # DailyMotion
-      def self.parse_url_for_dailymotion_provider_info(url, with_url=false)
+      def self.parse_url_for_dailymotion_provider_info(url)
         match_data = url.match( /dailymotion.+(video\/)([\w-]{5,9})[_?\\"']+/i )
         if match_data and match_data.size == 3
-          if with_url
-            return {:url => match_data[0], :provider_name => "dailymotion", :provider_id => match_data[2]}
-          else
-            return {:provider_name => "dailymotion", :provider_id => match_data[2]}
-          end
+          return {:provider_name => "dailymotion", :provider_id => match_data[2]}
         end
       end
       
       # CollegeHumor
-      def self.parse_url_for_collegehumor_provider_info(url, with_url=false)
+      def self.parse_url_for_collegehumor_provider_info(url)
         match_data = url.match( /collegehumor.+(clip_id=|video\/|e\/)([\d]*)/i )
         if match_data and match_data.size == 3
-          if with_url
-            return {:url => match_data[0], :provider_name => "collegehumor", :provider_id => match_data[2]}
-          else
-            return {:provider_name => "collegehumor", :provider_id => match_data[2]}
-          end
+          return {:provider_name => "collegehumor", :provider_id => match_data[2]}
         end
       end
       
       # Hulu
-      def self.parse_url_for_hulu_provider_info(url, with_url=false)
+      def self.parse_url_for_hulu_provider_info(url)
         match_data = url.match( /hulu.+\/(\d{6,})\//i )
         if match_data and match_data.size == 2
-          if with_url
-            return {:url => match_data[0], :provider_name => "hulu", :provider_id => match_data[1]}
-          else
-            return {:provider_name => "hulu", :provider_id => match_data[1]}
-          end
+          return {:provider_name => "hulu", :provider_id => match_data[1]}
         end
       end
       
       # TechCrunch
-      def self.parse_url_for_techcrunch_provider_info(url, with_url=false)
+      def self.parse_url_for_techcrunch_provider_info(url)
         #regular URLs
         match_data = url.match( /techcrunch.+id=([\w-]*)(&+.*\z|\z)/i )
         if match_data and match_data.size == 3
-          if with_url
-            return {:url => match_data[0], :provider_name => "techcrunch", :provider_id => match_data[1]}
-          else
-            return {:provider_name => "techcrunch", :provider_id => match_data[1]}
-          end
+          return {:provider_name => "techcrunch", :provider_id => match_data[1]}
         end
         
         # N.B. TechCrunch embeds are detected by ooyala
       end
         
       # Detechs TechCrunch and Bloomberg
-      def self.parse_url_for_ooyala_embed(url, with_url=false)
+      def self.parse_url_for_ooyala_embed(url)
         # ooyala player embed
         match_data = url.match( /player.ooyala.com.+embedCode=([\w-]*)(&+.*\z|\z)/i )
         if match_data and match_data.size == 3
-          if with_url
-            return {:url => match_data[0], :provider_name => "ooyala", :provider_id => match_data[1]}
-          else
-            return {:provider_name => "ooyala", :provider_id => match_data[1]}
-          end
+          return {:provider_name => "ooyala", :provider_id => match_data[1]}
         end
       end
     
       # Blip
-      def self.parse_url_for_blip_provider_info(url, with_url=false)
+      def self.parse_url_for_blip_provider_info(url)
         match_data = url.match( /blip.tv.+(play\/)([\w-]*)/i )
         if match_data and match_data.size == 3
-          if with_url
-            return {:url => match_data[0], :provider_name => "bliptv", :provider_id => match_data[2]}
-          else
-            return {:provider_name => "bliptv", :provider_id => match_data[2]}
-          end
+          return {:provider_name => "bliptv", :provider_id => match_data[2]}
         end
       end
     
