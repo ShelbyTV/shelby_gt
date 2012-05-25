@@ -37,7 +37,7 @@ describe GT::VideoManager do
       fake_em_http_request = mock_model("FakeEMHttpRequest")
       fake_em_http_request.stub(:get).and_return(
           mock_model("FakeEMHttpResonse", :error => false,
-            :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open("testdeepfiles/rant.html")))
+            :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testdeepfiles/rant.html", __FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
       vids = GT::VideoManager.get_or_create_videos_for_url(@urlhaslink, false, nil, true, true)
       vids.size.should == 1
@@ -52,7 +52,7 @@ describe GT::VideoManager do
       fake_em_http_request = mock_model("FakeEMHttpRequest")
       fake_em_http_request.stub(:get).and_return(
           mock_model("FakeEMHttpResonse", :error => false,
-            :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open("testdeepfiles/google.html")))
+            :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testdeepfiles/google.html", __FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
       vids = GT::VideoManager.get_or_create_videos_for_url(@urlnolink, false, nil, true, true)
       vids.should == []
