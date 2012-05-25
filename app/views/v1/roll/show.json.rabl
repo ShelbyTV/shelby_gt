@@ -4,7 +4,7 @@ attributes :id, :collaborative, :public, :creator_id, :origin_network
 
 code :title do |r|
 	if params[:heart_roll]
-		"hearted"
+		"<3 Roll"
 	else
 		r.title
 	end
