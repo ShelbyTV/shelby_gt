@@ -369,10 +369,10 @@ describe GT::Framer do
       @f2.upvoters.should == @f1.upvoters
     end
     
-    it "should have the duping user's id" do
+    it "should have the orig frame user's id" do
       @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
       
-      @f2.creator_id.should == @u.id
+      @f2.creator_id.should == @f2.creator_id
     end
     
     it "should copy the F1's ancestors, adding itself" do

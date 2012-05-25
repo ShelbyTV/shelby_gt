@@ -190,7 +190,7 @@ describe Frame do
         f = @frame.add_to_watch_later!(@u1)
       }.should change { Frame.count } .by 1
 
-      f.creator_id.should == @u1.id
+      f.creator_id.should == @frame.creator_id
       f.video_id.should == @frame.video_id
       f.conversation_id.should == @frame.conversation_id
       f.frame_ancestors.include?(@frame.id).should == true
@@ -240,7 +240,7 @@ describe Frame do
         f = @frame.view!(@u1)
       }.should change { Frame.count } .by 1
 
-      f.creator_id.should == @u1.id
+      f.creator_id.should == @frame.creator_id
       f.video_id.should == @frame.video_id
       f.conversation_id.should == @frame.conversation_id
       f.frame_ancestors.include?(@frame.id).should == true
