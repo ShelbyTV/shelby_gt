@@ -60,7 +60,7 @@ describe 'v1/user' do
       
       it "should not show a users rolls if the supplied user_id is NOT the current_users" do
         u2 = Factory.create(:user)
-        get '/v1/user/'+u2.id+'/rolls'
+        get '/v1/user/'+u2.id+'/rolls/following'
         response.body.should be_json_eql(403).at_path("status")
       end
       
@@ -122,7 +122,7 @@ describe 'v1/user' do
       
       it "should return error if trying to get a users rolls" do
         u = Factory.create(:user)
-        get '/v1/user/'+u.id+'/rolls'
+        get '/v1/user/'+u.id+'/rolls/following'
         response.body.should be_json_eql(401).at_path("status")
       end
       

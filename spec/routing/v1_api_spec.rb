@@ -19,9 +19,8 @@ describe V1::UserController do
       )
     end
 
-    #DEPRECATED ROUTE (name of route is inconsistent with model attribute)
     it "routes for GET users rolls following" do
-      { :get => "/v1/user/1/rolls" }.should route_to(
+      { :get => "/v1/user/1/rolls/following" }.should route_to(
         :controller => "v1/user",
         :action => "roll_followings",
         :format => "json",
