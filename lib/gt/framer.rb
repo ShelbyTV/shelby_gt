@@ -151,7 +151,7 @@ module GT
       def self.basic_dupe!(orig_frame, user_id, roll_id)
         # Dupe it
         new_frame = Frame.new
-        new_frame.creator_id = user_id
+        new_frame.creator_id = orig_frame.creator_id
         new_frame.roll_id = roll_id
         new_frame.video_id = orig_frame.video_id
         

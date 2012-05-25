@@ -168,7 +168,6 @@ module GT
       build_upvoted_roll_for_user(u) unless u.upvoted_roll
       u.save if save
       #users now follow their upvoted_roll, from the consumer side of the api its known as the heart_roll
-      u.upvoted_roll.save if save
       u.upvoted_roll.add_follower(u) if save and !u.following_roll?(u.upvoted_roll)
       
       build_watch_later_roll_for_user(u) unless u.watch_later_roll

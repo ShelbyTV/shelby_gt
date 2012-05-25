@@ -5,6 +5,14 @@ describe V1::UserController do
   before(:each) do
     @u1 = Factory.create(:user)
     User.stub(:find) { @u1 }
+    r1 = Factory.create(:roll, :creator => @u1)
+    r1.add_follower(@u1)
+    r2 = Factory.create(:roll, :creator => @u1)
+    r2.add_follower(@u1)
+    @u1.public_roll = r1
+    @u1.upvoted_roll = r2
+    @u1.save
+    
     sign_in @u1
   end
     
