@@ -273,7 +273,7 @@ module GT
         r.creator = u
         r.public = false
         r.collaborative = false
-        r.title = "<3 Roll"
+        r.title = "♥'d Roll"
         u.upvoted_roll = r
       end
       
