@@ -7,7 +7,7 @@ puts "loading app..."
 require File.dirname(__FILE__) + "/../../../config/application"
 Rails.application.require_environment!
 #TODO: turn arnold logger.level back to 1 for production
-Rails.logger.level = 1 #0:DEBUG, 1:INFO, 2:WARN, 3:ERROR, 4:FATAL
+Rails.logger.level = 0 #0:DEBUG, 1:INFO, 2:WARN, 3:ERROR, 4:FATAL
 Rails.logger.auto_flushing = true
 
 # For cleanly exiting
@@ -51,7 +51,7 @@ $statsd_jobs_processed_bucket = "arnold.#{arnold_version}.#{machine_name}.job.pr
 $consumer_turns = 0
 GT::Arnold::ConsumerMonitor.monitor(1.minute)
 
-puts "running EM..."
+puts "running EM...."
 EventMachine.synchrony do
   Rails.logger.info "[Arnold Main] Event machine started."
 
