@@ -22,7 +22,7 @@ module GT
     private
 
     # return deep linked urls, empty list if none
-    def self.get_page_em(url, tries_left=5, sleep_time=2)
+    def self.get_page_with_em(url, tries_left=5, sleep_time=2)
       http = EventMachine::HttpRequest.new(url, :connect_timeout => 5).get
       if http.response_header and http.response_header.status == 404
         # failure cache no videos
@@ -32,16 +32,18 @@ module GT
       #don't cache
       if http.error or http.response_header.status != 200
         if tries_left <= 0
+          Rails.logger.error("[GT::DeeplinkParser#get_page_with_em] http error requesting #{url} /http.error: #{http.error} / http.response_header: #{http.response_header} / http.response: #{http.response} // DONE RETRYING: tires_left: #{tries_left}, sleep_time: #{sleep_time}")
           return [nil, false]
         else
+          Rails.logger.debug( "[GT::DeeplinkParser#get_page_with_em] http error requesting #{url} / http.error: #{http.error} / http.response_header: #{http.response_header} / http.response: #{http.response} // RETRYING: tries_left: #{tries_left}, sleep_time: #{sleep_time}")
           EventMachine::Synchrony.sleep(sleep_time)
-          return get_page(url, tries_left-1, sleep_time*2)
+          return get_page_with_em(url, tries_left-1, sleep_time*2)
         end
       end
       return [http.response, true]
     end
 
-    def self.get_page_net(url)
+    def self.get_page_with_net(url)
       response = Net::HTTP.get_response(url)
       return [nil, false] unless response
     
@@ -54,10 +56,15 @@ module GT
       end
     end
 
-    def self.deep_parse_url(url)
-      deep_response, to_cache = get_page_em(url)
+    def self.deep_parse_url(url, use_em=true)
+      if use_em
+        deep_response, to_cache = get_page_with_em(url)
+      else
+        deep_response, to_cache = get_page_with_net(url)
+      end
       if deep_response
         parsedoc = Nokogiri::HTML(deep_response)
+        Rails.logger.debug( "[GT::DeeplinkCache#deep_parse_url] got response")
         embed_elements = []
         embed_elements += parsedoc.xpath("//iframe")
         embed_elements += parsedoc.xpath("//embed")
