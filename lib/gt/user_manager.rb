@@ -84,6 +84,7 @@ module GT
       
       if u = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
         ensure_users_special_rolls(u, true)
+        u.update_attributes(:user_image => options[:user_thumbnail_url], :user_image_original => options[:user_thumbnail_url]) if u.user_image == nil
         return u
       end
       

@@ -242,6 +242,27 @@ describe GT::UserManager do
       auth.uid.should == uid
     end
     
+    it "should update user's image if it's null" do
+      nick, provider, uid = "whatever-x1", "fb", "123uid-x1"
+      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      auth = Authentication.new
+      auth.provider = provider
+      auth.uid = uid
+      u.authentications << auth
+      u.save
+      
+      u.persisted?.should == true
+      
+      u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, :user_thumbnail_url => "someURL")
+      u.user_image.should == "someURL"
+      u.user_image_original.should == "someURL"
+      
+      #should not change it next time around
+      u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, :user_thumbnail_url => "new_URL")
+      u.user_image.should == "someURL"
+      u.user_image_original.should == "someURL"
+    end
+    
     context "nickname fixing" do
       it "should change space to underscore" do
         nick, provider, uid = "whatever 6", "fb", "123uid6"
