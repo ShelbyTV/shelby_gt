@@ -1,6 +1,6 @@
 object @roll
 
-attributes :id, :collaborative, :public, :creator_id, :origin_network
+attributes :id, :collaborative, :public, :creator_id, :origin_network, :genius
 
 code :title do |r|
 	if params[:heart_roll]
