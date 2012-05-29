@@ -73,9 +73,12 @@ class V1::UserController < ApplicationController
         
         @rolls = current_user.roll_followings.map! {|r| r.roll }
         # move heart roll to @rolls[1]
-        heartRollIndex = @rolls.index(current_user.upvoted_roll)
-        heartRoll = @rolls.slice!(heartRollIndex)
-        @rolls.insert(1, heartRoll)
+        if heartRollIndex = @rolls.index(current_user.upvoted_roll)
+          heartRoll = @rolls.slice!(heartRollIndex)
+          @rolls.insert(1, heartRoll)
+        else
+          Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
+        end
         
         @status = 200
       else
