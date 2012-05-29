@@ -15,7 +15,7 @@ module GT
     #
     # --options--
     #
-    # :creator => User --- REQUIRED the 'owner' or 'creator' of this Frame (ie who tweeted it?)
+    # :creator => User --- OPTIONAL the 'owner' or 'creator' of this Frame (ie who tweeted it?)
     # :video => Video --- REQUIRED (may be new or persisted) the normalized video being referenced
     # :message => Message --- OPTIONAL (must be new) which is either normalized twitter/fb stuff, or straight from app, or blank
     #                       - will be added to a new Conversation attached to the Roll
@@ -24,6 +24,8 @@ module GT
     # :dashboard_user_id => id --- OPTIONAL: if no roll is given, will add the new Frame to a DashboardEntry for this user_id
     #                            - N.B. does *not* check that the given id is for a valid User
     # :action => DashboardEntry::ENTRY_TYPE[?] --- REQUIRED: what action created this frame? Distinguish between social, bookmark
+    # :score => Float --- OPTIONAL initial score for ordering the frames in a roll
+    # :order => Float --- OPTIONAL manual ordering for genius rolls
     #
     # --returns--
     #
@@ -32,6 +34,8 @@ module GT
     #
     def self.create_frame(options)
       creator = options.delete(:creator)
+      score = options.delete(:score)
+      order = options.delete(:order)
       raise ArgumentError, "must supply a :video" unless (video = options.delete(:video)).is_a? Video
       raise ArgumentError, "must supply an :action" unless DashboardEntry::ENTRY_TYPE.values.include?(action = options.delete(:action))
       roll = options.delete(:roll)
@@ -62,8 +66,11 @@ module GT
       f.video = video
       f.roll = roll if roll
       f.conversation = convo
+      f.score = score
+      f.order = order
+
       f.save
-      
+ 
       #track the original frame in the convo
       convo.update_attribute(:frame_id, f.id)
       

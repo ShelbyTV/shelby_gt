@@ -47,21 +47,37 @@ class V1::FrameController < ApplicationController
         # lets the view show appropriate information, eg thumbnail_url
         params[:heart_roll] = true if (user_signed_in? and @roll.id == current_user.upvoted_roll_id)
 
+        # the default sort order for genius rolls is by the order field, other rolls score field
+        # if needed in the future, can add a parameter so clients can specify sorting type
+        if @roll.genius
+          sort_by = :order.desc
+        else
+          sort_by = :score.desc
+        end
+
+        where_hash = { :roll_id => @roll.id }
+ 
         if params[:since_id]
           
-          return render_error(404, "please specify a valid since_id") unless (since_id = ensure_valid_bson_id(params[:since_id]))
+          return render_error(404, "please specify a valid since_id") unless (since_id = ensure_valid_bson_id(params[:since_id]) and (since_id_frame = Frame.find(since_id)))
           
-          if since_id_frame = Frame.find(since_id)
-            case params[:order]
-            when "1", nil, "forward"
-              @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.lte => since_id_frame.score).all
-            when "-1", "reverse"
-              @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.gte => since_id_frame.score).all
+          case params[:order]
+          when "1", nil, "forward"
+            if @roll.genius
+              where_hash[:order.lte] = since_id_frame.order 
+            else
+              where_hash[:score.lte] = since_id_frame.score
+            end
+          when "-1", "reverse"
+            if @roll.genius
+              where_hash[:order.gte] = since_id_frame.order 
+            else
+              where_hash[:score.gte] = since_id_frame.score
             end
           end
-        else
-          @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id).all
         end
+
+        @frames = Frame.sort(sort_by).limit(@limit).skip(skip).where(where_hash).all
         
         if @frames
           #########

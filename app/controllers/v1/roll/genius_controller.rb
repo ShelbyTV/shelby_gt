@@ -17,44 +17,86 @@ class V1::Roll::GeniusController < ApplicationController
     end
 
     begin
-      @urlsArray = ActiveSupport::JSON.decode(params[:urls])
+      @urls = ActiveSupport::JSON.decode(params[:urls])
     rescue
       return render_error(404, "unabled to decode urls parameter: invalid JSON")
     end
  
-    unless @urlsArray
+    unless @urls
       return render_error(404, "decoded urls parameter was undefined")
     end
 
-    unless @urlsArray.kind_of?(Array)
+    unless @urls.kind_of?(Array)
        return render_error(404, "decoded urls parameter was not an array")
     end
 
-    unless !@urlsArray.empty?
+    unless !@urls.empty?
       return render_error(404, "decoded urls parameter resulted in an empty array")
     end
 
     @roll = ::Roll.new(:title => "GENIUS: " + params[:search])
     @roll.genius = true
 
-    @searchVideos = []
-    @urlsArray.each do |url|
-      @searchVideos.append(GT::VideoManager.get_or_create_videos_for_url(url)[0])
+    @searchVids = []
+    @urls.each do |url|
+      video = GT::VideoManager.get_or_create_videos_for_url(url)[0]
+      @searchVids.append(video) if video
     end
 
-    @recommendedVideos = []
-    @searchVideos.each do |video|
-      video.recommendations.each do |rec|
-      end
-    end       
+    @recsHash = Hash.new
+    @searchVids.each do |searchVid|
+      searchVid.recs.each do |rec|
+        recVideo = Video.find(rec.recommended_video_id)
+        if recVideo
+          @recsHash[recVideo] = rec.score + @recsHash.fetch(recVideo, 0)
+        end
+      end if searchVid.recs
+    end
 
-    @searchVideos.each do |video|
+    @recsSortedArray = @recsHash.sort { |a,b| b[1] <=> a[1] }
+    @finalVids = []
+
+    r = 0
+    s = 0
+    roughDesiredFinalRollLength = 100
+
+    while r < @recsSortedArray.length or s < @searchVids.length do
+
+      while s < @searchVids.length and @finalVids.include?(@searchVids[s]) do
+        s += 1
+      end
+
+      if s < @searchVids.length and !@finalVids.include?(@searchVids[s])
+        @finalVids.append(@searchVids[s])
+      end
+
+      s += 1
+
+      if r < @recsSortedArray.length and !@finalVids.include?(@recsSortedArray[r][0])
+        @finalVids.append(@recsSortedArray[r][0])
+      end
+
+      r += 1
+
+      if r < @recsSortedArray.length and !@finalVids.include?(@recsSortedArray[r][0])
+        @finalVids.append(@recsSortedArray[r][0])
+      end
+
+      r += 1
+
+      if @finalVids.length > roughDesiredFinalRollLength
+        break
+      end
+    end
+
+    count = 0
+    @finalVids.each do |video|
       frame_options = { :roll => @roll }
       frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_genius_frame]
       frame_options[:video] = video
-      if frame_options[:video]
-        GT::Framer.create_frame(frame_options)
-      end
+      frame_options[:order] = (@finalVids.length - count) * 100
+      GT::Framer.create_frame(frame_options)
+      count += 1
     end
     
     begin
