@@ -35,8 +35,9 @@ class User
   
   # A special roll for a user: their Upvoted Roll
   # - contains trivial copies of Frames that this user has upvoted
+  # - from the consumer side of the api its known as the "heart_roll"
   belongs_to :upvoted_roll, :class_name => 'Roll'
-  key :upvoted_roll, ObjectId, :abbr => :ae
+  key :upvoted_roll_id, ObjectId, :abbr => :ae
   
   # A special roll for a user: their Viewed Roll
   # - contains trivial copies of Frames that this user has viewed
@@ -235,10 +236,10 @@ class User
   def total_tracker_count() self.social_tracker.inject(:+); end
   
   def send_email_address_to_sailthru(list=Settings::Sailthru.user_list)
-    ShelbyGT_EM.next_tick do
+    #ShelbyGT_EM.next_tick do
       #client = Bacon::Email.new()
       #client.add_email_address(self.primary_email, list)
-    end
+    #end
   end
     
   private

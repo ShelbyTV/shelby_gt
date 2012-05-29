@@ -189,6 +189,12 @@ describe GT::UrlHelper do
       end
     end
     
+    context "espn" do
+      it "should parse from url" do
+        GT::UrlHelper.parse_url_for_provider_info('http://espn.go.com/video/clip?id=7940079').should == 
+          {:provider_name => "espn", :provider_id => "7940079"}
+      end      
+    end
   end
   
   context "resolve_url" do

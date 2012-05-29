@@ -19,15 +19,13 @@ if current_user == @user
 	node "watch_later_roll_id" do
 		@user.watch_later_roll_id
 	end
+	
+	node "heart_roll_id" do
+		@user.upvoted_roll_id
+	end
 
 	code :app_progress do |u|
 		u.app_progress ? u.app_progress.as_json : {}
 	end
 	
-end
-
-if @include_rolls == true
-	child @roll_followings => "roll_followings" do |r|
-		attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url, :origin_network
-	end
 end

@@ -21,6 +21,11 @@ describe 'v1/user' do
         response.body.should have_json_path("result/app_progress")
       end
       
+      it "should not have a roll_followings attr" do
+        get '/v1/user'
+        response.body.should_not have_json_path("result/roll_followings")
+      end
+
       it "should wrap with callback when requesting via jsonp" do
         get '/v1/user/?callback=jQuery17108599677098863208_1335973680689&include_rolls=true&_=1335973682178'
         response.body.should =~ /^\W*jQuery17108599677098863208_1335973680689/
@@ -50,18 +55,37 @@ describe 'v1/user' do
       end
       
       it "should show a users rolls if the supplied user_id is the current_users" do
-        r = Factory.create(:roll, :creator => @u1)
-        r.add_follower(@u1)
+        r1 = Factory.create(:roll, :creator => @u1)
+        r1.add_follower(@u1)
+        r2 = Factory.create(:roll, :creator => @u1)
+        r2.add_follower(@u1)
+        @u1.upvoted_roll = r2
         @u1.save
-        get '/v1/user/'+@u1.id+'/roll_followings'
+        get '/v1/user/'+@u1.id+'/rolls/following'
         response.body.should be_json_eql(200).at_path("status")
         parse_json(response.body)["result"].class.should eq(Array)
       end
       
       it "should not show a users rolls if the supplied user_id is NOT the current_users" do
         u2 = Factory.create(:user)
-        get '/v1/user/'+u2.id+'/rolls'
+        get '/v1/user/'+u2.id+'/rolls/following'
         response.body.should be_json_eql(403).at_path("status")
+      end
+      
+      it "should have the first and second rolls be special" do
+        r1 = Factory.create(:roll, :creator => @u1)
+        r1.add_follower(@u1)
+        r2 = Factory.create(:roll, :creator => @u1)
+        r2.add_follower(@u1)
+        r3 = Factory.create(:roll, :creator => @u1)
+        r3.add_follower(@u1)
+        @u1.public_roll = r1
+        @u1.upvoted_roll = r2
+        @u1.save
+        
+        get '/v1/user/'+@u1.id+'/rolls/following'
+        parse_json(response.body)["result"][0]["id"].should eq(r1.id.to_s)
+        parse_json(response.body)["result"][1]["id"].should eq(r2.id.to_s)
       end
       
       it "should have correct watch_later and public roll ids returned" do
@@ -122,7 +146,7 @@ describe 'v1/user' do
       
       it "should return error if trying to get a users rolls" do
         u = Factory.create(:user)
-        get '/v1/user/'+u.id+'/rolls'
+        get '/v1/user/'+u.id+'/rolls/following'
         response.body.should be_json_eql(401).at_path("status")
       end
       

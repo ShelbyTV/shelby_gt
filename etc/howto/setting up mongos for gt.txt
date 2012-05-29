@@ -1,8 +1,18 @@
+
+
+rackspace CLONE?
+
+*** Even if you clone gt-base-plus-mongo-2.0.3 you need to do everything below ***
+
+
+
+
 root passwd
 sudo apt-get install htop
 
 
 0) edit /etc/mongodb.conf setting replSet name
+
 
 1) create key
 echo -e "base64 secret key fuck you asshole love spinosa" > mongodb.key;
@@ -10,8 +20,10 @@ sudo mv mongodb.key /etc/;
 sudo chmod 700 /etc/mongodb.key;
 sudo chown mongodb:mongodb /etc/mongodb.key;
 
+
 2) add this to /etc/init/mongodb.conf
 --keyFile /etc/mongodb.key
+
 
 3) restart mongo w/o data
 sudo service mongodb stop;
@@ -19,13 +31,13 @@ sudo rm -rf /var/lib/mongodb/*
 sudo service mongodb start
 
 
-4) setup replica set  (do we have to setup /etc/hosts ???)
+4) setup replica set  (make sure you've set up /etc/hosts on all DBs in the replica set)
 rs.initiate();
 rs.add("IP:PORT")
 rs.status();
 
 
-5) setup admin
+5) setup admin (only need to do this on the primary)
 use admin;
 db.addUser("gt_admin", 'Ov3rt1m3#4#');
 db.auth("gt_admin", 'Ov3rt1m3#4#');
