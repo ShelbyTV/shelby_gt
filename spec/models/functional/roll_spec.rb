@@ -1,9 +1,11 @@
+# encoding: UTF-8
+
 require 'spec_helper'
 
 #Functional: hit the database, treat model as black box
 describe Roll do
   before(:each) do
-    @roll = Factory.create(:roll, :creator => Factory.create(:user))
+    @roll = Factory.create(:roll, :creator => Factory.create(:user), :title => "normal title", :thumbnail_url => "u://rl")
     @user = Factory.create(:user)
     @stranger = Factory.create(:user)
   end
@@ -192,4 +194,23 @@ describe Roll do
   
   end
     
+  context "upvoted_roll display_<title/thumbnail_url>" do
+    it "should return regular title when not an upvoted roll" do
+      @roll.display_title.should == "normal title"
+    end
+    
+    it "should return heart title when an upvoted roll" do
+      @roll.upvoted_roll = true
+      @roll.display_title.should == "#{@roll.creator.nickname} ♥s"
+    end
+    
+    it "should return regular thumbnail_url when not an upvoted roll" do
+      @roll.display_thumbnail_url.should == "u://rl"
+    end
+    
+    it "should return heart thumbnail_url when an upvoted roll" do
+      @roll.upvoted_roll = true
+      @roll.display_thumbnail_url.should == "#{Settings::ShelbyAPI.web_root}/images/assets/favorite_roll_avatar.png"
+    end
+  end
 end

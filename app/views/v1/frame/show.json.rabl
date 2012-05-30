@@ -10,9 +10,7 @@ if @include_frame_children == true
 	
 	child :roll => "roll" do
 		attributes :id, :collaborative, :public, :creator_id
-		#special title and thumb for upvoted roll (will refactor this)
-		node(:title) { |r| (r.creator and r.creator.upvoted_roll == r) ? "#{r.creator.nickname} ♥s" : r.title  }
-		node(:thumbnail_url) { |r| (r.creator and r.creator.upvoted_roll == r) ? Settings::ShelbyAPI.web_root + "/images/assets/favorite_roll_avatar.png" : r.thumbnail_url  }
+		attributes :display_title => :title, :display_thumbnail_url => :thumbnail_url
 	end
 
 	child :creator => "creator" do

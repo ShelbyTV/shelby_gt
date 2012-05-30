@@ -1,22 +1,7 @@
 object @roll
 
 attributes :id, :collaborative, :public, :creator_id, :genius
-
-code :title do |r|
-	if params[:heart_roll] and r.creator != nil
-		"#{r.creator.nickname} ♥s"
-	else
-		r.title
-	end
-end
-
-code :thumbnail_url do |r|
-	if params[:heart_roll]
-		Settings::ShelbyAPI.web_root + "/images/assets/favorite_roll_avatar.png"
-	else
-		r.thumbnail_url
-	end
-end
+attributes :display_title => :title, :display_thumbnail_url => :thumbnail_url
 
 child @frames do
 		
@@ -31,7 +16,8 @@ child @frames do
 	end
 	
 	child :roll => "roll" do
-		attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url
+		attributes :id, :collaborative, :public, :creator_id
+		attributes :display_title => :title, :display_thumbnail_url => :thumbnail_url
 	end
 	
 	child :video => "video" do

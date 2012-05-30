@@ -4,9 +4,14 @@
 module GT
   class UserFixer
     
-    def self.clean_roll_followings(u)
+    def self.clean_roll_followings(u, save=true)
       u.roll_followings.delete_if { |rf| rf.roll == nil }
-      u.save
+      u.save if save
+    end
+    
+    def self.update_rolls_metadata(u, save=true)
+      u.upvoted_roll.upvoted_roll = true
+      u.upvoted_roll.save if save
     end
     
     def self.fix_heart_roll_creators(u)
