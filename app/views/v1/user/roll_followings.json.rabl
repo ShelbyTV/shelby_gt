@@ -4,7 +4,7 @@ attributes :id, :collaborative, :public, :creator_id, :origin_network
 
 code :title do |r|
 	if current_user.upvoted_roll_id == r.id
-		"♥'d Roll"
+		"#{current_user.nickname} ♥s"
 	else
 		r.title
 	end
