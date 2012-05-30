@@ -61,7 +61,7 @@ module GT
     def self.check_valid_url(url)
       matched = url.match(URI::regexp)
       return false unless matched
-      if (url =~ /fis\.doubleclick\.net/).nil?
+      if (url =~ /fls\.doubleclick\.net/).nil?
         return matched[0] == url
       else
         return false
