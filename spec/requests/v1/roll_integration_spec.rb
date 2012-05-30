@@ -12,7 +12,7 @@ describe 'v1/roll' do
     
     
     @u2 = Factory.create(:user)
-    @uv_roll2 = Factory.build(:roll, :creator => @u2)
+    @uv_roll2 = Factory.build(:roll, :creator => @u2, :upvoted_roll => true)
     @pub_roll2 = Factory.build(:roll, :creator => @u2)
     @u2.public_roll = @pub_roll2
     @u2.upvoted_roll = @uv_roll2
