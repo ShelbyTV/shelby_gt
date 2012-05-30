@@ -25,7 +25,7 @@ class Frame
   belongs_to :creator,  :class_name => 'User'
   key :creator_id,      ObjectId,   :abbr => :d
   
-  # Frames will be ordered in Rolls based on their score
+  # Frames will be ordered in normal Rolls based on their score by default
   key :score,  Float, :required => true, :abbr => :e
   
   # The users who have upvoted, increasing the score
@@ -48,10 +48,13 @@ class Frame
   
   # The shortlinks created for each type of share, eg twitter, tumvlr, email, facebook
   key :short_links, Hash, :abbr => :j, :default => {}
-  
+
+  # Manual ordering value. Used as the default ordering for genius roll frames. May be used in the future for user-initiated ordering.
+  key :order, Float, :default => 0, :abbr => :k
+ 
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
-  
+ 
   before_validation :update_score
   
   def created_at() self.id.generation_time; end
