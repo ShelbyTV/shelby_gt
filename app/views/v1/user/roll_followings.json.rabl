@@ -3,7 +3,7 @@ collection @rolls
 attributes :id, :collaborative, :public, :creator_id, :origin_network
 
 code :title do |r|
-	if r and current_user.upvoted_roll_id == r.id
+	if current_user.upvoted_roll_id == r.id
 		"♥'d Roll"
 	else
 		r.title
