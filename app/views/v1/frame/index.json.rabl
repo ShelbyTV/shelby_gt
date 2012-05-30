@@ -3,8 +3,8 @@ object @roll
 attributes :id, :collaborative, :public, :creator_id, :genius
 
 code :title do |r|
-	if params[:heart_roll]
-		"♥'d Roll"
+	if params[:heart_roll] and r.creator != nil
+		"#{r.creator.nickname} ♥s"
 	else
 		r.title
 	end
