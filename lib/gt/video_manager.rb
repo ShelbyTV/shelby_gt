@@ -28,7 +28,7 @@ module GT
     #
     # [Video] --- and Array of 0 or more Videos, persisted.
     # 
-    def self.get_or_create_videos_for_url(url, use_em=false, memcache_client=nil, should_resolve_url=true, check_deep=false)
+    def self.get_or_create_videos_for_url(url, use_em=false, memcache_client=nil, should_resolve_url=true, check_deep=false, prob=1)
       begin
         return [] unless (url = GT::UrlHelper.get_clean_url(url))
       rescue
@@ -75,9 +75,7 @@ module GT
 
       # if can't check cache go deep
       
-      
-      if check_deep
-
+      if check_deep && rand < prob
         deep_urls, to_cache = GT::DeeplinkParser.find_deep_link(url)
         deep_video_ids = []
         deep_videos = []

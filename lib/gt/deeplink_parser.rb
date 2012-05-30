@@ -3,7 +3,7 @@ require 'net/http'
 module GT
   class DeeplinkParser
 	
-    DOMAIN_REGEX = /\w*\.\w*\/\w*/
+    DOMAIN_REGEX = /\w+\.\w+\/\w+/
 
     #returns a list of urls, empty list if none
     def self.find_deep_link(url)
@@ -56,6 +56,20 @@ module GT
       end
     end
 
+    
+    
+    def self.check_valid_url(url)
+      matched = url.match(URI::regexp)
+      return false unless matched
+      if (url =~ /fis\.doubleclick\.net/).nil?
+        return matched[0] == url
+      else
+        return false
+      end
+    end
+      
+      
+
     def self.deep_parse_url(url, use_em=true)
       if use_em
         deep_response, to_cache = get_page_with_em(url)
@@ -64,7 +78,6 @@ module GT
       end
       if deep_response
         parsedoc = Nokogiri::HTML(deep_response)
-        Rails.logger.debug( "[GT::DeeplinkCache#deep_parse_url] got response")
         embed_elements = []
         embed_elements += parsedoc.xpath("//iframe")
         embed_elements += parsedoc.xpath("//embed")
@@ -72,7 +85,7 @@ module GT
         for embed in embed_elements
             for k,v in embed
                 if k == "src"
-                    urls << v
+                  urls << v if check_valid_url(v)
                 end
             end
         end
