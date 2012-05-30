@@ -35,7 +35,6 @@ class V1::RollController < ApplicationController
           if params[:public_roll]
             @roll = user.public_roll
           elsif params[:heart_roll]
-            puts "loading heart roll"
             @roll = user.upvoted_roll
           end
           @include_following_users = params[:following_users] == "true" ? true : false
