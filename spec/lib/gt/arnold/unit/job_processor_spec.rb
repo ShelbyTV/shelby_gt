@@ -6,13 +6,21 @@ require 'memcached_manager'
 
 # UNIT test
 describe GT::Arnold::JobProcessor do
+
+  $cache = [[""] * 10, 0]
   before(:each) do
     @fake_job = mock_model("MJob", :jobid => "fake")
     @user = User.new
+
+    @badurl = "bad://url"
+    @urlb = "bad://b"
+    @urlc = "bad://c"
+
     
     #make sure delete is *always* called exactly once
     @mock_fibers = mock_model("FFiber", :size => 1)
     @mock_fibers.should_receive(:delete)
+
     
     GT::Arnold::MemcachedManager.stub(:get_client).and_return(nil)
   end
@@ -23,9 +31,19 @@ describe GT::Arnold::JobProcessor do
   end
   
   it "should return :no_videos if there are no vids at :url" do
-    GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "bad://url"})
+    GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => @badurl})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([])
-    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == :no_videos
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers, $cache, false).should == :no_videos
+  end
+
+  it "should sleep for a few seconds" do
+    GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => @badurl})
+    GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([])
+    beforeTime = Time.now
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers, $cache, false).should == :no_videos
+    (Time.now - beforeTime).should > 1
+    $cache[0][0].should == @badurl
+    $cache[1] .should == 1
   end
   
   it "should return :no_videos if there are no vids at :expanded_urls" do

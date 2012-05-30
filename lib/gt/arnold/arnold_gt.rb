@@ -37,6 +37,9 @@ $fibers = []
 $http_timeout = 60
 $max_redirects = 5
 
+$cache_size = 10
+$url_cache = [[""] * $cache_size, 0]
+
 #get machine name from command line options
 machine = ARGV.select { |i| i =~ /^--machine_name=/ }
 machine_name = (machine and machine[0].is_a? String) ? machine[0].slice(15,3) : "arnold"
@@ -74,7 +77,7 @@ EventMachine.synchrony do
         #Rails.logger.debug "[Arnold Main] got job (job:#{job.jobid}), handing off to fiber. looks like: #{job.inspect}"
     		f = Fiber.new { |job|
     		  begin
-    		    GT::Arnold::JobProcessor.process_job(job, $fibers, $MAX_FIBERS)
+    		    GT::Arnold::JobProcessor.process_job(job, $fibers, $MAX_FIBERS, $url_cache)
     		  rescue => e
     		    Rails.logger.fatal "[Arnold Main Fiber] unhandled exception #{e} / BACKTRACE: #{e.backtrace.join('\n')}"
     		  end

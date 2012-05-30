@@ -10,7 +10,8 @@ module GT
   module Arnold
     class JobProcessor
     
-      def self.process_job(job, fibers, max_fibers)
+      #url_cache is a (list, int) tuple that represents a fixed size cache
+      def self.process_job(job, fibers, max_fibers, url_cache=nil, use_em = true)
         job_start_t = Time.now
   		  
   		  unless job_details = GT::Arnold::BeanJob.parse_job(job)
@@ -18,16 +19,19 @@ module GT
   		    clean_up(job, fibers, max_fibers, job_start_t)
   		    return :bad_job
 		    end
-		    
+
 		    # 1) Get videos at that URL
 		    if job_details[:expanded_urls].is_a?(Array)
 		      vids = []
 		      job_details[:expanded_urls].each do |url|
 		        # Experimentation has shown that we cannot rely on these URLs to actually be expanded
+                        check_url(url, url_cache, use_em)
 		        vids += GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client)
 	        end
 	      else
-  		    vids = GT::VideoManager.get_or_create_videos_for_url(job_details[:url], true, GT::Arnold::MemcachedManager.get_client)
+                    url = job_details[:url]
+                    check_url(url, url_cache, use_em)
+  		    vids = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client)
         end
         
         if vids.empty?          
@@ -64,6 +68,22 @@ module GT
       end
     
       private
+
+        def self.check_url(url, url_cache, use_em)
+          return nil unless url_cache
+          print url_cache[0]
+          if url_cache[0].include? url
+            if use_em
+              EM::Synchrony.sleep 1
+            else
+              sleep 1
+            end
+          else
+            url_cache[0][url_cache[1]] = url
+            url_cache[1] = (url_cache[1] + 1) % url_cache[0].length
+          end
+        end
+
       
         def self.clean_up(job, fibers, max_fibers, job_start_t)
 		      # -- stats --
