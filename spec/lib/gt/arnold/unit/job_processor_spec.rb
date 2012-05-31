@@ -9,7 +9,7 @@ describe GT::Arnold::JobProcessor do
 
   $cache = [[""] * 10, 0]
   before(:each) do
-    @fake_job = mock_model("MJob", :jobid => "fake")
+    @fake_job = [mock_model("MJob", :jobid => "fake")]
     @user = User.new
 
     @badurl = "bad://url"
@@ -27,20 +27,20 @@ describe GT::Arnold::JobProcessor do
   
   it "should return :bad_job if job cannot be parsed" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return(false)
-    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == :bad_job
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [:bad_job]
   end
   
   it "should return :no_videos if there are no vids at :url" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => @badurl})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([])
-    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers, $cache, false).should == :no_videos
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers, $cache, false).should == [:no_videos]
   end
 
   it "should sleep for a few seconds" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => @badurl})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([])
     beforeTime = Time.now
-    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers, $cache, false).should == :no_videos
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers, $cache, false).should == [:no_videos]
     (Time.now - beforeTime).should > 1
     $cache[0][0].should == @badurl
     $cache[1] .should == 1
@@ -49,13 +49,13 @@ describe GT::Arnold::JobProcessor do
   it "should return :no_videos if there are no vids at :expanded_urls" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:expanded_urls => ["bad://url1", "bad://url2"]})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([])
-    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == :no_videos
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [:no_videos]
   end
   
   it "should return :no_social_message if there is no tweet, fb, or tumblr social post" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "bad://url"})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => true}])
-    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == :no_social_message
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [:no_social_message]
   end
   
   it "should return :no_observing_user if there a user could not be found" do
@@ -66,7 +66,7 @@ describe GT::Arnold::JobProcessor do
     # fail to find user...
     User.stub(:find_by_provider_name_and_id).with('pt', 'puid').once.and_return(nil)
     
-    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == :no_observing_user
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [:no_observing_user]
   end
   
   it "should get the correct observing user from job_details" do
@@ -78,7 +78,7 @@ describe GT::Arnold::JobProcessor do
     User.stub(:find_by_provider_name_and_id).with('pt', 'puid').once.and_return(@user)
     
     GT::SocialSorter.stub(:sort).and_return(:sorted)
-    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [:sorted]
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [[:sorted]]
   end
   
   it "should SocialSort multiple videos from :url" do
@@ -89,7 +89,7 @@ describe GT::Arnold::JobProcessor do
     GT::SocialSorter.stub(:sort).and_return(:sorted)
     
     # 1 standard url returning 2 videos...
-    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [:sorted, :sorted]
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [[:sorted, :sorted]]
   end
   
   it "should SocialSort multiple videos from :expanded_urls" do
@@ -100,7 +100,7 @@ describe GT::Arnold::JobProcessor do
     GT::SocialSorter.stub(:sort).and_return(:sorted)
     
     # 2 expanded urls returning 2 videos each...
-    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [:sorted, :sorted, :sorted, :sorted]
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [[:sorted, :sorted, :sorted, :sorted]]
   end
   
   it "should remove it's controlling fiber from fibers array"  do
@@ -112,7 +112,7 @@ describe GT::Arnold::JobProcessor do
     
     # see before(:each) for the @mock_fiber that expects to be deleted
     
-    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [:sorted]
+    GT::Arnold::JobProcessor.process_job(@fake_job, @mock_fibers, :max_fibers).should == [[:sorted]]
   end
   
 end
