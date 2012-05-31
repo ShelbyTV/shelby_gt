@@ -5,7 +5,7 @@ if @include_frame_children == true
 	attributes :id, :score, :upvoters, :frame_ancestors, :frame_children
 	
 	code :created_at do |f|
-		time_ago_in_words(f.created_at) + ' ago' if f.created_at
+		concise_time_ago_in_words(f.created_at) if f.created_at
 	end
 	
 	child :roll => "roll" do
@@ -29,7 +29,7 @@ if @include_frame_children == true
 			attributes :id, :nickname, :realname, :user_image_url, :text, :origin_network, :origin_id, :origin_user_id, :user_id, :public
 
 			code :created_at do |c|
-				time_ago_in_words(c.created_at) + ' ago' if c.created_at
+				concise_time_ago_in_words(c.created_at) if c.created_at
 			end
 		end
 	end
@@ -37,7 +37,7 @@ else
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
 	
 	code :created_at do |c|
-		time_ago_in_words(c.created_at) + ' ago' if c.created_at
+		concise_time_ago_in_words(c.created_at) if c.created_at
 	end
 	
 end
