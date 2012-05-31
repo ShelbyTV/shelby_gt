@@ -30,15 +30,15 @@ module GT
     # 
     def self.get_or_create_videos_for_url(url, use_em=false, memcache_client=nil, should_resolve_url=true, check_deep=false, prob=1)
       begin
-        return [] unless (url = GT::UrlHelper.get_clean_url(url))
+        return [[], false] unless (url = GT::UrlHelper.get_clean_url(url))
       rescue
-        return []
+        return [[], false]
       end
       
       # Are we looking at a known provider that has a unique video at this url?
       if (provider_info = GT::UrlHelper.parse_url_for_provider_info(url))
         v = Video.where(:provider_name => provider_info[:provider_name], :provider_id => provider_info[:provider_id]).first
-        return [v] if v
+        return [[v], false] if v
       else
         
         # couldn't determine provider from URL; try resolving it and trying again
@@ -48,13 +48,13 @@ module GT
           url = GT::UrlHelper.resolve_url(url, use_em, memcache_client) if should_resolve_url
           url = GT::UrlHelper.post_process_url(url)
         rescue
-          return []
+          return [[], false]
         end
       
         # Is the new, resolved URL of a known provider that has a unique video at this url?
         if (provider_info = GT::UrlHelper.parse_url_for_provider_info(url))
           v = Video.where(:provider_name => provider_info[:provider_name], :provider_id => provider_info[:provider_id]).first
-          return [v] if v
+          return [[v], false] if v
         end
       end
       
@@ -70,12 +70,14 @@ module GT
       if checkcached 
         vid_ids = checkcached[:videos]
         deep_videos = Video.find(vid_ids)
-        return deep_videos
+        if deep_videos.length > 0
+          return [[deep_videos], true]
+        end
       end
 
       # if can't check cache go deep
       
-      if check_deep && rand < prob
+      if check_deep && rand < prob && !checkcached
         deep_urls, to_cache = GT::DeeplinkParser.find_deep_link(url)
         deep_video_ids = []
         deep_videos = []
@@ -94,7 +96,7 @@ module GT
           cachedlinks.save
         end
         if deep_videos.length > 0    
-          return deep_videos
+          return [deep_videos, true]
         end
       end
           
@@ -106,7 +108,7 @@ module GT
       videos = find_or_create_videos_for_hashes(video_hashes)
       
       # videos will be an Array of 0 or more Videos
-      return videos
+      return [videos, false]
     end
     
     private
