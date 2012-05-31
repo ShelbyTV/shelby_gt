@@ -22,12 +22,17 @@ module GT
 		    # 1) Get videos at that URL
 		    if job_details[:expanded_urls].is_a?(Array)
 		      vids = []
+                      is_deep = false
 		      job_details[:expanded_urls].each do |url|
 		        # Experimentation has shown that we cannot rely on these URLs to actually be expanded
-		        vids += GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, 0.3)
+                        fetched_videos, fetched_deep = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, 0.3)
+		        vids += fetched_videos
+                        is_deep |= fetched_deep
 	        end
 	      else
-  		    vids = GT::VideoManager.get_or_create_videos_for_url(job_details[:url], true, GT::Arnold::MemcachedManager.get_client, true, true, 0.3)
+                        fetched_videos, is_deep = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, 0.3)
+  		    vids = fetched_videos
+                    is_deep |= fetched_deep
         end
         
         if vids.empty?          

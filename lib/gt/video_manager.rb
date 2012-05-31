@@ -70,19 +70,17 @@ module GT
       if checkcached 
         vid_ids = checkcached[:videos]
         deep_videos = Video.find(vid_ids)
-        if deep_videos.length > 0
-          return [[deep_videos], true]
-        end
+        return [deep_videos, true]
       end
 
       # if can't check cache go deep
       
-      if check_deep && rand < prob && !checkcached
+      if check_deep && rand < prob
         deep_urls, to_cache = GT::DeeplinkParser.find_deep_link(url)
         deep_video_ids = []
         deep_videos = []
         deep_urls.each do |deep_url| 
-          deep_video = get_or_create_videos_for_url(deep_url, false)
+          deep_video = get_or_create_videos_for_url(deep_url, false)[0]
           deep_videos += deep_video
         end
         deep_videos.each do |video|
@@ -95,6 +93,7 @@ module GT
           cachedlinks.videos = deep_video_ids
           cachedlinks.save
         end
+        #if haven't found videos yet go to embedly
         if deep_videos.length > 0    
           return [deep_videos, true]
         end
