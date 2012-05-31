@@ -8,7 +8,7 @@ child @frames do
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
 	
 	code :created_at do |f|
-		concise_time_ago_in_words(f.created_at) + ' ago' if f.created_at
+		concise_time_ago_in_words(f.created_at) if f.created_at
 	end
 	
 	child :creator => "creator" do
@@ -32,7 +32,7 @@ child @frames do
 			attributes :id, :nickname, :realname, :user_image_url, :text, :origin_network, :origin_id, :origin_user_id, :user_id, :public
 
 			code :created_at do |c|
-				concise_time_ago_in_words(c.created_at) + ' ago' if c.created_at
+				concise_time_ago_in_words(c.created_at) if c.created_at
 			end
 		end
 	end
