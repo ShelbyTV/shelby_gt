@@ -9,7 +9,8 @@ if @include_frame_children == true
 	end
 	
 	child :roll => "roll" do
-		attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url
+		attributes :id, :collaborative, :public, :creator_id
+		attributes :display_title => :title, :display_thumbnail_url => :thumbnail_url
 	end
 
 	child :creator => "creator" do

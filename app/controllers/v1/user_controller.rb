@@ -72,6 +72,14 @@ class V1::UserController < ApplicationController
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
         @rolls = current_user.roll_followings.map! {|r| r.roll }
+        
+        #handle and log bad roll followings
+        compacted_rolls = @rolls.compact
+        if compacted_rolls.size < @rolls.size
+          Rails.logger.error("UserController#roll_followings - bad roll_followings for user #{current_user.id}")
+          @rolls = compacted_rolls
+        end
+        
         # move heart roll to @rolls[1]
         if heartRollIndex = @rolls.index(current_user.upvoted_roll)
           heartRoll = @rolls.slice!(heartRollIndex)

@@ -104,6 +104,7 @@ describe GT::UserManager do
         usr.viewed_roll.persisted?.should == true
 
         usr.upvoted_roll.class.should == Roll
+        usr.upvoted_roll.upvoted_roll.should == true
         usr.upvoted_roll.persisted?.should == true
                 
         usr.public_roll.class.should == Roll
@@ -181,7 +182,7 @@ describe GT::UserManager do
       u.public_roll.origin_network.should == "fb"
     end
     
-    it "should have the faux user follow its own public roll (should not follow watch_later, viewed, and upvoted rolls)" do
+    it "should have the faux user follow its own public and upvoted rolls (should not follow watch_later, viewed rolls)" do
       nick, provider, uid = "whatever3-c", "fb", "123uid3-c"
       lambda {
         u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
@@ -220,6 +221,7 @@ describe GT::UserManager do
       r.persisted?.should == true
       r.public.should == false
       r.collaborative.should == false
+      r.upvoted_roll.should == true
       r.creator.should == u
       
       #viewed
@@ -603,6 +605,7 @@ describe GT::UserManager do
         u.watch_later_roll.persisted?.should == true
         
         u.upvoted_roll.class.should == Roll
+        u.upvoted_roll.upvoted_roll.should == true
         u.upvoted_roll.persisted?.should == true
         
         u.viewed_roll.class.should == Roll
@@ -621,7 +624,7 @@ describe GT::UserManager do
         u.public_roll.origin_network.should == Roll::SHELBY_USER_PUBLIC_ROLL
       end
       
-      it "should have the user follow their public rolls (and NOT the watch_later, upvoted, or viewed Rolls)" do
+      it "should have the user follow their public and upvoted rolls (and NOT the watch_later, or viewed Rolls)" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         
         u.following_roll?(u.public_roll).should == true
