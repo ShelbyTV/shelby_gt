@@ -17,8 +17,8 @@ module ApplicationHelper
     return "just now" if distance_in_minutes <= 1
     
     case distance_in_minutes
-    when 1..59 then "#{distance_in_minutes}m"
-    when 60..720 then "#{distance_in_minutes/60}h"
+    when 1..59 then "#{distance_in_minutes}m ago"
+    when 60..720 then "#{distance_in_minutes/60}h ago"
     else
       from_time.respond_to?(:strftime) ? from_time.strftime("%b %-d") : ""
     end
