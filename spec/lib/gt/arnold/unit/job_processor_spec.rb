@@ -21,6 +21,7 @@ describe GT::Arnold::JobProcessor do
     @mock_fibers = mock_model("FFiber", :size => 1)
     @mock_fibers.should_receive(:delete)
 
+
     
     GT::Arnold::MemcachedManager.stub(:get_client).and_return(nil)
   end
@@ -45,6 +46,19 @@ describe GT::Arnold::JobProcessor do
     $cache[0][0].should == @badurl
     $cache[1] .should == 1
   end
+
+  it "shouldn't sleep" do
+    @mock_fibers.should_receive(:delete)
+    GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => @urlb})
+    GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => @urlb})
+    GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([])
+    beforeTime = Time.now
+    GT::Arnold::JobProcessor.process_job([@fake_job, @fake_job], @mock_fibers, :max_fibers, $cache, false).should == [:no_videos, :no_videos]
+    (Time.now - beforeTime).should < 1
+    $cache[0][0].should == @badurl
+    $cache[1].should == 2
+  end
+
   
   it "should return :no_videos if there are no vids at :expanded_urls" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:expanded_urls => ["bad://url1", "bad://url2"]})
