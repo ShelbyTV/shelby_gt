@@ -93,8 +93,9 @@ module GT
           cachedlinks.videos = deep_video_ids
           cachedlinks.save
         end
-            
-        return deep_videos
+        if deep_videos.length > 0    
+          return deep_videos
+        end
       end
           
 	  # Still no video...
