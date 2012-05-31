@@ -83,12 +83,13 @@ class V1::FrameController < ApplicationController
           #########
           # solving the N+1 problem with eager loading all children of a frame
           @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
-          @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq        
+          @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq
+          @entries_hearted_ids = @frames.map {|f| f.upvoters }.flatten.compact.uniq
           @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
           @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
 
           @rolls = Roll.find(@entries_roll_ids)
-          @creators = User.find(@entries_user_ids)        
+          @users = User.find((@entries_creator_ids + @entries_hearted_ids).uniq)
           @videos = Video.find(@entries_video_ids)
           @conversations = Conversation.find(@entries_conversation_ids)
           ##########
