@@ -14,29 +14,29 @@ describe ApplicationHelper do
     end
     
     it "should return 'Xm' for X minutes ago up to 59" do
-      concise_time_ago_in_words(3.minutes.ago).should == "3m"
-      concise_time_ago_in_words(22.minutes.ago).should == "22m"
-      concise_time_ago_in_words(59.minutes.ago).should == "59m"
+      concise_time_ago_in_words(3.minutes.ago).should == "3m ago"
+      concise_time_ago_in_words(22.minutes.ago).should == "22m ago"
+      concise_time_ago_in_words(59.minutes.ago).should == "59m ago"
     end
     
     it "should return '1h' for 1:00 - 1:59 hours ago" do
-      concise_time_ago_in_words(1.hour.ago).should == "1h"
-      concise_time_ago_in_words((1.hour + 59.minutes).ago).should == "1h"
+      concise_time_ago_in_words(1.hour.ago).should == "1h ago"
+      concise_time_ago_in_words((1.hour + 59.minutes).ago).should == "1h ago"
     end
     
     it "should return '2h' for 2:00 - 2:29 hours ago" do
-      concise_time_ago_in_words((2.hours + 0.minutes).ago).should == "2h"
-      concise_time_ago_in_words((2.hours + 59.minutes).ago).should == "2h"
+      concise_time_ago_in_words((2.hours + 0.minutes).ago).should == "2h ago"
+      concise_time_ago_in_words((2.hours + 59.minutes).ago).should == "2h ago"
     end
     
     it "should return '10h' for 10:00 - 10:59 hours ago" do
-      concise_time_ago_in_words((10.hours + 0.minutes).ago).should == "10h"
-      concise_time_ago_in_words((10.hours + 59.minutes).ago).should == "10h"
+      concise_time_ago_in_words((10.hours + 0.minutes).ago).should == "10h ago"
+      concise_time_ago_in_words((10.hours + 59.minutes).ago).should == "10h ago"
     end
     
     it "should return '11h' for 11:00 - 11:59 hours ago" do
-      concise_time_ago_in_words((11.hours + 0.minutes).ago).should == "11h"
-      concise_time_ago_in_words((11.hours + 59.minutes).ago).should == "11h"
+      concise_time_ago_in_words((11.hours + 0.minutes).ago).should == "11h ago"
+      concise_time_ago_in_words((11.hours + 59.minutes).ago).should == "11h ago"
     end
     
     it "should return 'MMM dd' for > 12 hours ago" do
