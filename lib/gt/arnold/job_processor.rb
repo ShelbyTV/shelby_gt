@@ -19,7 +19,6 @@ module GT
   	    results << :bad_job
             next
 	  end
-
 		    # 1) Get videos at that URL
 	  if job_details[:expanded_urls].is_a?(Array)
 	    vids = []
