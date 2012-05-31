@@ -11,6 +11,7 @@ module GT
     class JobProcessor
       #url_cache is a (list, int) tuple that represents a fixed size cache
       def self.process_job(jobs, fibers, max_fibers, url_cache=nil, use_em = true)
+        prev_urls = []
         results = []
         job_start_t = Time.now
   	jobs.each do |job|
@@ -24,13 +25,19 @@ module GT
 	  if job_details[:expanded_urls].is_a?(Array)
 	    vids = []
 	    job_details[:expanded_urls].each do |url|
-		        # Experimentation has shown that we cannot rely on these URLs to actually be expanded
-              check_url(url, url_cache, use_em)
+	    # Experimentation has shown that we cannot rely on these URLs to actually be expanded
+              unless prev_urls.include? url
+                check_url(url, url_cache, use_em)
+                prev_urls << url
+              end
 	      vids += GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client)
 	    end
 	  else
             url = job_details[:url]
-            check_url(url, url_cache, use_em)
+            unless prev_urls.include? url
+              check_url(url, url_cache, use_em)
+              prev_urls << url
+            end
   	    vids = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client)
           end
         
