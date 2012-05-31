@@ -46,6 +46,7 @@ module GT
       
       # Try to safely create conversation
       convo = Conversation.new
+      convo.deep = options.delete(:deep)
       if message
         convo.messages << message
         convo.public = message.public

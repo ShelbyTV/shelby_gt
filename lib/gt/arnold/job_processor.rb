@@ -19,19 +19,22 @@ module GT
   		    return :bad_job
 		    end
 		    
+                    is_deep = false
 		    # 1) Get videos at that URL
 		    if job_details[:expanded_urls].is_a?(Array)
 		      vids = []
-                      is_deep = false
 		      job_details[:expanded_urls].each do |url|
 		        # Experimentation has shown that we cannot rely on these URLs to actually be expanded
                         fetched_videos, fetched_deep = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, 0.3)
+                      unless fetched_videos.nil?
 		        vids += fetched_videos
-                        is_deep |= fetched_deep
+                        is_deep |= fetched_deep 
+                      end
 	        end
 	      else
-                        fetched_videos, is_deep = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, 0.3)
-  		    vids = fetched_videos
+                        fetched_videos, fetched_deep = GT::VideoManager.get_or_create_videos_for_url(job_details[:url], true, GT::Arnold::MemcachedManager.get_client, true, true, 0.3)
+
+  		    vids = fetched_videos || []
                     is_deep |= fetched_deep
         end
         
@@ -62,7 +65,7 @@ module GT
         
         # 4) For each video, post it into the system
         res = []
-        vids.each { |v| res << GT::SocialSorter.sort(msg, v, observing_user) }
+        vids.each { |v| res << GT::SocialSorter.sort(msg, v, observing_user, is_deep) }
   		  
   		  clean_up(job, fibers, max_fibers, job_start_t) 
   		  return res

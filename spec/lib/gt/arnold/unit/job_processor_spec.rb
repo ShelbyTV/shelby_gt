@@ -65,7 +65,7 @@ describe GT::Arnold::JobProcessor do
   
   it "should SocialSort multiple videos from :url" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => "ok://url", :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
-    GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => 1}, {:fake => 2}])
+    GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([[{:fake => 1}, {:fake => 2}], false])
     GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(mock_model(Message, :nickname => "nick"))
     User.stub(:find_by_provider_name_and_id).with('pt', 'puid').and_return(@user)
     GT::SocialSorter.stub(:sort).and_return(:sorted)
@@ -76,7 +76,7 @@ describe GT::Arnold::JobProcessor do
   
   it "should SocialSort multiple videos from :expanded_urls" do
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:expanded_urls => ["ok://url1", "ok://url2"], :twitter_status_update => "whatever", :provider_type => 'pt', :provider_user_id => 'puid'})
-    GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([{:fake => 1}, {:fake => 2}])
+    GT::VideoManager.stub(:get_or_create_videos_for_url).and_return([[{:fake => 1}, {:fake => 2}], false])
     GT::TwitterNormalizer.stub(:normalize_tweet).with("whatever").and_return(mock_model(Message, :nickname => "nick"))
     User.stub(:find_by_provider_name_and_id).with('pt', 'puid').and_return(@user)
     GT::SocialSorter.stub(:sort).and_return(:sorted)
