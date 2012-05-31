@@ -8,37 +8,38 @@ require 'social_sorter'
 
 module GT
   module Arnold
-    class JobProcessor
-    
       #url_cache is a (list, int) tuple that represents a fixed size cache
-      def self.process_job(job, fibers, max_fibers, url_cache=nil, use_em = true)
+      def self.process_job(jobs, fibers, max_fibers, url_cache=nil, use_em = true)
+        results = []
         job_start_t = Time.now
-  		  
-  		  unless job_details = GT::Arnold::BeanJob.parse_job(job)
-  		    Rails.logger.error "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No job_details.  Indicates some issue during job parsing."
-  		    clean_up(job, fibers, max_fibers, job_start_t)
-  		    return :bad_job
-		    end
+  	jobs.each do |job|
+  	  unless job_details = GT::Arnold::BeanJob.parse_job(job)
+  	    Rails.logger.error "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No job_details.  Indicates some issue during job parsing."
+  	    clean_up(job, fibers, max_fibers, job_start_t)
+  	    results << :bad_job
+            next
+	  end
 
 		    # 1) Get videos at that URL
-		    if job_details[:expanded_urls].is_a?(Array)
-		      vids = []
-		      job_details[:expanded_urls].each do |url|
+	  if job_details[:expanded_urls].is_a?(Array)
+	    vids = []
+	    job_details[:expanded_urls].each do |url|
 		        # Experimentation has shown that we cannot rely on these URLs to actually be expanded
-                        check_url(url, url_cache, use_em)
-		        vids += GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client)
-	        end
-	      else
-                    url = job_details[:url]
-                    check_url(url, url_cache, use_em)
-  		    vids = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client)
+            check_url(url, url_cache, use_em)
+	    vids += GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client)
+	  end
+	else
+          url = job_details[:url]
+          check_url(url, url_cache, use_em)
+  	  vids = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client)
         end
         
         if vids.empty?          
 		      #Rails.logger.debug "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No videos found for #{job_details}"
-		      clean_up(job, fibers, max_fibers, job_start_t) 
-		      return :no_videos
-	      end
+	  clean_up(job, fibers, max_fibers, job_start_t) 
+	  results << :no_videos
+          next
+	end
 		    
 		    # 2) Normalize the incoming social post
         msg = GT::TwitterNormalizer.normalize_tweet(job_details[:twitter_status_update]) if job_details[:twitter_status_update]
@@ -47,7 +48,8 @@ module GT
         if msg == nil or msg.nickname.blank?
           Rails.logger.fatal "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] Invalid social message. job: #{job}, job_details: #{job_details}, message: #{msg}"
           clean_up(job, fibers, max_fibers, job_start_t)
-          return :no_social_message
+          results << :no_social_message
+          next
         end
         
         # 3) get the observing user
@@ -56,7 +58,8 @@ module GT
           # But while testing, we're not using the real User DB, so this is expected
           Rails.logger.error "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No observing_user for provider '#{job_details[:provider_type]}' with id '#{job_details[:provider_user_id]}'"
           clean_up(job, fibers, max_fibers, job_start_t) 
-          return :no_observing_user
+          results << :no_observing_user
+          next
         end
         
         # 4) For each video, post it into the system
@@ -64,7 +67,10 @@ module GT
         vids.each { |v| res << GT::SocialSorter.sort(msg, v, observing_user) }
   		  
   		  clean_up(job, fibers, max_fibers, job_start_t) 
-  		  return res
+  		  results << res
+                  next
+        end
+        return results
       end
     
       private
