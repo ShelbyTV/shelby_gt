@@ -4,7 +4,7 @@ require 'video_manager'
 describe 'v1/frame' do
   
   context 'logged in' do
-    before(:all) do
+    before(:each) do
       @u1 = Factory.create(:user)
       @u1.upvoted_roll = Factory.create(:roll, :creator => @u1)
       @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
@@ -39,6 +39,36 @@ describe 'v1/frame' do
           get '/v1/frame/'+@f.id
           response.body.should be_json_eql(404).at_path("status")
         end
+        
+        context "upvoters" do
+          it "should return an array with upvote users and their attributes" do
+            @f.upvoters << Factory.create(:user).id
+            @f.upvoters << Factory.create(:user).id
+            @f.save
+            
+            get '/v1/frame/'+@f.id+'?include_children=true'
+            response.body.should be_json_eql(200).at_path("status")
+            response.body.should have_json_size(2).at_path("result/upvote_users")
+          end
+
+          it "should return an empty array if no upvoters on a frame" do
+            get '/v1/frame/'+@f.id+'?include_children=true'
+            response.body.should be_json_eql(200).at_path("status")
+            response.body.should have_json_size(0).at_path("result/upvote_users")
+          end
+
+          it "should make one single User.find query for all upvoters" do
+            @f.upvoters << Factory.create(:user).id
+            @f.upvoters << Factory.create(:user).id
+            @f.upvoters << Factory.create(:user).id
+            @f.upvoters << Factory.create(:user).id
+            @f.save
+            
+            User.should_receive(:find).exactly(1).times
+                        
+            get '/v1/frame/'+@f.id+'?include_children=true'
+          end
+        end
       end
       
       context 'all frames in a roll' do
@@ -52,6 +82,61 @@ describe 'v1/frame' do
           response.body.should have_json_path("result/creator_id")
           parse_json(response.body)["result"]["creator_id"].should eq(@u1.id.to_s)
           response.body.should have_json_size(2).at_path("result/frames")
+        end
+        
+        context "upvoters" do
+          before(:each) do
+            @roll = Factory.create(:roll, :creator_id => @u1.id)
+            @f.roll_id = @roll.id
+            @f.save
+            @f2 = Factory.create(:frame, :roll_id => @roll.id)
+          end
+          
+          it "should return an array with upvote users and their attributes (in the first frame of the roll)" do
+            @f.upvoters << (upvoter = Factory.create(:user)).id
+            @f.upvoters << (upvoter = Factory.create(:user)).id
+            @f.upvoters << (upvoter = Factory.create(:user)).id
+            @f.upvoters << (upvoter = Factory.create(:user)).id
+            @f.upvoters << (upvoter = Factory.create(:user)).id
+            @f.upvoters << (upvoter = Factory.create(:user)).id
+            @f.upvoters << (upvoter = Factory.create(:user)).id
+            @f.save
+            
+            get "/v1/roll/#{@roll.id}/frames"
+            response.body.should be_json_eql(200).at_path("status")
+            response.body.should have_json_size(7).at_path("result/frames/0/upvote_users")
+          end
+
+          it "should return an empty array if no upvoters on the first frame of the roll" do
+            get "/v1/roll/#{@roll.id}/frames"
+            response.body.should be_json_eql(200).at_path("status")
+            response.body.should have_json_size(0).at_path("result/frames/0/upvote_users")
+          end
+
+          it "should make one single User.find query for all upvoters (in all frames of the roll)" do
+            @f.upvoters << Factory.create(:user).id
+            @f.upvoters << Factory.create(:user).id
+            @f.upvoters << Factory.create(:user).id
+            @f.upvoters << Factory.create(:user).id
+            @f.upvoters << Factory.create(:user).id
+            @f.upvoters << Factory.create(:user).id
+            @f.upvoters << Factory.create(:user).id
+            @f.save
+            
+            @f2.upvoters << Factory.create(:user).id
+            @f2.upvoters << Factory.create(:user).id
+            @f2.upvoters << Factory.create(:user).id
+            @f2.upvoters << Factory.create(:user).id
+            @f2.save
+            
+            # 1 time to load current_user
+            # 1 time to load all the upvote users
+            # 1 time for ??? signed_in? ???
+            # although thre is 1 unexpected load, it's O(1) and this at least shows we don't have an N+1 problem w/ users
+            User.should_receive(:find).exactly(3).times
+                        
+            get "/v1/roll/#{@roll.id}/frames"
+          end
         end
 
 #TODO: finishe these tests... I SUCK AT WRITING TESTS! Code works. can't work out why tests aren't working
