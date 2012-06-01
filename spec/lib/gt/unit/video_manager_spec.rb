@@ -123,7 +123,7 @@ describe GT::VideoManager do
     
       it "should handle single video hash return" do
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
-        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil)
+        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil, "abcd")
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
         
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([
@@ -136,7 +136,7 @@ describe GT::VideoManager do
       
       it "should handle multiple video hash return" do
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
-        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil)
+        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil, "abcd")
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
         
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([
@@ -170,7 +170,7 @@ describe GT::VideoManager do
           'html' => '-iframe src=\'whatever\' /-'
           }
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
-        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil)
+        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil, "abcd")
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
         
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([
@@ -205,7 +205,7 @@ describe GT::VideoManager do
       it "should return Video from DB if embed.ly hash references one in there" do
         h = { 'url' => 'a_new_url' }
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
-        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil)
+        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil, "abcd")
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
         
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([

@@ -57,7 +57,7 @@ module GT
           return {:videos => [v], :from_deep => false} if v
         end
       end
-      
+
       ##### -- -- -- -- >>>
       # In the future, if we deep-examine pages for video, would have a cross-references DB that we would look at right now
       # For a given URL, it would return an array of id's for Videos which we could then return
@@ -98,7 +98,11 @@ module GT
           return {:videos => deep_videos, :from_deep => true}
         end
       end
-          
+      
+      # since there are no deep links, check to see if we can handle the url
+      unless GT::UrlHelper.parse_url_for_provider_info(url)
+        return {:videos => [], :from_deep => false}
+      end
 	  # Still no video...
       # Examine that URL (via our cache, our service, or external service like embed.ly), looking for video
       video_hashes = GT::UrlVideoDetector.examine_url_for_video(url, use_em, memcache_client)
