@@ -52,6 +52,7 @@ $statsd_job_timing_bucket =         "arnold.#{arnold_version}.#{machine_name}.jo
 $statsd_job_reserve_timing_bucket = "arnold.#{arnold_version}.#{machine_name}.job_reserve.time"
 $statsd_em_turn_timing_bucket = "arnold.#{arnold_version}.#{machine_name}.em_turn.time"
 $statsd_jobs_processed_bucket = "arnold.#{arnold_version}.#{machine_name}.job.processed"
+$statsd_jobs_cached_bucket = "arnold.#{arnold_version}.#{machine_name}.job.cached"
 
 # To make sure the consumer isn't hung, and kill ourselves if it is
 $consumer_turns = 0

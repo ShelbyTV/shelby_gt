@@ -39,7 +39,9 @@ module GT
 	    end
 	  else
             url = job_details[:url]
-            unless prev_urls.include? url
+            if prev_urls.include? url
+    	      StatsManager::StatsD.client.increment($statsd_jobs_cached_bucket)
+            else prev_urls.include? url
               sleep_if_other_fiber_is_processing(url, url_cache, use_em)
               prev_urls << url
             end
@@ -93,6 +95,7 @@ module GT
           return nil unless url_cache
           if url_cache[0].include? url
             if use_em
+    	      StatsManager::StatsD.client.increment($statsd_jobs_cached_bucket)
               EM::Synchrony.sleep 1
             else
               sleep 1
