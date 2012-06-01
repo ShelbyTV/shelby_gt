@@ -14,7 +14,7 @@ set :user, "gt"
 
 set :scm, :git
 set :repository,  "git@github.com:ShelbyTV/shelby_gt.git"
-set :branch, "deeplink"
+set :branch, "master"
 set :deploy_via, :remote_cache #keep a local cache to speed up deploys
 
 #TODO: copy lib/etc/arnold_gt.conf to /etc/init/arnold_gt.conf

@@ -22,7 +22,7 @@ describe GT::DeeplinkParser do
           mock_model("FakeEMHttpResonse", :error => false,
             :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testdeepfiles/rant.html",__FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
-      GT::DeeplinkParser.find_deep_link(@urlhaslink).should == [[@deeplink], true]
+      GT::DeeplinkParser.find_deep_link(@urlhaslink).should == {:urls => [@deeplink], :to_cache => true}
       
     end
 
@@ -32,7 +32,7 @@ describe GT::DeeplinkParser do
           mock_model("FakeEMHttpResonse", :error => false,
             :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testdeepfiles/badlinks.html",__FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
-      GT::DeeplinkParser.find_deep_link(@urlbadlinks).should == [[], true]
+      GT::DeeplinkParser.find_deep_link(@urlbadlinks).should == {:urls => [], :to_cache => true}
     end    
 
 
@@ -42,12 +42,12 @@ describe GT::DeeplinkParser do
           mock_model("FakeEMHttpResonse", :error => false,
             :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testdeepfiles/google.html", __FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
-      GT::DeeplinkParser.find_deep_link(@urlnolink).should == [[], true]
+      GT::DeeplinkParser.find_deep_link(@urlnolink).should == {:urls => [], :to_cache => true}
     end
 
 
     it "should be blacklisted" do
-      GT::DeeplinkParser.find_deep_link(@blacklisted).should == [[],false]
+      GT::DeeplinkParser.find_deep_link(@blacklisted).should == {:urls => [], :to_cache => false}
     end
   end
 end

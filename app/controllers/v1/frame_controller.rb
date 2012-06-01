@@ -44,10 +44,10 @@ class V1::FrameController < ApplicationController
       
       if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
- 
         # lets the view show appropriate information, eg thumbnail_url
         params[:heart_roll] = true if (user_signed_in? and @roll.id == current_user.upvoted_roll_id)
-              
+
+ 
         # the default sort order for genius rolls is by the order field, other rolls score field
         # if needed in the future, can add a parameter so clients can specify sorting type
         if @roll.genius
