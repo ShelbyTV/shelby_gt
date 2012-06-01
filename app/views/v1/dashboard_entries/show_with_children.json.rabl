@@ -15,6 +15,12 @@ child :frame => "frame" do |f|
 		attributes :id, :name, :nickname, :user_image_original, :user_image, :faux, :public_roll_id
 	end
 	
+	code do |f|
+  	child (User.find(f.upvoters)) => :upvote_users do
+  	  attributes :id, :name, :nickname, :user_image_original, :user_image, :public_roll_id
+    end
+  end
+	
 	child :roll => "roll" do
 		attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url
 	end

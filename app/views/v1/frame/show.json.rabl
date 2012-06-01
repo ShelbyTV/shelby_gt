@@ -14,8 +14,12 @@ if @include_frame_children == true
 	end
 
 	child :creator => "creator" do
-		attributes :id, :name, :nickname, :user_image_original, :user_image, :faux
+		attributes :id, :name, :nickname, :user_image_original, :user_image
 	end
+	
+	child (User.find(@frame.upvoters)) => :upvote_users do
+	  attributes :id, :name, :nickname, :user_image_original, :user_image, :public_roll_id
+  end
 
 	child :video => "video" do
 		attributes :id, :provider_name, :provider_id, :title, :description, 
