@@ -88,6 +88,9 @@ class V1::UserController < ApplicationController
           Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
         end
         
+        # Load all roll creators to prevent N+1 queries
+        @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
+        
         @status = 200
       else
         render_error(403, "you are not authorized to view that users rolls.")
