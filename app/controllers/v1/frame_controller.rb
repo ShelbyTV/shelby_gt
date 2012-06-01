@@ -186,7 +186,7 @@ class V1::FrameController < ApplicationController
           # and finally create the frame
           r = frame_options[:video] ? GT::Framer.create_frame(frame_options) : {}
 
-            if @frame = r[:frame]
+          if @frame = r[:frame]
             @status = 200          
           else
             render_error(404, "something went wrong when creating that frame")
