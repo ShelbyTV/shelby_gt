@@ -39,7 +39,7 @@ class V1::Roll::GeniusController < ApplicationController
 
     @searchVids = []
     @urls.each do |url|
-      video = GT::VideoManager.get_or_create_videos_for_url(url)[0][0]
+      video = GT::VideoManager.get_or_create_videos_for_url(url)[:videos][0]
       @searchVids.append(video) if video
     end
 

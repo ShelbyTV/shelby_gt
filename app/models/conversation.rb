@@ -30,7 +30,7 @@ class Conversation
   key :frame_id, ObjectId, :abbr => :c
 
 
-  key :from_deep_link, Boolean, :abbr => :d, :default => false
+  key :from_deeplink, Boolean, :abbr => :d, :default => false
   
   #don't need anythign mass-assignable (yet)
   attr_accessible

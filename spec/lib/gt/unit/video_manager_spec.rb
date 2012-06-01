@@ -30,7 +30,7 @@ describe GT::VideoManager do
   context "get_deep_url" do
     it "should find cached deep" do
       vids = GT::VideoManager.get_or_create_videos_for_url(@deep_url, false, nil, true, true)
-      vids.should == [[@v], true]
+      vids.should == {:videos => [@v], :from_deep => true}
     end
 
     it "should find deep" do
@@ -40,8 +40,8 @@ describe GT::VideoManager do
             :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testdeepfiles/rant.html", __FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
       vids = GT::VideoManager.get_or_create_videos_for_url(@urlhaslink, false, nil, true, true)
-      vids[0].size.should == 1
-      vids[1].should == true
+      vids[:videos].size.should == 1
+      vids[:from_deep].should == true
     end
 
     it "should be cached" do
@@ -56,7 +56,7 @@ describe GT::VideoManager do
             :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testdeepfiles/google.html", __FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
       vids = GT::VideoManager.get_or_create_videos_for_url(@urlnolink, false, nil, true, true)
-      vids.should == [[], false]
+      vids.should == {:videos => [], :from_deep =>false}
     end
 
     it "the nothing deep should be cached" do
@@ -72,27 +72,27 @@ describe GT::VideoManager do
   context "get_or_create_videos_for_url" do
    
     it "should return [] with crappy url" do
-      GT::VideoManager.get_or_create_videos_for_url(nil).should == [[], false]
-      GT::VideoManager.get_or_create_videos_for_url("dan").should == [[], false]
-      GT::VideoManager.get_or_create_videos_for_url("http://4sq.com/xyz").should == [[], false]
+      GT::VideoManager.get_or_create_videos_for_url(nil).should == {:videos => [], :from_deep => false}
+      GT::VideoManager.get_or_create_videos_for_url("dan").should == {:videos => [], :from_deep => false}
+      GT::VideoManager.get_or_create_videos_for_url("http://4sq.com/xyz").should == {:videos => [], :from_deep => false}
     end
 
     it "should find Video already in DB" do
       GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
       
-      GT::VideoManager.get_or_create_videos_for_url(@url1).should == [[@v], false]
+      GT::VideoManager.get_or_create_videos_for_url(@url1).should == {:videos => [@v], :from_deep => false}
     end
     
     it "should resolve shortlink" do
       GT::UrlHelper.should_receive( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
       
-      GT::VideoManager.get_or_create_videos_for_url(@short_url).should == [[], false]
+      GT::VideoManager.get_or_create_videos_for_url(@short_url).should == {:videos => [], :from_deep => false}
     end
     
     it "should not resolve shortlink is should_resolve_url==false" do
       GT::UrlHelper.should_not_receive( :resolve_url )
       
-      GT::VideoManager.get_or_create_videos_for_url(@short_url, false, nil, false).should == [[], false]
+      GT::VideoManager.get_or_create_videos_for_url(@short_url, false, nil, false).should == {:videos => [], :from_deep => false}
     end
     
     it "should find Video already in DB after resolving shortlink" do
@@ -100,7 +100,7 @@ describe GT::VideoManager do
       GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
       GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
       
-      GT::VideoManager.get_or_create_videos_for_url(@short_url).should == [[@v], false]
+      GT::VideoManager.get_or_create_videos_for_url(@short_url).should == {:videos => [@v], :from_deep => false}
     end
     
     context "reaching out to external service" do
@@ -110,7 +110,7 @@ describe GT::VideoManager do
         
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return( [{}] )
         
-        GT::VideoManager.get_or_create_videos_for_url(@short_url).should == [[], false]
+        GT::VideoManager.get_or_create_videos_for_url(@short_url).should == {:videos => [], :from_deep => false}
       end
     
       it "should handle nil return from external service" do
@@ -118,7 +118,7 @@ describe GT::VideoManager do
         
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return( nil )
         
-        GT::VideoManager.get_or_create_videos_for_url(@short_url).should == [[], false]
+        GT::VideoManager.get_or_create_videos_for_url(@short_url).should == {:videos => [], :from_deep => false}
       end
     
       it "should handle single video hash return" do
@@ -131,7 +131,7 @@ describe GT::VideoManager do
           ])
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with("something").and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
         
-        GT::VideoManager.get_or_create_videos_for_url(@short_url)[0].size.should == 1
+        GT::VideoManager.get_or_create_videos_for_url(@short_url)[:videos].size.should == 1
       end
       
       it "should handle multiple video hash return" do
@@ -147,7 +147,7 @@ describe GT::VideoManager do
           ])
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with("something").and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
         
-        GT::VideoManager.get_or_create_videos_for_url(@short_url)[0].size.should == 4
+        GT::VideoManager.get_or_create_videos_for_url(@short_url)[:videos].size.should == 4
       end
     
     end
@@ -180,7 +180,7 @@ describe GT::VideoManager do
         
         #should actually create a new video
         vid_count = Video.count
-        vids = GT::VideoManager.get_or_create_videos_for_url(@short_url)[0]
+        vids = GT::VideoManager.get_or_create_videos_for_url(@short_url)[:videos]
         Video.count.should == vid_count + 1
         
         vids.size.should == 1
@@ -214,7 +214,7 @@ describe GT::VideoManager do
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with("a_new_url").and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
         
         vid_count = Video.count
-        vids = GT::VideoManager.get_or_create_videos_for_url(@short_url)[0]
+        vids = GT::VideoManager.get_or_create_videos_for_url(@short_url)[:videos]
         
         #should find the Video in our DB, not create one
         Video.count.should == vid_count

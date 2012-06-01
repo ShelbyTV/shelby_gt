@@ -22,16 +22,20 @@ module GT
   	    results << :bad_job
             next
 	  end
+
+	  vids = []
 	  # 1) Get videos at that URL
 	  if job_details[:expanded_urls].is_a?(Array)
-	    vids = []
 	    job_details[:expanded_urls].each do |url|
 	    # Experimentation has shown that we cannot rely on these URLs to actually be expanded
               unless prev_urls.include? url
                 sleep_if_other_fiber_is_processing(url, url_cache, use_em)
                 prev_urls << url
               end
-	      vids += GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, 1.0)
+	      video_response = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, 1.0)
+              video_response[:videos].each do |v|
+                vids << {:video => v, :from_deep => video_response[:from_deep]}
+              end
 	    end
 	  else
             url = job_details[:url]
@@ -39,7 +43,10 @@ module GT
               sleep_if_other_fiber_is_processing(url, url_cache, use_em)
               prev_urls << url
             end
-  	    vids = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, 1.0)
+  	    video_response = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, 1.0)
+            video_response[:videos].each do |v|
+              vids << {:video => v, :from_deep => video_response[:from_deep]}
+            end
           end
         
           if vids.empty?          
@@ -72,7 +79,7 @@ module GT
         
         # 4) For each video, post it into the system
         res = []
-        vids.each { |v| res << GT::SocialSorter.sort(msg, v, observing_user, is_deep) }
+        vids.each { |v_hash| res << GT::SocialSorter.sort(msg, v_hash, observing_user) }
   		  
   	clean_up(job, fibers, max_fibers, job_start_t) 
   	results << res

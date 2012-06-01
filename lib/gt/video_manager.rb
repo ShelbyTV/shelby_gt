@@ -30,15 +30,15 @@ module GT
     # 
     def self.get_or_create_videos_for_url(url, use_em=false, memcache_client=nil, should_resolve_url=true, check_deep=false, prob=1)
       begin
-        return [[], false] unless (url = GT::UrlHelper.get_clean_url(url))
+        return {:videos => [], :from_deep => false} unless (url = GT::UrlHelper.get_clean_url(url))
       rescue
-        return [[], false]
+        return {:videos => [], :from_deep => false}
       end
       
       # Are we looking at a known provider that has a unique video at this url?
       if (provider_info = GT::UrlHelper.parse_url_for_provider_info(url))
         v = Video.where(:provider_name => provider_info[:provider_name], :provider_id => provider_info[:provider_id]).first
-        return [[v], false] if v
+        return {:videos => [v], :from_deep => false} if v
       else
         
         # couldn't determine provider from URL; try resolving it and trying again
@@ -48,13 +48,13 @@ module GT
           url = GT::UrlHelper.resolve_url(url, use_em, memcache_client) if should_resolve_url
           url = GT::UrlHelper.post_process_url(url)
         rescue
-          return [[], false]
+          return {:videos => [], :from_deep => false}
         end
       
         # Is the new, resolved URL of a known provider that has a unique video at this url?
         if (provider_info = GT::UrlHelper.parse_url_for_provider_info(url))
           v = Video.where(:provider_name => provider_info[:provider_name], :provider_id => provider_info[:provider_id]).first
-          return [[v], false] if v
+          return {:videos => [v], :from_deep => false} if v
         end
       end
       
@@ -70,7 +70,7 @@ module GT
       if checkcached 
         vid_ids = checkcached[:videos]
         deep_videos = Video.find(vid_ids)
-        return [deep_videos, true]
+        return {:videos => deep_videos, :from_deep => true}
       end
 
       # if can't check cache go deep
@@ -80,7 +80,7 @@ module GT
         deep_video_ids = []
         deep_videos = []
         deep_response[:urls].each do |deep_url| 
-          deep_video = get_or_create_videos_for_url(deep_url, false)[0]
+          deep_video = get_or_create_videos_for_url(deep_url, false)[:videos]
           deep_videos += deep_video
         end
         deep_videos.each do |video|
@@ -95,7 +95,7 @@ module GT
         end
         #if haven't found videos yet go to embedly
         if deep_videos.length > 0    
-          return [deep_videos, true]
+          return {:videos => deep_videos, :from_deep => true}
         end
       end
           
@@ -107,7 +107,7 @@ module GT
       videos = find_or_create_videos_for_hashes(video_hashes)
       
       # videos will be an Array of 0 or more Videos
-      return [videos, false]
+      return {:videos => videos, :from_deep => false}
     end
     
     private
