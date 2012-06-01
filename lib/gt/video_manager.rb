@@ -76,10 +76,10 @@ module GT
       # if can't check cache go deep
       
       if check_deep && rand < prob
-        deep_urls, to_cache = GT::DeeplinkParser.find_deep_link(url)
+        deep_response = GT::DeeplinkParser.find_deep_link(url)
         deep_video_ids = []
         deep_videos = []
-        deep_urls.each do |deep_url| 
+        deep_response[:urls].each do |deep_url| 
           deep_video = get_or_create_videos_for_url(deep_url, false)
           deep_videos += deep_video
         end
@@ -87,7 +87,7 @@ module GT
           deep_video_ids << video.id
         end
         #cache
-        if to_cache
+        if deep_response[:to_cache]
           cachedlinks = DeeplinkCache.new
           cachedlinks.url = url
           cachedlinks.videos = deep_video_ids
