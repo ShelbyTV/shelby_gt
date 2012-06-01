@@ -1,22 +1,7 @@
 object @roll
 
 attributes :id, :collaborative, :public, :creator_id, :origin_network, :genius
-
-code :title do |r|
-	if params[:heart_roll]
-		"♥'d Roll"
-	else
-		r.title
-	end
-end
-
-code :thumbnail_url do |r|
-	if params[:heart_roll]
-		Settings::ShelbyAPI.web_root + "/images/assets/favorite_roll_avatar.png"
-	else
-		r.thumbnail_url
-	end
-end
+attributes :display_title => :title, :display_thumbnail_url => :thumbnail_url
 
 if @include_following_users == true
 	child :following_users => "following_users" do

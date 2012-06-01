@@ -37,7 +37,10 @@ class Roll
   key :short_links, Hash, :abbr => :g, :default => {}
 
   # boolean indicating whether this roll is a genius roll
-  key :genius,          Boolean, :abbr => :h
+  key :genius,          Boolean, :abbr => :h, :default => false
+  
+  # indicates the special heart roll (formerly upvoted_roll, known as user.upvoted_roll)
+  key :upvoted_roll,    Boolean, :abbr => :i, :default => false
 
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
@@ -133,5 +136,10 @@ class Roll
   def invitable_to_by?(u) viewable_by?(u); end
 
   def permalink() "#{Settings::ShelbyAPI.web_root}/roll/#{self.id}"; end
+  
+  #displayed title and thumbnail_url for upvoted rolls (aka heart rolls)
+  def display_title() (self.upvoted_roll? and self.creator) ? "#{self.creator.nickname} ♥s" : self.title; end
+  
+  def display_thumbnail_url() self.upvoted_roll? ? "#{Settings::ShelbyAPI.web_root}/images/assets/favorite_roll_avatar.png" : self.thumbnail_url; end
   
 end
