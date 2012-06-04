@@ -39,9 +39,18 @@ describe V1::UserController do
     end
 
     it "routes for GET users rolls following" do
-      { :get => "/v1/user/1/rolls" }.should route_to(
+      { :get => "/v1/user/1/rolls/following" }.should route_to(
         :controller => "v1/user",
-        :action => "rolls",
+        :action => "roll_followings",
+        :format => "json",
+        :id => "1"
+      )
+    end
+    
+    it "routes for GET users rolls following" do
+      { :get => "/v1/user/1/roll_followings" }.should route_to(
+        :controller => "v1/user",
+        :action => "roll_followings",
         :format => "json",
         :id => "1"
       )
@@ -90,13 +99,23 @@ describe V1::FrameController do
       )
     end 
     
-    it "alias for GET INDEX" do
+    it "alias to GET INDEX of personal_roll" do
       { :get => "/v1/user/1/personal_roll/frames" }.should route_to(
         :controller => "v1/frame",
         :action => "index",
         :format => "json",
         :user_id => "1",
         :public_roll => true
+      )
+    end
+
+    it "alias to GET INDEX of heart_roll" do
+      { :get => "/v1/user/1/heart_roll/frames" }.should route_to(
+        :controller => "v1/frame",
+        :action => "index",
+        :format => "json",
+        :user_id => "1",
+        :heart_roll => true
       )
     end
 
@@ -167,7 +186,7 @@ describe V1::RollController do
       )
     end 
     
-    it "alias for GET" do
+    it "alias to GET personal_roll" do
       { :get => "/v1/user/1/personal_roll" }.should route_to(
         :controller => "v1/roll",
         :action => "show",
@@ -176,6 +195,24 @@ describe V1::RollController do
         :public_roll => true
       )
     end 
+    
+    it "alias to GET hearted roll" do
+      { :get => "/v1/user/1/heart_roll" }.should route_to(
+        :controller => "v1/roll",
+        :action => "show",
+        :format => "json",
+        :user_id => "1",
+        :heart_roll => true
+      )
+    end
+    
+    it "route to browser roll" do
+      { :get => "/v1/roll/browse" }.should route_to(
+        :controller => "v1/roll",
+        :action => "browse",
+        :format => "json"
+      )
+    end
 
     it "routes for PUT" do
       { :put => "/v1/roll/1" }.should route_to(
@@ -223,6 +260,18 @@ describe V1::RollController do
     end 
   end
 end
+
+describe V1::Roll::GeniusController do
+  describe "routing" do
+    it "routes for PUT" do
+      { :post => "/v1/roll/genius" }.should route_to(
+        :controller => "v1/roll/genius",
+        :action => "create",
+        :format => "json"
+      )
+    end 
+  end
+end 
 
 describe V1::VideoController do
   describe "routing" do

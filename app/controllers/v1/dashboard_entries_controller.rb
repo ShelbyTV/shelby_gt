@@ -22,9 +22,8 @@ class V1::DashboardEntriesController < ApplicationController
 
       # get user
       if params[:user_id]
-        unless user = User.find(params[:user_id])
-          render_error(404, "could not find that user")
-        end
+        return render_error(404, "please specify a valid id") unless (user_id = ensure_valid_bson_id(params[:user_id]))
+        return render_error(404, "could not find that user") unless user = User.find(user_id)
       elsif user_signed_in?
         user = current_user
       end
@@ -61,12 +60,13 @@ class V1::DashboardEntriesController < ApplicationController
         @frames = Frame.find(@entries_frame_ids)
       
         @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
-        @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq        
+        @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq
+        @entries_hearted_ids = @frames.map {|f| f.upvoters }.flatten.compact.uniq
         @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
         @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
 
         @rolls = Roll.find(@entries_roll_ids)
-        @creators = User.find(@entries_user_ids)        
+        @users = User.find((@entries_creator_ids + @entries_hearted_ids).uniq)
         @videos = Video.find(@entries_video_ids)
         @conversations = Conversation.find(@entries_conversation_ids)
         ##########
@@ -89,17 +89,22 @@ class V1::DashboardEntriesController < ApplicationController
   #TODO: Do not user update_attributes, instead only allow updating specific attrs
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['update']) do
-      id = params.delete(:id)
-      if @dashboard_entry = DashboardEntry.find(id)
-        begin 
-          @status = 200 if @dashboard_entry.update_attributes!(params)
-          Rails.logger.info(@dashboard_entry.inspect)
-        rescue => e
-          render_error(404, "could not update dashboard_entry: #{e}")
+      if params[:id]
+
+        return render_error(404, "please specify a valid id") unless (id = ensure_valid_bson_id(params.delete(:id)))
+        
+        if @dashboard_entry = DashboardEntry.find(id)
+          begin 
+            @status = 200 if @dashboard_entry.update_attributes!(params)
+          rescue => e
+            render_error(404, "could not update dashboard_entry: #{e}")
+          end
+        else
+          render_error(404, "could not find that dashboard_entry")
         end
       else
-        render_error(404, "could not find that dashboard_entry")
-      end    
+        render_error(404, "must specify an id.")
+      end
     end
   end
 

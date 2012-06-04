@@ -22,14 +22,14 @@ class Frame
   belongs_to :conversation, :required => true
   key :conversation_id, ObjectId, :abbr => :c
   
-  belongs_to :creator,  :class_name => 'User', :required => true
+  belongs_to :creator,  :class_name => 'User'
   key :creator_id,      ObjectId,   :abbr => :d
   
-  # Frames will be ordered in Rolls based on their score
+  # Frames will be ordered in normal Rolls based on their score by default
   key :score,  Float, :required => true, :abbr => :e
   
   # The users who have upvoted, increasing the score
-  key :upvoters, Array, :typecase => ObjectId, :abbr => :f
+  key :upvoters, Array, :typecast => 'ObjectId', :abbr => :f, :default => []
 
   # To track the *re-roll* lineage of a Frame (both forward and backward); when Frame F1 gets re-rolled as F2:
   # F1.frame_children << F2
@@ -48,10 +48,13 @@ class Frame
   
   # The shortlinks created for each type of share, eg twitter, tumvlr, email, facebook
   key :short_links, Hash, :abbr => :j, :default => {}
-  
+
+  # Manual ordering value. Used as the default ordering for genius roll frames. May be used in the future for user-initiated ordering.
+  key :order, Float, :default => 0, :abbr => :k
+ 
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
-  
+ 
   before_validation :update_score
   
   def created_at() self.id.generation_time; end
@@ -114,7 +117,7 @@ class Frame
     update_score
     
     # send email notification in a non-blocking manor
-    EM.next_tick { GT::NotificationManager.check_and_send_upvote_notification(u, self) }
+    ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_upvote_notification(u, self) }
     
     self.save
   end

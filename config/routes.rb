@@ -26,18 +26,33 @@ ShelbyGt::Application.routes.draw do
   # Namespace allows for versioning of API
   # NOTE: Must use V1::ControllerName in controllers
   namespace :v1, :defaults => { :format => 'json' } do
+    
+    #
+    # WHEN ADDING NEW NON-GET ROUTES
+    #
+    # Be sure to add a /v1/VERB/your-route-here route down below
+    # 
+    # WHY? We support some browsers that don't suppot CORS, and they use jsonp which only does GETs.
+    # Sometimes we have the same route do different things depending on the verb, and that doens't play nice w/ jsonp.
+    
     resources :user, :only => [:show, :update] do
-      get 'rolls' => 'user#rolls', :on => :member
+      get 'rolls/following' => 'user#roll_followings', :on => :member
+      get 'roll_followings' => 'user#roll_followings', :on => :member
       get 'personal_roll' => 'roll#show', :defaults => {:public_roll => true}
       get 'personal_roll/frames' => 'frame#index', :defaults => {:public_roll => true}
+      get 'heart_roll' => 'roll#show', :defaults => {:heart_roll => true}
+      get 'heart_roll/frames' => 'frame#index', :defaults => {:heart_roll => true}
     end
+    get 'roll/browse' => 'roll#browse'
     resources :roll, :only => [:show, :create, :update, :destroy] do
       get 'frames' => 'frame#index'
-      get 'new_frame' => 'frame#create' #NOTE: this is for jsonp, cross domain requests made by video radar
       post 'frames' => 'frame#create'
       post 'share' => 'roll#share'
       post 'join' => 'roll#join'
       post 'leave' => 'roll#leave'
+    end
+    namespace :roll do
+       resources :genius, :only => [:create]
     end
     resources :frame, :only => [:show, :destroy] do
       post 'upvote' => 'frame#upvote'
@@ -58,6 +73,34 @@ ShelbyGt::Application.routes.draw do
     # User related
     get 'user' => 'user#show'
     get 'signed_in' => 'user#signed_in'
+    
+    #----------------------------------------------------------------
+    # POST, PUT, DELETE aliases for JSONP :-[  b/c we support IE 8, 9
+    #----------------------------------------------------------------
+    # user
+    get 'PUT/user/:id' => 'user#update'
+    # roll
+    get 'POST/roll/:roll_id/share' => 'roll#share'
+    get 'POST/roll/:roll_id/join' => 'roll#join'
+    get 'POST/roll/:roll_id/leave' => 'roll#leave'
+    get 'POST/roll' => 'roll#create'
+    get 'PUT/roll/:id' => 'roll#update'
+    get 'DELETE/roll/:id' => 'roll#destroy'
+    # genius
+    get 'POST/roll/genius' => 'genius#create'
+    # frame
+    get 'POST/roll/:roll_id/frames' => "frame#create"
+    get 'POST/frame/:frame_id/upvote' => 'frame#upvote'
+    get 'POST/frame/:frame_id/add_to_watch_later' => 'frame#add_to_watch_later'
+    get 'POST/frame/:frame_id/watched' => 'frame#watched'
+    get 'POST/frame/:frame_id/share' => 'frame#share'
+    get 'DELETE/frame/:id' => 'frame#destroy'
+    # dashboard entry
+    get 'PUT/dashboard/:id' => 'dashboard_entries#update'
+    # messages
+    get 'POST/conversation/:conversation_id/messages' => 'messages#create'
+    get 'DELETE/conversation/:conversation_id/messages/:id' => 'messages#destroy'
+
   end
   
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user

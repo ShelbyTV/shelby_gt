@@ -44,8 +44,25 @@ module GT
       def self.parse_job(job)
         job_details = {}
       
-        #Jobs are simple JSON, but beanstalk isn't always happy with all characters, so we URI encode them first
-        job_json = JSON.parse(URI.unescape(job.body))
+        begin
+          #Jobs are simple JSON
+          # For some reason, we thought beanstalk wasn't always happy with all characters, so we URI encoded them first
+          #job_json = JSON.parse(URI.unescape(job.body))
+          #
+          # But the unescaping is particularly non-performant, so we're now trying things w/o the URI escaping
+          job_json = JSON.parse(job.body)
+        rescue JSON::ParserError => e
+          # some jobs are still URI escaped...
+          begin
+            job_json = JSON.parse(URI.unescape(job.body))
+          rescue => e
+            Rails.logger.error("[Arnold::BeanJob#parse_job(job:#{job.jobid})] BAD JOB: tried to URI.unescape but still could not process: #{job}")
+            return false
+          end
+        rescue => e
+          Rails.logger.error("[Arnold::BeanJob#parse_job(job:#{job.jobid})] BAD JOB: could not process: #{job}")
+          return false
+        end
       
         # parse out the things we expect from a job        
         job_details[:provider_type] =  job_json['provider_type']
@@ -59,6 +76,7 @@ module GT
         # The traditional, expected url as parsed by Predator
         job_details[:url] =  job_json['url']
         # Twitter provided expanded URLs (that we don't need to resolve)
+        # ***FALSE*** Some research has shown that we cannot trust twitter to return these expanded (updated JobProcessor based on this)
         if job_details[:twitter_status_update] and job_details[:twitter_status_update]["entities"] and job_details[:twitter_status_update]["entities"]["urls"]
           expanded_urls = (job_details[:twitter_status_update]["entities"]["urls"].map { |u| u["expanded_url"] }).compact
           job_details[:expanded_urls] = expanded_urls unless expanded_urls.blank?
@@ -75,7 +93,7 @@ module GT
           return false
         end
       
-        Rails.logger.debug("[Arnold::BeanJob#parse_job(job:#{job.jobid})] Parsed Job: #{job_details}")
+        #Rails.logger.debug("[Arnold::BeanJob#parse_job(job:#{job.jobid})] Parsed Job: #{job_details}")
         return job_details
       end
     

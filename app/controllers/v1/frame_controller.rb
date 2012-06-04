@@ -26,42 +26,71 @@ class V1::FrameController < ApplicationController
       @limit = 20 if @limit.to_i > 20
   
       skip = params[:skip] ? params[:skip].to_i : 0
-      
-      if params[:roll_id] 
-        @roll = Roll.find(params[:roll_id])
-      elsif params[:public_roll]
+            
+      if params[:roll_id]
+        return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:roll_id]))
+        
+        @roll = Roll.find(roll_id)
+        
+      elsif (params[:public_roll] or params[:heart_roll])
         if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
-          @roll = user.public_roll 
+          if params[:public_roll]
+            @roll = user.public_roll
+          elsif params[:heart_roll]
+            @roll = user.upvoted_roll
+          end
         end
       end
       
       if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
-        
-        if params[:since_id] and since_id = BSON::ObjectId.from_string(params[:since_id])
-          if since_id_frame = Frame.find(since_id)
-            case params[:order]
-            when "1", nil, "forward"
-              @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.lte => since_id_frame.score).all
-              #puts "frames: #{@frames.length}"
-            when "-1", "reverse"
-              @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id, :score.gte => since_id_frame.score).all
+        # lets the view show appropriate information, eg thumbnail_url
+        params[:heart_roll] = true if (user_signed_in? and @roll.id == current_user.upvoted_roll_id)
+
+ 
+        # the default sort order for genius rolls is by the order field, other rolls score field
+        # if needed in the future, can add a parameter so clients can specify sorting type
+        if @roll.genius
+          sort_by = :order.desc
+        else
+          sort_by = :score.desc
+        end
+
+        where_hash = { :roll_id => @roll.id }
+ 
+        if params[:since_id]
+          
+          return render_error(404, "please specify a valid since_id") unless (since_id = ensure_valid_bson_id(params[:since_id]) and (since_id_frame = Frame.find(since_id)))
+          
+          case params[:order]
+          when "1", nil, "forward"
+            if @roll.genius
+              where_hash[:order.lte] = since_id_frame.order 
+            else
+              where_hash[:score.lte] = since_id_frame.score
+            end
+          when "-1", "reverse"
+            if @roll.genius
+              where_hash[:order.gte] = since_id_frame.order 
+            else
+              where_hash[:score.gte] = since_id_frame.score
             end
           end
-        else
-          @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(:roll_id => @roll.id).all
         end
+
+        @frames = Frame.sort(sort_by).limit(@limit).skip(skip).where(where_hash).all
         
         if @frames
           #########
           # solving the N+1 problem with eager loading all children of a frame
           @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
-          @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq        
+          @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq
+          @entries_hearted_ids = @frames.map {|f| f.upvoters }.flatten.compact.uniq
           @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
           @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
 
           @rolls = Roll.find(@entries_roll_ids)
-          @creators = User.find(@entries_user_ids)        
+          @users = User.find((@entries_creator_ids + @entries_hearted_ids).uniq)
           @videos = Video.find(@entries_video_ids)
           @conversations = Conversation.find(@entries_conversation_ids)
           ##########
@@ -83,14 +112,26 @@ class V1::FrameController < ApplicationController
   # @param [Optional, Boolean] include_children Include the referenced roll, video, conv, and rerolls
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['show']) do
-      @frame = Frame.find(params[:id])
-      #N.B. If frame has a roll, check permissions.  If not, it has to be on your dashboard.  Checking for that is expensive b/c we don't index that way.
-      # But guessing a frame is very difficult and noticeable as hacking, so we can fairly safely just return the Frame.
-      if @frame and (@frame.roll_id == nil or @frame.roll.viewable_by?(current_user))
-        @status =  200
-        @include_frame_children = (params[:include_children] == "true") ? true : false
+      if params[:id]
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:id]))
+        
+        @frame = Frame.find(frame_id)
+        #N.B. If frame has a roll, check permissions.  If not, it has to be on your dashboard.  Checking for that is expensive b/c we don't index that way.
+        # But guessing a frame is very difficult and noticeable as hacking, so we can fairly safely just return the Frame.
+        if @frame 
+          # make sure the frame has a roll so this doesn't get all 'so i married an axe murderer' on the consumer.
+          frame_viewable_by = (@frame.roll and @frame.roll.viewable_by?(current_user))
+          if (@frame.roll_id == nil or frame_viewable_by)
+            @status =  200
+            @include_frame_children = (params[:include_children] == "true") ? true : false
+          else
+            render_error(404, "that frame isn't viewable or has a bad roll")
+          end
+        else
+          render_error(404, "could not find that frame")
+        end
       else
-        render_error(404, "could not find that frame")
+        render_error(404, "must supply an id")
       end
     end
   end
@@ -147,14 +188,12 @@ class V1::FrameController < ApplicationController
 
           if @frame = r[:frame]
             @status = 200          
-            # allow for jsonp callbacks on this method for video radar
-            render 'show', :layout => 'with_callbacks' if params[:callback]
           else
             render_error(404, "something went wrong when creating that frame")
           end
           
         else
-          return render_error(401, "that user cant post to that roll")
+          return render_error(403, "that user cant post to that roll")
         end
         
       # create a new frame by re-rolling a frame from a frame_id
@@ -168,7 +207,7 @@ class V1::FrameController < ApplicationController
             StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'], current_user.id, 'frame_re_roll', request)
             @status = 200
           else
-            render_error(401, "that user cant post to that roll")
+            render_error(403, "that user cant post to that roll")
           end
         rescue => e
           render_error(404, "could not re_roll: #{e}")
@@ -200,7 +239,11 @@ class V1::FrameController < ApplicationController
         return  render_error(404, "destination must be an array of strings") 
       end
       
-      if frame = Frame.find(params[:frame_id])
+      if params[:frame_id]
+        
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:frame_id]))
+         
+        frame = Frame.find(frame_id)
         # truncate text so that our link can fit fo sure
         text = params[:text]
         
@@ -208,30 +251,32 @@ class V1::FrameController < ApplicationController
         #  short_links will be a hash of desinations/links
         short_links = GT::LinkShortener.get_or_create_shortlinks(frame, params[:destination].join(','))
         
+        resp = true
+        
         params[:destination].each do |d|
           case d
           when 'twitter'
-            text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
-            resp = GT::SocialPoster.post_to_twitter(current_user, text)
+            t = GT::SocialPostFormatter.format_for_twitter(text, short_links)
+            resp &= GT::SocialPoster.post_to_twitter(current_user, t)
           when 'facebook'
-            text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
-            resp = GT::SocialPoster.post_to_facebook(current_user, text, frame)
+            t = GT::SocialPostFormatter.format_for_facebook(text, short_links)
+            resp &= GT::SocialPoster.post_to_facebook(current_user, t, frame)
           when 'email'
             #NB if frame is on a private roll, this is a private roll invite.  Otherwise, it's just a Frame share
             email_addresses = params[:addresses]
             return render_error(404, "you must provide addresses") if email_addresses.blank?
             
-            resp = GT::SocialPoster.post_to_email(current_user, params[:addresses], text, frame)
+            resp &= GT::SocialPoster.post_to_email(current_user, params[:addresses], text, frame)
           else
             return render_error(404, "we dont support that destination yet :(")
           end
-          
-          if resp
-            @status = 200
-            StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d], current_user.id, 'frame_share', request)
-          elsif resp == nil
-            render_error(404, "that user cant post to that destination")
-          end  
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d], current_user.id, 'frame_share', request)
+        end
+        
+        if resp
+          @status = 200
+        else
+          render_error(404, "that user cant post to that destination")
         end
         
       else
@@ -249,15 +294,20 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame
   def upvote
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['upvote']) do
-      if @frame = Frame.find(params[:frame_id])
-        if @frame.upvote!(current_user)
+      if params[:frame_id]
+        
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:frame_id]))
+        
+        if @frame = Frame.find(frame_id) and @frame.upvote!(current_user)
           @status = 200
           GT::UserActionManager.upvote!(current_user.id, @frame.id)
           StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote', request)
+          @frame.reload
+        else
+          render_error(404, "could not find frame")
         end
-        @frame.reload
       else
-        render_error(404, "could not find frame")
+        render_error(404, "please specify an id")
       end
     end
   end
@@ -271,7 +321,10 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame
   def add_to_watch_later
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['add_to_watch_later']) do
-      if @frame = Frame.find(params[:frame_id])
+      if params[:frame_id]
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:frame_id]))
+        
+        @frame = Frame.find(params[:frame_id])
         if @new_frame = @frame.add_to_watch_later!(current_user)
           @status = 200
           GT::UserActionManager.watch_later!(current_user.id, @frame.id)
@@ -295,7 +348,10 @@ class V1::FrameController < ApplicationController
   # @param [Optional, String] end_time The end_time of the action on the frame
   def watched
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['watched']) do
-      if @frame = Frame.find(params[:frame_id])
+      if params[:frame_id]
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:frame_id]))
+        
+        @frame = Frame.find(frame_id)
         @status = 200
         
         #conditionally count this as a view (once per 24 hours per user)
@@ -324,11 +380,15 @@ class V1::FrameController < ApplicationController
   # @return [Integer] Whether request was successful or not.
   def destroy
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['destroy']) do
-      if frame = Frame.find(params[:id]) and frame.destroy 
-        @status = 200
-      else
-        render_error(404, "could not find that frame to destroy") unless frame
-        render_error(404, "could not destroy that frame")
+      if params[:id]
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:id]))
+        
+        if frame = Frame.find(frame_id) and frame.destroy 
+          @status = 200
+        else
+          render_error(404, "could not find that frame to destroy") unless frame
+          render_error(404, "could not destroy that frame")
+        end
       end
     end
   end

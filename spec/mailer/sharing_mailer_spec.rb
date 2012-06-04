@@ -2,8 +2,8 @@ require 'spec_helper'
  
 describe SharingMailer do
   describe 'share frame' do
-    before(:all) do
-      @from_user = Factory.create(:user, :primary_email => 'your@mom.com')
+    before(:each) do
+      @from_user = Factory.create(:user, :primary_email => 'your@mom.com', :name => "dan")
       @to_email = 'your@dad.com'
       @message = "wassssuuuup!"
       video = Factory.create(:video, :thumbnail_url => "http://url.com/123.jpg", :title=>"blah")
@@ -12,8 +12,15 @@ describe SharingMailer do
       @email = SharingMailer.share_frame(@from_user, @from_user.primary_email, @to_email, @message, @frame)
     end
  
-    it 'renders the subject' do
-      @email.subject.should eq(Settings::Email.share_frame['subject'])
+    it 'renders the standard share frame subject' do
+      @email.subject.should eq(Settings::Email.share_frame['subject'] % {:sharers_name => "dan"})
+    end
+    
+    it 'renders the private roll invite subject' do
+      @frame.roll.public = false
+      @frame.roll.save
+      @email = SharingMailer.share_frame(@from_user, @from_user.primary_email, @to_email, @message, @frame)
+      @email.subject.should eq(Settings::Email.share_frame['private_roll_invite_subject'] % {:inviters_name => "dan", :roll_title => "good roll"})
     end
     
     it 'renders the receiver email' do

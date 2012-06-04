@@ -1,6 +1,14 @@
+<% if params[:callback] %>
+	<%= params[:callback] %>(
+	
+<% end %>
 {"status": <%= @status.to_json.html_safe %>,	
 <% if @status != 200 %>
 "message": <%= @message.to_json.html_safe %>
 <% else %>
 "result": <%= yield %>
 <% end %>}
+
+<% if params[:callback] %>
+	)
+<% end %>

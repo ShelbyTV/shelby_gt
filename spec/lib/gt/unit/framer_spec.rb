@@ -38,6 +38,31 @@ describe GT::Framer do
       res[:frame].roll.should == @roll
     end
     
+    it "should return false if safe save failed due to duplicate key" do
+      @message.origin_id = "12345"
+      lambda {
+        res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :roll => @roll
+          )
+        res[:frame].class.should == Frame
+      }.should change { Frame.count } .by(1)
+        
+      lambda {
+        res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :roll => @roll
+          )
+        res.should == false
+      }.should_not change { Frame.count }
+    end
+    
     it "should track the Frame in the Conversation" do
       res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
@@ -115,9 +140,9 @@ describe GT::Framer do
     end
   
     it "should create DashboardEntries for all followers of Roll" do
-      @roll.add_follower(u1 = User.create)
-      @roll.add_follower(u2 = User.create)
-      @roll.add_follower(u3 = User.create)
+      @roll.add_follower(u1 = Factory.create(:user))
+      @roll.add_follower(u2 = Factory.create(:user))
+      @roll.add_follower(u3 = Factory.create(:user))
       user_ids = [u1.id, u2.id, u3.id]
       
       res = GT::Framer.create_frame(
@@ -204,16 +229,6 @@ describe GT::Framer do
         ) }.should raise_error(ArgumentError)
     end
   
-    it "should not create a Frame without Creator" do
-      lambda { GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => nil,
-        :video => @video,
-        :message => @message,
-        :roll => @roll
-        ) }.should raise_error(ArgumentError)
-    end
-    
     it "should not create a Frame without action" do
       lambda { GT::Framer.create_frame(
         :action => nil,
@@ -239,7 +254,8 @@ describe GT::Framer do
 
   context "re-rolling" do
     before(:each) do
-      @f1 = Frame.create
+      @video = Factory.create(:video, :thumbnail_url => "thum_url")
+      @f1 = Factory.create(:frame, :video => @video)
       
       @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
       @roll = Roll.new( :title => "title" )
@@ -261,9 +277,9 @@ describe GT::Framer do
     
     it "should create DashboardEntries for all users (except the re-reroller) following the Roll a Frame is re-rolled to" do
       @roll.add_follower(@roll_creator)
-      @roll.add_follower(u1 = User.create)
-      @roll.add_follower(u2 = User.create)
-      @roll.add_follower(u3 = User.create)
+      @roll.add_follower(u1 = Factory.create(:user))
+      @roll.add_follower(u2 = Factory.create(:user))
+      @roll.add_follower(u3 = Factory.create(:user))
       user_ids = [@roll_creator.id, u1.id, u2.id, u3.id]
       
       # Re-roll some random frame on the roll this user created
@@ -276,6 +292,22 @@ describe GT::Framer do
       res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u1.id)
       res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u2.id)
       res[:dashboard_entries].map { |dbe| dbe.user_id }.should include(u3.id)
+    end
+    
+    it "should set the frame's roll's thumbnail_url if it's nil" do
+      @roll.thumbnail_url.blank?.should == true
+      
+      res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
+    
+      res[:frame].roll.thumbnail_url.should == @video.thumbnail_url
+    end
+    
+    it "should not touch the frame's roll's thumbnail_url if it's already set" do
+      @roll.update_attribute(:thumbnail_url, "something://el.se")
+      
+      res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
+    
+      res[:frame].roll.thumbnail_url.should == "something://el.se"
     end
   end
   
@@ -333,14 +365,14 @@ describe GT::Framer do
       @f1.save
       @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
       
-      @f2.score.should == @f1.score
+      @f2.score.should be_within(0.001).of(@f1.score)
       @f2.upvoters.should == @f1.upvoters
     end
     
-    it "should have the duping user's id" do
+    it "should have the orig frame user's id" do
       @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
       
-      @f2.creator_id.should == @u.id
+      @f2.creator_id.should == @f2.creator_id
     end
     
     it "should copy the F1's ancestors, adding itself" do
@@ -375,4 +407,51 @@ describe GT::Framer do
       d[0].user.should == observer
     end
   end
+
+  context "backfilling DashboardEntries" do
+    before(:each) do
+      @roll_creator = Factory.create(:user)
+      @roll = Factory.create(:roll, :title => "title", :creator => @roll_creator )
+      
+      @frame3 = Factory.create(:frame, :roll => @roll, :score => 10)
+      @frame2 = Factory.create(:frame, :roll => @roll, :score => 11)
+      @frame1 = Factory.create(:frame, :roll => @roll, :score => 12)
+      @frame0 = Factory.create(:frame, :roll => @roll, :score => 13)
+      
+      @frame3.update_attribute(:score, 13)
+      @frame2.update_attribute(:score, 14)
+      @frame1.update_attribute(:score, 15)
+      @frame0.update_attribute(:score, 16)
+      
+      @user = Factory.create(:user)
+    end
+    
+    it "should backfill User's dashboard with 2 frames" do
+      lambda {
+        res = GT::Framer.backfill_dashboard_entries(@user, @roll, 2)
+      }.should change { @user.dashboard_entries.count } .by 2
+    end
+    
+    it "should backfill User's dashboard with 2 frames in the correct order" do
+      GT::Framer.backfill_dashboard_entries(@user, @roll, 2)
+      @user.dashboard_entries.count.should == 2
+      @user.dashboard_entries[0].frame.should == @frame0
+      @user.dashboard_entries[1].frame.should == @frame1
+    end
+    
+    it "should backfill even if there aren't enough Frames" do
+      lambda {
+        res = GT::Framer.backfill_dashboard_entries(@user, @roll, 20)
+      }.should change { @user.dashboard_entries.count } .by 4
+    end
+    
+    it "shouldn't die if there aren't any frames" do
+      empty_roll = Factory.create(:roll, :title => "title", :creator => @roll_creator )
+       
+      lambda {
+        res = GT::Framer.backfill_dashboard_entries(@user, empty_roll, 20)
+      }.should change { @user.dashboard_entries.count } .by 0
+    end
+  end
+
 end

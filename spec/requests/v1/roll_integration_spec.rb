@@ -1,9 +1,21 @@
+# encoding: UTF-8
 require 'spec_helper' 
 
 describe 'v1/roll' do
   before(:all) do
     @u1 = Factory.create(:user)
+    @uv_roll1 = Factory.create(:roll, :creator => @u1)
+    @pub_roll1 = Factory.create(:roll, :creator => @u1)
+    @u1.public_roll = @pub_roll1
+    @u1.upvoted_roll = @uv_roll1
+    @u1.save
+    
+    
     @u2 = Factory.create(:user)
+    @uv_roll2 = Factory.build(:roll, :creator => @u2, :upvoted_roll => true)
+    @pub_roll2 = Factory.build(:roll, :creator => @u2)
+    @u2.public_roll = @pub_roll2
+    @u2.upvoted_roll = @uv_roll2
     @u2.downcase_nickname = @u2.nickname.downcase
     @u2.save
     @r = Factory.create(:roll, :creator => @u1)
@@ -27,10 +39,27 @@ describe 'v1/roll' do
         get 'v1/user/'+@u2.nickname+'/personal_roll'
         response.body.should be_json_eql(200).at_path("status")
       end
+
+      it "should return heart roll of user when given a nickname" do
+        get 'v1/user/'+@u2.nickname+'/heart_roll'
+        response.body.should be_json_eql(200).at_path("status")
+        parse_json(response.body)["result"]["title"].should eq("#{@u2.nickname} ♥s")
+      end
     
       it "should return error message if roll doesnt exist" do
         get '/v1/roll/'+@r.id+'xxx'
         response.body.should be_json_eql(404).at_path("status")
+      end
+      
+      it "should return a list of rolls to browse" do
+        @r1 = Factory.create(:roll, :creator => @u1)
+        @r2 = Factory.create(:roll, :creator => @u1)
+        @r3 = Factory.create(:roll, :creator => @u1)
+        @r4 = Factory.create(:roll, :creator => @u1)
+        roll_arry = [@r1,@r2,@r3,@r4].map!{|r| "rolls[]=#{r.id.to_s}"}
+        
+        get 'v1/roll/browse?'+roll_arry.join('&')
+        response.body.should be_json_eql(200).at_path("status")
       end
       
     end
@@ -73,7 +102,7 @@ describe 'v1/roll' do
           
           response.body.should be_json_eql(404).at_path("status")
           response.body.should have_json_path("message")
-          parse_json(response.body)["message"].should eq("could not find that roll")
+          parse_json(response.body)["message"].should eq("please specify a valid id")
         end
         
         it "should return 404 if user cant post to that destination" do

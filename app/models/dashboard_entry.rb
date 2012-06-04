@@ -7,6 +7,9 @@ class DashboardEntry
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::DashboardEntry
   
+  plugin MongoMapper::Plugins::IdentityMap
+  
+  
   belongs_to :user, :required => true
   key :user_id, ObjectId, :abbr => :a
 
@@ -26,6 +29,7 @@ class DashboardEntry
     :new_social_frame => 0,
     :new_bookmark_frame => 1,
     :new_in_app_frame => 2,
+    :new_genius_frame => 3,
     :re_roll => 8,
     :watch => 9,
     :comment => 10

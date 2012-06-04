@@ -1,22 +1,20 @@
 # Background processing for the API Rails app via EventMachine
 #
 # Any fire-and-forget calls that will delay an API return should be pushed off to EM like this:
-# EM.next_tick { this_will_take(3.seconds) }
+# ShelbyGT_EM.next_tick { this_will_take(3.seconds) }
 #
 # N.B. Using EM is much less to maintain than a job queue and works especially well for our current needs.
 # But this may not work well for very long lived or intensive jobs that needs to be farmed out.
 # In those cases we may still need to pull in a job queue.
 #
 module ShelbyGT_EM
-  def self.start
-    if defined?(PhusionPassenger)
-      PhusionPassenger.on_event(:starting_worker_process) do |forked|
-        if forked && EM.reactor_running?
-          EM.stop
-        end
-        Thread.new { EM.run }
-        die_gracefully_on_signal
+  def self.start    
+    PhusionPassenger.on_event(:starting_worker_process) do |forked|
+      if forked && EM.reactor_running?
+        EM.stop
       end
+      Thread.new { EM.run }
+      die_gracefully_on_signal
     end
   end
 
@@ -24,7 +22,18 @@ module ShelbyGT_EM
     Signal.trap("INT")  { EM.stop }
     Signal.trap("TERM") { EM.stop }
   end
+  
+  def self.next_tick &block
+    if Settings::Global.override_em_next_tick
+      #override EM.next_tick to just execute the block now b/c Arnold can't yield from main Fiber (See https://github.com/ShelbyTV/shelby_gt/issues/50)
+      yield block
+    else
+      EM.next_tick block
+    end
+  end
 end
 
 # Will only run our EM if PhusionPassenger is defined, so this won't interfere w/ Arnold.
-ShelbyGT_EM.start
+if defined?(PhusionPassenger)
+  ShelbyGT_EM.start
+end

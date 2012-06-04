@@ -87,7 +87,7 @@ describe V1::DashboardEntriesController do
     before(:each) do
       @u = Factory.create(:user)
       sign_in @u
-      @d = mock_model(DashboardEntry, :update_attributes => true)
+      @d = Factory.create(:dashboard_entry)
     end
     
     it "should return the dashboard entry to @dashboard and return 200" do

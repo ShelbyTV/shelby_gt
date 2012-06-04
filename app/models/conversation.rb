@@ -28,9 +28,14 @@ class Conversation
   # Although Frames can be dupe'd, and each dupe'd Frame will reference the same Conversation, from the Conversation's POV we only care about the original Frame
   belongs_to :frame
   key :frame_id, ObjectId, :abbr => :c
+
+
+  key :from_deeplink, Boolean, :abbr => :d, :default => false
   
   #don't need anythign mass-assignable (yet)
   attr_accessible
+  
+  def created_at() self.id.generation_time; end
 
   def self.first_including_message_origin_id(mid)
     Conversation.first( :conditions => { 'messages.b' => mid } )

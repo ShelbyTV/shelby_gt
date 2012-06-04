@@ -7,7 +7,7 @@ puts "loading app..."
 require File.dirname(__FILE__) + "/../../../config/application"
 Rails.application.require_environment!
 #TODO: turn arnold logger.level back to 1 for production
-Rails.logger.level = 1 #0:DEBUG, 1:INFO, 2:WARN, 3:ERROR, 4:FATAL
+Rails.logger.level = 0 #0:DEBUG, 1:INFO, 2:WARN, 3:ERROR, 4:FATAL
 Rails.logger.auto_flushing = true
 
 # For cleanly exiting
@@ -36,6 +36,13 @@ $MAX_FIBERS = 1000 # <-- 1k seems to be good for LP1 (running w/ 2K hit a Segfau
 $fibers = []
 $http_timeout = 60
 $max_redirects = 5
+$check_deep_prob = 1.0
+
+$cache_size = 10
+$url_cache = [[""] * $cache_size, 0]
+
+$job_buffer = []
+$batch_size = 10
 
 #get machine name from command line options
 machine = ARGV.select { |i| i =~ /^--machine_name=/ }
@@ -46,50 +53,61 @@ $statsd_job_timing_bucket =         "arnold.#{arnold_version}.#{machine_name}.jo
 $statsd_job_reserve_timing_bucket = "arnold.#{arnold_version}.#{machine_name}.job_reserve.time"
 $statsd_em_turn_timing_bucket = "arnold.#{arnold_version}.#{machine_name}.em_turn.time"
 $statsd_jobs_processed_bucket = "arnold.#{arnold_version}.#{machine_name}.job.processed"
+$statsd_jobs_cached_bucket = "arnold.#{arnold_version}.#{machine_name}.job.cached"
 
 # To make sure the consumer isn't hung, and kill ourselves if it is
 $consumer_turns = 0
 GT::Arnold::ConsumerMonitor.monitor(1.minute)
 
-puts "running EM..."
+puts "running EM...."
 EventMachine.synchrony do
   Rails.logger.info "[Arnold Main] Event machine started."
 
   Fiber.new {
-  	while($running) do
-  	  turn_start_t = Time.now
+    while($running) do
+      turn_start_t = Time.now
   	  
       #Make sure we don't create too many fibers
-  		next unless GT::Arnold::EventLoop.should_pull_a_job($fibers, $MAX_FIBERS)
+      next unless GT::Arnold::EventLoop.should_pull_a_job($fibers, $MAX_FIBERS)
   		
   		#only counts as a turn if we're doing useful work
-  	  $consumer_turns += 1
+      $consumer_turns += 1
 
       # pull the job (w/o blocking reactor)
       pre_job_t = Time.now
-  		job = GT::Arnold::BeanJob.get_and_delete_job
-  		StatsManager::StatsD.client.timing($statsd_job_reserve_timing_bucket, Time.now - pre_job_t)
+      job = GT::Arnold::BeanJob.get_and_delete_job
+      StatsManager::StatsD.client.timing($statsd_job_reserve_timing_bucket, Time.now - pre_job_t)
 
       if job
-        Rails.logger.debug "[Arnold Main] got job (job:#{job.jobid}), handing off to fiber. looks like: #{job.inspect}"
-    		f = Fiber.new { |job|
-    		  GT::Arnold::JobProcessor.process_job(job, $fibers, $MAX_FIBERS)
-        }
-        $fibers << f
-        f.resume(job)
+        $job_buffer << job
+
+        if $job_buffer.length >= $batch_size
+        #Rails.logger.debug "[Arnold Main] got job (job:#{job.jobid}), handing off to fiber. looks like: #{job.inspect}"
+    	  f = Fiber.new { |jobs|
+    	    begin
+    	      GT::Arnold::JobProcessor.process_job(jobs, $fibers, $MAX_FIBERS, $url_cache)
+    	    rescue => e
+    	        Rails.logger.fatal "[Arnold Main Fiber] unhandled exception #{e} / BACKTRACE: #{e.backtrace.join('\n')}"
+    	    end
+          }
+          $fibers << f
+          f.resume($job_buffer)
+          #clear the buffer
+          $job_buffer = []
+        end
       else
         Rails.logger.fatal "[Arnold Main] No job returned for processing. Fiber count: #{$fibers.size}"
       end
 
       StatsManager::StatsD.client.timing($statsd_em_turn_timing_bucket, Time.now - turn_start_t)
-  	end
+    end
   	
   	# We've been asked to exit, try to allow fibers to finish up
     Rails.logger.info "[Arnold Main] exiting..."
-  	GT::Arnold::EventLoop.wait_until_done($fibers, 60.seconds.from_now)
-  	Rails.logger.info "[Arnold Main] done waiting for fibers (#{$fibers.size} fibers alive), stopping event machine"
-  	EventMachine.stop
-  	Rails.logger.info "[Arnold Main] EventMachine.stop returned, waiting to exit loop..."
+    GT::Arnold::EventLoop.wait_until_done($fibers, 60.seconds.from_now)
+    Rails.logger.info "[Arnold Main] done waiting for fibers (#{$fibers.size} fibers alive), stopping event machine"
+    EventMachine.stop
+    Rails.logger.info "[Arnold Main] EventMachine.stop returned, waiting to exit loop..."
   	
   }.resume
 

@@ -78,7 +78,7 @@ end
 #
 # ---------- Error Monitoring
 #
-gem 'exception_notification'
+gem 'exception_notification', :require => "exception_notifier"
 
 #
 # ---------- Arnold 2 (aka Link Processor 4)

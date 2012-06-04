@@ -2,7 +2,7 @@ module MongoMapper
   class Helper
     
     def self.drop_all_dbs
-      [DashboardEntry, Frame, Conversation, Roll, User, Video].each do |model|
+      [DashboardEntry, DeeplinkCache, Frame, Conversation, Roll, User, Video].each do |model|
         model.database.collections.select {|c| c.name !~ /system/ }.each(&:drop)
       end
     end
@@ -11,11 +11,14 @@ module MongoMapper
       #Get all the conversations related to a given video (a == video_id)
       Conversation.ensure_index(:a, :background => true)
       #Get a conversation based on originating tweet/facebook update/tumblr/etc (don't need to add network to index, won't help much)
-      Conversation.ensure_index('messages.b', :background => true)
+      Conversation.ensure_index('messages.b', :background => true, :unique => true, :sparse => true)
       
       # Get the newest dashboard entries for a user (a == user_id)
       DashboardEntry.ensure_index([[:a, 1], [:_id, -1]], :background => false)
-      
+
+      # Index over urls
+      DeeplinkCache.ensure_index([[:a,1]], :background => true, :unique=>true)
+
       # Get the highest scored frame for a given roll (a == roll_id; e == score)
       Frame.ensure_index([[:a, 1], [:e, -1]], :background => true)
       

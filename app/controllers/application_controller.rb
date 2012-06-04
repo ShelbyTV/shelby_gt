@@ -8,6 +8,7 @@ class ApplicationController < ActionController::Base
   
   def render_error(code, message)
     @status, @message = code, message
+    Rails.logger.error "render_error(#{code}, '#{message}')"
     render 'v1/blank', :status => @status
   end
   
@@ -48,9 +49,11 @@ class ApplicationController < ActionController::Base
     # - see: http://www.tsheffler.com/blog/?p=428 and
     #         https://developer.mozilla.org/En/Server-Side_Access_Control
     #
-    #TODO: When we go live only allow cs_key in staging env    
+    # N.B. "when responding to a credentialed request,  server must specify a domain, and cannot use wild carding."
+    # via https://developer.mozilla.org/En/HTTP_access_control#Requests_with_credentials
+    # ...but Access-Control-Allow-Origin will be overridden if origin is on of ours: see config/application.rb
     def set_access_control_headers
-      headers['Access-Control-Allow-Origin'] = '*'
+      headers['Access-Control-Allow-Origin'] = (['web.gt.shelby.tv', 'gt.shelby.tv', 'isoroll.shelby.tv', 'shelby.tv', 'localhost.shelby.tv:3000'].include?(request.domain) ? request.domain : '*')
       headers['Access-Control-Request-Method'] = '*'
       headers['Access-Control-Allow-Credentials'] = 'true'
       headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-Prototype-Version, X-CSRF-Token, X-Shelby-User-Agent'

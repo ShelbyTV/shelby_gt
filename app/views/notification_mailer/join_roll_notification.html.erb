@@ -1,0 +1,49 @@
+<% standard_html_email_wrapper do %>
+	<!-- Wrapper/Container Table: Use a wrapper table to control the width and the background color consistently of your email. Use this approach instead of setting attributes on the body tag. -->
+	<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#f6f6f6; border:1px solid #b5b5b5; color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
+		<tr>
+			<td valign="top" class="shelby-email-lining" style="padding:20px;">
+				<h1 class="shelby-logo" style="margin-top:5px;">
+					<a href="<%= Settings::Email.web_url_base %>">
+						<img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv logo" title="Shelby.tv" width="156" height="42" />
+					</a>
+				</h1>
+				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:1px solid #b5b5b5; padding:20px; width:100%;">
+					<tr height="95">
+						<td width="75"  valign="top">
+							<a href="<%= @user_permalink %>"><img class="image_fix" src="<%= @user_joined.user_image %>" alt="user_image" title="user_image" width="60" height="60" /></a>
+						</td>
+						<td  valign="top">
+							<div>
+								<a href="<%= @user_permalink %>"><%= @user_joined.name %></a> joined your roll:
+							</div>
+							<div style="font-weight: bold;padding: 8px 0px;">
+							 <a href="<%= @roll_permalink %>">"<%= @roll.title %>"</a>
+							</div>
+							<p>
+								What's a <a href="<%= Settings::ShelbyAPI.web_root %>/help">roll</a>?
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2" style="padding-top:10px;">
+							<small class="shelby-email-message-footer" style="font-size:11px; margin-top: 10px;">
+								Please remember you can always go into your <a href="<%= Settings::ShelbyAPI.web_root %>/preferences">Preferences</a> page and adjust your account and contact info, privacy controls and emails preferences.
+							</small>
+						</td>
+					</tr>
+				</table>
+			<!-- <a href="http://htmlemailboilerplate.com" target ="_blank" title="Styling Links" style="color: orange; text-decoration: none;">Coloring Links appropriately</a> -->
+
+			<!-- Gmail/Hotmail image display fix -->
+			<!-- <img class="image_fix" src="full path to image" alt="Your alt text" title="Your title text" width="x" height="x" /> -->
+
+			<!-- Working with telephone numbers (including sms prompts).  Use the "mobile" class to style appropriately in desktop clients
+			versus mobile clients. -->
+			<!-- <span class="mobile_link">123-456-7890</span> -->
+
+			</td>
+		</tr>
+	</table>  
+	<!-- End of wrapper table -->
+<% end %>

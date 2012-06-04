@@ -71,6 +71,11 @@ describe GT::UrlHelper do
         GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/watch?v=6dncx6O5J4U&feature=youtu.be").should == 
           {:provider_name => "youtube", :provider_id => "6dncx6O5J4U"}
       end  
+      
+      it "should parse youtube CAPTCHA urls" do
+        GT::UrlHelper.parse_url_for_provider_info("http://www.youtube.com/das_captcha?next=/watch?v=780llTKt3uM%26feature=share").should == 
+          {:provider_name => "youtube", :provider_id => "780llTKt3uM"}
+      end
     
       it "should parse youtube shortlink urls" do
         GT::UrlHelper.parse_url_for_provider_info("http://youtu.be/L7jduDKGWUc?version=3").should == 
@@ -184,6 +189,12 @@ describe GT::UrlHelper do
       end
     end
     
+    context "espn" do
+      it "should parse from url" do
+        GT::UrlHelper.parse_url_for_provider_info('http://espn.go.com/video/clip?id=7940079').should == 
+          {:provider_name => "espn", :provider_id => "7940079"}
+      end      
+    end
   end
   
   context "resolve_url" do

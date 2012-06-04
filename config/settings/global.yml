@@ -1,15 +1,18 @@
 defaults: &defaults
   title: "Shelby.tv"
   domain: "shelby.tv"
+  override_em_next_tick: false
 
 development:
   <<: *defaults
 
 test:
   <<: *defaults
+  override_em_next_tick: true
 
 production: &production
   <<: *defaults
 
 arnold:
   <<: *production
+  override_em_next_tick: true

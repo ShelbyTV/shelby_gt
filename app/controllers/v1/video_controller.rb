@@ -9,10 +9,15 @@ class V1::VideoController < ApplicationController
   # @todo return error if id not present w/ params.has_key?(:id)
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['video']['show']) do
-      if @video = Video.find(params[:id])
-        @status =  200
+      if params[:id]
+        return render_error(404, "please specify a valid id") unless (id = ensure_valid_bson_id(params[:id]))
+        if @video = Video.find(id)
+          @status =  200
+        else
+          render_error(404, "could not find video")
+        end
       else
-        render_error(404, "could not find video")
+        render_error(404, "must specify an id, man.")
       end
     end
   end

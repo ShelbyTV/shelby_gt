@@ -23,13 +23,13 @@ module GT
           sleep(boot_grace)
         
           Thread.current[:last_consumer_turns] = 0
-          Thread.current[:suicide_time] = rand(8..12).minutes.from_now
+          Thread.current[:suicide_time] = rand(15..25).minutes.from_now
         
           while($running) do
             sleep(turn_period)
           
             if Time.now > Thread.current[:suicide_time]
-              Rails.logger.fatal "[Arnold::ConsumerMonitor.monitor] Killing myself as quick fix for GC issue.  Goodbye, world."
+              Rails.logger.info "[Arnold::ConsumerMonitor.monitor] Killing myself b/c memory leak eventually catchs up with me.  Goodbye, world."
               self.kill_process
             elsif $consumer_turns > Thread.current[:last_consumer_turns]
               Rails.logger.debug "[Arnold::ConsumerMonitor.monitor] We're healthy.  Turns was #{Thread.current[:last_consumer_turns]} is now #{$consumer_turns}"
@@ -47,17 +47,17 @@ module GT
     
     
       def self.kill_process
-        Rails.logger.fatal "[Arnold::ConsumerMonitor.kill_process] Gracefully killing (running=false, sleep for 2 minutes)..."
+        Rails.logger.fatal "[Arnold::ConsumerMonitor.kill_process] Gracefully killing (running=false, sleep for 10s)..."
         $running = false
       
         #if EM and main thread exit gracefully, make sure to exit w/ a fail status code
         $exit_code = false
       
         #give Arnold some time to gracefully shut down
-        sleep(1.minute)
+        sleep(10.seconds)
       
         if EventMachine.reactor_running?
-          Rails.logger.fatal "[Arnold::ConsumerMonitor.kill_process] EM Reactor still running after 1 minute, forcefully killing process via Kernel.exit!(false)..."
+          Rails.logger.fatal "[Arnold::ConsumerMonitor.kill_process] EM Reactor still running after 10s, forcefully killing process via Kernel.exit!(false)..."
           Kernel.exit!($exit_code)
         else
           Rails.logger.fatal "[Arnold::ConsumerMonitor.kill_process] EM Reactor stopped, exiting w/ Kernel.exit(false)..."

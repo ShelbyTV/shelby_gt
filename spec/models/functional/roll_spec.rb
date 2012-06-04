@@ -1,11 +1,13 @@
+# encoding: UTF-8
+
 require 'spec_helper'
 
 #Functional: hit the database, treat model as black box
 describe Roll do
   before(:each) do
-    @roll = Roll.new
-    @user = User.new
-    @stranger = User.new
+    @roll = Factory.create(:roll, :creator => Factory.create(:user), :title => "normal title", :thumbnail_url => "u://rl")
+    @user = Factory.create(:user)
+    @stranger = Factory.create(:user)
   end
   
   context "database" do
@@ -27,24 +29,36 @@ describe Roll do
       @roll.followed_by?(@user).should == false
     
       @roll.add_follower(@user)
-      @roll.followed_by?(@user).should == true
+      @roll.reload.followed_by?(@user).should == true
     end
   
     it "should be able to add a follower, who should then know they're following this role" do
       @roll.add_follower(@user)
     
-      @roll.followed_by?(@user).should == true
-      @user.following_roll?(@roll).should == true
+      @roll.reload.followed_by?(@user).should == true
+      @user.reload.following_roll?(@roll).should == true
+    end
+    
+    it "should email on add follower" do
+      lambda {
+        @roll.add_follower(@user)
+      }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+    
+    it "should not email on add follower if send_notification=false" do
+      lambda {
+        @roll.add_follower(@user, false)
+      }.should change(ActionMailer::Base.deliveries,:size).by(0)
     end
     
     it "should not add follower if they're already following" do
       lambda {
         @roll.add_follower(@user)
-      }.should change { @roll.following_users.count } .by(1)
+      }.should change { @roll.reload.following_users.count } .by(1)
       
       lambda {
         @roll.add_follower(@user).should == false
-      }.should_not change { @roll.following_users.count }
+      }.should_not change { @roll.reload.following_users.count }
     end
     
     it "should be able to remove a follower, who then knows they've unfollowed this role" do
@@ -77,10 +91,44 @@ describe Roll do
     end
     
     it "should be able to hold 1000 following users" do
+      u = Factory.create(:user)
+      
       1000.times do
-        @roll.add_follower(Factory.create(:user))
+        @roll.following_users << FollowingUser.new(:user => u)
       end
       @roll.save #should not raise an error
+    end
+    
+    it "should return array of all followers' ids" do
+      u1 = Factory.create(:user)
+      @roll.add_follower(u1)
+      u2 = Factory.create(:user)
+      @roll.add_follower(u2)
+      u3 = Factory.create(:user)
+      @roll.add_follower(u3)
+      
+      user_ids = @roll.following_users_ids
+      
+      user_ids[0].should be_a(BSON::ObjectId)
+      user_ids.include?(u1.id).should == true
+      user_ids.include?(u2.id).should == true
+      user_ids.include?(u3.id).should == true
+    end
+    
+    it "should return array of all follower' models" do
+      u1 = Factory.create(:user)
+      @roll.add_follower(u1)
+      u2 = Factory.create(:user)
+      @roll.add_follower(u2)
+      u3 = Factory.create(:user)
+      @roll.add_follower(u3)
+      
+      user_models = @roll.following_users_models
+      
+      user_models[0].should be_a(User)
+      user_models.include?(u1).should == true
+      user_models.include?(u2).should == true
+      user_models.include?(u3).should == true
     end
   
   end
@@ -146,4 +194,23 @@ describe Roll do
   
   end
     
+  context "upvoted_roll display_<title/thumbnail_url>" do
+    it "should return regular title when not an upvoted roll" do
+      @roll.display_title.should == "normal title"
+    end
+    
+    it "should return heart title when an upvoted roll" do
+      @roll.upvoted_roll = true
+      @roll.display_title.should == "#{@roll.creator.nickname} ♥s"
+    end
+    
+    it "should return regular thumbnail_url when not an upvoted roll" do
+      @roll.display_thumbnail_url.should == "u://rl"
+    end
+    
+    it "should return heart thumbnail_url when an upvoted roll" do
+      @roll.upvoted_roll = true
+      @roll.display_thumbnail_url.should == "#{Settings::ShelbyAPI.web_root}/images/assets/favorite_roll_avatar.png"
+    end
+  end
 end

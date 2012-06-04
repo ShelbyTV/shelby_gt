@@ -35,6 +35,18 @@ describe V1::FrameController do
       @u1.stub(:public_roll) { @roll }
       Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
       get :index, :user_id => @u1.id, :public_roll => true, :format => :json
+      
+      assigns(:roll).should eq(@roll)
+      assigns(:frames).should eq([@frame])
+      assigns(:status).should eq(200)
+    end
+
+    it "properly aliases for users heart roll" do
+      User.stub(:find) { @u1 }
+      @u1.stub(:upvoted_roll) { @roll }
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
+      get :index, :user_id => @u1.id, :heart_roll => true, :format => :json
+      
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])
       assigns(:status).should eq(200)
@@ -96,24 +108,24 @@ describe V1::FrameController do
   
   describe "GET show" do
     it "assigns one frame to @frame" do
-      get :show, :frame_id => @frame.id, :format => :json
-      assigns(:frame).should eq(@frame)
+      get :show, :id => @frame.id, :format => :json
       assigns(:status).should eq(200)
+      assigns(:frame).should eq(@frame)
     end
     
     it "should allow non logged in user to see frame is roll is public" do
       sign_out @u1
       
-      get :show, :frame_id => @frame.id, :format => :json
-      assigns(:frame).should eq(@frame)
+      get :show, :id => @frame.id, :format => :json
       assigns(:status).should eq(200)
+      assigns(:frame).should eq(@frame)
     end
     
     it "should not allow non logged in user to see frame if roll is not public" do
       @roll.public = false
       sign_out @u1
       
-      get :show, :frame_id => @frame.id, :format => :json
+      get :show, :id => @frame.id, :format => :json
       assigns(:status).should eq(404)
     end
     
@@ -122,7 +134,7 @@ describe V1::FrameController do
       @frame.save
       sign_out @u1
       
-      get :show, :frame_id => @frame.id, :format => :json
+      get :show, :id => @frame.id, :format => :json
       assigns(:status).should eq(200)
     end
     
@@ -130,11 +142,11 @@ describe V1::FrameController do
       Frame.stub(:find) { nil }
       get :show, :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("could not find that frame")
+      assigns(:message).should eq("must supply an id")
     end
   end
   
-  describe "POST upvote" do    
+  describe "POST upvote" do
     it "updates a frame successfuly" do
       @frame = Factory.create(:frame)
       @frame.should_receive(:upvote!).with(@u1).and_return(@frame)
@@ -144,8 +156,8 @@ describe V1::FrameController do
         post :upvote, :frame_id => @frame.id, :format => :json
       }.should change { UserAction.count } .by 1
       
-      assigns(:frame).should eq(@frame)
       assigns(:status).should eq(200)
+      assigns(:frame).should eq(@frame)
     end
     
     it "updates a frame UNsuccessfuly gracefully" do
@@ -204,11 +216,7 @@ describe V1::FrameController do
     end
     
     it "should return 404 if Frame can't be found" do
-      Frame.should_receive(:find).with("somebadid").and_return(nil)
-      lambda {
-        post :watched, :frame_id => "somebadid", :format => :json
-      }.should_not change { Frame.count }
-      
+      post :watched, :frame_id => "somebadid", :format => :json
       assigns(:status).should eq(404)
     end
   end
@@ -218,37 +226,45 @@ describe V1::FrameController do
       sign_in @u1
       @frame = Factory.create(:frame, :roll => Factory.create(:roll, :creator => @u1))
       Frame.stub!(:find).and_return(@frame)
-      resp = {"awesm_urls" => [{"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"}]}
+      resp = {"awesm_urls" => [
+        {"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"},
+        {"service"=>"facebook", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_fb", "awesm_id"=>"shl.by_fb", "awesm_url"=>"http://shl.by/fb", "user_id"=>nil, "path"=>"fb", "channel"=>"facebook-post", "domain"=>"shl.by"}]}
       Awesm::Url.stub(:batch).and_return([200, resp])
     end
     
     it "should return 200 if the user posts succesfully to destination" do
-      post :share, :destination => ["twitter"], :text => "testing", :format => :json
+      post :share, :frame_id => @frame.id.to_s, :destination => ["twitter"], :text => "testing", :format => :json
       assigns(:status).should eq(200)      
     end
     
+    it "should only add link text to each individual service's post" do
+      GT::SocialPoster.should_receive(:post_to_twitter).with(@u1, "testing http://shl.by/4")
+      GT::SocialPoster.should_receive(:post_to_facebook).with(@u1, "testing http://shl.by/fb", @frame)
+      post :share, :frame_id => @frame.id.to_s, :destination => ["twitter", "facebook"], :text => "testing", :format => :json
+    end
+    
     it "should return 404 if destination is not an array" do
-      post :share, :destination => "twitter", :text => "testing", :format => :json
+      post :share, :frame_id => @frame.id.to_s, :destination => "twitter", :text => "testing", :format => :json
       assigns(:status).should eq(404)
     end
     
     it "should return 404 if the user cant post to the destination" do
-      post :share, :destination => ["facebook"], :text => "testing", :format => :json
+      post :share, :frame_id => @frame.id.to_s, :destination => ["facebook"], :text => "testing", :format => :json
       assigns(:status).should eq(404)
       assigns(:message).should eq("that user cant post to that destination")      
     end
     
     it "should not post if the destination is not supported" do
-      post :share, :destination => ["awesome_service"], :text => "testing", :format => :json
+      post :share, :frame_id => @frame.id.to_s, :destination => ["awesome_service"], :text => "testing", :format => :json
       assigns(:status).should eq(404)
       assigns(:message).should eq("we dont support that destination yet :(")
     end
     
     it "should return 404 if a comment or destination is not present" do
-      post :share, :destination => ["twitter"], :format => :json
+      post :share, :frame_id => @frame.id.to_s, :destination => ["twitter"], :format => :json
       assigns(:status).should eq(404)
       
-      post :share, :text => "testing", :format => :json
+      post :share, :frame_id => @frame.id.to_s, :text => "testing", :format => :json
       assigns(:status).should eq(404)
       
       assigns(:message).should eq("a destination and text is required to post")
@@ -349,7 +365,7 @@ describe V1::FrameController do
         Roll.stub(:find) { new_roll }
         
         post :create, :roll_id => new_roll.id, :url => @video_url, :format => :json
-        assigns(:status).should eq(401)
+        assigns(:status).should eq(403)
       end
       
     end
@@ -363,7 +379,7 @@ describe V1::FrameController do
         assigns(:frame).should eq(@f2)
       end
       
-      it "returns 404 if user can re_roll to that roll" do
+      it "returns 403 if user can re_roll to that roll" do
         r = stub_model(Roll, :public => false)
         Roll.stub(:find) { r }
         
@@ -371,7 +387,7 @@ describe V1::FrameController do
         sign_in u
         
         post :create, :roll_id => r.id, :frame_id => @f1.id, :format => :json
-        assigns(:status).should eq(401)
+        assigns(:status).should eq(403)
         assigns(:message).should eq("that user cant post to that roll")
       end
       
@@ -395,18 +411,18 @@ describe V1::FrameController do
   
   describe "DELETE destroy" do
     it "destroys a roll successfuly" do
-      frame = mock_model(Frame)
+      frame = Factory.create(:frame)
       Frame.stub!(:find).and_return(frame)
       frame.should_receive(:destroy).and_return(frame)
-      delete :destroy, :frame_id => frame.id, :format => :json
+      delete :destroy, :id => frame.id, :format => :json
       assigns(:status).should eq(200)
     end
     
     it "unsuccessfuly destroys a roll returning 404" do
-      frame = mock_model(Frame)
+      frame = Factory.create(:frame)
       Frame.stub!(:find).and_return(frame)
       frame.should_receive(:destroy).and_return(false)
-      delete :destroy, :frame_id => frame.id, :format => :json
+      delete :destroy, :id => frame.id, :format => :json
       assigns(:status).should eq(404)
     end
   end

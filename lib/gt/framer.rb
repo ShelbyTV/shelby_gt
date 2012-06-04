@@ -10,10 +10,12 @@ module GT
     #  If adding to a Roll, create DashboardEntries for all followers of Roll.
     #  If not adding to a Roll, create single DashboardEntry for the given dashboard owner.
     #
+    # N.B. If a conversation with a message with the same origin_id exists, conversation save will fail and this
+    #  will return false.  This prevents timing issues between threads receiving the same tweets for different observers.
     #
     # --options--
     #
-    # :creator => User --- REQUIRED the 'owner' or 'creator' of this Frame (ie who tweeted it?)
+    # :creator => User --- OPTIONAL the 'owner' or 'creator' of this Frame (ie who tweeted it?)
     # :video => Video --- REQUIRED (may be new or persisted) the normalized video being referenced
     # :message => Message --- OPTIONAL (must be new) which is either normalized twitter/fb stuff, or straight from app, or blank
     #                       - will be added to a new Conversation attached to the Roll
@@ -22,13 +24,18 @@ module GT
     # :dashboard_user_id => id --- OPTIONAL: if no roll is given, will add the new Frame to a DashboardEntry for this user_id
     #                            - N.B. does *not* check that the given id is for a valid User
     # :action => DashboardEntry::ENTRY_TYPE[?] --- REQUIRED: what action created this frame? Distinguish between social, bookmark
+    # :score => Float --- OPTIONAL initial score for ordering the frames in a roll
+    # :order => Float --- OPTIONAL manual ordering for genius rolls
     #
     # --returns--
     #
+    # false if message.origin_id already exists in DB's unique index
     # { :frame => newly_created_frame, :dashboard_entries => [1 or more DashboardEntry, ...] }
     #
     def self.create_frame(options)
-      raise ArgumentError, "must supply a :creator" unless (creator = options.delete(:creator)).is_a? User
+      creator = options.delete(:creator)
+      score = options.delete(:score)
+      order = options.delete(:order)
       raise ArgumentError, "must supply a :video" unless (video = options.delete(:video)).is_a? Video
       raise ArgumentError, "must supply an :action" unless DashboardEntry::ENTRY_TYPE.values.include?(action = options.delete(:action))
       roll = options.delete(:roll)
@@ -36,6 +43,20 @@ module GT
       raise ArgumentError, "must include a :roll or :dashboard_user_id" unless roll.is_a?(Roll) or dashboard_user_id.is_a?(BSON::ObjectId)
       message = options.delete(:message)
       raise ArgumentError, ":message must be a Message" if message and !message.is_a?(Message)
+      
+      # Try to safely create conversation
+      convo = Conversation.new
+      convo.from_deeplink = true if options.delete(:deep)
+      if message
+        convo.messages << message
+        convo.public = message.public
+      end
+      begin
+        convo.save(:safe => true)
+      rescue Mongo::OperationFailure
+        # unique key failure due to duplicate
+        return false
+      end
       
       res = { :frame => nil, :dashboard_entries => [] }
       
@@ -45,14 +66,15 @@ module GT
       f.creator = creator
       f.video = video
       f.roll = roll if roll
-      f.conversation = Conversation.new
-      f.conversation.frame = f
-      if message
-        f.conversation.messages << message
-        f.conversation.public = message.public
-      end
-      f.conversation.save
+      f.conversation = convo
+      f.score = score
+      f.order = order
+
       f.save
+ 
+      #track the original frame in the convo
+      convo.update_attribute(:frame_id, f.id)
+      
       res[:frame] = f
       
       # DashboardEntry
@@ -94,6 +116,9 @@ module GT
       #create dashboard entries for all roll followers *except* the user who just re-rolled
       res[:dashboard_entries] = create_dashboard_entries(res[:frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
       
+      # Roll - set its thumbnail if missing
+      ensure_roll_metadata!(Roll.find(roll_id), res[:frame])
+      
       return res
     end
     
@@ -109,6 +134,19 @@ module GT
       return basic_dupe!(orig_frame, user_id, roll_id)
     end
     
+    def self.backfill_dashboard_entries(user, roll, frame_count=5)
+      raise ArgumentError, "must supply a User" unless user.is_a? User
+      raise ArgumentError, "must supply a Roll" unless roll.is_a? Roll
+      raise ArgumentError, "count must be >= 0" if frame_count < 0
+      
+      res = []
+      roll.frames.sort(:score.desc).limit(frame_count).all.reverse.each do |frame|
+        res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user)
+      end
+      
+      return res.flatten
+    end
+    
     def self.create_dashboard_entry(frame, action, user)
       raise ArgumentError, "must supply a Frame" unless frame.is_a? Frame
       raise ArgumentError, "must supply an action" unless action
@@ -121,7 +159,7 @@ module GT
       def self.basic_dupe!(orig_frame, user_id, roll_id)
         # Dupe it
         new_frame = Frame.new
-        new_frame.creator_id = user_id
+        new_frame.creator_id = orig_frame.creator_id
         new_frame.roll_id = roll_id
         new_frame.video_id = orig_frame.video_id
         
@@ -181,7 +219,7 @@ module GT
       
       def self.ensure_roll_metadata!(roll, frame)
         #rolls need thumbnails (user.public_roll thumbnail is already set as their avatar)
-        roll.update_attribute(:thumbnail_url, frame.video.thumbnail_url) if roll.thumbnail_url.blank?
+        roll.update_attribute(:thumbnail_url, frame.video.thumbnail_url) if (roll and roll.thumbnail_url.blank?) and (frame and frame.video)
       end
     
   end

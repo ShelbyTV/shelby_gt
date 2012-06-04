@@ -44,9 +44,25 @@ describe GT::Arnold::BeanJob do
         }
     end
     
-    it "should URI unescape then JSON parse the job" do
+    it "should only JSON parse the job" do
+      JSON.stub(:parse).with(:job_body).and_return(@body_hash)
+      GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => :job_body, :jobid => :id))
+    end
+    
+    it "should try to URI.unescape if JSON.parse throws" do
+      JSON.stub(:parse).with(:job_body).and_throw(JSON::ParserError)
+      
       URI.stub(:unescape).with(:job_body).and_return(:job_body_unescaped)
       JSON.stub(:parse).with(:job_body_unescaped).and_return(@body_hash)
+      
+      GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => :job_body, :jobid => :id))
+    end
+    
+    it "should return false if URI.unescape throws after JSON.parse throws" do
+      JSON.stub(:parse).with(:job_body).and_throw(JSON::ParserError)
+      
+      URI.stub(:unescape).with(:job_body).and_throw(Exception)
+      
       GT::Arnold::BeanJob.parse_job(mock_model("MJob", :body => :job_body, :jobid => :id))
     end
     

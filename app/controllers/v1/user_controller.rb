@@ -9,7 +9,6 @@ class V1::UserController < ApplicationController
   def signed_in
     @status = 200
     @signed_in = user_signed_in? ? true : false
-    render 'signed_in', :layout => 'with_callbacks' if params[:callback]
   end
   
   ####################################
@@ -19,24 +18,19 @@ class V1::UserController < ApplicationController
   # [GET] /v1/user/:id
   # 
   # @param [Optional, String] id The id of the user, if not present, user is current_user
-  # @param [Optional, Boolean] rolls_following Include the referenced rolls the user is following
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['show']) do
       if params[:id]
-                
-        if @user = User.find(params[:id]) or @user = User.find_by_nickname(params[:id])
-          @include_rolls = (user_signed_in? and current_user.id.to_s == params[:id] and params[:include_rolls] == "true" ) ? true : false
-          @status = 200
-        else
-          render_error(404, "could not find that user")
+        unless @user = User.find(params[:id]) or @user = User.find_by_nickname(params[:id])
+          return render_error(404, "could not find that user")
         end
-      elsif user_signed_in? and @user = current_user
-        @include_rolls = (params[:include_rolls] == "true") ? true : false
-        @status = 200
-        render 'show', :layout => 'with_callbacks' if params[:callback]
+      elsif user_signed_in?
+        @user = current_user
       else
-        render_error(404, "could not find that user")
+        return render_error(404, "could not find that user")
       end
+
+      @status = 200
     end
   end
   
@@ -50,12 +44,9 @@ class V1::UserController < ApplicationController
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['update']) do
       @user = current_user
-      params.keep_if {|key,value| [:name, :nickname, :primary_email, :preferences].include?key.to_sym}
+      params.keep_if {|key,value| [:name, :nickname, :primary_email, :preferences, :app_progress].include?key.to_sym}
       begin
         if @user.update_attributes!(params)
-          @status = 200
-        elsif params[:preferences]
-          @user.preferences.update_attributes!(params[:preferences])
           @status = 200
         else
           render_error(404, "error while updating user.")
@@ -70,20 +61,39 @@ class V1::UserController < ApplicationController
   # Returns the rolls the current_user is following
   #   REQUIRES AUTHENTICATION
   #
-  # [GET] /v1/user/:id/rolls
+  # [GET] /v1/user/:id/roll_followings
   # 
   # @param [Required, String] id The id of the user
   # @param [Optional, boolean] include_children Return the following_users?
-  def rolls
+  def roll_followings
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
       if current_user.id.to_s == params[:id]
         
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
-        @user = current_user
+        @rolls = current_user.roll_followings.map! {|r| r.roll }
+        
+        #handle and log bad roll followings
+        compacted_rolls = @rolls.compact
+        if compacted_rolls.size < @rolls.size
+          Rails.logger.error("UserController#roll_followings - bad roll_followings for user #{current_user.id}")
+          @rolls = compacted_rolls
+        end
+        
+        # move heart roll to @rolls[1]
+        if heartRollIndex = @rolls.index(current_user.upvoted_roll)
+          heartRoll = @rolls.slice!(heartRollIndex)
+          @rolls.insert(1, heartRoll)
+        else
+          Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
+        end
+        
+        # Load all roll creators to prevent N+1 queries
+        @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
+        
         @status = 200
       else
-        render_error(401, "you are not authorized to view that users rolls.")
+        render_error(403, "you are not authorized to view that users rolls.")
       end
     end
   end

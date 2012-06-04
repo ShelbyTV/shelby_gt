@@ -12,7 +12,7 @@ class V1::GtInterestController < ApplicationController
     @interest = GtInterest.new(:email => params[:email], :priority_code => params[:priority_code])
     if @interest.save
       @status = 200
-      EM.next_tick { GtInterestMailer.interest_autoresponse(@interest.email).deliver }
+      ShelbyGT_EM.next_tick { GtInterestMailer.interest_autoresponse(@interest.email).deliver }
     else
       render_error(400, "must have a valid email")
     end

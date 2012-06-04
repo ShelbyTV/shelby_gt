@@ -14,7 +14,7 @@ module GT
           return [{:embedly_hash => JSON.parse(cache.embedly_json)}] if cache.embedly_json
           #return [{:shelby_hash => cache.shelby_hash}] if cache.shelby_hash
         rescue JSON::ParserError => e
-          Rails.logger.error("[GT::UrlVideoDetector#examine_url_for_video] JSON::ParserError on embedly_json=#{cache.embedly_json} / returning nil") if cache.embedly_json
+          Rails.logger.error("[GT::UrlVideoDetector#examine_url_for_video] JSON::ParserError on embedly_json=#{cache.embedly_json} / returning nil")
           return nil
         end
         return nil
@@ -66,7 +66,7 @@ module GT
       
       # returns the raw JSON from http.response
       def self.check_embedly_for_video(url, use_em, memcache_client)
-        return nil unless url_matches_embedly_video_regex(url)
+        return nil unless Embedly::Regexes.video_regexes_matches?(url)
         
         embedly_url = "http://api.embed.ly/1/oembed?url=#{CGI.escape(url)}&format=json&key=#{Settings::Embedly.key}"
 
@@ -114,15 +114,6 @@ module GT
         else
           return nil
         end
-      end
-      
-      # Check if the given url matches the embeddable video urls from embed.ly
-      # Must match http://api.embed.ly/docs/service
-      def self.url_matches_embedly_video_regex(url)
-        Embedly::Regexes::VIDEO_REGEXES.each do |regex|
-          return true if url =~ regex
-        end
-        return false
       end
     
       ##############################################

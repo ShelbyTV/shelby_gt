@@ -8,7 +8,7 @@ describe 'v1/conversation' do
   
   context 'logged in' do
     before(:each) do
-      set_omniauth()
+      set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
     end
     

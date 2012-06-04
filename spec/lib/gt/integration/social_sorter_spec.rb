@@ -4,20 +4,21 @@ require 'social_sorter'
 
 # INTEGRATION test (b/c it relies on and implicitly tests UserManager)
 describe GT::SocialSorter do
-  before(:all) do
-    @observer = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+  before(:each) do
+    @observer = Factory.create(:user)
     
-    @existing_user = User.new( :nickname => "#{rand.to_s}-#{Time.now.to_f}")
-    @existing_user_nick, @existing_user_provider, @existing_user_uid = "nick1", "ss_1", "uid001"
+    @existing_user = Factory.create(:user)
+    @existing_user_nick, @existing_user_provider, @existing_user_uid = "nick1", "ss_1#{rand.to_s}", "uid001#{rand.to_s}"
     auth = Authentication.new
     auth.provider = @existing_user_provider
     auth.uid = @existing_user_uid
     @existing_user.authentications << auth
-    @existing_user.public_roll = Roll.new(:title => "yup")
-    @existing_user.public_roll.creator = @existing_user
     @existing_user.save
-    @existing_user.public_roll.save
     
+    @existing_user_public_roll = Factory.create(:roll, :creator => @existing_user, :title => "yup")
+    @existing_user.public_roll = @existing_user_public_roll
+    @existing_user.save
+
     @video = Video.create
   end
   
@@ -33,7 +34,7 @@ describe GT::SocialSorter do
     
     it "should add to public Roll of existing User" do      
       lambda {
-        res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res.should_not == false
         res[:frame].persisted?.should == true
         res[:frame].conversation.persisted?.should == true
@@ -42,7 +43,7 @@ describe GT::SocialSorter do
     end
     
     it "should set existing User on the Message" do
-      res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+      res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
       res[:frame].conversation.messages[0].user.should == @existing_user
       res[:frame].conversation.messages[0].user.should == res[:frame].creator
     end
@@ -57,7 +58,7 @@ describe GT::SocialSorter do
       m.public = true
       
       lambda {
-        res = GT::SocialSorter.sort(m, @video, @observer)
+        res = GT::SocialSorter.sort(m, {:video => @video, :from_deep => false}, @observer)
         res[:frame].creator.nickname.should == "FakeNick001"
         res[:frame].creator.user_image.should == "img"
       }.should change { User.count }.by(1)
@@ -71,16 +72,16 @@ describe GT::SocialSorter do
       m.origin_id = "RandomId998--b"
       m.public = true
       
-      res = GT::SocialSorter.sort(m, @video, @observer)
+      res = GT::SocialSorter.sort(m, {:video => @video, :from_deep => false}, @observer)
       res[:frame].conversation.messages[0].user.should == res[:frame].creator
     end
     
     it "should do nothing if this social posting has already been posted to User's public Roll" do
       lambda {
-        GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer).should_not == false
-        GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer).should == false
-        GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer).should == false
-        GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer).should == false
+        GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer).should_not == false
+        GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer).should == false
+        GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer).should == false
+        GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer).should == false
       }.should change { @existing_user.public_roll.reload.frames.count }.by(1)
     end
     
@@ -93,7 +94,7 @@ describe GT::SocialSorter do
       m.public = true
       
       lambda {
-        res = GT::SocialSorter.sort(m, @video, @observer)
+        res = GT::SocialSorter.sort(m, {:video => @video, :from_deep => false}, @observer)
         @observer.reload.following_roll?(res[:frame].roll).should == true
         res[:frame].roll.reload.followed_by?(@observer).should == true
       }.should change { @observer.roll_followings.count }.by(1)
@@ -101,14 +102,14 @@ describe GT::SocialSorter do
     
     it "should make observing User auto-follow Roll even if this Message has already been posted to a Roll" do
       lambda {
-        GT::SocialSorter.sort(@existing_user_random_msg, @video, User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
+        GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
       }.should change { Frame.count }.by(1)
 
       new_observer = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
       
       new_observer.following_roll?(@existing_user.public_roll).should == false
       lambda {
-        GT::SocialSorter.sort(@existing_user_random_msg, @video, new_observer)
+        GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, new_observer)
         new_observer.following_roll?(@existing_user.public_roll).should == true
         new_observer.reload.following_roll?(@existing_user.public_roll).should == true
         @existing_user.public_roll.reload.followed_by?(new_observer).should == true
@@ -116,14 +117,17 @@ describe GT::SocialSorter do
     end
     
     it "should not make observing User auto-follow public Roll if they've unfollowed it" do
+      #need to follow first
+      @existing_user.public_roll.add_follower(@observer)
+      #can now un-follow
       @existing_user.public_roll.remove_follower(@observer)
       @existing_user.public_roll.save
       @observer.save
 
-      res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
       @observer.following_roll?(@existing_user.public_roll).should == false
-      @observer.reload.following_roll?(@existing_user.public_roll).should == false
-      @existing_user.public_roll.reload.followed_by?(@observer).should == false
+      res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
+      @observer.following_roll?(@existing_user.public_roll).should == false
+      @existing_user.public_roll.followed_by?(@observer).should == false
       @observer.following_roll?(res[:frame].roll).should == false
     end
     
@@ -134,7 +138,7 @@ describe GT::SocialSorter do
       @observer.save
       
       lambda {
-        res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         @observer.following_roll?(@existing_user.public_roll).should == true
       }.should change { @observer.dashboard_entries.count }.by(1)
     end
@@ -147,14 +151,14 @@ describe GT::SocialSorter do
       @existing_user.public_roll.save
       
       lambda {
-        res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res[:dashboard_entries].size.should satisfy { |n| n >= 4 }
       }.should change { DashboardEntry.count }.by_at_least(4)
     end
     
     it "should create appropriate Frame" do
       lambda {
-        res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         f = res[:frame]
         f.is_a?(Frame).should == true
         f.persisted?.should == true
@@ -170,7 +174,7 @@ describe GT::SocialSorter do
     
     it "should create public Message in the Frame's public Conversation" do
       lambda {
-        res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res[:frame].conversation.public?.should == true
         res[:frame].conversation.messages[0].public?.should == true
       }.should change { Conversation.count }.by(1)
@@ -178,15 +182,15 @@ describe GT::SocialSorter do
     
     it "should make observing User auto-follow Roll even if this Message has already been posted to a Roll, and observering User should get a DashboardEntry" do
       lambda {
-        GT::SocialSorter.sort(@existing_user_random_msg, @video, User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
+        GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, Factory.create(:user))
       }.should change { Frame.count }.by(1)
 
-      new_observer = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+      new_observer = Factory.create(:user)
       
       new_observer.following_roll?(@existing_user.public_roll).should == false
       lambda {
         lambda {
-          GT::SocialSorter.sort(@existing_user_random_msg, @video, new_observer)
+          GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, new_observer)
         }.should_not change { Frame.count }
       }.should change { new_observer.dashboard_entries.count } .by 1
     end
@@ -206,7 +210,7 @@ describe GT::SocialSorter do
     it "should not add to public Roll of existing User" do
       lambda {
         lambda {
-          res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+          res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
           res.should_not == false
         }.should change { Frame.count }.by(1)
       }.should_not change { @existing_user.public_roll.reload.frames.count }
@@ -221,7 +225,7 @@ describe GT::SocialSorter do
       m.public = false
       
       lambda {
-        res = GT::SocialSorter.sort(m, @video, @observer)
+        res = GT::SocialSorter.sort(m, {:video => @video, :from_deep => false}, @observer)
         res[:frame].creator.nickname.should == "PrivateFakeNick001"
       }.should change { User.count }.by(1)
     end
@@ -235,21 +239,21 @@ describe GT::SocialSorter do
       m.public = false
       
       lambda {
-        res = GT::SocialSorter.sort(m, @video, @observer)
+        res = GT::SocialSorter.sort(m, {:video => @video, :from_deep => false}, @observer)
         res[:frame].roll.should == nil
       }.should change { User.count }.by(1)
     end
     
     it "should only create one DashboardEntry" do
       lambda {
-        res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res.should_not == false
       }.should change { DashboardEntry.count }.by(1)
     end
     
     it "should add DashboardEntry for observing User (with no Roll)" do
       lambda {
-        res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res.should_not == false
         res[:dashboard_entries].size.should == 1
         res[:dashboard_entries][0].user.should == @observer
@@ -263,7 +267,7 @@ describe GT::SocialSorter do
       @existing_user.public_roll.save
       
       lambda {
-        res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res.should_not == false
         res[:dashboard_entries].size.should == 1
         res[:dashboard_entries][0].user.should == @observer
@@ -272,7 +276,7 @@ describe GT::SocialSorter do
     
     it "should create appropriate Frame (owned by existing User, no Roll)" do
       lambda {
-        res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res.should_not == false
         f = res[:frame]
         f.is_a?(Frame).should == true
@@ -288,7 +292,7 @@ describe GT::SocialSorter do
     
     it "should create *private* Message in the Frame's Conversation" do
       lambda {
-        res = GT::SocialSorter.sort(@existing_user_random_msg, @video, @observer)
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res[:frame].conversation.public?.should == false
         res[:frame].conversation.messages[0].public?.should == false
       }.should change { Conversation.count }.by(1)

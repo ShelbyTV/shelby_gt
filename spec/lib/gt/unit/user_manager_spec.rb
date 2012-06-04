@@ -100,12 +100,13 @@ describe GT::UserManager do
         usr.watch_later_roll.class.should == Roll
         usr.watch_later_roll.persisted?.should == true
         
-        usr.upvoted_roll.class.should == Roll
-        usr.upvoted_roll.persisted?.should == true
-        
         usr.viewed_roll.class.should == Roll
         usr.viewed_roll.persisted?.should == true
-        
+
+        usr.upvoted_roll.class.should == Roll
+        usr.upvoted_roll.upvoted_roll.should == true
+        usr.upvoted_roll.persisted?.should == true
+                
         usr.public_roll.class.should == Roll
         usr.public_roll.persisted?.should == true
         usr.public_roll.thumbnail_url.should == thumb_url
@@ -125,7 +126,7 @@ describe GT::UserManager do
     end
     
     it "should handle Mongo::OperationFailure (due to duplicate nickname on user) when creating a faux User" do
-      GT::UserManager.should_receive(:ensure_users_special_rolls).and_raise(Mongo::OperationFailure)
+      GT::UserManager.should_receive(:ensure_valid_unique_nickname!).and_raise(Mongo::OperationFailure)
       
       nick, provider, uid = "whatever3", "fb", "123uid3--xx--"
       thumb_url = "some:://thumb.url"
@@ -138,7 +139,7 @@ describe GT::UserManager do
     end
     
     it "should handle Mongo::OperationFailure (due to timing issue) and recover by returning the correct user" do
-      GT::UserManager.should_receive(:ensure_users_special_rolls).and_raise(Mongo::OperationFailure)
+      GT::UserManager.should_receive(:ensure_valid_unique_nickname!).and_raise(Mongo::OperationFailure)
       
       #User.first(...) will first return nil, then will return a User, we want that User!
       User.should_receive(:first).and_return(nil, :the_user)
@@ -181,15 +182,15 @@ describe GT::UserManager do
       u.public_roll.origin_network.should == "fb"
     end
     
-    it "should have the faux user follow its own public roll (should not follow watch_later, viewed, and upvoted rolls)" do
+    it "should have the faux user follow its own public and upvoted rolls (should not follow watch_later, viewed rolls)" do
       nick, provider, uid = "whatever3-c", "fb", "123uid3-c"
       lambda {
         u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
         
         u.following_roll?(u.public_roll).should == true
+        u.following_roll?(u.upvoted_roll).should == true
         
         u.following_roll?(u.watch_later_roll).should == false
-        u.following_roll?(u.upvoted_roll).should == false
         u.following_roll?(u.viewed_roll).should == false
       }.should change { User.count }.by(1)
     end
@@ -220,6 +221,7 @@ describe GT::UserManager do
       r.persisted?.should == true
       r.public.should == false
       r.collaborative.should == false
+      r.upvoted_roll.should == true
       r.creator.should == u
       
       #viewed
@@ -240,6 +242,27 @@ describe GT::UserManager do
       auth.class.should == Authentication
       auth.provider.should == provider
       auth.uid.should == uid
+    end
+    
+    it "should update user's image if it's null" do
+      nick, provider, uid = "whatever-x1", "fb", "123uid-x1"
+      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      auth = Authentication.new
+      auth.provider = provider
+      auth.uid = uid
+      u.authentications << auth
+      u.save
+      
+      u.persisted?.should == true
+      
+      u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, :user_thumbnail_url => "someURL")
+      u.user_image.should == "someURL"
+      u.user_image_original.should == "someURL"
+      
+      #should not change it next time around
+      u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, :user_thumbnail_url => "new_URL")
+      u.user_image.should == "someURL"
+      u.user_image_original.should == "someURL"
     end
     
     context "nickname fixing" do
@@ -331,6 +354,11 @@ describe GT::UserManager do
     it "should have preferences set" do
       real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
       real_u.preferences.class.should eq(Preferences)
+    end
+    
+    it "should have app_progrss set" do
+      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u.app_progress.class.should eq(AppProgress)
     end
   end
   
@@ -561,6 +589,11 @@ describe GT::UserManager do
         u.preferences.watched_notifications.should == true
         u.preferences.quiet_mode.should == nil
       end
+
+      it "should always have preferences once created" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        u.app_progress.class.should eq(AppProgress)
+      end
       
       it "should create and persist public, watch_later, upvoted, viwed Rolls for new User" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
@@ -572,6 +605,7 @@ describe GT::UserManager do
         u.watch_later_roll.persisted?.should == true
         
         u.upvoted_roll.class.should == Roll
+        u.upvoted_roll.upvoted_roll.should == true
         u.upvoted_roll.persisted?.should == true
         
         u.viewed_roll.class.should == Roll
@@ -590,12 +624,12 @@ describe GT::UserManager do
         u.public_roll.origin_network.should == Roll::SHELBY_USER_PUBLIC_ROLL
       end
       
-      it "should have the user follow their public rolls (and NOT the watch_later, upvoted, or viewed Rolls)" do
+      it "should have the user follow their public and upvoted rolls (and NOT the watch_later, or viewed Rolls)" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         
         u.following_roll?(u.public_roll).should == true
+        u.following_roll?(u.upvoted_roll).should == true
         u.following_roll?(u.watch_later_roll).should == false
-        u.following_roll?(u.upvoted_roll).should == false
         u.following_roll?(u.viewed_roll).should == false
       end
       
@@ -680,6 +714,13 @@ describe GT::UserManager do
       
       updated_u = GT::UserManager.add_new_auth_from_omniauth(u, new_omniauth_hash)
       u.id.should == updated_u.id
+    end
+
+    it "should create app_progress if it doesnt exist" do
+      u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+      u.app_progress = nil; u.save
+      GT::UserManager.start_user_sign_in(u, @omniauth_hash)
+      u.app_progress.class.should eq(AppProgress)
     end
   end
   

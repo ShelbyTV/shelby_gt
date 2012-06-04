@@ -22,7 +22,7 @@ class User
   
   # Rolls this user has unfollowed
   # these rolls should not be auto-followed by our system
-  key :rolls_unfollowed, Array, :typecase => ObjectId, :abbr => :aa
+  key :rolls_unfollowed, Array, :typecast => 'ObjectId', :abbr => :aa, :default => []
   
   # A special roll for a user: their public roll
   belongs_to :public_roll, :class_name => 'Roll'
@@ -35,8 +35,9 @@ class User
   
   # A special roll for a user: their Upvoted Roll
   # - contains trivial copies of Frames that this user has upvoted
+  # - from the consumer side of the api its known as the "heart_roll"
   belongs_to :upvoted_roll, :class_name => 'Roll'
-  key :upvoted_roll, ObjectId, :abbr => :ae
+  key :upvoted_roll_id, ObjectId, :abbr => :ae
   
   # A special roll for a user: their Viewed Roll
   # - contains trivial copies of Frames that this user has viewed
@@ -59,6 +60,8 @@ class User
 
   # has this user been granted access to Shelby GT?
   key :gt_enabled, Boolean, :abbr => :ag, :default => false
+
+  one :app_progress
 
   #--old keys--
   many :authentications
@@ -95,7 +98,7 @@ class User
   # [twitter, facebook, email, tumblr]
   key :social_tracker,        Array, :default => [0, 0, 0, 0]
 
-  attr_accessible :name, :nickname, :primary_email, :preferences
+  attr_accessible :name, :nickname, :primary_email, :preferences, :app_progress, :user_image, :user_image_original
   
   # Arnold does a *shit ton* of user saving, which runs this validation, which turns out to be very expensive 
   # (see shelby_gt/etc/performance/unique_nickname_realtime_profile.gif)
@@ -151,6 +154,13 @@ class User
   end
   
   def permalink() "#{Settings::ShelbyAPI.web_root}/user/#{self.nickname}/personal_roll"; end
+  
+  # Use this to convert User's created on NOS to GT
+  # When we move everyone to GT, use the rake task in gt_migration.rb
+  def gt_enable!
+    self.gt_enabled = true
+    GT::UserManager.ensure_users_special_rolls(self, true)
+  end
   
   # -- Old Methods --   
   def self.find_by_nickname(n)
@@ -226,10 +236,10 @@ class User
   def total_tracker_count() self.social_tracker.inject(:+); end
   
   def send_email_address_to_sailthru(list=Settings::Sailthru.user_list)
-    EM.next_tick do
+    #ShelbyGT_EM.next_tick do
       #client = Bacon::Email.new()
       #client.add_email_address(self.primary_email, list)
-    end
+    #end
   end
     
   private

@@ -22,7 +22,7 @@ module ShelbyGt
     # -- all .rb files in that directory are automatically loaded.
 
     # Custom directories with classes and modules you want to be autoloadable.
-    config.autoload_paths += %W(#{Rails.root}/lib/plugins #{Rails.root}/lib/db #{Rails.root}/lib/gt #{Rails.root}/lib/gt/arnold #{Rails.root}/lib/cache #{Rails.root}/lib/embedly #{Rails.root}/lib/dev_pollers #{Rails.root}/lib/stats #{Rails.root}/lib/social_postings)
+    config.autoload_paths += %W(#{Rails.root}/lib/plugins #{Rails.root}/lib/db #{Rails.root}/lib/gt #{Rails.root}/lib/gt/arnold #{Rails.root}/lib/cache #{Rails.root}/lib/embedly #{Rails.root}/lib/dev #{Rails.root}/lib/stats #{Rails.root}/lib/social_postings)
 
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.
@@ -68,9 +68,12 @@ module ShelbyGt
     end
     
     # Setup cors preflight request headers
+    # N.B. Although configed for only put/post/delete, Access-Control-Allow-Origin will be set to the requests origin if it matches here
+    #      and the request is with credentials (even if it's not a pre-flight).  As such, the '*' set in application_controller is fine
+    #      b/c it always gets overridden for credentialed requests
     config.middleware.use Rack::Cors do
       allow do
-        origins 'web.gt.shelby.tv', 'gt.shelby.tv', 'localhost.shelby.tv:3000'
+        origins 'web.gt.shelby.tv', 'gt.shelby.tv', 'isoroll.shelby.tv', 'shelby.tv', 'localhost.shelby.tv:3000'
         resource %r{/v1/(roll|frame|user|dashboard|conversation)\w*},
           :headers => ['Origin', 'Accept', 'Content-Type', 'X-CSRF-Token', 'X-Shelby-User-Agent'],
           :methods => [:put, :post, :delete]

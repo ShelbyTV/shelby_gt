@@ -1,6 +1,9 @@
 require 'net/http'
 require 'memcached_link_resolving_cache'
 
+require 'open-uri'
+require 'nokogiri'
+
 # A helper module for URLs
 # works with or without EventMachine and Memcache
 #
@@ -24,6 +27,10 @@ module GT
       
       vim = parse_url_for_vimeo_provider_info(url)
       return vim if vim
+      
+      # ESPN
+      es = parse_url_for_espn_provider_info(url)
+      return es if es
       
       dm = parse_url_for_dailymotion_provider_info(url)
       return dm if dm
@@ -79,17 +86,18 @@ module GT
       url.match(SHELBY_URL_REGEX) != nil
     end
     
+    # also using it for deep link parsing  
+    # we see lots of these, don't want to waste time resolving them
+    BLACKLIST_REGEX = /freq\.ly|yfrog\.|4sq\.com|twitpic\.com|nyti\.ms|plixi\.com|instagr\.am|facebook\.com/i
+    def self.url_is_blacklisted?(url)
+      url.match(BLACKLIST_REGEX) != nil
+    end
+ 
     private
-    
+
       SHELBY_URL_REGEX = /shel\.tv|shelby\.tv/i
       VIMEO_URL_REGEX = /(http:\/\/vimeo.com\/\D*\#)(\d*)/       
-   
-      # we see lots of these, don't want to waste time resolving them
-      BLACKLIST_REGEX = /freq\.ly|yfrog\.|4sq\.com|twitpic\.com|nyti\.ms|plixi\.com|instagr\.am|facebook\.com/i
-      def self.url_is_blacklisted?(url)
-        url.match(BLACKLIST_REGEX) != nil
-      end
-   
+
       # we see URLs w/o scheme and it kills em-http-request / addressable
       # so, if the URL doesn't have a scheme, we default it to http
       VALID_URL_REGEX = /^(http:\/\/|https:\/\/)/i
@@ -151,6 +159,8 @@ module GT
           Rails.logger.error("[GT::UrlHelper#cache_link_resolution] MemcachedLinkResolvingCache#create threw ? #{e} -- BACKTRACE: #{e.backtrace.join('\n')}")
         end
       end
+
+
       
       ##############################################
       #------ parsing URLs for unique video --------
@@ -160,7 +170,7 @@ module GT
       # YouTube
       def self.parse_url_for_youtube_provider_info(url)
         #normal, long youtube links
-        match_data = url.match( /youtube.*\/([ev]|embed)+\/([\w-]*)|v=([\w-]*)(&+.*\z|\z)/i )
+        match_data = url.match( /youtube.*\/([ev]|embed)+\/([\w-]*)|v=([\w-]*)([&%]+.*\z|\z)/i )
         if match_data and match_data.size >= 2
           id = match_data[2] unless match_data[2].blank?
           id = match_data[3] unless match_data[3].blank?
@@ -231,6 +241,14 @@ module GT
         match_data = url.match( /blip.tv.+(play\/)([\w-]*)/i )
         if match_data and match_data.size == 3
           return {:provider_name => "bliptv", :provider_id => match_data[2]}
+        end
+      end
+      
+      # ESPN
+      def self.parse_url_for_espn_provider_info(url)
+        match_data = url.match( /espn.go.com\/video\/clip.+id=([\w-]*)(&+.*\z|\z)/i )
+        if match_data and match_data.size == 3
+          return {:provider_name => "espn", :provider_id => match_data[1]}
         end
       end
     

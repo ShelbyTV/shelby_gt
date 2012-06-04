@@ -23,9 +23,9 @@ module GT
     #
     # The created Frames and DashboardEntries (via GT::Framer)
     #
-    def self.sort(message, video, observing_user)
+    def self.sort(message, video_hash, observing_user)
       raise ArgumentError, "must supply message" unless message.is_a?(Message)
-      raise ArgumentError, "must supply video" unless video.is_a?(Video)
+      raise ArgumentError, "must supply video" unless video_hash[:video].is_a?(Video)
       raise ArgumentError, "must supply observing_user" unless observing_user.is_a?(User)
 
       posting_user = get_or_create_posting_user_for(message)
@@ -34,9 +34,9 @@ module GT
       message.user = posting_user
       
       if message.public?
-        sort_public_message(message, video, observing_user, posting_user)
+        sort_public_message(message, video_hash, observing_user, posting_user)
       else
-        sort_private_message(message, video, observing_user, posting_user)
+        sort_private_message(message, video_hash, observing_user, posting_user)
       end
     end
     
@@ -45,19 +45,29 @@ module GT
       # This is a public message: put it on the public roll of the posting user
       # Make sure observing user sees it by first following that roll (unless they've specifically unfollowed it)
       # Everyone else following that public roll will see it as well.
-      def self.sort_public_message(message, video, observing_user, posting_user)
+      def self.sort_public_message(message, video_hash, observing_user, posting_user)
         
         #observing_user should be following the posting_user's public roll, unless they specifically unfollowed it
-        unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)  
-          posting_user.public_roll.add_follower(observing_user)
-          new_following = true
+        unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)
+          posting_user.public_roll.add_follower(observing_user, false)
           
-          posting_user.public_roll.save
-          observing_user.save
+          new_following = true
         end
-        
-        if convo = already_posted?(message, posting_user.public_roll)
-          # This has already been posted, so we're not going to create a Frame.
+
+        #Add Frame to posting_user's public roll
+        res = GT::Framer.create_frame(
+          :creator => posting_user,
+          :video => video_hash[:video],
+          :message => message,
+          :roll => posting_user.public_roll,
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :deep => video_hash[:from_deep]
+          )
+
+        if !res
+          # conversation was already posted
+          convo = Conversation.first_including_message_origin_id(message.origin_id)
+          # This has already been posted, so we weren't able to create a Frame.
           #  BUT if observing_user was just added as a follower of posting_user's public_roll, 
           #      a DashboardEntry was never created for this Frame/observing_user...
           if new_following and original_frame = convo.frame
@@ -66,27 +76,21 @@ module GT
 
           return false
         end
-        
-        #Add Frame to posting_user's public roll
-        GT::Framer.create_frame(
-          :creator => posting_user,
-          :video => video,
-          :message => message,
-          :roll => posting_user.public_roll,
-          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame]
-          )
+
+        return res
       end
       
       # This is a private message: don't put it on the public roll of the posting user.
       # Make sure the observing user sees it by creating a Frame that is only attached to their dashboard
-      def self.sort_private_message(message, video, observing_user, posting_user)
+      def self.sort_private_message(message, video_hash, observing_user, posting_user)
         # Add Frame to observing_user's dashboard
         GT::Framer.create_frame(
           :creator => posting_user,
-          :video => video,
+          :video => video_hash[:video],
           :message => message,
           :dashboard_user_id => observing_user.id,
-          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame]
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :deep => video_hash[:from_deep]
           )
       end
       
@@ -97,14 +101,6 @@ module GT
           Rails.logger.fatal("[GT::SocialSorter#get_or_create_posting_user_for] rescued but re-raising #{e} for message #{message.inspect}")
           raise e
         end
-      end
-      
-      def self.already_posted?(message, roll)
-        # See if there is a conversation that has a matching message
-        if c = Conversation.first_including_message_origin_id(message.origin_id)
-          return c if c.messages.any? { |m| m.origin_network == message.origin_network and m.origin_id == message.origin_id }
-        end
-        return false
       end
        
   end

@@ -7,7 +7,7 @@ module GT
             
       # don't email the creator if they are the upvoting user or they dont have an email address!
       user_to = frame.creator
-      return if (user == user_to) or !user_to.primary_email or (user_to.primary_email == "")
+      return if !user_to or (user == user_to) or !user_to.primary_email or (user_to.primary_email == "")
       
       # Temp: for now only send emails to gt_enabled users
       return unless frame.creator.gt_enabled
@@ -33,34 +33,44 @@ module GT
       NotificationMailer.reroll_notification(new_frame, old_frame).deliver
     end
     
-    def self.check_and_send_comment_notification(c, new_message)
-      raise ArgumentError, "must supply valid conversation" unless c.is_a?(Conversation) and !c.blank?
-      raise ArgumentError, "must supply valid message" unless new_message.is_a?(Message) and !new_message.blank?
+    def self.send_new_message_notifications(c, new_message)
+      raise ArgumentError, "must supply Conversation" unless c.is_a?(Conversation)
+      raise ArgumentError, "must supply Message" unless new_message.is_a?(Message)
       
-      # stop if we don't get the frame (otherwise we won't have a permalink for the email)      
-      #TODO: This is probably not the *best* way to get the conversations frame, so find a  better way...
-      return unless frame = Frame.where(:conversation_id => c.id).first
+      return false unless frame = c.frame
       
-      # an array to check against emails already sent for block below
-      users_in_conversation = []
-      
-      c.messages.each do |old_message|
-        # cant email anyone if we dont have their email address :)
-        break unless old_message.user and old_message.user.primary_email
-        
-        # dont send an email to a user that we've just emaild wrt this new message
-        break if users_in_conversation.include?(old_message.user_id)
-        
-        # add this user to that array
-        users_in_conversation << old_message.user_id
-        
-        # Temp: for now only send emails to gt_enabled users
-        break unless old_message.user.gt_enabled
-
-        break unless old_message.user.preferences.comment_notifications
-
-        NotificationMailer.comment_notification(old_message.user, new_message.user, frame, new_message).deliver
+      # Email everybody...
+      if c.frame and c.frame.roll and !c.frame.roll.public?
+        # ...following a private roll
+        users_to_email = c.frame.roll.following_users_models
+      else
+        # ..in the conversation (for a public roll)
+        users_to_email = [frame.creator] + c.messages.map { |m| m.user }
       end
+      users_to_email = users_to_email.uniq.compact
+      
+      # except for the person who just wrote this new message
+      users_to_email -= [new_message.user]
+      # and those who don't wish to receive comment notifications
+      users_to_email.select! { |u| u.preferences and u.preferences.comment_notifications? }
+      
+      users_to_email.each { |u| NotificationMailer.comment_notification(u, new_message.user, frame, new_message).deliver unless u.primary_email.blank? }
+    end
+
+    def self.check_and_send_join_roll_notification(user_from, roll)
+      raise ArgumentError, "must supply valid user" unless user_from.is_a?(User) and !user_from.blank?
+      raise ArgumentError, "must supply valid roll" unless roll.is_a?(Roll) and !roll.blank?
+      
+      # for now only send emails to gt_enabled users
+      return unless roll.creator.gt_enabled
+            
+      # don't email the creator if they are the user joining or they dont have an email address!
+      user_to = roll.creator
+      return if (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "")
+      
+      return unless user_to.preferences.roll_activity_notifications
+      
+      NotificationMailer.join_roll_notification(user_to, user_from, roll).deliver
     end
   end
 end
