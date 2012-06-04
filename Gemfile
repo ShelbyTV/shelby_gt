@@ -47,6 +47,7 @@ gem 'httparty'
 #
 # ---------- External Services
 #
+gem "youtube_it" #youtube api
 gem "grackle" 		# twitter
 gem "koala"				# facebook
 gem "sendgrid" 		# email

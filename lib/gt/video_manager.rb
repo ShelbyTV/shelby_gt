@@ -100,8 +100,13 @@ module GT
       end
       
       # since there are no deep links, check to see if we can handle the url
-      unless GT::UrlHelper.parse_url_for_provider_info(url)
+      unless provider_info = GT::UrlHelper.parse_url_for_provider_info(url)
         return {:videos => [], :from_deep => false}
+      end
+      
+      if provider_info[:provider_name] == "youtube"
+        yt_video = GT::UrlProviderVideoDector.examine_url_for_youtube_video(provider_info[:provider_id])
+        return {:videos => [yt_video], :from_deep => false}
       end
 	  # Still no video...
       # Examine that URL (via our cache, our service, or external service like embed.ly), looking for video
