@@ -32,7 +32,7 @@ module GT
                 sleep_if_other_fiber_is_processing(url, url_cache, use_em)
                 prev_urls << url
               end
-	      video_response = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, 1.0)
+	      video_response = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, $check_deep_prob)
               video_response[:videos].each do |v|
                 vids << {:video => v, :from_deep => video_response[:from_deep]}
               end
@@ -45,7 +45,7 @@ module GT
               sleep_if_other_fiber_is_processing(url, url_cache, use_em)
               prev_urls << url
             end
-  	    video_response = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, 1.0)
+  	    video_response = GT::VideoManager.get_or_create_videos_for_url(url, true, GT::Arnold::MemcachedManager.get_client, true, true, $check_deep_prob)
             video_response[:videos].each do |v|
               vids << {:video => v, :from_deep => video_response[:from_deep]}
             end
