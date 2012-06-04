@@ -99,27 +99,29 @@ module GT
 
     # Finds a users authentication and updates it
     #  - returns the updated auth
-    def self.update_authentication_tokens!(u,omniauth)
-      auth = authentication_by_provider_and_uid(u, omniauth['provider'], omniauth['uid'])
-      return auth ? update_oauth_tokens!(u, auth, omniauth) : false
+    def self.update_authentication_tokens!(u, provider, uid, credentials_token, credentials_secret)
+      auth = authentication_by_provider_and_uid(u, provider, uid)
+      return auth ? update_oauth_tokens!(u, auth, credentials_token, credentials_secret) : false
     end
     
-    # Updates oauth tokens for a users auth given an authentication
-    #  - returns the updated auth
-    def self.update_oauth_tokens!(u, a, omniauth)
-      if a.oauth_token != omniauth['credentials']['token'] or a.oauth_secret != omniauth['credentials']['secret']
-        a.update_attributes!({ :oauth_token => omniauth['credentials']['token'], :oauth_secret => omniauth['credentials']['secret'] })
+    private
+    
+      # Updates oauth tokens for a users auth given an authentication
+      #  - returns the updated auth
+      def self.update_oauth_tokens!(u, a, credentials_token, credentials_secret)
+        if a.oauth_token != credentials_token or a.oauth_secret != credentials_secret
+          a.update_attributes!({ :oauth_token => credentials_token, :oauth_secret => credentials_secret })
 
-        #and need the node processes to update as well
-        GT::PredatorManager.update_video_processing(u, a)
+          #and need the node processes to update as well
+          GT::PredatorManager.update_video_processing(u, a)
+        end
+        return a
       end
-      return a
-    end
     
-    # Finds a auth by provider and id
-    def self.authentication_by_provider_and_uid(u, provider, uid)
-      u.authentications.select { |a| a.provider == provider and a.uid == uid } .first
-    end
+      # Finds a auth by provider and id
+      def self.authentication_by_provider_and_uid(u, provider, uid)
+        u.authentications.select { |a| a.provider == provider and a.uid == uid } .first
+      end
     
   end
 end

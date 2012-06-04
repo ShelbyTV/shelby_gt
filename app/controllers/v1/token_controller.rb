@@ -1,3 +1,4 @@
+require 'user_manager'
 
 class V1::TokenController < ApplicationController  
 
@@ -13,19 +14,38 @@ class V1::TokenController < ApplicationController
   # [POST] /v1/token
   #
   # @param [Required, String] provider_name The name of the 3rd party provider the user is authorized with (ie. "twitter")
-  # @param [Required, String] provider_id The id of the User at the 3rd party
-  # @param [Required, String] oauth_token The oAuth token of this User at said provider
-  # @param [Optional, String] oauth_secret The oAuth secret of this User at said provider (if used by the provider)
-  # @return [String] User's authentication token
+  # @param [Required, String] uid The id of the User at the 3rd party
+  # @param [Required, String] token The oAuth token of this User at said provider
+  # @param [Optional, String] secret The oAuth secret of this User at said provider (if used by the provider)
+  # @return [User] User w/ authentication token
   def create
     provider = params[:provider_name]
-    uid = params[:provider_id]
+    uid = params[:uid]
+    token = params[:token]
+    secret = params[:secret]
     
-    user = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
+    @user = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
     
-    if user
-      #TODO: validate this user via GT::UserManager
+    if @user
+      if GT::UserManager.verify_user(@user, provider, uid, token, secret)
+        
+        if @user.faux == User::FAUX_STATUS[:true]
+          return render_error(404, "Unable to convert faux user to real user.")
+          #TODO: get details normally retrieved by omniauth and convert: GT::UserManager.convert_faux_user_to_real(@user, omniauth)
+        else
+          GT::UserManager.start_user_sign_in(@user, :provider => provider, :uid => uid, :token => token, :secret => secret)
+        end
+        
+        sign_in(:user, @user)
+        @user.ensure_authentication_token!
+        @status = 200
+        #renders v1/user/show which includes user.authentication_token
+      else
+        return render_error(404, "Failed to verify user.")
+      end
     else
+      return render_error(404, "Unable to create new users.")
+      
       #TODO: create a new user via GT::UserManager
       # THOUGHT: we may be able to use omniauth to get user info and then call GT::UserManager.create_new_user_from_omniauth(o)
       #          actually, we may be able to use omniauth to do the verification step (ie. get user info via omniauth, on success, it's verified)
@@ -40,7 +60,7 @@ class V1::TokenController < ApplicationController
   ##
   # Remove the single sign on token from its User.
   #
-  # [POST] /v1/token/:auth_token
+  # [POST] /v1/token/:id
   #
   # @param [Required, String] auth_token The auth_token for this User
   # @return [Boolean] returns if the token was successfull destroyed
@@ -51,7 +71,7 @@ class V1::TokenController < ApplicationController
     else
       @user.reset_authentication_token!
       @status = 200
-      #TODO render true/false?
+      #renders v1/user/show which includes user.authentication_token
     end
   end
   
