@@ -6,7 +6,7 @@
 <title>
   Class: V1::VideoController
   
-    &mdash; Shelby GT API
+    &mdash; Documentation by YARD 0.7.5
   
 </title>
 
@@ -23,8 +23,6 @@
 
   <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
 
-  <script type="text/javascript" charset="utf-8" src="../js/rest_plugin.js"></script>
-
 
   </head>
   <body>
@@ -33,40 +31,218 @@
     </script>
     
     <div id="header">
-      <div id="search">
-  <!-- <a id="topic_list_link" href="#">Topic List</a> -->
-  <a id="resource_list_link" href="#">Resource List</a>
-  <a id="file_list_link" href="#">File List</a>
+      <div id="menu">
+  
+    <a href="../_index.html">Index (V)</a> &raquo; 
+    <span class='title'>V1</span>
+     &raquo; 
+    <span class="title">VideoController</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
 </div>
 
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
     </div>
     
     <iframe id="search_frame"></iframe>
     
-    <div id="content"><div class="service">
-  <h1>
+    <div id="content"><h1>Class: V1::VideoController
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName">ApplicationController</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">ApplicationController</li>
+          
+            <li class="next">V1::VideoController</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
     
-  </h1>
+  
+  
+    
+  
+    
   
   
   
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">app/controllers/v1/video_controller.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#show-instance_method" title="#show (instance method)">- (Object) <strong>show</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns one video, with the given parameters.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="show-instance_method">
+  
+    - (<tt>Object</tt>) <strong>show</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note todo">
+    <strong>TODO:</strong> 
+    <div class='inline'>
+<p>return error if id not present w/ params.has_key?(:id)</p>
 </div>
+  </div>
 
 
+<p>Returns one video, with the given parameters.</p>
+<dl class="rdoc-list"><dt>GET</dt>
+<dd>
+<p>/v1/video/:id</p>
+</dd></dl>
 
 
+  </div>
+</div>
+<div class="tags">
+  <h3>Parameters:</h3>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Required</tt>, <tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The id of the video</p>
+</div>
+      
+    </li>
+  
+</ul>
 
 
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
 
 
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'app/controllers/v1/video_controller.rb', line 10</span>
 
-
-
+<span class='kw'>def</span> <span class='id identifier rubyid_show'>show</span>
+  <span class='const'>StatsManager</span><span class='op'>::</span><span class='const'>StatsD</span><span class='period'>.</span><span class='id identifier rubyid_time'>time</span><span class='lparen'>(</span><span class='const'>Settings</span><span class='op'>::</span><span class='const'>StatsConstants</span><span class='period'>.</span><span class='id identifier rubyid_api'>api</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>video</span><span class='tstring_end'>'</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>show</span><span class='tstring_end'>'</span></span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:id</span><span class='rbracket'>]</span>
+      <span class='kw'>return</span> <span class='id identifier rubyid_render_error'>render_error</span><span class='lparen'>(</span><span class='int'>404</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>please specify a valid id</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span> <span class='op'>=</span> <span class='id identifier rubyid_ensure_valid_bson_id'>ensure_valid_bson_id</span><span class='lparen'>(</span><span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:id</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='rparen'>)</span>
+      <span class='kw'>if</span> <span class='ivar'>@video</span> <span class='op'>=</span> <span class='const'>Video</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span><span class='rparen'>)</span>
+        <span class='ivar'>@status</span> <span class='op'>=</span>  <span class='int'>200</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_render_error'>render_error</span><span class='lparen'>(</span><span class='int'>404</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>could not find video</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_render_error'>render_error</span><span class='lparen'>(</span><span class='int'>404</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>must specify an id, man.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
 
 </div>
     
     <div id="footer">
-  Generated on Tue Mar  6 15:58:18 2012 with ruby-1.9.3
+  Generated on Tue Jun  5 08:52:26 2012 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.5 (ruby-1.9.3).
 </div>
 
   </body>
