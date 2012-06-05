@@ -94,14 +94,14 @@ module GT
     def self.parse_with_regex(page)
       scanner = StringScanner.new(page)
       urls = []
-      while html = scanner.scan_until(/<iframe/)
-        iframeline = scanner.scan_until(/<\/iframe>/)
+      while html = scanner.scan_until(/<iframe|<embed/)
+        iframeline = scanner.scan_until(/<\/iframe>|<\/embed>/)
         linkurl = nil
         next  unless srcurl = iframeline[/src=.* /]
         startindex = srcurl.index(/http:\/\//)
         endindex = srcurl.index(/ /) - 1
         
-        urls << srcurl[startindex...endindex] if startindex
+        urls << srcurl[startindex...endindex].gsub(/&amp;/, "&") if startindex
       end
       return {:urls => urls, :to_cache => true}
     end
