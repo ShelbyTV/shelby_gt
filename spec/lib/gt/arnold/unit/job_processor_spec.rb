@@ -48,7 +48,6 @@ describe GT::Arnold::JobProcessor do
   end
 
   it "shouldn't sleep" do
-    @mock_fibers.should_receive(:delete)
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => @urlb})
     GT::Arnold::BeanJob.stub(:parse_job).and_return({:url => @urlb})
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return({:videos => [], :from_deep => false})

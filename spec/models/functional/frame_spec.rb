@@ -160,6 +160,48 @@ describe Frame do
     end
   end
   
+  context "upvote undo" do
+    before(:each) do
+      @frame = Factory.create(:frame)
+      @voter1 = Factory.create(:user)
+      @voter1.upvoted_roll = Factory.create(:roll, :creator => @voter1)
+      @voter1.save
+
+      @voter2 = Factory.create(:user)
+      @voter2.upvoted_roll = Factory.create(:roll, :creator => @voter2)
+      @voter2.save
+      
+      @frame.upvote!(@voter1)
+      @frame.upvote!(@voter2)
+    end
+    
+    it "should decrease score with each new upvote_undo" do
+        score_before = @frame.score
+        @frame.upvote_undo!(@voter1)
+        @frame.score.should < score_before
+    end
+    
+    it "should remove upvoting user from upvoters array and remove dupe of self from user.upvoted_roll" do
+      lambda {
+        @voter1.upvoted_roll.frames.count.should == 1
+        @frame.upvoters.should include(@voter1.id)
+        
+        @frame.upvote_undo!(@voter1)
+        @frame.upvoters.should_not include(@voter1.id)
+        @frame.upvoters.should include(@voter2.id)
+        
+        @voter1.upvoted_roll.frames.count.should == 0
+      }.should change { @frame.upvoters.count } .by(-1)
+    end
+    
+    it "should not allow user to upvote_undo more than once" do
+      @frame.upvote_undo!(@voter1).should == true
+      score = @frame.score
+      @frame.upvote_undo!(@voter1).should == false
+      @frame.score.should == score
+    end
+  end
+  
   context "watch later" do
     before(:each) do
       @frame = Factory.create(:frame)

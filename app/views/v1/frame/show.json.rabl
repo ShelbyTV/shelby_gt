@@ -2,7 +2,7 @@ object @frame
 
 if @include_frame_children == true
 
-	attributes :id, :score, :upvoters, :frame_ancestors, :frame_children
+	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
 	
 	code :created_at do |f|
 		concise_time_ago_in_words(f.created_at) if f.created_at

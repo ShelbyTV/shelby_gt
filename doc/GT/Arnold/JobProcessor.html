@@ -1,0 +1,342 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: GT::Arnold::JobProcessor
+  
+    &mdash; Documentation by YARD 0.7.5
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '../..';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../_index.html">Index (J)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../../GT.html" title="GT (module)">GT</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Arnold.html" title="GT::Arnold (module)">Arnold</a></span></span>
+     &raquo; 
+    <span class="title">JobProcessor</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Class: GT::Arnold::JobProcessor
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GT::Arnold::JobProcessor</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/gt/arnold/job_processor.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#process_job-class_method" title="process_job (class method)">+ (Object) <strong>process_job</strong>(jobs, fibers, max_fibers, url_cache = nil, use_em = true) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>url_cache is a (list, int) tuple that represents a fixed size cache.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="process_job-class_method">
+  
+    + (<tt>Object</tt>) <strong>process_job</strong>(jobs, fibers, max_fibers, url_cache = nil, use_em = true) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+<p>url_cache is a (list, int) tuple that represents a fixed size cache</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/gt/arnold/job_processor.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_process_job'>process_job</span><span class='lparen'>(</span><span class='id identifier rubyid_jobs'>jobs</span><span class='comma'>,</span> <span class='id identifier rubyid_fibers'>fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_max_fibers'>max_fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_url_cache'>url_cache</span><span class='op'>=</span><span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_use_em'>use_em</span> <span class='op'>=</span> <span class='kw'>true</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_prev_urls'>prev_urls</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_results'>results</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  	<span class='id identifier rubyid_jobs'>jobs</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_job'>job</span><span class='op'>|</span>
+
+      <span class='id identifier rubyid_job_start_t'>job_start_t</span> <span class='op'>=</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span>
+ <span class='kw'>unless</span> <span class='id identifier rubyid_job_details'>job_details</span> <span class='op'>=</span> <span class='const'>GT</span><span class='op'>::</span><span class='const'>Arnold</span><span class='op'>::</span><span class='const'>BeanJob</span><span class='period'>.</span><span class='id identifier rubyid_parse_job'>parse_job</span><span class='lparen'>(</span><span class='id identifier rubyid_job'>job</span><span class='rparen'>)</span>
+   <span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[GT::Arnold::JobProcessor.process_job(job:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_job'>job</span><span class='period'>.</span><span class='id identifier rubyid_jobid'>jobid</span><span class='rbrace'>}</span><span class='tstring_content'>)] No job_details.  Indicates some issue during job parsing.</span><span class='tstring_end'>&quot;</span></span>
+   <span class='id identifier rubyid_clean_up'>clean_up</span><span class='lparen'>(</span><span class='id identifier rubyid_job'>job</span><span class='comma'>,</span> <span class='id identifier rubyid_fibers'>fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_max_fibers'>max_fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_job_start_t'>job_start_t</span><span class='rparen'>)</span>
+   <span class='id identifier rubyid_results'>results</span> <span class='op'>&lt;&lt;</span> <span class='symbol'>:bad_job</span>
+        <span class='kw'>next</span>
+	  <span class='kw'>end</span>
+
+	  <span class='id identifier rubyid_vids'>vids</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+	  <span class='comment'># 1) Get videos at that URL
+</span>	  <span class='kw'>if</span> <span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:expanded_urls</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span>
+ <span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:expanded_urls</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_url'>url</span><span class='op'>|</span>
+ <span class='comment'># Experimentation has shown that we cannot rely on these URLs to actually be expanded
+</span>          <span class='kw'>unless</span> <span class='id identifier rubyid_prev_urls'>prev_urls</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span> <span class='id identifier rubyid_url'>url</span>
+            <span class='id identifier rubyid_sleep_if_other_fiber_is_processing'>sleep_if_other_fiber_is_processing</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='id identifier rubyid_url_cache'>url_cache</span><span class='comma'>,</span> <span class='id identifier rubyid_use_em'>use_em</span><span class='rparen'>)</span>
+            <span class='id identifier rubyid_prev_urls'>prev_urls</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_url'>url</span>
+          <span class='kw'>end</span>
+   <span class='id identifier rubyid_video_response'>video_response</span> <span class='op'>=</span> <span class='const'>GT</span><span class='op'>::</span><span class='const'>VideoManager</span><span class='period'>.</span><span class='id identifier rubyid_get_or_create_videos_for_url'>get_or_create_videos_for_url</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='const'>GT</span><span class='op'>::</span><span class='const'>Arnold</span><span class='op'>::</span><span class='const'>MemcachedManager</span><span class='period'>.</span><span class='id identifier rubyid_get_client'>get_client</span><span class='comma'>,</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='gvar'>$check_deep_prob</span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_video_response'>video_response</span><span class='lbracket'>[</span><span class='symbol'>:videos</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span>
+            <span class='id identifier rubyid_vids'>vids</span> <span class='op'>&lt;&lt;</span> <span class='lbrace'>{</span><span class='symbol'>:video</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='symbol'>:from_deep</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_video_response'>video_response</span><span class='lbracket'>[</span><span class='symbol'>:from_deep</span><span class='rbracket'>]</span><span class='rbrace'>}</span>
+          <span class='kw'>end</span>
+ <span class='kw'>end</span>
+	  <span class='kw'>else</span>
+        <span class='id identifier rubyid_url'>url</span> <span class='op'>=</span> <span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:url</span><span class='rbracket'>]</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_prev_urls'>prev_urls</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span> <span class='id identifier rubyid_url'>url</span>
+	      <span class='const'>StatsManager</span><span class='op'>::</span><span class='const'>StatsD</span><span class='period'>.</span><span class='id identifier rubyid_client'>client</span><span class='period'>.</span><span class='id identifier rubyid_increment'>increment</span><span class='lparen'>(</span><span class='gvar'>$statsd_jobs_cached_bucket</span><span class='rparen'>)</span>
+        <span class='kw'>else</span> <span class='id identifier rubyid_prev_urls'>prev_urls</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span> <span class='id identifier rubyid_url'>url</span>
+          <span class='id identifier rubyid_sleep_if_other_fiber_is_processing'>sleep_if_other_fiber_is_processing</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='id identifier rubyid_url_cache'>url_cache</span><span class='comma'>,</span> <span class='id identifier rubyid_use_em'>use_em</span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_prev_urls'>prev_urls</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_url'>url</span>
+        <span class='kw'>end</span>
+   <span class='id identifier rubyid_video_response'>video_response</span> <span class='op'>=</span> <span class='const'>GT</span><span class='op'>::</span><span class='const'>VideoManager</span><span class='period'>.</span><span class='id identifier rubyid_get_or_create_videos_for_url'>get_or_create_videos_for_url</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='const'>GT</span><span class='op'>::</span><span class='const'>Arnold</span><span class='op'>::</span><span class='const'>MemcachedManager</span><span class='period'>.</span><span class='id identifier rubyid_get_client'>get_client</span><span class='comma'>,</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='gvar'>$check_deep_prob</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_video_response'>video_response</span><span class='lbracket'>[</span><span class='symbol'>:videos</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span>
+          <span class='id identifier rubyid_vids'>vids</span> <span class='op'>&lt;&lt;</span> <span class='lbrace'>{</span><span class='symbol'>:video</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='symbol'>:from_deep</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_video_response'>video_response</span><span class='lbracket'>[</span><span class='symbol'>:from_deep</span><span class='rbracket'>]</span><span class='rbrace'>}</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    
+      <span class='kw'>if</span> <span class='id identifier rubyid_vids'>vids</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>          
+    <span class='comment'>#Rails.logger.debug &quot;[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No videos found for #{job_details}&quot;
+</span> <span class='id identifier rubyid_clean_up'>clean_up</span><span class='lparen'>(</span><span class='id identifier rubyid_job'>job</span><span class='comma'>,</span> <span class='id identifier rubyid_fibers'>fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_max_fibers'>max_fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_job_start_t'>job_start_t</span><span class='rparen'>)</span> 
+ <span class='id identifier rubyid_results'>results</span> <span class='op'>&lt;&lt;</span> <span class='symbol'>:no_videos</span>
+        <span class='kw'>next</span>
+	  <span class='kw'>end</span>
+  
+  <span class='comment'># 2) Normalize the incoming social post
+</span>      <span class='id identifier rubyid_msg'>msg</span> <span class='op'>=</span> <span class='const'>GT</span><span class='op'>::</span><span class='const'>TwitterNormalizer</span><span class='period'>.</span><span class='id identifier rubyid_normalize_tweet'>normalize_tweet</span><span class='lparen'>(</span><span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:twitter_status_update</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:twitter_status_update</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_msg'>msg</span> <span class='op'>=</span> <span class='const'>GT</span><span class='op'>::</span><span class='const'>FacebookNormalizer</span><span class='period'>.</span><span class='id identifier rubyid_normalize_post'>normalize_post</span><span class='lparen'>(</span><span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:facebook_status_update</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:facebook_status_update</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_msg'>msg</span> <span class='op'>=</span> <span class='const'>GT</span><span class='op'>::</span><span class='const'>TumblrNormalizer</span><span class='period'>.</span><span class='id identifier rubyid_normalize_post'>normalize_post</span><span class='lparen'>(</span><span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:tumblr_status_update</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:tumblr_status_update</span><span class='rbracket'>]</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_msg'>msg</span> <span class='op'>==</span> <span class='kw'>nil</span> <span class='kw'>or</span> <span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_nickname'>nickname</span><span class='period'>.</span><span class='id identifier rubyid_blank?'>blank?</span>
+        <span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='period'>.</span><span class='id identifier rubyid_fatal'>fatal</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[GT::Arnold::JobProcessor.process_job(job:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_job'>job</span><span class='period'>.</span><span class='id identifier rubyid_jobid'>jobid</span><span class='rbrace'>}</span><span class='tstring_content'>)] Invalid social message. job: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_job'>job</span><span class='rbrace'>}</span><span class='tstring_content'>, job_details: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_job_details'>job_details</span><span class='rbrace'>}</span><span class='tstring_content'>, message: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_msg'>msg</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+        <span class='id identifier rubyid_clean_up'>clean_up</span><span class='lparen'>(</span><span class='id identifier rubyid_job'>job</span><span class='comma'>,</span> <span class='id identifier rubyid_fibers'>fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_max_fibers'>max_fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_job_start_t'>job_start_t</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_results'>results</span> <span class='op'>&lt;&lt;</span> <span class='symbol'>:no_social_message</span>
+        <span class='kw'>next</span>
+      <span class='kw'>end</span>
+    
+      <span class='comment'># 3) get the observing user
+</span>      <span class='kw'>unless</span> <span class='id identifier rubyid_observing_user'>observing_user</span> <span class='op'>=</span> <span class='const'>User</span><span class='period'>.</span><span class='id identifier rubyid_find_by_provider_name_and_id'>find_by_provider_name_and_id</span><span class='lparen'>(</span><span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:provider_type</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='comma'>,</span> <span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:provider_user_id</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span>
+      <span class='comment'># In production, this is certainly an error (how are we getting jobs for Users not in the DB?)
+</span>      <span class='comment'># But while testing, we're not using the real User DB, so this is expected
+</span>      <span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[GT::Arnold::JobProcessor.process_job(job:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_job'>job</span><span class='period'>.</span><span class='id identifier rubyid_jobid'>jobid</span><span class='rbrace'>}</span><span class='tstring_content'>)] No observing_user for provider '</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:provider_type</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='tstring_content'>' with id '</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_job_details'>job_details</span><span class='lbracket'>[</span><span class='symbol'>:provider_user_id</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='tstring_content'>'</span><span class='tstring_end'>&quot;</span></span>
+      <span class='id identifier rubyid_clean_up'>clean_up</span><span class='lparen'>(</span><span class='id identifier rubyid_job'>job</span><span class='comma'>,</span> <span class='id identifier rubyid_fibers'>fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_max_fibers'>max_fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_job_start_t'>job_start_t</span><span class='rparen'>)</span> 
+      <span class='id identifier rubyid_results'>results</span> <span class='op'>&lt;&lt;</span> <span class='symbol'>:no_observing_user</span>
+      <span class='kw'>next</span>
+    <span class='kw'>end</span>
+    
+    <span class='comment'># 4) For each video, post it into the system
+</span>    <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_vids'>vids</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v_hash'>v_hash</span><span class='op'>|</span> <span class='id identifier rubyid_res'>res</span> <span class='op'>&lt;&lt;</span> <span class='const'>GT</span><span class='op'>::</span><span class='const'>SocialSorter</span><span class='period'>.</span><span class='id identifier rubyid_sort'>sort</span><span class='lparen'>(</span><span class='id identifier rubyid_msg'>msg</span><span class='comma'>,</span> <span class='id identifier rubyid_v_hash'>v_hash</span><span class='comma'>,</span> <span class='id identifier rubyid_observing_user'>observing_user</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  
+  	<span class='id identifier rubyid_clean_up'>clean_up</span><span class='lparen'>(</span><span class='id identifier rubyid_job'>job</span><span class='comma'>,</span> <span class='id identifier rubyid_fibers'>fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_max_fibers'>max_fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_job_start_t'>job_start_t</span><span class='rparen'>)</span> 
+  	<span class='id identifier rubyid_results'>results</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_res'>res</span>
+  <span class='kw'>end</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_results'>results</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Tue Jun  5 08:52:26 2012 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.5 (ruby-1.9.3).
+</div>
+
+  </body>
+</html>

@@ -122,6 +122,20 @@ class Frame
     self.save
   end
   
+  def upvote_undo!(u)
+    raise ArgumentError, "must supply User" unless u and u.is_a?(User)
+    
+    return false unless self.has_voted?(u.id)
+    
+    self.upvoters.delete_if { |id| id == u.id }
+    
+    GT::Framer.remove_dupe_of_frame_from_roll!(self, u.upvoted_roll_id)
+    
+    update_score
+    
+    self.save
+  end
+  
   def has_voted?(u)
     raise ArgumentError, "must supply user or user_id" unless u
     user_id = (u.is_a?(User) ? u.id : u)

@@ -147,7 +147,7 @@ describe V1::FrameController do
   end
   
   describe "POST upvote" do
-    it "updates a frame successfuly" do
+    it "upvotes a frame successfuly" do
       @frame = Factory.create(:frame)
       @frame.should_receive(:upvote!).with(@u1).and_return(@frame)
       @frame.should_receive(:reload).and_return(@frame)
@@ -160,7 +160,20 @@ describe V1::FrameController do
       assigns(:frame).should eq(@frame)
     end
     
-    it "updates a frame UNsuccessfuly gracefully" do
+    it "un-upvotes a frame successfuly" do
+      @frame = Factory.create(:frame)
+      @frame.should_receive(:upvote_undo!).with(@u1).and_return(@frame)
+      @frame.should_receive(:reload).and_return(@frame)
+      
+      lambda {
+        post :upvote, :frame_id => @frame.id, :undo => "1", :format => :json
+      }.should change { UserAction.count } .by 1
+      
+      assigns(:status).should eq(200)
+      assigns(:frame).should eq(@frame)
+    end
+    
+    it "upvotes a frame UNsuccessfuly gracefully" do
       frame = Factory.create(:frame)
       Frame.stub(:find) { nil }
       post :upvote, :frame_id => frame.id, :format => :json

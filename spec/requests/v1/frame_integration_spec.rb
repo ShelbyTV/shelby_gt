@@ -219,6 +219,10 @@ describe 'v1/frame' do
         
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/score")
+          response.body.should have_json_path("result/roll")
+          response.body.should have_json_path("result/creator")
+          response.body.should have_json_path("result/video")
+          response.body.should have_json_path("result/conversation")
         end
         
         it "should create and return a frame and success if its payload is a url and text" do
@@ -270,12 +274,22 @@ describe 'v1/frame' do
       end
       
       context 'frame upvoting' do
-        it "should return success and frame on upvote" do
+        it "should return success and original frame on upvote" do
           post '/v1/frame/'+@f.id+'/upvote'
           
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/score")
         end
+        
+        it "should return success and original frame on upvote undo" do
+          @f.upvote!(@u1)
+          
+          post '/v1/frame/'+@f.id+'/upvote?undo=1'
+          
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/score")
+        end
+        
       end
       
       context 'watched frame' do
