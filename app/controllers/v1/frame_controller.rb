@@ -149,12 +149,17 @@ class V1::FrameController < ApplicationController
   # @param [Required, Escaped String] url A video url
   # @param [Optional, Escaped String] text Message text to via added to the conversation
   # @param [Optional, String] source The source could be bookmarklet, webapp, etc
+  #
+  # Returns: The new Frame, including all children expanded.
   def create
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['create']) do
       render_error(404, "this route is for jsonp only.") if request.get? and !params[:callback]
       
       roll = Roll.find(params[:roll_id])
       render_error(404, "could not find that roll") if !roll
+      
+      #on success, always want to render the full resulting Frame
+      @include_frame_children = true
       
       # create frame from a video url
       if video_url = params[:url]

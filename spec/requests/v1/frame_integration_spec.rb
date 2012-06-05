@@ -219,6 +219,10 @@ describe 'v1/frame' do
         
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/score")
+          response.body.should have_json_path("result/roll")
+          response.body.should have_json_path("result/creator")
+          response.body.should have_json_path("result/video")
+          response.body.should have_json_path("result/conversation")
         end
         
         it "should create and return a frame and success if its payload is a url and text" do
