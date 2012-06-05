@@ -63,7 +63,7 @@ module GT
           msg = GT::FacebookNormalizer.normalize_post(job_details[:facebook_status_update]) if job_details[:facebook_status_update]
           msg = GT::TumblrNormalizer.normalize_post(job_details[:tumblr_status_update]) if job_details[:tumblr_status_update]
           if msg == nil or msg.nickname.blank?
-            Rails.logger.fatal "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] Invalid social message. job: #{job}, job_details: #{job_details}, message: #{msg}"
+            Rails.logger.error "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] Invalid social message. job: #{job}, job_details: #{job_details}, message: #{msg}"
             clean_up(job, fibers, max_fibers, job_start_t)
             results << :no_social_message
             next
