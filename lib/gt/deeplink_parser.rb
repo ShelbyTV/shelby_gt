@@ -1,9 +1,15 @@
 require 'net/http'
+require 'strscan'
 
 module GT
   class DeeplinkParser
 	
     DOMAIN_REGEX = /\w+\.\w+\/\w+/
+
+    youtubepattern = /http:\/\/(www\.)?youtube\.com\/embed\/[a-zA-Z0-9\-\_]*/
+    vimeouni = /http:\/\/player\.vimeo\.com\/video\/[0-9]+(\?(([a-z]+=[0-9]+&?)+))?(\"| )/
+
+    regexes = [youtubepattern,vimeouni]
 
     #returns a list of urls, empty list if none
     def self.find_deep_link(url)
@@ -41,7 +47,6 @@ module GT
         end
       end
       return {:response => http.response, :to_cache => true}
-    end
 
     def self.get_page_with_net(url)
       response = Net::HTTP.get_response(url)
@@ -68,7 +73,33 @@ module GT
       end
     end
       
-      
+    def self.parse_with_nokogiri(page)
+      parsedoc = Nokogiri::HTML(deep_response)
+      embed_elements = []
+      embed_elements += parsedoc.xpath("//iframe")
+      embed_elements += parsedoc.xpath("//embed")
+      urls = []
+      for embed in embed_elements
+        for k,v in embed
+          if k == "src"
+            urls << v if check_valid_url(v)
+          end
+        end
+      end
+      return {:urls => urls, to_cache => true}
+    end
+
+    def self.parse_with_regex(page)
+      scanner = StringScanner.new(doc)
+      urls = []
+      while html = scanner.scan_until(/ <iframe( |>)/)
+        iframeline = scanner.scan_until(/<\/iframe>/)
+        linkurl = nil
+        regexes.each {|regex| linkurl = linkurl || iframeline[regex]}
+        urls << linkurl
+      end
+      return {:urls => urls, to_cache => true}
+    end
 
     def self.deep_parse_url(url, use_em=true)
       if use_em
@@ -77,19 +108,7 @@ module GT
         deep_http_response = get_page_with_net(url)
       end
       if deep_response = deep_http_response[:response]
-        parsedoc = Nokogiri::HTML(deep_response)
-        embed_elements = []
-        embed_elements += parsedoc.xpath("//iframe")
-        embed_elements += parsedoc.xpath("//embed")
-        urls = []
-        for embed in embed_elements
-            for k,v in embed
-                if k == "src"
-                  urls << v if check_valid_url(v)
-                end
-            end
-        end
-        return {:urls => urls, :to_cache => true}
+        return parse_with_regex(deep_response)
       end
       return {:urls => [], :to_cache => deep_http_response[:to_cache]}
     end
