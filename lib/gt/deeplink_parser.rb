@@ -47,6 +47,8 @@ module GT
         end
       end
       return {:response => http.response, :to_cache => true}
+    end
+
 
     def self.get_page_with_net(url)
       response = Net::HTTP.get_response(url)
@@ -90,15 +92,18 @@ module GT
     end
 
     def self.parse_with_regex(page)
-      scanner = StringScanner.new(doc)
+      scanner = StringScanner.new(page)
       urls = []
-      while html = scanner.scan_until(/ <iframe( |>)/)
+      while html = scanner.scan_until(/<iframe/)
         iframeline = scanner.scan_until(/<\/iframe>/)
         linkurl = nil
-        regexes.each {|regex| linkurl = linkurl || iframeline[regex]}
-        urls << linkurl
+        next  unless srcurl = iframeline[/src=.* /]
+        startindex = srcurl.index(/http:\/\//)
+        endindex = srcurl.index(/ /) - 1
+        
+        urls << srcurl[startindex...endindex] if startindex
       end
-      return {:urls => urls, to_cache => true}
+      return {:urls => urls, :to_cache => true}
     end
 
     def self.deep_parse_url(url, use_em=true)
