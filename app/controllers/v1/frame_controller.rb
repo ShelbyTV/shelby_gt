@@ -292,13 +292,19 @@ class V1::FrameController < ApplicationController
   # [POST] /v1/frame/:frame_id/upvote
   # 
   # @param [Required, String] id The id of the frame
+  # @param [Optional, Boolean] undo When "1", undoes the upvoting
   def upvote
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['upvote']) do
       if params[:frame_id]
         
-        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:frame_id]))
+        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:frame_id])) and @frame = Frame.find(frame_id)
         
-        if @frame = Frame.find(frame_id) and @frame.upvote!(current_user)
+        if params[:undo] == "1" and @frame.upvote_undo!(current_user)
+          @status = 200
+          GT::UserActionManager.unupvote!(current_user.id, @frame.id)
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote_undo', request)
+          @frame.reload
+        elsif @frame.upvote!(current_user)
           @status = 200
           GT::UserActionManager.upvote!(current_user.id, @frame.id)
           StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote', request)
