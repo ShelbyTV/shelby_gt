@@ -6,7 +6,7 @@
 <title>
   Module: ApplicationHelper
   
-    &mdash; Shelby GT API
+    &mdash; Documentation by YARD 0.7.5
   
 </title>
 
@@ -23,8 +23,6 @@
 
   <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
 
-  <script type="text/javascript" charset="utf-8" src="js/rest_plugin.js"></script>
-
 
   </head>
   <body>
@@ -33,12 +31,27 @@
     </script>
     
     <div id="header">
-      <div id="search">
-  <!-- <a id="topic_list_link" href="#">Topic List</a> -->
-  <a id="resource_list_link" href="#">Resource List</a>
-  <a id="file_list_link" href="#">File List</a>
+      <div id="menu">
+  
+    <a href="_index.html">Index (A)</a> &raquo; 
+    
+    
+    <span class="title">ApplicationHelper</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
 </div>
 
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
     </div>
     
     <iframe id="search_frame"></iframe>
@@ -71,12 +84,125 @@
 
 
 
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
 
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#concise_time_ago_in_words-instance_method" title="#concise_time_ago_in_words (instance method)">- (Object) <strong>concise_time_ago_in_words</strong>(from_time, to_time = Time.now) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>future times =&gt; "just now" &lt; 1 minute =&gt; "just now" 1m - 59m =&gt;
+"Xm" 1h - 12h =&gt; "Xh" &gt; 12h =&gt; "MMM dd" (Feb 22 or Dec 1).</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="concise_time_ago_in_words-instance_method">
+  
+    - (<tt>Object</tt>) <strong>concise_time_ago_in_words</strong>(from_time, to_time = Time.now) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+<p>future times =&gt; "just now" &lt; 1 minute =&gt; "just now" 1m - 59m =&gt;
+"Xm" 1h - 12h =&gt; "Xh" &gt; 12h =&gt; "MMM dd" (Feb 22 or Dec 1)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'app/helpers/application_helper.rb', line 8</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_concise_time_ago_in_words'>concise_time_ago_in_words</span><span class='lparen'>(</span><span class='id identifier rubyid_from_time'>from_time</span><span class='comma'>,</span> <span class='id identifier rubyid_to_time'>to_time</span><span class='op'>=</span><span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_from_time'>from_time</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:to_time</span><span class='rparen'>)</span> <span class='kw'>and</span> <span class='id identifier rubyid_to_time'>to_time</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:to_time</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_from_time'>from_time</span> <span class='op'>=</span> <span class='id identifier rubyid_from_time'>from_time</span><span class='period'>.</span><span class='id identifier rubyid_to_time'>to_time</span>
+    <span class='id identifier rubyid_to_time'>to_time</span> <span class='op'>=</span> <span class='id identifier rubyid_to_time'>to_time</span><span class='period'>.</span><span class='id identifier rubyid_to_time'>to_time</span>
+  <span class='kw'>else</span>
+    <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_distance_in_minutes'>distance_in_minutes</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='lparen'>(</span><span class='lparen'>(</span><span class='id identifier rubyid_to_time'>to_time</span> <span class='op'>-</span> <span class='id identifier rubyid_from_time'>from_time</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='op'>/</span><span class='int'>60</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_round'>round</span>
+  
+  <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>just now</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_distance_in_minutes'>distance_in_minutes</span> <span class='op'>&lt;=</span> <span class='int'>1</span>
+  
+  <span class='kw'>case</span> <span class='id identifier rubyid_distance_in_minutes'>distance_in_minutes</span>
+  <span class='kw'>when</span> <span class='int'>1</span><span class='op'>..</span><span class='int'>59</span> <span class='kw'>then</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_distance_in_minutes'>distance_in_minutes</span><span class='rbrace'>}</span><span class='tstring_content'>m ago</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>when</span> <span class='int'>60</span><span class='op'>..</span><span class='int'>720</span> <span class='kw'>then</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_distance_in_minutes'>distance_in_minutes</span><span class='op'>/</span><span class='int'>60</span><span class='rbrace'>}</span><span class='tstring_content'>h ago</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_from_time'>from_time</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:strftime</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_from_time'>from_time</span><span class='period'>.</span><span class='id identifier rubyid_strftime'>strftime</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>%b %-d</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
 
 </div>
     
     <div id="footer">
-  Generated on Tue Mar  6 15:58:18 2012 with ruby-1.9.3
+  Generated on Tue Jun  5 08:52:26 2012 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.5 (ruby-1.9.3).
 </div>
 
   </body>

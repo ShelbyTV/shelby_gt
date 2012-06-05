@@ -6,7 +6,7 @@
 <title>
   Class: GT::UrlHelper
   
-    &mdash; Shelby GT API
+    &mdash; Documentation by YARD 0.7.5
   
 </title>
 
@@ -23,8 +23,6 @@
 
   <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
 
-  <script type="text/javascript" charset="utf-8" src="../js/rest_plugin.js"></script>
-
 
   </head>
   <body>
@@ -33,24 +31,118 @@
     </script>
     
     <div id="header">
-      <div id="search">
-  <!-- <a id="topic_list_link" href="#">Topic List</a> -->
-  <a id="resource_list_link" href="#">Resource List</a>
-  <a id="file_list_link" href="#">File List</a>
+      <div id="menu">
+  
+    <a href="../_index.html">Index (U)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../GT.html" title="GT (module)">GT</a></span></span>
+     &raquo; 
+    <span class="title">UrlHelper</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
 </div>
 
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
     </div>
     
     <iframe id="search_frame"></iframe>
     
-    <div id="content"><div class="service">
-  <h1>
+    <div id="content"><h1>Class: GT::UrlHelper
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GT::UrlHelper</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
     
-  </h1>
+  
+  
+    
+  
+    
   
   
   
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/gt/url_helper.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="BLACKLIST_REGEX-constant" class="">BLACKLIST_REGEX =
+          <div class="docstring">
+  <div class="discussion">
+    
+<p>also using it for deep link parsing   we see lots of these, don't want to
+waste time resolving them</p>
+
+
+  </div>
 </div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>freq\.ly|yfrog\.|4sq\.com|twitpic\.com|nyti\.ms|plixi\.com|instagr\.am|facebook\.com</span><span class='regexp_end'>/i</span></span></pre></dd>
+      
+        <dt id="SHELBY_URL_REGEX-constant" class="">SHELBY_URL_REGEX =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>shel\.tv|shelby\.tv</span><span class='regexp_end'>/i</span></span></pre></dd>
+      
+        <dt id="VIMEO_URL_REGEX-constant" class="">VIMEO_URL_REGEX =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>(http:\/\/vimeo.com\/\D*\#)(\d*)</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="VALID_URL_REGEX-constant" class="">VALID_URL_REGEX =
+          <div class="docstring">
+  <div class="discussion">
+    
+<p>we see URLs w/o scheme and it kills em-http-request / addressable so, if
+the URL doesn't have a scheme, we default it to http</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^(http:\/\/|https:\/\/)</span><span class='regexp_end'>/i</span></span></pre></dd>
+      
+    </dl>
+  
 
 
 
@@ -58,15 +150,527 @@
 
 
 
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#get_clean_url-class_method" title="get_clean_url (class method)">+ (Object) <strong>get_clean_url</strong>(url) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>returns nil if we shouldn't processes this url.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parse_url_for_provider_info-class_method" title="parse_url_for_provider_info (class method)">+ (Object) <strong>parse_url_for_provider_info</strong>(url) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Try to pull the provider's name and id so we can check out DB return nil if
+we can't.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#post_process_url-class_method" title="post_process_url (class method)">+ (Object) <strong>post_process_url</strong>(url) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>a little transformation on some URLs allows our URL analyst services to
+better process them.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve_url-class_method" title="resolve_url (class method)">+ (Object) <strong>resolve_url</strong>(url, use_em = false, memcache_client = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>resolve the URL, using a cache if available.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#url_is_blacklisted%3F-class_method" title="url_is_blacklisted? (class method)">+ (Boolean) <strong>url_is_blacklisted?</strong>(url) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#url_is_shelby%3F-class_method" title="url_is_shelby? (class method)">+ (Boolean) <strong>url_is_shelby?</strong>(url) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+  
 
 
 
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="get_clean_url-class_method">
+  
+    + (<tt>Object</tt>) <strong>get_clean_url</strong>(url) 
+  
 
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+<p>returns nil if we shouldn't processes this url</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+14
+15
+16
+17
+18</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/gt/url_helper.rb', line 14</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_get_clean_url'>get_clean_url</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_url'>url</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_ensure_url_has_scheme!'>ensure_url_has_scheme!</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>if</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_url_is_blacklisted?'>url_is_blacklisted?</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_url'>url</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="parse_url_for_provider_info-class_method">
+  
+    + (<tt>Object</tt>) <strong>parse_url_for_provider_info</strong>(url) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+<p>Try to pull the provider's name and id so we can check out DB return nil if
+we can't</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/gt/url_helper.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_parse_url_for_provider_info'>parse_url_for_provider_info</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>unless</span> <span class='id identifier rubyid_url'>url</span>
+  
+  <span class='id identifier rubyid_yt'>yt</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_url_for_youtube_provider_info'>parse_url_for_youtube_provider_info</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_yt'>yt</span> <span class='kw'>if</span> <span class='id identifier rubyid_yt'>yt</span>
+  
+  <span class='id identifier rubyid_vim'>vim</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_url_for_vimeo_provider_info'>parse_url_for_vimeo_provider_info</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_vim'>vim</span> <span class='kw'>if</span> <span class='id identifier rubyid_vim'>vim</span>
+  
+  <span class='comment'># ESPN
+</span>  <span class='id identifier rubyid_es'>es</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_url_for_espn_provider_info'>parse_url_for_espn_provider_info</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_es'>es</span> <span class='kw'>if</span> <span class='id identifier rubyid_es'>es</span>
+  
+  <span class='id identifier rubyid_dm'>dm</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_url_for_dailymotion_provider_info'>parse_url_for_dailymotion_provider_info</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_dm'>dm</span> <span class='kw'>if</span> <span class='id identifier rubyid_dm'>dm</span>
+  
+  <span class='comment'># CollegeHumor
+</span>  <span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_url_for_collegehumor_provider_info'>parse_url_for_collegehumor_provider_info</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_ch'>ch</span> <span class='kw'>if</span> <span class='id identifier rubyid_ch'>ch</span>
+  
+  <span class='comment'># Ooyala (TechCrunch, Bloomberg embeds)
+</span>  <span class='id identifier rubyid_ooyala'>ooyala</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_url_for_ooyala_embed'>parse_url_for_ooyala_embed</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_ooyala'>ooyala</span> <span class='kw'>if</span> <span class='id identifier rubyid_ooyala'>ooyala</span>
+  
+  <span class='comment'># Hulu
+</span>  <span class='id identifier rubyid_hu'>hu</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_url_for_hulu_provider_info'>parse_url_for_hulu_provider_info</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_hu'>hu</span> <span class='kw'>if</span> <span class='id identifier rubyid_hu'>hu</span>
+  
+  <span class='comment'># TechCrunch
+</span>  <span class='id identifier rubyid_tc'>tc</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_url_for_techcrunch_provider_info'>parse_url_for_techcrunch_provider_info</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_tc'>tc</span> <span class='kw'>if</span> <span class='id identifier rubyid_tc'>tc</span>
+
+  <span class='comment'># Blip
+</span>  <span class='id identifier rubyid_bp'>bp</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_url_for_blip_provider_info'>parse_url_for_blip_provider_info</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_bp'>bp</span> <span class='kw'>if</span> <span class='id identifier rubyid_bp'>bp</span>
+  
+  <span class='kw'>return</span> <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="post_process_url-class_method">
+  
+    + (<tt>Object</tt>) <strong>post_process_url</strong>(url) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+<p>a little transformation on some URLs allows our URL analyst services to
+better process them</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+78
+79
+80
+81
+82
+83</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/gt/url_helper.rb', line 78</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_post_process_url'>post_process_url</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='comment'># http://vimeo.com/channels/hdgirls#30492458 =&gt; http://vimeo.com/30492458
+</span>  <span class='id identifier rubyid_vimeo_ch_check'>vimeo_ch_check</span> <span class='op'>=</span> <span class='const'>VIMEO_URL_REGEX</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_url'>url</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>http://vimeo.com/</span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span> <span class='id identifier rubyid_vimeo_ch_check'>vimeo_ch_check</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_vimeo_ch_check'>vimeo_ch_check</span> <span class='kw'>and</span> <span class='id identifier rubyid_vimeo_ch_check'>vimeo_ch_check</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_url'>url</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="resolve_url-class_method">
+  
+    + (<tt>Object</tt>) <strong>resolve_url</strong>(url, use_em = false, memcache_client = nil) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+<p>resolve the URL, using a cache if available</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/gt/url_helper.rb', line 62</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_resolve_url'>resolve_url</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='id identifier rubyid_use_em'>use_em</span><span class='op'>=</span><span class='kw'>false</span><span class='comma'>,</span> <span class='id identifier rubyid_memcache_client'>memcache_client</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='comment'># 1) Check cache
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_memcache_client'>memcache_client</span> <span class='kw'>and</span> <span class='lparen'>(</span><span class='id identifier rubyid_cache'>cache</span> <span class='op'>=</span> <span class='id identifier rubyid_check_link_resolving_cache'>check_link_resolving_cache</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='id identifier rubyid_memcache_client'>memcache_client</span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='kw'>return</span> <span class='id identifier rubyid_cache'>cache</span><span class='period'>.</span><span class='id identifier rubyid_resolved_url'>resolved_url</span>
+  <span class='kw'>end</span>
+  
+  <span class='comment'># 2) resolve (event machine or otherwise)
+</span>  <span class='id identifier rubyid_resolved_url'>resolved_url</span> <span class='op'>=</span> <span class='id identifier rubyid_use_em'>use_em</span> <span class='op'>?</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_resolve_url_with_eventmachine'>resolve_url_with_eventmachine</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_resolve_url_with_net_http'>resolve_url_with_net_http</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='int'>5</span><span class='rparen'>)</span>
+
+  <span class='comment'># 3) cache this
+</span>  <span class='id identifier rubyid_cache_link_resolution'>cache_link_resolution</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='id identifier rubyid_resolved_url'>resolved_url</span><span class='comma'>,</span> <span class='id identifier rubyid_memcache_client'>memcache_client</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_memcache_client'>memcache_client</span>
+
+  <span class='kw'>return</span> <span class='id identifier rubyid_resolved_url'>resolved_url</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="url_is_blacklisted?-class_method">
+  
+    + (<tt>Boolean</tt>) <strong>url_is_blacklisted?</strong>(url) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<h3>Returns:</h3>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+92
+93
+94</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/gt/url_helper.rb', line 92</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_url_is_blacklisted?'>url_is_blacklisted?</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_url'>url</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='const'>BLACKLIST_REGEX</span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="url_is_shelby?-class_method">
+  
+    + (<tt>Boolean</tt>) <strong>url_is_shelby?</strong>(url) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<h3>Returns:</h3>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+85
+86
+87</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/gt/url_helper.rb', line 85</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_url_is_shelby?'>url_is_shelby?</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_url'>url</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='const'>SHELBY_URL_REGEX</span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
 
 </div>
     
     <div id="footer">
-  Generated on Tue Mar  6 15:58:18 2012 with ruby-1.9.3
+  Generated on Tue Jun  5 08:52:25 2012 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.5 (ruby-1.9.3).
 </div>
 
   </body>

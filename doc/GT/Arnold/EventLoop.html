@@ -1,0 +1,316 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: GT::Arnold::EventLoop
+  
+    &mdash; Documentation by YARD 0.7.5
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '../..';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../_index.html">Index (E)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../../GT.html" title="GT (module)">GT</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Arnold.html" title="GT::Arnold (module)">Arnold</a></span></span>
+     &raquo; 
+    <span class="title">EventLoop</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Class: GT::Arnold::EventLoop
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GT::Arnold::EventLoop</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/gt/arnold/event_loop.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#should_pull_a_job-class_method" title="should_pull_a_job (class method)">+ (Object) <strong>should_pull_a_job</strong>(fibers, max) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Make sure we only create 1,000 fibers and safely sleep for a little while
+if we have to.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#stop_em-class_method" title="stop_em (class method)">+ (Object) <strong>stop_em</strong>(fibers, kill_time) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wait_until_done-class_method" title="wait_until_done (class method)">+ (Object) <strong>wait_until_done</strong>(fibers, kill_time) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="should_pull_a_job-class_method">
+  
+    + (<tt>Object</tt>) <strong>should_pull_a_job</strong>(fibers, max) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+<p>Make sure we only create 1,000 fibers and safely sleep for a little while
+if we have to</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+8
+9
+10
+11
+12
+13
+14</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/gt/arnold/event_loop.rb', line 8</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_should_pull_a_job'>should_pull_a_job</span><span class='lparen'>(</span><span class='id identifier rubyid_fibers'>fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_max'>max</span><span class='rparen'>)</span>
+	<span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>if</span> <span class='id identifier rubyid_fibers'>fibers</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_max'>max</span>
+	<span class='comment'>#Rails.logger.debug &quot;[Arnold::EventLoop#pace_car] Too many fibers (#{fibers.size}), sleeping for 1...&quot;
+</span>	<span class='const'>EventMachine</span><span class='op'>::</span><span class='const'>Synchrony</span><span class='period'>.</span><span class='id identifier rubyid_sleep'>sleep</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span>
+	<span class='comment'>#Rails.logger.debug &quot;[Arnold::EventLoop#pace_car] done sleeping.&quot;
+</span>	<span class='kw'>return</span> <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="stop_em-class_method">
+  
+    + (<tt>Object</tt>) <strong>stop_em</strong>(fibers, kill_time) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+17
+18
+19
+20
+21
+22
+23
+24</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/gt/arnold/event_loop.rb', line 17</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_stop_em'>stop_em</span><span class='lparen'>(</span><span class='id identifier rubyid_fibers'>fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_kill_time'>kill_time</span><span class='rparen'>)</span>
+  <span class='comment'># We've been asked to exit, try to allow fibers to finish up
+</span>  <span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[Arnold Main] waiting for fibers if necessary...</span><span class='tstring_end'>&quot;</span></span>
+	<span class='const'>Arnold</span><span class='op'>::</span><span class='const'>EventLoop</span><span class='period'>.</span><span class='id identifier rubyid_wait_until_done'>wait_until_done</span><span class='lparen'>(</span><span class='id identifier rubyid_fibers'>fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_kill_time'>kill_time</span><span class='rparen'>)</span>
+	<span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[Arnold Main] done waiting for fibers (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_fibers'>fibers</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='rbrace'>}</span><span class='tstring_content'> fibers alive), stopping event machine...</span><span class='tstring_end'>&quot;</span></span>
+	<span class='const'>EventMachine</span><span class='period'>.</span><span class='id identifier rubyid_stop'>stop</span>
+	<span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[Arnold Main] EventMachine.stop returned...</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="wait_until_done-class_method">
+  
+    + (<tt>Object</tt>) <strong>wait_until_done</strong>(fibers, kill_time) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29
+30
+31
+32</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/gt/arnold/event_loop.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_wait_until_done'>wait_until_done</span><span class='lparen'>(</span><span class='id identifier rubyid_fibers'>fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_kill_time'>kill_time</span><span class='rparen'>)</span>
+	<span class='kw'>return</span> <span class='kw'>if</span> <span class='id identifier rubyid_fibers'>fibers</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span> <span class='kw'>or</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>&gt;</span> <span class='id identifier rubyid_kill_time'>kill_time</span>
+	<span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[Arnold::EventLoop#wait_until_done] still running fibers, not ready to kill, sleeping...</span><span class='tstring_end'>&quot;</span></span>
+	<span class='const'>EventMachine</span><span class='op'>::</span><span class='const'>Synchrony</span><span class='period'>.</span><span class='id identifier rubyid_sleep'>sleep</span><span class='lparen'>(</span> <span class='lbracket'>[</span><span class='lparen'>(</span><span class='lparen'>(</span><span class='id identifier rubyid_kill_time'>kill_time</span> <span class='op'>-</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span><span class='rparen'>)</span><span class='op'>/</span><span class='int'>5</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_round'>round</span><span class='comma'>,</span> <span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_max'>max</span> <span class='rparen'>)</span>
+	<span class='id identifier rubyid_wait_until_done'>wait_until_done</span><span class='lparen'>(</span><span class='id identifier rubyid_fibers'>fibers</span><span class='comma'>,</span> <span class='id identifier rubyid_kill_time'>kill_time</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Tue Jun  5 08:52:26 2012 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.5 (ruby-1.9.3).
+</div>
+
+  </body>
+</html>

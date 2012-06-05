@@ -134,6 +134,21 @@ module GT
       return basic_dupe!(orig_frame, user_id, roll_id)
     end
     
+    def self.remove_dupe_of_frame_from_roll!(frame, roll)
+      raise ArgumentError, "must supply Frame" unless frame.is_a? Frame
+      raise ArgumentError, "must supply roll or roll_id" unless roll
+      roll_id = (roll.is_a?(Roll) ? roll.id : roll)
+      
+      # Is it overkill / does it hurt performance to check frame_ancestors?
+      dupe = Frame.where(
+        :roll_id => roll_id, 
+        :video_id => frame.video_id, 
+        :conversation_id => frame.conversation_id,
+        :frame_ancestors => (frame.frame_ancestors << frame.id)).first
+      
+      dupe.destroy
+    end
+    
     def self.backfill_dashboard_entries(user, roll, frame_count=5)
       raise ArgumentError, "must supply a User" unless user.is_a? User
       raise ArgumentError, "must supply a Roll" unless roll.is_a? Roll

@@ -7,6 +7,8 @@ node :personal_roll_id do |u|
 end
 
 if current_user == @user
+  
+  attributes :authentication_token
 
 	child :authentications do
 		attributes :uid, :provider, :nickname

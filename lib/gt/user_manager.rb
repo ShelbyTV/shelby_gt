@@ -35,8 +35,14 @@ module GT
     end
     
     # Things that happen when a user signs in.
-    def self.start_user_sign_in(user, omniauth=nil, session=nil)
-      GT::AuthenticationBuilder.update_authentication_tokens!(user, omniauth) if omniauth
+    def self.start_user_sign_in(user, options)
+      omniauth = options[:omniauth]
+      provider = omniauth ? omniauth['provider'] : options[:provider]
+      uid = omniauth ? omniauth['uid'] : options[:uid]
+      credentials_token = omniauth ? omniauth['credentials']['token'] : options[:token]
+      credentials_secret = omniauth ? omniauth['credentials']['secret'] : options[:secret]
+      
+      GT::AuthenticationBuilder.update_authentication_tokens!(user, provider, uid, credentials_token, credentials_secret) if provider and uid and credentials_token
       
       update_token_and_permissions(user)
       
@@ -184,7 +190,59 @@ module GT
       end
     end
     
+    # If the given oauth credentials don't match the user's authentication, verify them with the
+    # external provider.  If verified, returns true (does not update user or sign in).
+    def self.verify_user(user, provider, uid, oauth_token, oauth_secret=nil)
+      raise ArgumentError, "must supply valid user" unless user.is_a?(User)
+      raise ArgumentError, "must supply provider" unless provider.is_a?(String) and !provider.blank?
+      raise ArgumentError, "must supply uid" unless uid.is_a?(String) and !uid.blank?
+      raise ArgumentError, "must supply oauth_token" unless oauth_token.is_a?(String) and !oauth_token.blank?
+      
+      auth = user.authentication_by_provider_and_uid(provider, uid)
+      
+      return false unless auth
+      return true if (auth.oauth_token == oauth_token) and (auth.oauth_secret == oauth_secret)
+      
+      # Check if the given token and secret allow us access to the user's secure data...
+      case provider
+      when "twitter" then return verify_users_twitter(auth, oauth_token, oauth_secret)
+      when "facebook" then return verify_users_facebook(auth, oauth_token)
+      else return false
+      end
+      
+      return false
+    end
+    
     private
+    
+      def self.verify_users_twitter(auth, oauth_token, oauth_secret)
+        return false unless auth and oauth_token and oauth_secret
+        
+        begin
+          c = Grackle::Client.new(:auth => {
+              :type => :oauth,
+              :consumer_key => Settings::Twitter.consumer_key, :consumer_secret => Settings::Twitter.consumer_secret,
+              :token => oauth_token, :token_secret => oauth_secret
+            })
+          #this will throw if user isn't auth'd
+          c.statuses.home_timeline? :count => 1
+          return true
+        rescue Grackle::TwitterError => e
+          return false
+        end
+      end
+      
+      def self.verify_users_facebook(auth, oauth_token)
+        return false unless auth and oauth_token
+        
+        begin
+          graph = Koala::Facebook::API.new(oauth_token)
+          graph.get_connections("me","permissions")
+          return true
+        rescue Koala::Facebook::APIError => e
+          return false
+        end
+      end
       
       # Takes an omniauth hash to build one user, prefs, and an auth to go along with it
       def self.build_new_user_and_auth(omniauth)
@@ -219,7 +277,7 @@ module GT
           
           if a.provider == "facebook"
             begin
-              graph = Koala::Facebook::GraphAPI.new(a.oauth_token)
+              graph = Koala::Facebook::API.new(a.oauth_token)
               fb_permissions = graph.get_connections("me","permissions")
               a['permissions'] = fb_permissions if fb_permissions
               u.save(:validate => false)

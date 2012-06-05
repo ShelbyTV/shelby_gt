@@ -676,14 +676,32 @@ describe GT::UserManager do
 
     end
     
-    it "should be able to update auth tokens" do
+    it "should be able to update auth tokens via omniauth" do
       u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
       
       # UPDATE
       @omniauth_hash['credentials']['token'] = "NEW--token"
       @omniauth_hash['credentials']['secret'] = "NEW--secret"
       
-      GT::UserManager.start_user_sign_in(u, @omniauth_hash)
+      GT::UserManager.start_user_sign_in(u, :omniauth => @omniauth_hash)
+
+      auth = GT::AuthenticationBuilder.authentication_by_provider_and_uid(u, "twitter", @omniauth_hash['uid'] )
+      auth.should_not == nil
+      auth.provider.should == "twitter"
+      auth.uid.should == @omniauth_hash['uid']
+      auth.oauth_token.should == "NEW--token"
+      auth.oauth_secret.should == "NEW--secret"
+    end
+    
+    it "should be able to update auth tokens via direct options" do
+      u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+      
+      # UPDATE is inline
+      GT::UserManager.start_user_sign_in(u, 
+        :provider => @omniauth_hash['provider'],
+        :uid => @omniauth_hash['uid'],
+        :token => "NEW--token",
+        :secret => "NEW--secret")
 
       auth = GT::AuthenticationBuilder.authentication_by_provider_and_uid(u, "twitter", @omniauth_hash['uid'] )
       auth.should_not == nil
@@ -719,9 +737,81 @@ describe GT::UserManager do
     it "should create app_progress if it doesnt exist" do
       u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
       u.app_progress = nil; u.save
-      GT::UserManager.start_user_sign_in(u, @omniauth_hash)
+      GT::UserManager.start_user_sign_in(u, :omniauth => @omniauth_hash)
       u.app_progress.class.should eq(AppProgress)
     end
+  end
+  
+  context "verify user" do
+    
+    context "existing GT user" do
+      before(:each) do
+        @user = Factory.create(:user) #adds a twitter authentication
+        @twt_auth = @user.authentications[0]
+        @fb_auth = Factory.create(:authentication, :provider => "facebook", :oauth_secret => nil)
+        @user.authentications << @fb_auth
+        @user.save
+      end
+
+      it "should fail if it can't find auth" do
+        GT::UserManager.verify_user(@user, "fake_provider", "fake_uid", "fake_token").should == false
+      end
+    
+      it "should verify w/ twitter externally if token/secret don't match" do
+        token = "fake_token"
+        secret = "fake_secret"
+        GT::UserManager.should_receive(:verify_users_twitter).with(@twt_auth, token, secret).and_return(true)
+            
+        GT::UserManager.verify_user(@user, "twitter", @twt_auth.uid, token, secret).should == true
+      end
+    
+      it "should verify w/ twitter internally if token/secret do match" do
+        GT::UserManager.should_receive(:verify_users_twitter).exactly(0).times
+            
+        GT::UserManager.verify_user(@user, "twitter", @twt_auth.uid, @twt_auth.oauth_token, @twt_auth.oauth_secret).should == true
+      end
+    
+      it "should verify w/ FB externally if token/secret don't match" do
+        token = "fake_token"
+        GT::UserManager.should_receive(:verify_users_facebook).with(@fb_auth, token).and_return(true)
+            
+        GT::UserManager.verify_user(@user, "facebook", @fb_auth.uid, token).should == true
+      end
+    
+      it "should verify w/ FB internally if token/secret do match" do
+        GT::UserManager.should_receive(:verify_users_facebook).exactly(0).times
+            
+        GT::UserManager.verify_user(@user, "facebook", @fb_auth.uid, @fb_auth.oauth_token).should == true
+      end
+    
+      it "should not verify and return false if user does not have that auth" do
+        GT::UserManager.verify_user(@user, "something_DNE", "some_id", "token", "secret").should == false
+      end
+    
+    end
+    
+    context "existing GT faux user" do
+      
+      it "should convert faux user to real if token/secret match"
+      
+      it "should not convert faux user if token/secret don't match"
+      
+      it "should get user info from twitter"
+      
+      it "should get user info from facebook"
+      
+    end
+    
+    context "new user" do
+      
+      it "should handle bad token/secret and return false"
+      
+      it "should create new user from twitter"
+      
+      it "should create new user from facebook"
+      
+    end
+    
   end
   
   context "helper stuff" do
