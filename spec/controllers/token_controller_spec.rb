@@ -19,6 +19,11 @@ describe V1::TokenController do
       post :create, :provider_name => "twitter", :uid => @twt_auth.uid, :token => @twt_auth.oauth_token, :secret => "bad", :format => :json
       assigns(:status).should eq(404)
     end
+    
+    it "returns 404 when missing required token" do
+      post :create, :provider_name => "twitter", :uid => @twt_auth.uid, :format => :json
+      assigns(:status).should eq(404)
+    end
   end
   
   describe "DELETE token" do

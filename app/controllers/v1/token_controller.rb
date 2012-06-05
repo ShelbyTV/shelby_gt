@@ -27,7 +27,7 @@ class V1::TokenController < ApplicationController
     
     @user = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
     
-    if @user
+    if @user and token
       if GT::UserManager.verify_user(@user, provider, uid, token, secret)
         
         if @user.faux == User::FAUX_STATUS[:true]
