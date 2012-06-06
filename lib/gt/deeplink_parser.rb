@@ -97,11 +97,12 @@ module GT
       while html = scanner.scan_until(/<iframe|<embed/)
         iframeline = scanner.scan_until(/<\/iframe>|<\/embed>/)
         linkurl = nil
-        next  unless srcurl = iframeline[/src=.* /]
-        startindex = srcurl.index(/http:\/\//)
-        endindex = srcurl.index(/ /) - 1
-        
-        urls << srcurl[startindex...endindex].gsub(/&amp;/, "&") if startindex
+        next unless src_url = iframeline[/src=.* /]
+        startindex = src_url.index(/http:\/\//)
+        endindex = src_url.index(/ /) - 1
+        next unless startindex
+        to_add = src_url[startindex...endindex].gsub(/&amp;/, "&")
+        urls << to_add if check_valid_url(to_add)
       end
       return {:urls => urls, :to_cache => true}
     end
