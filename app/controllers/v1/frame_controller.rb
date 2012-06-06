@@ -165,7 +165,7 @@ class V1::FrameController < ApplicationController
       if video_url = params[:url]
         frame_options = { :creator => current_user, :roll => roll }
         # get or create video from url
-        frame_options[:video] = GT::VideoManager.get_or_create_videos_for_url(video_url)[0]
+        frame_options[:video] = GT::VideoManager.get_or_create_videos_for_url(video_url)[:videos][0]
         
         # create message
         message_text = params[:text] ? CGI::unescape(params[:text]) : nil
