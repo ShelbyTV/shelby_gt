@@ -229,7 +229,7 @@ describe 'v1/frame' do
           message_text = "awesome video!"
           video_url = "http://some.video.url.com/of_a_movie_i_like"
           video = Factory.create(:video, :source_url => video_url)
-          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return([video])
+          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return({:videos=> [video]})
           roll = Factory.create(:roll, :creator_id => @u1.id)
           post '/v1/roll/'+roll.id+'/frames?url='+CGI::escape(video_url)+'&text='+CGI::escape(message_text)
         
@@ -240,7 +240,7 @@ describe 'v1/frame' do
         it "should return 404 error if trying to create a frame via url and action is not known" do
           video_url = "http://some.video.url.com/of_a_movie_i_like"
           video = Factory.create(:video, :source_url => video_url)
-          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return(video)
+          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return({:videos=> [video]})
           roll = Factory.create(:roll, :creator_id => @u1.id)
           post '/v1/roll/'+roll.id+'/frames?url='+CGI::escape(video_url)+'&source=fucked_up'
           
@@ -262,7 +262,7 @@ describe 'v1/frame' do
           message_text = "awesome video!"
           video_url = "http://some.video.url.com/of_a_movie_i_like"
           video = Factory.create(:video, :source_url => video_url)
-          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return([video])
+          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return({:videos=> [video]})
           u2 = Factory.create(:user)
           u2.watch_later_roll = Factory.create(:roll, :creator => u2, :public => false)
           u2.save

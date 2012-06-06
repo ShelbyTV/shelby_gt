@@ -337,7 +337,7 @@ describe V1::FrameController do
     
     context 'creating new frames from urls' do
       before(:each) do
-        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return([@video])
+        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return({:videos =>[@video]})
         GT::MessageManager.stub(:build_message).and_return(@message)        
       end
       
@@ -366,7 +366,7 @@ describe V1::FrameController do
       end
     
       it "should be ok if action is f-d up" do
-        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
+        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return({:videos=> [@video]})
         GT::Framer.stub(:create_frame_from_url).and_return({:frame => @f1})
         post :create, :roll_id => @r2.id, :url => @video_url, :source => "fucked_up", :format => :json
         assigns(:status).should eq(404)
