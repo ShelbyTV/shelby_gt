@@ -28,34 +28,44 @@ class V1::TokenController < ApplicationController
     @user = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
     
     if @user and token
+      
+      #----------------------------------Current User----------------------------------
       if GT::UserManager.verify_user(@user, provider, uid, token, secret)
         
         if @user.faux == User::FAUX_STATUS[:true]
-          return render_error(404, "Unable to convert faux user to real user.")
-          #TODO: get details normally retrieved by omniauth and convert: GT::UserManager.convert_faux_user_to_real(@user, omniauth)
+          GT::UserManager.convert_faux_user_to_real(@user, GT::ImposterOmniauth.get_user_info(provider, uid, token, secret))
         else
           GT::UserManager.start_user_sign_in(@user, :provider => provider, :uid => uid, :token => token, :secret => secret)
         end
         
-        sign_in(:user, @user)
-        @user.ensure_authentication_token!
-        @status = 200
-        #renders v1/user/show which includes user.authentication_token
       else
         return render_error(404, "Failed to verify user.")
       end
-    else
-      return render_error(404, "Unable to create new users.")
+    elsif token
       
-      #TODO: create a new user via GT::UserManager
-      # THOUGHT: we may be able to use omniauth to get user info and then call GT::UserManager.create_new_user_from_omniauth(o)
-      #          actually, we may be able to use omniauth to do the verification step (ie. get user info via omniauth, on success, it's verified)
-      #          then we don't actually need to validate, below
-      #          https://github.com/intridea/omniauth/wiki/Auth-Hash-Schema
-      #       --OR-- just hit the endpoint myself and map to omniauth so we can use the same code path.
-      #TODO: if created, validate via GT::UserManager
-      #TODO: if NOT created, return false
+      #----------------------------------New User----------------------------------
+      omniauth = GT::ImposterOmniauth.get_user_info(provider, uid, token, secret)
+      
+      if omniauth.blank?
+        return render_error(404, "Failed to create new user.")
+      end
+      
+      @user = GT::UserManager.create_new_user_from_omniauth(omniauth)
+      
+      unless @user.valid?
+        return render_error(404, "Failed to create new user.")
+      end
+
+    else
+      return render_error(404, "Missing valid provider/uid, and/or token/secret")
     end
+    
+    #we have a valid user if we've made it here
+    @user.ensure_authentication_token!
+    sign_in(:user, @user)
+    StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['token'])
+    @status = 200
+    #renders v1/user/show which includes user.authentication_token
   end
   
   ##
