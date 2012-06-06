@@ -5,8 +5,6 @@ class Video
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Video
 
-  plugin MongoMapper::Plugins::IdentityMap
-
   # A video may be references by many frames
   many :frames, :foreign_key => :b
 

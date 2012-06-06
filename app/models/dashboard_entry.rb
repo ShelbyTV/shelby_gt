@@ -7,7 +7,6 @@ class DashboardEntry
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::DashboardEntry
   
-  plugin MongoMapper::Plugins::IdentityMap
   
   
   belongs_to :user, :required => true

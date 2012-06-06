@@ -12,6 +12,8 @@ module Plugins
         end
         set_database_name settings.db_name
         database.authenticate(settings.db_username, settings.db_password) if settings['db_username'] && settings['db_password']
+
+        plugin MongoMapper::Plugins::IdentityMap if settings.arnold
       end
     end
     
