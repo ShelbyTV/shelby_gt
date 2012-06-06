@@ -6,10 +6,6 @@ module GT
 	
     DOMAIN_REGEX = /\w+\.\w+\/\w+/
 
-    youtubepattern = /http:\/\/(www\.)?youtube\.com\/embed\/[a-zA-Z0-9\-\_]*/
-    vimeouni = /http:\/\/player\.vimeo\.com\/video\/[0-9]+(\?(([a-z]+=[0-9]+&?)+))?(\"| )/
-
-    regexes = [youtubepattern,vimeouni]
 
     #returns a list of urls, empty list if none
     def self.find_deep_link(url)
@@ -84,6 +80,10 @@ module GT
     end
 
     def self.parse_with_regex(page)
+      #first ignore invalid bytes
+      page.encode!('UTF-16', 'UTF-8', :invalid => :replace, :replace => '')
+      page.encode!('UTF-8', 'UTF-16')
+      #page.encode!('UTF-8', 'UTF-8', :invalid => :replace)
       scanner = StringScanner.new(page)
       urls = []
       while html = scanner.scan_until(/<iframe|<embed/)
