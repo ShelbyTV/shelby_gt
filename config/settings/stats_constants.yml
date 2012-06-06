@@ -43,6 +43,7 @@ defaults: &defaults
       success:
         twitter: "user.signin.success.twitter"
         facebook: "user.signin.success.facebook"
+        token: "user.signin.success.token"
       failure: "user.signin.failure"
     signout: "signout"
     add_service:
