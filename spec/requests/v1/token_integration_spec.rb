@@ -75,24 +75,53 @@ describe 'v1/token' do
 
       context "new user" do
         before(:each) do
+          @uid, @oauth_token, @oauth_secret, @name, @nickname = "123uid", "oaTok", "oaSec", "name", "someNickname--is--unique"
+          
           @omniauth_hash = {
             'provider' => "twitter",
-            'uid' => @twt_auth.uid,
+            'uid' => @uid,
             'credentials' => {
-              'token' => @twt_auth.oauth_token,
-              'secret' => @twt_auth.oauth_secret
+              'token' => @oauth_token,
+              'secret' => @oauth_secret
             },
             'info' => {
-              'name' => @twt_auth.name,
-              'nickname' => @twt_auth.nickname,
+              'name' => @name,
+              'nickname' => @nickname,
               'image' => "http://original.com/image_normal.png"
             }
           }
         end
         
-        it "should create new user if token/secret verify"
+        it "should create new user if token/secret verify" do
+          GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
+          
+          lambda {
+            post "/v1/token?provider_name=twitter&uid=#{@uid}&token=#{@oauth_token}&secret=#{@oauth_secret}"
+            response.body.should be_json_eql(200).at_path("status")
+            response.body.should have_json_path("result/authentication_token")
+          }.should change { User.count } .by(1)
+          
+          u = User.find_by_nickname(@nickname)
+          u.nickname.should == @nickname
+          u.name.should == @name
+          u.authentications.size.should == 1
+          u.authentications[0].provider.should == "twitter"
+          u.authentications[0].uid.should == @uid
+          u.authentications[0].oauth_token.should == @oauth_token
+          u.authentications[0].oauth_secret.should == @oauth_secret
+          
+          u.destroy
+        end
 
-        it "should handle bad token/secret and return 404"
+        it "should handle bad token/secret and return 404" do
+          GT::ImposterOmniauth.stub(:get_user_info).and_return({})
+          
+          lambda {
+            post "/v1/token?provider_name=twitter&uid=#{@uid}&token=NOT_THE_TOKEN&secret=#{@oauth_secret}"
+            response.body.should be_json_eql(404).at_path("status")
+            response.body.should_not have_json_path("result/authentication_token")
+          }.should change { User.count } .by(0)
+        end
 
 
       end
