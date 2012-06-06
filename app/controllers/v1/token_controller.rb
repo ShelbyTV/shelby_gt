@@ -31,8 +31,7 @@ class V1::TokenController < ApplicationController
       if GT::UserManager.verify_user(@user, provider, uid, token, secret)
         
         if @user.faux == User::FAUX_STATUS[:true]
-          return render_error(404, "Unable to convert faux user to real user.")
-          #TODO: get details normally retrieved by omniauth and convert: GT::UserManager.convert_faux_user_to_real(@user, omniauth)
+          GT::UserManager.convert_faux_user_to_real(@user, GT::ImposterOmniauth.get_user_info(provider, uid, token, secret))
         else
           GT::UserManager.start_user_sign_in(@user, :provider => provider, :uid => uid, :token => token, :secret => secret)
         end
@@ -46,6 +45,9 @@ class V1::TokenController < ApplicationController
       end
     else
       return render_error(404, "Unable to create new users.")
+      
+      # will want to use this:
+      #GT::ImposterOmniauth.get_user_info(provider, uid, token, secret)
       
       #TODO: create a new user via GT::UserManager
       # THOUGHT: we may be able to use omniauth to get user info and then call GT::UserManager.create_new_user_from_omniauth(o)
