@@ -7,6 +7,12 @@ describe Video do
   end
   
   context "database" do
+
+    it "should have an identity map" do
+      v = Video.new
+      v.save
+      Video.identity_map.size.should > 0
+    end
     
     it "should have an index on [provider_name, provider_id]" do
       indexes = Video.collection.index_information.values.map { |v| v["key"] }

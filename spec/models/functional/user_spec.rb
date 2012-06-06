@@ -7,7 +7,13 @@ describe User do
   end
   
   context "database" do
-    
+ 
+    it "should have an identity map" do
+      u = User.new
+      u.save
+      User.identity_map.size.should > 0
+    end
+
     it "should have an index on [nickname], [downcase_nickname], [primary_email], [authentications.uid], [authentications.nickname]" do
       indexes = User.collection.index_information.values.map { |v| v["key"] }
       indexes.should include({"nickname"=>1})
