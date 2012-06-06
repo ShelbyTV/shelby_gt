@@ -35,16 +35,8 @@ module GT
         return {:response => nil, :to_cache => true}
       end
 
-      #don't cache
       if http.error or http.response_header.status != 200
-        if tries_left <= 0
-          Rails.logger.error("[GT::DeeplinkParser#get_page_with_em] http error requesting #{url} /http.error: #{http.error} / http.response_header: #{http.response_header} / http.response: #{http.response} // DONE RETRYING: tires_left: #{tries_left}, sleep_time: #{sleep_time}")
-          return {:response => nil, :to_cache => false}
-        else
-          Rails.logger.debug( "[GT::DeeplinkParser#get_page_with_em] http error requesting #{url} / http.error: #{http.error} / http.response_header: #{http.response_header} / http.response: #{http.response} // RETRYING: tries_left: #{tries_left}, sleep_time: #{sleep_time}")
-          EventMachine::Synchrony.sleep(sleep_time)
-          return get_page_with_em(url, tries_left-1, sleep_time*2)
-        end
+        return {:response => nil, :to_cache => true}
       end
       return {:response => http.response, :to_cache => true}
     end
@@ -96,7 +88,7 @@ module GT
       urls = []
       while html = scanner.scan_until(/<iframe|<embed/)
         iframeline = scanner.scan_until(/<\/iframe>|<\/embed>/)
-        linkurl = nil
+        next unless iframeline
         next unless src_url = iframeline[/src=.* /]
         startindex = src_url.index(/http:\/\//)
         endindex = src_url.index(/ /) - 1
