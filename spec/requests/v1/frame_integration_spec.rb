@@ -219,13 +219,17 @@ describe 'v1/frame' do
         
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/score")
+          response.body.should have_json_path("result/roll")
+          response.body.should have_json_path("result/creator")
+          response.body.should have_json_path("result/video")
+          response.body.should have_json_path("result/conversation")
         end
         
         it "should create and return a frame and success if its payload is a url and text" do
           message_text = "awesome video!"
           video_url = "http://some.video.url.com/of_a_movie_i_like"
           video = Factory.create(:video, :source_url => video_url)
-          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return([video])
+          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return({:videos=> [video]})
           roll = Factory.create(:roll, :creator_id => @u1.id)
           post '/v1/roll/'+roll.id+'/frames?url='+CGI::escape(video_url)+'&text='+CGI::escape(message_text)
         
@@ -236,7 +240,7 @@ describe 'v1/frame' do
         it "should return 404 error if trying to create a frame via url and action is not known" do
           video_url = "http://some.video.url.com/of_a_movie_i_like"
           video = Factory.create(:video, :source_url => video_url)
-          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return(video)
+          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return({:videos=> [video]})
           roll = Factory.create(:roll, :creator_id => @u1.id)
           post '/v1/roll/'+roll.id+'/frames?url='+CGI::escape(video_url)+'&source=fucked_up'
           
@@ -258,7 +262,7 @@ describe 'v1/frame' do
           message_text = "awesome video!"
           video_url = "http://some.video.url.com/of_a_movie_i_like"
           video = Factory.create(:video, :source_url => video_url)
-          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return([video])
+          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return({:videos=> [video]})
           u2 = Factory.create(:user)
           u2.watch_later_roll = Factory.create(:roll, :creator => u2, :public => false)
           u2.save
@@ -270,12 +274,22 @@ describe 'v1/frame' do
       end
       
       context 'frame upvoting' do
-        it "should return success and frame on upvote" do
+        it "should return success and original frame on upvote" do
           post '/v1/frame/'+@f.id+'/upvote'
           
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/score")
         end
+        
+        it "should return success and original frame on upvote undo" do
+          @f.upvote!(@u1)
+          
+          post '/v1/frame/'+@f.id+'/upvote?undo=1'
+          
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/score")
+        end
+        
       end
       
       context 'watched frame' do

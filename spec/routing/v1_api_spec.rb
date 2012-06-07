@@ -1,5 +1,24 @@
 require 'spec_helper'
 
+describe V1::TokenController do
+  describe "routing" do
+    it "routes for token create" do
+      { :post => "/v1/token" }.should route_to(
+        :controller => "v1/token",
+        :action => "create",
+        :format => "json")
+    end
+    
+    it "routes for token destroy" do
+      { :delete => "/v1/token/1" }.should route_to(
+        :controller => "v1/token",
+        :action => "destroy",
+        :id => "1",
+        :format => "json")
+    end
+  end
+end
+
 describe V1::UserController do
   describe "routing" do
     it "routes for user GET" do

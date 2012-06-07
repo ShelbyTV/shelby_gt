@@ -383,6 +383,28 @@ describe GT::Framer do
     
   end
 
+  context "removing dupe of Frame from Roll" do
+    before(:each) do
+      @roll_creator = Factory.create( :user )
+      @roll = Roll.new( :title => "title" )
+      @roll.creator = @roll_creator
+      @roll.save
+      
+      @frame = Factory.create(:frame)
+      
+      @dupe = GT::Framer.dupe_frame!(@frame, @roll_creator, @roll)
+    end
+    
+    it "should destroy the dupe of the Frame" do
+      lambda {
+        GT::Framer.remove_dupe_of_frame_from_roll!(@frame, @roll)
+        Frame.find(@frame.id).should == @frame
+        Frame.find(@dupe.id).should == nil
+      }.should change { @roll.frames.count } .by(-1)
+    end
+    
+  end
+
   context "creating a DashboardEntry" do
     before(:each) do
       @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )

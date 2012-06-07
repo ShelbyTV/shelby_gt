@@ -6,7 +6,7 @@
 <title>
   Module: GT
   
-    &mdash; Shelby GT API
+    &mdash; Documentation by YARD 0.7.5
   
 </title>
 
@@ -23,8 +23,6 @@
 
   <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
 
-  <script type="text/javascript" charset="utf-8" src="js/rest_plugin.js"></script>
-
 
   </head>
   <body>
@@ -33,12 +31,27 @@
     </script>
     
     <div id="header">
-      <div id="search">
-  <!-- <a id="topic_list_link" href="#">Topic List</a> -->
-  <a id="resource_list_link" href="#">Resource List</a>
-  <a id="file_list_link" href="#">File List</a>
+      <div id="menu">
+  
+    <a href="_index.html">Index (G)</a> &raquo; 
+    
+    
+    <span class="title">GT</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
 </div>
 
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
     </div>
     
     <iframe id="search_frame"></iframe>
@@ -60,24 +73,32 @@
   
     <dt class="r1 last">Defined in:</dt>
     <dd class="r1 last">lib/gt/framer.rb<span class="defines">,<br />
-  lib/gt/url_helper.rb,<br /> lib/gt/video_manager.rb,<br /> lib/gt/twitter_normalizer.rb</span>
+  lib/gt/url_helper.rb,<br /> lib/gt/user_fixer.rb,<br /> lib/gt/user_manager.rb,<br /> lib/gt/social_poster.rb,<br /> lib/gt/social_sorter.rb,<br /> lib/gt/video_manager.rb,<br /> lib/gt/link_shortener.rb,<br /> lib/gt/deeplink_parser.rb,<br /> lib/gt/arnold/bean_job.rb,<br /> lib/gt/message_manager.rb,<br /> lib/gt/predator_manager.rb,<br /> lib/gt/arnold/event_loop.rb,<br /> lib/gt/tumblr_normalizer.rb,<br /> lib/gt/twitter_normalizer.rb,<br /> lib/gt/url_video_detector.rb,<br /> lib/gt/invitation_manager.rb,<br /> lib/gt/user_action_manager.rb,<br /> lib/gt/notification_manager.rb,<br /> lib/gt/arnold/job_processor.rb,<br /> lib/gt/social_post_formatter.rb,<br /> lib/gt/authentication_builder.rb,<br /> lib/gt/arnold/consumer_monitor.rb,<br /> lib/gt/arnold/memcached_manager.rb,<br /> lib/gt/arnold/facebook_normalizer.rb</span>
 </dd>
   
 </dl>
 <div class="clear"></div>
 
-<h2>Overview</h2>
-<p>Given a tweet, return a normalized Message</p>
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>Given a facebook post, return a normalized Message</p>
 
+
+  </div>
+</div>
 <div class="tags">
   
+
 </div><h2>Defined Under Namespace</h2>
 <p class="children">
    
     
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="GT/Arnold.html" title="GT::Arnold (module)">Arnold</a></span>
+    
    
     
-      <strong class="classes">Classes:</strong> <span class='object_link'><a href="GT/Framer.html" title="GT::Framer (class)">Framer</a></span>, <span class='object_link'><a href="GT/TwitterNormalizer.html" title="GT::TwitterNormalizer (class)">TwitterNormalizer</a></span>, <span class='object_link'><a href="GT/UrlHelper.html" title="GT::UrlHelper (class)">UrlHelper</a></span>, <span class='object_link'><a href="GT/VideoManager.html" title="GT::VideoManager (class)">VideoManager</a></span>
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="GT/AuthenticationBuilder.html" title="GT::AuthenticationBuilder (class)">AuthenticationBuilder</a></span>, <span class='object_link'><a href="GT/DeeplinkParser.html" title="GT::DeeplinkParser (class)">DeeplinkParser</a></span>, <span class='object_link'><a href="GT/FacebookNormalizer.html" title="GT::FacebookNormalizer (class)">FacebookNormalizer</a></span>, <span class='object_link'><a href="GT/Framer.html" title="GT::Framer (class)">Framer</a></span>, <span class='object_link'><a href="GT/InvitationManager.html" title="GT::InvitationManager (class)">InvitationManager</a></span>, <span class='object_link'><a href="GT/LinkShortener.html" title="GT::LinkShortener (class)">LinkShortener</a></span>, <span class='object_link'><a href="GT/MessageManager.html" title="GT::MessageManager (class)">MessageManager</a></span>, <span class='object_link'><a href="GT/NotificationManager.html" title="GT::NotificationManager (class)">NotificationManager</a></span>, <span class='object_link'><a href="GT/PredatorManager.html" title="GT::PredatorManager (class)">PredatorManager</a></span>, <span class='object_link'><a href="GT/SocialPostFormatter.html" title="GT::SocialPostFormatter (class)">SocialPostFormatter</a></span>, <span class='object_link'><a href="GT/SocialPoster.html" title="GT::SocialPoster (class)">SocialPoster</a></span>, <span class='object_link'><a href="GT/SocialSorter.html" title="GT::SocialSorter (class)">SocialSorter</a></span>, <span class='object_link'><a href="GT/TumblrNormalizer.html" title="GT::TumblrNormalizer (class)">TumblrNormalizer</a></span>, <span class='object_link'><a href="GT/TwitterNormalizer.html" title="GT::TwitterNormalizer (class)">TwitterNormalizer</a></span>, <span class='object_link'><a href="GT/UrlHelper.html" title="GT::UrlHelper (class)">UrlHelper</a></span>, <span class='object_link'><a href="GT/UrlVideoDetector.html" title="GT::UrlVideoDetector (class)">UrlVideoDetector</a></span>, <span class='object_link'><a href="GT/UserActionManager.html" title="GT::UserActionManager (class)">UserActionManager</a></span>, <span class='object_link'><a href="GT/UserFixer.html" title="GT::UserFixer (class)">UserFixer</a></span>, <span class='object_link'><a href="GT/UserManager.html" title="GT::UserManager (class)">UserManager</a></span>, <span class='object_link'><a href="GT/VideoManager.html" title="GT::VideoManager (class)">VideoManager</a></span>
     
   
 </p>
@@ -93,7 +114,9 @@
 </div>
     
     <div id="footer">
-  Generated on Tue Mar  6 15:58:18 2012 with ruby-1.9.3
+  Generated on Tue Jun  5 08:52:25 2012 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.5 (ruby-1.9.3).
 </div>
 
   </body>

@@ -147,7 +147,7 @@ describe V1::FrameController do
   end
   
   describe "POST upvote" do
-    it "updates a frame successfuly" do
+    it "upvotes a frame successfuly" do
       @frame = Factory.create(:frame)
       @frame.should_receive(:upvote!).with(@u1).and_return(@frame)
       @frame.should_receive(:reload).and_return(@frame)
@@ -160,7 +160,20 @@ describe V1::FrameController do
       assigns(:frame).should eq(@frame)
     end
     
-    it "updates a frame UNsuccessfuly gracefully" do
+    it "un-upvotes a frame successfuly" do
+      @frame = Factory.create(:frame)
+      @frame.should_receive(:upvote_undo!).with(@u1).and_return(@frame)
+      @frame.should_receive(:reload).and_return(@frame)
+      
+      lambda {
+        post :upvote, :frame_id => @frame.id, :undo => "1", :format => :json
+      }.should change { UserAction.count } .by 1
+      
+      assigns(:status).should eq(200)
+      assigns(:frame).should eq(@frame)
+    end
+    
+    it "upvotes a frame UNsuccessfuly gracefully" do
       frame = Factory.create(:frame)
       Frame.stub(:find) { nil }
       post :upvote, :frame_id => frame.id, :format => :json
@@ -324,7 +337,7 @@ describe V1::FrameController do
     
     context 'creating new frames from urls' do
       before(:each) do
-        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return([@video])
+        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return({:videos =>[@video]})
         GT::MessageManager.stub(:build_message).and_return(@message)        
       end
       
@@ -353,7 +366,7 @@ describe V1::FrameController do
       end
     
       it "should be ok if action is f-d up" do
-        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return(@video)
+        GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return({:videos=> [@video]})
         GT::Framer.stub(:create_frame_from_url).and_return({:frame => @f1})
         post :create, :roll_id => @r2.id, :url => @video_url, :source => "fucked_up", :format => :json
         assigns(:status).should eq(404)

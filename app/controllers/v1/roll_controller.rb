@@ -58,7 +58,7 @@ class V1::RollController < ApplicationController
       
       case Rails.env
       when 'production'
-        hot_rolls = ['4f901bd8b415cc466a0008ec','4f900cf5b415cc466a0005bb', '4fa03429b415cc18bf0007b2', '4f8f7f08b415cc4762000172', '4f8f7f17b415cc4762000262', '4f8fac9ab415cc661401317b', '4f9d5d0a9a725b3d5f002c14', '4f90223bb415cc466a00091c', '4f8fac9ab415cc661401317b', '4fbe42069a725b686300004a']
+        hot_rolls = ['4f901bd8b415cc466a0008ec','4f900cf5b415cc466a0005bb', '4fcd0ca888ba6b07e30001d7', '4fbe42069a725b686300004a', '4fa03429b415cc18bf0007b2', '4f8f7f08b415cc4762000172', '4f8f7f17b415cc4762000262', '4f8fac9ab415cc661401317b', '4fbe42031c1cf44d540013f0', '4fbd2d24d10412081e00042e', '4f9d5d0a9a725b3d5f002c14', '4fbe42079a725b6863000077', '4fbd4da49a725b58cf00246b', '4f90223bb415cc466a00091c', '4f8fac9ab415cc661401317b', '4fbaa51d1c1cf44b9d002f58']
       when 'development'
         hot_rolls = [Roll.all[0].id, Roll.all[1].id]
       else

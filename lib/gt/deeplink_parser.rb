@@ -74,7 +74,7 @@ module GT
       if use_em
         deep_http_response = get_page_with_em(url)
       else
-        deep_http_response= get_page_with_net(url)
+        deep_http_response = get_page_with_net(url)
       end
       if deep_response = deep_http_response[:response]
         parsedoc = Nokogiri::HTML(deep_response)
@@ -91,7 +91,7 @@ module GT
         end
         return {:urls => urls, :to_cache => true}
       end
-      return {:urls => [], :to_cache => to_cache}
+      return {:urls => [], :to_cache => deep_http_response[:to_cache]}
     end
 	
 	

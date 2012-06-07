@@ -3,6 +3,10 @@ object @roll
 attributes :id, :collaborative, :public, :creator_id, :genius
 attributes :display_title => :title, :display_thumbnail_url => :thumbnail_url
 
+node(:creator_nickname, :if => lambda { |r| r.creator != nil }) do |r|
+  r.creator.nickname
+end
+
 child @frames do
 		
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id

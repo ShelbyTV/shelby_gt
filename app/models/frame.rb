@@ -8,7 +8,6 @@ class Frame
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Frame
   
-  plugin MongoMapper::Plugins::IdentityMap
 
   # A Frame is contained by exactly one Roll, first and foremost.
   # In some special cases, a Frame may *not* have a Roll (ie a private Facebook post creates a Frame that only attaches to DashboardEntry)
@@ -82,7 +81,7 @@ class Frame
       Video.increment(self.video_id, :view_count => 1)
 
       # when a frame.video.reload happens we want to get the real doc that is reloaded, not the cached one.
-      MongoMapper::Plugins::IdentityMap.clear
+      MongoMapper::Plugins::IdentityMap.clear if Settings::Frame.mm_use_identity_map
 
       return GT::Framer.dupe_frame!(self, u.id, u.viewed_roll_id)
     end
@@ -118,6 +117,20 @@ class Frame
     
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_upvote_notification(u, self) }
+    
+    self.save
+  end
+  
+  def upvote_undo!(u)
+    raise ArgumentError, "must supply User" unless u and u.is_a?(User)
+    
+    return false unless self.has_voted?(u.id)
+    
+    self.upvoters.delete_if { |id| id == u.id }
+    
+    GT::Framer.remove_dupe_of_frame_from_roll!(self, u.upvoted_roll_id)
+    
+    update_score
     
     self.save
   end
