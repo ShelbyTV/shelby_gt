@@ -14,6 +14,7 @@ describe 'v1/roll' do
     describe "POST" do
       context "genius roll creation" do
         it "should create and return a genius roll on success" do
+          GT::UrlHelper.stub( "parse_url_for_provider_info").and_return({:provider_name => "name", :provider_id=>"id"})
           post '/v1/roll/genius?search=Beyonce&urls=%5B%22http%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D4m1EFMoRFvY%26feature%3Dyoutube_gdata%22%2C%22http%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdunGhkCmYKM%26feature%3Dyoutube_gdata%22%5D'
 
           response.body.should be_json_eql(200).at_path("status")
@@ -40,6 +41,7 @@ describe 'v1/roll' do
     describe "POST" do
       context "genius roll creation" do
         it "should create and return a genius roll on success" do
+          GT::UrlHelper.stub(:parse_url_for_provider_info).and_return({:provider_name => "name", :provider_id => "id"})
           post '/v1/roll/genius?search=Beyonce&urls=%5B%22http%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D4m1EFMoRFvY%26feature%3Dyoutube_gdata%22%2C%22http%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdunGhkCmYKM%26feature%3Dyoutube_gdata%22%5D'
 
           response.body.should be_json_eql(200).at_path("status")

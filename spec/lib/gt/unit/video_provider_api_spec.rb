@@ -1,8 +1,8 @@
 require 'spec_helper'
 require 'youtube_it'
-require 'url_provider_video_detector'
+require 'video_provider_api'
 
-describe GT::UrlProviderVideoDetector do
+describe GT::VideoProviderApi do
 
   context "youtube" do
     it "should return a persisted video" do
@@ -11,9 +11,8 @@ describe GT::UrlProviderVideoDetector do
           mock_model("FakeEMHttpResonse", :error => false,
                           :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testhtmlfiles/youtubegdata.html", __FILE__))))
       EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
-      vid = GT::UrlProviderVideoDetector.examine_url_for_youtube_video("fakeid")
+      vid = GT::VideoProviderApi.examine_url_for_youtube_video("fakeid")
       vid.provider_id.should == "LTMyiQg7x6w"
-      puts vid.embed_url
     end
   end
 end

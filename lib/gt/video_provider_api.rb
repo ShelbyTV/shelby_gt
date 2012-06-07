@@ -3,7 +3,7 @@ require 'net/http'
 require 'nokogiri'
 
 module GT
-  class UrlProviderVideoDetector
+  class VideoProviderApi
     def self.examine_url_for_youtube_video(youtube_id, use_em=true)
       gdata_url = "http://gdata.youtube.com/feeds/api/videos/#{youtube_id}"
       if use_em
@@ -29,8 +29,6 @@ module GT
     private
 
       def self.get_or_create_videos_for_yt_model(yt_model)
-        v = Video.where(:provider_name => "youtube", :provider_id => yt_model.video_id).first
-        return v if v
 
         v  = Video.new
         v.provider_name = "youtube"
@@ -48,7 +46,17 @@ module GT
         v.categories = yt_model.categories.map {|category| category.label}
         v.source_url = yt_model.player_url
         v.embed_url = yt_model.embed_url
-        return v
+
+        begin
+          v.save
+          return v
+        rescue Mongo::OperationFailure => e
+          # If this was a timing issue, and Video got created after we checked, that means the Video exists now.  See if we can't recover...
+          v = Video.where(:provider_name => provider_name, :provider_id => provider_id).first
+          return v if v
+          Rails.logger.error "[GT::VideoManager#find_or_create_video_for_embedly_hash] rescuing Mongo::OperationFailure #{e}"
+          return nil
+        end
       end
 
 
