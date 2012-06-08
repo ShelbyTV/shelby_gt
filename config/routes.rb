@@ -7,11 +7,17 @@ ShelbyGt::Application.routes.draw do
 
   ########################
   # Authentication and User Managment
+
   devise_for :user, :skip => [:sessions]
   as :user do
     get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
     get 'login' => 'authentications#index', :as => :new_user_session
   end
+
+  get 'oauth/authorize' => 'oauth#authorize'
+  get 'oauth/grant' => 'oauth#grant'
+  get 'oauth/deny' => 'oauth#deny'
+  get 'oauth/login' => 'oauth#login'
 
   resources :authentications
   get '/auth/:provider/callback' => 'authentications#create'

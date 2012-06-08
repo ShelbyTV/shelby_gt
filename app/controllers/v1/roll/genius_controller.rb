@@ -2,7 +2,10 @@ require 'video_manager'
 require 'framer'
 
 class V1::Roll::GeniusController < ApplicationController  
-  
+    
+  before_filter :set_current_user
+  oauth_required
+ 
   ##
   # Create and return a genius roll from an array of video URLs
   # 
@@ -107,4 +110,9 @@ class V1::Roll::GeniusController < ApplicationController
       render_error(404, "could not save roll: #{e}")
     end
   end
+  protected
+    def set_current_user
+      @current_user = User.find(oauth.identity) if oauth.authenticated?
+    end
+ 
 end

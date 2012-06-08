@@ -1,6 +1,8 @@
 class V1::ConversationController < ApplicationController  
   
   before_filter :user_authenticated?
+  before_filter :set_current_user
+  oauth_required
   
   ##
   # Returns a conversation including messages, with the given parameters.
@@ -24,5 +26,10 @@ class V1::ConversationController < ApplicationController
       end
     end
   end
+
+  protected
+    def set_current_user
+      @current_user = User.find(oauth.identity) if oauth.authenticated?
+    end
   
 end

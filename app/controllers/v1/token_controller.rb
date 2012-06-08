@@ -2,6 +2,9 @@ require 'user_manager'
 
 class V1::TokenController < ApplicationController  
   skip_before_filter :verify_authenticity_token
+  before_filter :set_current_user
+  oauth_required
+  
 
   ##
   # Ensures User matching the given credentials has a single sign on token and returns it.
@@ -85,5 +88,9 @@ class V1::TokenController < ApplicationController
       #renders v1/user/show which includes user.authentication_token
     end
   end
-  
+  protected
+    def set_current_user
+      @current_user = User.find(oauth.identity) if oauth.authenticated?
+    end
+ 
 end

@@ -8,6 +8,9 @@ require "active_resource/railtie"
 require "sprockets/railtie"
 require "rails/test_unit/railtie"
 
+# an oauth server
+require 'rack/oauth2/server'
+
 if defined?(Bundler)
   # If you precompile assets before deploying to production, use this line
   Bundler.require(*Rails.groups(:assets => %w(development test)))
@@ -80,6 +83,10 @@ module ShelbyGt
       end
       
     end
-    
+
+    config.after_initialize do
+      settings = Settings::OauthServer
+      config.oauth.database = Mongo::Connection.new(settings.db_host, settings.db_port, {}.merge(settings.db_options.merge(Settings::Mongo.db_options)) ).db(settings.db_name)
+    end
   end
 end

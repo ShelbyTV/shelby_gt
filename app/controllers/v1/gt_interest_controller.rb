@@ -1,5 +1,7 @@
 class V1::GtInterestController < ApplicationController  
-
+  before_filter :set_current_user
+  oauth_required
+ 
   ##
   # Creates and returns one GtInterest
   #
@@ -17,5 +19,11 @@ class V1::GtInterestController < ApplicationController
       render_error(400, "must have a valid email")
     end
   end
+
+  protected
+    def set_current_user
+      @current_user = User.find(oauth.identity) if oauth.authenticated?
+    end
+ 
   
 end

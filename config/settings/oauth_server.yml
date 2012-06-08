@@ -1,0 +1,25 @@
+defaults: &defaults
+  db_host: '127.0.0.1'
+  db_port: '27017'
+  db_options: {}
+  mm_use_identity_map: false
+
+development:
+  <<: *defaults
+  db_name: 'dev-oauth_server'
+
+test:
+  <<: *defaults
+  db_name: 'test-oauth_server'
+
+#erm not sure how to set this up
+production: &production
+  <<: *defaults
+  db_name: 'oauth_server'
+  db_hosts: ["10.183.66.100:27017", "10.183.66.108:27017"]
+  db_replSetName: 'oauthServer'
+  db_username: "gt_user"
+  db_password: "GT/us3r!!!"
+  
+arnold:
+  <<: *production

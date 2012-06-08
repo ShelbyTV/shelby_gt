@@ -7,6 +7,9 @@ class V1::FrameController < ApplicationController
 
   before_filter :user_authenticated?, :except => [:index, :show, :watched]
   skip_before_filter :verify_authenticity_token, :only => [:create]
+  before_filter :set_current_user
+  oauth_required
+ 
   
   ##
   # Returns all frames in a roll
@@ -404,5 +407,9 @@ class V1::FrameController < ApplicationController
     end
   end
 
-
+  protected
+    def set_current_user
+      @current_user = User.find(oauth.identity) if oauth.authenticated?
+    end
+ 
 end

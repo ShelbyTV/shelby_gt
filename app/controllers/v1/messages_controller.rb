@@ -3,6 +3,9 @@ require 'message_manager'
 class V1::MessagesController < ApplicationController  
 
   before_filter :authenticate_user!
+  before_filter :set_current_user
+  oauth_required
+ 
   
   ##
   # Creates and returns one message, with the given parameters.
@@ -67,5 +70,9 @@ class V1::MessagesController < ApplicationController
       end
     end
   end
-
+  protected
+    def set_current_user
+      @current_user = User.find(oauth.identity) if oauth.authenticated?
+    end
+ 
 end

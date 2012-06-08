@@ -1,6 +1,9 @@
 class V1::DashboardEntriesController < ApplicationController  
     
   before_filter :authenticate_user!
+  before_filter :set_current_user
+  oauth_required
+ 
   
   ##
   # Returns dashboad entries, with the given parameters.
@@ -107,5 +110,11 @@ class V1::DashboardEntriesController < ApplicationController
       end
     end
   end
+
+  protected
+    def set_current_user
+      @current_user = User.find(oauth.identity) if oauth.authenticated?
+    end
+ 
 
 end
