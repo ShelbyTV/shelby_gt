@@ -16,6 +16,8 @@ defaults: &defaults
       leave: 'roll.leave'
       update: 'roll.update'
       destroy: 'roll.destroy'
+      genius:
+        create: "roll.genius.create"
     frame:
       index: 'frame.index'
       show: 'frame.show'
