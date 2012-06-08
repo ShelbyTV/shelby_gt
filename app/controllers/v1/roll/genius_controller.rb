@@ -1,3 +1,4 @@
+require 'set'
 require 'video_manager'
 require 'framer'
 
@@ -17,84 +18,48 @@ class V1::Roll::GeniusController < ApplicationController
     end
 
     begin
-      @urls = ActiveSupport::JSON.decode(params[:urls])
+      urls = ActiveSupport::JSON.decode(params[:urls])
     rescue
       return render_error(404, "unabled to decode urls parameter: invalid JSON")
     end
  
-    unless @urls
+    unless urls
       return render_error(404, "decoded urls parameter was undefined")
     end
 
-    unless @urls.kind_of?(Array)
+    unless urls.kind_of?(Array)
        return render_error(404, "decoded urls parameter was not an array")
     end
 
-    unless !@urls.empty?
+    unless !urls.empty?
       return render_error(404, "decoded urls parameter resulted in an empty array")
     end
+
+    vidManagerResults = urls.map { |u| GT::VideoManager.get_or_create_videos_for_url(u) }
+    vidManagerVideoArrays = vidManagerResults.map { |r| r[:videos] }
+    searchVids = vidManagerVideoArrays.map { |v| v[0] }.compact.uniq
+    searchVidIds = searchVids.map { |s| s._id }
+    recs = searchVids.map { |s| s.recs.flatten }.flatten.compact
+    
+    recIdToScoreHash = Hash.new 
+    recs.each do |rec|
+      recId = rec.recommended_video_id
+      recIdToScoreHash[recId] = rec.score + recIdToScoreHash.fetch(recId, 0)
+    end
+
+    recIdsSortedArray = recIdToScoreHash.sort { |a,b| b[1] <=> a[1] }.map { |r| r[0] }  
+
+    finalVidIds = combineSearchAndRecVidIds(searchVidIds, recIdsSortedArray, 100)
 
     @roll = ::Roll.new(:title => "GENIUS: " + params[:search])
     @roll.genius = true
 
-    @searchVids = []
-    @urls.each do |url|
-      video = GT::VideoManager.get_or_create_videos_for_url(url)[:videos][0]
-      @searchVids.append(video) if video
-    end
-
-    @recsHash = Hash.new
-    @searchVids.each do |searchVid|
-      searchVid.recs.each do |rec|
-        recVideo = Video.find(rec.recommended_video_id)
-        if recVideo
-          @recsHash[recVideo] = rec.score + @recsHash.fetch(recVideo, 0)
-        end
-      end if searchVid.recs
-    end
-
-    @recsSortedArray = @recsHash.sort { |a,b| b[1] <=> a[1] }
-    @finalVids = []
-
-    r = 0
-    s = 0
-    roughDesiredFinalRollLength = 100
-
-    while r < @recsSortedArray.length or s < @searchVids.length do
-
-      while s < @searchVids.length and @finalVids.include?(@searchVids[s]) do
-        s += 1
-      end
-
-      if s < @searchVids.length and !@finalVids.include?(@searchVids[s])
-        @finalVids.append(@searchVids[s])
-      end
-
-      s += 1
-
-      if r < @recsSortedArray.length and !@finalVids.include?(@recsSortedArray[r][0])
-        @finalVids.append(@recsSortedArray[r][0])
-      end
-
-      r += 1
-
-      if r < @recsSortedArray.length and !@finalVids.include?(@recsSortedArray[r][0])
-        @finalVids.append(@recsSortedArray[r][0])
-      end
-
-      r += 1
-
-      if @finalVids.length > roughDesiredFinalRollLength
-        break
-      end
-    end
-
     count = 0
-    @finalVids.each do |video|
+    finalVidIds.each do |videoId|
       frame_options = { :roll => @roll }
       frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_genius_frame]
-      frame_options[:video] = video
-      frame_options[:order] = (@finalVids.length - count) * 100
+      frame_options[:video_id] = videoId
+      frame_options[:order] = (finalVidIds.size - count) * 100
       GT::Framer.create_frame(frame_options)
       count += 1
     end
@@ -106,5 +71,46 @@ class V1::Roll::GeniusController < ApplicationController
     rescue => e
       render_error(404, "could not save roll: #{e}")
     end
+  end
+
+private
+
+  def skipVidsAlreadyAdded(cur, vidIds, finalVidIds)
+    cur += 1 while (cur < vidIds.size and finalVidIds.include?(vidIds[cur]))
+    return cur
+  end
+
+  def checkAndAppendVid!(cur, vidIds, finalVidIds, maxVids)
+    if (finalVidIds.size < maxVids and cur < vidIds.size and !finalVidIds.include?(vidIds[cur]))
+      finalVidIds.append(vidIds[cur])
+    end
+    return (cur += 1)
+  end
+
+  # this is just an initial simple algorith for combining the item based
+  # recommendations we have with YouTube search results. in the future, we'd
+  # ideally be intelligently combining videos from several 'signal' sources
+  def combineSearchAndRecVidIds(searchVidIds, recIdsSortedArray, maxVids)
+  
+    r = s = 0
+    finalVidIds = []
+
+    while r < recIdsSortedArray.size or s < searchVidIds.size do
+
+      # make sure we add at least one search vid per loop if possible
+      s = skipVidsAlreadyAdded(s, searchVidIds, finalVidIds)
+      s = checkAndAppendVid!(s, searchVidIds, finalVidIds, maxVids)
+
+      # add 2 recommended vids afterward if next 2 recs are eligible
+      r = checkAndAppendVid!(r, recIdsSortedArray, finalVidIds, maxVids)
+      r = checkAndAppendVid!(r, recIdsSortedArray, finalVidIds, maxVids)
+
+      # break out early if we've already got enough vids
+      break if finalVidIds.size >= maxVids
+
+    end
+
+    return finalVidIds
+
   end
 end
