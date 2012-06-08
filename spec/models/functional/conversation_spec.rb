@@ -13,7 +13,7 @@ describe Conversation do
       m = Message.new
       m.origin_id = rand.to_s
       c.save
-      Conversation.identity_map.size.should == 1
+      Conversation.identity_map.size.should >= 1
     end
     
     it "should have an index on [video_id]" do
