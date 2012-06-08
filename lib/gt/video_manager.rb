@@ -1,4 +1,5 @@
 require 'url_helper'
+require 'video_provider_api'
 require 'url_video_detector'
 require 'deeplink_parser'
 
