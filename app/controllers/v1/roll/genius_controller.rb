@@ -53,6 +53,7 @@ class V1::Roll::GeniusController < ApplicationController
 
       @roll = ::Roll.new(:title => "GENIUS: " + params[:search])
       @roll.genius = true
+      @roll.creator = current_user
 
       count = 0
       finalVidIds.each do |videoId|
