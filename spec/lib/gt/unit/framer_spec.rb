@@ -309,6 +309,12 @@ describe GT::Framer do
     
       res[:frame].roll.thumbnail_url.should == "something://el.se"
     end
+    
+    it "should set the back-pointer frame.conversation.frame" do
+      res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
+      
+      res[:frame].conversation.frame.should == res[:frame]
+    end
   end
   
   context "duping F1 as F2" do
