@@ -204,6 +204,7 @@ module GT
 
         # Create a new conversation
         convo = Conversation.new
+        convo.frame = new_frame
         convo.video_id = new_frame.video_id
         convo.public = true
         new_frame.conversation = convo

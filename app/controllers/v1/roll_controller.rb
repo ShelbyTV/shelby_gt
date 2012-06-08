@@ -270,6 +270,7 @@ class V1::RollController < ApplicationController
       if params[:id]
         return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:id]))
         return render_error(404, "could not find that roll to destroy") unless @roll = Roll.find(roll_id)
+        return render_error(404, "you do not have permission") unless @roll.destroyable_by?(current_user)
         if @roll.following_users.each { |fu| @roll.remove_follower(fu.user) } and @roll.destroy
           @status =  200
         else
