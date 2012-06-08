@@ -121,14 +121,16 @@ module GT
       
       def self.resolve_url_with_net_http(url, limit)
         return url if limit == 0
-        
-        response = Net::HTTP.get_response(URI.parse(url))
-        if response.kind_of?(Net::HTTPRedirection)
-          redirect_url = response['location'].nil? ? response.body.match(/<a href=\"([^>]+)\">/i)[1] : response['location']
-          return self.resolve_url_with_net_http(redirect_url, limit-1)
-        else
-          return url
+       
+        begin 
+          response = Net::HTTP.get_response(URI.parse(url))
+        ensure
+          return url unless response.kind_of?(Net::HTTPRedirection)
         end
+
+        # response.kind_of?(Net::HTTPRedirection) is true
+        redirect_url = response['location'].nil? ? response.body.match(/<a href=\"([^>]+)\">/i)[1] : response['location']
+        return self.resolve_url_with_net_http(redirect_url, limit-1)
       end
       
       ##############################################
