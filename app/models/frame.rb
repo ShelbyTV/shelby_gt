@@ -58,8 +58,14 @@ class Frame
   
   def created_at() self.id.generation_time; end
   
-  #------ ReRolling -------
+  #------ Permissions -------
   
+  def destroyable_by?(user)
+    return !!(self.creator == nil or self.creator == user or (self.roll and self.roll.creator == user))
+  end
+  
+  #------ ReRolling -------
+
   #re roll this frame into the given roll, for the given user
   def re_roll(user, roll)
     return GT::Framer.re_roll(self, user, roll)
