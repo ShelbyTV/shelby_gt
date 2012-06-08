@@ -323,5 +323,32 @@ describe Frame do
     end
   end
   
+  context "destroy" do
+    before(:each) do
+      @creator = Factory.create(:user)
+      @frame = Factory.create(:frame, :creator => @creator)
+      @stranger = Factory.create(:user)
+    end
+    
+    it "should allow destroy if destroyer is creator" do
+      @frame.destroyable_by?(@creator).should == true
+      @frame.destroyable_by?(@stranger).should == false
+    end
+    
+    it "should allow destory if creator is nil" do
+      @frame.creator = nil
+      @frame.save
+      @frame.destroyable_by?(@creator).should == true
+      @frame.destroyable_by?(@stranger).should == true
+    end
+    
+    it "should allow destroy if destroyer is roll creator" do
+      roll = Factory.create(:roll, :creator => @stranger)
+      @frame.roll = roll
+      @frame.save
+      @frame.destroyable_by?(@stranger).should == true
+    end
+    
+  end
   
 end

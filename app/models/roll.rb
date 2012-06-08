@@ -134,6 +134,17 @@ class Roll
   # if you can view it, you can invite to it
   def invitable_to_by?(u) viewable_by?(u); end
 
+  def destroyable_by?(u)
+    return true if self.creator == nil
+    if self.creator == u
+      return (self.creator.public_roll != self and
+        self.creator.watch_later_roll != self and
+        self.creator.upvoted_roll != self and
+        self.creator.viewed_roll != self)
+    end
+    return false
+  end
+
   def permalink() "#{Settings::ShelbyAPI.web_root}/roll/#{self.id}"; end
   
   #displayed title and thumbnail_url for upvoted rolls (aka heart rolls)

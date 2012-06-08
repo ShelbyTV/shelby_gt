@@ -423,7 +423,7 @@ describe V1::FrameController do
   end
   
   describe "DELETE destroy" do
-    it "destroys a roll successfuly" do
+    it "destroys a frame successfuly" do
       frame = Factory.create(:frame)
       Frame.stub!(:find).and_return(frame)
       frame.should_receive(:destroy).and_return(frame)
@@ -431,7 +431,7 @@ describe V1::FrameController do
       assigns(:status).should eq(200)
     end
     
-    it "unsuccessfuly destroys a roll returning 404" do
+    it "unsuccessfuly destroys a frame returning 404" do
       frame = Factory.create(:frame)
       Frame.stub!(:find).and_return(frame)
       frame.should_receive(:destroy).and_return(false)

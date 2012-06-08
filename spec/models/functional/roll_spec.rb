@@ -5,7 +5,7 @@ require 'spec_helper'
 #Functional: hit the database, treat model as black box
 describe Roll do
   before(:each) do
-    @roll = Factory.create(:roll, :creator => Factory.create(:user), :title => "normal title", :thumbnail_url => "u://rl")
+    @roll = Factory.create(:roll, :creator => (@creator = Factory.create(:user)), :title => "normal title", :thumbnail_url => "u://rl")
     @user = Factory.create(:user)
     @stranger = Factory.create(:user)
   end
@@ -218,6 +218,48 @@ describe Roll do
     it "should return heart thumbnail_url when an upvoted roll" do
       @roll.upvoted_roll = true
       @roll.display_thumbnail_url.should == "#{Settings::ShelbyAPI.web_root}/images/assets/favorite_roll_avatar.png"
+    end
+  end
+  
+  context "destroy" do
+    it "should be destroyable by creator" do
+      @roll.destroyable_by?(@creator).should == true
+      @roll.destroyable_by?(@stranger).should == false
+    end
+    
+    it "should be destoyable by anyone if creator is nil" do
+      @roll.creator = nil
+      @roll.save(:validate => false)
+      @roll.destroyable_by?(@creator).should == true
+      @roll.destroyable_by?(@stranger).should == true
+    end
+    
+    it "should NOT be destroyable if it's creators public_roll" do
+      @roll.destroyable_by?(@creator).should == true
+      @creator.public_roll = @roll
+      @creator.save
+      @roll.destroyable_by?(@creator).should == false
+    end
+    
+    it "should NOT be destroyable if it's creators watch_later_roll" do
+      @roll.destroyable_by?(@creator).should == true
+      @creator.watch_later_roll = @roll
+      @creator.save
+      @roll.destroyable_by?(@creator).should == false
+    end
+    
+    it "should NOT be destroyable if it's creators upvoted_roll" do
+      @roll.destroyable_by?(@creator).should == true
+      @creator.upvoted_roll = @roll
+      @creator.save
+      @roll.destroyable_by?(@creator).should == false
+    end
+    
+    it "should NOT be destroyable if it's creators viewed_roll" do
+      @roll.destroyable_by?(@creator).should == true
+      @creator.viewed_roll = @roll
+      @creator.save
+      @roll.destroyable_by?(@creator).should == false
     end
   end
 end
