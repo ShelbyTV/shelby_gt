@@ -168,8 +168,9 @@ class V1::FrameController < ApplicationController
         frame_options[:video] = GT::VideoManager.get_or_create_videos_for_url(video_url)[:videos][0]
         
         # create message
-        message_text = params[:text] ? CGI::unescape(params[:text]) : nil
-        frame_options[:message] = GT::MessageManager.build_message(:user => current_user, :public => true, :text => message_text)
+        if params[:text]
+          frame_options[:message] = GT::MessageManager.build_message(:user => current_user, :public => true, :text => CGI::unescape(params[:text]))
+        end
         
         # set the action, defaults to new_bookmark_frame
         case params[:source]
@@ -215,7 +216,7 @@ class V1::FrameController < ApplicationController
             render_error(403, "that user cant post to that roll")
           end
         rescue => e
-          render_error(404, "could not re_roll: #{e}")
+          return render_error(404, "could not re_roll: #{e}")
         end
         
       else
