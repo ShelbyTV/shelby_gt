@@ -219,11 +219,12 @@ describe GT::Framer do
       res[:frame].roll.should == @roll
     end
   
-    it "should not create a Frame without Video" do
+    it "should not create a Frame without Video or video_id" do
       lambda { GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => nil,
+        :video_id => nil,
         :message => @message,
         :roll => @roll
         ) }.should raise_error(ArgumentError)

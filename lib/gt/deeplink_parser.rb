@@ -44,8 +44,11 @@ module GT
     end
 
     def self.get_page_with_net(url)
-      response = Net::HTTP.get_response(url)
-      return {:response => nil, :to_cache => false} unless response
+      begin
+        response = Net::HTTP.get_response(url)
+      ensure
+        return {:response => nil, :to_cache => false} unless response
+      end
     
       if response.code == "200"
         return {:response => response.body, :to_cache => true}
