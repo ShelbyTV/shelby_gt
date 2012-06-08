@@ -78,8 +78,11 @@ module GT
       end
 
       def self.get_page_with_net(url)
-        response = Net::HTTP.get_response(url)
-        return nil unless response
+        begin
+          response = Net::HTTP.get_response(URI.parse(url))
+        ensure
+          return nil unless response
+        end
 
         if response.code == "200"
           return response.body

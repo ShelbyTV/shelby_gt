@@ -107,7 +107,7 @@ module GT
       end
 
       if provider_info[:provider_name] == "youtube"
-        yt_video = GT::VideoProviderApi.examine_url_for_youtube_video(provider_info[:provider_id])
+        yt_video = GT::VideoProviderApi.examine_url_for_youtube_video(provider_info[:provider_id], use_em)
         return {:videos => [yt_video], :from_deep => false} if yt_video
       end
 	  # Still no video...
