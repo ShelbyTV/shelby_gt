@@ -41,6 +41,9 @@ class Roll
   # indicates the special heart roll (formerly upvoted_roll, known as user.upvoted_roll)
   key :upvoted_roll,    Boolean, :abbr => :i, :default => false
 
+  # running count of frames in the roll, so it doesn't require a query
+  key :frame_count,     Integer, :abbr => :j, :default => 0
+
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
   many :following_users
