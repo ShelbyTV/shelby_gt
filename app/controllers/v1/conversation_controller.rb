@@ -1,8 +1,10 @@
 class V1::ConversationController < ApplicationController  
   
   before_filter :user_authenticated?
-  before_filter :set_current_user
-  oauth_required
+  if Rails.env != 'test'
+    before_filter :set_current_user
+    oauth_required
+  end
   
   ##
   # Returns a conversation including messages, with the given parameters.

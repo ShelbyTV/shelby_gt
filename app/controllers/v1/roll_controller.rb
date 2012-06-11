@@ -5,8 +5,10 @@ require "social_post_formatter"
 class V1::RollController < ApplicationController  
   
   before_filter :user_authenticated?, :except => [:show]
-  before_filter :set_current_user
-  oauth_required
+  if Rails.env != 'test'
+    before_filter :set_current_user
+    oauth_required
+  end
   
   ##
   # Returns one roll, with the given parameters.

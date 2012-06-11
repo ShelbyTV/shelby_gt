@@ -7,8 +7,10 @@ class V1::FrameController < ApplicationController
 
   before_filter :user_authenticated?, :except => [:index, :show, :watched]
   skip_before_filter :verify_authenticity_token, :only => [:create]
-  before_filter :set_current_user
-  oauth_required
+  if Rails.env != 'test'
+    before_filter :set_current_user
+    oauth_required
+  end
  
   
   ##

@@ -1,8 +1,10 @@
 class V1::DashboardEntriesController < ApplicationController  
     
   before_filter :authenticate_user!
-  before_filter :set_current_user
-  oauth_required
+  if Rails.env != 'test'
+    before_filter :set_current_user
+    oauth_required
+  end
  
   
   ##

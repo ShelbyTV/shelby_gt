@@ -1,6 +1,9 @@
 class V1::VideoController < ApplicationController  
-  before_filter :set_current_user
-  oauth_required
+
+  if Rails.env != 'test'
+    before_filter :set_current_user
+    oauth_required
+  end
  
   ##
   # Returns one video, with the given parameters.

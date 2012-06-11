@@ -2,8 +2,10 @@ require 'user_manager'
 
 class V1::TokenController < ApplicationController  
   skip_before_filter :verify_authenticity_token
-  before_filter :set_current_user
-  oauth_required
+  if Rails.env != 'test'
+    before_filter :set_current_user
+    oauth_required
+  end
   
 
   ##
