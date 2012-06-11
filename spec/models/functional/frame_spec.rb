@@ -21,6 +21,15 @@ describe Frame do
     end
   end
   
+  context "create" do
+    it "should increment it's roll's frame_count on create" do
+      roll = Factory.create(:roll)
+      lambda {
+        frame = Factory.create(:frame, :roll => roll)
+      }.should change { roll.reload.frame_count }.by(1)
+    end
+  end
+  
   # We're testing a private method here, but it's a pretty fucking important/tricky one and has to be correct
   context "ancestor search" do
     it "should find an ancestor when one exists" do
@@ -347,6 +356,16 @@ describe Frame do
       @frame.roll = roll
       @frame.save
       @frame.destroyable_by?(@stranger).should == true
+    end
+    
+    it "should decrement it's roll's frame_count on destroy" do
+      roll = Factory.create(:roll, :creator => @stranger)
+      @frame.roll = roll
+      @frame.save
+      
+      lambda {
+        @frame.destroy
+      }.should change { roll.reload.frame_count }.by -1
     end
     
   end
