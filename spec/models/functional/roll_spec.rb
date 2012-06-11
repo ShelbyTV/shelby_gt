@@ -24,10 +24,19 @@ describe Roll do
       indexes.should include({"a"=>1})
     end
   
+    it "should have an index on [subdomain]" do
+      indexes = Roll.collection.index_information.values.map { |v| v["key"] }
+      indexes.should include({"j"=>1})
+    end
+
     it "should abbreviate creator_id as :a" do
       Roll.keys["creator_id"].abbr.should == :a
     end
   
+    it "should abbreviate subdomain as :j" do
+      Roll.keys["subdomain"].abbr.should == :j
+    end
+
   end
   
   context "followers" do

@@ -41,6 +41,9 @@ class Roll
   # indicates the special heart roll (formerly upvoted_roll, known as user.upvoted_roll)
   key :upvoted_roll,    Boolean, :abbr => :i, :default => false
 
+  # indicates the shelby.tv subdomain where this roll can be accessed as an isolated roll
+  key :subdomain,       String, :abbr => :j
+
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
   many :following_users
