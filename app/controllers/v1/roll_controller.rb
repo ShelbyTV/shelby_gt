@@ -16,13 +16,9 @@ class V1::RollController < ApplicationController
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
       if params[:id]
-        return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:id]))
         @include_following_users = params[:following_users] == "true" ? true : false
-        if @roll = Roll.find(roll_id)
-          if user_signed_in? and @roll.viewable_by?(current_user)
-            params[:heart_roll] = true if @roll.id == current_user.upvoted_roll_id
-            @status =  200
-          elsif @roll.public
+        if @roll = Roll.find(params[:id])
+          if (user_signed_in? and @roll.viewable_by?(current_user)) or @roll.public
             @status =  200
           else
             render_error(404, "you are not authorized to see that roll")
@@ -30,21 +26,37 @@ class V1::RollController < ApplicationController
         else
           render_error(404, "that roll does not exist")
         end
-      elsif (params[:public_roll] or params[:heart_roll]) and user_signed_in? #this is for the aliased route to get users public roll
-        if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
-          if params[:public_roll]
-            @roll = user.public_roll
-          elsif params[:heart_roll]
-            @roll = user.upvoted_roll
-          end
+      end
+    end
+  end
+  
+  def show_users_public_roll
+    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show_users_public_roll']) do
+      if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
+        if @roll = user.public_roll
           @include_following_users = params[:following_users] == "true" ? true : false
           @status = 200
         else
-          render_error(404, "could not find the roll of the user specified")
+          render_error(404, "could not find that roll")
         end
       else
-        render_error(404, "could not find that roll")
+        render_error(404, "could not find the roll of the user specified")
       end
+    end
+  end
+  
+  def show_users_heart_roll
+    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show_users_heart_roll']) do
+      if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
+        if @roll = user.upvoted_roll
+          @include_following_users = params[:following_users] == "true" ? true : false
+          @status = 200
+        else
+          render_error(404, "could not find that roll")
+        end
+      else
+        render_error(404, "could not find the roll of the user specified")
+      end    
     end
   end
   

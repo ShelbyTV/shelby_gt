@@ -29,25 +29,12 @@ class V1::FrameController < ApplicationController
             
       if params[:roll_id]
         return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:roll_id]))
-        
-        @roll = Roll.find(roll_id)
-        
-      elsif (params[:public_roll] or params[:heart_roll])
-        if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
-          if params[:public_roll]
-            @roll = user.public_roll
-          elsif params[:heart_roll]
-            @roll = user.upvoted_roll
-          end
-        end
+        @roll = Roll.find(roll_id)        
       end
       
       if @roll and @roll.viewable_by?(current_user)
         @include_frame_children = (params[:include_children] == "true") ? true : false
-        # lets the view show appropriate information, eg thumbnail_url
-        params[:heart_roll] = true if (user_signed_in? and @roll.id == current_user.upvoted_roll_id)
-
- 
+        
         # the default sort order for genius rolls is by the order field, other rolls score field
         # if needed in the future, can add a parameter so clients can specify sorting type
         if @roll.genius
@@ -101,7 +88,103 @@ class V1::FrameController < ApplicationController
       end
     end
   end
-    
+  
+  def index_for_users_public_roll
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['index_for_users_public_roll']) do 
+      # default params
+      @limit = params[:limit] ? params[:limit] : 20
+      # put an upper limit on the number of entries returned
+      @limit = 20 if @limit.to_i > 20
+  
+      skip = params[:skip] ? params[:skip].to_i : 0
+      
+      if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
+        @roll = user.public_roll
+      end
+      
+      where_hash = { :roll_id => @roll.id }
+
+      if params[:since_id]
+        
+        return render_error(404, "please specify a valid since_id") unless (since_id = ensure_valid_bson_id(params[:since_id]) and (since_id_frame = Frame.find(since_id)))
+        
+        case params[:order]
+        when "1", nil, "forward"
+          where_hash[:score.lte] = since_id_frame.score
+        when "-1", "reverse"
+          where_hash[:score.gte] = since_id_frame.score
+        end
+      end
+
+      @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(where_hash).all
+      
+      if @frames
+        #########
+        # solving the N+1 problem with eager loading all children of a frame
+        @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
+        @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq
+        @entries_hearted_ids = @frames.map {|f| f.upvoters }.flatten.compact.uniq
+        @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
+        @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
+
+        @rolls = Roll.find(@entries_roll_ids)
+        @users = User.find((@entries_creator_ids + @entries_hearted_ids).uniq)
+        @videos = Video.find(@entries_video_ids)
+        @conversations = Conversation.find(@entries_conversation_ids)
+        ##########
+      end        
+      @status =  200
+    end
+  end
+  
+  def index_for_users_heart_roll
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['index_for_users_heart_roll']) do 
+      # default params
+      @limit = params[:limit] ? params[:limit] : 20
+      # put an upper limit on the number of entries returned
+      @limit = 20 if @limit.to_i > 20
+  
+      skip = params[:skip] ? params[:skip].to_i : 0
+      
+      if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
+        @roll = user.upvoted_roll
+      end
+      
+      where_hash = { :roll_id => @roll.id }
+
+      if params[:since_id]
+        
+        return render_error(404, "please specify a valid since_id") unless (since_id = ensure_valid_bson_id(params[:since_id]) and (since_id_frame = Frame.find(since_id)))
+        
+        case params[:order]
+        when "1", nil, "forward"
+          where_hash[:score.lte] = since_id_frame.score
+        when "-1", "reverse"
+          where_hash[:score.gte] = since_id_frame.score
+        end
+      end
+
+      @frames = Frame.sort(:score.desc).limit(@limit).skip(skip).where(where_hash).all
+      
+      if @frames
+        #########
+        # solving the N+1 problem with eager loading all children of a frame
+        @entries_roll_ids = @frames.map {|f| f.roll_id }.compact.uniq
+        @entries_creator_ids = @frames.map {|f| f.creator_id }.compact.uniq
+        @entries_hearted_ids = @frames.map {|f| f.upvoters }.flatten.compact.uniq
+        @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
+        @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
+
+        @rolls = Roll.find(@entries_roll_ids)
+        @users = User.find((@entries_creator_ids + @entries_hearted_ids).uniq)
+        @videos = Video.find(@entries_video_ids)
+        @conversations = Conversation.find(@entries_conversation_ids)
+        ##########
+      end        
+      @status =  200
+    end
+  end
+  
   ##
   # Returns one frame
   #   AUTHENTICATION OPTIONAL

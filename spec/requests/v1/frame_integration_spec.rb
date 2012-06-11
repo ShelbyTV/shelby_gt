@@ -178,7 +178,7 @@ describe 'v1/frame' do
           u2.save
           r2 = Factory.create(:roll, :creator => u2, :public => true)
           u2.public_roll_id = r2.id; u2.save
-          get 'v1/user/'+u2.nickname+'/personal_roll/frames'
+          get 'v1/user/'+u2.nickname+'/rolls/personal/frames'
           response.body.should be_json_eql(200).at_path("status")
         end
 
@@ -188,7 +188,7 @@ describe 'v1/frame' do
           u2.save
           r2 = Factory.create(:roll, :creator => u2, :public => true)
           u2.upvoted_roll_id = r2.id; u2.save
-          get 'v1/user/'+u2.nickname+'/heart_roll/frames'
+          get 'v1/user/'+u2.nickname+'/rolls/heart/frames'
           response.body.should be_json_eql(200).at_path("status")
         end
         

@@ -30,22 +30,22 @@ describe V1::FrameController do
       assigns(:status).should eq(200)
     end
     
-    it "properly aliases for users public roll" do
+    it "properly gets users public roll" do
       User.stub(:find) { @u1 }
       @u1.stub(:public_roll) { @roll }
       Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
-      get :index, :user_id => @u1.id, :public_roll => true, :format => :json
+      get :index_for_users_public_roll, :user_id => @u1.id, :format => :json
       
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])
       assigns(:status).should eq(200)
     end
 
-    it "properly aliases for users heart roll" do
+    it "properly gets users heart roll" do
       User.stub(:find) { @u1 }
       @u1.stub(:upvoted_roll) { @roll }
       Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
-      get :index, :user_id => @u1.id, :heart_roll => true, :format => :json
+      get :index_for_users_heart_roll, :user_id => @u1.id, :format => :json
       
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])

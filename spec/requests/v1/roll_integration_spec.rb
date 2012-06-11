@@ -36,12 +36,12 @@ describe 'v1/roll' do
       end
       
       it "should return personal roll of user when given a nickname" do
-        get 'v1/user/'+@u2.nickname+'/personal_roll'
+        get 'v1/user/'+@u2.nickname+'/rolls/personal'
         response.body.should be_json_eql(200).at_path("status")
       end
 
       it "should return heart roll of user when given a nickname" do
-        get 'v1/user/'+@u2.nickname+'/heart_roll'
+        get 'v1/user/'+@u2.nickname+'/rolls/hearted'
         response.body.should be_json_eql(200).at_path("status")
         parse_json(response.body)["result"]["title"].should eq("#{@u2.nickname} ♥s")
       end
