@@ -40,7 +40,7 @@ class AuthenticationsController < ApplicationController
         }
         StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
       
-        @opener_location = request.env['omniauth.origin'] || web_root_url
+        @opener_location = session[:return_url] || request.env['omniauth.origin'] || web_root_url
 
       elsif private_invite = cookies[:gt_roll_invite] # if they were invited via private roll, they get in
         GT::InvitationManager.private_roll_invite(user, private_invite)
@@ -54,10 +54,10 @@ class AuthenticationsController < ApplicationController
         }
         StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
       
-        @opener_location = request.env['omniauth.origin'] || web_root_url
+        @opener_location = session[:return_url] || request.env['omniauth.origin'] || web_root_url
       else
         # NO GT FOR YOU, just redirect to error page w/o signing in
-        @opener_location = "#{Settings::ShelbyAPI.web_root}/?access=nos"
+        @opener_location = session[:return_url] || "#{Settings::ShelbyAPI.web_root}/?access=nos"
       end
       
 # ---- Adding new authentication to current user
@@ -65,10 +65,10 @@ class AuthenticationsController < ApplicationController
       new_auth = GT::UserManager.add_new_auth_from_omniauth(current_user, omniauth)
       
       if new_auth
-        @opener_location = request.env['omniauth.origin'] || web_root_url
+        @opener_location = session[:return_url] || request.env['omniauth.origin'] || web_root_url
       else
         Rails.logger.error "AuthenticationsController#create - ERROR - tried to add authentication to #{current_user.id}, user.save failed with #{current_user.errors.full_messages.join(', ')}"
-        @opener_location = web_root_url
+        @opener_location = session[:return_url] || web_root_url
       end
 
 # ---- New User signing up!
@@ -103,15 +103,15 @@ class AuthenticationsController < ApplicationController
           }
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
         
-          @opener_location = request.env['omniauth.origin'] || web_root_url
+          @opener_location = session[:return_url] || request.env['omniauth.origin'] || web_root_url
         else
           Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
         
-          @opener_location = web_root_url
+          @opener_location = session[:return_url] || web_root_url
         end
       else
         # ...otherwise NO GT FOR YOU!  Just redirect to error page w/o creating account
-        @opener_location = "#{Settings::ShelbyAPI.web_root}/?access=nos"
+        @opener_location = session[:return_url] || "#{Settings::ShelbyAPI.web_root}/?access=nos"
       end
       
     end
@@ -125,7 +125,7 @@ class AuthenticationsController < ApplicationController
     
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['failure'])
     
-    @opener_location = web_root_url
+    @opener_location = session[:return_url] || web_root_url
     render :action => 'redirector', :layout => 'simple'
   end
   

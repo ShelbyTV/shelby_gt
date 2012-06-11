@@ -344,7 +344,7 @@ describe V1::FrameController do
       it "should create a new frame if given valid source, video_url and text params" do
         GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
       
-        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message, :source => "bookmark", :format => :json
+        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmark", :format => :json
         assigns(:status).should eq(200)
         assigns(:frame).should eq(@f1)
       end
@@ -352,7 +352,7 @@ describe V1::FrameController do
       it "should create a new frame if given video_url and text params" do
         GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
       
-        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message, :format => :json
+        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :format => :json
         assigns(:status).should eq(200)
         assigns(:frame).should eq(@f1)
       end
@@ -423,7 +423,7 @@ describe V1::FrameController do
   end
   
   describe "DELETE destroy" do
-    it "destroys a roll successfuly" do
+    it "destroys a frame successfuly" do
       frame = Factory.create(:frame)
       Frame.stub!(:find).and_return(frame)
       frame.should_receive(:destroy).and_return(frame)
@@ -431,7 +431,7 @@ describe V1::FrameController do
       assigns(:status).should eq(200)
     end
     
-    it "unsuccessfuly destroys a roll returning 404" do
+    it "unsuccessfuly destroys a frame returning 404" do
       frame = Factory.create(:frame)
       Frame.stub!(:find).and_return(frame)
       frame.should_receive(:destroy).and_return(false)

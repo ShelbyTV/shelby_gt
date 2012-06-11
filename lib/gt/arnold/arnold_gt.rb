@@ -36,7 +36,7 @@ $MAX_FIBERS = 1000 # <-- 1k seems to be good for LP1 (running w/ 2K hit a Segfau
 $fibers = []
 $http_timeout = 60
 $max_redirects = 5
-$check_deep_prob = 1.0
+$check_deep_prob = 0.0
 
 $cache_size = 10
 $url_cache = [[""] * $cache_size, 0]

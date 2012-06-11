@@ -219,11 +219,12 @@ describe GT::Framer do
       res[:frame].roll.should == @roll
     end
   
-    it "should not create a Frame without Video" do
+    it "should not create a Frame without Video or video_id" do
       lambda { GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => nil,
+        :video_id => nil,
         :message => @message,
         :roll => @roll
         ) }.should raise_error(ArgumentError)
@@ -308,6 +309,12 @@ describe GT::Framer do
       res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
     
       res[:frame].roll.thumbnail_url.should == "something://el.se"
+    end
+    
+    it "should set the back-pointer frame.conversation.frame" do
+      res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
+      
+      res[:frame].conversation.frame.should == res[:frame]
     end
   end
   

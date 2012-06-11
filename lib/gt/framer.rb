@@ -16,7 +16,11 @@ module GT
     # --options--
     #
     # :creator => User --- OPTIONAL the 'owner' or 'creator' of this Frame (ie who tweeted it?)
+    #
+    # Either :video or :video_id is required, but not both:
     # :video => Video --- REQUIRED (may be new or persisted) the normalized video being referenced
+    # :video_id => Video ID --- REQUIRED (may be new or persisted) the normalized video ID being referenced
+    #
     # :message => Message --- OPTIONAL (must be new) which is either normalized twitter/fb stuff, or straight from app, or blank
     #                       - will be added to a new Conversation attached to the Roll
     #                       - see GT::<Twitter | Facebook | Tumblr>Normalizer to create the messages
@@ -36,7 +40,10 @@ module GT
       creator = options.delete(:creator)
       score = options.delete(:score)
       order = options.delete(:order)
-      raise ArgumentError, "must supply a :video" unless (video = options.delete(:video)).is_a? Video
+      video = options.delete(:video)
+      video_id = options.delete(:video_id)
+      raise ArgumentError, "must include a :video or :video_id" unless video.is_a?(Video) or video_id.is_a?(BSON::ObjectId)
+      raise ArgumentError, "must not supply both :video and :video_id" if (video and video_id)
       raise ArgumentError, "must supply an :action" unless DashboardEntry::ENTRY_TYPE.values.include?(action = options.delete(:action))
       roll = options.delete(:roll)
       dashboard_user_id = options.delete(:dashboard_user_id)
@@ -64,7 +71,8 @@ module GT
       # There will always be exactly 1 new frame
       f = Frame.new
       f.creator = creator
-      f.video = video
+      f.video = video if video
+      f.video_id = video_id if video_id 
       f.roll = roll if roll
       f.conversation = convo
       f.score = score
@@ -204,6 +212,7 @@ module GT
 
         # Create a new conversation
         convo = Conversation.new
+        convo.frame = new_frame
         convo.video_id = new_frame.video_id
         convo.public = true
         new_frame.conversation = convo

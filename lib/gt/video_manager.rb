@@ -1,8 +1,10 @@
 require 'url_helper'
+require 'video_provider_api'
 require 'url_video_detector'
 require 'deeplink_parser'
 
 # This is the one and only place where Videos are created.
+# They might be created in video_provider_api but that is only called through this method
 # VideoManager handles the URLs resolution/parsing in the background
 #
 # If Arnold 2, the bookmarklet, or a dev script needs (to create) a Video, that goes through us.
@@ -100,8 +102,13 @@ module GT
       end
       
       # since there are no deep links, check to see if we can handle the url
-      unless GT::UrlHelper.parse_url_for_provider_info(url)
+      unless provider_info
         return {:videos => [], :from_deep => false}
+      end
+
+      if provider_info[:provider_name] == "youtube"
+        yt_video = GT::VideoProviderApi.examine_url_for_youtube_video(provider_info[:provider_id], use_em)
+        return {:videos => [yt_video], :from_deep => false} if yt_video
       end
 	  # Still no video...
       # Examine that URL (via our cache, our service, or external service like embed.ly), looking for video

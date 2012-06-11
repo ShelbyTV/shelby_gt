@@ -12,7 +12,7 @@ class V1::ConversationController < ApplicationController
   # 
   # @param [Required, String] id The id of the conversation
   def show
-    StatsManager::StatsD.time(Settings::StatsConstants.api['video']['show']) do
+    StatsManager::StatsD.time(Settings::StatsConstants.api['conversation']['show']) do
       if params[:id]
         return render_error(404, "please specify a valid id") unless (id = ensure_valid_bson_id(params[:id]))
 

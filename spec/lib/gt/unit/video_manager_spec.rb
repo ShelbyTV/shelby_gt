@@ -37,7 +37,7 @@ describe GT::VideoManager do
       fake_em_http_request = mock_model("FakeEMHttpRequest")
       fake_em_http_request.stub(:get).and_return(
           mock_model("FakeEMHttpResonse", :error => false,
-            :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testdeepfiles/rant.html", __FILE__))))
+            :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testhtmlfiles/rant.html", __FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
       vids = GT::VideoManager.get_or_create_videos_for_url(@urlhaslink, false, nil, true, true)
       vids[:videos].size.should == 1
@@ -53,7 +53,7 @@ describe GT::VideoManager do
       fake_em_http_request = mock_model("FakeEMHttpRequest")
       fake_em_http_request.stub(:get).and_return(
           mock_model("FakeEMHttpResonse", :error => false,
-            :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testdeepfiles/google.html", __FILE__))))
+            :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testhtmlfiles/google.html", __FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
       vids = GT::VideoManager.get_or_create_videos_for_url(@urlnolink, false, nil, true, true)
       vids.should == {:videos => [], :from_deep =>false}
@@ -123,8 +123,8 @@ describe GT::VideoManager do
     
       it "should handle single video hash return" do
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
-        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil, "abcd")
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
+        GT::UrlHelper.stub( :parse_url_for_provider_info ).with( @url1).and_return({:provider_name => "name", :provider_id => "id"})
         
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([
           {:embedly_hash => { 'url' => "something" }}
@@ -136,7 +136,7 @@ describe GT::VideoManager do
       
       it "should handle multiple video hash return" do
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
-        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil, "abcd")
+        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>"name",:provider_id=>"id"})
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
         
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([
@@ -170,7 +170,7 @@ describe GT::VideoManager do
           'html' => '-iframe src=\'whatever\' /-'
           }
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
-        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil, "abcd")
+        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>"name", :provider_id=>"id"})
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
         
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([
@@ -205,7 +205,7 @@ describe GT::VideoManager do
       it "should return Video from DB if embed.ly hash references one in there" do
         h = { 'url' => 'a_new_url' }
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
-        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return(nil, "abcd")
+        GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>"name", :provider_id=>"id"})
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
         
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([

@@ -100,10 +100,12 @@ module GT
       end
     
       def self.check_embedly_for_video_with_net_http(orig_url, embedly_url, memcache_client)
-        response = Net::HTTP.get_response(URI.parse(embedly_url))
-        
-        return nil unless response
-        
+        begin
+          response = Net::HTTP.get_response(URI.parse(embedly_url))
+        ensure
+          return nil unless response
+        end
+ 
         if response.code == "200"
           #valid response is cached above
           return response.body
