@@ -73,7 +73,7 @@ class V1::UserController < ApplicationController
         
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
-        @rolls = Roll.find(current_user.roll_followings.map! {|r| r.roll_id }.compact.uniq)
+        @rolls = Roll.find(current_user.roll_followings.map {|r| r.roll_id }.compact.uniq)
                 
         # move heart roll to @rolls[1]
         if heartRollIndex = @rolls.index(current_user.upvoted_roll)
