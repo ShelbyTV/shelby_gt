@@ -86,7 +86,7 @@ module GT
 
         if response.code == "200"
           return response.body
-        elsif response.code = "404"
+        elsif response.code == "404"
           return nil
         else
           return nil
