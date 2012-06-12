@@ -62,6 +62,20 @@ describe 'v1/roll' do
         response.body.should be_json_eql(200).at_path("status")
       end
       
+      it "should return frames if they are asked for in roll followings" do
+        r1 = Factory.create(:roll, :creator => @u1)
+        r1.add_follower(@u1)
+        url = 'http://url.here'
+        v = Factory.create(:video, :thumbnail_url => url)
+        f = Factory.create(:frame, :creator => @u1, :roll => r1, :video => v)
+        
+        roll_arry = [r1].map!{|r| "rolls[]=#{r.id.to_s}"}
+        
+        get 'v1/roll/browse?'+roll_arry.join('&')+"&frames=true"
+        response.body.should be_json_eql(200).at_path("status")
+        parse_json(response.body)["result"][0]["frames"][0]["video"]["thumbnail_url"].should eq(url)
+      end
+      
     end
     
     describe "POST" do

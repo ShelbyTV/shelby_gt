@@ -78,6 +78,30 @@ class V1::RollController < ApplicationController
       end
       
       if @rolls = Roll.find(hot_rolls)
+        
+        # load frames with select attributes, if params say to
+        if params[:frames] == "true"
+          # default params
+          limit = params[:limit] ? params[:limit] : 1
+          # put an upper limit on the number of entries returned
+          limit = 20 if limit.to_i > 20
+          
+          @frames = []                    
+          @rolls.each do |r|
+            r['frames_subset'] = []
+            @frames = r.frames.limit(limit).all
+            @frames.each do |f| 
+              if f.video # NOTE: not sure why some frames dont have videos, but this is necessary until we know why
+                r['frames_subset'] << {
+                  :id => f.id, :video => {
+                    :id => f.video.id, :thumbnail_url => f.video.thumbnail_url
+                  }
+                }
+              end
+            end
+          end
+        end
+        
         @status = 200
       else
         render_error(404, "something went wrong finding those rolls.")
