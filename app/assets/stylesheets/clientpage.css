@@ -1,0 +1,23 @@
+#hor-table {
+    font-size:15px;
+    margin: 45px;
+    width:1500px;
+    border-collapse: collapse;
+    text-align left;
+}
+
+#hor-table td {
+  padding: 20px 200px 0px 200px;
+}
+
+.heading {
+  font-size: 25px;
+  margin: 5px auto 10px;
+  text-align:center;
+  width: 100%
+}
+
+.client_information {
+  margin: 10px auto;
+  width: 100%
+}

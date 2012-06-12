@@ -11,24 +11,37 @@
   <meta name="viewport" content="width=device-width">
   <head profile="http://www.w3.org/2005/10/profile">
   <link rel="icon"type="image/png" href="/favicon.png">
-  <%= stylesheet_link_tag "gate" %>
   <%= stylesheet_link_tag "fonts/stylesheet" %>
   <%= stylesheet_link_tag "app.html" %>
   <%= stylesheet_link_tag "clientpage.css" %>
   <!--[if lt IE 9]><link href="/stylesheets/png.css" media="screen, projection" rel="stylesheet" type="text/css" /><![endif]-->  
 </head>
 
-<body = "email-gate">
 
-<h2>The application <%= link_to h(oauth.client.display_name), oauth.client.link %>
-  is requesting to access your account.</h2>
-<form action="/oauth/grant">
-  <button>Grant</button>
-  <input type="hidden" name="authorization" value="<%= oauth.authorization %>">
-</form>
-<form action="/oauth/deny">
-  <button>Deny</button>
-  <input type="hidden" name="authorization" value="<%= oauth.authorization %>">
-</form>
+<body>
+  <div class="client_information">
+  <h2 class="heading"> Oauth settings </h2>
+  <table id="hor-table">
+    <tr>
+      <td> Client id</td>
+      <td><tt> <%= @client.id %> </tt></td>
+    </tr>
+    <tr> 
+      <td>Client secret</td>
+      <td><tt> <%= @client.secret %> </tt></td>
+    </tr>
+    <tr>
+      <td> Application name </td>
+      <td><tt> <%= @client.display_name %> </td></tt>
+    </tr>
+    <tr>
+      <td> Callback url</td>
+      <td><tt> <%= @client.redirect_uri %> </tt></td>
+    </tr>
+    <tr>
+      <td> 
+  </table>
+</div>
+
 </body>
 </html>

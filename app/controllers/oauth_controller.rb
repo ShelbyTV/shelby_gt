@@ -3,12 +3,15 @@ require 'rack/oauth2/server'
 class OauthController < ApplicationController
   def authorize
     #if current user is logged in
-    if current_user
+    if true
       render :action=>"authorize"
     else
       session[:return_url] = request.url
-      render 'login_page'
+      render 'gate'
     end
+  end
+
+  def gate
   end
 
   def grant
@@ -23,16 +26,12 @@ class OauthController < ApplicationController
   end
 
   def create
-    client_params = params[:post]
-    client = Rack::OAuth2::Server.register(:display_name=>client_params[:display_name],
-                                           :link=>client_params[:website_link],
-                                           :image_url=>client_params[:image_url],
-                                           :redirect_uri=>client_params[:redirect_url])
-    @id = client.id
-    @secret = client.secret
-    puts @id
-    puts @secret
-    render "create"
+    client = Rack::OAuth2::Server.register(:display_name=>params["app_name"],
+                                           :link=>params["website_link"],
+                                           :image_url=>params["image_url"],
+                                           :redirect_uri=>params["callback_url"])
+    @client = client
+    render "clientpage"
 
   end
 

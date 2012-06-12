@@ -1,26 +1,48 @@
-<h1>Client Registration</h1>
-<%= form_for :post, :url => {:action=>:create} do |f| %>
-  <p>
-    <%= f.label :website_link, "Website Link"%>
-    <%= f.text_field :website_link %>
-  </p>
+<!doctype html>
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
 
-  <p>
-    <%= f.label :redirect_url, "Redirect Url" %>
-    <%= f.text_field :redirect_url %>
-  </p>
+<% # if we got any meta tag info from request display it, otherwise just render head normally %>
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shelbytv: http://ogp.me/ns/fb/shelbytv#">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title> Login Page </title>
+  
+  <meta name="viewport" content="width=device-width">
+  <head profile="http://www.w3.org/2005/10/profile">
+    <link rel="icon"type="image/png" href="/favicon.png">
+    <%= stylesheet_link_tag "registration" %>
+    <%= stylesheet_link_tag "fonts/stylesheet" %>
+    <%= stylesheet_link_tag "app.html" %>
 
-  <p>
-    <%= f.label :display_name, "Display Name" %>
-    <%= f.text_field :display_name %>
-  </p>
+  <!--[if lt IE 9]><link href="/stylesheets/png.css" media="screen, projection" rel="stylesheet" type="text/css" /><![endif]-->  
+</head>
 
-  <p>
-    <%= f.label :image_url, "Image Url" %>
-    <%= f.text_field :image_url %>
-  </p>
 
-  <p>
-    <%= f.submit "Register" %>
-  </p>
-<% end %>
+<body class="registration">
+  <form action = "/oauth/create" method="post" class="registration-signup">
+    <legend class="registration-caption">
+      Application Details
+    </legend>
+    <label class="registration-label">
+      Application Name
+      <input type="app_name" id="app_name" class="registration-field" name="app_name" />
+    </label>
+    <label class="registration-label">
+      Website Url
+      <input type="website_link" id="website_link" class="registration-field" name="website_link" />
+    </label>
+    <label class="registration-label">
+      Image Url
+      <input type="image_url" id="image_url" class="registration-field" name="image_url" />
+    </label>
+    <label class="registration-label">
+      Callback Url
+      <input type="callback_url" id="callback_url" class="registration-field" name="callback_url"/>
+    </label>
+    <button type="submit" class="registration-signup-submit">
+      Submit
+    </button>
+  </form>
+</body>
+</html>

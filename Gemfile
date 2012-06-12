@@ -31,6 +31,7 @@ gem 'rack-oauth2-server'
 gem "haml"
 gem "compass", "0.11.7"
 
+
 #
 # ---------- User Authentication
 #

@@ -152,6 +152,12 @@ class User
   end
   
   def permalink() "#{Settings::ShelbyAPI.web_root}/user/#{self.nickname}/personal_roll"; end
+
+  def revoke(client)
+    token = Rack::Oauth2::Server::AccessToken.get_token_for(self.id, client)
+    token.revoke!
+  end
+
   
   # Use this to convert User's created on NOS to GT
   # When we move everyone to GT, use the rake task in gt_migration.rb

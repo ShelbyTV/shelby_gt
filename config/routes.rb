@@ -21,6 +21,8 @@ ShelbyGt::Application.routes.draw do
   get 'oauth/register' => 'oauth#register'
   post 'oauth/register' => 'oauth#register'
   post 'oauth/create' => 'oauth#create'
+  get 'oauth/gate' => 'oauth#gate'
+  #get 'oauth/clientpage' => 'oauth#clientpage'
 
   resources :authentications
   get '/auth/:provider/callback' => 'authentications#create'

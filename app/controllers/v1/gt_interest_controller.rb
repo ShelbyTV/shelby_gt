@@ -1,9 +1,5 @@
 class V1::GtInterestController < ApplicationController  
-  if Rails.env != 'test'
-    before_filter :set_current_user
-    oauth_required
-  end
- 
+  
   ##
   # Creates and returns one GtInterest
   #
@@ -22,10 +18,5 @@ class V1::GtInterestController < ApplicationController
     end
   end
 
-  protected
-    def set_current_user
-      @current_user = User.find(oauth.identity) if oauth.authenticated?
-    end
- 
   
 end

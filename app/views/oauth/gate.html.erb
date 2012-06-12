@@ -11,24 +11,27 @@
   <meta name="viewport" content="width=device-width">
   <head profile="http://www.w3.org/2005/10/profile">
   <link rel="icon"type="image/png" href="/favicon.png">
-  <%= stylesheet_link_tag "gate" %>
+  <%= stylesheet_link_tag "app.html" %>  
+  <%= stylesheet_link_tag "login" %>
   <%= stylesheet_link_tag "fonts/stylesheet" %>
-  <%= stylesheet_link_tag "app.html" %>
-  <%= stylesheet_link_tag "clientpage.css" %>
   <!--[if lt IE 9]><link href="/stylesheets/png.css" media="screen, projection" rel="stylesheet" type="text/css" /><![endif]-->  
 </head>
 
-<body = "email-gate">
 
-<h2>The application <%= link_to h(oauth.client.display_name), oauth.client.link %>
-  is requesting to access your account.</h2>
-<form action="/oauth/grant">
-  <button>Grant</button>
-  <input type="hidden" name="authorization" value="<%= oauth.authorization %>">
-</form>
-<form action="/oauth/deny">
-  <button>Deny</button>
-  <input type="hidden" name="authorization" value="<%= oauth.authorization %>">
-</form>
-</body>
+<body>
+  <div class="login-wrapper">
+    <h1 class="login-logo ir">
+    </h1>
+    <p class = "login-slogan">
+      An amazing way to <br> discover and enjoy video.
+      </p>
+      <br>
+    <div class="login-links">
+      <%= link_to "Log In with Twitter", '/auth/twitter' %> <br>
+      <%= link_to "Log In with Facebook", '/auth/facebook' %>
+    </div>
+  </div>
+  
+  
+  </body>
 </html>
