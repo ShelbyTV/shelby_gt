@@ -61,10 +61,12 @@ class V1::UserController < ApplicationController
   # Returns the rolls the current_user is following
   #   REQUIRES AUTHENTICATION
   #
-  # [GET] /v1/user/:id/roll_followings
+  # [GET] /v1/user/:id/rolls/following 
   # 
   # @param [Required, String] id The id of the user
   # @param [Optional, boolean] include_children Return the following_users?
+  # @param [Optional, boolean] frames Returns a shallow version of frames
+  # @param [Optional, boolean] limit limit number of shallow frames to return 
   def roll_followings
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
       if current_user.id.to_s == params[:id]
@@ -90,6 +92,21 @@ class V1::UserController < ApplicationController
         
         # Load all roll creators to prevent N+1 queries
         @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
+        
+        # load frames with select attributes, if params say to
+        if params[:frames] == "true"
+          # default params
+          limit = params[:limit] ? params[:limit] : 1
+          # put an upper limit on the number of entries returned
+          limit = 20 if limit.to_i > 20
+          
+          @frames = []                    
+          @rolls.each do |r|
+            r['shallow_frames'] = []
+            @frames = r.frames.limit(limit).all
+            @frames.each {|f| r['shallow_frames'] << f.video.thumbnail_url }
+          end
+        end
         
         @status = 200
       else
