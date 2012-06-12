@@ -105,7 +105,7 @@ class V1::UserController < ApplicationController
             r['frames_subset'] = []
             @frames = r.frames.limit(limit).all
             @frames.each do |f| 
-              if f.video
+              if f.video # NOTE: not sure why some frames dont have videos, but this is necessary until we know why
                 r['frames_subset'] << {
                   :id => f.id, :video => {
                     :id => f.video.id, :thumbnail_url => f.video.thumbnail_url
