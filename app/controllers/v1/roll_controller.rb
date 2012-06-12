@@ -86,7 +86,6 @@ class V1::RollController < ApplicationController
     end
   end
   
-  
   ##
   # Returns success if roll is shared successfully, with the given parameters.
   #
