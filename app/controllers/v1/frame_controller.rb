@@ -443,10 +443,7 @@ class V1::FrameController < ApplicationController
   # @param [Optional, String] end_time The end_time of the action on the frame
   def watched
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['watched']) do
-      if params[:frame_id]
-        return render_error(404, "please specify a valid id") unless (frame_id = ensure_valid_bson_id(params[:frame_id]))
-        
-        @frame = Frame.find(frame_id)
+      if params[:frame_id] and (@frame = Frame.find(params[:frame_id]))
         @status = 200
         
         #conditionally count this as a view (once per 24 hours per user)

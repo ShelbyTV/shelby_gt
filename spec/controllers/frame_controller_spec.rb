@@ -229,6 +229,9 @@ describe V1::FrameController do
     end
     
     it "should return 404 if Frame can't be found" do
+      #undo the stub above so this actually fails
+      Frame.stub(:find) { nil }
+      
       post :watched, :frame_id => "somebadid", :format => :json
       assigns(:status).should eq(404)
     end
