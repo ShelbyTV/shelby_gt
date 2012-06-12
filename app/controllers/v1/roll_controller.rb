@@ -82,15 +82,18 @@ class V1::RollController < ApplicationController
         # load frames with select attributes, if params say to
         if params[:frames] == "true"
           # default params
-          limit = params[:limit] ? params[:limit] : 1
+          limit = params[:frames_limit] ? params[:frames_limit] : 1
           # put an upper limit on the number of entries returned
           limit = 20 if limit.to_i > 20
+
+          # intelligently fetching frames and videos for performance purposes
+          @frames =[]
+          @rolls.each { |r| @frames << r.frames.limit(limit).all }
+          @videos = Video.find( @frames.flatten!.compact.uniq.map {|f| f.video_id }.compact.uniq )
           
-          @frames = []                    
           @rolls.each do |r|
             r['frames_subset'] = []
-            @frames = r.frames.limit(limit).all
-            @frames.each do |f| 
+            r.frames.limit(limit).all.each do |f| 
               if f.video # NOTE: not sure why some frames dont have videos, but this is necessary until we know why
                 r['frames_subset'] << {
                   :id => f.id, :video => {

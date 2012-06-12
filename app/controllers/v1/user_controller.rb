@@ -66,22 +66,15 @@ class V1::UserController < ApplicationController
   # @param [Required, String] id The id of the user
   # @param [Optional, boolean] include_children Return the following_users?
   # @param [Optional, boolean] frames Returns a shallow version of frames
-  # @param [Optional, boolean] limit limit number of shallow frames to return 
+  # @param [Optional, boolean] frames_limit limit number of shallow frames to return 
   def roll_followings
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
       if current_user.id.to_s == params[:id]
         
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
-        @rolls = current_user.roll_followings.map! {|r| r.roll }
-        
-        #handle and log bad roll followings
-        compacted_rolls = @rolls.compact
-        if compacted_rolls.size < @rolls.size
-          Rails.logger.error("UserController#roll_followings - bad roll_followings for user #{current_user.id}")
-          @rolls = compacted_rolls
-        end
-        
+        @rolls = Roll.find(current_user.roll_followings.map! {|r| r.roll_id }.compact.uniq)
+                
         # move heart roll to @rolls[1]
         if heartRollIndex = @rolls.index(current_user.upvoted_roll)
           heartRoll = @rolls.slice!(heartRollIndex)
@@ -96,15 +89,18 @@ class V1::UserController < ApplicationController
         # load frames with select attributes, if params say to
         if params[:frames] == "true"
           # default params
-          limit = params[:limit] ? params[:limit] : 1
+          limit = params[:frames_limit] ? params[:frames_limit] : 1
           # put an upper limit on the number of entries returned
           limit = 20 if limit.to_i > 20
+
+          # intelligently fetching frames and videos for performance purposes
+          @frames =[]
+          @rolls.each { |r| @frames << r.frames.limit(limit).all }
+          @videos = Video.find( @frames.flatten!.compact.uniq.map {|f| f.video_id }.compact.uniq )
           
-          @frames = []                    
           @rolls.each do |r|
             r['frames_subset'] = []
-            @frames = r.frames.limit(limit).all
-            @frames.each do |f| 
+            r.frames.limit(limit).all.each do |f| 
               if f.video # NOTE: not sure why some frames dont have videos, but this is necessary until we know why
                 r['frames_subset'] << {
                   :id => f.id, :video => {
