@@ -9,6 +9,6 @@ end
 
 if @frames
 	node :frames do |r|
-		r['shallow_frames']
+		r['frames_subset']
 	end
 end
