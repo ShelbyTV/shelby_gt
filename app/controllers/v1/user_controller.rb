@@ -104,7 +104,7 @@ class V1::UserController < ApplicationController
           @rolls.each do |r|
             r['shallow_frames'] = []
             @frames = r.frames.limit(limit).all
-            @frames.each {|f| r['shallow_frames'] << f.video.thumbnail_url }
+            @frames.each {|f| r['shallow_frames'] << f.video.thumbnail_url if f.video}
           end
         end
         
