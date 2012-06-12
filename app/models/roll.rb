@@ -4,6 +4,7 @@ require 'user_action_manager'
 
 class Roll
   include MongoMapper::Document
+  safe
 
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Roll
@@ -49,6 +50,24 @@ class Roll
   many :following_users
   
   attr_accessible :title, :thumbnail_url
+
+  def title=(val)
+    # update subdomain to match title if its a public non-genius roll
+    self.subdomain = val.strip.gsub(/[_]+/,'-').gsub(/[^a-zA-Z\d-]|((\A[-])|([-]\z))/, '').downcase if self.public and !self.genius
+    self[:title] = val
+  end
+
+  def public=(val)
+    # remove subdomain if private
+    self.subdomain = nil if !val
+    self[:public] = val
+  end
+
+  def genius=(val)
+    # remove subdomain if genius
+    self.subdomain = nil if val
+    self[:genius] = val
+  end
 
   def followed_by?(u)
     raise ArgumentError, "must supply user or user_id" unless u

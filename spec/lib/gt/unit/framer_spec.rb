@@ -14,8 +14,7 @@ describe GT::Framer do
       @message.public = true
     
       @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
-      @roll = Roll.new( :title => "title" )
-      @roll.creator = @roll_creator
+      @roll = Factory.create(:roll, :creator => @roll_creator)
       @roll.save
     end
   
@@ -259,8 +258,7 @@ describe GT::Framer do
       @f1 = Factory.create(:frame, :video => @video)
       
       @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
-      @roll = Roll.new( :title => "title" )
-      @roll.creator = @roll_creator
+      @roll = Factory.create(:roll, :creator => @roll_creator)
       @roll.save
     end
     
@@ -393,8 +391,7 @@ describe GT::Framer do
   context "removing dupe of Frame from Roll" do
     before(:each) do
       @roll_creator = Factory.create( :user )
-      @roll = Roll.new( :title => "title" )
-      @roll.creator = @roll_creator
+      @roll = Factory.create(:roll, :creator => @roll_creator)
       @roll.save
       
       @frame = Factory.create(:frame)
@@ -415,8 +412,7 @@ describe GT::Framer do
   context "creating a DashboardEntry" do
     before(:each) do
       @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
-      @roll = Roll.new( :title => "title" )
-      @roll.creator = @roll_creator
+      @roll = Factory.create(:roll, :creator => @roll_creator)
       @roll.save
       
       @frame = Factory.create(:frame)
@@ -440,7 +436,7 @@ describe GT::Framer do
   context "backfilling DashboardEntries" do
     before(:each) do
       @roll_creator = Factory.create(:user)
-      @roll = Factory.create(:roll, :title => "title", :creator => @roll_creator )
+      @roll = Factory.create(:roll, :creator => @roll_creator)
       
       @frame3 = Factory.create(:frame, :roll => @roll, :score => 10)
       @frame2 = Factory.create(:frame, :roll => @roll, :score => 11)
@@ -475,7 +471,7 @@ describe GT::Framer do
     end
     
     it "shouldn't die if there aren't any frames" do
-      empty_roll = Factory.create(:roll, :title => "title", :creator => @roll_creator )
+      empty_roll = Factory.create(:roll, :creator => @roll_creator )
        
       lambda {
         res = GT::Framer.backfill_dashboard_entries(@user, empty_roll, 20)

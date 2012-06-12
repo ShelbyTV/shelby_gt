@@ -5,7 +5,8 @@ require 'spec_helper'
 #Functional: hit the database, treat model as black box
 describe Roll do
   before(:each) do
-    @roll = Factory.create(:roll, :creator => (@creator = Factory.create(:user)), :title => "normal title", :thumbnail_url => "u://rl")
+    @roll = Factory.create(:roll, :creator => (@creator = Factory.create(:user)), :thumbnail_url => "u://rl")
+    @roll_title = @roll.title
     @user = Factory.create(:user)
     @stranger = Factory.create(:user)
   end
@@ -17,7 +18,6 @@ describe Roll do
       r.save
       Roll.identity_map.size.should > 0
     end
-
 
     it "should have an index on [creator_id]" do
       indexes = Roll.collection.index_information.values.map { |v| v["key"] }
@@ -212,7 +212,7 @@ describe Roll do
     
   context "upvoted_roll display_<title/thumbnail_url>" do
     it "should return regular title when not an upvoted roll" do
-      @roll.display_title.should == "normal title"
+      @roll.display_title.should == @roll_title
     end
     
     it "should return heart title when an upvoted roll" do
@@ -270,5 +270,55 @@ describe Roll do
       @creator.save
       @roll.destroyable_by?(@creator).should == false
     end
+  end
+
+  context "subdomain" do
+    it "should have a subdomain that matches its title if it's public and not a genius roll" do
+      @roll.subdomain.should == @roll_title
+      @roll.title = "normaltitle"
+      @roll.subdomain.should == "normaltitle"
+      @roll.public = true
+      @roll.genius = false
+      @roll.subdomain.should == "normaltitle"
+    end
+
+    it "should NOT have a subdomain if it's private" do
+      @roll.public = false
+      @roll.subdomain.nil?.should == true
+      @roll.title = "rolltitle"
+      @roll.subdomain.nil?.should == true
+    end
+
+    it "should NOT have a subdomain if it's a genius roll" do
+      @roll.genius = true
+      @roll.subdomain.nil?.should == true
+      @roll.title = "rolltitle"
+      @roll.subdomain.nil?.should == true
+    end
+
+    it "should remove spaces and invalid characters from the roll title when creating subdomain" do
+      @roll.public = true
+      @roll.title = " a b!c*d-1   23à4     "
+      @roll.subdomain.should == "abcd-1234"
+    end
+
+    it "should remove leading and/or trailing '-' from the roll title when creating subdomain" do
+      @roll.public = true
+      @roll.title = " -ti-tle-  "
+      @roll.subdomain.should == "ti-tle"
+    end
+
+    it "should transform sequences of one or more '_' to '-' when creating subdomain" do
+      @roll.public = true
+      @roll.title = "a_b__c___d"
+      @roll.subdomain.should == "a-b-c-d"
+    end
+
+    it "should downcase characters in the roll title when creating subdomain" do
+      @roll.public = true
+      @roll.title = "RoLLTitLE"
+      @roll.subdomain.should == "rolltitle"
+    end
+
   end
 end
