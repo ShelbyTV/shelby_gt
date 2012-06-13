@@ -1,6 +1,8 @@
 class V1::UserController < ApplicationController  
   
   before_filter :user_authenticated?, :except => [:signed_in, :show]
+
+  extend NewRelic::Agent::MethodTracer
   
   ####################################
   # Returns true (false) if user is (not) signed in
@@ -73,20 +75,26 @@ class V1::UserController < ApplicationController
         
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
-        roll_ids = current_user.roll_followings.map {|r| r.roll_id }.compact.uniq
-        if @rolls = Roll.find(roll_ids)
-          
-          # move heart roll to @rolls[1]
-          if heartRollIndex = @rolls.index(current_user.upvoted_roll)
-            heartRoll = @rolls.slice!(heartRollIndex)
-            @rolls.insert(1, heartRoll)
-          else
-            Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
+        self.class.trace_execution_scoped(['UserController/roll_followings/roll_find']) do
+          @rolls = Roll.find(current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
+        end
+        
+        if @rolls
+
+          self.class.trace_execution_scoped(['UserController/roll_followings/heart_roll']) do
+            # move heart roll to @rolls[1]
+            if heartRollIndex = @rolls.index(current_user.upvoted_roll)
+              heartRoll = @rolls.slice!(heartRollIndex)
+              @rolls.insert(1, heartRoll)
+            else
+              Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
+            end
           end
-        
-          # Load all roll creators to prevent N+1 queries
-          @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
-        
+          
+          self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_find']) do
+            # Load all roll creators to prevent N+1 queries
+            @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
+          end
           # load frames with select attributes, if params say to
           if params[:frames] == "true"
             # default params
@@ -96,18 +104,24 @@ class V1::UserController < ApplicationController
 
             # intelligently fetching frames and videos for performance purposes
             @frames =[]
-            @rolls.each { |r| @frames << r.frames.limit(limit).all }
-            @videos = Video.find( @frames.flatten!.compact.uniq.map {|f| f.video_id }.compact.uniq )
-          
-            @rolls.each do |r|
-              r['frames_subset'] = []
-              r.frames.limit(limit).all.each do |f| 
-                if f.video # NOTE: not sure why some frames dont have videos, but this is necessary until we know why
-                  r['frames_subset'] << {
-                    :id => f.id, :video => {
-                      :id => f.video.id, :thumbnail_url => f.video.thumbnail_url
+            self.class.trace_execution_scoped(['UserController/roll_followings/frames_find']) do
+              @rolls.each { |r| @frames << r.frames.limit(limit).all }
+            end
+            self.class.trace_execution_scoped(['UserController/roll_followings/video_find']) do
+              @videos = Video.find( @frames.flatten!.compact.uniq.map {|f| f.video_id }.compact.uniq )
+            end
+            
+            self.class.trace_execution_scoped(['UserController/roll_followings/frames_subset_code']) do
+              @rolls.each do |r|
+                r['frames_subset'] = []
+                r.frames.limit(limit).all.each do |f| 
+                  if f.video # NOTE: not sure why some frames dont have videos, but this is necessary until we know why
+                    r['frames_subset'] << {
+                      :id => f.id, :video => {
+                        :id => f.video.id, :thumbnail_url => f.video.thumbnail_url
+                      }
                     }
-                  }
+                  end
                 end
               end
             end
