@@ -20,8 +20,10 @@
 
 
 <body class="registration">
-  <form action = "/oauth/create" method="post" class="registration-signup">
-    <legend class="registration-caption">
+  <%= form_for :form, :url => "/oauth/create" do |f| %>
+    
+      
+      <legend class="registration-caption">
       Application Details
     </legend>
     <label class="registration-label">
@@ -43,6 +45,6 @@
     <button type="submit" class="registration-signup-submit">
       Submit
     </button>
-  </form>
+  <% end %>
 </body>
 </html>

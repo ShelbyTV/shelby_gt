@@ -9,8 +9,16 @@ class AuthenticationsController < ApplicationController
   
   def create
     omniauth = request.env["omniauth.auth"]
+    puts "HIIIIIIIIIIIIIIIIIIIIIIIIIII"
+    puts omniauth['provider']
+    puts omniauth['uid']
     # See if we have a matching user...
     user = User.first( :conditions => { 'authentications.provider' => omniauth['provider'], 'authentications.uid' => omniauth['uid'] } )
+  puts user
+  puts user.nil?
+
+    puts "HIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
+
 
 =begin    
 #TODO: ---- Current user with two seperate accounts

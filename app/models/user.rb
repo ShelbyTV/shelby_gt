@@ -17,7 +17,7 @@ class User
   
   # the Rolls this user is following and when they started following
   many :roll_followings
-  
+
   # Rolls this user has unfollowed
   # these rolls should not be auto-followed by our system
   key :rolls_unfollowed, Array, :typecast => 'ObjectId', :abbr => :aa, :default => []
@@ -60,6 +60,8 @@ class User
   key :gt_enabled, Boolean, :abbr => :ag, :default => false
 
   one :app_progress
+
+  key :applications, Array, :abbr => :ap
 
   #--old keys--
   many :authentications

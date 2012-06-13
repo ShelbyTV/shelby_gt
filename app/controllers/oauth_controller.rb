@@ -1,9 +1,10 @@
 require 'rack/oauth2/server'
 
 class OauthController < ApplicationController
+  before_filter :set_current_user
   def authorize
     #if current user is logged in
-    if true
+    if current_user
       render :action=>"authorize"
     else
       session[:return_url] = request.url
@@ -11,8 +12,10 @@ class OauthController < ApplicationController
     end
   end
 
-  def gate
+  def index
+    render 'index'
   end
+
 
   def grant
     head oauth.grant!(current_user.id)
@@ -31,8 +34,30 @@ class OauthController < ApplicationController
                                            :image_url=>params["image_url"],
                                            :redirect_uri=>params["callback_url"])
     @client = client
-    render "clientpage"
+    @user.applications << client.id
+    @user.save
+    render "index"
 
   end
+
+  def clientpage
+    appid = params[:appid]
+    if @user.applications.include?appid
+      render :text=>"nothing here"
+    end
+    @client = Rack::OAuth2::Server::Client.find(appid)
+  end
+
+
+  protected
+    def set_current_user
+      if current_user
+        puts "OKKKKKKKKKKKKKKKKKKKKKK"
+        @user = current_user
+      else
+        session[:return_url] = request.url
+        render 'gate'
+      end
+    end
 
 end
