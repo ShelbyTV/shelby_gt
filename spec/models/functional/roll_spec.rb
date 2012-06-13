@@ -273,52 +273,97 @@ describe Roll do
   end
 
   context "subdomain" do
-    it "should have a subdomain that matches its title if it's public and not a genius roll" do
-      @roll.subdomain.should == @roll_title
+    it "should have a subdomain that matches its title if it's the user's personal roll" do
       @roll.title = "normaltitle"
-      @roll.subdomain.should == "normaltitle"
-      @roll.public = true
-      @roll.genius = false
+      @roll.collaborative = false
+      @roll.save
       @roll.subdomain.should == "normaltitle"
     end
 
     it "should NOT have a subdomain if it's private" do
       @roll.public = false
+      @roll.save
       @roll.subdomain.nil?.should == true
       @roll.title = "rolltitle"
+      @roll.save
       @roll.subdomain.nil?.should == true
     end
 
     it "should NOT have a subdomain if it's a genius roll" do
       @roll.genius = true
+      @roll.save
       @roll.subdomain.nil?.should == true
       @roll.title = "rolltitle"
+      @roll.save
       @roll.subdomain.nil?.should == true
     end
 
-    it "should remove spaces and invalid characters from the roll title when creating subdomain" do
-      @roll.public = true
-      @roll.title = " a b!c*d-1   23à4     "
-      @roll.subdomain.should == "abcd-1234"
+    it "should NOT have a subdomain if it's collaborative" do
+      @roll.collaborative = true
+      @roll.save
+      @roll.subdomain.nil?.should == true
+      @roll.title = "rolltitle"
+      @roll.save
+      @roll.subdomain.nil?.should == true
     end
 
-    it "should remove leading and/or trailing '-' from the roll title when creating subdomain" do
-      @roll.public = true
+    it "should NOT have a subdomain if it's subdomain is not active" do
+      @roll.collaborative = true
+      @roll.save
+      @roll.subdomain.nil?.should == true
+      @roll.subdomain_active = false
+      @roll.save
+      @roll.subdomain.nil?.should == true
+    end
+
+    it "should remove leading and/or trailing '-' or whitespace from the roll title when creating subdomain" do
+      @roll.collaborative = false
       @roll.title = " -ti-tle-  "
+      @roll.save
+      @roll.subdomain.should == "ti-tle"
+      @roll.title = " ---ti-tle--  "
+      @roll.save
       @roll.subdomain.should == "ti-tle"
     end
 
     it "should transform sequences of one or more '_' to '-' when creating subdomain" do
-      @roll.public = true
+      @roll.collaborative = false
       @roll.title = "a_b__c___d"
+      @roll.save
       @roll.subdomain.should == "a-b-c-d"
     end
 
     it "should downcase characters in the roll title when creating subdomain" do
-      @roll.public = true
+      @roll.collaborative = false
       @roll.title = "RoLLTitLE"
+      @roll.save
       @roll.subdomain.should == "rolltitle"
     end
 
+    it "should not raise an error when trying to create two rolls with the same subdomain" do
+      lambda {
+        @roll.collaborative = false
+        @roll.title = "sametitle"
+        @roll.save
+        second_roll = Factory.create(:roll, :creator => @user)
+        second_roll.collaborative = false
+        second_roll.title = "sametitle"
+        second_roll.save
+      }.should_not raise_error
+    end
+
+    it "should only assign the subdomain to the first roll that tries to get that subdomain" do
+        @roll.collaborative = false
+        @roll.title = "sametitle"
+        @roll.save
+        second_roll = Factory.create(:roll, :creator => @user)
+        second_roll.collaborative = false
+        second_roll.title = "sametitle"
+        second_roll.save
+        @roll.subdomain.should == "sametitle"
+        @roll.subdomain_active.should == true
+        second_roll.subdomain.nil?.should == true
+        second_roll.subdomain_active.should == false
+    end
   end
 end

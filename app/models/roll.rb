@@ -4,11 +4,11 @@ require 'user_action_manager'
 
 class Roll
   include MongoMapper::Document
-  safe
 
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Roll
   
+  before_save :set_subdomain
   
   # A Roll has many Frames, first and foremost
   many :frames, :foreign_key => :a
@@ -44,6 +44,9 @@ class Roll
 
   # indicates the shelby.tv subdomain where this roll can be accessed as an isolated roll
   key :subdomain,       String, :abbr => :j
+  # indicates whether the subdomain for this roll is activated
+  key :subdomain_active,Boolean, :abbr => :k, :default => true
+  # roll is accesible at the subdomain address if :subdomain is not nil AND :subdomain_active
 
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
@@ -51,22 +54,36 @@ class Roll
   
   attr_accessible :title, :thumbnail_url
 
-  def title=(val)
-    # update subdomain to match title if its a public non-genius roll
-    self.subdomain = val.strip.gsub(/[_]+/,'-').gsub(/[^a-zA-Z\d-]|((\A[-])|([-]\z))/, '').downcase if self.public and !self.genius
-    self[:title] = val
+  def save(options={})
+    # if this roll has subdomain access we have to check if we violate the unique index constraint on subdomains
+    if has_subdomain_access?
+      begin
+        super({:safe => true}.merge!(options))
+      rescue Mongo::OperationFailure => e
+        if e.error_code == 11000 or e.error_code == 11001
+          # we violated the unique index constraint on subdomains, so we just won't give this roll a subdomain
+          self.subdomain_active = false
+          save(options)
+        else
+          raise
+        end
+      end
+    else
+      super
+    end
   end
 
-  def public=(val)
-    # remove subdomain if private
-    self.subdomain = nil if !val
-    self[:public] = val
+  def set_subdomain
+    # only user's personal roll gets a subdomain
+    if has_subdomain_access?
+      self.subdomain = title.strip.gsub(/[_]+/,'-').gsub(/((\A[-]+)|([-]+\z))/, '').downcase
+    else
+      self.subdomain = nil
+    end
   end
 
-  def genius=(val)
-    # remove subdomain if genius
-    self.subdomain = nil if val
-    self[:genius] = val
+  def has_subdomain_access?
+    public and !collaborative and !genius and subdomain_active
   end
 
   def followed_by?(u)
