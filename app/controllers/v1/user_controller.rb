@@ -73,46 +73,50 @@ class V1::UserController < ApplicationController
         
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
-        @rolls = Roll.find(current_user.roll_followings.map {|r| r.roll_id }.compact.uniq)
-                
-        # move heart roll to @rolls[1]
-        if heartRollIndex = @rolls.index(current_user.upvoted_roll)
-          heartRoll = @rolls.slice!(heartRollIndex)
-          @rolls.insert(1, heartRoll)
-        else
-          Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
-        end
-        
-        # Load all roll creators to prevent N+1 queries
-        @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
-        
-        # load frames with select attributes, if params say to
-        if params[:frames] == "true"
-          # default params
-          limit = params[:frames_limit] ? params[:frames_limit] : 1
-          # put an upper limit on the number of entries returned
-          limit = 20 if limit.to_i > 20
-
-          # intelligently fetching frames and videos for performance purposes
-          @frames =[]
-          @rolls.each { |r| @frames << r.frames.limit(limit).all }
-          @videos = Video.find( @frames.flatten!.compact.uniq.map {|f| f.video_id }.compact.uniq )
+        roll_ids = current_user.roll_followings.map {|r| r.roll_id }.compact.uniq
+        if @rolls = Roll.find(roll_ids)
           
-          @rolls.each do |r|
-            r['frames_subset'] = []
-            r.frames.limit(limit).all.each do |f| 
-              if f.video # NOTE: not sure why some frames dont have videos, but this is necessary until we know why
-                r['frames_subset'] << {
-                  :id => f.id, :video => {
-                    :id => f.video.id, :thumbnail_url => f.video.thumbnail_url
+          # move heart roll to @rolls[1]
+          if heartRollIndex = @rolls.index(current_user.upvoted_roll)
+            heartRoll = @rolls.slice!(heartRollIndex)
+            @rolls.insert(1, heartRoll)
+          else
+            Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
+          end
+        
+          # Load all roll creators to prevent N+1 queries
+          @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
+        
+          # load frames with select attributes, if params say to
+          if params[:frames] == "true"
+            # default params
+            limit = params[:frames_limit] ? params[:frames_limit] : 1
+            # put an upper limit on the number of entries returned
+            limit = 20 if limit.to_i > 20
+
+            # intelligently fetching frames and videos for performance purposes
+            @frames =[]
+            @rolls.each { |r| @frames << r.frames.limit(limit).all }
+            @videos = Video.find( @frames.flatten!.compact.uniq.map {|f| f.video_id }.compact.uniq )
+          
+            @rolls.each do |r|
+              r['frames_subset'] = []
+              r.frames.limit(limit).all.each do |f| 
+                if f.video # NOTE: not sure why some frames dont have videos, but this is necessary until we know why
+                  r['frames_subset'] << {
+                    :id => f.id, :video => {
+                      :id => f.video.id, :thumbnail_url => f.video.thumbnail_url
+                    }
                   }
-                }
+                end
               end
             end
           end
-        end
         
-        @status = 200
+          @status = 200
+        else
+          render_error(404, "something went wrong when getting those rolls.")
+        end
       else
         render_error(403, "you are not authorized to view that users rolls.")
       end

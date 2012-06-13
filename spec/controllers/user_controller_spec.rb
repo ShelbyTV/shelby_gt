@@ -30,7 +30,7 @@ describe V1::UserController do
       assigns(:status).should eq(200)
       assigns(:rolls).size.should == 2
     end
-    
+        
     it "returns 403 if the user is not the authed in user" do
       u2 = Factory.create(:user, :nickname => "name")
       get :roll_followings, :id => u2.id, :format => :json
