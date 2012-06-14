@@ -9,6 +9,8 @@ class User
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::User
   
+  before_save :update_public_roll_title
+
   devise  :rememberable, :trackable, :token_authenticatable, :remember_for => 1.week
   #devise includes root in json which fucked up backbone models, need to undo that...
   def self.include_root_in_json() nil; end
@@ -239,7 +241,14 @@ class User
       #client.add_email_address(self.primary_email, list)
     #end
   end
-    
+
+  def update_public_roll_title
+    if changed.include?('nickname') and self.public_roll
+      self.public_roll.title = self.nickname
+      self.public_roll.save
+    end
+  end
+
   private
         
     def check_to_send_email_address_to_sailthru
