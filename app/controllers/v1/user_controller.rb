@@ -71,19 +71,36 @@ class V1::UserController < ApplicationController
   # @param [Optional, boolean] frames_limit limit number of shallow frames to return 
   def roll_followings
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
-      if @user = current_user and @user.id.to_s == params[:id]
+      if current_user.id.to_s == params[:id]
         
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
         self.class.trace_execution_scoped(['UserController/roll_followings/roll_find']) do
-          @rolls = Roll.find(@user.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
+          # TODO: limit to 100 queries at a time
+          @safe_rolls = [[]]; i=0; n=0;
+          current_user.roll_followings.each do |r|
+            if i < (n+1)*100
+              @safe_rolls[n] << r.roll_id
+            else
+              @safe_rolls[n+1] = []
+              @safe_rolls[n+1] << r.roll_id
+              n += 1
+            end
+            i += 1
+          end
         end
+        
+        @rolls = []
+        @safe_rolls.each do |s|
+          @rolls << Roll.find(s)
+        end
+        @rolls.flatten!
         
         if @rolls
 
           self.class.trace_execution_scoped(['UserController/roll_followings/heart_roll']) do
             # move heart roll to @rolls[1]
-            if heartRollIndex = @rolls.index(@user.upvoted_roll)
+            if heartRollIndex = @rolls.index(current_user.upvoted_roll)
               heartRoll = @rolls.slice!(heartRollIndex)
               @rolls.insert(1, heartRoll)
             else
@@ -93,6 +110,7 @@ class V1::UserController < ApplicationController
           
           self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_find']) do
             # Load all roll creators to prevent N+1 queries
+            # TODO: limit to 100 queries at a time?
             @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
           end
           
