@@ -59,7 +59,7 @@ describe User do
         u.save(:validate => false)
       }.should raise_error Mongo::OperationFailure
     end
-  
+
   end
   
   context "rolls" do
@@ -81,7 +81,15 @@ describe User do
       @roll.remove_follower(@user)
       @user.unfollowed_roll?(@roll).should == true
     end
-    
+
+    it "should update the title of its public roll when it's nickname is updated" do
+      @user.public_roll = @roll
+      @user.nickname = "newnickname"
+      @user.save
+      @user.public_roll.title.should == "newnickname"
+      @user.public_roll.changed?.should == false
+    end
+
   end
   
   context "devise" do

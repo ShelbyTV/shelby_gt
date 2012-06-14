@@ -24,6 +24,8 @@ module MongoMapper
       
       # Get the rolls a given user has created (a == creator_id)
       Roll.ensure_index(:a, :background => true)
+      # Get the rolls for a given subdomain (k == subdomain)
+      Roll.ensure_index(:k, :background => true, :unique => true, :sparse => true)
           
       # Get a user by their nickname, ensure it's unique
       User.ensure_index(:nickname, :background => true, :unique => true)
