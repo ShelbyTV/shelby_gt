@@ -4,7 +4,6 @@ class V1::UserController < ApplicationController
   if Rails.env != 'test'
     before_filter :set_current_user
     oauth_required
-    #before_filter :check_oauth_token
   end
  
   
@@ -108,8 +107,4 @@ class V1::UserController < ApplicationController
       @current_user = User.find(oauth.identity) if oauth.authenticated?
     end
 
-    def check_oauth_token
-      unless request.env["oauth.identity"] == oauth.identity
-        render_error(404, "not the right user")
-      end
-    end
+end
