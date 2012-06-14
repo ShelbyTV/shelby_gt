@@ -15,6 +15,8 @@ ShelbyGt::Application.routes.draw do
   end
 
   get 'oauth/authorize' => 'oauth#authorize'
+  get 'oauth/grantpage' => 'oauth#grantpage'
+  get 'oauth/delete' => 'oauth#delete'
   get 'oauth/grant' => 'oauth#grant'
   get 'oauth/deny' => 'oauth#deny'
   get 'oauth/login' => 'oauth#login'

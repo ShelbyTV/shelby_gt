@@ -62,6 +62,7 @@ class User
   one :app_progress
 
   key :applications, Array, :abbr => :ap
+  key :clients, Array, :abbr => :ai
 
   #--old keys--
   many :authentications
@@ -156,7 +157,7 @@ class User
   def permalink() "#{Settings::ShelbyAPI.web_root}/user/#{self.nickname}/personal_roll"; end
 
   def revoke(client)
-    token = Rack::Oauth2::Server::AccessToken.get_token_for(self.id, client)
+    token = Rack::OAuth2::Server::AccessToken.get_token_for(id.to_s, client, "")
     token.revoke!
   end
 
