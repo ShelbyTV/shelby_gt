@@ -71,19 +71,19 @@ class V1::UserController < ApplicationController
   # @param [Optional, boolean] frames_limit limit number of shallow frames to return 
   def roll_followings
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
-      if current_user.id.to_s == params[:id]
+      if @user = current_user and @user.id.to_s == params[:id]
         
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
         self.class.trace_execution_scoped(['UserController/roll_followings/roll_find']) do
-          @rolls = Roll.find(current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
+          @rolls = Roll.find(@user.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
         end
         
         if @rolls
 
           self.class.trace_execution_scoped(['UserController/roll_followings/heart_roll']) do
             # move heart roll to @rolls[1]
-            if heartRollIndex = @rolls.index(current_user.upvoted_roll)
+            if heartRollIndex = @rolls.index(@user.upvoted_roll)
               heartRoll = @rolls.slice!(heartRollIndex)
               @rolls.insert(1, heartRoll)
             else
@@ -95,6 +95,7 @@ class V1::UserController < ApplicationController
             # Load all roll creators to prevent N+1 queries
             @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
           end
+          
           # load frames with select attributes, if params say to
           if params[:frames] == "true"
             # default params
@@ -136,5 +137,6 @@ class V1::UserController < ApplicationController
       end
     end
   end
+  add_method_tracer :roll_followings
   
 end
