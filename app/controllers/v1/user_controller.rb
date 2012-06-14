@@ -76,6 +76,7 @@ class V1::UserController < ApplicationController
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
         self.class.trace_execution_scoped(['UserController/roll_followings/roll_find']) do
+          
           # TODO: limit to 100 queries at a time
           @safe_rolls = [[]]; i=0; n=0;
           current_user.roll_followings.each do |r|
@@ -88,13 +89,13 @@ class V1::UserController < ApplicationController
             end
             i += 1
           end
+          
+          @rolls = []
+          @safe_rolls.each do |s|
+            @rolls << Roll.find(s)
+          end
+          @rolls.flatten!
         end
-        
-        @rolls = []
-        @safe_rolls.each do |s|
-          @rolls << Roll.find(s)
-        end
-        @rolls.flatten!
         
         if @rolls
 
@@ -110,8 +111,23 @@ class V1::UserController < ApplicationController
           
           self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_find']) do
             # Load all roll creators to prevent N+1 queries
-            # TODO: limit to 100 queries at a time?
-            @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
+            @safe_creators = [[]]; i=0; n=0;
+            @rolls.each do |r|
+              if i < (n+1)*100
+                @safe_creators[n] << r.creator_id
+              else
+                @safe_creators[n+1] = []
+                @safe_creators[n+1] << r.creator_id
+                n += 1
+              end
+              i += 1
+            end
+
+            @roll_creators = []
+            @safe_creators.each do |s|
+              @roll_creators << User.find(s)
+            end
+            @roll_creators.flatten!
           end
           
           # load frames with select attributes, if params say to
