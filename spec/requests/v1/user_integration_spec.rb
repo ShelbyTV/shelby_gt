@@ -98,7 +98,7 @@ describe 'v1/user' do
         response.body.should be_json_eql(200).at_path("status")
         parse_json(response.body)["result"][0]["frames"][0]["video"]["thumbnail_url"].should eq(url)
       end
-      
+            
       it "should have correct watch_later and public roll ids returned" do
         @u1.watch_later_roll_id = 12345
         @u1.public_roll_id = 54321

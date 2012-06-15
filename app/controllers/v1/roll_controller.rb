@@ -11,13 +11,22 @@ class V1::RollController < ApplicationController
   #
   # [GET] /v1/roll/:id
   # 
-  # @param [Required, String] id The id of the roll
+  # @param [Required, String] id The id or shelby.tv subdomain of the roll
   # @param [Optional, String] following_users Return the following_users?
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
       if params[:id]
         @include_following_users = params[:following_users] == "true" ? true : false
-        if @roll = Roll.find(params[:id])
+        roll_id = ensure_valid_bson_id(params[:id])
+        if (roll_id)
+          @roll = Roll.find(roll_id)
+        else
+          # if the id param isn't a BSON id, search for the roll that has the param as its subdomain
+          roll_at_subdomain = Roll.find_by_subdomain(params[:id])
+          # only return the roll if its subdomain is active
+          @roll = (roll_at_subdomain and roll_at_subdomain.subdomain_active) ? roll_at_subdomain : nil
+        end
+        if @roll
           if (user_signed_in? and @roll.viewable_by?(current_user)) or @roll.public
             @status =  200
           else

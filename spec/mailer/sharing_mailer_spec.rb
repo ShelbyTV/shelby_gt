@@ -7,7 +7,8 @@ describe SharingMailer do
       @to_email = 'your@dad.com'
       @message = "wassssuuuup!"
       video = Factory.create(:video, :thumbnail_url => "http://url.com/123.jpg", :title=>"blah")
-      roll = Factory.create(:roll, :creator => @from_user, :title => "good roll")
+      roll = Factory.create(:roll, :creator => @from_user)
+      @roll_title = roll.title
       @frame = Factory.create(:frame, :creator_id => @from_user.id, :video_id => video.id, :roll => roll)
       @email = SharingMailer.share_frame(@from_user, @from_user.primary_email, @to_email, @message, @frame)
     end
@@ -20,7 +21,7 @@ describe SharingMailer do
       @frame.roll.public = false
       @frame.roll.save
       @email = SharingMailer.share_frame(@from_user, @from_user.primary_email, @to_email, @message, @frame)
-      @email.subject.should eq(Settings::Email.share_frame['private_roll_invite_subject'] % {:inviters_name => "dan", :roll_title => "good roll"})
+      @email.subject.should eq(Settings::Email.share_frame['private_roll_invite_subject'] % {:inviters_name => "dan", :roll_title => @roll_title})
     end
     
     it 'renders the receiver email' do

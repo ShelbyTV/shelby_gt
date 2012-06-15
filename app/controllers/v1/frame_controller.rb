@@ -81,7 +81,7 @@ class V1::FrameController < ApplicationController
           @videos = Video.find(@entries_video_ids)
           @conversations = Conversation.find(@entries_conversation_ids)
           ##########
-        end        
+        end
         @status =  200
       else
         render_error(404, "could not find that roll")

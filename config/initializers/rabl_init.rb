@@ -7,6 +7,7 @@ Rabl.configure do |config|
   # config.bson_engine = nil # Defaults to ::BSON
   # config.plist_engine = nil # Defaults to ::Plist::Emit
   config.include_json_root = false
+  config.include_child_root = false
   # config.include_msgpack_root = true
   # config.include_bson_root = true
   # config.include_plist_root = true
