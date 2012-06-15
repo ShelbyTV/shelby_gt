@@ -95,6 +95,7 @@ class V1::UserController < ApplicationController
             # Load all roll creators to prevent N+1 queries
             @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
           end
+          
           # load frames with select attributes, if params say to
           if params[:frames] == "true"
             # default params
@@ -136,5 +137,6 @@ class V1::UserController < ApplicationController
       end
     end
   end
+  add_method_tracer :roll_followings
   
 end

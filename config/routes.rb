@@ -59,7 +59,10 @@ ShelbyGt::Application.routes.draw do
       post 'watched' => 'frame#watched'
       post 'share' => 'frame#share'
     end
-    resources :video, :only => [:show]
+    resources :video, :only => [:show] do
+      get 'find', :on => :collection
+      get 'conversations' => 'conversation#index'
+    end
     resources :dashboard_entries, :path => "dashboard", :only => [:index, :update]
     resources :conversation, :only => [:show] do 
       resources :messages, :only => [:create, :destroy]
