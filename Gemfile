@@ -63,6 +63,13 @@ gem "statsd-ruby" # for communicating with graphite server
 
 gem 'newrelic_rpm'
 gem 'rpm_contrib'
+
+#
+# ---------- Scheduled Task Management
+#
+
+gem 'whenever', :require => false
+
 #
 # ---------- Beanstalk (non-Event Machine, non-Arnold)
 #
