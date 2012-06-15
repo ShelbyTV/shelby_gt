@@ -8,8 +8,6 @@ class Roll
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Roll
   
-  before_save :set_subdomain
-  
   # A Roll has many Frames, first and foremost
   many :frames, :foreign_key => :a
   
@@ -60,12 +58,14 @@ class Roll
   def save(options={})
     # if this roll has subdomain access we have to check if we violate the unique index constraint on subdomains
     if has_subdomain_access?
+      self.subdomain = title.strip.gsub(/[_]+/,'-').gsub(/((\A[-]+)|([-]+\z))/, '').downcase
       self.subdomain_active = true
       begin
         super({:safe => true}.merge!(options))
       rescue Mongo::OperationFailure => e
         if e.error_code == 11000 or e.error_code == 11001
           # we violated the unique index constraint on subdomains, so we just won't give this roll a subdomain
+          self.subdomain = nil
           self.subdomain_active = false
           super
         else
@@ -73,15 +73,9 @@ class Roll
         end
       end
     else
-      super
-    end
-  end
-
-  def set_subdomain
-    if self.subdomain_active
-      self.subdomain = title.strip.gsub(/[_]+/,'-').gsub(/((\A[-]+)|([-]+\z))/, '').downcase
-    else
       self.subdomain = nil
+      self.subdomain_active = false
+      super
     end
   end
 
