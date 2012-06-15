@@ -16,15 +16,13 @@ class V1::RollController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
       if params[:id]
         @include_following_users = params[:following_users] == "true" ? true : false
-        roll_id = ensure_valid_bson_id(params[:id])
-        if (roll_id)
-          @roll = Roll.find(roll_id)
+        
+        if BSON::ObjectId.legal? params[:id]
+          @roll = Roll.find(params[:id])
         else
-          # if the id param isn't a BSON id, search for the roll that has the param as its subdomain
-          roll_at_subdomain = Roll.find_by_subdomain(params[:id])
-          # only return the roll if its subdomain is active
-          @roll = (roll_at_subdomain and roll_at_subdomain.subdomain_active) ? roll_at_subdomain : nil
+          @roll = Roll.where(:subdomain => params[:id], :subdomain_active => true).find_one
         end
+        
         if @roll
           if (user_signed_in? and @roll.viewable_by?(current_user)) or @roll.public
             @status =  200
