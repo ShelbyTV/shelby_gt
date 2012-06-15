@@ -283,6 +283,7 @@ describe Roll do
       @roll.collaborative = false
       @roll.save
       @roll.subdomain.should == @roll_title
+      @roll.subdomain_active.should == true
     end
 
     it "should NOT have a subdomain if it's private" do
@@ -290,9 +291,11 @@ describe Roll do
       @roll.public = false
       @roll.save
       @roll.subdomain.nil?.should == true
+      @roll.subdomain_active.should == false
       @roll.title = "rolltitle1"
       @roll.save
       @roll.subdomain.nil?.should == true
+      @roll.subdomain_active.should == false
     end
 
     it "should NOT have a subdomain if it's a genius roll" do
@@ -300,25 +303,22 @@ describe Roll do
       @roll.genius = true
       @roll.save
       @roll.subdomain.nil?.should == true
+      @roll.subdomain_active.should == false
       @roll.title = "rolltitle2"
       @roll.save
       @roll.subdomain.nil?.should == true
+      @roll.subdomain_active.should == false
     end
 
     it "should NOT have a subdomain if it's collaborative" do
       @roll.collaborative = true
       @roll.save
       @roll.subdomain.nil?.should == true
+      @roll.subdomain_active.should == false
       @roll.title = "rolltitle3"
       @roll.save
       @roll.subdomain.nil?.should == true
-    end
-
-    it "should NOT have a subdomain if it's subdomain is not active" do
-      @roll.collaborative = false
-      @roll.subdomain_active = false
-      @roll.save
-      @roll.subdomain.nil?.should == true
+      @roll.subdomain_active.should == false
     end
 
     it "should remove leading and/or trailing '-' or whitespace from the roll title when creating subdomain" do
@@ -372,6 +372,18 @@ describe Roll do
           @roll.subdomain_active.should == true
           @second_roll.subdomain.nil?.should == true
           @second_roll.subdomain_active.should == false
+      end
+
+      it "should activate the subdomain of a roll that previously violated the uniquness constraint" do
+          @roll.collaborative = false
+          @roll.title = "sametitle2"
+          @roll.save
+          @roll.subdomain.nil?.should == true
+          @roll.subdomain_active.should == false
+          @roll.title = "newuniquetitle"
+          @roll.save
+          @roll.subdomain.should == "newuniquetitle"
+          @roll.subdomain_active.should == true
       end
     end
   end

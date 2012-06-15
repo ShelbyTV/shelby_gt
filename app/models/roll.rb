@@ -8,8 +8,6 @@ class Roll
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Roll
   
-  before_save :set_subdomain
-  
   # A Roll has many Frames, first and foremost
   many :frames, :foreign_key => :a
   
@@ -48,7 +46,7 @@ class Roll
   # indicates the shelby.tv subdomain where this roll can be accessed as an isolated roll
   key :subdomain,       String, :abbr => :k
   # indicates whether the subdomain for this roll is activated
-  key :subdomain_active,Boolean, :abbr => :l, :default => true
+  key :subdomain_active,Boolean, :abbr => :l, :default => false
   # roll is accesible at the subdomain address if :subdomain is not nil AND :subdomain_active
 
   # each user following this roll and when they started following
@@ -60,33 +58,30 @@ class Roll
   def save(options={})
     # if this roll has subdomain access we have to check if we violate the unique index constraint on subdomains
     if has_subdomain_access?
+      self.subdomain = title.strip.gsub(/[_]+/,'-').gsub(/((\A[-]+)|([-]+\z))/, '').downcase
+      self.subdomain_active = true
       begin
         super({:safe => true}.merge!(options))
       rescue Mongo::OperationFailure => e
         if e.error_code == 11000 or e.error_code == 11001
           # we violated the unique index constraint on subdomains, so we just won't give this roll a subdomain
+          self.subdomain = nil
           self.subdomain_active = false
-          save(options)
+          super
         else
           raise
         end
       end
     else
+      self.subdomain = nil
+      self.subdomain_active = false
       super
     end
   end
 
-  def set_subdomain
-    # only user's personal roll gets a subdomain
-    if has_subdomain_access?
-      self.subdomain = title.strip.gsub(/[_]+/,'-').gsub(/((\A[-]+)|([-]+\z))/, '').downcase
-    else
-      self.subdomain = nil
-    end
-  end
-
   def has_subdomain_access?
-    public and !collaborative and !genius and subdomain_active
+    # only user's personal roll gets a subdomain
+    public and !collaborative and !genius
   end
 
   def followed_by?(u)
