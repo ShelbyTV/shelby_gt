@@ -5,7 +5,6 @@ require "social_post_formatter"
 class V1::RollController < ApplicationController  
   
   before_filter :user_authenticated?, :except => [:show]
-  
   ##
   # Returns one roll, with the given parameters.
   #

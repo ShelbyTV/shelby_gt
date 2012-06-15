@@ -1,3 +1,5 @@
+require 'rack/oauth2/server'
+
 ShelbyGt::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb
 
@@ -34,5 +36,7 @@ ShelbyGt::Application.configure do
 
   # Print deprecation notices to the stderr
   config.active_support.deprecation = :stderr
-  
+
+  config.middleware.delete Rack::OAuth2::Server
+
 end
