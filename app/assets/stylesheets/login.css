@@ -1,0 +1,31 @@
+.login-links {
+  font-size: 20px;
+  margin: 5px auto 10px;
+  margin-top: 100px;
+  text-align: center;
+  width: 100%;
+}
+
+.login-wrapper {
+  margin: 0 auto;
+  margin-top: 40px;
+  width: 480px;
+}
+
+.login-slogan {
+  float: left;
+  font-size: 11px;
+  line-height: 1.4;
+  margin-top: 40px;
+  width: 33%;
+}
+
+
+.login-logo {
+  background: url("landing_logo.svg") no-repeat center center transparent;
+  background-size: 100%;
+  float: left;
+  height: 100px;
+  margin-right: 18px;
+  width: 50%
+}

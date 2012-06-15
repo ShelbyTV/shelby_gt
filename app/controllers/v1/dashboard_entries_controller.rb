@@ -108,5 +108,6 @@ class V1::DashboardEntriesController < ApplicationController
       end
     end
   end
+ 
 
 end

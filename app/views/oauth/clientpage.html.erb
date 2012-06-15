@@ -1,0 +1,46 @@
+<!doctype html>
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+<% # if we got any meta tag info from request display it, otherwise just render head normally %>
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shelbytv: http://ogp.me/ns/fb/shelbytv#">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title> Login Page </title>
+  
+  <meta name="viewport" content="width=device-width">
+  <head profile="http://www.w3.org/2005/10/profile">
+  <%= stylesheet_link_tag "fonts/stylesheet" %>
+  <%= stylesheet_link_tag "app.html" %>
+  <%= stylesheet_link_tag "clientpage.css" %>
+  <!--[if lt IE 9]><link href="/stylesheets/png.css" media="screen, projection" rel="stylesheet" type="text/css" /><![endif]-->  
+</head>
+
+
+<body>
+  <div class="client_information">
+  <h2 class="heading"> Oauth settings </h2>
+  <table id="hor-table">
+    <tr>
+      <td> Client id</td>
+      <td><tt> <%= @client.id %> </tt></td>
+    </tr>
+    <tr> 
+      <td>Client secret</td>
+      <td><tt> <%= @client.secret %> </tt></td>
+    </tr>
+    <tr>
+      <td> Application name </td>
+      <td><tt> <%= @client.display_name %> </td></tt>
+    </tr>
+    <tr>
+      <td> Callback url</td>
+      <td><tt> <%= @client.redirect_uri %> </tt></td>
+    </tr>
+    <tr>
+      <td> 
+  </table>
+</div>
+
+</body>
+</html>

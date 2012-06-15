@@ -19,7 +19,7 @@ class User
   
   # the Rolls this user is following and when they started following
   many :roll_followings
-  
+
   # Rolls this user has unfollowed
   # these rolls should not be auto-followed by our system
   key :rolls_unfollowed, Array, :typecast => 'ObjectId', :abbr => :aa, :default => []
@@ -62,6 +62,9 @@ class User
   key :gt_enabled, Boolean, :abbr => :ag, :default => false
 
   one :app_progress
+
+  key :applications, Array, :abbr => :ap
+  key :clients, Array, :abbr => :ai
 
   #--old keys--
   many :authentications
@@ -154,6 +157,12 @@ class User
   end
   
   def permalink() "#{Settings::ShelbyAPI.web_root}/user/#{self.nickname}/personal_roll"; end
+
+  def revoke(client)
+    token = Rack::OAuth2::Server::AccessToken.get_token_for(id.to_s, client, "")
+    token.revoke! unless token.nil?
+  end
+
   
   # Use this to convert User's created on NOS to GT
   # When we move everyone to GT, use the rake task in gt_migration.rb

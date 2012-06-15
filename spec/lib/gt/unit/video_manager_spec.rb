@@ -39,7 +39,7 @@ describe GT::VideoManager do
           mock_model("FakeEMHttpResonse", :error => false,
             :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testhtmlfiles/rant.html", __FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
-      vids = GT::VideoManager.get_or_create_videos_for_url(@urlhaslink, false, nil, true, true)
+      vids = GT::VideoManager.get_or_create_videos_for_url(@urlhaslink, false, nil, false, true)
       vids[:videos].size.should == 1
       vids[:from_deep].should == true
     end
@@ -55,7 +55,7 @@ describe GT::VideoManager do
           mock_model("FakeEMHttpResonse", :error => false,
             :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testhtmlfiles/google.html", __FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
-      vids = GT::VideoManager.get_or_create_videos_for_url(@urlnolink, false, nil, true, true)
+      vids = GT::VideoManager.get_or_create_videos_for_url(@urlnolink, false, nil, false, true)
       vids.should == {:videos => [], :from_deep =>false}
     end
 
