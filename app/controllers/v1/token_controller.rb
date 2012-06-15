@@ -2,10 +2,6 @@ require 'user_manager'
 
 class V1::TokenController < ApplicationController  
   skip_before_filter :verify_authenticity_token
-  if Rails.env != 'test'
-    before_filter :set_current_user
-    oauth_required
-  end
   
 
   ##
@@ -90,9 +86,4 @@ class V1::TokenController < ApplicationController
       #renders v1/user/show which includes user.authentication_token
     end
   end
-  protected
-    def set_current_user
-      @current_user = User.find(oauth.identity) if oauth.authenticated?
-    end
- 
 end

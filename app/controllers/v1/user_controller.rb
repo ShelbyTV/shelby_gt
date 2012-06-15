@@ -1,10 +1,6 @@
 class V1::UserController < ApplicationController  
   
   before_filter :user_authenticated?, :except => [:signed_in, :show]
-  if Rails.env != 'test'
-    before_filter :set_current_user
-    oauth_required
-  end
  
   
   ####################################
@@ -102,9 +98,5 @@ class V1::UserController < ApplicationController
       end
     end
   end
-  protected
-    def set_current_user
-      @current_user = User.find(oauth.identity) if oauth.authenticated?
-    end
 
 end
