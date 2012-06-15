@@ -35,19 +35,40 @@ describe 'v1/roll' do
         parse_json(response.body)["result"]["title"].should eq(@r.title)
       end
       
+      it "should return roll info on success when looking up by subdomain if the subdomain is active" do
+        @r.collaborative = false
+        @r.save
+        get '/v1/roll/'+@r.subdomain
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result/title")
+        parse_json(response.body)["result"]["title"].should eq(@r.title)
+      end
+
+      it "should return error message when looking up by subdomain if the subdomain is not active" do
+        @r.collaborative = true
+        @r.save
+        get '/v1/roll/'+@r.title
+        response.body.should be_json_eql(404).at_path("status")
+      end
+
+      it "should return error message when looking up by subdomain if there is no roll with that subdomain" do
+        get '/v1/roll/nonexistantsubdomain'
+        response.body.should be_json_eql(404).at_path("status")
+      end
+
       it "should return personal roll of user when given a nickname" do
-        get 'v1/user/'+@u2.nickname+'/personal_roll'
+        get 'v1/user/'+@u2.nickname+'/rolls/personal'
         response.body.should be_json_eql(200).at_path("status")
       end
 
       it "should return heart roll of user when given a nickname" do
-        get 'v1/user/'+@u2.nickname+'/heart_roll'
+        get 'v1/user/'+@u2.nickname+'/rolls/hearted'
         response.body.should be_json_eql(200).at_path("status")
         parse_json(response.body)["result"]["title"].should eq("#{@u2.nickname} ♥s")
       end
     
       it "should return error message if roll doesnt exist" do
-        get '/v1/roll/'+@r.id+'xxx'
+        get '/v1/roll/'+ BSON::ObjectId.new.to_s
         response.body.should be_json_eql(404).at_path("status")
       end
       
@@ -60,6 +81,20 @@ describe 'v1/roll' do
         
         get 'v1/roll/browse?'+roll_arry.join('&')
         response.body.should be_json_eql(200).at_path("status")
+      end
+      
+      it "should return frames if they are asked for in roll followings" do
+        r1 = Factory.create(:roll, :creator => @u1)
+        r1.add_follower(@u1)
+        url = 'http://url.here'
+        v = Factory.create(:video, :thumbnail_url => url)
+        f = Factory.create(:frame, :creator => @u1, :roll => r1, :video => v)
+        
+        roll_arry = [r1].map!{|r| "rolls[]=#{r.id.to_s}"}
+        
+        get 'v1/roll/browse?'+roll_arry.join('&')+"&frames=true"
+        response.body.should be_json_eql(200).at_path("status")
+        parse_json(response.body)["result"][0]["frames"][0]["video"]["thumbnail_url"].should eq(url)
       end
       
     end

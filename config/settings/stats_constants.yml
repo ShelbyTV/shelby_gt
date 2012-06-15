@@ -10,6 +10,8 @@ defaults: &defaults
       rolls: 'user.rolls'
     roll:
       show: 'roll.show'
+      show_users_public_roll: "roll.show_public"
+      show_users_heart_roll: "roll.show_hearted"
       share: 'roll.share'
       create: 'roll.create'
       join: 'roll.join'
@@ -20,6 +22,8 @@ defaults: &defaults
         create: "roll.genius.create"
     frame:
       index: 'frame.index'
+      index_for_users_public_roll: 'frame.public_roll_index'
+      index_for_users_heart_roll: 'frame.heart_roll_index'
       show: 'frame.show'
       create: 'frame.create'
       upvote: 'frame.upvote'
@@ -29,11 +33,13 @@ defaults: &defaults
       share: 'frame.share'
     conversation:
       show: 'conversation.show'
+      index: 'conversation.index'
     messages:
       create: 'messages.create'
       destroy: 'messages.destroy'
     video:
       show: 'video.show'
+      find: 'video.find'
   
   user:
     new:

@@ -15,7 +15,7 @@ describe GT::SocialSorter do
     @existing_user.authentications << auth
     @existing_user.save
     
-    @existing_user_public_roll = Factory.create(:roll, :creator => @existing_user, :title => "yup")
+    @existing_user_public_roll = Factory.create(:roll, :creator => @existing_user, :title => @existing_user.nickname)
     @existing_user.public_roll = @existing_user_public_roll
     @existing_user.save
 

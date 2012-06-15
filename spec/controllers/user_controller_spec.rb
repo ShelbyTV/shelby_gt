@@ -7,6 +7,7 @@ describe V1::UserController do
     User.stub(:find) { @u1 }
     r1 = Factory.create(:roll, :creator => @u1)
     r1.add_follower(@u1)
+    r1.add_follower(Factory.create(:user))
     r2 = Factory.create(:roll, :creator => @u1)
     r2.add_follower(@u1)
     @u1.public_roll = r1
@@ -31,6 +32,19 @@ describe V1::UserController do
       assigns(:rolls).size.should == 2
     end
     
+    it "should only call Roll.find once when getting roll followings" do
+      rolls = Roll.find(@u1.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
+      Roll.should_receive(:find).exactly(1).times { rolls }
+      get :roll_followings, :id => @u1.id, :format => :json
+    end
+    
+    it "should should only call User.find once when getting roll followings" do
+      rolls = Roll.find(@u1.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
+      users = User.find( rolls.map {|r| r.creator_id }.compact.uniq )
+      User.should_receive(:find).exactly(1).times { users }
+      get :roll_followings, :id => @u1.id, :format => :json
+    end
+        
     it "returns 403 if the user is not the authed in user" do
       u2 = Factory.create(:user, :nickname => "name")
       get :roll_followings, :id => u2.id, :format => :json

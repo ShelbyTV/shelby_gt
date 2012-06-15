@@ -88,6 +88,17 @@ describe 'v1/user' do
         parse_json(response.body)["result"][1]["id"].should eq(r2.id.to_s)
       end
       
+      it "should return frames if they are asked for in roll followings" do
+        r1 = Factory.create(:roll, :creator => @u1)
+        r1.add_follower(@u1)
+        url = 'http://url.here'
+        v = Factory.create(:video, :thumbnail_url => url)
+        f = Factory.create(:frame, :creator => @u1, :roll => r1, :video => v)
+        get '/v1/user/'+@u1.id+'/rolls/following?frames=true'
+        response.body.should be_json_eql(200).at_path("status")
+        parse_json(response.body)["result"][0]["frames"][0]["video"]["thumbnail_url"].should eq(url)
+      end
+            
       it "should have correct watch_later and public roll ids returned" do
         @u1.watch_later_roll_id = 12345
         @u1.public_roll_id = 54321

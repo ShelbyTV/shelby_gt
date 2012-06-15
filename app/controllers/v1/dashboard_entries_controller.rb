@@ -2,6 +2,8 @@ class V1::DashboardEntriesController < ApplicationController
     
   before_filter :authenticate_user!
   
+  extend NewRelic::Agent::MethodTracer
+  
   ##
   # Returns dashboad entries, with the given parameters.
   #
@@ -32,10 +34,8 @@ class V1::DashboardEntriesController < ApplicationController
       if user
         
         if @limit == 0
-          @status = 200
-          @entries = []
-          render 'index'
-          return
+          @status, @entries = 200, []
+          render 'index' and return
         end
         
         
@@ -78,6 +78,7 @@ class V1::DashboardEntriesController < ApplicationController
       end    
     end
   end
+  add_method_tracer :index
 
   ##
   # Updates and returns one dashboard entry, with the given parameters.

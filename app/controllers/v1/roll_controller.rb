@@ -10,18 +10,23 @@ class V1::RollController < ApplicationController
   #
   # [GET] /v1/roll/:id
   # 
-  # @param [Required, String] id The id of the roll
+  # @param [Required, String] id The id or shelby.tv subdomain of the roll
   # @param [Optional, String] following_users Return the following_users?
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
       if params[:id]
-        return render_error(404, "please specify a valid id") unless (roll_id = ensure_valid_bson_id(params[:id]))
         @include_following_users = params[:following_users] == "true" ? true : false
-        if @roll = Roll.find(roll_id)
-          if user_signed_in? and @roll.viewable_by?(current_user)
-            params[:heart_roll] = true if @roll.id == current_user.upvoted_roll_id
-            @status =  200
-          elsif @roll.public
+        roll_id = ensure_valid_bson_id(params[:id])
+        if (roll_id)
+          @roll = Roll.find(roll_id)
+        else
+          # if the id param isn't a BSON id, search for the roll that has the param as its subdomain
+          roll_at_subdomain = Roll.find_by_subdomain(params[:id])
+          # only return the roll if its subdomain is active
+          @roll = (roll_at_subdomain and roll_at_subdomain.subdomain_active) ? roll_at_subdomain : nil
+        end
+        if @roll
+          if (user_signed_in? and @roll.viewable_by?(current_user)) or @roll.public
             @status =  200
           else
             render_error(404, "you are not authorized to see that roll")
@@ -29,21 +34,37 @@ class V1::RollController < ApplicationController
         else
           render_error(404, "that roll does not exist")
         end
-      elsif (params[:public_roll] or params[:heart_roll]) and user_signed_in? #this is for the aliased route to get users public roll
-        if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
-          if params[:public_roll]
-            @roll = user.public_roll
-          elsif params[:heart_roll]
-            @roll = user.upvoted_roll
-          end
+      end
+    end
+  end
+  
+  def show_users_public_roll
+    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show_users_public_roll']) do
+      if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
+        if @roll = user.public_roll
           @include_following_users = params[:following_users] == "true" ? true : false
           @status = 200
         else
-          render_error(404, "could not find the roll of the user specified")
+          render_error(404, "could not find that roll")
         end
       else
-        render_error(404, "could not find that roll")
+        render_error(404, "could not find the roll of the user specified")
       end
+    end
+  end
+  
+  def show_users_heart_roll
+    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show_users_heart_roll']) do
+      if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
+        if @roll = user.upvoted_roll
+          @include_following_users = params[:following_users] == "true" ? true : false
+          @status = 200
+        else
+          render_error(404, "could not find that roll")
+        end
+      else
+        render_error(404, "could not find the roll of the user specified")
+      end    
     end
   end
   
@@ -65,6 +86,33 @@ class V1::RollController < ApplicationController
       end
       
       if @rolls = Roll.find(hot_rolls)
+        
+        # load frames with select attributes, if params say to
+        if params[:frames] == "true"
+          # default params
+          limit = params[:frames_limit] ? params[:frames_limit] : 1
+          # put an upper limit on the number of entries returned
+          limit = 20 if limit.to_i > 20
+
+          # intelligently fetching frames and videos for performance purposes
+          @frames =[]
+          @rolls.each { |r| @frames << r.frames.limit(limit).all }
+          @videos = Video.find( @frames.flatten!.compact.uniq.map {|f| f.video_id }.compact.uniq )
+          
+          @rolls.each do |r|
+            r['frames_subset'] = []
+            r.frames.limit(limit).all.each do |f| 
+              if f.video # NOTE: not sure why some frames dont have videos, but this is necessary until we know why
+                r['frames_subset'] << {
+                  :id => f.id, :video => {
+                    :id => f.video.id, :thumbnail_url => f.video.thumbnail_url
+                  }
+                }
+              end
+            end
+          end
+        end
+        
         @status = 200
       else
         render_error(404, "something went wrong finding those rolls.")
@@ -72,7 +120,6 @@ class V1::RollController < ApplicationController
       
     end
   end
-  
   
   ##
   # Returns success if roll is shared successfully, with the given parameters.

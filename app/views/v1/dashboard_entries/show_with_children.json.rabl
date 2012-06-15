@@ -1,16 +1,15 @@
 object @entry
 
 attributes :id, :action, :actor_id, :read
-
 child :frame => "frame" do |f|
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id
-	
+
 	node(:timestamp) { |f| f.created_at.to_time }
-	
+
 	code :created_at do |f|
 		concise_time_ago_in_words(f.created_at) if f.created_at
 	end
-	
+
 	child :creator => "creator" do
 		attributes :id, :name, :nickname, :user_image_original, :user_image, :faux, :public_roll_id
 	end
@@ -29,7 +28,7 @@ child :frame => "frame" do |f|
 		attributes :id, :provider_name, :provider_id, :title, :description, 
 			:duration, :author, :thumbnail_url, :tags, :categories, :source_url, :embed_url, :view_count
 	end
-	
+
 	child :conversation => "conversation" do
 		attributes :id, :public
 
@@ -41,5 +40,5 @@ child :frame => "frame" do |f|
 			end
 		end
 	end
-	
+
 end

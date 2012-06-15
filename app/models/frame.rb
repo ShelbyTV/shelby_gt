@@ -7,7 +7,6 @@ class Frame
 
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Frame
-  
 
   # A Frame is contained by exactly one Roll, first and foremost.
   # In some special cases, a Frame may *not* have a Roll (ie a private Facebook post creates a Frame that only attaches to DashboardEntry)
@@ -55,6 +54,9 @@ class Frame
   attr_accessible
  
   before_validation :update_score
+  
+  after_create :increment_rolls_frame_count
+  after_destroy :decrement_rolls_frame_count
   
   def created_at() self.id.generation_time; end
   
@@ -208,5 +210,9 @@ class Frame
         :frame_ancestors => frame_id
         ).first
     end
-  
+
+    # Rolls' :frame_count is abbreviated as :j and that doesn't get translated w/ atomic updates like this...
+    def increment_rolls_frame_count() Roll.increment(self.roll_id, :j => 1) if self.roll_id; true; end
+    def decrement_rolls_frame_count() Roll.decrement(self.roll_id, :j => -1) if self.roll_id; true; end
+
 end

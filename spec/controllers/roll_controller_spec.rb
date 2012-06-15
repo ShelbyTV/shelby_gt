@@ -16,9 +16,34 @@ describe V1::RollController do
       assigns(:roll).should eq(@roll)
     end
 
+    describe "by subdomain" do
+      before(:each) do
+        @roll.subdomain = @roll.title
+        Roll.stub!(:find_by_subdomain).and_return(@roll)
+      end
+
+      it "gets a roll by subdomain if it is asked for and the roll has its subdomain active" do
+        @roll.subdomain_active = true
+        get :show, :id => @roll.subdomain, :format => :json
+        assigns(:roll).should eq(@roll)
+      end
+
+      it "does not get a roll by subdomain if it is asked for and the roll does not have its subdomain active" do
+        @roll.subdomain_active = false
+        get :show, :id => @roll.subdomain, :format => :json
+        assigns(:roll).should eq(nil)
+      end
+    end
+
     it "gets a users public roll if its asked for" do
       @u1.public_roll = @roll; @u1.save
-      get :show, :user_id => @u1.id, :public_roll => true, :format => :json
+      get :show_users_public_roll, :user_id => @u1.id, :format => :json
+      assigns(:roll).should eq(@roll)
+    end
+    
+    it "gets a users heart roll if its asked for" do
+      @u1.upvoted_roll = @roll; @u1.save
+      get :show_users_heart_roll, :user_id => @u1.id, :format => :json
       assigns(:roll).should eq(@roll)
     end
     

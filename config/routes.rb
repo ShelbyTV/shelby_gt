@@ -51,11 +51,10 @@ ShelbyGt::Application.routes.draw do
     
     resources :user, :only => [:show, :update] do
       get 'rolls/following' => 'user#roll_followings', :on => :member
-      get 'roll_followings' => 'user#roll_followings', :on => :member
-      get 'personal_roll' => 'roll#show', :defaults => {:public_roll => true}
-      get 'personal_roll/frames' => 'frame#index', :defaults => {:public_roll => true}
-      get 'heart_roll' => 'roll#show', :defaults => {:heart_roll => true}
-      get 'heart_roll/frames' => 'frame#index', :defaults => {:heart_roll => true}
+      get 'rolls/personal' => 'roll#show_users_public_roll'
+      get 'rolls/personal/frames' => 'frame#index_for_users_public_roll'
+      get 'rolls/hearted' => 'roll#show_users_heart_roll'
+      get 'rolls/heart/frames' => 'frame#index_for_users_heart_roll'
     end
     get 'roll/browse' => 'roll#browse'
     resources :roll, :only => [:show, :create, :update, :destroy] do
@@ -74,7 +73,10 @@ ShelbyGt::Application.routes.draw do
       post 'watched' => 'frame#watched'
       post 'share' => 'frame#share'
     end
-    resources :video, :only => [:show]
+    resources :video, :only => [:show] do
+      get 'find', :on => :collection
+      get 'conversations' => 'conversation#index'
+    end
     resources :dashboard_entries, :path => "dashboard", :only => [:index, :update]
     resources :conversation, :only => [:show] do 
       resources :messages, :only => [:create, :destroy]
