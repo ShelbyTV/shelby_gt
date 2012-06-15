@@ -86,7 +86,14 @@ module ShelbyGt
 
     config.after_initialize do
       settings = Settings::OauthServer
-      config.oauth.database = Mongo::Connection.new(settings.db_host, settings.db_port, {}.merge(settings.db_options.merge(Settings::Mongo.db_options)) ).db(settings.db_name)
+      
+      if settings['db_hosts']
+        # Starting with a proper Hash and merging into it b/c Mongo::Connection checks if the class is Hash, which it isn't when using Settings
+        conn = Mongo::ReplSetConnection.new( settings.db_hosts, {}.merge(settings.db_options.merge(Settings::Mongo.db_options)) )
+      else
+        conn = Mongo::Connection.new(settings.db_host, settings.db_port, {}.merge(settings.db_options.merge(Settings::Mongo.db_options)) )
+      end
+      config.oauth.database = conn.db(settings.db_name)
     end
   end
 end
