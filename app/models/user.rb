@@ -158,7 +158,7 @@ class User
 
   def revoke(client)
     token = Rack::OAuth2::Server::AccessToken.get_token_for(id.to_s, client, "")
-    token.revoke!
+    token.revoke! unless token.nil?
   end
 
   
