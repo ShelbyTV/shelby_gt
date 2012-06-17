@@ -3,8 +3,9 @@ require 'video_manager'
 require 'framer'
 
 class V1::Roll::GeniusController < ApplicationController
-
-  before_filter :set_current_user
+  if Rails.env != 'test'
+    before_filter :set_current_user
+  end
  
   ##
   # Create and return a genius roll from an array of video URLs
