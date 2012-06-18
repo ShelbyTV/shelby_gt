@@ -1,5 +1,4 @@
 set :deploy_to, "/home/gt/shelby_gt"
-set :load_assets, false
 
 #############################################################
 #	Servers
