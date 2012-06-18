@@ -191,7 +191,7 @@ class V1::RollController < ApplicationController
   def create
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['create']) do
       if ![:title, :public, :collaborative].all? { |p| params.include?(p) }
-        @status = 404
+        @status = 400
         @message = "title required" unless params.include?(:title)
         @message = "public required" unless params.include?(:public)
         @message = "collaborative required" unless params.include?(:collaborative)
@@ -209,8 +209,10 @@ class V1::RollController < ApplicationController
             StatsManager::StatsD.increment(Settings::StatsConstants.roll[:create][roll_type], current_user.id, 'roll_create', request)
             @status = 200
           end
+        rescue MongoMapper::DocumentNotValid => e
+          render_error(409, "roll invalid: #{e}")
         rescue => e
-          render_error(404, "could not save roll: #{e}")
+          render_error(400, "could not save roll: #{e}")
         end
       end
     end
@@ -292,8 +294,10 @@ class V1::RollController < ApplicationController
         else
           begin
             @status = 200 if @roll.update_attributes!(params)
+          rescue MongoMapper::DocumentNotValid => e
+            render_error(409, "roll invalid: #{e}")
           rescue => e
-            render_error(404, "error while updating roll: #{e}")
+            render_error(400, "error while updating roll: #{e}")
           end
         end
       else

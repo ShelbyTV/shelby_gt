@@ -79,10 +79,20 @@ describe V1::RollController do
       assigns(:roll).should eq(@roll)
     end
     
-    it "updates a roll unsuccessfuly returning 404" do
+    it "updates a roll unsuccessfuly returning 400" do
       @roll.should_receive(:update_attributes!).and_raise(ArgumentError)
       put :update, :id => @roll.id, :public => false, :format => :json
-      assigns(:status).should eq(404)
+      assigns(:status).should eq(400)
+    end
+
+    it "updates a record to an invalid state returning 409" do
+      document = double ("document")
+      document.stub_chain(:errors, :full_messages, :join).and_return("Subdomain is reserved")
+      exception = MongoMapper::DocumentNotValid.new(document)
+
+      @roll.should_receive(:update_attributes!).and_raise(exception)
+      put :update, :id => @roll.id, :title => 'anal', :format => :json
+      assigns(:status).should eq(409)
     end
   end
   
@@ -110,33 +120,39 @@ describe V1::RollController do
       assigns(:status).should eq(200)
     end
     
-    it "returns 404 if user not signed in" do
+    it "fails if user not signed in" do
       sign_out @u1
       post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :public => false, :collaborative => false, :format => :json
       response.should_not be_success
     end
     
-    it "returns 404 if there is no title" do
+    it "returns 400 if there is no title" do
       sign_in @u1
       post :create, :thumbnail_url => "http://foofle", :public => false, :collaborative => false, :format => :json
-      assigns(:status).should eq(404)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("title required")
     end
     
-    it "returns 404 if public is not set" do
+    it "returns 400 if public is not set" do
       sign_in @u1
       post :create, :title => "title", :collaborative => true, :format => :json
-      assigns(:status).should eq(404)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("public required")
     end
     
-    it "returns 404 if collaborative is not set" do
+    it "returns 400 if collaborative is not set" do
       sign_in @u1
       post :create, :title => "title", :public => true, :format => :json
-      assigns(:status).should eq(404)
+      assigns(:status).should eq(400)
       assigns(:message).should eq("collaborative required")
     end
     
+    it "returns 409 if reserved subdomain is set" do
+      sign_in @u1
+      post :create, :title => "anal", :public => true, :collaborative => false, :format => :json
+      assigns(:status).should eq(409)
+    end
+
   end
   
   describe "POST share" do

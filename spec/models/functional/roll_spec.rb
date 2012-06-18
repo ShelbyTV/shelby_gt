@@ -279,6 +279,7 @@ describe Roll do
       @roll = Factory.create(:roll)
       @roll_title = @roll.title
     end
+
     it "should have a subdomain that matches its title if it's the user's personal roll" do
       @roll.collaborative = false
       @roll.save
@@ -343,6 +344,14 @@ describe Roll do
       @roll.title = "RoLLTitLE"
       @roll.save
       @roll.subdomain.should == "rolltitle"
+    end
+
+    it "should throw error when trying to create a roll with a subdomain on the blacklist" do
+      lambda {
+        @roll.collaborative = false
+        @roll.title = "anal"
+        @roll.save!
+      }.should raise_error MongoMapper::DocumentNotValid
     end
 
     context "subdomain on multiple rolls" do
