@@ -1,4 +1,4 @@
-#require 'bundler/capistrano'
+require 'bundler/capistrano'
 
 set :deploy_to, "/home/gt/api"
 
