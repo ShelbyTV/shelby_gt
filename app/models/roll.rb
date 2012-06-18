@@ -55,7 +55,7 @@ class Roll
   
   attr_accessible :title, :thumbnail_url
 
-  RESERVED_SUBDOMAINS = %w(anal admin qa vanity)
+  RESERVED_SUBDOMAINS = %w(gt anal admin qa vanity)
   validates_exclusion_of :subdomain, :in => RESERVED_SUBDOMAINS
 
   def save(options={})
