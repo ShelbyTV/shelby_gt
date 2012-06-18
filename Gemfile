@@ -28,6 +28,7 @@ gem 'rack-oauth2-server'
 #
 # ---------- Assets
 #
+gem "uglifier"
 gem "haml"
 gem "compass", "0.11.7"
 
