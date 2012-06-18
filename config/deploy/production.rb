@@ -1,3 +1,5 @@
+require 'bundler/capistrano'
+
 set :deploy_to, "/home/gt/api"
 
 #############################################################
@@ -16,7 +18,7 @@ set :user, "gt"
 
 set :scm, :git
 set :repository,  "git@github.com:ShelbyTV/shelby_gt.git"
-set :branch, "master"
+set :branch, "trycap"
 #set :git_enable_submodules, 1
 set :deploy_via, :remote_cache #keep a local cache to speed up deploys
 
