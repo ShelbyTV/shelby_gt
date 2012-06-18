@@ -1,6 +1,7 @@
 require 'bundler/capistrano'
 
 set :deploy_to, "/home/gt/api"
+set :load_assets, true
 
 #############################################################
 #	Servers
