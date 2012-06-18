@@ -76,7 +76,11 @@ class V1::UserController < ApplicationController
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
         self.class.trace_execution_scoped(['UserController/roll_followings/roll_find']) do
-          @rolls = Roll.find(current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
+          @rolls = []
+          roll_ids = current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq
+          Roll.find_each(:conditions => {:id=>roll_ids}, :batch_size => 500) do |r|
+            @rolls << r
+          end
         end
         
         if @rolls
@@ -93,7 +97,11 @@ class V1::UserController < ApplicationController
           
           self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_find']) do
             # Load all roll creators to prevent N+1 queries
-            @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
+            creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
+            @roll_creators = []
+            User.find_each(:conditions => {:id => creator_ids}, :batch_size => 500) do |u|
+              @roll_creators << u
+            end
           end
           
           # load frames with select attributes, if params say to
@@ -109,7 +117,11 @@ class V1::UserController < ApplicationController
               @rolls.each { |r| @frames << r.frames.limit(limit).all }
             end
             self.class.trace_execution_scoped(['UserController/roll_followings/video_find']) do
-              @videos = Video.find( @frames.flatten!.compact.uniq.map {|f| f.video_id }.compact.uniq )
+              video_ids = @frames.flatten!.compact.uniq.map {|f| f.video_id }.compact.uniq
+              @videos = []
+              Video.find_each(:conditions => {:id => video_ids}, :batch_size => 500) do |v|
+                @videos << v
+              end
             end
             
             self.class.trace_execution_scoped(['UserController/roll_followings/frames_subset_code']) do
