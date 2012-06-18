@@ -34,14 +34,14 @@ describe V1::UserController do
     
     it "should only call Roll.find once when getting roll followings" do
       rolls = Roll.find(@u1.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
-      Roll.should_receive(:find_each).exactly(1).times { rolls }
+      Roll.should_receive(:find).exactly(1).times { rolls }
       get :roll_followings, :id => @u1.id, :format => :json
     end
     
     it "should should only call User.find once when getting roll followings" do
       rolls = Roll.find(@u1.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
       users = User.find( rolls.map {|r| r.creator_id }.compact.uniq )
-      User.should_receive(:find_each).exactly(1).times { users }
+      User.should_receive(:find).exactly(1).times { users }
       get :roll_followings, :id => @u1.id, :format => :json
     end
         
