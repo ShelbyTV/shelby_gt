@@ -7,11 +7,25 @@ ShelbyGt::Application.routes.draw do
 
   ########################
   # Authentication and User Managment
+
   devise_for :user, :skip => [:sessions]
   as :user do
     get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
     get 'login' => 'authentications#index', :as => :new_user_session
   end
+
+  get 'oauth/authorize' => 'oauth#authorize'
+  get 'oauth/grantpage' => 'oauth#grantpage'
+  get 'oauth/delete' => 'oauth#delete'
+  get 'oauth/grant' => 'oauth#grant'
+  get 'oauth/deny' => 'oauth#deny'
+  get 'oauth/login' => 'oauth#login'
+  get 'oauth/register' => 'oauth#register'
+  post 'oauth/register' => 'oauth#register'
+  post 'oauth/create' => 'oauth#create'
+  get 'oauth/gate' => 'oauth#gate'
+  get 'oauth/index' => 'oauth#index'
+  get 'oauth/clientpage' => 'oauth#clientpage'
 
   resources :authentications
   get '/auth/:provider/callback' => 'authentications#create'
@@ -59,7 +73,10 @@ ShelbyGt::Application.routes.draw do
       post 'watched' => 'frame#watched'
       post 'share' => 'frame#share'
     end
-    resources :video, :only => [:show]
+    resources :video, :only => [:show] do
+      get 'find', :on => :collection
+      get 'conversations' => 'conversation#index'
+    end
     resources :dashboard_entries, :path => "dashboard", :only => [:index, :update]
     resources :conversation, :only => [:show] do 
       resources :messages, :only => [:create, :destroy]

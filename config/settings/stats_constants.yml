@@ -33,11 +33,13 @@ defaults: &defaults
       share: 'frame.share'
     conversation:
       show: 'conversation.show'
+      index: 'conversation.index'
     messages:
       create: 'messages.create'
       destroy: 'messages.destroy'
     video:
       show: 'video.show'
+      find: 'video.find'
   
   user:
     new:

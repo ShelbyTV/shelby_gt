@@ -7,6 +7,7 @@ class V1::FrameController < ApplicationController
 
   before_filter :user_authenticated?, :except => [:index, :show, :watched]
   skip_before_filter :verify_authenticity_token, :only => [:create]
+ 
   
   ##
   # Returns all frames in a roll
@@ -484,6 +485,5 @@ class V1::FrameController < ApplicationController
       end
     end
   end
-
 
 end

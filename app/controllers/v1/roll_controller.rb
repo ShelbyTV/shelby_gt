@@ -5,19 +5,25 @@ require "social_post_formatter"
 class V1::RollController < ApplicationController  
   
   before_filter :user_authenticated?, :except => [:show]
-  
   ##
   # Returns one roll, with the given parameters.
   #
   # [GET] /v1/roll/:id
   # 
-  # @param [Required, String] id The id of the roll
+  # @param [Required, String] id The id or shelby.tv subdomain of the roll
   # @param [Optional, String] following_users Return the following_users?
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
       if params[:id]
         @include_following_users = params[:following_users] == "true" ? true : false
-        if @roll = Roll.find(params[:id])
+        
+        if BSON::ObjectId.legal? params[:id]
+          @roll = Roll.find(params[:id])
+        else
+          @roll = Roll.where(:subdomain => params[:id], :subdomain_active => true).find_one
+        end
+        
+        if @roll
           if (user_signed_in? and @roll.viewable_by?(current_user)) or @roll.public
             @status =  200
           else

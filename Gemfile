@@ -24,12 +24,13 @@ gem 'rabl','~> 0.6.0'
 gem 'yajl-ruby', :require => "yajl"
 gem "statsd-ruby" # for communicating with graphite server
 gem 'rack-cors', :require => 'rack/cors' # for cors preflight requests
-
+gem 'rack-oauth2-server'
 #
 # ---------- Assets
 #
 gem "haml"
 gem "compass", "0.11.7"
+gem "uglifier"
 
 #
 # ---------- User Authentication

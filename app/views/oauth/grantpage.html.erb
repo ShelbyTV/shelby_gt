@@ -1,0 +1,47 @@
+<!doctype html>
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+<% # if we got any meta tag info from request display it, otherwise just render head normally %>
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shelbytv: http://ogp.me/ns/fb/shelbytv#">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title> Login Page </title>
+  
+  <meta name="viewport" content="width=device-width">
+  <head profile="http://www.w3.org/2005/10/profile">
+  <%= stylesheet_link_tag "application" %>
+  <!--[if lt IE 9]><link href="/stylesheets/png.css" media="screen, projection" rel="stylesheet" type="text/css" /><![endif]-->  
+</head>
+
+
+<body>
+  <div class="app-table"> 
+    <h1 class="app-title"> Granted applications </h1>
+    <% if @client_list.empty? %>
+      <p>
+        Not granted access to clients yet.
+      </p>
+    <% else %>
+      <table>
+      <% @client_list.each do |client| %>
+        <tr>
+          <td>
+            <a href=<%= "clientpage?appid=#{client.id}"%> class="app-button"> <%= client.display_name %> </a>
+          </td>
+          <td>
+            <form action="/oauth/delete">
+              <button>Revoke</button>
+              <input type="hidden" name="client_id" value="<%=client.id %>">
+            </form>
+          </td>
+        </tr>
+      <% end %>
+    </table>
+  <% end %>
+  </div>
+
+
+  
+  </body>
+</html>

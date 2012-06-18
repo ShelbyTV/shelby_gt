@@ -35,6 +35,27 @@ describe 'v1/roll' do
         parse_json(response.body)["result"]["title"].should eq(@r.title)
       end
       
+      it "should return roll info on success when looking up by subdomain if the subdomain is active" do
+        @r.collaborative = false
+        @r.save
+        get '/v1/roll/'+@r.subdomain
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result/title")
+        parse_json(response.body)["result"]["title"].should eq(@r.title)
+      end
+
+      it "should return error message when looking up by subdomain if the subdomain is not active" do
+        @r.collaborative = true
+        @r.save
+        get '/v1/roll/'+@r.title
+        response.body.should be_json_eql(404).at_path("status")
+      end
+
+      it "should return error message when looking up by subdomain if there is no roll with that subdomain" do
+        get '/v1/roll/nonexistantsubdomain'
+        response.body.should be_json_eql(404).at_path("status")
+      end
+
       it "should return personal roll of user when given a nickname" do
         get 'v1/user/'+@u2.nickname+'/rolls/personal'
         response.body.should be_json_eql(200).at_path("status")
@@ -47,7 +68,7 @@ describe 'v1/roll' do
       end
     
       it "should return error message if roll doesnt exist" do
-        get '/v1/roll/'+@r.id+'xxx'
+        get '/v1/roll/'+ BSON::ObjectId.new.to_s
         response.body.should be_json_eql(404).at_path("status")
       end
       
