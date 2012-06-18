@@ -110,15 +110,20 @@ describe 'v1/roll' do
           parse_json(response.body)["result"]["thumbnail_url"].should eq("http://bar.com")
         end
 
-        it "should return 404 if there is no thumbnail_url" do
+        it "should return 400 if there is no thumbnail_url" do
           post '/v1/roll?title=Roll%20me%20baby'      
-          response.body.should be_json_eql(404).at_path("status")
+          response.body.should be_json_eql(400).at_path("status")
         end
 
-        it "should return 404 if there is no title or thumbnail_url" do
+        it "should return 400 if there is no title or thumbnail_url" do
           post '/v1/roll'      
-          response.body.should be_json_eql(404).at_path("status")
-        end        
+          response.body.should be_json_eql(400).at_path("status")
+        end
+
+        it "should return 409 if trying to set a reserved subdomain" do
+          post '/v1/roll?title=anal&thumbnail_url=http://bar.com&public=1&collaborative=0'
+          response.body.should be_json_eql(409).at_path("status")
+        end
       end
       
       context "roll sharing" do
@@ -219,6 +224,12 @@ describe 'v1/roll' do
         response.body.should be_json_eql(404).at_path("status")
       end
 
+      it "should return 409 if trying to set a reserved subdomain" do
+          @r.collaborative = false
+          @r.save
+          put '/v1/roll/'+@r.id+'?title=anal'
+          response.body.should be_json_eql(409).at_path("status")
+      end
     end
     
     describe "DELETE" do
