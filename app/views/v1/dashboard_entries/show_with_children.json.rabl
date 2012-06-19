@@ -21,7 +21,7 @@ child :frame => "frame" do |f|
   end
 	
 	child :roll => "roll" do
-		attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url
+		attributes :id, :collaborative, :public, :creator_id, :title, :creator_thumbnail_url => :thumbnail_url
 	end
 	
 	child :video => "video" do

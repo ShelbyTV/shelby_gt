@@ -65,7 +65,9 @@ class V1::DashboardEntriesController < ApplicationController
         @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
         @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
 
-        @rolls = Roll.find(@entries_roll_ids)
+        # for some reason calling Roll.find is throwing an error, its thinking its calling:
+        #  V1::DashboardEntriesController::Roll which does not exist, for now, just forcing the global Roll
+        @rolls = ::Roll.find(@entries_roll_ids)
         @users = User.find((@entries_creator_ids + @entries_hearted_ids).uniq)
         @videos = Video.find(@entries_video_ids)
         @conversations = Conversation.find(@entries_conversation_ids)
