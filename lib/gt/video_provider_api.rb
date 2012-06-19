@@ -6,12 +6,13 @@ module GT
   class VideoProviderApi
     def self.examine_url_for_youtube_video(youtube_id, use_em=true)
       gdata_url = "http://gdata.youtube.com/feeds/api/videos/#{youtube_id}"
+      puts "checking page #{gdata_url}"
       if use_em
         youtube_http = get_page_with_em(gdata_url)
       else
         youtube_http = get_page_with_net(gdata_url)
       end
-
+      puts "got" if youtube_http
       return nil unless youtube_http
       # pretty sure this doesn't make an http request 
       begin
@@ -49,6 +50,7 @@ module GT
 
         begin
           v.save
+          puts "got vid"
           return v
         rescue Mongo::OperationFailure => e
           # If this was a timing issue, and Video got created after we checked, that means the Video exists now.  See if we can't recover...
