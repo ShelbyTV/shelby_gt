@@ -151,6 +151,8 @@ module GT
 
       user.authentications << new_auth
 
+      user.gt_enable!
+
       user.faux = User::FAUX_STATUS[:converted]
       if user.save
         GT::PredatorManager.initialize_video_processing(user, new_auth)

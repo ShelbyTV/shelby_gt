@@ -51,7 +51,6 @@ class Roll
   
   key :first_frame_thumbnail_url, String, :abbr => :m
 
-
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
   many :following_users
