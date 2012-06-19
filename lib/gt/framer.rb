@@ -248,8 +248,8 @@ module GT
           # rolls need thumbnails (user.public_roll thumbnail is already set as their avatar)
           roll.update_attribute(:creator_thumbnail_url, vid.thumbnail_url) if roll.creator_thumbnail_url.blank?
           
-          # always try and update the rolls :first_frame_thumbnail_url
-          roll.update_attribute(:first_frame_thumbnail_url, frame.video.thumbnail_url)
+          # always try and update the rolls :first_frame_thumbnail_url, always.
+          roll.update_attribute(:first_frame_thumbnail_url, vid.thumbnail_url)
         end
       end
     
