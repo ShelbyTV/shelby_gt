@@ -82,12 +82,21 @@ describe User do
       @user.unfollowed_roll?(@roll).should == true
     end
 
-    it "should update the title of its public roll when it's nickname is updated" do
+    it "should update the title of its public roll when it's nickname is updated if the roll matches the nickname" do
+      @roll.title = @user.nickname
       @user.public_roll = @roll
       @user.nickname = "newnickname"
       @user.save
       @user.public_roll.title.should == "newnickname"
       @user.public_roll.changed?.should == false
+    end
+
+    it "should NOT update the title of its public roll when it's nickname is updated if the roll doesn't match the nickname" do
+      @roll.title = "not-my-nickname"
+      @user.public_roll = @roll
+      @user.nickname = "newnickname"
+      @user.save
+      @user.public_roll.title.should == "not-my-nickname"
     end
 
   end
