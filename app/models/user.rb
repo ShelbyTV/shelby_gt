@@ -42,7 +42,7 @@ class User
   # A special roll for a user: their Viewed Roll
   # - contains trivial copies of Frames that this user has viewed
   belongs_to :viewed_roll, :class_name => 'Roll'
-  key :viewed_roll, ObjectId, :abbr => :af
+  key :viewed_roll_id, ObjectId, :abbr => :af
   
   # When we create a User just for their public Roll, we mark them faux=true
   #  this status allows us to track conversions from faux to real
