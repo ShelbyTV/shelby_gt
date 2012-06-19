@@ -245,7 +245,7 @@ module GT
       
       def self.ensure_roll_metadata!(roll, frame)
         #rolls need thumbnails (user.public_roll thumbnail is already set as their avatar)
-        roll.update_attribute(:thumbnail_url, frame.video.thumbnail_url) if (roll and roll.thumbnail_url.blank?) and (frame and frame.video)
+        roll.update_attribute(:creator_thumbnail_url, frame.video.thumbnail_url) if (roll and roll.creator_thumbnail_url.blank?) and (frame and frame.video)
       end
     
   end

@@ -198,7 +198,7 @@ class V1::RollController < ApplicationController
         @message = "not authenticated, could not access user" unless user_signed_in?
         render 'v1/blank'
       else
-        @roll = Roll.new(:title => params[:title], :thumbnail_url => params[:thumbnail_url])
+        @roll = Roll.new(:title => params[:title], :creator_thumbnail_url => params[:thumbnail_url])
         @roll.creator = current_user
         @roll.public = params[:public]
         @roll.collaborative = params[:collaborative]

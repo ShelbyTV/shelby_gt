@@ -6,7 +6,7 @@ require 'spec_helper'
 describe Roll do
   context "not testing subdomain" do
     before(:each) do
-      @roll = Factory.create(:roll, :creator => (@creator = Factory.create(:user)), :thumbnail_url => "u://rl")
+      @roll = Factory.create(:roll, :creator => (@creator = Factory.create(:user)), :creator_thumbnail_url => "u://rl")
       @roll_title = @roll.title
       @user = Factory.create(:user)
       @stranger = Factory.create(:user)

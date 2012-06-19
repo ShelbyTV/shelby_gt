@@ -109,7 +109,7 @@ describe GT::UserManager do
                 
         usr.public_roll.class.should == Roll
         usr.public_roll.persisted?.should == true
-        usr.public_roll.thumbnail_url.should == thumb_url
+        usr.public_roll.creator_thumbnail_url.should == thumb_url
       }.should_not change { User.count }
     end
     
@@ -178,7 +178,7 @@ describe GT::UserManager do
       nick, provider, uid = "whatever3--c", "fb", "123uid3--c"
       u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, {:user_thumbnail_url => thumb_url})
       
-      u.public_roll.thumbnail_url.should == thumb_url
+      u.public_roll.creator_thumbnail_url.should == thumb_url
       u.public_roll.origin_network.should == "fb"
     end
     
@@ -615,7 +615,7 @@ describe GT::UserManager do
       it "should set the public_roll's thumbnail to the creator's avatar" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         
-        u.public_roll.thumbnail_url.should == @omniauth_hash['info']['image']
+        u.public_roll.creator_thumbnail_url.should == @omniauth_hash['info']['image']
       end
       
       it "should set the origin_network on the user's public roll" do

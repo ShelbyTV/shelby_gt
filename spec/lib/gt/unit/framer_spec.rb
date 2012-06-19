@@ -75,7 +75,7 @@ describe GT::Framer do
     end
     
     it "should set the frame's roll's thumbnail_url if it's nil" do
-      @roll.thumbnail_url.blank?.should == true
+      @roll.creator_thumbnail_url.blank?.should == true
       
       res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
@@ -85,11 +85,11 @@ describe GT::Framer do
         :roll => @roll
         )
     
-      res[:frame].roll.thumbnail_url.should == @video.thumbnail_url
+      res[:frame].roll.creator_thumbnail_url.should == @video.thumbnail_url
     end
     
     it "should not touch the frame's roll's thumbnail_url if it's already set" do
-      @roll.update_attribute(:thumbnail_url, "something://el.se")
+      @roll.update_attribute(:creator_thumbnail_url, "something://el.se")
       
       res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
@@ -99,7 +99,7 @@ describe GT::Framer do
         :roll => @roll
         )
     
-      res[:frame].roll.thumbnail_url.should == "something://el.se"
+      res[:frame].roll.creator_thumbnail_url.should == "something://el.se"
     end
 
     it "should create no DashboardEntries if the roll has no followers" do
@@ -294,19 +294,19 @@ describe GT::Framer do
     end
     
     it "should set the frame's roll's thumbnail_url if it's nil" do
-      @roll.thumbnail_url.blank?.should == true
+      @roll.creator_thumbnail_url.blank?.should == true
       
       res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
     
-      res[:frame].roll.thumbnail_url.should == @video.thumbnail_url
+      res[:frame].roll.creator_thumbnail_url.should == @video.thumbnail_url
     end
     
     it "should not touch the frame's roll's thumbnail_url if it's already set" do
-      @roll.update_attribute(:thumbnail_url, "something://el.se")
+      @roll.update_attribute(:creator_thumbnail_url, "something://el.se")
       
       res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
     
-      res[:frame].roll.thumbnail_url.should == "something://el.se"
+      res[:frame].roll.creator_thumbnail_url.should == "something://el.se"
     end
     
     it "should set the back-pointer frame.conversation.frame" do
