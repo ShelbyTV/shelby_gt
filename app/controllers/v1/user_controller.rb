@@ -76,7 +76,9 @@ class V1::UserController < ApplicationController
         return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
         
         self.class.trace_execution_scoped(['UserController/roll_followings/roll_find']) do
-          @rolls = Roll.find(current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
+          # for some reason calling Roll.find is throwing an error, its thinking its calling:
+          #  V1::UserController::Roll which does not exist, for now, just forcing the global Roll
+          @rolls = ::Roll.find(current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
         end
         
         if @rolls
@@ -137,6 +139,6 @@ class V1::UserController < ApplicationController
       end
     end
   end
-  add_method_tracer :roll_followings
+  #add_method_tracer :roll_followings
   
 end
