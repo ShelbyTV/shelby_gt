@@ -101,6 +101,32 @@ describe GT::Framer do
     
       res[:frame].roll.creator_thumbnail_url.should == "something://el.se"
     end
+    
+    it "should set the roll's first_frame_thumbnail_url everytime a frame is added to a roll" do
+      res1 = GT::Framer.create_frame(
+        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+        :creator => @frame_creator,
+        :video => @video,
+        :message => @message,
+        :roll => @roll
+        )
+    
+      res1[:frame].roll.first_frame_thumbnail_url.should == @video.thumbnail_url
+      
+      vid2 = @video
+      vid2.thumbnail_url = "http://test.ing"; vid2.save
+      
+      res2 = GT::Framer.create_frame(
+        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+        :creator => @frame_creator,
+        :video => vid2,
+        :message => @message,
+        :roll => @roll
+        )
+
+        res1[:frame].roll.first_frame_thumbnail_url.should == vid2.thumbnail_url
+    end
+    
 
     it "should create no DashboardEntries if the roll has no followers" do
       res = GT::Framer.create_frame(
