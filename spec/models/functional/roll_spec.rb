@@ -332,11 +332,18 @@ describe Roll do
       @roll.subdomain.should == "ti-tle"
     end
 
-    it "should transform sequences of one or more '_' to '-' when creating subdomain" do
+    it "should transform sequences of one or more '_' or '-' or spaces to '-' when creating subdomain" do
       @roll.collaborative = false
-      @roll.title = "a_b__c___d"
+      @roll.title = " a_-b__c___d e  f _  g   -- h\ti\t\tj  "
       @roll.save
-      @roll.subdomain.should == "a-b-c-d"
+      @roll.subdomain.should == "a-b-c-d-e-f-g-h-i-j"
+    end
+
+    it "should remove any invalid characters when creating subdomain" do
+      @roll.collaborative = false
+      @roll.title = "!josh^%"
+      @roll.save
+      @roll.subdomain.should == "josh"
     end
 
     it "should downcase characters in the roll title when creating subdomain" do

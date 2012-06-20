@@ -30,7 +30,10 @@ gem 'rack-oauth2-server'
 #
 gem "haml"
 gem "compass", "0.11.7"
-gem "uglifier"
+
+group :production do
+  gem "uglifier"
+end
 
 #
 # ---------- User Authentication

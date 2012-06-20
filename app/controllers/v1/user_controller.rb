@@ -73,8 +73,6 @@ class V1::UserController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
       if current_user.id.to_s == params[:id]
         
-        return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:id])
-        
         self.class.trace_execution_scoped(['UserController/roll_followings/roll_find']) do
           # for some reason calling Roll.find is throwing an error, its thinking its calling:
           #  V1::UserController::Roll which does not exist, for now, just forcing the global Roll

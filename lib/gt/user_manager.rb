@@ -108,7 +108,6 @@ module GT
         u.authentications << auth
       
         ensure_valid_unique_nickname!(u)
-        u.downcase_nickname = u.nickname.downcase
       
         if u.save
           # Need to ensure special rolls after saving user b/c of the way add_follower works
@@ -147,7 +146,6 @@ module GT
       
       GT::AuthenticationBuilder.normalize_user_info(user, new_auth)
       ensure_valid_unique_nickname!(user)
-      user.downcase_nickname = user.nickname.downcase
 
       user.authentications << new_auth
 
@@ -215,6 +213,25 @@ module GT
       return false
     end
     
+    # Makes sure a nickname is valid and unique!
+    def self.ensure_valid_unique_nickname!(user)
+      #replace standard junk with underscore
+      user.nickname = user.nickname.gsub(/[ ,:&~]/,'_');
+      #remove anything not in the set of valid characters
+      user.nickname = user.nickname.gsub(User::NICKNAME_UNACCEPTABLE_CHAR_REGEX, '')
+      user.nickname = "cobra" if user.nickname.blank?
+      
+      orig_nick = user.nickname
+      i = 2
+      
+      while( User.where( :downcase_nickname => user.nickname.downcase ).count > 0 ) do
+        user.nickname = "#{orig_nick}_#{i}"
+        i = i*2
+      end
+      #this happens in a before_save, but doesn't hurt to do it here
+      user.downcase_nickname = user.nickname.downcase
+    end
+    
     private
     
       def self.verify_users_twitter(auth, oauth_token, oauth_secret)
@@ -261,7 +278,6 @@ module GT
 
         GT::AuthenticationBuilder.normalize_user_info(u, auth)
         ensure_valid_unique_nickname!(u)
-        u.downcase_nickname = u.nickname.downcase
 
         u.authentications << auth
 
@@ -289,23 +305,6 @@ module GT
               Rails.logger.error "[GT::UserManager] ERROR saving user after updating: #{e}"
             end
           end
-        end
-      end
-      
-      # Makes sure a nickname is valid and unique!
-      def self.ensure_valid_unique_nickname!(user)
-        #replace standard junk with underscore
-        user.nickname = user.nickname.gsub(/[ ,:&~]/,'_');
-        #remove anything not in the set of valid characters
-        user.nickname = user.nickname.gsub(User::NICKNAME_UNACCEPTABLE_CHAR_REGEX, '')
-        user.nickname = "cobra" if user.nickname.blank?
-        
-        orig_nick = user.nickname
-        i = 2
-        
-        while( User.where( :downcase_nickname => user.nickname.downcase ).count > 0 ) do
-          user.nickname = "#{orig_nick}_#{i}"
-          i = i*2
         end
       end
       

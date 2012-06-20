@@ -115,4 +115,27 @@ describe User do
     
   end
   
+  context "nickname" do
+    it "should update downcase_nickname when you update nickname" do
+      new_nick = "someTHINGnewaAaAaAaA"
+      u = Factory.create(:user)
+      u.nickname = new_nick
+      u.save
+      u.reload
+      u.downcase_nickname.should == new_nick.downcase
+    end
+    
+    #UserManager performs this operation manually (for new users from Arnold or signup), want to make sure we don't do it twice
+    it "should not run User#ensure_valid_unique_nickname on create" do
+      nick = "random_unique_nick_name-o0823u"
+      u = User.new
+      u.should_receive(:ensure_valid_unique_nickname).exactly(0).times
+      
+      u.nickname = nick
+      u.save
+      u.reload
+      u.downcase_nickname.should == nil
+    end
+  end
+  
 end

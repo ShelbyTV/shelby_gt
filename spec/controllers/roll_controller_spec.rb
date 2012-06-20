@@ -201,14 +201,14 @@ describe V1::RollController do
       Roll.stub!(:find).and_return(roll)
       post :share, :roll_id => roll.id.to_s, :destination => ["twitter"], :text => "testing", :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("please specify a valid id")      
+      assigns(:message).should eq("that roll is private, can not share")
     end
     
     it "should return 404 if roll not found" do
       Roll.stub!(:find).and_return(nil)
       post :share, :destination => ["twitter"], :text => "testing", :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("must specify a roll_id")
+      assigns(:message).should eq("could not find roll with id ")
     end
     
   end

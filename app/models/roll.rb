@@ -63,7 +63,7 @@ class Roll
   def save(options={})
     # if this roll has subdomain access we have to check if we violate the unique index constraint on subdomains
     if has_subdomain_access?
-      self.subdomain = title.strip.gsub(/[_]+/,'-').gsub(/((\A[-]+)|([-]+\z))/, '').downcase
+      self.subdomain = title.strip.gsub(/[_\-\s]+/, '-').gsub(/[^A-Za-z\d-]|\A[-]+|[-]+\z/, '').downcase
       self.subdomain_active = true
       begin
         super({:safe => true}.merge!(options))
