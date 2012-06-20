@@ -94,7 +94,7 @@ class AuthenticationsController < ApplicationController
           if gt_interest
             gt_interest.used!(user)
           elsif private_invite
-            GT::InvitationManager.private_roll_invite(user, roll, private_invite)
+            GT::InvitationManager.private_roll_invite(user, private_invite)
           end
           
           # ensure csrf_token in cookie

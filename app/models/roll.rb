@@ -55,6 +55,9 @@ class Roll
   
   attr_accessible :title, :thumbnail_url
 
+  RESERVED_SUBDOMAINS = %w(gt anal admin qa vanity)
+  validates_exclusion_of :subdomain, :in => RESERVED_SUBDOMAINS
+
   def save(options={})
     # if this roll has subdomain access we have to check if we violate the unique index constraint on subdomains
     if has_subdomain_access?
