@@ -34,15 +34,6 @@ class ApplicationController < ActionController::Base
     
     h
   end
-  
-  def ensure_valid_bson_id(id)
-    # make sure id is valid.
-    begin
-      BSON::ObjectId.from_string(id)
-    rescue
-      nil
-    end
-  end
 
   private    
     

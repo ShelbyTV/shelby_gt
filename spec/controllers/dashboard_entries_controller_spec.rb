@@ -102,7 +102,7 @@ describe V1::DashboardEntriesController do
       DashboardEntry.stub(:find) { nil }
       put :update, :id => @d.id, :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("could not find that dashboard_entry")
+      assigns(:message).should eq("could not find dashboard_entry with id #{@d.id}")
     end
     
     it "should return error if could not update dashboard entry" do

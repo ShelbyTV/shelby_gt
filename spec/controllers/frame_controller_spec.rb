@@ -142,7 +142,7 @@ describe V1::FrameController do
       Frame.stub(:find) { nil }
       get :show, :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("must supply an id")
+      assigns(:message).should eq("could not find frame with id ")
     end
   end
   
