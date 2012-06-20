@@ -115,7 +115,7 @@ class Frame
   def upvote!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
     
-    return false if self.has_voted?(u.id)
+    return true if self.has_voted?(u.id)
     
     self.upvoters << u.id
     
@@ -132,7 +132,7 @@ class Frame
   def upvote_undo!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
     
-    return false unless self.has_voted?(u.id)
+    return true unless self.has_voted?(u.id)
     
     self.upvoters.delete_if { |id| id == u.id }
     

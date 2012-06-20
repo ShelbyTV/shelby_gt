@@ -381,18 +381,24 @@ class V1::FrameController < ApplicationController
       @frame = Frame.find(params[:frame_id])
       return render_error(404, "could not find frame with id #{params[:frame_id]}") unless @frame
       
-      if params[:undo] == "1" and @frame.upvote_undo!(current_user)
-        @status = 200
-        GT::UserActionManager.unupvote!(current_user.id, @frame.id)
-        StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote_undo', request)
-        @frame.reload
-      elsif @frame.upvote!(current_user)
-        @status = 200
-        GT::UserActionManager.upvote!(current_user.id, @frame.id)
-        StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote', request)
-        @frame.reload
+      if params[:undo] == "1"
+        if @frame.upvote_undo!(current_user)
+          @status = 200
+          GT::UserActionManager.unupvote!(current_user.id, @frame.id)
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote_undo', request)
+          @frame.reload
+        else
+          render_error(404, "Failed to undo upvote frame #{@frame.id}")
+        end
       else
-        render_error(404, "something went wrong trying to upvote frame")
+        if @frame.upvote!(current_user)
+          @status = 200
+          GT::UserActionManager.upvote!(current_user.id, @frame.id)
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote', request)
+          @frame.reload
+        else
+          render_error(404, "Failed to upvote frame #{@frame.id}")
+        end
       end
     end
   end
