@@ -130,6 +130,13 @@ describe 'v1/user' do
         parse_json(response.body)["result"]["app_progress"]["test"].should eq("2")
       end
       
+      it "should update nickname and that should be reflected in new downcase_nickname" do
+        new_nick = "WhAtaintUniQUE--123"
+        put "/v1/user/#{@u1.id}?nickname=#{new_nick}"
+        @u1.reload
+        @u1.downcase_nickname.should == new_nick.downcase
+      end
+      
       it "should update the user's public_roll title when changing the user nickname if the roll has nickname as its title" do
         roll = Factory.build(:roll, :title => @u1.nickname)
         roll.creator = @u1

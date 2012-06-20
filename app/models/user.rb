@@ -1,4 +1,5 @@
 # encoding: utf-8
+require 'user_manager'
 
 # We are using the User model form Shelby (before rolls)
 # New vs. old keys will be clearly listed
@@ -9,6 +10,7 @@ class User
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::User
   
+  before_validation(:on => :update) { self.ensure_valid_unique_nickname }
   before_save :update_public_roll_title
 
   devise  :rememberable, :trackable, :token_authenticatable, :remember_for => 1.week
@@ -259,6 +261,10 @@ class User
         self.public_roll.save
       end
     end
+  end
+  
+  def ensure_valid_unique_nickname
+    GT::UserManager.ensure_valid_unique_nickname!(self) if self.nickname_changed?
   end
 
   private
