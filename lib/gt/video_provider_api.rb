@@ -29,6 +29,9 @@ module GT
     private
 
       def self.get_or_create_videos_for_yt_model(yt_model)
+        
+        v = Video.where(:provider_name => "youtube", :provider_id => yt_model.unique_id).first
+        return v if v
 
         v  = Video.new
         v.provider_name = "youtube"
