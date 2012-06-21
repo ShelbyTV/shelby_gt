@@ -156,7 +156,7 @@ module GT
         :conversation_id => frame.conversation_id,
         :frame_ancestors => (frame.frame_ancestors << frame.id)).first
       
-      dupe.destroy
+      dupe.destroy if dupe
     end
     
     def self.backfill_dashboard_entries(user, roll, frame_count=5)

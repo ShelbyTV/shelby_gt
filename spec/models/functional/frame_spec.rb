@@ -167,11 +167,15 @@ describe Frame do
       @frame.has_voted?(@voter1).should == true
     end
   
-    it "should not allow user to upvote more than once" do
+    it "multi-upvote's should be idempotent" do
       @frame.upvote!(@voter1).should == true
       score = @frame.score
-      @frame.upvote!(@voter1).should == false
+      @frame.upvote!(@voter1).should == true
+      @frame.upvote!(@voter1).should == true
+      @frame.upvote!(@voter1).should == true
+      @frame.upvote!(@voter1).should == true
       @frame.score.should == score
+      @frame.reload.score.should == score
     end
   end
   
@@ -209,11 +213,16 @@ describe Frame do
       }.should change { @frame.upvoters.count } .by(-1)
     end
     
-    it "should not allow user to upvote_undo more than once" do
+    it "multi-un-upvotes should be idempotent" do
       @frame.upvote_undo!(@voter1).should == true
       score = @frame.score
-      @frame.upvote_undo!(@voter1).should == false
+      @frame.upvote_undo!(@voter1).should == true
+      @frame.upvote_undo!(@voter1).should == true
+      @frame.upvote_undo!(@voter1).should == true
+      @frame.upvote_undo!(@voter1).should == true
+      @frame.upvote_undo!(@voter1).should == true
       @frame.score.should == score
+      @frame.reload.score.should == score
     end
   end
   
