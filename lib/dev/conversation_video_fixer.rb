@@ -11,10 +11,10 @@ module Dev
   class ConversationVideoFixer
     
     def self.fix!
-      conversationsToFix = Conversation.where(:video_id => nil)
+      conversationsToFix = Conversation.where()
       count = 1
       conversationsToFix.each do |c|
-        if c.frame_id && BSON::ObjectId.legal?(c.frame_id.to_s)
+        if (c.video_id == nil) && c.frame_id && BSON::ObjectId.legal?(c.frame_id.to_s)
           begin
             if f = Frame.find(c.frame_id)
               c.video_id = f.video_id
@@ -29,7 +29,8 @@ module Dev
         end
         # throttle a little bit to give the DB time to catch its breath...
         if count % 10000 == 0
-          puts "Fixed #{count} conversations... sleep(1)"
+          puts "Fixed ~#{count} conversations... sleep(1)"
+          count += 1
           sleep(1)
         end
       end if conversationsToFix
