@@ -49,7 +49,8 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 		}
 	};
 	
-	window.shelbyUserCallback = function(response){
+        window.shelbyUserCallback = function(response){
+                console.log(response);
 		window.shelbyUser = response;
 		shelbyRadar.sendVidsToShelby(foundVideo, response, shelbyJ);
 	};
@@ -68,7 +69,8 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 	// end global callbacks //
 	
 	window.shelbyRadar = {
-		signedIn: function(shelbyJ){
+                  signedIn: function(shelbyJ){
+                        console.log("signing in");
 			shelbyJ.ajax({
 				type : 'GET',
 				url : 'http://<%= Settings::VideoRadar.domain %>/v1/signed_in',
@@ -219,7 +221,7 @@ loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', f
 						.css('height', '138px')
 						.css('margin-top', '15px')
 						.css('outline', '0px')
-						.hide();
+			l		.hide();
 
 						if (vids[i].known_url && vids[i].known_url.slice(0, 19) == "http://www.hulu.com") {
 							var vpos = jQuery(vids[i].embed).offset().top + 342;
