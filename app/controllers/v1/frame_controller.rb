@@ -272,7 +272,7 @@ class V1::FrameController < ApplicationController
           if @frame = r[:frame]
             @status = 200          
           else
-            render_error(404, "Sorry, but something went wrong trying add that video")
+            render_error(404, "Sorry, but something went wrong trying add that video.")
           end
           
         else
