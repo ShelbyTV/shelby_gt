@@ -11,28 +11,37 @@ module Dev
   class ConversationVideoFixer
     
     def self.fix!
-      conversationsToFix = Conversation.where()
-      count = 1
+      conversationsToFix = Conversation.where(:video_id => nil)
+      fixed = 1
+      total = 1
       conversationsToFix.each do |c|
-        if (c.video_id == nil) && c.frame_id && BSON::ObjectId.legal?(c.frame_id.to_s)
+        if c.frame_id && BSON::ObjectId.legal?(c.frame_id.to_s)
           begin
             if f = Frame.find(c.frame_id)
               c.video_id = f.video_id
               begin
-                c.save()
-                count += 1
+                c.save
+                fixed += 1
               rescue
               end
+            else
+              puts "Could not find Frame..."
             end
           rescue
+            puts "Exception while looking up Frame..."
           end
         end
+        if total % 1000 == 0
+          puts "Iterated over ~#{total} conversations"
+        end
         # throttle a little bit to give the DB time to catch its breath...
-        if count % 10000 == 0
-          puts "Fixed ~#{count} conversations... sleep(1)"
-          count += 1
+        if fixed % 10000 == 0
+          puts "Fixed ~#{fixed} conversations... sleep(1)"
+          # hack so that we never accidentally sleep twice in a row
+          fixed += 1
           sleep(1)
         end
+        total += 1
       end if conversationsToFix
     end
   end
