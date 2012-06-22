@@ -84,8 +84,7 @@ describe 'v1/user' do
         @u1.save
         
         get '/v1/user/'+@u1.id+'/rolls/following'
-        parse_json(response.body)["result"][0]["id"].should eq(r1.id.to_s)
-        parse_json(response.body)["result"][1]["id"].should eq(r2.id.to_s)
+        parse_json(response.body)["result"][0]["id"].should eq(r2.id.to_s)
       end
       
       it "should return frames if they are asked for in roll followings" do

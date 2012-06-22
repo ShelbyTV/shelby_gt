@@ -85,7 +85,7 @@ class V1::UserController < ApplicationController
             # move heart roll to @rolls[1]
             if heartRollIndex = @rolls.index(current_user.upvoted_roll)
               heartRoll = @rolls.slice!(heartRollIndex)
-              @rolls.insert(1, heartRoll)
+              @rolls.insert(0, heartRoll)
             else
               Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
             end
@@ -93,7 +93,8 @@ class V1::UserController < ApplicationController
           
           self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_find']) do
             # Load all roll creators to prevent N+1 queries
-            @roll_creators = User.find( @rolls.map {|r| r.creator_id }.compact.uniq )
+            creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
+            @roll_creators = User.where(:id => { "$in" => creator_ids }).limit(creator_ids.length).all
           end
           
           # load frames with select attributes, if params say to
