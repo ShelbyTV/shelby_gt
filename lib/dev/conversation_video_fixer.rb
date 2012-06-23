@@ -58,9 +58,9 @@ module Dev
       total = 1
       conversationsToFix.each do |c|
         begin
-          if f = Frame.first(:conversation_id => c._id)
-            c.frame_id = f._id
-            c.video_id = f.video_id
+          if f = Frame.where(:conversation_id => c.id)
+            c.frame_id = f[0].id
+            c.video_id = f[0].video_id
             begin
               c.save
               fixed += 1
