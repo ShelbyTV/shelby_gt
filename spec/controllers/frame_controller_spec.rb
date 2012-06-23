@@ -19,33 +19,49 @@ describe V1::FrameController do
     Frame.stub(:find) { @frame }
     @roll.stub_chain(:frames, :sort) { [@frame] }
   end  
-
-  describe "GET index" do
-    it "assigns all frames in a roll to @frames" do
+  
+  describe "GET index_for_users_public_roll" do
+    it "properly gets users public roll" do
+      User.stub(:find) { @u1 }
+      @u1.stub(:public_roll) { @roll }
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame, @frame])
+      get :index_for_users_public_roll, :user_id => @u1.id, :format => :json
+      
+      assigns(:roll).should eq(@roll)
+      assigns(:frames).should eq([@frame, @frame])
+      assigns(:status).should eq(200)
+    end
+    
+    it "should handle bad user_id" do
+      get :index_for_users_public_roll, :user_id => "someting_that_doesn't_exist08925asoijasdf", :format => :json
+      
+      assigns(:status).should eq(404)
+    end
+  end
+  
+  describe "GET index_for_users_heart_roll" do
+    it "properly gets users heart roll" do
+      User.stub(:find) { @u1 }
+      @u1.stub(:upvoted_roll) { @roll }
       Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
-      get :index, :roll_id => @roll.id, :format => :json
+      get :index_for_users_heart_roll, :user_id => @u1.id, :format => :json
       
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])
       assigns(:status).should eq(200)
     end
     
-    it "properly gets users public roll" do
-      User.stub(:find) { @u1 }
-      @u1.stub(:public_roll) { @roll }
-      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
-      get :index_for_users_public_roll, :user_id => @u1.id, :format => :json
+    it "should handle bad user_id" do
+      get :index_for_users_heart_roll, :user_id => "someting_that_doesn't_exist08925asoijasdf", :format => :json
       
-      assigns(:roll).should eq(@roll)
-      assigns(:frames).should eq([@frame])
-      assigns(:status).should eq(200)
+      assigns(:status).should eq(404)
     end
+  end
 
-    it "properly gets users heart roll" do
-      User.stub(:find) { @u1 }
-      @u1.stub(:upvoted_roll) { @roll }
+  describe "GET index" do
+    it "assigns all frames in a roll to @frames" do
       Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
-      get :index_for_users_heart_roll, :user_id => @u1.id, :format => :json
+      get :index, :roll_id => @roll.id, :format => :json
       
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])

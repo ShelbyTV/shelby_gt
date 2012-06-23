@@ -99,6 +99,8 @@ class V1::FrameController < ApplicationController
       
       if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
         @roll = user.public_roll
+      else
+        return render_error(404, "can't find user for #{params[:user_id]}")
       end
       
       where_hash = { :roll_id => @roll.id }
@@ -132,7 +134,7 @@ class V1::FrameController < ApplicationController
         @videos = Video.find(@entries_video_ids)
         @conversations = Conversation.find(@entries_conversation_ids)
         ##########
-      end        
+      end
       @status =  200
     end
   end
@@ -148,6 +150,8 @@ class V1::FrameController < ApplicationController
       
       if user = User.find(params[:user_id]) or user = User.find_by_nickname(params[:user_id])
         @roll = user.upvoted_roll
+      else
+        return render_error(404, "can't find user for #{params[:user_id]}")
       end
       
       where_hash = { :roll_id => @roll.id }
