@@ -234,10 +234,10 @@ class V1::FrameController < ApplicationController
   # Returns: The new Frame, including all children expanded.
   def create
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['create']) do
-      render_error(404, "this route is for jsonp only.") if request.get? and !params[:callback]
+      return render_error(404, "this route is for jsonp only.") if request.get? and !params[:callback]
       
       roll = Roll.find(params[:roll_id])
-      render_error(404, "could not find that roll") if !roll
+      return render_error(404, "could not find that roll") unless roll
       
       #on success, always want to render the full resulting Frame
       @include_frame_children = true
@@ -276,7 +276,7 @@ class V1::FrameController < ApplicationController
           if @frame = r[:frame]
             @status = 200          
           else
-            render_error(404, "Sorry, but something went wrong trying add that video.")
+            return render_error(404, "Sorry, but something went wrong trying add that video.")
           end
           
         else
@@ -294,7 +294,7 @@ class V1::FrameController < ApplicationController
             StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'], current_user.id, 'frame_re_roll', request)
             @status = 200
           else
-            render_error(403, "that user cant post to that roll")
+            return render_error(403, "that user cant post to that roll")
           end
         rescue => e
           return render_error(404, "could not re_roll: #{e}")
@@ -302,7 +302,7 @@ class V1::FrameController < ApplicationController
         
       else
         
-        render_error(404, "you haven't built me to do anything else yet...")
+       return render_error(404, "failed to re-roll frame from id.")
 
       end
     end

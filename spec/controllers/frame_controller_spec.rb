@@ -400,6 +400,12 @@ describe V1::FrameController do
         assigns(:status).should eq(403)
       end
       
+      it "should handle bad roll_id" do
+        Roll.stub(:find) { nil }
+        post :create, :roll_id => "some_Roll_id_that_doesnt_exist", :url => @video_url, :format => :json
+        assigns(:status).should eq(404)
+      end
+      
     end
     
     context "new frame by re rolling a frame" do
@@ -436,7 +442,6 @@ describe V1::FrameController do
     it "returns 404 if it theres no frame_id to re_roll or no video_url to make into a frame" do
       post :create, :roll_id => @r2.id, :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("you haven't built me to do anything else yet...")
     end
 
   end
