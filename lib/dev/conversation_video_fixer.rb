@@ -58,7 +58,7 @@ module Dev
       total = 1
       conversationsToFix.each do |c|
         begin
-          if f = Frame.find(:conversation_id => c._id)
+          if f = Frame.first(:conversation_id => c._id)
             c.frame_id = f._id
             c.video_id = f.video_id
             begin
