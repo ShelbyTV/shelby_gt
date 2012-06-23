@@ -45,34 +45,34 @@ class T101
     puts " Destroying #{rolls_created.count} rolls created by #{user.nickname}..."
     rolls_created.each do |r|
       puts "  destroying roll #{r.title} (#{r.id})..."
-      self.destroy_roll(r)
+      destroy_roll(r)
     end
     
     puts " Destroying special rolls (if they're still around)..."
     if user.public_roll
       puts "   Destroying public_roll..."
-      self.destroy_roll user.public_roll
+      destroy_roll user.public_roll
     else
       puts "   User had no public_roll"
     end
     
     if user.watch_later_roll
       puts "   Destroying watch_later_roll..."
-      self.destroy_roll user.watch_later_roll
+      destroy_roll user.watch_later_roll
     else
       puts "   User had no watch_later_roll"
     end
     
     if user.upvoted_roll
       puts "   Destroying upvoted_roll..."
-      self.destroy_roll user.upvoted_roll
+      destroy_roll user.upvoted_roll
     else
       puts "   User had no upvoted_roll"
     end
     
     if user.viewed_roll
       puts "   Destroying viewed_roll..."
-      self.destroy_roll user.viewed_roll
+      destroy_roll user.viewed_roll
     else
       puts "   User had no viewed_roll"
     end

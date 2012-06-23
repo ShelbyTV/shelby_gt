@@ -88,6 +88,8 @@ class Roll
     # only user's personal roll gets a subdomain
     public and !collaborative and !genius
   end
+  
+  def created_at() self.id.generation_time; end
 
   def followed_by?(u)
     raise ArgumentError, "must supply user or user_id" unless u

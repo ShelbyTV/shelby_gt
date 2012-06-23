@@ -42,7 +42,7 @@ describe V1::DashboardEntriesController do
       video = mock_model(Video)
       message = mock_model(Message)
       conv = mock_model(Conversation, :messages => [message])
-      roll = mock_model(Roll)
+      roll = Factory.create(:roll)
       frame = Factory.create(:frame, :video => video, :conversation => conv, :roll => roll, :creator => @user)
       entry = mock_model(DashboardEntry, :frame => frame, :roll => roll, :creator => @user, :video => video)
       
