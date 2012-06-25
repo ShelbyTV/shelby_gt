@@ -311,6 +311,9 @@ class V1::FrameController < ApplicationController
   ##
   # Returns success if frame is shared successfully, with the given parameters.
   #
+  # SIDE AFFECTS:
+  #   - The text will be added to the frame's conversation as a new messag
+  #
   # [GET] /v1/frame/:frame_id/share
   # 
   # @param [Required, String] frame_id The id of the frame to share
@@ -361,6 +364,14 @@ class V1::FrameController < ApplicationController
         end
         
         if resp
+          # Since the message was posted, add it to the Frame's conversation
+          new_message = GT::MessageManager.build_message(:user => current_user, :public => true, :text => text)
+          frame.conversation.messages << new_message
+          if frame.conversation.save
+            ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(frame.conversation, new_message) }
+            StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)
+          end
+          
           @status = 200
         else
           render_error(404, "that user cant post to that destination")
