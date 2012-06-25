@@ -21,7 +21,13 @@ module GT
         return nil
       end 
       # a youtube it video object
-      return get_or_create_videos_for_yt_model(parser.parse)
+      begin
+        return get_or_create_videos_for_yt_model(parser.parse)
+      rescue => e
+        # b/c the parser can be a little buggy
+        Rails.logger.info "[GT::VideoProviderApi#examine_url_for_youtube_video] rescuing YouTubeIt::Parser::VideoFeedParser#parse exception #{e}"
+        return nil
+      end
       
 
     end
@@ -57,7 +63,7 @@ module GT
           # If this was a timing issue, and Video got created after we checked, that means the Video exists now.  See if we can't recover...
           v = Video.where(:provider_name => "youtube", :provider_id => yt_model.unique_id).first
           return v if v
-          Rails.logger.error "[GT::VideoManager#find_or_create_video_for_embedly_hash] rescuing Mongo::OperationFailure #{e}"
+          Rails.logger.error "[GT::VideoProviderApi#get_or_create_videos_for_yt_model] rescuing Mongo::OperationFailure #{e}"
           return nil
         end
       end
