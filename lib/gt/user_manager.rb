@@ -149,6 +149,8 @@ module GT
 
       user.authentications << new_auth
 
+      user.gt_enable!
+
       user.faux = User::FAUX_STATUS[:converted]
       if user.save
         GT::PredatorManager.initialize_video_processing(user, new_auth)
@@ -312,7 +314,7 @@ module GT
         r.public = true
         r.collaborative = false
         r.title = u.nickname
-        r.thumbnail_url = u.user_image || u.user_image_original
+        r.creator_thumbnail_url = u.user_image || u.user_image_original
         u.public_roll = r
       end
       

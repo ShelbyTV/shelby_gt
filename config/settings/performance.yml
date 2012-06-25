@@ -1,5 +1,6 @@
 defaults: &defaults
   validate_uniqueness_user_nickname: true
+  validate_uniqueness_video_provider_name_id: true
 
 development:
   <<: *defaults
@@ -13,3 +14,4 @@ production: &production
 arnold:
   <<: *production
   validate_uniqueness_user_nickname: false
+  validate_uniqueness_video_provider_name_id: false

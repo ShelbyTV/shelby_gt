@@ -45,8 +45,7 @@ class V1::DashboardEntriesController < ApplicationController
 
       # get user
       if params[:user_id]
-        return render_error(404, "please specify a valid id") unless (user_id = ensure_valid_bson_id(params[:user_id]))
-        return render_error(404, "could not find that user") unless user = User.find(user_id)
+        return render_error(404, "could not find that user") unless user = User.find(params[:user_id])
       elsif user_signed_in?
         user = current_user
       end
@@ -59,16 +58,15 @@ class V1::DashboardEntriesController < ApplicationController
           render 'index' and return
         end
         
-        
         if params[:since_id]
-          
-          return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:since_id])
+          return render_error(404, "invalid since_id #{params[:since_id]}") unless BSON::ObjectId.legal?(params[:since_id])
+          since_object_id = BSON::ObjectId(params[:since_id])
           
           case params[:order]
           when "1", nil, "forward"
-            @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.lte => since_id).all
+            @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.lte => since_object_id).all
           when "-1", "reverse", "backward"
-            @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.gt => since_id).all
+            @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.gt => since_object_id).all
           end
         else
           @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
@@ -86,7 +84,9 @@ class V1::DashboardEntriesController < ApplicationController
         @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
         @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
 
-        @rolls = Roll.find(@entries_roll_ids)
+        # for some reason calling Roll.find is throwing an error, its thinking its calling:
+        #  V1::DashboardEntriesController::Roll which does not exist, for now, just forcing the global Roll
+        @rolls = ::Roll.find(@entries_roll_ids)
         @users = User.find((@entries_creator_ids + @entries_hearted_ids).uniq)
         @videos = Video.find(@entries_video_ids)
         @conversations = Conversation.find(@entries_conversation_ids)
@@ -112,17 +112,14 @@ class V1::DashboardEntriesController < ApplicationController
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['update']) do
       if params[:id]
-
-        return render_error(404, "please specify a valid id") unless (id = ensure_valid_bson_id(params.delete(:id)))
-        
-        if @dashboard_entry = DashboardEntry.find(id)
+        if @dashboard_entry = DashboardEntry.find(params[:id])
           begin 
             @status = 200 if @dashboard_entry.update_attributes!(params)
           rescue => e
             render_error(404, "could not update dashboard_entry: #{e}")
           end
         else
-          render_error(404, "could not find that dashboard_entry")
+          render_error(404, "could not find dashboard_entry with id #{params[:id]}")
         end
       else
         render_error(404, "must specify an id.")

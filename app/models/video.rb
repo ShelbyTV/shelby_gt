@@ -37,8 +37,13 @@ class Video
   key :recs, Array, :typecast => 'Recommendation', :abbr => :r
   many :recommendations, :in => :recs
   
-  # mongo has a unique key on these as well
-  validates_uniqueness_of :provider_id, :scope => :provider_name
+  # Arnold does a *shit ton* of Video creation, which runs this validation, which turns out to be very expensive 
+  # This validations is technically unnecessary because there is a unique index on [provider_id, provider_name] in the database.
+  # Additionally: 1) Arnold performs manual validation on Video create. 2) This doesn't even gurantee uniqueness (timing issues)
+  # So, we turn this validation off for performance reasons inside of Arnold
+  if Settings::Performance.validate_uniqueness_video_provider_name_id
+    validates_uniqueness_of :provider_id, :scope => :provider_name
+  end
 
   #nothing needs to be mass-assigned
   attr_accessible

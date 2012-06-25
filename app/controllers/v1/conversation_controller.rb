@@ -11,16 +11,10 @@ class V1::ConversationController < ApplicationController
   # @param [Required, String] id The id of the conversation
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['conversation']['show']) do
-      if params[:id]
-        return render_error(404, "please specify a valid id") unless (id = ensure_valid_bson_id(params[:id]))
-
-        if @conversation = Conversation.find(id)
-          @status = 200
-        else
-          render_error(404, "could not find conversation")
-        end
+      if @conversation = Conversation.find(params[:id])
+        @status = 200
       else
-        render_error(404, "must supply an id")
+        render_error(404, "could not find conversation for id #{params[:id]}")
       end
     end
   end
@@ -38,14 +32,13 @@ class V1::ConversationController < ApplicationController
       # put an upper limit on the number of entries returned
       @limit = 50 if @limit.to_i > 50
       
-      return render_error(404, "must specify video_id") unless params[:video_id]
-      
-      return render_error(404, "please specify a valid id") unless (video_id = ensure_valid_bson_id(params[:video_id]))
-        
-      if @conversations = Conversation.sort(:id.desc).limit(@limit).where(:video_id => video_id, :public => true, :from_deeplink => {:$ne => true} )
+      if @conversations = Conversation.sort(:id.desc).limit(@limit).where(
+        :video_id => BSON::ObjectId(params[:video_id]), 
+        :public => true, 
+        :from_deeplink => {:$ne => true} )
         @status =  200
       else
-        render_error(404, "could not find conversations for that video")
+        render_error(404, "could not find conversations for video with id #{params[:video_id]}")
       end
     end
   end

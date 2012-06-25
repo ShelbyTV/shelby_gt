@@ -115,7 +115,7 @@ class Frame
   def upvote!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
     
-    return false if self.has_voted?(u.id)
+    return true if self.has_voted?(u.id)
     
     self.upvoters << u.id
     
@@ -132,7 +132,7 @@ class Frame
   def upvote_undo!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
     
-    return false unless self.has_voted?(u.id)
+    return true unless self.has_voted?(u.id)
     
     self.upvoters.delete_if { |id| id == u.id }
     
@@ -212,7 +212,17 @@ class Frame
     end
 
     # Rolls' :frame_count is abbreviated as :j and that doesn't get translated w/ atomic updates like this...
-    def increment_rolls_frame_count() Roll.increment(self.roll_id, :j => 1) if self.roll_id; true; end
-    def decrement_rolls_frame_count() Roll.decrement(self.roll_id, :j => -1) if self.roll_id; true; end
+    # N.B. Roll.increment doesn't udpate the roll locally, and we don't want to overwrite that if we save this roll to the DB
+    def increment_rolls_frame_count
+      Roll.increment(self.roll_id, :j => 1) if self.roll_id
+      self.roll.frame_count += 1 if self.roll
+      true
+    end
+
+    def decrement_rolls_frame_count
+      Roll.decrement(self.roll_id, :j => -1) if self.roll_id
+      self.roll.frame_count -= 1 if self.roll
+      true
+    end
 
 end

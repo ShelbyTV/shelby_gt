@@ -68,7 +68,7 @@ describe V1::DashboardEntriesController do
       video = mock_model(Video)
       message = mock_model(Message)
       conv = mock_model(Conversation, :messages => [message])
-      roll = mock_model(Roll)
+      roll = Factory.create(:roll)
       frame = Factory.create(:frame, :video => video, :conversation => conv, :roll => roll, :creator => @user)
       entry = mock_model(DashboardEntry, :frame => frame, :roll => roll, :creator => @user, :video => video)
       
@@ -128,7 +128,7 @@ describe V1::DashboardEntriesController do
       DashboardEntry.stub(:find) { nil }
       put :update, :id => @d.id, :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("could not find that dashboard_entry")
+      assigns(:message).should eq("could not find dashboard_entry with id #{@d.id}")
     end
     
     it "should return error if could not update dashboard entry" do
