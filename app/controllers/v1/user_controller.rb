@@ -98,38 +98,6 @@ class V1::UserController < ApplicationController
             # Load all roll creators to prevent N+1 queries
             @roll_creators = User.where(:id => { "$in" => @creator_ids }).limit(@creator_ids.length).all
           end
-          
-          # load frames with select attributes, if params say to
-          if params[:frames] == "true"
-            # default params
-            limit = params[:frames_limit] ? params[:frames_limit] : 1
-            # put an upper limit on the number of entries returned
-            limit = 20 if limit.to_i > 20
-
-            # intelligently fetching frames and videos for performance purposes
-            @frames =[]
-            self.class.trace_execution_scoped(['UserController/roll_followings/frames_find']) do
-              @rolls.each { |r| @frames << r.frames.limit(limit).all }
-            end
-            self.class.trace_execution_scoped(['UserController/roll_followings/video_find']) do
-              @videos = Video.find( @frames.flatten!.compact.uniq.map {|f| f.video_id }.compact.uniq )
-            end
-            
-            self.class.trace_execution_scoped(['UserController/roll_followings/frames_subset_code']) do
-              @rolls.each do |r|
-                r['frames_subset'] = []
-                r.frames.limit(limit).all.each do |f| 
-                  if f.video # NOTE: not sure why some frames dont have videos, but this is necessary until we know why
-                    r['frames_subset'] << {
-                      :id => f.id, :video => {
-                        :id => f.video.id, :thumbnail_url => f.video.thumbnail_url
-                      }
-                    }
-                  end
-                end
-              end
-            end
-          end
         
           @status = 200
         else
