@@ -58,8 +58,7 @@ describe 'v1/dashboard' do
           @f.save
           
           # 1 time to load current_user
-          # 1 time to load all the upvote users
-          User.should_receive(:find).exactly(2).times
+          User.should_receive(:find).exactly(1).times
                       
           get '/v1/dashboard?include_children=true'
         end
