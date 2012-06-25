@@ -2,8 +2,6 @@ class V1::UserController < ApplicationController
   
   before_filter :user_authenticated?, :except => [:signed_in, :show]
 
-  extend NewRelic::Agent::MethodTracer
-  
   ####################################
   # Returns true (false) if user is (not) signed in
   #
@@ -70,16 +68,16 @@ class V1::UserController < ApplicationController
   # @param [Optional, boolean] frames Returns a shallow version of frames
   # @param [Optional, boolean] frames_limit limit number of shallow frames to return 
   def roll_followings
+    # disabling garbage collection here because we are loading a whole bunch of documents, and my hypothesis (HIS) is 
+    #  it is slowing down this api request
     GC.disable
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
       if current_user.id.to_s == params[:id]
         
-        self.class.trace_execution_scoped(['UserController/roll_followings/roll_find']) do
-          # for some reason calling Roll.find is throwing an error, its thinking its calling:
-          #  V1::UserController::Roll which does not exist, for now, just forcing the global Roll
-          @roll_ids = current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq
-          @rolls = ::Roll.where(:id => { "$in" => @roll_ids }).limit(@roll_ids.length).all
-        end
+        # for some reason calling Roll.find is throwing an error, its thinking its calling:
+        #  V1::UserController::Roll which does not exist, for now, just forcing the global Roll
+        @roll_ids = current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq
+        @rolls = Roll.where(:id => { "$in" => @roll_ids }).limit(@roll_ids.length).all
         
         if @rolls
           
@@ -91,12 +89,11 @@ class V1::UserController < ApplicationController
             Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
           end
           
-          self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_find']) do
-            # Load all roll creators to prevent N+1 queries
-            @creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
-            @roll_creators = User.where(:id => { "$in" => @creator_ids }).limit(@creator_ids.length).fields(:id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id, :upvoted_roll_id, :viewed_roll_id, :app_progress).all
-            @roll_creators.each {|u| User.identity_map[u.id] = u}
-          end
+          # Load all roll creators to prevent N+1 queries
+          @creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
+          @roll_creators = User.where(:id => { "$in" => @creator_ids }).limit(@creator_ids.length).fields(:id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id, :upvoted_roll_id, :viewed_roll_id, :app_progress).all
+          # we have to manually put these users into an identity map, .fields() seems to User.identity map = {}
+          @roll_creators.each {|u| User.identity_map[u.id] = u}
         
           @status = 200
         else
@@ -108,6 +105,5 @@ class V1::UserController < ApplicationController
     end
     GC.enable
   end
-  #add_method_tracer :roll_followings
   
 end
