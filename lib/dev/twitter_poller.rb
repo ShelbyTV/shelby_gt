@@ -22,12 +22,12 @@ module Dev
         # find vids, and if there are any, have SocialSorter put them in their place...
         URI.extract(tweet.text, ["http", "https"]).each do |url|
           
-          vids = GT::VideoManager.get_or_create_videos_for_url(url)
+          vids = GT::VideoManager.get_or_create_videos_for_url(url)[:videos]
           msg = GT::TwitterNormalizer.normalize_tweet(grackle_to_hash(tweet))
 
           vids.empty? ? print(".") : puts("\nFound vids #{vids} for msg #{msg.inspect} (url #{url})")
           
-          vids.each { |v| GT::SocialSorter.sort(msg, v, u) }
+          vids.each { |v| GT::SocialSorter.sort(msg, {:video=>v}, u) }
 
         end
         

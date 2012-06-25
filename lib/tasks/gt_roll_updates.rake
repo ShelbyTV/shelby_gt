@@ -27,3 +27,22 @@ namespace :gt_roll_updates do
     puts "#{@limit*@p*@n} - #{@limit*@n+(@p*@limit*@n)} done!"
   end  
 end
+
+=begin
+@n = 4
+@p = 3
+@n.times do |i|
+  @limit = 125000
+  @skip = (i)*@limit + (@limit*@n*@p)
+  Roll.where(:title=>{"$nin" => ["Viewed","Upvoted","Watch Later"]}).limit(@limit).skip(@skip).find_each.each do |r|  
+    if r.first_frame_thumbnail_url == nil and r.frames.first and video = r.frames.first.video
+      print '*'
+      r.first_frame_thumbnail_url = video.thumbnail_url
+    else
+      print '.'
+    end
+    r.save
+  end
+  puts "through: #{@skip}"
+end
+=end
