@@ -10,9 +10,3 @@ end
 code :first_frame_thumbnail_url do |r|
 	r.first_frame_thumbnail_url if r.first_frame_thumbnail_url
 end
-
-if @frames
-	node :frames do |r|
-		r['frames_subset']
-	end
-end

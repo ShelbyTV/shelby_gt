@@ -73,7 +73,7 @@ class V1::UserController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
       if current_user.id.to_s == params[:id]
         
-        GC.disable
+        #GC.disable
         
         self.class.trace_execution_scoped(['UserController/roll_followings/roll_find']) do
           # for some reason calling Roll.find is throwing an error, its thinking its calling:
@@ -83,7 +83,7 @@ class V1::UserController < ApplicationController
         end
         
         if @rolls
-
+          
           # move heart roll to @rolls[1]
           if heartRollIndex = @rolls.index(current_user.upvoted_roll)
             heartRoll = @rolls.slice!(heartRollIndex)
@@ -92,11 +92,9 @@ class V1::UserController < ApplicationController
             Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
           end
           
-          self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_array']) do
-            @creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
-          end
           self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_find']) do
             # Load all roll creators to prevent N+1 queries
+            @creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
             @roll_creators = User.where(:id => { "$in" => @creator_ids }).limit(@creator_ids.length).fields(:id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id, :upvoted_roll_id, :app_progress).all
           end
         
@@ -108,7 +106,7 @@ class V1::UserController < ApplicationController
         render_error(403, "you are not authorized to view that users rolls.")
       end
     end
-    GC.enable
+    #GC.enable
   end
   #add_method_tracer :roll_followings
   
