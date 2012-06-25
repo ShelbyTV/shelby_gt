@@ -1,5 +1,7 @@
 class V1::GtInterestController < ApplicationController  
 
+  protect_from_forgery :except => :create
+  
   ##
   # Creates and returns one GtInterest
   #
@@ -17,5 +19,6 @@ class V1::GtInterestController < ApplicationController
       render_error(400, "must have a valid email")
     end
   end
+
   
 end

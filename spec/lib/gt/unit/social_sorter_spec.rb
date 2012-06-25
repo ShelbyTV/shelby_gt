@@ -11,7 +11,7 @@ describe GT::SocialSorter do
       existing_user = Factory.create(:user)
       existing_user_nick, existing_user_provider, existing_user_uid = "nick1", "ss_1#{rand.to_s}", "uid001#{rand.to_s}"
       
-      video = Video.create
+      video = Factory.create(:video)
       existing_user_random_msg = Message.new
       existing_user_random_msg.nickname = existing_user_nick
       existing_user_random_msg.origin_network = existing_user_provider
@@ -26,30 +26,30 @@ describe GT::SocialSorter do
   
   it "should raise ArgumentError without a valid Message" do
     lambda {
-      GT::SocialSorter.sort(nil, {:video => Video.new, :from_deep => false}, User.new) 
+      GT::SocialSorter.sort(nil, {:video => Factory.create(:video), :from_deep => false}, User.new) 
     }.should raise_error(ArgumentError)
   end
   
   it "should raise ArgumentError without a valid Video" do
     lambda {
-      GT::SocialSorter.sort(Message.new, {:video => Video.new, :from_deep => false}, User.new) 
+      GT::SocialSorter.sort(Message.new, {:video => nil, :from_deep => false}, User.new) 
     }.should raise_error(ArgumentError)
   end
   
   it "should raise ArgumentError without a valid User" do
     lambda {
-      GT::SocialSorter.sort(Message.new, {:video => Video.new, :from_deep => false}, nil) 
+      GT::SocialSorter.sort(Message.new, {:video => Factory.create(:video), :from_deep => false}, nil) 
     }.should raise_error(ArgumentError)
   end
 
   it "should return false if posting_user isn't found and can't be created" do
     GT::UserManager.stub(:get_or_create_faux_user).and_return(nil)
-    GT::SocialSorter.sort(Message.new, {:video => Video.new, :from_deep => false}, User.new).should == false 
+    GT::SocialSorter.sort(Message.new, {:video => Factory.create(:video), :from_deep => false}, User.new).should == false 
   end
   
   it "should return false if posting_user has no public roll" do
     GT::UserManager.stub(:get_or_create_faux_user).and_return(User.new)
-    GT::SocialSorter.sort(Message.new, {:video => Video.new, :from_deep => false}, User.new).should == false 
+    GT::SocialSorter.sort(Message.new, {:video => Factory.create(:video), :from_deep => false}, User.new).should == false 
   end
   
 end

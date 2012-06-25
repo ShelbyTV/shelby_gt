@@ -10,7 +10,7 @@ gem 'rails', '3.2.2'
 #   key_abbreviation - allowing us to use short keys in mongo but longer attributes in ruby, and
 #   embed_doc_no_callbacks - allowing us to disable callbacks on embedde documents so we don't hit the stack level too deep issue
 gem "mongo_mapper", :git => 'git://github.com/spinosa/mongomapper.git', :branch => 'embed_doc_no_callbacks'
-gem "bson_ext"
+gem "mongo", '>=1.6.4'
 
 #
 # ---------- Config
@@ -24,12 +24,16 @@ gem 'rabl','~> 0.6.0'
 gem 'yajl-ruby', :require => "yajl"
 gem "statsd-ruby" # for communicating with graphite server
 gem 'rack-cors', :require => 'rack/cors' # for cors preflight requests
-
+gem 'rack-oauth2-server'
 #
 # ---------- Assets
 #
 gem "haml"
 gem "compass", "0.11.7"
+
+group :production do
+  gem "uglifier"
+end
 
 #
 # ---------- User Authentication

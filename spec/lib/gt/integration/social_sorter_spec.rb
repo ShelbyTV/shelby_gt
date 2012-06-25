@@ -19,7 +19,7 @@ describe GT::SocialSorter do
     @existing_user.public_roll = @existing_user_public_roll
     @existing_user.save
 
-    @video = Video.create
+    @video = Factory.create(:video)
   end
   
   context "public social postings" do

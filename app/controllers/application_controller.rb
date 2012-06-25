@@ -15,6 +15,7 @@ class ApplicationController < ActionController::Base
   # === Unlike the default user_authenticated! helper that ships with devise,
   #  We want to render our json response as well as just the http 401 response
   def user_authenticated?
+    warden.authenticate(:oauth) unless user_signed_in?
     unless user_signed_in?
       @status, @message = 401, "you must be authenticated"
       render 'v1/blank', :status => @status
@@ -32,15 +33,6 @@ class ApplicationController < ActionController::Base
     end
     
     h
-  end
-  
-  def ensure_valid_bson_id(id)
-    # make sure id is valid.
-    begin
-      BSON::ObjectId.from_string(id)
-    rescue
-      nil
-    end
   end
 
   private    
@@ -65,5 +57,5 @@ class ApplicationController < ActionController::Base
         sign_in(:user, user)
       end
     end
-          
+
 end

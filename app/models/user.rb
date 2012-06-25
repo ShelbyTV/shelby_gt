@@ -1,4 +1,5 @@
 # encoding: utf-8
+require 'user_manager'
 
 # We are using the User model form Shelby (before rolls)
 # New vs. old keys will be clearly listed
@@ -9,6 +10,7 @@ class User
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::User
   
+  before_validation(:on => :update) { self.ensure_valid_unique_nickname }
   before_save :update_public_roll_title
 
   devise  :rememberable, :trackable, :token_authenticatable, :remember_for => 1.week
@@ -19,7 +21,7 @@ class User
   
   # the Rolls this user is following and when they started following
   many :roll_followings
-  
+
   # Rolls this user has unfollowed
   # these rolls should not be auto-followed by our system
   key :rolls_unfollowed, Array, :typecast => 'ObjectId', :abbr => :aa, :default => []
@@ -42,7 +44,7 @@ class User
   # A special roll for a user: their Viewed Roll
   # - contains trivial copies of Frames that this user has viewed
   belongs_to :viewed_roll, :class_name => 'Roll'
-  key :viewed_roll, ObjectId, :abbr => :af
+  key :viewed_roll_id, ObjectId, :abbr => :af
   
   # When we create a User just for their public Roll, we mark them faux=true
   #  this status allows us to track conversions from faux to real
@@ -62,6 +64,9 @@ class User
   key :gt_enabled, Boolean, :abbr => :ag, :default => false
 
   one :app_progress
+
+  key :applications, Array, :abbr => :ap
+  key :clients, Array, :abbr => :ai
 
   #--old keys--
   many :authentications
@@ -154,6 +159,12 @@ class User
   end
   
   def permalink() "#{Settings::ShelbyAPI.web_root}/user/#{self.nickname}/personal_roll"; end
+
+  def revoke(client)
+    token = Rack::OAuth2::Server::AccessToken.get_token_for(id.to_s, client, "")
+    token.revoke! unless token.nil?
+  end
+
   
   # Use this to convert User's created on NOS to GT
   # When we move everyone to GT, use the rake task in gt_migration.rb
@@ -244,9 +255,16 @@ class User
 
   def update_public_roll_title
     if changed.include?('nickname') and self.public_roll
-      self.public_roll.title = self.nickname
-      self.public_roll.save
+      # only update the public roll title if the title matched the old nickname
+      if self.public_roll.title == changed_attributes['nickname']
+        self.public_roll.title = self.nickname
+        self.public_roll.save
+      end
     end
+  end
+  
+  def ensure_valid_unique_nickname
+    GT::UserManager.ensure_valid_unique_nickname!(self) if self.nickname_changed?
   end
 
   private

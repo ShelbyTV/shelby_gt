@@ -6,7 +6,7 @@ require 'spec_helper'
 describe Roll do
   context "not testing subdomain" do
     before(:each) do
-      @roll = Factory.create(:roll, :creator => (@creator = Factory.create(:user)), :thumbnail_url => "u://rl")
+      @roll = Factory.create(:roll, :creator => (@creator = Factory.create(:user)), :creator_thumbnail_url => "u://rl")
       @roll_title = @roll.title
       @user = Factory.create(:user)
       @stranger = Factory.create(:user)
@@ -279,6 +279,7 @@ describe Roll do
       @roll = Factory.create(:roll)
       @roll_title = @roll.title
     end
+
     it "should have a subdomain that matches its title if it's the user's personal roll" do
       @roll.collaborative = false
       @roll.save
@@ -331,11 +332,18 @@ describe Roll do
       @roll.subdomain.should == "ti-tle"
     end
 
-    it "should transform sequences of one or more '_' to '-' when creating subdomain" do
+    it "should transform sequences of one or more '_' or '-' or spaces to '-' when creating subdomain" do
       @roll.collaborative = false
-      @roll.title = "a_b__c___d"
+      @roll.title = " a_-b__c___d e  f _  g   -- h\ti\t\tj  "
       @roll.save
-      @roll.subdomain.should == "a-b-c-d"
+      @roll.subdomain.should == "a-b-c-d-e-f-g-h-i-j"
+    end
+
+    it "should remove any invalid characters when creating subdomain" do
+      @roll.collaborative = false
+      @roll.title = "!josh^%"
+      @roll.save
+      @roll.subdomain.should == "josh"
     end
 
     it "should downcase characters in the roll title when creating subdomain" do
@@ -343,6 +351,14 @@ describe Roll do
       @roll.title = "RoLLTitLE"
       @roll.save
       @roll.subdomain.should == "rolltitle"
+    end
+
+    it "should throw error when trying to create a roll with a subdomain on the blacklist" do
+      lambda {
+        @roll.collaborative = false
+        @roll.title = "anal"
+        @roll.save!
+      }.should raise_error MongoMapper::DocumentNotValid
     end
 
     context "subdomain on multiple rolls" do

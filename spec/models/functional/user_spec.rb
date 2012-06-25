@@ -82,12 +82,21 @@ describe User do
       @user.unfollowed_roll?(@roll).should == true
     end
 
-    it "should update the title of its public roll when it's nickname is updated" do
+    it "should update the title of its public roll when it's nickname is updated if the roll matches the nickname" do
+      @roll.title = @user.nickname
       @user.public_roll = @roll
       @user.nickname = "newnickname"
       @user.save
       @user.public_roll.title.should == "newnickname"
       @user.public_roll.changed?.should == false
+    end
+
+    it "should NOT update the title of its public roll when it's nickname is updated if the roll doesn't match the nickname" do
+      @roll.title = "not-my-nickname"
+      @user.public_roll = @roll
+      @user.nickname = "newnickname"
+      @user.save
+      @user.public_roll.title.should == "not-my-nickname"
     end
 
   end
@@ -104,6 +113,29 @@ describe User do
       @user.remember_me!
     end
     
+  end
+  
+  context "nickname" do
+    it "should update downcase_nickname when you update nickname" do
+      new_nick = "someTHINGnewaAaAaAaA"
+      u = Factory.create(:user)
+      u.nickname = new_nick
+      u.save
+      u.reload
+      u.downcase_nickname.should == new_nick.downcase
+    end
+    
+    #UserManager performs this operation manually (for new users from Arnold or signup), want to make sure we don't do it twice
+    it "should not run User#ensure_valid_unique_nickname on create" do
+      nick = "random_unique_nick_name-o0823u"
+      u = User.new
+      u.should_receive(:ensure_valid_unique_nickname).exactly(0).times
+      
+      u.nickname = nick
+      u.save
+      u.reload
+      u.downcase_nickname.should == nil
+    end
   end
   
 end

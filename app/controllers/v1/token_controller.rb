@@ -2,6 +2,7 @@ require 'user_manager'
 
 class V1::TokenController < ApplicationController  
   skip_before_filter :verify_authenticity_token
+  
 
   ##
   # Ensures User matching the given credentials has a single sign on token and returns it.
@@ -85,5 +86,4 @@ class V1::TokenController < ApplicationController
       #renders v1/user/show which includes user.authentication_token
     end
   end
-  
 end

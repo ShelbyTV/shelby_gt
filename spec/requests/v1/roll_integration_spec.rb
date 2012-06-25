@@ -83,18 +83,16 @@ describe 'v1/roll' do
         response.body.should be_json_eql(200).at_path("status")
       end
       
-      it "should return frames if they are asked for in roll followings" do
-        r1 = Factory.create(:roll, :creator => @u1)
-        r1.add_follower(@u1)
+      it "roll followings should contain first frame thumb url" do
         url = 'http://url.here'
-        v = Factory.create(:video, :thumbnail_url => url)
-        f = Factory.create(:frame, :creator => @u1, :roll => r1, :video => v)
+        r1 = Factory.create(:roll, :creator => @u1, :first_frame_thumbnail_url => url)
+        r1.add_follower(@u1)
         
         roll_arry = [r1].map!{|r| "rolls[]=#{r.id.to_s}"}
         
-        get 'v1/roll/browse?'+roll_arry.join('&')+"&frames=true"
+        get 'v1/roll/browse?'+roll_arry.join('&')
         response.body.should be_json_eql(200).at_path("status")
-        parse_json(response.body)["result"][0]["frames"][0]["video"]["thumbnail_url"].should eq(url)
+        parse_json(response.body)["result"][0]["first_frame_thumbnail_url"].should eq(url)
       end
       
     end
@@ -110,15 +108,20 @@ describe 'v1/roll' do
           parse_json(response.body)["result"]["thumbnail_url"].should eq("http://bar.com")
         end
 
-        it "should return 404 if there is no thumbnail_url" do
+        it "should return 400 if there is no thumbnail_url" do
           post '/v1/roll?title=Roll%20me%20baby'      
-          response.body.should be_json_eql(404).at_path("status")
+          response.body.should be_json_eql(400).at_path("status")
         end
 
-        it "should return 404 if there is no title or thumbnail_url" do
+        it "should return 400 if there is no title or thumbnail_url" do
           post '/v1/roll'      
-          response.body.should be_json_eql(404).at_path("status")
-        end        
+          response.body.should be_json_eql(400).at_path("status")
+        end
+
+        it "should return 409 if trying to set a reserved subdomain" do
+          post '/v1/roll?title=anal&thumbnail_url=http://bar.com&public=1&collaborative=0'
+          response.body.should be_json_eql(409).at_path("status")
+        end
       end
       
       context "roll sharing" do
@@ -137,7 +140,7 @@ describe 'v1/roll' do
           
           response.body.should be_json_eql(404).at_path("status")
           response.body.should have_json_path("message")
-          parse_json(response.body)["message"].should eq("please specify a valid id")
+          parse_json(response.body)["message"].should eq("could not find roll with id #{@r.id}xxx")
         end
         
         it "should return 404 if user cant post to that destination" do
@@ -219,6 +222,12 @@ describe 'v1/roll' do
         response.body.should be_json_eql(404).at_path("status")
       end
 
+      it "should return 409 if trying to set a reserved subdomain" do
+          @r.collaborative = false
+          @r.save
+          put '/v1/roll/'+@r.id+'?title=anal'
+          response.body.should be_json_eql(409).at_path("status")
+      end
     end
     
     describe "DELETE" do

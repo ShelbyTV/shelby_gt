@@ -84,19 +84,16 @@ describe 'v1/user' do
         @u1.save
         
         get '/v1/user/'+@u1.id+'/rolls/following'
-        parse_json(response.body)["result"][0]["id"].should eq(r1.id.to_s)
-        parse_json(response.body)["result"][1]["id"].should eq(r2.id.to_s)
+        parse_json(response.body)["result"][0]["id"].should eq(r2.id.to_s)
       end
       
       it "should return frames if they are asked for in roll followings" do
-        r1 = Factory.create(:roll, :creator => @u1)
-        r1.add_follower(@u1)
         url = 'http://url.here'
-        v = Factory.create(:video, :thumbnail_url => url)
-        f = Factory.create(:frame, :creator => @u1, :roll => r1, :video => v)
-        get '/v1/user/'+@u1.id+'/rolls/following?frames=true'
+        r1 = Factory.create(:roll, :creator => @u1, :first_frame_thumbnail_url => url)
+        r1.add_follower(@u1)
+        get '/v1/user/'+@u1.id+'/rolls/following'
         response.body.should be_json_eql(200).at_path("status")
-        parse_json(response.body)["result"][0]["frames"][0]["video"]["thumbnail_url"].should eq(url)
+        parse_json(response.body)["result"][0]["first_frame_thumbnail_url"].should eq(url)
       end
             
       it "should have correct watch_later and public roll ids returned" do
@@ -130,6 +127,35 @@ describe 'v1/user' do
         parse_json(response.body)["result"]["app_progress"]["test"].should eq("2")
       end
       
+      it "should update nickname and that should be reflected in new downcase_nickname" do
+        new_nick = "WhAtaintUniQUE--123"
+        put "/v1/user/#{@u1.id}?nickname=#{new_nick}"
+        @u1.reload
+        @u1.downcase_nickname.should == new_nick.downcase
+      end
+      
+      it "should update the user's public_roll title when changing the user nickname if the roll has nickname as its title" do
+        roll = Factory.build(:roll, :title => @u1.nickname)
+        roll.creator = @u1
+        roll.save
+        @u1.public_roll = roll
+        @u1.save
+        put '/v1/user/'+@u1.id+'?nickname=pharoah'
+        @u1.reload
+        @u1.public_roll.title.should == "pharoah"
+      end
+
+      it "should NOT update the user's public_roll title when changing the user nickname if the roll does not have nickname as its title" do
+        roll = Factory.build(:roll, :title => 'not-the-users-nickname')
+        roll.creator = @u1
+        roll.save
+        @u1.public_roll = roll
+        @u1.save
+        put '/v1/user/'+@u1.id+'?nickname=ramses'
+        @u1.reload
+        @u1.public_roll.title.should == "not-the-users-nickname"
+      end
+
     end
   end
   

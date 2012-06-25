@@ -89,9 +89,9 @@ GEM
     addressable (2.2.7)
     arel (3.0.2)
     bcrypt-ruby (3.0.1)
-    bson (1.6.0)
-    bson_ext (1.6.0)
-      bson (= 1.6.0)
+    bson (1.6.4)
+    bson_ext (1.6.4)
+      bson (~> 1.6.4)
     builder (3.0.0)
     capistrano (2.11.2)
       highline
@@ -123,6 +123,8 @@ GEM
     eventmachine (1.0.0.beta.4)
     exception_notification (2.5.2)
       actionmailer (>= 3.0.4)
+    execjs (1.4.0)
+      multi_json (~> 1.0)
     factory_girl (2.6.1)
       activesupport (>= 2.3.9)
     factory_girl_rails (1.7.0)
@@ -155,10 +157,12 @@ GEM
       rake
       rdoc
     journey (1.0.3)
-    json (1.7.0)
+    json (1.7.3)
     json_spec (1.0.0)
       multi_json (~> 1.0)
       rspec (~> 2.0)
+    jwt (0.1.4)
+      json (>= 1.2.4)
     koala (1.3.0)
       faraday (~> 0.7.0)
       multi_json (~> 1.0)
@@ -171,8 +175,8 @@ GEM
     mm-devise (1.3)
       devise (>= 1.2)
       mongo_mapper (>= 0.9.0)
-    mongo (1.6.0)
-      bson (= 1.6.0)
+    mongo (1.6.4)
+      bson (~> 1.6.4)
     multi_json (1.3.6)
     multi_xml (0.4.4)
     multipart-post (1.1.5)
@@ -209,6 +213,15 @@ GEM
     rack-cache (1.2)
       rack (>= 0.4)
     rack-cors (0.2.4)
+      rack
+    rack-oauth2-server (2.6.1)
+      bson_ext
+      json
+      jwt (~> 0.1.4)
+      mongo (~> 1)
+      rack (~> 1.1)
+      sinatra (~> 1.1)
+    rack-protection (1.2.0)
       rack
     rack-ssl (1.3.2)
       rack
@@ -264,6 +277,10 @@ GEM
     shoulda-context (1.0.0)
     shoulda-matchers (1.0.0)
     simple_oauth (0.1.8)
+    sinatra (1.3.2)
+      rack (~> 1.3, >= 1.3.6)
+      rack-protection (~> 1.2)
+      tilt (~> 1.3, >= 1.3.3)
     sprockets (2.1.2)
       hike (~> 1.2)
       rack (~> 1.0)
@@ -275,6 +292,9 @@ GEM
       polyglot
       polyglot (>= 0.3.1)
     tzinfo (0.3.32)
+    uglifier (1.2.4)
+      execjs (>= 0.3.0)
+      multi_json (>= 1.0.2)
     warden (1.1.1)
       rack (>= 1.0)
     whenever (0.7.3)
@@ -295,7 +315,6 @@ PLATFORMS
 DEPENDENCIES
   awesm!
   beanstalk-client!
-  bson_ext
   capistrano
   compass (= 0.11.7)
   devise (>= 2.0)
@@ -314,6 +333,7 @@ DEPENDENCIES
   koala
   memcached (~> 1.4.1)
   mm-devise
+  mongo (>= 1.6.4)
   mongo_mapper!
   newrelic_rpm
   omniauth (~> 1.0.2)
@@ -322,6 +342,7 @@ DEPENDENCIES
   omniauth-twitter!
   rabl (~> 0.6.0)
   rack-cors
+  rack-oauth2-server
   rails (= 3.2.2)
   rpm_contrib
   rspec-rails
@@ -331,6 +352,10 @@ DEPENDENCIES
   settingslogic
   shoulda
   statsd-ruby
+<<<<<<< HEAD
   whenever
+=======
+  uglifier
+>>>>>>> master
   yajl-ruby
   youtube_it

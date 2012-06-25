@@ -8,6 +8,9 @@ require "active_resource/railtie"
 require "sprockets/railtie"
 require "rails/test_unit/railtie"
 
+# an oauth server
+require 'rack/oauth2/server'
+
 if defined?(Bundler)
   # If you precompile assets before deploying to production, use this line
   Bundler.require(*Rails.groups(:assets => %w(development test)))
@@ -74,12 +77,23 @@ module ShelbyGt
     config.middleware.use Rack::Cors do
       allow do
         origins 'web.gt.shelby.tv', 'gt.shelby.tv', 'isoroll.shelby.tv', 'shelby.tv', 'localhost.shelby.tv:3000'
-        resource %r{/v1/(roll|frame|user|dashboard|conversation)\w*},
+        resource %r{/v1/(roll|frame|user|dashboard|conversation|gt_interest)\w*},
           :headers => ['Origin', 'Accept', 'Content-Type', 'X-CSRF-Token', 'X-Shelby-User-Agent'],
           :methods => [:put, :post, :delete]
       end
       
     end
-    
+
+    config.after_initialize do
+      settings = Settings::OauthServer
+      
+      if settings['db_hosts']
+        # Starting with a proper Hash and merging into it b/c Mongo::Connection checks if the class is Hash, which it isn't when using Settings
+        conn = Mongo::ReplSetConnection.new( settings.db_hosts, {}.merge(settings.db_options.merge(Settings::Mongo.db_options)) )
+      else
+        conn = Mongo::Connection.new(settings.db_host, settings.db_port, {}.merge(settings.db_options.merge(Settings::Mongo.db_options)) )
+      end
+      config.oauth.database = conn.db(settings.db_name)
+    end
   end
 end

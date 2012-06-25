@@ -1,0 +1,29 @@
+<!doctype html>
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+<% # if we got any meta tag info from request display it, otherwise just render head normally %>
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shelbytv: http://ogp.me/ns/fb/shelbytv#">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title> Login Page </title>
+  
+  <meta name="viewport" content="width=device-width">
+  <%= stylesheet_link_tag "application" %>
+  <!--[if lt IE 9]><link href="/stylesheets/png.css" media="screen, projection" rel="stylesheet" type="text/css" /><![endif]-->  
+</head>
+
+<body = "email-gate">
+
+<h2>The application <%= link_to h(oauth.client.display_name), oauth.client.link %>
+  is requesting to access your account.</h2>
+<form action="/oauth/grant">
+  <button>Grant</button>
+  <input type="hidden" name="authorization" value="<%= oauth.authorization %>">
+</form>
+<form action="/oauth/deny">
+  <button>Deny</button>
+  <input type="hidden" name="authorization" value="<%= oauth.authorization %>">
+</form>
+</body>
+</html>
