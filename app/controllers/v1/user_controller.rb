@@ -91,10 +91,12 @@ class V1::UserController < ApplicationController
             end
           end
           
+          self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_array']) do
+            @creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
+          end
           self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_find']) do
             # Load all roll creators to prevent N+1 queries
-            creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
-            @roll_creators = User.where(:id => { "$in" => creator_ids }).limit(creator_ids.length).all
+            @roll_creators = User.where(:id => { "$in" => @creator_ids }).limit(@creator_ids.length).all
           end
           
           # load frames with select attributes, if params say to
