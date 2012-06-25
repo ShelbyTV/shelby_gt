@@ -76,19 +76,18 @@ class V1::UserController < ApplicationController
         self.class.trace_execution_scoped(['UserController/roll_followings/roll_find']) do
           # for some reason calling Roll.find is throwing an error, its thinking its calling:
           #  V1::UserController::Roll which does not exist, for now, just forcing the global Roll
-          @rolls = ::Roll.find(current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq)
+          @roll_ids = current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq
+          @rolls = ::Roll.where(:id => { "$in" => @roll_ids }).limit(@roll_ids.length).all
         end
         
         if @rolls
 
-          self.class.trace_execution_scoped(['UserController/roll_followings/heart_roll']) do
-            # move heart roll to @rolls[1]
-            if heartRollIndex = @rolls.index(current_user.upvoted_roll)
-              heartRoll = @rolls.slice!(heartRollIndex)
-              @rolls.insert(0, heartRoll)
-            else
-              Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
-            end
+          # move heart roll to @rolls[1]
+          if heartRollIndex = @rolls.index(current_user.upvoted_roll)
+            heartRoll = @rolls.slice!(heartRollIndex)
+            @rolls.insert(0, heartRoll)
+          else
+            Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
           end
           
           self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_array']) do
