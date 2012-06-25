@@ -77,6 +77,20 @@ class V1::DashboardEntriesController < ApplicationController
           @users.each {|u| User.identity_map[u.id] = u}
         end
         
+        # took this out of the rabl to speed things up.
+        @frames.each do |f|
+          f[:upvote_users] = []
+          if !f.upvoters.empty?
+            f.upvoters.each do |fu|
+              if u = User.find(fu)
+                f[:upvote_users] << { :id => u.id, :name => u.name, :nickname => u.nickname, 
+                                      :user_image_original => u.user_image_original, :user_image => u.user_image,
+                                      :public_roll_id => u.public_roll_id }
+              end
+            end
+          end
+        end
+        
         @videos = Video.find(@entries_video_ids)
         @conversations = Conversation.find(@entries_conversation_ids)
         ##########

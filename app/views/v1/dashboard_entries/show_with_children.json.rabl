@@ -1,3 +1,5 @@
+extend NewRelic::Agent::MethodTracer
+
 object @entry
 
 attributes :id, :action, :actor_id, :read
@@ -14,10 +16,8 @@ child :frame => "frame" do |f|
 		attributes :id, :name, :nickname, :user_image_original, :user_image, :faux, :public_roll_id
 	end
 	
-	code do |f|
-  	child (User.find(f.upvoters)) => :upvote_users do
-  	  attributes :id, :name, :nickname, :user_image_original, :user_image, :public_roll_id
-    end
+ 	node :upvote_users do |r|
+ 	  r[:upvote_users]
   end
 	
 	child :roll => "roll" do
