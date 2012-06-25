@@ -95,7 +95,7 @@ class V1::UserController < ApplicationController
           end
           self.class.trace_execution_scoped(['UserController/roll_followings/roll_creator_find']) do
             # Load all roll creators to prevent N+1 queries
-            @roll_creators = User.where(:id => { "$in" => @creator_ids }).limit(@creator_ids.length).all
+            @roll_creators = User.where(:id => { "$in" => @creator_ids }).limit(@creator_ids.length).fields(:id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id, :upvoted_roll_id, :app_progress).all
           end
         
           @status = 200
