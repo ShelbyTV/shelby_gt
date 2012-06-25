@@ -70,10 +70,9 @@ class V1::UserController < ApplicationController
   # @param [Optional, boolean] frames Returns a shallow version of frames
   # @param [Optional, boolean] frames_limit limit number of shallow frames to return 
   def roll_followings
+    GC.disable
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
       if current_user.id.to_s == params[:id]
-        
-        #GC.disable
         
         self.class.trace_execution_scoped(['UserController/roll_followings/roll_find']) do
           # for some reason calling Roll.find is throwing an error, its thinking its calling:
@@ -106,7 +105,7 @@ class V1::UserController < ApplicationController
         render_error(403, "you are not authorized to view that users rolls.")
       end
     end
-    #GC.enable
+    GC.enable
   end
   #add_method_tracer :roll_followings
   
