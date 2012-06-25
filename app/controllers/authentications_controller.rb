@@ -85,7 +85,8 @@ class AuthenticationsController < ApplicationController
         roll = Roll.find(invite_info[2])
       end
       
-      if (gt_interest and gt_interest.allow_entry?) or (private_invite and inviter and inviter.gt_enabled)
+      #if (gt_interest and gt_interest.allow_entry?) or (private_invite and inviter and inviter.gt_enabled)
+      if (true) or (private_invite and inviter and inviter.gt_enabled)
         user = GT::UserManager.create_new_user_from_omniauth(omniauth)
         
         if user.valid?
