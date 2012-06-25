@@ -352,10 +352,7 @@ DEPENDENCIES
   settingslogic
   shoulda
   statsd-ruby
-<<<<<<< HEAD
-  whenever
-=======
   uglifier
->>>>>>> master
+  whenever
   yajl-ruby
   youtube_it

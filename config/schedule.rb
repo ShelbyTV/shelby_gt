@@ -4,7 +4,7 @@
 # http://en.wikipedia.org/wiki/Cron
 #
 
-every 1.minutes do
+every 10.minutes do
   rake "rhombus:total_users"
 end
 
