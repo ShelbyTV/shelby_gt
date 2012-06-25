@@ -14,6 +14,10 @@ class V1::DashboardEntriesController < ApplicationController
   # @param [Optional, Integer] skip The number of entries to skip (default 0)
   # @param [Optional, Boolean] include_children if set to true, will not include all goodies, eg roll, frame etc
   def index
+    # disabling garbage collection here because we are loading a whole bunch of documents, and my hypothesis (HIS) is 
+    #  it is slowing down this api request
+    GC.disable
+    
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['index']) do
       # default params
       @limit = params[:limit] ? params[:limit].to_i : 20
@@ -66,7 +70,11 @@ class V1::DashboardEntriesController < ApplicationController
         # for some reason calling Roll.find is throwing an error, its thinking its calling:
         #  V1::DashboardEntriesController::Roll which does not exist, for now, just forcing the global Roll
         @rolls = ::Roll.find(@entries_roll_ids)
-        @users = User.find((@entries_creator_ids + @entries_hearted_ids).uniq)
+        if @users = User.find((@entries_creator_ids + @entries_hearted_ids).uniq)
+          # we have to manually put these users into an identity map (for some reason)
+          @users.each {|u| User.identity_map[u.id] = u}
+        end
+        
         @videos = Video.find(@entries_video_ids)
         @conversations = Conversation.find(@entries_conversation_ids)
         ##########
@@ -77,6 +85,7 @@ class V1::DashboardEntriesController < ApplicationController
         render_error(404, "no user info found")
       end    
     end
+    GC.enable
   end
   add_method_tracer :index
 
