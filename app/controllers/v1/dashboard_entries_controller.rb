@@ -70,9 +70,25 @@ class V1::DashboardEntriesController < ApplicationController
         # for some reason calling Roll.find is throwing an error, its thinking its calling:
         #  V1::DashboardEntriesController::Roll which does not exist, for now, just forcing the global Roll
         @rolls = ::Roll.find(@entries_roll_ids)
-        if @users = User.find((@entries_creator_ids + @entries_hearted_ids).uniq)
+        
+        @user_ids =  (@entries_creator_ids + @entries_hearted_ids).uniq
+        if @users = User.where(:id => { "$in" => @user_ids }).limit(@user_ids.length).fields(:id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id, :upvoted_roll_id, :viewed_roll_id, :app_progress, :authentication_token).all
           # we have to manually put these users into an identity map (for some reason)
           @users.each {|u| User.identity_map[u.id] = u}
+        end
+        
+        # took this out of the rabl to speed things up.
+        @frames.each do |f|
+          f[:upvote_users] = []
+          if !f.upvoters.empty?
+            f.upvoters.each do |fu|
+              if u = User.find(fu)
+                f[:upvote_users] << { :id => u.id, :name => u.name, :nickname => u.nickname, 
+                                      :user_image_original => u.user_image_original, :user_image => u.user_image,
+                                      :public_roll_id => u.public_roll_id }
+              end
+            end
+          end
         end
         
         @videos = Video.find(@entries_video_ids)

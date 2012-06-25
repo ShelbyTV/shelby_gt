@@ -256,7 +256,7 @@ describe V1::FrameController do
   describe "POST share" do
     before(:each) do
       sign_in @u1
-      @frame = Factory.create(:frame, :roll => Factory.create(:roll, :creator => @u1))
+      @frame = Factory.create(:frame, :roll => Factory.create(:roll, :creator => @u1), :conversation => Factory.create(:conversation))
       Frame.stub!(:find).and_return(@frame)
       resp = {"awesm_urls" => [
         {"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"},
@@ -273,6 +273,13 @@ describe V1::FrameController do
       GT::SocialPoster.should_receive(:post_to_twitter).with(@u1, "testing http://shl.by/4")
       GT::SocialPoster.should_receive(:post_to_facebook).with(@u1, "testing http://shl.by/fb", @frame)
       post :share, :frame_id => @frame.id.to_s, :destination => ["twitter", "facebook"], :text => "testing", :format => :json
+    end
+    
+    it "should add text as a message to the frames conversation" do
+      txt = "just testing here boys"
+      post :share, :frame_id => @frame.id.to_s, :destination => ["twitter"], :text => txt, :format => :json
+      @frame.conversation.messages.size.should == 1
+      @frame.conversation.messages[0].text.should == txt
     end
     
     it "should return 404 if destination is not an array" do
