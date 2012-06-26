@@ -16,6 +16,16 @@ describe 'v1/user' do
         response.body.should have_json_path("result/nickname")
       end
       
+      it "should return cohorts with user" do
+        @u1.cohorts = ["a", "b"]
+        @u1.save
+        
+        get '/v1/user'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_size(2).at_path("result/cohorts")
+        response.body.should be_json_eql(["a", "b"]).at_path("result/cohorts")
+      end
+      
       it "should have a user app progress attr" do
         get '/v1/user'
         response.body.should have_json_path("result/app_progress")

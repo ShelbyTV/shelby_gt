@@ -1,6 +1,6 @@
 object @user
 
-attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux
+attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :cohorts
 
 node :personal_roll_id do |u|
 	u.public_roll_id

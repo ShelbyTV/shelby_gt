@@ -3,6 +3,7 @@ defaults: &defaults
   db_port: '27017'
   db_options: {}
   mm_use_identity_map: true
+  current_cohort: "pre_onboarding"
 
 development:
   <<: *defaults

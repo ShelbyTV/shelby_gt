@@ -68,6 +68,8 @@ class User
   key :applications, Array, :abbr => :ap
   key :clients, Array, :abbr => :ai
 
+  key :cohorts, Array, :typecast => 'String', :abbr => :aq, :default => []
+
   #--old keys--
   many :authentications
   
@@ -170,6 +172,7 @@ class User
   # When we move everyone to GT, use the rake task in gt_migration.rb
   def gt_enable!
     self.gt_enabled = true
+    self.cohorts << Settings::User.current_cohort
     GT::UserManager.ensure_users_special_rolls(self, true)
   end
   
