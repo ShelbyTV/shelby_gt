@@ -1,5 +1,3 @@
-extend NewRelic::Agent::MethodTracer
-
 object @entry
 
 attributes :id, :action, :actor_id, :read
