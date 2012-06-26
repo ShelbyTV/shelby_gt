@@ -360,6 +360,11 @@ describe GT::UserManager do
       real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
       real_u.app_progress.class.should eq(AppProgress)
     end
+    
+    it "should have at least one cohort" do
+      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u.cohorts.size.should > 0
+    end
   end
   
   context "create_user" do
@@ -389,6 +394,8 @@ describe GT::UserManager do
       it "should build a valid user itself from omniauth hash" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should == true
+        u.gt_enabled?.should == true
+        u.cohorts.size.should > 0
         u.nickname.should eq(@nickname)
         u.user_image.should == @omniauth_hash['info']['image']
       end

@@ -16,7 +16,7 @@ module GT
 
       if user.save
         # Need to ensure special rolls after saving user b/c of the way add_follower works
-        ensure_users_special_rolls(user, true)
+        user.gt_enable!
         #additional meta-data for faux user public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
         
