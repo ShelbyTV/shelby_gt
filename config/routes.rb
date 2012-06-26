@@ -50,6 +50,7 @@ ShelbyGt::Application.routes.draw do
     # Sometimes we have the same route do different things depending on the verb, and that doens't play nice w/ jsonp.
     
     resources :user, :only => [:show, :update] do
+      get 'valid_token' => 'user#valid_token', :on => :member
       get 'rolls/following' => 'user#roll_followings', :on => :member
       get 'rolls/personal' => 'roll#show_users_public_roll'
       get 'rolls/personal/frames' => 'frame#index_for_users_public_roll'

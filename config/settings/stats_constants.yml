@@ -8,6 +8,7 @@ defaults: &defaults
       show: 'user.show'
       update: 'user.update'
       rolls: 'user.rolls'
+      rolls: 'user.valid_token'
     roll:
       show: 'roll.show'
       show_users_public_roll: "roll.show_public"
