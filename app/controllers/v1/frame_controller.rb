@@ -528,7 +528,12 @@ class V1::FrameController < ApplicationController
   def destroy
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['destroy']) do
       @frame = Frame.find(params[:id])
-        
+      
+      #XXX Can't just destory the frame!  
+      # What about the conversation?
+      # What about any DashboardEntries pointing to this Frame?
+      #  It seems the front end handles bad dashboard entries gracefully, but I don't like that as a solution.
+      
       if @frame and @frame.destroy 
         @status = 200
       else
