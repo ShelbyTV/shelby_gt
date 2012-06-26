@@ -31,6 +31,10 @@ class V1::FrameController < ApplicationController
       @roll = Roll.find(params[:roll_id])
       
       if @roll and @roll.viewable_by?(current_user)
+        # disabling garbage collection here because we are loading a whole bunch of documents, and my hypothesis (HIS) is 
+        #  it is slowing down this api request
+        GC.disable
+        
         @include_frame_children = (params[:include_children] == "true") ? true : false
         
         # the default sort order for genius rolls is by the order field, other rolls score field
@@ -80,11 +84,27 @@ class V1::FrameController < ApplicationController
           @videos = Video.find(@entries_video_ids)
           @conversations = Conversation.find(@entries_conversation_ids)
           ##########
+          
+          # took this out of the rabl to speed things up: building upvote_users for each frame
+          @frames.each do |f|
+            f[:upvote_users] = []
+            if !f.upvoters.empty?
+              f.upvoters.each do |fu|
+                if u = User.find(fu)
+                  f[:upvote_users] << { :id => u.id, :name => u.name, :nickname => u.nickname, 
+                                        :user_image_original => u.user_image_original, :user_image => u.user_image,
+                                        :public_roll_id => u.public_roll_id }
+                end
+              end
+            end
+          end
+          
         end
         @status =  200
       else
         render_error(404, "could not find that roll")
       end
+      GC.enable
     end
   end
   
@@ -134,6 +154,20 @@ class V1::FrameController < ApplicationController
         @videos = Video.find(@entries_video_ids)
         @conversations = Conversation.find(@entries_conversation_ids)
         ##########
+        
+        # took this out of the rabl to speed things up: building upvote_users for each frame
+        @frames.each do |f|
+          f[:upvote_users] = []
+          if !f.upvoters.empty?
+            f.upvoters.each do |fu|
+              if u = User.find(fu)
+                f[:upvote_users] << { :id => u.id, :name => u.name, :nickname => u.nickname, 
+                                      :user_image_original => u.user_image_original, :user_image => u.user_image,
+                                      :public_roll_id => u.public_roll_id }
+              end
+            end
+          end
+        end
       end
       @status =  200
     end
@@ -185,6 +219,20 @@ class V1::FrameController < ApplicationController
         @videos = Video.find(@entries_video_ids)
         @conversations = Conversation.find(@entries_conversation_ids)
         ##########
+        
+        # took this out of the rabl to speed things up: building upvote_users for each frame
+        @frames.each do |f|
+          f[:upvote_users] = []
+          if !f.upvoters.empty?
+            f.upvoters.each do |fu|
+              if u = User.find(fu)
+                f[:upvote_users] << { :id => u.id, :name => u.name, :nickname => u.nickname, 
+                                      :user_image_original => u.user_image_original, :user_image => u.user_image,
+                                      :public_roll_id => u.public_roll_id }
+              end
+            end
+          end
+        end
       end        
       @status =  200
     end
@@ -480,7 +528,12 @@ class V1::FrameController < ApplicationController
   def destroy
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['destroy']) do
       @frame = Frame.find(params[:id])
-        
+      
+      #XXX Can't just destory the frame!  
+      # What about the conversation?
+      # What about any DashboardEntries pointing to this Frame?
+      #  It seems the front end handles bad dashboard entries gracefully, but I don't like that as a solution.
+      
       if @frame and @frame.destroy 
         @status = 200
       else

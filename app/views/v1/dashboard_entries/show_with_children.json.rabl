@@ -1,5 +1,3 @@
-extend NewRelic::Agent::MethodTracer
-
 object @entry
 
 attributes :id, :action, :actor_id, :read
@@ -15,7 +13,8 @@ child :frame => "frame" do |f|
 	child :creator => "creator" do
 		attributes :id, :name, :nickname, :user_image_original, :user_image, :faux, :public_roll_id
 	end
-	
+
+	# upvote_users is a fake attribute that is populated in the controller	
  	node :upvote_users do |r|
  	  r[:upvote_users]
   end

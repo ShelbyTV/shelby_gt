@@ -19,10 +19,9 @@ child @frames do
 		attributes :id, :name, :nickname, :user_image_original, :user_image, :public_roll_id
 	end
 	
-	code do |f|
-  	child (User.find(f.upvoters)) => :upvote_users do
-  	  attributes :id, :name, :nickname, :user_image_original, :user_image, :public_roll_id
-    end
+	# upvote_users is a fake attribute that is populated in the controller
+ 	node :upvote_users do |r|
+ 	  r[:upvote_users]
   end
 
 	child :roll => "roll" do
