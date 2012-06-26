@@ -12,7 +12,7 @@ describe 'v1/frame' do
       @u1.save
       
       @r = Factory.create(:roll, :creator => @u1, :public => false)
-      @f = Factory.create(:frame, :creator => @u1, :roll => @r)
+      @f = Factory.create(:frame, :creator => @u1, :roll => @r, :conversation => Factory.create(:conversation))
       @f2 = Factory.create(:frame, :creator => @u1, :roll => @r)
       @f3 = Factory.create(:frame, :creator => @u1, :roll => @r)
       @f4 = Factory.create(:frame, :creator => @u1, :roll => @r)

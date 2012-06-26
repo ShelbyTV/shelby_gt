@@ -125,10 +125,18 @@ class AuthenticationsController < ApplicationController
   def fail
     #if their session is fucked, it will cause bad auth params.
     reset_session
-    
+
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['failure'])
-    
-    @opener_location = session[:return_url] || web_root_url
+
+    redirect_url = session[:return_url] || web_root_url
+
+    # add parameters describing the auth failure to the redirect url
+    redirect_uri = URI.parse redirect_url
+    query = Rack::Utils.parse_query redirect_uri.query
+    query["auth_failure"] = 1
+    query["auth_strategy"] = params[:strategy] if params[:strategy]
+
+    @opener_location = URI.join(redirect_uri, "?#{query.to_query}").to_s
     render :action => 'redirector', :layout => 'simple'
   end
   

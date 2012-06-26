@@ -29,7 +29,7 @@ describe AuthenticationsController do
       cookies[:signed_in].should eq("true")
     end
 =end
-    
+
   end
   
   context "Adding new authentication to current user" do
@@ -48,6 +48,32 @@ describe AuthenticationsController do
 
     it "should do the correct things when a user merges two seperate accts"
     
+  end
+
+  context "Auth failure" do
+
+    it "should add failure param to root url on auth failure" do
+      get :fail
+      assigns(:opener_location).should eq(web_root_url + '?auth_failure=1')
+    end
+
+    it "should add failure param and strategy param to root url on auth failure when strategy specified" do
+      get :fail, :strategy => 'Facebook'
+      assigns(:opener_location).should eq(web_root_url + '?auth_failure=1&auth_strategy=Facebook')
+    end
+
+    it "should add failure param to session return url on auth failure" do
+      controller.stub!(:session) { {:return_url => 'http://www.example.com?param1=val1&param2=val2' }}
+      get :fail
+      assigns(:opener_location).should eq('http://www.example.com?auth_failure=1&param1=val1&param2=val2')
+    end
+
+    it "should add failure param and strategy param to session return url on auth failure when strategy specified" do
+      controller.stub!(:session) { {:return_url => 'http://www.example.com?param1=val1&param2=val2' }}
+      get :fail, :strategy => 'Facebook'
+      assigns(:opener_location).should eq('http://www.example.com?auth_failure=1&auth_strategy=Facebook&param1=val1&param2=val2')
+    end
+
   end
 
 end

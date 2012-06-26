@@ -61,22 +61,16 @@ module GT
       end
 
       ##### -- -- -- -- >>>
-      # In the future, if we deep-examine pages for video, would have a cross-references DB that we would look at right now
-      # For a given URL, it would return an array of id's for Videos which we could then return
-      ##### -- -- -- -- >>>
+      # Deep-exampine pages for video...
       
       # first check cached
-
-      checkcached = DeeplinkCache.where(:url => url).first
-      
-      if checkcached 
+      if checkcached = DeeplinkCache.where(:url => url).first
         vid_ids = checkcached[:videos]
         deep_videos = Video.find(vid_ids)
         return {:videos => deep_videos, :from_deep => true}
       end
 
-      # if can't check cache go deep
-      
+      # if it's not in the cache, do actual deep-examination (on some % of links)
       if check_deep && rand < prob
         deep_response = GT::DeeplinkParser.find_deep_link(url)
         deep_video_ids = []
@@ -101,17 +95,20 @@ module GT
         end
       end
       
-      # since there are no deep links, check to see if we can handle the url
+      ##### -- -- -- -- >>>
+      # since there are no deep links, leave now if we don't support this type of url
       unless provider_info
         return {:videos => [], :from_deep => false}
       end
 
+      #cut embed.ly out of the loop for youtube videos
       if provider_info[:provider_name] == "youtube"
         yt_video = GT::VideoProviderApi.examine_url_for_youtube_video(provider_info[:provider_id], use_em)
         return {:videos => [yt_video], :from_deep => false} if yt_video
       end
-	  # Still no video...
-      # Examine that URL (via our cache, our service, or external service like embed.ly), looking for video
+      
+      # Still no video...
+      # Examine that URL (via our cache or external service like embed.ly), looking for video
       video_hashes = GT::UrlVideoDetector.examine_url_for_video(url, use_em, memcache_client)
       
       # turn that array of hashes into Videos

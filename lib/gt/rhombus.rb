@@ -1,6 +1,6 @@
 class Rhombus
   include HTTParty
-  base_uri 'http://api.rhombus.shelby.tv:3010'
+  base_uri 'http://api.rhombus.shelby.tv'
 
   def initialize(u, p)
     @auth = {:username => u, :password => p}
