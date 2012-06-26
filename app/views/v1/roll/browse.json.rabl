@@ -10,3 +10,7 @@ end
 code :first_frame_thumbnail_url do |r|
 	r.first_frame_thumbnail_url if r.first_frame_thumbnail_url
 end
+
+node(:creator_nickname, :if => lambda { |r| r.creator != nil }) do |r|
+  r.creator.nickname
+end
