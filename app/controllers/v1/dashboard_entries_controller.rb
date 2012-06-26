@@ -77,7 +77,7 @@ class V1::DashboardEntriesController < ApplicationController
           @users.each {|u| User.identity_map[u.id] = u}
         end
         
-        # took this out of the rabl to speed things up.
+        # took this out of the rabl to speed things up: building upvote_users for each frame
         @frames.each do |f|
           f[:upvote_users] = []
           if !f.upvoters.empty?
