@@ -18,7 +18,7 @@ module GT
       m = GT::MessageManager.build_message( :origin_network => Message::ORIGIN_NETWORKS[:facebook],
                                             :origin_id => post_hash["id"],
                                             :origin_user_id => user_hash["id"],
-                                            :public => false,
+                                            :public => true,
                                             :nickname => user_hash["name"],
                                             :realname => user_hash["name"],
                                             :user_image_url => user_image_url,
