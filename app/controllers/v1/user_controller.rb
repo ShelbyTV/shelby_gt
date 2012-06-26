@@ -124,10 +124,10 @@ class V1::UserController < ApplicationController
         graph = Koala::Facebook::API.new(a.oauth_token)
         begin
           graph.get_object("me")
-          @status, @valid = 200, true
+          @status, @token_valid = 200, true
         rescue Koala::Facebook::APIError => e
           if e.fb_error_type == "OAuthException"
-            @status, @valid = 200, true
+            @status, @token_valid = 200, false
           end
         rescue => e
           Rails.logger.info "[V1::UserController] Unknown error checking validity of users OAuth tokens"
