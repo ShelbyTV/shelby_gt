@@ -51,6 +51,7 @@ ShelbyGt::Application.routes.draw do
     
     resources :user, :only => [:show, :update] do
       get 'rolls/following' => 'user#roll_followings', :on => :member
+      get 'rolls/postable' => 'user#roll_followings', :on => :member, :defaults => { :postable => true }
       get 'rolls/personal' => 'roll#show_users_public_roll'
       get 'rolls/personal/frames' => 'frame#index_for_users_public_roll'
       get 'rolls/hearted' => 'roll#show_users_heart_roll'
