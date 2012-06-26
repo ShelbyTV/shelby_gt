@@ -20,7 +20,39 @@ describe V1::DashboardEntriesController do
     end
     
   end
-  
+
+  describe "GET find_entries_with_video" do
+    before(:each) do
+      @user = Factory.create(:user)
+      sign_in @user
+      v = Video.new
+      v.provider_name = "jengjeng"
+      v.provider_id = "llama"
+      v.save
+      f = Frame.new
+      f.video = v
+      f.save
+      dbe = DashboardEntry.new
+      dbe.frame = f;
+      @user.name = "jengjeng"
+      @user.dashboard_entries << dbe
+      @user.save
+      
+    end
+
+    it "should find video in dashboard" do 
+      get :find_entries_with_video, {:auth_token => @user.authentication_token, :format => :json, :provider_id => "llama", :provider_name =>"jengjeng"}
+      assigns["frames"].length.should == 1
+    end
+
+    it "should not fnd video in dashboard" do
+      get :find_entries_with_video, {:auth_token => @user.authentication_token, :format => :json, :provider_id => "llamaz", :provider_name =>"jeng"}
+      assigns["frames"].length.should == 0
+    end
+  end
+      
+      
+
   describe "GET index" do
     before(:each) do
       @user = Factory.create(:user)

@@ -3,7 +3,33 @@ class V1::DashboardEntriesController < ApplicationController
   before_filter :authenticate_user!
   
   extend NewRelic::Agent::MethodTracer
-  
+
+  ##
+  # Returns frames of the videos fo the parameters
+  #
+  # [GET] v1/dashboard/find_entries_with_video/
+  # 
+  # @param [Required, String] provider_name The name of the provider
+  # @param [Required, String] provider_id The id of the provider
+  #
+  def find_entries_with_video
+    provider_name = params.delete(:provider_name)
+    provider_id = params.delete(:provider_id)
+    return render_error(404, "need to specify both provider_name and provider_id") unless (provider_name and provider_id)
+    @status = 200
+    @include_frame_children = true
+    db_entries = current_user.dashboard_entries.limit(100).all
+    frames = Frame.find((db_entries.map {|db_entry| db_entry.frame_id}).compact.uniq)
+    videos = Video.find((frames.map {|frame| frame.video_id}).compact.uniq)
+    selected_video = videos.select {|video| video.provider_id == provider_id and video.provider_name == provider_name}
+    if selected_video.empty?
+      @frames = []
+      return
+    end
+    selected_frames = frames.select {|frame| (selected_video[0]).id == frame.video_id}
+    @frames = selected_frames
+  end
+
   ##
   # Returns dashboad entries, with the given parameters.
   #
