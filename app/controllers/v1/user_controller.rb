@@ -111,4 +111,36 @@ class V1::UserController < ApplicationController
     GC.enable
   end
   
+  ##
+  # Returns whether the users' oauth tokens are valid
+  #   REQUIRES AUTHENTICATION
+  #
+  # [GET] /v1/user/:id/valid_token
+  # 
+  # @param [Required, String] id The id of the user
+  # @param [Required, String] provider provider that want to check on
+  def valid_token
+    StatsManager::StatsD.time(Settings::StatsConstants.api['user']['valid_token']) do
+      if !["facebook"].include?(params[:provider]) # using indludes allows us to do this for twitter/tumblr in the future
+        return render_error(404, "this route only currently supports facebook as a provider.")
+      end
+      
+      if a = current_user.first_provider(params[:provider]) and a.is_a? Authentication
+        graph = Koala::Facebook::API.new(a.oauth_token)
+        begin
+          graph.get_object("me")
+          @status, @token_valid = 200, true
+        rescue Koala::Facebook::APIError => e
+          if e.fb_error_type == "OAuthException"
+            @status, @token_valid = 200, false
+          end
+        rescue => e
+          Rails.logger.info "[V1::UserController] Unknown error checking validity of users OAuth tokens"
+        end
+      else
+        return render_error(404, "This user does not have a #{params[:provider]} authentication to check on")
+      end
+    end
+  end
+  
 end

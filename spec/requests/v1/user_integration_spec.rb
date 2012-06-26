@@ -135,6 +135,22 @@ describe 'v1/user' do
         parse_json(response.body)["result"]["personal_roll_id"].should eq(@u1.public_roll_id)
       end
       
+      context "valid_token route" do
+        
+        it "should render an error if user doen't have the specified authentication" do
+          get '/v1/user/'+@u1.id+'/valid_token?provider=facebook'
+          response.body.should be_json_eql(404).at_path("status")
+        end
+              
+        it "should return error if a provider is not specified or is not supporte" do
+          get '/v1/user/'+@u1.id+'/valid_token'
+          response.body.should be_json_eql(404).at_path("status")
+          
+          get '/v1/user/'+@u1.id+'/valid_token?provider=funckymoney'
+          response.body.should be_json_eql(404).at_path("status")
+        end
+      end
+      
     end
     
     describe "PUT" do
