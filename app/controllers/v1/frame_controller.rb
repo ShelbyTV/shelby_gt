@@ -31,6 +31,10 @@ class V1::FrameController < ApplicationController
       @roll = Roll.find(params[:roll_id])
       
       if @roll and @roll.viewable_by?(current_user)
+        # disabling garbage collection here because we are loading a whole bunch of documents, and my hypothesis (HIS) is 
+        #  it is slowing down this api request
+        GC.disable
+        
         @include_frame_children = (params[:include_children] == "true") ? true : false
         
         # the default sort order for genius rolls is by the order field, other rolls score field
@@ -100,6 +104,7 @@ class V1::FrameController < ApplicationController
       else
         render_error(404, "could not find that roll")
       end
+      GC.enable
     end
   end
   

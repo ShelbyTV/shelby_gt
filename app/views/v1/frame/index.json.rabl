@@ -1,5 +1,3 @@
-extend NewRelic::Agent::MethodTracer
-
 object @roll
 
 attributes :id, :collaborative, :public, :creator_id, :genius, :frame_count
