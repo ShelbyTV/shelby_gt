@@ -130,50 +130,68 @@ describe 'v1/roll' do
           Awesm::Url.stub(:batch).and_return([200, resp])
         end
         
-        it "should return 200 if post is successful" do
-          post '/v1/roll/'+@r.id+'/share?destination[]=twitter&text=testing'
-          response.body.should be_json_eql(200).at_path("status")
-        end
+        context "social share" do
+          it "should return 200 if post is successful" do
+            post '/v1/roll/'+@r.id+'/share?destination[]=twitter&text=testing'
+            response.body.should be_json_eql(200).at_path("status")
+          end
         
-        it "should return 404 if roll not found" do
-          post '/v1/roll/'+@r.id+'xxx/share?destination[]=facebook&text=testing'
+          it "should return 404 if roll not found" do
+            post '/v1/roll/'+@r.id+'xxx/share?destination[]=facebook&text=testing'
           
-          response.body.should be_json_eql(404).at_path("status")
-          response.body.should have_json_path("message")
-          parse_json(response.body)["message"].should eq("could not find roll with id #{@r.id}xxx")
-        end
+            response.body.should be_json_eql(404).at_path("status")
+            response.body.should have_json_path("message")
+            parse_json(response.body)["message"].should eq("could not find roll with id #{@r.id}xxx")
+          end
         
-        it "should return 404 if user cant post to that destination" do
-          post '/v1/roll/'+@r.id+'/share?destination[]=facebook&text=testing'
+          it "should return 404 if user cant post to that destination" do
+            post '/v1/roll/'+@r.id+'/share?destination[]=facebook&text=testing'
           
-          response.body.should be_json_eql(404).at_path("status")
-          response.body.should have_json_path("message")
-          parse_json(response.body)["message"].should eq("that user cant post to that destination")
-        end
+            response.body.should be_json_eql(404).at_path("status")
+            response.body.should have_json_path("message")
+            parse_json(response.body)["message"].should eq("that user cant post to that destination")
+          end
         
-        it "should return 404 if destination not supported" do
-          post '/v1/roll/'+@r.id+'/share?destination[]=fake&text=testing'
+          it "should return 404 if destination not supported" do
+            post '/v1/roll/'+@r.id+'/share?destination[]=fake&text=testing'
           
-          response.body.should be_json_eql(404).at_path("status")
-          response.body.should have_json_path("message")
-          parse_json(response.body)["message"].should eq("we dont support that destination yet :(")
-        end
+            response.body.should be_json_eql(404).at_path("status")
+            response.body.should have_json_path("message")
+            parse_json(response.body)["message"].should eq("we dont support that destination yet :(")
+          end
         
-        it "should return 404 if roll is private" do
-          @r = Factory.create(:roll, :creator=>@u1, :public => false)
-          post '/v1/roll/'+@r.id+'/share?destination[]=twitter&text=testing'
+          it "should return 404 if roll is private" do
+            @r = Factory.create(:roll, :creator=>@u1, :public => false)
+            post '/v1/roll/'+@r.id+'/share?destination[]=twitter&text=testing'
           
-          response.body.should be_json_eql(404).at_path("status")
-          response.body.should have_json_path("message")
-          parse_json(response.body)["message"].should eq("that roll is private, can not share")
-        end
+            response.body.should be_json_eql(404).at_path("status")
+            response.body.should have_json_path("message")
+          end
         
-        it "should return 404 if destination and/or text not incld" do
-          post '/v1/roll/'+@r.id+'/share'
-          response.body.should be_json_eql(404).at_path("status")
-          response.body.should have_json_path("message")
-          parse_json(response.body)["message"].should eq("a destination and a text is required to post")
-        end        
+          it "should return 404 if destination and/or text not incld" do
+            post '/v1/roll/'+@r.id+'/share'
+            response.body.should be_json_eql(404).at_path("status")
+            response.body.should have_json_path("message")
+            parse_json(response.body)["message"].should eq("a destination and a text is required to post")
+          end
+        end
+      
+        context "email share" do
+          it "should return 200 when sharing to email" do
+            GT::SocialPoster.should_receive(:post_to_email).once
+            
+            post '/v1/roll/'+@r.id+'/share?destination[]=email&text=testing&addresses=dan@shelby.tv'
+            response.body.should be_json_eql(200).at_path("status")
+          end
+          
+          it "should return 404 if addresses aren't included" do
+            GT::SocialPoster.should_receive(:post_to_email).exactly(0).times
+            
+            post '/v1/roll/'+@r.id+'/share?destination[]=email&text=testing'
+            response.body.should be_json_eql(404).at_path("status")
+          end
+        end
+          
       end
 
       context "join roll" do

@@ -125,7 +125,8 @@ class V1::RollController < ApplicationController
   # [GET] /v1/roll/:roll_id/share
   # 
   # @param [Required, String] roll_id The id of the roll to share
-  # @param [Required, String] destination Where the roll is being shared to (comma seperated list ok)
+  # @param [Required, String] destination Where the roll is being shared to (comma seperated list)
+  # @param [Optional, String] addresses The email addresses to send to
   # @param [Required, Escaped String] text What the status update of the post is
   def share
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['share']) do
@@ -137,10 +138,9 @@ class V1::RollController < ApplicationController
         return  render_error(404, "destination must be an array of strings") 
       end
       
-      if roll = Roll.find(params[:roll_id])
-        return render_error(404, "that roll is private, can not share") unless roll.public
-      
+      if roll = Roll.find(params[:roll_id])      
         text = params[:text]
+        resp = true
       
         # params[:destination] is an array of destinations, 
         #  short_links will be a hash of desinations/links
@@ -149,20 +149,30 @@ class V1::RollController < ApplicationController
         params[:destination].each do |d|
           case d
           when 'twitter'
+            return render_error(404, "that roll is private, can not share to twitter") unless roll.public
             text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
-            resp = GT::SocialPoster.post_to_twitter(current_user, text)
+            resp &= GT::SocialPoster.post_to_twitter(current_user, text)
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           when 'facebook'
+            return render_error(404, "that roll is private, can not share to facebook") unless roll.public
             text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
-            resp = GT::SocialPoster.post_to_facebook(current_user, text, roll)
+            resp &= GT::SocialPoster.post_to_facebook(current_user, text, roll)
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
+          when 'email'
+            # If this is private roll, email sent will be an invite.  Otherwise, it's just a Frame share of the first frame (for now, since that isn't used)
+            email_addresses = params[:addresses]
+            return render_error(404, "you must provide addresses") if email_addresses.blank?
+            
+            ShelbyGT_EM.next_tick { GT::SocialPoster.post_to_email(current_user, email_addresses, text, roll.frames.first) }
+            resp &= true
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
           else
             return render_error(404, "we dont support that destination yet :(")
           end
-        
+
           if resp
             @status = 200
-          elsif resp == nil
+          else
             render_error(404, "that user cant post to that destination")
           end  
         end
