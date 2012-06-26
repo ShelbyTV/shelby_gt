@@ -1,4 +1,6 @@
 class V1::UserController < ApplicationController  
+
+  extend NewRelic::Agent::MethodTracer
   
   before_filter :user_authenticated?, :except => [:signed_in, :show]
 
@@ -110,6 +112,7 @@ class V1::UserController < ApplicationController
     end
     GC.enable
   end
+  
   
   ##
   # Returns whether the users' oauth tokens are valid

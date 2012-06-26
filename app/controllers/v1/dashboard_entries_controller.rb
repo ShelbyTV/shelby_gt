@@ -2,8 +2,6 @@ class V1::DashboardEntriesController < ApplicationController
     
   before_filter :authenticate_user!
   
-  extend NewRelic::Agent::MethodTracer
-
   ##
   # Returns frames of the videos fo the parameters
   #
