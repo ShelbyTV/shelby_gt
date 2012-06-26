@@ -365,7 +365,8 @@ class V1::FrameController < ApplicationController
   # [GET] /v1/frame/:frame_id/share
   # 
   # @param [Required, String] frame_id The id of the frame to share
-  # @param [Required, String] destination Where the frame is being shared to (comma seperated list ok)
+  # @param [Required, String] destination Where the frame is being shared to (comma seperated list)
+  # @param [Optional, String] addresses The email addresses to send to
   # @param [Required, Escaped String] text What the status update of the post is
   def share
     StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['share']) do

@@ -164,51 +164,73 @@ describe V1::RollController do
       Awesm::Url.stub(:batch).and_return([200, resp])
     end
     
-    it "should return 200 if the user posts succesfully to destination" do
-      post :share, :roll_id => @roll.id.to_s, :destination => ["twitter"], :text => "testing", :format => :json
-      assigns(:status).should eq(200)      
-    end
+    context "social share" do
+      it "should return 200 if the user posts succesfully to destination" do
+        post :share, :roll_id => @roll.id.to_s, :destination => ["twitter"], :text => "testing", :format => :json
+        assigns(:status).should eq(200)      
+      end
     
-    it "should return 404 if destination is not an array" do
-      post :share, :roll_id => @roll.id.to_s, :destination => "twitter", :text => "testing", :format => :json
-      assigns(:status).should eq(404)
-    end
+      it "should return 404 if destination is not an array" do
+        post :share, :roll_id => @roll.id.to_s, :destination => "twitter", :text => "testing", :format => :json
+        assigns(:status).should eq(404)
+      end
     
-    it "should return 404 if the user cant post to the destination" do
-      post :share, :roll_id => @roll.id.to_s, :destination => ["facebook"], :text => "testing", :format => :json
-      assigns(:status).should eq(404)
-      assigns(:message).should eq("that user cant post to that destination")      
-    end
+      it "should return 404 if the user cant post to the destination" do
+        post :share, :roll_id => @roll.id.to_s, :destination => ["facebook"], :text => "testing", :format => :json
+        assigns(:status).should eq(404)
+        assigns(:message).should eq("that user cant post to that destination")      
+      end
     
-    it "should not post if the destination is not supported" do
-      post :share, :roll_id => @roll.id.to_s, :destination => ["awesome_service"], :text => "testing", :format => :json
-      assigns(:status).should eq(404)
-      assigns(:message).should eq("we dont support that destination yet :(")
-    end
+      it "should not post if the destination is not supported" do
+        post :share, :roll_id => @roll.id.to_s, :destination => ["awesome_service"], :text => "testing", :format => :json
+        assigns(:status).should eq(404)
+        assigns(:message).should eq("we dont support that destination yet :(")
+      end
     
-    it "should return 404 if a text or destination is not present" do
-      post :share, :roll_id => @roll.id.to_s, :destination => ["twitter"], :format => :json
-      assigns(:status).should eq(404)
+      it "should return 404 if a text or destination is not present" do
+        post :share, :roll_id => @roll.id.to_s, :destination => ["twitter"], :format => :json
+        assigns(:status).should eq(404)
       
-      post :share, :roll_id => @roll.id.to_s, :text => "testing", :format => :json
-      assigns(:status).should eq(404)
+        post :share, :roll_id => @roll.id.to_s, :text => "testing", :format => :json
+        assigns(:status).should eq(404)
       
-      assigns(:message).should eq("a destination and a text is required to post")
+        assigns(:message).should eq("a destination and a text is required to post")
+      end
+    
+      it "should return 404 if roll is private and you try to share to a social network" do
+        roll = stub_model(Roll, :public => false)
+        Roll.stub!(:find).and_return(roll)
+        post :share, :roll_id => roll.id.to_s, :destination => ["twitter"], :text => "testing", :format => :json
+        assigns(:status).should eq(404)
+        assigns(:message).should eq("that roll is private, can not share to twitter")
+      end
+    
+      it "should return 404 if roll not found" do
+        Roll.stub!(:find).and_return(nil)
+        post :share, :destination => ["twitter"], :text => "testing", :format => :json
+        assigns(:status).should eq(404)
+        assigns(:message).should eq("could not find roll with id ")
+      end
     end
     
-    it "should return 404 if roll is private" do
-      roll = stub_model(Roll, :public => false)
-      Roll.stub!(:find).and_return(roll)
-      post :share, :roll_id => roll.id.to_s, :destination => ["twitter"], :text => "testing", :format => :json
-      assigns(:status).should eq(404)
-      assigns(:message).should eq("that roll is private, can not share")
-    end
-    
-    it "should return 404 if roll not found" do
-      Roll.stub!(:find).and_return(nil)
-      post :share, :destination => ["twitter"], :text => "testing", :format => :json
-      assigns(:status).should eq(404)
-      assigns(:message).should eq("could not find roll with id ")
+    context "email share" do
+      it "should return 200 when sharing a private roll via email" do
+        GT::SocialPoster.should_receive(:post_to_email).once
+        
+        roll = stub_model(Roll, :public => false)
+        Roll.stub!(:find).and_return(roll)
+        post :share, :roll_id => roll.id.to_s, :destination => ["email"], :text => "testing", :addresses => "spinosa@gmail.com", :format => :json
+        assigns(:status).should eq(200)
+      end
+      
+      it "should return 404 if you don't includ email addresses" do
+        GT::SocialPoster.should_receive(:post_to_email).exactly(0).times
+        
+        roll = stub_model(Roll, :public => false)
+        Roll.stub!(:find).and_return(roll)
+        post :share, :roll_id => roll.id.to_s, :destination => ["email"], :text => "testing", :format => :json
+        assigns(:status).should eq(404)
+      end
     end
     
   end
