@@ -17,9 +17,27 @@ if @include_frame_children == true
 		attributes :id, :name, :nickname, :user_image_original, :user_image
 	end
 	
-	child (User.find(@frame.upvoters)) => :upvote_users do
-	  attributes :id, :name, :nickname, :user_image_original, :user_image, :public_roll_id
-  end
+        #child User.find(@frame.upvoters) => :upvote_users do
+    	#  attributes :id, :name, :nickname, :user_image_original, :user_image, :public_roll_id
+        #end
+        node :upvote_users do |frame| 
+            users = (User.find(frame.upvoters))
+            jsonList = []
+            if users
+              users.each do |user|
+                user_data = {}
+                user_data[:id] = user.id
+                user_data[:name] = user.name
+                user_data[:nickname] = user.nickname
+                user_data[:user_image_orignal] = user.user_image_original
+                user_data[:user_image] = user.user_image
+                user_data[:public_roll_id] = user.public_roll_id
+                jsonList << user_data.to_s
+              end
+            end
+            jsonList
+        end
+              
 
 	child :video => "video" do
 		attributes :id, :provider_name, :provider_id, :title, :description, 

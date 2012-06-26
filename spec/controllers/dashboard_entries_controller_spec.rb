@@ -25,9 +25,6 @@ describe V1::DashboardEntriesController do
     before(:each) do
       @user = Factory.create(:user)
       sign_in @user
-    end
-
-    it "should find video in dashboard" do 
       v = Video.new
       v.provider_name = "jengjeng"
       v.provider_id = "llama"
@@ -40,8 +37,17 @@ describe V1::DashboardEntriesController do
       @user.name = "jengjeng"
       @user.dashboard_entries << dbe
       @user.save
+      
+    end
+
+    it "should find video in dashboard" do 
       get :find_entries_with_video, {:auth_token => @user.authentication_token, :format => :json, :provider_id => "llama", :provider_name =>"jengjeng"}
-      assigns["entries"].length.should == 1
+      assigns["frames"].length.should == 1
+    end
+
+    it "should not fnd video in dashboard" do
+      get :find_entries_with_video, {:auth_token => @user.authentication_token, :format => :json, :provider_id => "llamaz", :provider_name =>"jeng"}
+      assigns["frames"].length.should == 0
     end
   end
       

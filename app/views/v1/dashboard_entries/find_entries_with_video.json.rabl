@@ -1,3 +1,3 @@
-collection @entries
+collection @frames
 
-extends 'v1/dashboard_entries/show_frame'
+extends 'v1/frame/show'
