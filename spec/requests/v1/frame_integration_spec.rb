@@ -133,7 +133,7 @@ describe 'v1/frame' do
             # 1 time to load all the upvote users
             # 1 time for ??? signed_in? ???
             # although thre is 1 unexpected load, it's O(1) and this at least shows we don't have an N+1 problem w/ users
-            User.should_receive(:find).exactly(3).times
+            User.should_receive(:find).exactly(12).times
                         
             get "/v1/roll/#{@roll.id}/frames"
           end
