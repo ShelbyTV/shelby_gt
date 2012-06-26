@@ -12,7 +12,7 @@ describe 'v1/frame' do
       @u1.save
       
       @r = Factory.create(:roll, :creator => @u1, :public => false)
-      @f = Factory.create(:frame, :creator => @u1, :roll => @r)
+      @f = Factory.create(:frame, :creator => @u1, :roll => @r, :conversation => Factory.create(:conversation))
       @f2 = Factory.create(:frame, :creator => @u1, :roll => @r)
       @f3 = Factory.create(:frame, :creator => @u1, :roll => @r)
       @f4 = Factory.create(:frame, :creator => @u1, :roll => @r)
@@ -133,7 +133,7 @@ describe 'v1/frame' do
             # 1 time to load all the upvote users
             # 1 time for ??? signed_in? ???
             # although thre is 1 unexpected load, it's O(1) and this at least shows we don't have an N+1 problem w/ users
-            User.should_receive(:find).exactly(3).times
+            User.should_receive(:find).exactly(12).times
                         
             get "/v1/roll/#{@roll.id}/frames"
           end
@@ -178,8 +178,14 @@ describe 'v1/frame' do
           u2.save
           r2 = Factory.create(:roll, :creator => u2, :public => true)
           u2.public_roll_id = r2.id; u2.save
+          f1 = Factory.create(:frame, :roll_id => r2.id)
+          f2 = Factory.create(:frame, :roll_id => r2.id)
+          
           get 'v1/user/'+u2.nickname+'/rolls/personal/frames'
+          
           response.body.should be_json_eql(200).at_path("status")
+          response.body.should be_json_eql(2).at_path("result/frame_count")
+          response.body.should have_json_size(2).at_path("result/frames")
         end
 
         it "should return frames of heart roll of user when given a nickname" do
@@ -188,8 +194,14 @@ describe 'v1/frame' do
           u2.save
           r2 = Factory.create(:roll, :creator => u2, :public => true)
           u2.upvoted_roll_id = r2.id; u2.save
+          f1 = Factory.create(:frame, :roll_id => r2.id)
+          f2 = Factory.create(:frame, :roll_id => r2.id)
+          
           get 'v1/user/'+u2.nickname+'/rolls/heart/frames'
+          
           response.body.should be_json_eql(200).at_path("status")
+          response.body.should be_json_eql(2).at_path("result/frame_count")
+          response.body.should have_json_size(2).at_path("result/frames")
         end
         
         it "should return 404 if cant access frames in a roll" do
@@ -346,7 +358,7 @@ describe 'v1/frame' do
 
           response.body.should be_json_eql(404).at_path("status")
           response.body.should have_json_path("message")
-          parse_json(response.body)["message"].should eq("please specify a valid id")
+          parse_json(response.body)["message"].should eq("could not find frame with id #{@f.id}xxx")
         end
 
         it "should return 404 if user cant post to that destination" do

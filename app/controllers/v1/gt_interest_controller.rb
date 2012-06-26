@@ -1,4 +1,6 @@
 class V1::GtInterestController < ApplicationController  
+
+  protect_from_forgery :except => :create
   
   ##
   # Creates and returns one GtInterest

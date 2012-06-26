@@ -17,28 +17,23 @@ class V1::MessagesController < ApplicationController
       if !params.include?(:text)
         render_error(400, "text of message required")
       else
-        if params[:conversation_id]
-          return render_error(404, "please specify a valid conversation_id") unless (conversation_id = ensure_valid_bson_id(params[:conversation_id]))
-          if @conversation = Conversation.find(conversation_id)
-            msg_opts = {:user => current_user, :public => true, :text => params[:text]}
-            @new_message = GT::MessageManager.build_message(msg_opts)
-            @conversation.messages << @new_message
-            begin
-              if @conversation.save!
+        if @conversation = Conversation.find(params[:conversation_id])
+          msg_opts = {:user => current_user, :public => true, :text => params[:text]}
+          @new_message = GT::MessageManager.build_message(msg_opts)
+          @conversation.messages << @new_message
+          begin
+            if @conversation.save!
 
-                ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(@conversation, @new_message) }
+              ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(@conversation, @new_message) }
 
-                @status = 200 
-                StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)
-              end
-            rescue => e
-              render_error(404, e)
+              @status = 200 
+              StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)
             end
-          else
-            render_error(404, "could not find that conversation")
+          rescue => e
+            render_error(404, e)
           end
         else
-          render_error(404, "must specify a conversation_id")
+          render_error(404, "could not find conversation with id #{params[:conversation_id]}")
         end
       end
     end

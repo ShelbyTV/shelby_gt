@@ -13,15 +13,19 @@ child :frame => "frame" do |f|
 	child :creator => "creator" do
 		attributes :id, :name, :nickname, :user_image_original, :user_image, :faux, :public_roll_id
 	end
-	
-	code do |f|
-  	child (User.find(f.upvoters)) => :upvote_users do
-  	  attributes :id, :name, :nickname, :user_image_original, :user_image, :public_roll_id
-    end
+
+	# upvote_users is a fake attribute that is populated in the controller	
+ 	node :upvote_users do |r|
+ 	  r[:upvote_users]
   end
 	
 	child :roll => "roll" do
-		attributes :id, :collaborative, :public, :creator_id, :title, :thumbnail_url
+		attributes :id, :collaborative, :public, :creator_id, :title, :creator_thumbnail_url => :thumbnail_url
+		
+		code :first_frame_thumbnail_url do |r|
+			r.first_frame_thumbnail_url if r.first_frame_thumbnail_url
+		end
+		
 	end
 	
 	child :video => "video" do

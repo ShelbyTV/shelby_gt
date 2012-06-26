@@ -9,8 +9,7 @@ describe Video do
   context "database" do
 
     it "should have an identity map" do
-      v = Video.new
-      v.save
+      v = Factory.create(:video)
       Video.identity_map.size.should > 0
     end
     
@@ -31,7 +30,7 @@ describe Video do
       @video = Factory.create(:video)
     end
     
-    it "should validate uniqueness of provider_name and provider_id" do
+    it "should validate uniqueness of provider_name and provider_id (when arnold performance settings aren't on)" do
       v = Video.new
       v.provider_name = @video.provider_name
       v.provider_id = @video.provider_id

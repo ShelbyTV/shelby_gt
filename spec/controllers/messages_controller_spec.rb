@@ -42,7 +42,7 @@ describe V1::MessagesController do
       Conversation.stub(:find) { nil }
       post :create, :text => "SOS", :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("must specify a conversation_id")
+      assigns(:message).should eq("could not find conversation with id ")
     end
     
   end

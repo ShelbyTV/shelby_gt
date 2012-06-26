@@ -156,7 +156,7 @@ module GT
         :conversation_id => frame.conversation_id,
         :frame_ancestors => (frame.frame_ancestors << frame.id)).first
       
-      dupe.destroy
+      dupe.destroy if dupe
     end
     
     def self.backfill_dashboard_entries(user, roll, frame_count=5)
@@ -244,8 +244,13 @@ module GT
       end
       
       def self.ensure_roll_metadata!(roll, frame)
-        #rolls need thumbnails (user.public_roll thumbnail is already set as their avatar)
-        roll.update_attribute(:thumbnail_url, frame.video.thumbnail_url) if (roll and roll.thumbnail_url.blank?) and (frame and frame.video)
+        if roll and frame and vid = frame.video
+          # rolls need thumbnails (user.public_roll thumbnail is already set as their avatar)
+          roll.update_attribute(:creator_thumbnail_url, vid.thumbnail_url) if roll.creator_thumbnail_url.blank?
+          
+          # always try and update the rolls :first_frame_thumbnail_url, always.
+          roll.update_attribute(:first_frame_thumbnail_url, vid.thumbnail_url)
+        end
       end
     
   end

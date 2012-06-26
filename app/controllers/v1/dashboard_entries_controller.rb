@@ -14,6 +14,10 @@ class V1::DashboardEntriesController < ApplicationController
   # @param [Optional, Integer] skip The number of entries to skip (default 0)
   # @param [Optional, Boolean] include_children if set to true, will not include all goodies, eg roll, frame etc
   def index
+    # disabling garbage collection here because we are loading a whole bunch of documents, and my hypothesis (HIS) is 
+    #  it is slowing down this api request
+    GC.disable
+    
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['index']) do
       # default params
       @limit = params[:limit] ? params[:limit].to_i : 20
@@ -24,8 +28,7 @@ class V1::DashboardEntriesController < ApplicationController
 
       # get user
       if params[:user_id]
-        return render_error(404, "please specify a valid id") unless (user_id = ensure_valid_bson_id(params[:user_id]))
-        return render_error(404, "could not find that user") unless user = User.find(user_id)
+        return render_error(404, "could not find that user") unless user = User.find(params[:user_id])
       elsif user_signed_in?
         user = current_user
       end
@@ -38,16 +41,15 @@ class V1::DashboardEntriesController < ApplicationController
           render 'index' and return
         end
         
-        
         if params[:since_id]
-          
-          return render_error(404, "please specify a valid id") unless since_id = ensure_valid_bson_id(params[:since_id])
+          return render_error(404, "invalid since_id #{params[:since_id]}") unless BSON::ObjectId.legal?(params[:since_id])
+          since_object_id = BSON::ObjectId(params[:since_id])
           
           case params[:order]
           when "1", nil, "forward"
-            @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.lte => since_id).all
+            @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.lte => since_object_id).all
           when "-1", "reverse", "backward"
-            @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.gt => since_id).all
+            @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id, :id.gt => since_object_id).all
           end
         else
           @entries = DashboardEntry.limit(@limit).skip(skip).sort(:id.desc).where(:user_id => user.id).all
@@ -65,8 +67,30 @@ class V1::DashboardEntriesController < ApplicationController
         @entries_conversation_ids = @frames.map {|f| f.conversation_id }.compact.uniq
         @entries_video_ids = @frames.map {|f| f.video_id }.compact.uniq
 
-        @rolls = Roll.find(@entries_roll_ids)
-        @users = User.find((@entries_creator_ids + @entries_hearted_ids).uniq)
+        # for some reason calling Roll.find is throwing an error, its thinking its calling:
+        #  V1::DashboardEntriesController::Roll which does not exist, for now, just forcing the global Roll
+        @rolls = ::Roll.find(@entries_roll_ids)
+        
+        @user_ids =  (@entries_creator_ids + @entries_hearted_ids).uniq
+        if @users = User.where(:id => { "$in" => @user_ids }).limit(@user_ids.length).fields(:id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id, :upvoted_roll_id, :viewed_roll_id, :app_progress, :authentication_token).all
+          # we have to manually put these users into an identity map (for some reason)
+          @users.each {|u| User.identity_map[u.id] = u}
+        end
+        
+        # took this out of the rabl to speed things up: building upvote_users for each frame
+        @frames.each do |f|
+          f[:upvote_users] = []
+          if !f.upvoters.empty?
+            f.upvoters.each do |fu|
+              if u = User.find(fu)
+                f[:upvote_users] << { :id => u.id, :name => u.name, :nickname => u.nickname, 
+                                      :user_image_original => u.user_image_original, :user_image => u.user_image,
+                                      :public_roll_id => u.public_roll_id }
+              end
+            end
+          end
+        end
+        
         @videos = Video.find(@entries_video_ids)
         @conversations = Conversation.find(@entries_conversation_ids)
         ##########
@@ -77,6 +101,7 @@ class V1::DashboardEntriesController < ApplicationController
         render_error(404, "no user info found")
       end    
     end
+    GC.enable
   end
   add_method_tracer :index
 
@@ -91,17 +116,14 @@ class V1::DashboardEntriesController < ApplicationController
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['update']) do
       if params[:id]
-
-        return render_error(404, "please specify a valid id") unless (id = ensure_valid_bson_id(params.delete(:id)))
-        
-        if @dashboard_entry = DashboardEntry.find(id)
+        if @dashboard_entry = DashboardEntry.find(params[:id])
           begin 
             @status = 200 if @dashboard_entry.update_attributes!(params)
           rescue => e
             render_error(404, "could not update dashboard_entry: #{e}")
           end
         else
-          render_error(404, "could not find that dashboard_entry")
+          render_error(404, "could not find dashboard_entry with id #{params[:id]}")
         end
       else
         render_error(404, "must specify an id.")

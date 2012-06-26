@@ -17,7 +17,7 @@ class Roll
   
   # it has some basic categorical info
   key :title,           String, :required => true, :abbr => :b
-  key :thumbnail_url,   String, :abbr => :c
+  key :creator_thumbnail_url,   String, :abbr => :c
 
   # public rolls can be viewed, posted to, and invited to by any user (doesn't have to be following)
   # private rolls can only be viewed, posted to, and invited to by private_collaborators
@@ -48,12 +48,14 @@ class Roll
   # indicates whether the subdomain for this roll is activated
   key :subdomain_active,Boolean, :abbr => :l, :default => false
   # roll is accesible at the subdomain address if :subdomain is not nil AND :subdomain_active
+  
+  key :first_frame_thumbnail_url, String, :abbr => :m
 
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
   many :following_users
   
-  attr_accessible :title, :thumbnail_url
+  attr_accessible :title, :creator_thumbnail_url
 
   RESERVED_SUBDOMAINS = %w(gt anal admin qa vanity)
   validates_exclusion_of :subdomain, :in => RESERVED_SUBDOMAINS
@@ -61,7 +63,7 @@ class Roll
   def save(options={})
     # if this roll has subdomain access we have to check if we violate the unique index constraint on subdomains
     if has_subdomain_access?
-      self.subdomain = title.strip.gsub(/[_]+/,'-').gsub(/((\A[-]+)|([-]+\z))/, '').downcase
+      self.subdomain = title.strip.gsub(/[_\-\s]+/, '-').gsub(/[^A-Za-z\d-]|\A[-]+|[-]+\z/, '').downcase
       self.subdomain_active = true
       begin
         super({:safe => true}.merge!(options))
@@ -86,6 +88,8 @@ class Roll
     # only user's personal roll gets a subdomain
     public and !collaborative and !genius
   end
+  
+  def created_at() self.id.generation_time; end
 
   def followed_by?(u)
     raise ArgumentError, "must supply user or user_id" unless u
@@ -190,6 +194,6 @@ class Roll
   #displayed title and thumbnail_url for upvoted rolls (aka heart rolls)
   def display_title() (self.upvoted_roll? and self.creator) ? "#{self.creator.nickname} ♥s" : self.title; end
   
-  def display_thumbnail_url() self.upvoted_roll? ? "#{Settings::ShelbyAPI.web_root}/images/assets/favorite_roll_avatar.png" : self.thumbnail_url; end
+  def display_thumbnail_url() self.upvoted_roll? ? "#{Settings::ShelbyAPI.web_root}/images/assets/favorite_roll_avatar.png" : self.creator_thumbnail_url; end
   
 end

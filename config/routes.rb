@@ -51,6 +51,7 @@ ShelbyGt::Application.routes.draw do
     
     resources :user, :only => [:show, :update] do
       get 'rolls/following' => 'user#roll_followings', :on => :member
+      get 'rolls/postable' => 'user#roll_followings', :on => :member, :defaults => { :postable => true }
       get 'rolls/personal' => 'roll#show_users_public_roll'
       get 'rolls/personal/frames' => 'frame#index_for_users_public_roll'
       get 'rolls/hearted' => 'roll#show_users_heart_roll'
@@ -120,7 +121,7 @@ ShelbyGt::Application.routes.draw do
   end
   
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user
-  get '/web_root' => redirect('http://gt.shelby.tv'), :as => :web_root
+  get '/web_root' => redirect {|params,request| "http://gt.shelby.tv#{'?' + request.env["QUERY_STRING"] if request.env["QUERY_STRING"].length > 0}"}, :as => :web_root
   
   root :to => 'authentications#index'
 
