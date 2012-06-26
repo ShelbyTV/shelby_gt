@@ -61,12 +61,14 @@ class V1::UserController < ApplicationController
   # Returns the rolls the current_user is following
   #   REQUIRES AUTHENTICATION
   #
-  # [GET] /v1/user/:id/rolls/following 
+  # [GET] /v1/user/:id/rolls/following
+  # [GET] /v1/user/:id/rolls/postable (returns the subset of rolls the user is following which they can also post to)
   # 
   # @param [Required, String] id The id of the user
   # @param [Optional, boolean] include_children Return the following_users?
   # @param [Optional, boolean] frames Returns a shallow version of frames
   # @param [Optional, boolean] frames_limit limit number of shallow frames to return 
+  # @param [Optional, boolean] postable Set this to true (or use the second route) if you only want rolls postable by current user returned (used by bookmarklet)
   def roll_followings
     # disabling garbage collection here because we are loading a whole bunch of documents, and my hypothesis (HIS) is 
     #  it is slowing down this api request
@@ -77,7 +79,12 @@ class V1::UserController < ApplicationController
         # for some reason calling Roll.find is throwing an error, its thinking its calling:
         #  V1::UserController::Roll which does not exist, for now, just forcing the global Roll
         @roll_ids = current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq
-        @rolls = Roll.where(:id => { "$in" => @roll_ids }).limit(@roll_ids.length).all
+        
+        # I really wanted to make a mongo query with $and / $or, but it doesn't seem doable with current semantics
+        @rolls = Roll.where({:id => { "$in" => @roll_ids }}).limit(@roll_ids.length).all
+        if params[:postable]
+          @rolls = @rolls.select { |r| r.postable_by?(current_user) }
+        end
         
         if @rolls
           
@@ -85,8 +92,6 @@ class V1::UserController < ApplicationController
           if heartRollIndex = @rolls.index(current_user.upvoted_roll)
             heartRoll = @rolls.slice!(heartRollIndex)
             @rolls.insert(0, heartRoll)
-          else
-            Rails.logger.error("UserController#roll_followings - could not find heart/upvoted roll for user #{current_user.id}")
           end
           
           # Load all roll creators to prevent N+1 queries

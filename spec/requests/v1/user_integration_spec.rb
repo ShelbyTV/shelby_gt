@@ -54,37 +54,67 @@ describe 'v1/user' do
         parse_json(response.body)["result"]["signed_in"].should eq(true)
       end
       
-      it "should show a users rolls if the supplied user_id is the current_users" do
-        r1 = Factory.create(:roll, :creator => @u1)
-        r1.add_follower(@u1)
-        r2 = Factory.create(:roll, :creator => @u1)
-        r2.add_follower(@u1)
-        @u1.upvoted_roll = r2
-        @u1.save
-        get '/v1/user/'+@u1.id+'/rolls/following'
-        response.body.should be_json_eql(200).at_path("status")
-        parse_json(response.body)["result"].class.should eq(Array)
-      end
+      context "rolls/following" do
+        it "should show a users rolls if the supplied user_id is the current_users" do
+          r1 = Factory.create(:roll, :creator => @u1)
+          r1.add_follower(@u1)
+          r2 = Factory.create(:roll, :creator => @u1)
+          r2.add_follower(@u1)
+          @u1.upvoted_roll = r2
+          @u1.save
+          get '/v1/user/'+@u1.id+'/rolls/following'
+          response.body.should be_json_eql(200).at_path("status")
+          parse_json(response.body)["result"].class.should eq(Array)
+        end
       
-      it "should not show a users rolls if the supplied user_id is NOT the current_users" do
-        u2 = Factory.create(:user)
-        get '/v1/user/'+u2.id+'/rolls/following'
-        response.body.should be_json_eql(403).at_path("status")
-      end
+        it "should not show a users rolls if the supplied user_id is NOT the current_users" do
+          u2 = Factory.create(:user)
+          get '/v1/user/'+u2.id+'/rolls/following'
+          response.body.should be_json_eql(403).at_path("status")
+        end
       
-      it "should have the first and second rolls be special" do
-        r1 = Factory.create(:roll, :creator => @u1)
-        r1.add_follower(@u1)
-        r2 = Factory.create(:roll, :creator => @u1)
-        r2.add_follower(@u1)
-        r3 = Factory.create(:roll, :creator => @u1)
-        r3.add_follower(@u1)
-        @u1.public_roll = r1
-        @u1.upvoted_roll = r2
-        @u1.save
+        it "should have the first and second rolls be special" do
+          r1 = Factory.create(:roll, :creator => @u1)
+          r1.add_follower(@u1)
+          r2 = Factory.create(:roll, :creator => @u1)
+          r2.add_follower(@u1)
+          r3 = Factory.create(:roll, :creator => @u1)
+          r3.add_follower(@u1)
+          @u1.public_roll = r1
+          @u1.upvoted_roll = r2
+          @u1.save
         
-        get '/v1/user/'+@u1.id+'/rolls/following'
-        parse_json(response.body)["result"][0]["id"].should eq(r2.id.to_s)
+          get '/v1/user/'+@u1.id+'/rolls/following'
+          parse_json(response.body)["result"][0]["id"].should eq(r2.id.to_s)
+        end
+      end
+      
+      context "rolls/postable" do
+        it "should only return the subset of rolls that the user can post to" do
+          public_roll = Factory.create(:roll, :creator => @u1, :collaborative => false)
+          public_roll.add_follower(@u1)
+          @u1.public_roll = public_roll
+          
+          upvoted_roll = Factory.create(:roll, :creator => @u1, :collaborative => false)
+          upvoted_roll.add_follower(@u1)
+          @u1.upvoted_roll = upvoted_roll
+          
+          r1 = Factory.create(:roll, :creator => @u1)
+          r1.add_follower(@u1)
+          r2 = Factory.create(:roll, :creator => Factory.create(:user), :public => false, :collaborative => true)
+          r2.add_follower(@u1)
+          r3 = Factory.create(:roll, :creator => Factory.create(:user), :public => true, :collaborative => false)
+          r3.add_follower(@u1)
+          
+          @u1.save
+        
+          get '/v1/user/'+@u1.id+'/rolls/postable'
+          response.body.should have_json_size(4).at_path("result")
+          parse_json(response.body)["result"][0]["id"].should == public_roll.id.to_s
+          parse_json(response.body)["result"][1]["id"].should == upvoted_roll.id.to_s
+          parse_json(response.body)["result"][2]["id"].should == r1.id.to_s
+          parse_json(response.body)["result"][3]["id"].should == r2.id.to_s
+        end
       end
       
       it "should return frames if they are asked for in roll followings" do
