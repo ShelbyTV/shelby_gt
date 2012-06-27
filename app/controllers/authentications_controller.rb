@@ -34,12 +34,8 @@ class AuthenticationsController < ApplicationController
       
         sign_in(:user, user)
         
-        # ensure csrf_token in cookie
-        cookies[:_shelby_gt_common] = {
-          :value => "authenticated_user_id=#{user.id.to_s},csrf_token=#{form_authenticity_token}",
-          :expires => 1.week.from_now,
-          :domain => '.shelby.tv'
-        }
+        set_common_cookie(user, form_authenticity_token)
+
         StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
       
         opener_location = redirect_path || web_root_url
@@ -48,12 +44,7 @@ class AuthenticationsController < ApplicationController
         GT::InvitationManager.private_roll_invite(user, private_invite)
         sign_in(:user, user)
         
-        # ensure csrf_token in cookie
-        cookies[:_shelby_gt_common] = {
-          :value => "authenticated_user_id=#{user.id.to_s},csrf_token=#{form_authenticity_token}",
-          :expires => 1.week.from_now,
-          :domain => '.shelby.tv'
-        }
+        set_common_cookie(user, form_authenticity_token)        
         StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
       
         opener_location = redirect_path || web_root_url
@@ -98,12 +89,7 @@ class AuthenticationsController < ApplicationController
             GT::InvitationManager.private_roll_invite(user, private_invite)
           end
           
-          # ensure csrf_token in cookie
-          cookies[:_shelby_gt_common] = {
-            :value => "authenticated_user_id=#{user.id.to_s},csrf_token=#{session[:_csrf_token]}",
-            :expires => 1.week.from_now,
-            :domain => '.shelby.tv'
-          }
+          set_common_cookie(user, session[:_csrf_token])
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
         
           opener_location = redirect_path || web_root_url
@@ -161,6 +147,14 @@ class AuthenticationsController < ApplicationController
     def redirect_path
       session[:return_url] || request.env['omniauth.origin']
     end
-
+    
+    def set_common_cookie(user, form_authenticity_token)
+      # ensure csrf_token in cookie
+      cookies[:_shelby_gt_common] = {
+        :value => "authenticated_user_id=#{user.id.to_s},csrf_token=#{form_authenticity_token}",
+        :expires => 20.years.from_now,
+        :domain => '.shelby.tv'
+      }      
+    end
   
 end

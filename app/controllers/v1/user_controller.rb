@@ -98,16 +98,17 @@ class V1::UserController < ApplicationController
           
           # Load all roll creators to prevent N+1 queries
           @creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
-          @roll_creators = User.where(:id => { "$in" => @creator_ids }).limit(@creator_ids.length).fields(:id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id, :upvoted_roll_id, :viewed_roll_id, :app_progress).all
+          @roll_creators = User.where(:id => { "$in" => @creator_ids }).limit(@creator_ids.length).fields(:id, :name, :nickname).all
           # we have to manually put these users into an identity map, .fields() seems to User.identity map = {}
           @roll_creators.each {|u| User.identity_map[u.id] = u}
           
           self.class.trace_execution_scoped(['UserController/roll_followings/special_attrs']) do
-            @rolls.each do |r|
+            @rolls.map!{ |r|
               creator = User.identity_map[r.creator_id]
               r[:creator_nickname] = creator.nickname if creator != nil
               r[:following_user_count] = r.following_users.length
-            end
+              r
+            }
           end
           
           @status = 200
