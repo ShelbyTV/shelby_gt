@@ -12,7 +12,7 @@ describe GT::FacebookNormalizer do
     m.origin_network.should == "facebook"
     m.origin_id.should == "1850281655_372627419426123"
     m.origin_user_id.should == "1850281655"
-    m.public.should == false
+    m.public.should == true
     
     m.nickname.should == "Melih Ang"
     m.realname.should == "Melih Ang"

@@ -50,6 +50,17 @@ describe AuthenticationsController do
     
   end
 
+  context "Create" do
+    it "should remove previous auth failure params from the query string for redirect" do
+        controller.stub!(:session).and_return({:return_url => 'http://www.example.com?auth_failure=1&auth_strategy=Facebook&param1=val1&param2=val2'})
+        request.stub!(:env).and_return({"omniauth.auth" => {}})
+        @u1 = Factory.create(:user, :gt_enabled => false)
+        User.stub(:first).and_return(@u1)
+        get :create, :provider => "Twitter"
+        assigns(:opener_location).should eq('http://www.example.com?param1=val1&param2=val2')
+    end
+  end
+
   context "Auth failure" do
 
     it "should add failure param to root url on auth failure" do
@@ -63,13 +74,13 @@ describe AuthenticationsController do
     end
 
     it "should add failure param to session return url on auth failure" do
-      controller.stub!(:session) { {:return_url => 'http://www.example.com?param1=val1&param2=val2' }}
+      controller.stub!(:session).and_return({:return_url => 'http://www.example.com?param1=val1&param2=val2'})
       get :fail
       assigns(:opener_location).should eq('http://www.example.com?auth_failure=1&param1=val1&param2=val2')
     end
 
     it "should add failure param and strategy param to session return url on auth failure when strategy specified" do
-      controller.stub!(:session) { {:return_url => 'http://www.example.com?param1=val1&param2=val2' }}
+      controller.stub!(:session).and_return({:return_url => 'http://www.example.com?param1=val1&param2=val2'})
       get :fail, :strategy => 'Facebook'
       assigns(:opener_location).should eq('http://www.example.com?auth_failure=1&auth_strategy=Facebook&param1=val1&param2=val2')
     end
