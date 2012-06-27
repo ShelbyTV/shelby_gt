@@ -56,7 +56,7 @@ describe AuthenticationsController do
         request.stub!(:env).and_return({"omniauth.auth" => {}})
         @u1 = Factory.create(:user, :gt_enabled => false)
         User.stub(:first).and_return(@u1)
-        get :create, :provider => "Twitter"
+        get :create, :provider => "twitter"
         assigns(:opener_location).should eq('http://www.example.com?param1=val1&param2=val2')
     end
   end

@@ -1,6 +1,6 @@
 class V1::UserController < ApplicationController  
 
-  extend NewRelic::Agent::MethodTracer
+  #extend NewRelic::Agent::MethodTracer
   
   before_filter :user_authenticated?, :except => [:signed_in, :show]
 
@@ -83,7 +83,7 @@ class V1::UserController < ApplicationController
         @roll_ids = current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq
         
         # I really wanted to make a mongo query with $and / $or, but it doesn't seem doable with current semantics
-        @rolls = Roll.where({:id => { "$in" => @roll_ids }}).limit(@roll_ids.length).all
+        @rolls = ::Roll.where({:id => { "$in" => @roll_ids }}).limit(@roll_ids.length).all
         if params[:postable]
           @rolls = @rolls.select { |r| r.postable_by?(current_user) }
         end
@@ -102,11 +102,13 @@ class V1::UserController < ApplicationController
           # we have to manually put these users into an identity map, .fields() seems to User.identity map = {}
           @roll_creators.each {|u| User.identity_map[u.id] = u}
           
-          
-          @rolls.each do |r|
-            r[:creator_nickname] = r.creator.nickname if r.creator != nil
-            r[:following_user_count] = r.following_users.count
-          end
+          #self.class.trace_execution_scoped(['UserController/roll_followings/special_attrs']) do
+            @rolls.each do |r|
+              creator = User.identity_map[r.creator_id]
+              r[:creator_nickname] = creator.nickname if creator != nil
+              r[:following_user_count] = r.following_users.length
+            end
+          #end
           
           @status = 200
         else
