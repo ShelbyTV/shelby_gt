@@ -340,6 +340,10 @@ class V1::FrameController < ApplicationController
             @frame = frame_to_re_roll.re_roll(current_user, roll)
             @frame = @frame[:frame]
             StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'], current_user.id, 'frame_re_roll', request)
+            
+            # send email notification in a non-blocking manor
+            #ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_reroll_notification(frame_re_roll, @frame) }
+            
             @status = 200
           else
             return render_error(403, "that user cant post to that roll")

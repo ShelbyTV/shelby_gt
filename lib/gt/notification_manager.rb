@@ -14,6 +14,9 @@ module GT
       
       return unless user_to.preferences.upvote_notifications
       
+      # TODO: send OG action to FB
+      # ShelbyGT_EM.next_tick { GT::OpenGraph.send_favorite_action(user, frame) }
+      
       NotificationMailer.upvote_notification(user_to, user, frame).deliver
     end
 
@@ -29,6 +32,9 @@ module GT
       return unless user_to.gt_enabled
       
       return unless user_to.preferences.reroll_notifications
+      
+      # TODO: send OG action to FB
+      # ShelbyGT_EM.next_tick { GT::OpenGraph.send_rolled_action(new_frame.creator, new_frame) }
       
       NotificationMailer.reroll_notification(new_frame, old_frame).deliver
     end
@@ -55,6 +61,10 @@ module GT
       users_to_email.select! { |u| u.preferences and u.preferences.comment_notifications? }
       
       users_to_email.each { |u| NotificationMailer.comment_notification(u, new_message.user, frame, new_message).deliver unless u.primary_email.blank? }
+      
+      # TODO: send OG action to FB
+      # ShelbyGT_EM.next_tick { GT::OpenGraph.send_comment_action(current_user, @new_message) }
+
     end
 
     def self.check_and_send_join_roll_notification(user_from, roll)

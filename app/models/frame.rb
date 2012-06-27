@@ -125,7 +125,7 @@ class Frame
     
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_upvote_notification(u, self) }
-    
+        
     self.save
   end
   
