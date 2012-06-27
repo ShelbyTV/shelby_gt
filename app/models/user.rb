@@ -172,6 +172,7 @@ class User
   # When we move everyone to GT, use the rake task in gt_migration.rb
   def gt_enable!
     self.gt_enabled = true
+    self.faux = (self.faux == FAUX_STATUS[:true] ? FAUX_STATUS[:converted] : FAUX_STATUS[:false])
     self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
     GT::UserManager.ensure_users_special_rolls(self, true)
   end
