@@ -101,7 +101,13 @@ class V1::UserController < ApplicationController
           @roll_creators = User.where(:id => { "$in" => @creator_ids }).limit(@creator_ids.length).fields(:id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :public_roll_id, :upvoted_roll_id, :viewed_roll_id, :app_progress).all
           # we have to manually put these users into an identity map, .fields() seems to User.identity map = {}
           @roll_creators.each {|u| User.identity_map[u.id] = u}
-        
+          
+          
+          @rolls.each do |r|
+            r[:creator_nickname] = r.creator.nickname if r.creator != nil
+            r[:following_user_count] = r.following_users.count
+          end
+          
           @status = 200
         else
           render_error(404, "something went wrong when getting those rolls.")
