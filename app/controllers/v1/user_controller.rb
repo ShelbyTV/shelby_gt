@@ -1,6 +1,6 @@
 class V1::UserController < ApplicationController  
 
-  #extend NewRelic::Agent::MethodTracer
+  extend NewRelic::Agent::MethodTracer
   
   before_filter :user_authenticated?, :except => [:signed_in, :show]
 
@@ -102,13 +102,13 @@ class V1::UserController < ApplicationController
           # we have to manually put these users into an identity map, .fields() seems to User.identity map = {}
           @roll_creators.each {|u| User.identity_map[u.id] = u}
           
-          #self.class.trace_execution_scoped(['UserController/roll_followings/special_attrs']) do
+          self.class.trace_execution_scoped(['UserController/roll_followings/special_attrs']) do
             @rolls.each do |r|
               creator = User.identity_map[r.creator_id]
               r[:creator_nickname] = creator.nickname if creator != nil
               r[:following_user_count] = r.following_users.length
             end
-          #end
+          end
           
           @status = 200
         else
