@@ -65,7 +65,7 @@ module GT
         puts " *FAIL* Missing public roll" unless u.public_roll
         puts " *FAIL* Not following their public roll" unless u.following_roll? u.public_roll
         puts " *FAIL* Missing upvoted roll" unless u.upvoted_roll
-        puts " *FAIL* Not following their upvoted roll. FIX: Roll.find('#{u.upvoted_roll.id}').add_follower(User.find('#{u.id}'))" unless u.following_roll? u.upvoted_roll
+        puts " *FAIL* Not following their upvoted roll. FIX: Roll.find('#{u.upvoted_roll.id}').add_follower(User.find('#{u.id}'), false)" unless u.following_roll? u.upvoted_roll
         puts " *FAIL* upvoted_roll should only have 1 follower, has too many" if u.upvoted_roll.following_users.count > 1
         puts " *FAIL* Missing viewed roll" unless u.viewed_roll
         puts " *FAIL* Should not be following viewed roll" if u.following_roll? u.viewed_roll
@@ -73,6 +73,9 @@ module GT
         # other rolls info
         bad_rolls_count = u.roll_followings.select { |rf| rf.roll == nil } .size
         puts " *FAIL* Follows #{bad_rolls_count} non-existant rolls.  FIX: GT::UserDoctor.clean_roll_followings(User.find('#{u.id}'))" if bad_rolls_count > 0
+
+        # cohorts
+        puts " *FAIL* Should have at least one cohort.  FIX: User.find('#{u.id}').push(:cohorts => Settings::User.current_cohort)" if u.cohorts.size == 0
       end
       
       puts "===done==="
