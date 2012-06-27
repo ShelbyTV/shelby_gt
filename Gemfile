@@ -152,3 +152,8 @@ group :test do
 	# if we have to fuck with time, this looks nice:
 	# gem 'timecop'
 end
+
+#
+# ---------- SEO
+#
+gem 'sitemap_generator'
