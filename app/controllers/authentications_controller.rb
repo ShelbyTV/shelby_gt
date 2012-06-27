@@ -120,12 +120,13 @@ class AuthenticationsController < ApplicationController
     end
 
     # remove parameters describing a previous auth failure from the redirect url as they are no longer relevant
-    redirect_uri = URI.parse opener_location
+    redirect_uri = URI(opener_location)
     query = Rack::Utils.parse_query redirect_uri.query
     query.delete("auth_failure")
     query.delete("auth_strategy")
-    
-    @opener_location = URI.join(redirect_uri, "?#{query.to_query}").to_s
+    redirect_uri.query = query.empty? ? nil : query.to_query
+
+    @opener_location = redirect_uri.to_s
 
     render :action => 'redirector', :layout => 'simple'
   end
@@ -139,12 +140,13 @@ class AuthenticationsController < ApplicationController
     redirect_url = session[:return_url] || web_root_url
 
     # add parameters describing the auth failure to the redirect url
-    redirect_uri = URI.parse redirect_url
+    redirect_uri = URI(redirect_url)
     query = Rack::Utils.parse_query redirect_uri.query
     query["auth_failure"] = 1
     query["auth_strategy"] = params[:strategy] if params[:strategy]
+    redirect_uri.query = query.to_query
 
-    @opener_location = URI.join(redirect_uri, "?#{query.to_query}").to_s
+    @opener_location = redirect_uri.to_s
     render :action => 'redirector', :layout => 'simple'
   end
   

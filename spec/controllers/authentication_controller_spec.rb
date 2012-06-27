@@ -51,13 +51,22 @@ describe AuthenticationsController do
   end
 
   context "Create" do
+    before(:each) do
+      request.stub!(:env).and_return({"omniauth.auth" => {}})
+      @u1 = Factory.create(:user, :gt_enabled => false)
+      User.stub(:first).and_return(@u1)
+    end
+
     it "should remove previous auth failure params from the query string for redirect" do
-        controller.stub!(:session).and_return({:return_url => 'http://www.example.com?auth_failure=1&auth_strategy=Facebook&param1=val1&param2=val2'})
-        request.stub!(:env).and_return({"omniauth.auth" => {}})
-        @u1 = Factory.create(:user, :gt_enabled => false)
-        User.stub(:first).and_return(@u1)
-        get :create, :provider => "Twitter"
-        assigns(:opener_location).should eq('http://www.example.com?param1=val1&param2=val2')
+      controller.stub!(:session).and_return({:return_url => 'http://www.example.com?auth_failure=1&auth_strategy=Facebook&param1=val1&param2=val2'})  
+      get :create, :provider => "Twitter"
+      assigns(:opener_location).should eq('http://www.example.com?param1=val1&param2=val2')
+    end
+
+    it "should have no ? if the query string is empty after removing the auth failure params" do
+      controller.stub!(:session).and_return({:return_url => 'http://www.example.com?auth_failure=1&auth_strategy=Facebook'})  
+      get :create, :provider => "Twitter"
+      assigns(:opener_location).should eq('http://www.example.com')
     end
   end
 
