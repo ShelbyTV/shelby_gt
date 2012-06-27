@@ -39,9 +39,9 @@ module GT
         puts "  created   : #{u.roll_followings.select { |rf| rf.roll and rf.roll.creator_id == u.id and !rf.roll.public } .size} private rolls"
 
         #videos
-        puts "  watched   : #{u.viewed_roll.frames.count} videos (approx.)"
-        puts "  favorited : #{u.upvoted_roll.frames.count} videos"
-        puts "  rolled    : #{u.public_roll.frames.count} videos to their personal public roll"
+        puts "  watched   : #{u.viewed_roll.frames.count} videos (approx.)" if u.viewed_roll
+        puts "  favorited : #{u.upvoted_roll.frames.count} videos" if u.upvoted_roll
+        puts "  rolled    : #{u.public_roll.frames.count} videos to their personal public roll" if u.public_roll
 
         # dashboard
         puts "  dashbaord : #{u.dashboard_entries.count} entries"
