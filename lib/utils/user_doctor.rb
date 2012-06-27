@@ -25,6 +25,7 @@ module GT
     
     def self.examine(u)
       puts "==user info=="
+      puts " id         : #{u.id}"
       puts " username   : #{u.nickname}"
       puts " created at : #{u.created_at} (#{((Time.now - u.created_at) / (60*60*24)).round} days ago)"
       puts " real name  : #{u.name}"
@@ -64,13 +65,14 @@ module GT
         puts " *FAIL* Missing public roll" unless u.public_roll
         puts " *FAIL* Not following their public roll" unless u.following_roll? u.public_roll
         puts " *FAIL* Missing upvoted roll" unless u.upvoted_roll
-        puts " *FAIL* Not following their upvoted roll" unless u.following_roll? u.upvoted_roll
+        puts " *FAIL* Not following their upvoted roll. FIX: Roll.find('#{u.upvoted_roll.id}').add_follower(User.find('#{u.id}'))" unless u.following_roll? u.upvoted_roll
+        puts " *FAIL* upvoted_roll should only have 1 follower, has too many" if u.upvoted_roll.following_users.count > 1
         puts " *FAIL* Missing viewed roll" unless u.viewed_roll
         puts " *FAIL* Should not be following viewed roll" if u.following_roll? u.viewed_roll
 
         # other rolls info
         bad_rolls_count = u.roll_followings.select { |rf| rf.roll == nil } .size
-        puts " *FAIL* Follows #{bad_rolls_count} non-existant rolls.  CLEANUP: GT::UserDoctor.clean_roll_followings(User.find('#{u.id}'))" if bad_rolls_count > 0
+        puts " *FAIL* Follows #{bad_rolls_count} non-existant rolls.  FIX: GT::UserDoctor.clean_roll_followings(User.find('#{u.id}'))" if bad_rolls_count > 0
       end
       
       puts "===done==="
