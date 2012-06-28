@@ -594,7 +594,7 @@ describe GT::UserManager do
         u.preferences.email_updates.should == true
         u.preferences.like_notifications.should == true
         u.preferences.watched_notifications.should == true
-        u.preferences.quiet_mode.should == nil
+        u.preferences.open_graph_posting.should == nil
       end
 
       it "should always have preferences once created" do
