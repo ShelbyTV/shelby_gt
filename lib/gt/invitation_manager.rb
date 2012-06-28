@@ -7,11 +7,12 @@ module GT
      # save their email if we don't have it already
      user.primary_email = invite_info[1] unless user.primary_email
      # let them into gt
-     user.gt_enabled = true
+     user.gt_enable!
      user.save(:validate => false)
 
      if roll = Roll.find(invite_info[2])     
        roll.add_follower(user)
+       GT::Framer.backfill_dashboard_entries(user, roll, 20)
        roll.save
      end
    end 

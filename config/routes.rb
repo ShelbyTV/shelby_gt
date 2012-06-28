@@ -124,7 +124,8 @@ ShelbyGt::Application.routes.draw do
   end
   
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user
-  get '/web_root' => redirect {|params,request| "http://gt.shelby.tv#{'?' + request.env["QUERY_STRING"] if request.env["QUERY_STRING"].length > 0}"}, :as => :web_root
+  
+  # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   
   root :to => 'authentications#index'
 

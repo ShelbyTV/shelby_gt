@@ -100,6 +100,18 @@ describe GT::SocialSorter do
       }.should change { @observer.roll_followings.count }.by(1)
     end
     
+    it "should backfill the observing User's stream when they auto-follow Roll" do
+      m = @existing_user_random_msg
+      
+      lambda {
+        GT::Framer.should_receive(:backfill_dashboard_entries).with(@observer.reload, @existing_user.public_roll.reload, 20)
+        
+        res = GT::SocialSorter.sort(m, {:video => @video, :from_deep => false}, @observer)
+        @observer.reload.following_roll?(res[:frame].roll).should == true
+        res[:frame].roll.reload.followed_by?(@observer).should == true
+      }.should change { @observer.roll_followings.count }.by(1)
+    end
+    
     it "should make observing User auto-follow Roll even if this Message has already been posted to a Roll" do
       lambda {
         GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
@@ -190,8 +202,10 @@ describe GT::SocialSorter do
       new_observer.following_roll?(@existing_user.public_roll).should == false
       lambda {
         lambda {
+          GT::Framer.should_receive(:backfill_dashboard_entries)
           GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, new_observer)
         }.should_not change { Frame.count }
+      # since we intercept backfill above, still only expecting 1 new dashbaord entry
       }.should change { new_observer.dashboard_entries.count } .by 1
     end
     

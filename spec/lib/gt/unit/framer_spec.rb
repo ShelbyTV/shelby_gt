@@ -464,8 +464,8 @@ describe GT::Framer do
       @roll_creator = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @roll_creator)
       
-      @frame3 = Factory.create(:frame, :roll => @roll, :score => 10)
-      @frame2 = Factory.create(:frame, :roll => @roll, :score => 11)
+      @frame3 = Factory.create(:frame, :roll => @roll, :score => 10, :_id => BSON::ObjectId.from_time(1.week.ago, :unique => true))
+      @frame2 = Factory.create(:frame, :roll => @roll, :score => 11, :_id => BSON::ObjectId.from_time(2.days.ago, :unique => true))
       @frame1 = Factory.create(:frame, :roll => @roll, :score => 12)
       @frame0 = Factory.create(:frame, :roll => @roll, :score => 13)
       
@@ -488,6 +488,14 @@ describe GT::Framer do
       @user.dashboard_entries.count.should == 2
       @user.dashboard_entries[0].frame.should == @frame0
       @user.dashboard_entries[1].frame.should == @frame1
+    end
+    
+    it "should give the new DashboardEntries backdated id's" do
+      GT::Framer.backfill_dashboard_entries(@user, @roll, 4)
+      @user.dashboard_entries[0].created_at.should == @frame0.created_at
+      @user.dashboard_entries[1].created_at.should == @frame1.created_at
+      @user.dashboard_entries[2].created_at.should == @frame2.created_at
+      @user.dashboard_entries[3].created_at.should == @frame3.created_at
     end
     
     it "should backfill even if there aren't enough Frames" do

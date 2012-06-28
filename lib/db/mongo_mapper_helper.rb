@@ -2,7 +2,7 @@ module MongoMapper
   class Helper
     
     def self.drop_all_dbs
-      [DashboardEntry, DeeplinkCache, Frame, Conversation, Roll, User, Video].each do |model|
+      [DashboardEntry, DeeplinkCache, Frame, Conversation, Roll, User, Video, GtInterest].each do |model|
         model.database.collections.select {|c| c.name !~ /system/ }.each(&:drop)
       end
     end

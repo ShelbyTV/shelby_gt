@@ -166,17 +166,17 @@ module GT
       
       res = []
       roll.frames.sort(:score.desc).limit(frame_count).all.reverse.each do |frame|
-        res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user)
+        res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user, :backdate => true)
       end
       
       return res.flatten
     end
     
-    def self.create_dashboard_entry(frame, action, user)
+    def self.create_dashboard_entry(frame, action, user, options={})
       raise ArgumentError, "must supply a Frame" unless frame.is_a? Frame
       raise ArgumentError, "must supply an action" unless action
       raise ArgumentError, "must supply a User" unless user.is_a? User
-      self.create_dashboard_entries(frame, action, [user.id])
+      self.create_dashboard_entries(frame, action, [user.id], options)
     end
     
     private
@@ -229,10 +229,11 @@ module GT
         return new_frame
       end
       
-      def self.create_dashboard_entries(frame, action, user_ids)
+      def self.create_dashboard_entries(frame, action, user_ids, options={})
         entries = []
         user_ids.uniq.each do |user_id|
           dbe = DashboardEntry.new
+          dbe.id = BSON::ObjectId.from_time(frame.created_at, :unique => true) if options[:backdate]
           dbe.user_id = user_id
           dbe.roll = frame.roll
           dbe.frame = frame

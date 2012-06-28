@@ -83,6 +83,23 @@ describe V1::FrameController do
       assigns(:status).should eq(404)
     end
     
+    it "should not allow you to get frame for non-public roll w/o being signed in" do
+      @roll.public = false
+      sign_out @u1
+      
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
+      get :index, :format => :json
+      assigns(:status).should eq(404)
+    end
+
+    # Users can share frame from private roll...
+    it "should allow user to get frames from private roll so long as they specify since_id" do
+      @roll.creator = Factory.create(:user); @roll.public = false; @roll.save
+      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
+      get :index, :since_id => "whatever", :format => :json
+      assigns(:status).should eq(200)
+    end
+    
     it "should allow you to get frame for public roll w/o being signed in" do
       sign_out @u1
       
@@ -91,15 +108,6 @@ describe V1::FrameController do
       assigns(:roll).should eq(@roll)
       assigns(:frames).should eq([@frame])
       assigns(:status).should eq(200)
-    end
-    
-    it "should not allow you to get frame for non-public roll w/o being signed in" do
-      @roll.public = false
-      sign_out @u1
-      
-      Frame.stub_chain(:sort, :limit, :skip, :where, :all).and_return([@frame])
-      get :index, :format => :json
-      assigns(:status).should eq(404)
     end
     
     it "returns 404 if cant find roll" do
