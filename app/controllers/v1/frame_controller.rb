@@ -30,7 +30,10 @@ class V1::FrameController < ApplicationController
 
       @roll = Roll.find(params[:roll_id])
       
-      if @roll and @roll.viewable_by?(current_user)
+      # User's can currently tweet out links to frames on private rolls.  Thus, we need to show them the roll.
+      # The better UX is probably to show them a "locked roll" with just the requested frame, but that's future work.
+      # For now, just removing the viewable constraint
+      if @roll and (@roll.viewable_by?(current_user) or params[:since_id])
         # disabling garbage collection here because we are loading a whole bunch of documents, and my hypothesis (HIS) is 
         #  it is slowing down this api request
         GC.disable
