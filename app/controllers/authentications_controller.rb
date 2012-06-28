@@ -13,10 +13,9 @@ class AuthenticationsController < ApplicationController
     user = User.first( :conditions => { 'authentications.provider' => omniauth['provider'], 'authentications.uid' => omniauth['uid'] } )
 
 
-
 =begin    
 #TODO: ---- Current user with two seperate accounts
-    if user_signed_in? and  and user != current_user
+    if current_user and user and user != current_user
       # make sure they want to merge "user" into "current_user"
       session[:user_to_merge_in_id] = user.id.to_s
       
@@ -42,7 +41,7 @@ class AuthenticationsController < ApplicationController
       end
       
 # ---- Adding new authentication to current user
-    elsif user_signed_in?
+    elsif current_user
       new_auth = GT::UserManager.add_new_auth_from_omniauth(current_user, omniauth)
       
       if new_auth
