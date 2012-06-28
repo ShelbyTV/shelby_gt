@@ -1,4 +1,5 @@
 class V1::UserController < ApplicationController  
+  require 'user_manager'
 
   extend NewRelic::Agent::MethodTracer
   
@@ -127,7 +128,7 @@ class V1::UserController < ApplicationController
   # Returns whether the users' oauth tokens are valid
   #   REQUIRES AUTHENTICATION
   #
-  # [GET] /v1/user/:id/valid_token
+  # [GET] /v1/user/:id/is_token_valid
   # 
   # @param [Required, String] id The id of the user
   # @param [Required, String] provider provider that want to check on
@@ -137,18 +138,9 @@ class V1::UserController < ApplicationController
         return render_error(404, "this route only currently supports facebook as a provider.")
       end
       
-      if a = current_user.first_provider(params[:provider]) and a.is_a? Authentication
-        graph = Koala::Facebook::API.new(a.oauth_token)
-        begin
-          graph.get_object("me")
-          @status, @token_valid = 200, true
-        rescue Koala::Facebook::APIError => e
-          if e.fb_error_type == "OAuthException"
-            @status, @token_valid = 200, false
-          end
-        rescue => e
-          Rails.logger.info "[V1::UserController] Unknown error checking validity of users OAuth tokens"
-        end
+      if auth = current_user.first_provider(params[:provider]) and auth.is_a? Authentication
+        @token_valid = GT::UserManager.verify_users_facebook(auth.oauth_token) ? true : false
+        @status = 200
       else
         return render_error(404, "This user does not have a #{params[:provider]} authentication to check on")
       end

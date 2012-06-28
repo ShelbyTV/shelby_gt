@@ -231,37 +231,37 @@ module GT
       #this happens in a before_save, but doesn't hurt to do it here
       user.downcase_nickname = user.nickname.downcase
     end
+
+    def self.verify_users_twitter(oauth_token, oauth_secret)
+      return false unless oauth_token and oauth_secret
+      
+      begin
+        c = Grackle::Client.new(:auth => {
+            :type => :oauth,
+            :consumer_key => Settings::Twitter.consumer_key, :consumer_secret => Settings::Twitter.consumer_secret,
+            :token => oauth_token, :token_secret => oauth_secret
+          })
+        #this will throw if user isn't auth'd
+        c.statuses.home_timeline? :count => 1
+        return true
+      rescue Grackle::TwitterError => e
+        return false
+      end
+    end
+    
+    def self.verify_users_facebook(oauth_token)
+      return false unless oauth_token
+      
+      begin
+        graph = Koala::Facebook::API.new(oauth_token)
+        graph.get_connections("me","permissions")
+        return true
+      rescue Koala::Facebook::APIError => e
+        return false
+      end
+    end
     
     private
-    
-      def self.verify_users_twitter(auth, oauth_token, oauth_secret)
-        return false unless auth and oauth_token and oauth_secret
-        
-        begin
-          c = Grackle::Client.new(:auth => {
-              :type => :oauth,
-              :consumer_key => Settings::Twitter.consumer_key, :consumer_secret => Settings::Twitter.consumer_secret,
-              :token => oauth_token, :token_secret => oauth_secret
-            })
-          #this will throw if user isn't auth'd
-          c.statuses.home_timeline? :count => 1
-          return true
-        rescue Grackle::TwitterError => e
-          return false
-        end
-      end
-      
-      def self.verify_users_facebook(auth, oauth_token)
-        return false unless auth and oauth_token
-        
-        begin
-          graph = Koala::Facebook::API.new(oauth_token)
-          graph.get_connections("me","permissions")
-          return true
-        rescue Koala::Facebook::APIError => e
-          return false
-        end
-      end
       
       # Takes an omniauth hash to build one user, prefs, and an auth to go along with it
       def self.build_new_user_and_auth(omniauth)
