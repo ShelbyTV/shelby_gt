@@ -58,7 +58,7 @@ describe V1::UserController do
     end
     
     it "route for getting validity of users fb auth token" do
-      { :get => "/v1/user/1/valid_token" }.should route_to(
+      { :get => "/v1/user/1/is_token_valid" }.should route_to(
         :controller => "v1/user",
         :action => "valid_token",
         :format => "json",
