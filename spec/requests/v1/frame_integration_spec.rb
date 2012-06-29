@@ -72,16 +72,29 @@ describe 'v1/frame' do
       end
       
       context 'all frames in a roll' do
+        before(:each) do
+          @frames_roll = Factory.create(:roll, :creator_id => @u1.id)
+          @f.roll_id = @frames_roll.id; @f.save
+          Factory.create(:frame, :roll_id => @frames_roll.id)
+        end
+
         it "should return frame info on success" do
-          roll = Factory.create(:roll, :creator_id => @u1.id)
-          @f.roll_id = roll.id; @f.save
-          Factory.create(:frame, :roll_id => roll.id)
-          get '/v1/roll/'+roll.id.to_s+'/frames'
+          get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
           
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/creator_id")
           parse_json(response.body)["result"]["creator_id"].should eq(@u1.id.to_s)
           response.body.should have_json_size(2).at_path("result/frames")
+        end
+
+        it "should contain first frame thumb url" do
+          @frames_roll.first_frame_thumbnail_url = 'http://www.example.com/images/image.png'
+          @frames_roll.save
+          get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/first_frame_thumbnail_url")
+          parse_json(response.body)["result"]["first_frame_thumbnail_url"].should eq(@frames_roll.first_frame_thumbnail_url)
         end
         
         context "upvoters" do
