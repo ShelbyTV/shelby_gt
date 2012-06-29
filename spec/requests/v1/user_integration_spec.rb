@@ -148,15 +148,15 @@ describe 'v1/user' do
       context "valid_token route" do
         
         it "should render an error if user doen't have the specified authentication" do
-          get '/v1/user/'+@u1.id+'/valid_token?provider=facebook'
+          get '/v1/user/'+@u1.id+'/is_token_valid?provider=facebook'
           response.body.should be_json_eql(404).at_path("status")
         end
               
         it "should return error if a provider is not specified or is not supporte" do
-          get '/v1/user/'+@u1.id+'/valid_token'
+          get '/v1/user/'+@u1.id+'/is_token_valid'
           response.body.should be_json_eql(404).at_path("status")
           
-          get '/v1/user/'+@u1.id+'/valid_token?provider=funckymoney'
+          get '/v1/user/'+@u1.id+'/is_token_valid?provider=funckymoney'
           response.body.should be_json_eql(404).at_path("status")
         end
       end
