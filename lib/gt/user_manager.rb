@@ -205,8 +205,8 @@ module GT
       
       # Check if the given token and secret allow us access to the user's secure data...
       case provider
-      when "twitter" then return verify_users_twitter(auth, oauth_token, oauth_secret)
-      when "facebook" then return verify_users_facebook(auth, oauth_token)
+      when "twitter" then return verify_users_twitter(oauth_token, oauth_secret)
+      when "facebook" then return verify_users_facebook(oauth_token)
       else return false
       end
       
