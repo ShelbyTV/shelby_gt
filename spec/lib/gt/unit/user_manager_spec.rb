@@ -765,7 +765,7 @@ describe GT::UserManager do
     it "should verify w/ twitter externally if token/secret don't match" do
       token = "fake_token"
       secret = "fake_secret"
-      GT::UserManager.should_receive(:verify_users_twitter).with(@twt_auth, token, secret).and_return(true)
+      GT::UserManager.should_receive(:verify_users_twitter).with(token, secret).and_return(true)
           
       GT::UserManager.verify_user(@user, "twitter", @twt_auth.uid, token, secret).should == true
     end
@@ -778,7 +778,7 @@ describe GT::UserManager do
   
     it "should verify w/ FB externally if token/secret don't match" do
       token = "fake_token"
-      GT::UserManager.should_receive(:verify_users_facebook).with(@fb_auth, token).and_return(true)
+      GT::UserManager.should_receive(:verify_users_facebook).with(token).and_return(true)
           
       GT::UserManager.verify_user(@user, "facebook", @fb_auth.uid, token).should == true
     end
