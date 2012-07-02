@@ -34,10 +34,10 @@ describe GT::OpenGraph do
   end
   
   it "should post a comment action" do
-    GT::OpenGraph.stub(:post_to_og).with(@u, 'shelbytv:comment', og_object, nil).and_return(true)
+    GT::OpenGraph.stub(:post_to_og).with(@u, 'shelbytv:comment', @og_object, nil).and_return(true)
     GT::OpenGraph.send_action('comment', @u, {:conversation => @c, :message => @m})
   end
-  
+    
   it "should not post if user doesnt have facbeook" do
     @u.authentications.first.provider = "shelby"
     @u.save

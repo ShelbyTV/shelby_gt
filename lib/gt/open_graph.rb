@@ -4,30 +4,32 @@ module GT
     def self.send_action(action, user, object, expires_in=nil)
       raise ArgumentError, "must supply user" unless user.is_a?(User)
       raise ArgumentError, "must supply an action" unless action.is_a?(String)
-      raise ArgumentError, "must supply a frame or roll" unless object.is_a?(Frame) or object.is_a?(Roll) or object.is_a?(Hash)
+      raise ArgumentError, "must supply a frame or hash with conversation and message" unless object.is_a?(Frame) or (object.is_a?(Hash) and (object.has_key?(:message) and object.has_key?(:conversation)))
       
       Rails.logger.info("[GT::OpenGraph] Would have sent OG action: #{action}") unless "production" == Rails.env
       
       # make sure the user wants us to send actions to facebook open graph
-      return unless user.has_provider("facebook") and user.preferences.can_post_to_open_graph?
-      
-      og_url = "http://gt.shelby.tv/roll/#{object.roll.id.to_s}/frame/#{object.id.to_s}"
-      og_object = {:video => og_url}
-      
+      return unless (user.nickname == "henry") and user.has_provider("facebook") and user.preferences.can_post_to_open_graph?
+            
       case action
       when 'watch'
+        og_url = object.permalink
         og_action = "video.watches"
       when 'favorite'
+        og_url = object.permalink
         og_action = "shelbytv:favorite"
       when 'roll'
+        og_url = object.permalink
         og_action = "shelbytv:roll"
       when 'comment'
         conversation = object[:conversation]
         msg = object[:message]
-        og_url = "http://gt.shelby.tv/roll/#{conversation.frame.roll.id.to_s}/frame/#{conversation.frame.id.to_s}"
-        og_object[:video] = og_url
+        frame = object[:conversation].frame
+        og_url = frame.permalink
         og_action = "shelbytv:comment"
       end
+
+      og_object = {:video => og_url}
       
       post_to_og(user, og_action, og_object, expires_in)
     end
@@ -49,7 +51,7 @@ module GT
           return true
         rescue => e
           Rails.logger.error("[FB OG: ERROR] #{e}")
-          return nil
+          return false
         end
         
       end

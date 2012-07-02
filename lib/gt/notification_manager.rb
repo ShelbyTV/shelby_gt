@@ -1,3 +1,5 @@
+require 'open_graph'
+
 module GT
   class NotificationManager
     
@@ -39,9 +41,10 @@ module GT
       NotificationMailer.reroll_notification(new_frame, old_frame).deliver
     end
     
-    def self.send_new_message_notifications(c, new_message)
+    def self.send_new_message_notifications(c, new_message, user)
       raise ArgumentError, "must supply Conversation" unless c.is_a?(Conversation)
       raise ArgumentError, "must supply Message" unless new_message.is_a?(Message)
+      raise ArgumentError, "must supply Message" unless user.is_a?(User)
       
       return false unless frame = c.frame
       
@@ -62,8 +65,8 @@ module GT
       
       users_to_email.each { |u| NotificationMailer.comment_notification(u, new_message.user, frame, new_message).deliver unless u.primary_email.blank? }
       
-      # TODO: send OG action to FB
-      # ShelbyGT_EM.next_tick { GT::OpenGraph.send_message_action('comment', current_user, {:conversation => c, :message => @new_message}) }
+      # send OG action to FB
+      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('comment', user, {:conversation => c, :message => new_message}) }
 
     end
 

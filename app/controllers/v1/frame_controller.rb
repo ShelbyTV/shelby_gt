@@ -421,7 +421,7 @@ class V1::FrameController < ApplicationController
           new_message = GT::MessageManager.build_message(:user => current_user, :public => true, :text => text)
           frame.conversation.messages << new_message
           if frame.conversation.save
-            ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(frame.conversation, new_message) }
+            ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(frame.conversation, new_message, current_user) }
             StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)
           end
           
