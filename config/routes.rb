@@ -125,6 +125,8 @@ ShelbyGt::Application.routes.draw do
   
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user
   
+  resources :cohort_entrance, :only => [:show]
+  
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   
   root :to => 'authentications#index'
