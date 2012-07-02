@@ -10,7 +10,9 @@ module GT
       
       # make sure the user wants us to send actions to facebook open graph
       return unless (user.nickname == "henry") and user.has_provider("facebook") and user.preferences.can_post_to_open_graph?
-            
+      
+      og_object = {}
+      
       case action
       when 'watch'
         og_url = object.permalink
@@ -27,9 +29,10 @@ module GT
         frame = object[:conversation].frame
         og_url = frame.permalink
         og_action = "shelbytv:comment"
+        og_object[:message] = msg.text
       end
 
-      og_object = {:video => og_url}
+      og_object[:video] = og_url
       
       post_to_og(user, og_action, og_object, expires_in)
     end
