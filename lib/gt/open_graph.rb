@@ -30,6 +30,7 @@ module GT
         og_url = frame.permalink
         og_action = "shelbytv:comment"
         og_object[:message] = msg.text
+        og_object[:roll] = frame.roll.permalink
       end
 
       og_object[:video] = og_url
