@@ -343,6 +343,10 @@ class V1::FrameController < ApplicationController
             @frame = frame_to_re_roll.re_roll(current_user, roll)
             @frame = @frame[:frame]
             StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'], current_user.id, 'frame_re_roll', request)
+            
+            # send email notification in a non-blocking manor
+            #ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_reroll_notification(frame_re_roll, @frame) }
+            
             @status = 200
           else
             return render_error(403, "that user cant post to that roll")
@@ -420,7 +424,7 @@ class V1::FrameController < ApplicationController
           new_message = GT::MessageManager.build_message(:user => current_user, :public => true, :text => text)
           frame.conversation.messages << new_message
           if frame.conversation.save
-            ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(frame.conversation, new_message) }
+            ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(frame.conversation, new_message, current_user) }
             StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)
           end
           

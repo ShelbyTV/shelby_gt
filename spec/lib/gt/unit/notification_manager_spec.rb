@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 require 'notification_manager'
+require 'open_graph'
 
 describe GT::NotificationManager do
 
@@ -75,7 +76,7 @@ describe GT::NotificationManager do
     
     it "should email Frame creator even if they didn't post a message" do
       lambda {
-        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message, @user2)
       }.should change(ActionMailer::Base.deliveries,:size).by(1)
     end
     
@@ -84,7 +85,7 @@ describe GT::NotificationManager do
       @frame_creator.save
       
       lambda {
-        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message, @user2)
       }.should change(ActionMailer::Base.deliveries,:size).by(1)
     end
     
@@ -94,7 +95,7 @@ describe GT::NotificationManager do
       @conversation.messages << Factory.create(:message, :text => "s", :user => Factory.create(:user))
       
       lambda {
-        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message, @user2)
       }.should change(ActionMailer::Base.deliveries,:size).by(3)
     end
     
@@ -103,7 +104,7 @@ describe GT::NotificationManager do
       @conversation.messages << Factory.create(:message, :text => "s", :user => Factory.create(:user, :primary_email => nil))
       
       lambda {
-        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message, @user2)
       }.should change(ActionMailer::Base.deliveries,:size).by(1)
     end
     
@@ -115,7 +116,7 @@ describe GT::NotificationManager do
       @conversation.messages << Factory.create(:message, :text => "s", :user => u)
       
       lambda {
-        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message, @user2)
       }.should change(ActionMailer::Base.deliveries,:size).by(1)
     end
     
@@ -126,7 +127,7 @@ describe GT::NotificationManager do
       @roll.add_follower(Factory.create(:user))
       
       lambda {
-        GT::NotificationManager.send_new_message_notifications(@conversation, @message)
+        GT::NotificationManager.send_new_message_notifications(@conversation, @message, @user2)
       }.should change(ActionMailer::Base.deliveries,:size).by(3)
     end
     

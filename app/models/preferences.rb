@@ -11,13 +11,13 @@ class Preferences
   key :comment_notifications,       Boolean, :default => true
   key :reroll_notifications,        Boolean, :default => true  
   key :roll_activity_notifications, Boolean, :default => true
-  key :quiet_mode,                  Boolean
+  key :open_graph_posting,          Boolean
   
   
-  def enabled_quiet_mode?
-    if self.quiet_mode == true
+  def can_post_to_open_graph?
+    if self.open_graph_posting == true
       return true
-    elsif self.quiet_mode == false
+    elsif self.open_graph_posting == false
       return false
     else
       return nil
