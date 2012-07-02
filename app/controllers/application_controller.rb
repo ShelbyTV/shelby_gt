@@ -39,7 +39,7 @@ class ApplicationController < ActionController::Base
   private
   
     def debug_cookies_and_session
-      Rails.logger.debug "Request: cookies: #{cookies.inspect} --//-- session: #{session.inspect}"
+      Rails.logger.info "Request: cookies: #{cookies.inspect} --//-- session: #{session.inspect}"
     end
     
     # === These headers are set to allow cross site access and cookies to be sent via ajax
