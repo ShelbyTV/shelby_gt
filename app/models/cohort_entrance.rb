@@ -19,7 +19,7 @@ class CohortEntrance
   
   key :used_by, Array, :typecase => "ObjectId", :abbr => :c
   
-  def url() "#{Settings::ShelbyAPI.web_root}/cohort_entrance/#{self.url}"; end
+  def url() "#{Settings::ShelbyAPI.web_root}/cohort_entrance/#{self.code}"; end
   
   def created_at() self.id.generation_time; end
   

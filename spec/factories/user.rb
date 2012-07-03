@@ -7,6 +7,10 @@ Factory.sequence :uid do |n|
   "12#{n}"
 end
 
+Factory.sequence :primary_email do |n|
+  "email#{n}@gmail.com"
+end
+
 Factory.define :authentication do |a|
   a.name          "name"
   a.nickname      "nickname"
@@ -19,7 +23,7 @@ end
 Factory.define :user do |user|
   user.nickname                 { Factory.next :nickname }
   user.authentications          { [FactoryGirl.create(:authentication)] }
-  user.primary_email "email@domain.com"
+  user.primary_email            { Factory.next :primary_email }
   user.gt_enabled true
   user.preferences  Preferences.new
 end

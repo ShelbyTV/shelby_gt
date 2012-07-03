@@ -54,12 +54,12 @@ Devise.setup do |config|
   # Configure which authentication keys should be case-insensitive.
   # These keys will be downcased upon creating or modifying a user and when used
   # to authenticate or find a user. Default is :email.
-  config.case_insensitive_keys = [ :email ]
+  config.case_insensitive_keys = [ :primary_email ]
 
   # Configure which authentication keys should have whitespace stripped.
   # These keys will have whitespace before and after removed upon creating or
   # modifying a user and when used to authenticate or find a user. Default is :email.
-  config.strip_whitespace_keys = [ :email ]
+  config.strip_whitespace_keys = [ :primary_email ]
 
   # Tell if authentication through request.params is enabled. True by default.
   # It can be set to an array that will enable params authentication only for the
@@ -98,10 +98,10 @@ Devise.setup do |config|
   # Limiting the stretches to just one in testing will increase the performance of
   # your test suite dramatically. However, it is STRONGLY RECOMMENDED to not use
   # a value less than 10 in other environments.
-  config.stretches = Rails.env.test? ? 1 : 10
+  config.stretches = (Rails.env.test? or Rails.env.development?) ? 1 : 13
 
   # Setup a pepper to generate the encrypted password.
-  # config.pepper = "a6bbf2a9957d8a153406ab927c9279d916f025e9d95e9ea33a240cf082e7438cda192ee72d3ba1b1f5e4dbf8c22a7580e81beaecc35595555a71962dc7093698"
+  config.pepper = "a6bbf2a9957d8a153406ab927c9279d916f025e9d95e9ea33a240cccc2e7438cda192ee72d3ba1b1f5e4fff8c22a7580e81beaecc35aaa555a71962dc7093698"
 
   # ==> Configuration for :confirmable
   # A period that the user is allowed to access the website even without
@@ -175,7 +175,7 @@ Devise.setup do |config|
   # ==> Configuration for :recoverable
   #
   # Defines which key will be used when recovering the password for an account
-  # config.reset_password_keys = [ :email ]
+  config.reset_password_keys = [ :primary_email ]
 
   # Time interval you can reset your password with a reset password key.
   # Don't put a too small interval or your users won't have the time to

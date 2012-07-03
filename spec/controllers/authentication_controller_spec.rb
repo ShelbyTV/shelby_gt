@@ -10,42 +10,84 @@ describe AuthenticationsController do
     end
   
     context "gt_enabled, non-faux user, just signing in" do
-      before(:each) do
-        request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
-        @u = Factory.create(:user, :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => ["init"])
-        User.stub(:first).and_return(@u)
+      context "via omniauth" do
+        before(:each) do
+          request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
+          @u = Factory.create(:user, :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => ["init"])
+          User.stub(:first).and_return(@u)
       
-        GT::UserManager.should_receive :start_user_sign_in
-      end
+          GT::UserManager.should_receive :start_user_sign_in
+        end
     
-      it "should simply sign the user in" do
-        get :create
-        assigns(:current_user).should == @u
-        cookies[:_shelby_gt_common].should_not == nil
-        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-      end
+        it "should simply sign the user in" do
+          get :create
+          assigns(:current_user).should == @u
+          cookies[:_shelby_gt_common].should_not == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        end
       
-      it "should add cohorts if they used a CohortEntrance link" do
-        cohorts = ["a", "b", "c"]
-        expected_cohorts = @u.cohorts + cohorts
-        cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
-        session[:cohort_entrance_id] = cohort_entrance.id
+        it "should add cohorts if they used a CohortEntrance link" do
+          cohorts = ["a", "b", "c"]
+          expected_cohorts = @u.cohorts + cohorts
+          cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
+          session[:cohort_entrance_id] = cohort_entrance.id
         
-        get :create
-        assigns(:current_user).cohorts.should == expected_cohorts
-        @u.reload.cohorts.should == expected_cohorts
-      end
+          get :create
+          assigns(:current_user).cohorts.should == expected_cohorts
+          @u.reload.cohorts.should == expected_cohorts
+        end
     
-      it "should handle redirect via session on sign in" do
-        session[:return_url] = (url = "http://danspinosa.tv")
-        get :create
-        assigns(:opener_location).should == url
-      end
+        it "should handle redirect via session on sign in" do
+          session[:return_url] = (url = "http://danspinosa.tv")
+          get :create
+          assigns(:opener_location).should == url
+        end
     
-      it "should handle redirect via omniauth on sign in" do
-        request.env['omniauth.origin'] = (url = "http://danspinosa.tv")
-        get :create
-        assigns(:opener_location).should == url
+        it "should handle redirect via omniauth on sign in" do
+          request.env['omniauth.origin'] = (url = "http://danspinosa.tv")
+          get :create
+          assigns(:opener_location).should == url
+        end
+      end
+      
+      context "via email/password" do
+        before(:each) do
+          @password = "pass"
+          @user = Factory.create(:user, :password => @password, :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => ["init"])
+        end
+        
+        it "should sign in if nickname & password is correct" do
+          User.should_receive(:find_by_nickname).with(@user.nickname).and_return @user
+          GT::UserManager.should_receive :start_user_sign_in
+          
+          get :create, :username => @user.nickname, :password => @password
+          assigns(:current_user).should == @user
+        end
+        
+        it "should sign in if email & password is correct" do
+          User.should_receive(:find_by_primary_email).with(@user.primary_email).and_return @user
+          GT::UserManager.should_receive :start_user_sign_in
+          
+          get :create, :username => @user.primary_email, :password => @password
+          assigns(:current_user).should == @user
+        end
+        
+        it "should return error and redirect with error query params if password is incorrect" do
+          session[:return_url] = (url = "http://wherever.com")
+          User.should_receive(:find_by_primary_email).with(@user.primary_email).and_return @user
+          
+          get :create, :username => @user.primary_email, :password => @password + "WRONG"
+          assigns(:current_user).should == nil
+          assigns(:opener_location).start_with?(url+"?").should == true
+        end
+        
+        it "should return error and redirect with error query params if username is incorrect" do
+          session[:return_url] = (url = "http://wherever.com")
+          User.should_receive(:find_by_primary_email).with(@user.primary_email).and_return nil
+          get :create, :username => @user.primary_email, :password => @password
+          assigns(:current_user).should == nil
+          assigns(:opener_location).start_with?(url+"?").should == true
+        end
       end
 
     end
@@ -76,89 +118,135 @@ describe AuthenticationsController do
     
     end
   
-    context "New User signing up!" do
-      before(:each) do
-        request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
-        User.stub(:first).and_return(nil)
-      end
+    context "New User signing up" do
+      context "no permissions" do
+        before(:each) do
+          request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
+          User.stub(:first).and_return(nil)
+        end
 
-      it "should reject without additional permissions" do
-        get :create
-        assigns(:opener_location).should == "#{Settings::ShelbyAPI.web_root}/?access=nos"
+        it "should reject without additional permissions" do
+          get :create
+          assigns(:opener_location).should == "#{Settings::ShelbyAPI.web_root}/?access=nos"
+        end
       end
     
-      it "should accept when GtInterest found" do
-        gt_interest = Factory.create(:gt_interest)
-        cookies[:gt_access_token] = gt_interest.id.to_s
-      
-        u = Factory.create(:user)
-        GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
-      
-        get :create
-        assigns(:current_user).should == u
-        assigns(:current_user).gt_enabled.should == true
-        cookies[:_shelby_gt_common].should_not == nil
-        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-      end
-    
-      it "should be able to redirect when GtInterest found" do
-        gt_interest = Factory.create(:gt_interest)
-        cookies[:gt_access_token] = gt_interest.id.to_s
-      
-        u = Factory.create(:user)
-        GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
-      
-        session[:return_url] = (url = "http://danspinosa.tv")
-        get :create
-        assigns(:opener_location).should == url
-      end
-    
-      it "should accept when invited to a roll" do
-        cookies[:gt_roll_invite] = "uid,emial,rollid"
-        User.should_receive(:find).with("uid").and_return Factory.create(:user, :gt_enabled => true)
-        Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
-        GT::InvitationManager.should_receive :private_roll_invite
-      
-        u = Factory.create(:user)
-        GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
-      
-        get :create
-        assigns(:current_user).should == u
-        assigns(:current_user).gt_enabled.should == true
-        cookies[:_shelby_gt_common].should_not == nil
-        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-      end
-    
-      it "should be able to redirect when invited to a roll" do
-        cookies[:gt_roll_invite] = "uid,emial,rollid"
-        User.should_receive(:find).with("uid").and_return Factory.create(:user, :gt_enabled => true)
-        Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
-        GT::InvitationManager.should_receive :private_roll_invite
-      
-        u = Factory.create(:user)
-        GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
-      
-        session[:return_url] = (url = "http://danspinosa.tv")
-        get :create
-        assigns(:opener_location).should == url
-      end
-      
-      it "should accept with CohortEntrance, set cohorts" do
-        cohorts = ["a", "b", "c"]
-        cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
-        session[:cohort_entrance_id] = cohort_entrance.id
+      context "via omniauth" do    
+        before(:each) do
+          request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
+        end
         
-        u = Factory.create(:user)
-        GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
+        it "should accept when GtInterest found" do
+          gt_interest = Factory.create(:gt_interest)
+          cookies[:gt_access_token] = gt_interest.id.to_s
       
-        get :create
-        assigns(:current_user).should == u
-        assigns(:current_user).gt_enabled.should == true
-        cookies[:_shelby_gt_common].should_not == nil
-        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+          u = Factory.create(:user)
+          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
+      
+          get :create
+          assigns(:current_user).should == u
+          assigns(:current_user).gt_enabled.should == true
+          cookies[:_shelby_gt_common].should_not == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        end
+    
+        it "should be able to redirect when GtInterest found" do
+          gt_interest = Factory.create(:gt_interest)
+          cookies[:gt_access_token] = gt_interest.id.to_s
+      
+          u = Factory.create(:user)
+          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
+      
+          session[:return_url] = (url = "http://danspinosa.tv")
+          get :create
+          assigns(:opener_location).should == url
+        end
+    
+        it "should accept when invited to a roll" do
+          cookies[:gt_roll_invite] = "uid,emial,rollid"
+          User.should_receive(:find).with("uid").and_return Factory.create(:user, :gt_enabled => true)
+          Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
+          GT::InvitationManager.should_receive :private_roll_invite
+      
+          u = Factory.create(:user)
+          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
+      
+          get :create
+          assigns(:current_user).should == u
+          assigns(:current_user).gt_enabled.should == true
+          cookies[:_shelby_gt_common].should_not == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        end
+    
+        it "should be able to redirect when invited to a roll" do
+          cookies[:gt_roll_invite] = "uid,emial,rollid"
+          User.should_receive(:find).with("uid").and_return Factory.create(:user, :gt_enabled => true)
+          Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
+          GT::InvitationManager.should_receive :private_roll_invite
+      
+          u = Factory.create(:user)
+          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
+      
+          session[:return_url] = (url = "http://danspinosa.tv")
+          get :create
+          assigns(:opener_location).should == url
+        end
+      
+        it "should accept with CohortEntrance, set cohorts" do
+          cohorts = ["a", "b", "c"]
+          cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
+          session[:cohort_entrance_id] = cohort_entrance.id
         
-        assigns(:current_user).cohorts.should == cohorts
-        u.reload.cohorts.should == cohorts
+          u = Factory.create(:user)
+          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
+      
+          get :create
+          assigns(:current_user).should == u
+          assigns(:current_user).gt_enabled.should == true
+          cookies[:_shelby_gt_common].should_not == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        
+          assigns(:current_user).cohorts.should == cohorts
+          u.reload.cohorts.should == cohorts
+        end
+      end
+    
+      context "via email / password" do
+        it "should accept with CohortEntrance, set cohorts" do
+          cohorts = ["a", "b", "c"]
+          cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
+          session[:cohort_entrance_id] = cohort_entrance.id
+        
+          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [])
+          GT::UserManager.should_receive(:create_new_user_from_params).and_return u
+          get :create, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
+      
+          assigns(:current_user).should == u
+          assigns(:current_user).gt_enabled.should == true
+          cookies[:_shelby_gt_common].should_not == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        
+          assigns(:current_user).cohorts.should == cohorts
+          u.reload.cohorts.should == cohorts
+        end
+        
+        it "should redirect to cohort entrance, with errors, when user creation fails" do
+          cohorts = ["a", "b", "c"]
+          cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
+          session[:cohort_entrance_id] = cohort_entrance.id
+        
+          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [])
+          u2 = User.new(:nickname => u.nickname)
+          u2.save
+          u2.valid?.should == false
+          GT::UserManager.should_receive(:create_new_user_from_params).and_return u2
+          get :create, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
+          
+          assigns(:current_user).should == nil
+          assigns(:opener_location).start_with?(cohort_entrance.url+"?").should == true
+        end
+        
+        it "should redirect to whatever is set when we launch"
       end
     
     end

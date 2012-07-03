@@ -3,8 +3,8 @@ require 'spec_helper'
 describe NotificationMailer do
   describe 'comment notifications' do
     before(:all) do
-      @user_to = Factory.create(:user, :primary_email => 'your@mom.com')
-      @user_from = Factory.create(:user, :primary_email => 'my@mom.com')
+      @user_to = Factory.create(:user)
+      @user_from = Factory.create(:user)
       @comment = "how much would a wood chuck chuck..."
       @message = Factory.create(:message, :text => @comment, :user => @user_to)
       @conversation = Factory.create(:conversation, :messages => [@message])

@@ -17,7 +17,7 @@ module GT
       if user.save
         # Need to ensure special rolls after saving user b/c of the way add_follower works
         user.gt_enable!
-        #additional meta-data for faux user public roll
+        #additional meta-data for user's public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
         
         GT::PredatorManager.initialize_video_processing(user, auth)
@@ -30,12 +30,33 @@ module GT
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
         
         Rails.logger.error "[GT::UserManager#create_new_user_from_omniauth] Failed to create user: #{user.errors.full_messages.join(',')} / user looks like: #{user.inspect}"
-        return user.errors
+        return user
+      end
+    end
+    
+    # Creats a real User on signup w/ email, password
+    def self.create_new_user_from_params(params)
+      user = build_new_user_from_params(params)
+      
+      if user.save
+        # Need to ensure special rolls after saving user b/c of the way add_follower works
+        user.gt_enable!
+        #additional meta-data for user's public roll
+        user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
+        
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'], user.id, 'signup')
+        
+        return user
+      else
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
+        
+        Rails.logger.error "[GT::UserManager#create_new_user_from_params] Failed to create user: #{user.errors.full_messages.join(',')} / user looks like: #{user.inspect}"
+        return user
       end
     end
     
     # Things that happen when a user signs in.
-    def self.start_user_sign_in(user, options)
+    def self.start_user_sign_in(user, options={})
       omniauth = options[:omniauth]
       provider = omniauth ? omniauth['provider'] : options[:provider]
       uid = omniauth ? omniauth['uid'] : options[:uid]
@@ -138,22 +159,24 @@ module GT
     end
     
     # Handles faux User becoming *real* User
-    def self.convert_faux_user_to_real(user, omniauth)
-      # create new auth and drop old auth
-      user.authentications = []
+    def self.convert_faux_user_to_real(user, omniauth=nil)
+      if omniauth
+        # create new auth and drop old auth
+        user.authentications = []
       
-      new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
+        new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
       
-      GT::AuthenticationBuilder.normalize_user_info(user, new_auth)
-      ensure_valid_unique_nickname!(user)
+        GT::AuthenticationBuilder.normalize_user_info(user, new_auth)
+        ensure_valid_unique_nickname!(user)
 
-      user.authentications << new_auth
+        user.authentications << new_auth
+      end
 
       user.gt_enable!
 
       user.faux = User::FAUX_STATUS[:converted]
       if user.save
-        GT::PredatorManager.initialize_video_processing(user, new_auth)
+        GT::PredatorManager.initialize_video_processing(user, new_auth) if new_auth
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'], user.id, 'signup')
         return user, new_auth
       else
@@ -285,6 +308,24 @@ module GT
         u.app_progress = AppProgress.new()
         
         return u, auth
+      end
+      
+      def self.build_new_user_from_params(params)
+        u = User.new
+        
+        u.nickname = params[:nickname]
+        u.primary_email = params[:primary_email]
+        u.password = params[:password]
+        u.name = params[:name]
+        
+        u.server_created_on = "GT::UserManager#build_new_user_from_params/#{u.nickname}"
+        
+        ensure_valid_unique_nickname!(u)
+        
+        u.preferences = Preferences.new()
+        u.app_progress = AppProgress.new()
+        
+        return u
       end
       
       # If we have an FB authentication, poll on demand... and get updated permissions
