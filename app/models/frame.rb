@@ -88,6 +88,9 @@ class Frame
       Frame.increment(self.id, :view_count => 1)
       Video.increment(self.video_id, :view_count => 1)
 
+      # TODO: send OG action to FB
+      # ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('watched', u, self) }
+
       # when a frame.video.reload happens we want to get the real doc that is reloaded, not the cached one.
       MongoMapper::Plugins::IdentityMap.clear if Settings::Frame.mm_use_identity_map
 
@@ -125,7 +128,7 @@ class Frame
     
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_upvote_notification(u, self) }
-    
+        
     self.save
   end
   

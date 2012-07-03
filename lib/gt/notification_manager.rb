@@ -1,3 +1,5 @@
+require 'open_graph'
+
 module GT
   class NotificationManager
     
@@ -13,6 +15,9 @@ module GT
       return unless frame.creator.gt_enabled
       
       return unless user_to.preferences.upvote_notifications
+      
+      # send OG action to FB
+      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('favorite', user, frame) }
       
       NotificationMailer.upvote_notification(user_to, user, frame).deliver
     end
@@ -30,12 +35,16 @@ module GT
       
       return unless user_to.preferences.reroll_notifications
       
+      # send OG action to FB
+      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', new_frame.creator, new_frame) }
+      
       NotificationMailer.reroll_notification(new_frame, old_frame).deliver
     end
     
-    def self.send_new_message_notifications(c, new_message)
+    def self.send_new_message_notifications(c, new_message, user)
       raise ArgumentError, "must supply Conversation" unless c.is_a?(Conversation)
       raise ArgumentError, "must supply Message" unless new_message.is_a?(Message)
+      raise ArgumentError, "must supply Message" unless user.is_a?(User)
       
       return false unless frame = c.frame
       
@@ -55,6 +64,10 @@ module GT
       users_to_email.select! { |u| u.preferences and u.preferences.comment_notifications? }
       
       users_to_email.each { |u| NotificationMailer.comment_notification(u, new_message.user, frame, new_message).deliver unless u.primary_email.blank? }
+      
+      # send OG action to FB
+      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('comment', user, {:conversation => c, :message => new_message}) }
+
     end
 
     def self.check_and_send_join_roll_notification(user_from, roll)

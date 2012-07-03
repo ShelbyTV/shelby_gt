@@ -2,6 +2,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery
   
   before_filter :allow_faux_authentication!
+  before_filter :debug_cookies_and_session
   after_filter :set_access_control_headers
   
   respond_to :json
@@ -35,7 +36,11 @@ class ApplicationController < ActionController::Base
     h
   end
 
-  private    
+  private
+  
+    def debug_cookies_and_session
+      Rails.logger.info "Request: cookies: #{cookies.inspect} --//-- session: #{session.inspect}"
+    end
     
     # === These headers are set to allow cross site access and cookies to be sent via ajax
     # - see: http://www.tsheffler.com/blog/?p=428 and
