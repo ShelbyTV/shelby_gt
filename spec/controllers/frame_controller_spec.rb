@@ -294,13 +294,6 @@ describe V1::FrameController do
       post :share, :frame_id => @frame.id.to_s, :destination => ["twitter"], :text => '', :format => :json
       @frame.conversation.messages.size.should == 0
     end
-    
-    it "should NOT add text as a message to the frames conversation if the destination is email" do
-      txt = "just testing here boys"
-      GT::SocialPoster.stub(:post_to_email) { true }
-      post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :addresses => 'addresses', :text => txt, :format => :json
-      @frame.conversation.messages.size.should == 0
-    end
 
     it "should return 404 if destination is not an array" do
       post :share, :frame_id => @frame.id.to_s, :destination => "twitter", :text => "testing", :format => :json
