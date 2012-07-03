@@ -9,7 +9,7 @@ module GT
       Rails.logger.info("[GT::OpenGraph] Would have sent OG action: #{action}") unless "production" == Rails.env
       
       # make sure the user wants us to send actions to facebook open graph
-      return unless (user.nickname == "henry") and user.has_provider("facebook") and user.preferences.can_post_to_open_graph?
+      return unless (["henry", "spinosa", "reece", "chris", "lauren"].include?(user.nickname)) and user.has_provider("facebook") and user.preferences.can_post_to_open_graph?
       
       og_object = {}
       
@@ -34,6 +34,8 @@ module GT
       end
 
       og_object[:video] = og_url
+      
+      Rails.logger.info("[OG POST] Posted: #{og_action}::  #{og_object}")
       
       post_to_og(user, og_action, og_object, expires_in) if og_action
     end
