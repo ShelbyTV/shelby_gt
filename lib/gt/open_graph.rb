@@ -35,7 +35,7 @@ module GT
 
       og_object[:video] = og_url
       
-      post_to_og(user, og_action, og_object, expires_in)
+      post_to_og(user, og_action, og_object, expires_in) if og_action
     end
     
     private
