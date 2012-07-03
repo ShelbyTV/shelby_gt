@@ -13,7 +13,14 @@ ShelbyGt::Application.routes.draw do
     get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
     get 'login' => 'authentications#index', :as => :new_user_session
   end
+  
+  resources :authentications
+  get '/auth/:provider/callback' => 'authentications#create'
+  get '/auth/failure' => 'authentications#fail'
+  post '/user/sign_in' => 'authentications#create', :as => :user_session
 
+  ########################
+  # OAuth Provider
   get 'oauth/authorize' => 'oauth#authorize'
   get 'oauth/grantpage' => 'oauth#grantpage'
   get 'oauth/delete' => 'oauth#delete'
@@ -27,9 +34,6 @@ ShelbyGt::Application.routes.draw do
   get 'oauth/index' => 'oauth#index'
   get 'oauth/clientpage' => 'oauth#clientpage'
 
-  resources :authentications
-  get '/auth/:provider/callback' => 'authentications#create'
-  get '/auth/failure' => 'authentications#fail'
 
   ########################
   # Video Radar / Bookmarklet
@@ -126,6 +130,8 @@ ShelbyGt::Application.routes.draw do
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user
   
   resources :cohort_entrance, :only => [:show]
+  
+  get '/the_bridge' => 'bridge#index'
   
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   

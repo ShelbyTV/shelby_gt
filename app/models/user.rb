@@ -13,7 +13,7 @@ class User
   before_validation(:on => :update) { self.ensure_valid_unique_nickname }
   before_save :update_public_roll_title
 
-  devise  :rememberable, :trackable, :token_authenticatable, :remember_for => 1.week
+  devise  :rememberable, :trackable, :token_authenticatable, :database_authenticatable, :remember_for => 12.weeks
   #devise includes root in json which fucked up backbone models, need to undo that...
   def self.include_root_in_json() nil; end
 
@@ -83,6 +83,7 @@ class User
   key :user_image,            String
   key :user_image_original,   String
   key :primary_email,         String
+  key :encrypted_password,    String, :abbr => :ar
   
   # so we know where a user was created...
   key :server_created_on,     String, :default => "gt"
@@ -114,6 +115,10 @@ class User
   # So, we turn this validation off for performance reasons inside of Arnold
   if Settings::Performance.validate_uniqueness_user_nickname
     validates_uniqueness_of :nickname
+  end
+  
+  if Settings::Performance.validate_uniqueness_primary_email
+    validates_uniqueness_of :primary_email
   end
   
   # Latin-1 and other extensions:   \u00c0 - \u02ae
@@ -179,13 +184,8 @@ class User
   
   # -- Old Methods --   
   def self.find_by_nickname(n)
-    return nil unless n.is_a? String and !n.blank?
+    return nil unless n.respond_to? :downcase
     User.first(:conditions=>{:downcase_nickname => n.downcase})
-  end
-
-  def self.find_by_email(n)
-    return nil unless n.is_a? String and !n.blank?
-    User.where( :primary_email => /^#{n.downcase}$/i ).first
   end
   
   def self.find_by_provider_name_and_id(name,id)
@@ -194,14 +194,8 @@ class User
     User.where('authentications.provider'=> name, 'authentications.uid'=> id).first
   end
   
-  def has_primary_email?() self.primary_email && self.primary_email.length > 0; end
-  
   def authentication_by_provider_and_uid(provider, uid)
     authentications.select { |a| a.provider == provider and a.uid == uid } .first
-  end
-  
-  def has_equivalent_authentication?(a)
-    !!authentication_by_provider_and_uid(a.provider, a.uid)
   end
   
   def has_provider?(provider) 
@@ -213,16 +207,6 @@ class User
   # N.B. If we support multiple accounts from the same provider, you may want to query more specfically!
   def first_provider(provider)
     @first_provider ||= authentications.each { |a| return a if a.provider == provider }
-  end
-  
-  # returns the nickname from the first matching provider
-  def nickname_on_first_provider(provider)
-    @nickname_on_first_provider ||= first_provider(provider) ? first_provider(provider).nickname : nil
-  end
-
-  # returns the uid from the first matching provider
-  def uid_on_first_provider(provider)
-    @uid_on_first_provider ||= first_provider(provider) ? first_provider(provider).uid : nil
   end
       
   #TODO: Update how we track social actions
