@@ -3,8 +3,8 @@ require 'spec_helper'
 describe SharingMailer do
   describe 'share frame' do
     before(:each) do
-      @from_user = Factory.create(:user, :primary_email => 'your@mom.com', :name => "dan")
-      @to_email = 'your@dad.com'
+      @from_user = Factory.create(:user, :name => "dan")
+      @to_email = Factory.next :primary_email
       @message = "wassssuuuup!"
       video = Factory.create(:video, :thumbnail_url => "http://url.com/123.jpg", :title=>"blah")
       roll = Factory.create(:roll, :creator => @from_user)

@@ -13,7 +13,14 @@ ShelbyGt::Application.routes.draw do
     get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
     get 'login' => 'authentications#index', :as => :new_user_session
   end
+  
+  resources :authentications
+  get '/auth/:provider/callback' => 'authentications#create'
+  get '/auth/failure' => 'authentications#fail'
+  post '/user/sign_in' => 'authentications#create', :as => :user_session
 
+  ########################
+  # OAuth Provider
   get 'oauth/authorize' => 'oauth#authorize'
   get 'oauth/grantpage' => 'oauth#grantpage'
   get 'oauth/delete' => 'oauth#delete'
@@ -27,9 +34,6 @@ ShelbyGt::Application.routes.draw do
   get 'oauth/index' => 'oauth#index'
   get 'oauth/clientpage' => 'oauth#clientpage'
 
-  resources :authentications
-  get '/auth/:provider/callback' => 'authentications#create'
-  get '/auth/failure' => 'authentications#fail'
 
   ########################
   # Video Radar / Bookmarklet

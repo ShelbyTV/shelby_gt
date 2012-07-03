@@ -344,6 +344,14 @@ describe GT::UserManager do
       real_u.persisted?.should == true
       real_u.faux.should == User::FAUX_STATUS[:converted]
     end
+    
+    it "should convert a (persisted) faux User to real user w/o omniauth creds" do
+      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u)
+      real_u.class.should == User
+      real_u.persisted?.should == true
+      real_u.faux.should == User::FAUX_STATUS[:converted]
+      new_auth.should == nil
+    end
 
     it "should have one authentication with an oauth token" do
       real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
@@ -597,7 +605,7 @@ describe GT::UserManager do
         u.preferences.open_graph_posting.should == nil
       end
 
-      it "should always have preferences once created" do
+      it "should always have app_progress once created" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.app_progress.class.should eq(AppProgress)
       end
@@ -655,6 +663,63 @@ describe GT::UserManager do
         User.stub(:new_from_facebook).with( fb_hash ).and_return( @user )
 
         u.valid?.should eql(true)
+      end
+      
+    end
+    
+    context "from params (ie. email/password)" do
+      before(:each) do
+        @params = {:nickname => Factory.next(:nickname), :primary_email => Factory.next(:primary_email), :password => "password", :name => "name"}
+      end
+      
+      it "should create a valid user itself from params" do
+        lambda {
+          u = GT::UserManager.create_new_user_from_params(@params)
+          u.valid?.should == true
+          u.persisted?.should == true
+          u.gt_enabled?.should == true
+          u.cohorts.size.should > 0
+          u.nickname.should == @params[:nickname]
+        }.should change { User.count } .by(1)
+      end
+      
+      it "should change nickname and still create user if it's taken" do
+        lambda {
+          u1 = GT::UserManager.create_new_user_from_params(@params)
+          @params[:primary_email] = Factory.next(:primary_email)
+          u2 = GT::UserManager.create_new_user_from_params(@params)
+          u2.valid?.should == true
+          u2.persisted?.should == true
+          u2.nickname.should_not == @params[:nickname]
+        }.should change { User.count } .by(2)
+      end
+      
+      it "should fail and return error if email is taken" do
+        lambda {
+          u1 = GT::UserManager.create_new_user_from_params(@params)
+          @params[:nickname] = Factory.next :nickname
+          u1 = GT::UserManager.create_new_user_from_params(@params)
+          u1.valid?.should == false
+          u1.errors.should be_a ActiveModel::Errors
+          u1.errors.messages.include?(:primary_email).should == true
+        }.should change { User.count } .by(1)
+      end
+      
+      it "should create and persist public, watch_later, upvoted, viwed Rolls for new User" do
+        u = GT::UserManager.create_new_user_from_params(@params)
+        
+        u.public_roll.class.should == Roll
+        u.public_roll.persisted?.should == true
+        
+        u.watch_later_roll.class.should == Roll
+        u.watch_later_roll.persisted?.should == true
+        
+        u.upvoted_roll.class.should == Roll
+        u.upvoted_roll.upvoted_roll.should == true
+        u.upvoted_roll.persisted?.should == true
+        
+        u.viewed_roll.class.should == Roll
+        u.viewed_roll.persisted?.should == true
       end
       
     end
@@ -745,6 +810,12 @@ describe GT::UserManager do
       u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
       u.app_progress = nil; u.save
       GT::UserManager.start_user_sign_in(u, :omniauth => @omniauth_hash)
+      u.app_progress.class.should eq(AppProgress)
+    end
+    
+    it "should be able to start user signin without omniauth" do
+      u = Factory.create(:user)
+      GT::UserManager.start_user_sign_in(u)
       u.app_progress.class.should eq(AppProgress)
     end
   end
