@@ -227,7 +227,7 @@ describe 'v1/user' do
       it "should return an error if a user is not found" do
         get '/v1/user'
         response.body.should have_json_type(Integer).at_path("status")
-        response.body.should be_json_eql(404).at_path("status")
+        response.body.should be_json_eql(401).at_path("status")
       end
       
       it "should show user is logged in" do

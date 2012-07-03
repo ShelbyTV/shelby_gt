@@ -30,7 +30,7 @@ class V1::UserController < ApplicationController
       elsif user_signed_in?
         @user = current_user
       else
-        return render_error(404, "could not find that user")
+        return render_error(401, "current user not authenticated")
       end
 
       @status = 200

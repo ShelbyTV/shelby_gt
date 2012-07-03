@@ -30,6 +30,9 @@ class AuthenticationsController < ApplicationController
       elsif gt_interest = GtInterest.find(cookies[:gt_access_token])
         gt_interest.used!(user)        
         sign_in_current_user(user, omniauth)
+        
+      elsif cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
+        sign_in_current_user(user, omniauth)
 
       elsif private_invite = cookies[:gt_roll_invite] # if they were invited via private roll, they get in
         GT::InvitationManager.private_roll_invite(user, private_invite)
@@ -53,8 +56,9 @@ class AuthenticationsController < ApplicationController
 
 # ---- New User signing up!
     else
-      # if they have a GtInterest access token, and they've been allowed entry, create the user and update the GtInterest
+      # if they have a GtInterest or CohortEntrance, they are allowed in
       gt_interest = GtInterest.find(cookies[:gt_access_token])
+      cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
       
       # if they are invited by someone via an invitation to join a private roll, and the inviter is gt_enabled, let em in!
       # gt_roll_invite consists of "inviter uid, invitee email address, roll id"
@@ -63,7 +67,7 @@ class AuthenticationsController < ApplicationController
         roll = Roll.find(invite_info[2])
       end
       
-      if gt_interest or (private_invite and inviter and inviter.gt_enabled)
+      if gt_interest or cohort_entrance or (private_invite and inviter and inviter.gt_enabled)
         user = GT::UserManager.create_new_user_from_omniauth(omniauth)
         
         if user.valid?
@@ -72,6 +76,7 @@ class AuthenticationsController < ApplicationController
           set_common_cookie(user, session[:_csrf_token])
           
           gt_interest.used!(user) if gt_interest
+          use_cohort_entrance(user, cohort_entrance) if cohort_entrance
           GT::InvitationManager.private_roll_invite(user, private_invite) if private_invite
           
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
@@ -140,9 +145,15 @@ class AuthenticationsController < ApplicationController
       }      
     end
     
+    def use_cohort_entrance(user, cohort_entrance)
+      cohort_entrance.used! user if cohort_entrance
+    end
+    
     def sign_in_current_user(user, omniauth)
       GT::UserManager.convert_faux_user_to_real(user, omniauth) if user.faux == User::FAUX_STATUS[:true]
       GT::UserManager.start_user_sign_in(user, :omniauth => omniauth)
+      
+      use_cohort_entrance user, CohortEntrance.find(session[:cohort_entrance_id])
       
       sign_in(:user, user)
       
