@@ -17,7 +17,7 @@ defaults: &defaults
     subject: "%{commenters_name} commented on %{video_title}"
   upvote_notification:
     category: "Comment Notifications"
-    subject: "%{upvoters_name} hearted %{video_title}"
+    subject: "%{upvoters_name} like %{video_title}"
   reroll_notification:
     category: "Reroll Notifications"
     subject: "%{re_rollers_name} re-rolled %{video_title}"
