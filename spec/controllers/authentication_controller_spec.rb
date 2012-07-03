@@ -12,7 +12,7 @@ describe AuthenticationsController do
     context "gt_enabled, non-faux user, just signing in" do
       before(:each) do
         request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
-        @u = Factory.create(:user, :gt_enabled => true, :faux => User::FAUX_STATUS[:false])
+        @u = Factory.create(:user, :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => ["init"])
         User.stub(:first).and_return(@u)
       
         GT::UserManager.should_receive :start_user_sign_in
@@ -23,6 +23,17 @@ describe AuthenticationsController do
         assigns(:current_user).should == @u
         cookies[:_shelby_gt_common].should_not == nil
         assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+      end
+      
+      it "should add cohorts if they used a CohortEntrance link" do
+        cohorts = ["a", "b", "c"]
+        expected_cohorts = @u.cohorts + cohorts
+        cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
+        session[:cohort_entrance_id] = cohort_entrance.id
+        
+        get :create
+        assigns(:current_user).cohorts.should == expected_cohorts
+        @u.reload.cohorts.should == expected_cohorts
       end
     
       it "should handle redirect via session on sign in" do
@@ -131,12 +142,30 @@ describe AuthenticationsController do
         get :create
         assigns(:opener_location).should == url
       end
+      
+      it "should accept with CohortEntrance, set cohorts" do
+        cohorts = ["a", "b", "c"]
+        cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
+        session[:cohort_entrance_id] = cohort_entrance.id
+        
+        u = Factory.create(:user)
+        GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
+      
+        get :create
+        assigns(:current_user).should == u
+        assigns(:current_user).gt_enabled.should == true
+        cookies[:_shelby_gt_common].should_not == nil
+        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        
+        assigns(:current_user).cohorts.should == cohorts
+        u.reload.cohorts.should == cohorts
+      end
     
     end
 
     context "Current user with two seperate accounts" do
 
-      it "should do the correct things when a user merges two seperate accts"
+      it "should be tested when implemented"
     
     end
 
@@ -147,7 +176,7 @@ describe AuthenticationsController do
             'provider'=>'twitter', 
             'credentials'=>{'token'=>nil, 'secret'=>nil}
           }})
-        @u = Factory.create(:user, :gt_enabled => false, :faux => User::FAUX_STATUS[:true])
+        @u = Factory.create(:user, :gt_enabled => false, :faux => User::FAUX_STATUS[:true], :cohorts => ["init"])
         User.stub(:first).and_return(@u)
       end
     
@@ -218,6 +247,24 @@ describe AuthenticationsController do
         session[:return_url] = (url = "http://danspinosa.tv")
         get :create
         assigns(:opener_location).should == url
+      end
+      
+      it "should accept and convert with CohortEntrance, set cohorts on user" do
+        cohorts = ["a", "b", "c"]
+        expected_cohorts = @u.cohorts + cohorts
+        cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
+        session[:cohort_entrance_id] = cohort_entrance.id
+        
+        GT::UserManager.should_receive :convert_faux_user_to_real
+        GT::UserManager.should_receive :start_user_sign_in
+      
+        get :create
+        assigns(:current_user).should == @u
+        cookies[:_shelby_gt_common].should_not == nil
+        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        
+        assigns(:current_user).cohorts.should == expected_cohorts
+        @u.reload.cohorts.should == expected_cohorts
       end
     end
 

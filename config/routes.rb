@@ -76,7 +76,7 @@ ShelbyGt::Application.routes.draw do
       post 'share' => 'frame#share'
     end
     resources :video, :only => [:show] do
-      get 'find', :on => :collection
+      get 'find_or_create', :on => :collection
       get 'conversations' => 'conversation#index'
     end
     resources :dashboard_entries, :path => "dashboard", :only => [:index, :update] do
@@ -124,6 +124,8 @@ ShelbyGt::Application.routes.draw do
   end
   
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user
+  
+  resources :cohort_entrance, :only => [:show]
   
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   

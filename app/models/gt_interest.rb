@@ -2,6 +2,8 @@
 #
 # Folks will submit their email address from the Gate and it's captured here.
 #
+# Designed for pre-launch testing of GT
+#
 class GtInterest
   include MongoMapper::Document
   

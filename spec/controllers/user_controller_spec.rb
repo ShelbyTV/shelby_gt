@@ -13,19 +13,41 @@ describe V1::UserController do
     @u1.public_roll = r1
     @u1.upvoted_roll = r2
     @u1.save
-    
-    sign_in @u1
   end
     
   describe "GET show" do
     it "assigns one user to @user" do
+      sign_in @u1
+      
       get :show, :format => :json
       assigns(:user).should eq(@u1)
       assigns(:status).should eq(200)
     end
+    
+    it "should return user if valid user_id provided" do
+      get :show, :id => @u1.id.to_s, :format => :json
+      assigns(:user).should eq(@u1)
+      assigns(:status).should eq(200)
+    end
+    
+    it "should return 404 if user_id provided, can't be found" do
+      get :show, :id => "certainly this id doesn't exist", :format => :json
+      assigns(:user).should eq(@u1)
+      assigns(:status).should eq(200)
+    end
+    
+    it "should return 401 if trying to get current_user and not signed in" do
+      get :show, :format => :json
+      assigns(:user).should == nil
+      assigns(:status).should eq(401)
+    end
   end
 
   describe "GET rolls" do
+    before(:each) do
+      sign_in @u1
+    end
+    
     it "returns rolls followed of the authed in user" do
       get :roll_followings, :id => @u1.id, :format => :json
       assigns(:status).should eq(200)
@@ -49,6 +71,10 @@ describe V1::UserController do
   end
   
   describe "PUT update" do
+    before(:each) do
+      sign_in @u1
+    end
+    
     it "updates a users nickname successfuly" do
       put :update, :id => @u1.id, :user => {:nickname=>"nick"}, :format => :json
       assigns(:user).should eq(@u1)
@@ -65,18 +91,17 @@ describe V1::UserController do
 
   describe "GET signed_in" do
     it "returns 200 if signed in" do
+      sign_in @u1
       get :signed_in, :format => :json
       assigns(:status).should eq(200)
       assigns(:signed_in).should eq(true)
     end
 
     it "returns 200 if signed out" do
-      sign_out(@u1)
+      #don't sign_in @u1
       get :signed_in, :format => :json
       assigns(:status).should eq(200)
       assigns(:signed_in).should eq(false)
     end
-
-
   end
 end
