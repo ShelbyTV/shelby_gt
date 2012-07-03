@@ -1,7 +1,7 @@
 <% #standard_html_email_wrapper do %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-    <head>
+  <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Notification from Shelby.tv</title>
     
@@ -11,21 +11,21 @@
       <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable" style="margin: 0;padding: 0;background-color: #FAFAFA;height: 100%;width: 100%;">
         <tr>
           <td align="center" valign="top" style="border-collapse: collapse;">
-            <table border="0" cellpadding="0" cellspacing="0" width="600" id="templateContainer" style="background-color: #ececec;">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateContainer" style="background-color: #ececec;">
               <tr>
                 <td align="center" valign="top" style="border-collapse: collapse;">
                   <!-- // Begin Template Header \ -->
-                  <table border="0" cellpadding="10" cellspacing="0" width="600" id="templateHeader" style="background-color: #FFFFFF;border-bottom: 0;position: relative;">
+                  <table border="0" cellpadding="10" cellspacing="0" width="100%" id="templateHeader" style="background-color: #FFFFFF;border-bottom: 0;position: relative;">
                     <tr>
                       <!-- // Begin Module: Standard Header Image \ -->
                       <td align="center" valign="middle" class="shelby-header-logo" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;font-weight: 300;width: 100px;">
                         <a href="<%= Settings::Email.web_url_base %>">
-                          <img src="http://gt.shelby.tv/images/assets/shelbylogo.png" id="headerImage" alt="Shelby.tv logo" title="Shelby.tv" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 97px;vertical-align: bottom;">
+                          <img src="<%= Settings::Email.shelby_logo_gt %>" id="headerImage" alt="Shelby.tv logo" title="Shelby.tv" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 97px;vertical-align: bottom;">
                         </a>
                       </td>
                       <td align="right" valign="middle" class="shelby-header" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;font-weight: 300;">
                         <span id="headerSlogan" style="color: #aaa;line-height: 2;">
-                          An amazing way to discover and enjoy videos.
+                          <%= Settings::Email.shelby_tagline %>
                         </span>
                       </td>
                       <!-- // End Module: Standard Header Image \ -->
@@ -59,10 +59,10 @@
                           <tr>
                             <td align="right" valign="middle" class="shelby-notification-footer" style="border-collapse: collapse;border-top: 1px solid #fff;color: #888;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 11px;line-height: 100%;text-align: right;">
                               <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
-                                <a href="<%= Settings::ShelbyAPI.web_root %>/preferences" style="color: #888;">Email settings</a>
+                                <a href="<%= Settings::ShelbyAPI.preferences_link %>" style="color: #888;">Email settings</a>
                               </p>
                               <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
-                                110 E 23rd, 10th Floor, New York NY 10010
+                                <%= Settings::ShelbyAPI.shelby_address %>
                               </p>
                             </td>
                           </tr>
