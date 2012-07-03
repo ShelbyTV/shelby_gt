@@ -24,7 +24,7 @@ describe 'v1/video' do
 
     it "should create video info on success" do
       GT::VideoManager.stub(:get_or_create_videos_for_url).and_return(@v);
-      get 'v1/video/find_or_create', {:provider_id=>"id4", :provider_name=>"youtube", :url=>"http://www.url.com"}
+      get 'v1/video/find_or_create', {:provider_id=>"id4", :provider_name=>"youtu", :url=>"http://www.url.com"}
       response.body.should be_json_eql(200).at_path("status");
     end
   end

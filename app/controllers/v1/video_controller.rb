@@ -34,9 +34,13 @@ class V1::VideoController < ApplicationController
       if @video = Video.where(:provider_name => @provider_name, :provider_id => @provider_id).first
         @status = 200
       else
-        @url = params.delete(:url);
-        @video = GT::VideoManager.get_or_create_video_for_url(@url) if @url
-        render_error(404, "could not find video")
+        @url = params.delete(:url)
+        @video = GT::VideoManager.get_or_create_videos_for_url(@url) if @url
+        if @video
+          @status = 200
+        else
+          render_error(404, "could not find video")
+        end
       end 
     end
   end  
