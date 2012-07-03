@@ -6,7 +6,7 @@ describe GT::InvitationManager do
     @inviter = Factory.create(:user)
     @user = Factory.create(:user, :gt_enabled => false, :primary_email => nil)
     @roll = Factory.create(:roll, :creator => @user)
-    @email = "my@email.com"
+    @email = Factory.next :primary_email
     @gt_roll_invite_cookie = "#{@inviter.id},#{@email},#{@roll.id},#{@roll.id}"
   end
 
