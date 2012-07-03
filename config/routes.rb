@@ -76,7 +76,7 @@ ShelbyGt::Application.routes.draw do
       post 'share' => 'frame#share'
     end
     resources :video, :only => [:show] do
-      get 'find', :on => :collection
+      get 'find_or_create', :on => :collection
       get 'conversations' => 'conversation#index'
     end
     resources :dashboard_entries, :path => "dashboard", :only => [:index, :update] do

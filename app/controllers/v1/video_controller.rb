@@ -20,20 +20,22 @@ class V1::VideoController < ApplicationController
   ##
   # Returns one video, with the given parameters.
   #
-  # [GET] /v1/video/find
+  # [GET] /v1/video/find_or_create
   # 
+  # @param [Optional, String] url the url of the video
   # @param [Required, String] provider_name The provider of the video
   # @param [Required, String] provider_id The id of the video
-  def find
+  def find_or_create
     StatsManager::StatsD.time(Settings::StatsConstants.api['video']['find']) do
       @provider_name = params.delete(:provider_name)
       @provider_id = params.delete(:provider_id)
 
-      return render_error(404, "need to specify both provider_name and provider_id") unless (@provider_name and @provider_id)
-
+      return render_error(404, "need to specify both provider_name and provider_id") unless @provider_name and @provider_id
       if @video = Video.where(:provider_name => @provider_name, :provider_id => @provider_id).first
         @status = 200
       else
+        @url = params.delete(:url);
+        @video = GT::VideoManager.get_or_create_video_for_url(@url) if @url
         render_error(404, "could not find video")
       end 
     end
