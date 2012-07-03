@@ -1,0 +1,59 @@
+body {
+	background-color: black;
+	color:white;
+}
+
+h1 { 
+	text-align: center;
+	font-size: 25px;
+}
+
+.frame {
+  margin: 15px auto;
+  font-size: 15px;
+	background-color: #444;
+	width: 50%;
+	padding: 10px;
+	border-radius: 10px;
+	overflow: auto;
+}
+
+.video-info {
+	width: 33%;
+	float: left;
+}
+.video-title {
+	margin-bottom: 5px;
+}
+
+.conversation-wrapper {
+	width: 66%;
+	min-height: 100px;
+	float: right;
+}
+.user-info {
+	width: 75px;
+	text-align:left;
+	float: left;
+}
+.text{
+	width: 85%;
+	float: right;	
+}
+
+ul {
+	list-style: none;
+	margin-left: 0;
+	padding-left: 1em;
+}
+
+li {
+	overflow: auto;
+}
+
+.new-comment {
+	margin-left: 14px;
+}
+input{
+	padding: 5px;
+}
