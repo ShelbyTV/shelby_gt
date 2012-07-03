@@ -118,7 +118,7 @@ class User
   end
   
   if Settings::Performance.validate_uniqueness_primary_email
-    validates_uniqueness_of :primary_email
+    validates_uniqueness_of :primary_email, :allow_blank => true, :allow_nil => true
   end
   
   # Latin-1 and other extensions:   \u00c0 - \u02ae
