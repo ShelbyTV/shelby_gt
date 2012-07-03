@@ -14,7 +14,7 @@ class BridgeController < ApplicationController
       while @entries.length < 20 do
         e = DashboardEntry.limit(limit).skip(skip*i+20).sort(:id.desc).where(:user_id => current_user.id).all
         @entries.concat(e)
-        @entries.delete_if {|e| e.frame.creator.faux == 0 }
+        @entries.delete_if {|e| e.frame.creator.faux == 1 }
         i+=1
       end
       
