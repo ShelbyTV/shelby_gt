@@ -31,6 +31,7 @@ describe GT::UserManager do
     it "should get real User when one exists" do
       nick, provider, uid = "whatever", "fb", "123uid"
       u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid
@@ -47,6 +48,7 @@ describe GT::UserManager do
     it "should get faux User when one exists" do
       nick, provider, uid = "whatever2", "fb", "123uid2"
       u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:true])
+      u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid
@@ -63,6 +65,7 @@ describe GT::UserManager do
     it "should add a public roll to existing user if they're missing it" do
       nick, provider, uid = "whatever--", "fb--", "123uid--"
       u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid
@@ -84,6 +87,7 @@ describe GT::UserManager do
       nick, provider, uid = "whatever--b-", "fb--", "123uid--b-"
       thumb_url = "some://thumb.url"
       u = User.new(:nickname => nick, :faux => false)
+      u.downcase_nickname = nick
       u.user_image = thumb_url
       auth = Authentication.new
       auth.provider = provider
@@ -247,6 +251,7 @@ describe GT::UserManager do
     it "should update user's image if it's null" do
       nick, provider, uid = "whatever-x1", "fb", "123uid-x1"
       u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid
