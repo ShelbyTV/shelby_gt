@@ -23,7 +23,8 @@ describe 'v1/dashboard' do
       
       context "upvoters" do
         before(:each) do
-          @f = Factory.create(:frame, :creator_id => @u1.id)
+          @r = Factory.create(:roll, :roll_type => Roll::TYPES[:user_public])
+          @f = Factory.create(:frame, :creator_id => @u1.id, :roll => @r)
           @d = Factory.build(:dashboard_entry)
           @d.user = @u1
           @d.frame = @f
@@ -38,6 +39,7 @@ describe 'v1/dashboard' do
           get '/v1/dashboard?include_children=true'
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_size(2).at_path("result/0/frame/upvote_users")
+          parse_json(response.body)["result"][0]["frame"]["roll"]["roll_type"].should eq @f.roll.roll_type
         end
 
         it "should return an empty array if no upvoters on a frame" do

@@ -103,17 +103,21 @@ describe GT::UserManager do
         usr.should == u
         usr.watch_later_roll.class.should == Roll
         usr.watch_later_roll.persisted?.should == true
+        usr.watch_later_roll.roll_type.should == Roll::TYPES[:special_watch_later]
         
         usr.viewed_roll.class.should == Roll
         usr.viewed_roll.persisted?.should == true
+        usr.viewed_roll.roll_type.should == Roll::TYPES[:special_viewed]
 
         usr.upvoted_roll.class.should == Roll
         usr.upvoted_roll.upvoted_roll.should == true
         usr.upvoted_roll.persisted?.should == true
+        usr.upvoted_roll.roll_type.should == Roll::TYPES[:special_upvoted]
                 
         usr.public_roll.class.should == Roll
         usr.public_roll.persisted?.should == true
         usr.public_roll.creator_thumbnail_url.should == thumb_url
+        usr.public_roll.roll_type.should == Roll::TYPES[:special_public]
       }.should_not change { User.count }
     end
     
@@ -210,6 +214,7 @@ describe GT::UserManager do
       r.public.should == true
       r.collaborative.should == false
       r.creator.should == u
+      r.roll_type.should == Roll::TYPES[:special_public]
       
       #watch later
       r = u.watch_later_roll
@@ -218,6 +223,7 @@ describe GT::UserManager do
       r.public.should == false
       r.collaborative.should == false
       r.creator.should == u
+      r.roll_type.should == Roll::TYPES[:special_watch_later]
       
       #upvoted
       r = u.upvoted_roll
@@ -227,6 +233,7 @@ describe GT::UserManager do
       r.collaborative.should == false
       r.upvoted_roll.should == true
       r.creator.should == u
+      r.roll_type.should == Roll::TYPES[:special_upvoted]
       
       #viewed
       r = u.viewed_roll
@@ -235,6 +242,7 @@ describe GT::UserManager do
       r.public.should == false
       r.collaborative.should == false
       r.creator.should == u
+      r.roll_type.should == Roll::TYPES[:special_viewed]
     end
     
     it "should have a correct Authentication on the User it creates" do

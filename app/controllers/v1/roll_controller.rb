@@ -206,6 +206,7 @@ class V1::RollController < ApplicationController
         @roll.creator = current_user
         @roll.public = params[:public]
         @roll.collaborative = params[:collaborative]
+        @roll.roll_type = @roll.public ? Roll::TYPES[:user_public] :  Roll::TYPES[:user_private]
         
         begin
           if @roll.save! and @roll.add_follower(current_user)

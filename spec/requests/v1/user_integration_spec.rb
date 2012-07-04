@@ -86,7 +86,7 @@ describe 'v1/user' do
         it "should have the first and second rolls be special" do
           r1 = Factory.create(:roll, :creator => @u1)
           r1.add_follower(@u1)
-          r2 = Factory.create(:roll, :creator => @u1)
+          r2 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_upvoted])
           r2.add_follower(@u1)
           r3 = Factory.create(:roll, :creator => @u1)
           r3.add_follower(@u1)
@@ -96,6 +96,7 @@ describe 'v1/user' do
         
           get '/v1/user/'+@u1.id+'/rolls/following'
           parse_json(response.body)["result"][0]["id"].should eq(r2.id.to_s)
+          parse_json(response.body)["result"][0]["roll_type"].should eq(r2.roll_type)
         end
       end
       
