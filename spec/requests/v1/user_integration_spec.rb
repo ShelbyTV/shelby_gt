@@ -161,7 +161,20 @@ describe 'v1/user' do
           response.body.should be_json_eql(404).at_path("status")
         end
       end
-      
+
+      context "autocomplete" do
+        it "should return autocomplete info with user if the supplied user_id is the current_users" do
+          get '/v1/user/' + @u1.id
+          response.body.should have_json_path("result/autocomplete")
+        end
+
+       it "should NOT return autocomplete info with user if the supplied user_id is not the current_users" do
+          u2 = Factory.create(:user)
+          get '/v1/user/' + u2.id
+          response.body.should_not have_json_path("result/autocomplete")
+        end
+      end
+
     end
     
     describe "PUT" do
