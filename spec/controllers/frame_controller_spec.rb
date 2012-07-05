@@ -328,6 +328,24 @@ describe V1::FrameController do
       assigns(:status).should eq(404)
       assigns(:message).should eq("could not find that frame")
     end
+
+    context "email share" do
+      before(:each) do
+        GT::SocialPoster.stub(:post_to_email)
+      end
+
+      it "should try to save email addresses to user's autocomplete" do
+        controller.current_user.should_receive(:store_autocomplete_info).once
+
+        post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :addresses => "spinosa@gmail.com, invalidaddress, j@jay.net", :format => :json
+      end
+
+      it "should NOT try to save email addresses to user's autocomplete if none are specified" do
+        controller.current_user.should_not_receive(:store_autocomplete_info)
+
+        post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :format => :json
+      end
+    end
     
   end
   

@@ -412,6 +412,9 @@ class V1::FrameController < ApplicationController
             email_addresses = params[:addresses]
             return render_error(404, "you must provide addresses") if email_addresses.blank?
             
+            # save any valid addresses for future use in autocomplete
+            current_user.store_autocomplete_info(:email, email_addresses)
+
             resp &= GT::SocialPoster.post_to_email(current_user, params[:addresses], text, frame)
           else
             return render_error(404, "we dont support that destination yet :(")
