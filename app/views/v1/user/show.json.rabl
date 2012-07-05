@@ -8,7 +8,7 @@ end
 
 if current_user == @user
   
-  attributes :authentication_token
+  attributes :authentication_token, :autocomplete
 
 	child :authentications do
 		attributes :uid, :provider, :nickname

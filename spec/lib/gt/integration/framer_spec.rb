@@ -9,7 +9,7 @@ describe GT::Framer do
     @message = Message.new
     @message.public = true
   
-    @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+    @roll_creator = Factory.create(:user)
     @roll = Factory.create(:roll, :creator => @roll_creator)
     @roll.save
   end

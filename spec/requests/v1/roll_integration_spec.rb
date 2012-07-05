@@ -18,7 +18,7 @@ describe 'v1/roll' do
     @u2.upvoted_roll = @uv_roll2
     @u2.downcase_nickname = @u2.nickname.downcase
     @u2.save
-    @r = Factory.create(:roll, :creator => @u1)
+    @r = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:global_public])
   end
   
   context 'logged in' do
@@ -33,6 +33,7 @@ describe 'v1/roll' do
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result/title")
         parse_json(response.body)["result"]["title"].should eq(@r.title)
+        parse_json(response.body)["result"]["roll_type"].should eq(@r.roll_type)
       end
       
       it "should return roll info on success when looking up by subdomain if the subdomain is active" do
@@ -99,13 +100,24 @@ describe 'v1/roll' do
     
     describe "POST" do
       context "roll creation" do
-        it "should create and return a roll on success" do
+        it "should create and return a private roll on success" do
           post '/v1/roll?title=Roll%20me%20baby&thumbnail_url=http://bar.com&public=0&collaborative=1'
 
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/title")
           parse_json(response.body)["result"]["title"].should eq("Roll me baby")
           parse_json(response.body)["result"]["thumbnail_url"].should eq("http://bar.com")
+          parse_json(response.body)["result"]["roll_type"].should eq(Roll::TYPES[:user_private])
+        end
+        
+        it "should create and return a public on success" do
+          post '/v1/roll?title=Roll%20me%20baby&thumbnail_url=http://bar.com&public=1&collaborative=0'
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/title")
+          parse_json(response.body)["result"]["title"].should eq("Roll me baby")
+          parse_json(response.body)["result"]["thumbnail_url"].should eq("http://bar.com")
+          parse_json(response.body)["result"]["roll_type"].should eq(Roll::TYPES[:user_public])
         end
 
         it "should return 400 if there is no thumbnail_url" do

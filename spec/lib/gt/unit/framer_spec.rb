@@ -9,11 +9,11 @@ describe GT::Framer do
   context "creating Frames" do
     before(:each) do
       @video = Factory.create(:video, :thumbnail_url => "thum_url")
-      @frame_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+      @frame_creator = Factory.create(:user)
       @message = Message.new
       @message.public = true
     
-      @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+      @roll_creator = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @roll_creator)
       @roll.save
     end
@@ -283,7 +283,7 @@ describe GT::Framer do
       @video = Factory.create(:video, :thumbnail_url => "thum_url")
       @f1 = Factory.create(:frame, :video => @video)
       
-      @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+      @roll_creator = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @roll_creator)
       @roll.save
     end
@@ -437,7 +437,7 @@ describe GT::Framer do
 
   context "creating a DashboardEntry" do
     before(:each) do
-      @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+      @roll_creator = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @roll_creator)
       @roll.save
       

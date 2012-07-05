@@ -3,7 +3,7 @@ require 'spec_helper'
 #Functional: hit the database, treat model as black box
 describe User do
   before(:each) do
-    @user = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+    @user = Factory.create(:user)
   end
   
   context "database" do
@@ -51,11 +51,15 @@ describe User do
     
     it "should throw error when trying to create a User where index (ie nickname) already exists" do
       lambda {
-        User.create(:nickname => "this_is_sooooo_unique").persisted?.should == true
+        u = User.new(:nickname => "this_is_sooooo_unique")
+        u.downcase_nickname = "this_is_sooooo_unique"
+        u.save
+        u.persisted?.should == true
       }.should change {User.count} .by 1
       lambda {
         u = User.new
         u.nickname = "this_is_sooooo_unique"
+        u.downcase_nickname = "this_is_sooooo_unique"
         u.save(:validate => false)
       }.should raise_error Mongo::OperationFailure
     end
@@ -132,9 +136,44 @@ describe User do
       u.should_receive(:ensure_valid_unique_nickname).exactly(0).times
       
       u.nickname = nick
+      u.downcase_nickname = nick
       u.save
       u.reload
-      u.downcase_nickname.should == nil
+      u.downcase_nickname.should == nick
+    end
+
+    context "autocomplete" do
+      it "should save unique, valid email addresses to user's autocomplete" do
+        @user.store_autocomplete_info(:email, "spinosa@gmail.com,  invalidaddress, j@jay.net,   spinosa@gmail.com ")
+        @user.autocomplete.should include(:email)
+        @user.autocomplete[:email].should include('spinosa@gmail.com')
+        @user.autocomplete[:email].should include('j@jay.net')
+        @user.autocomplete[:email].should_not include('invalidaddress')
+        @user.autocomplete[:email].length.should == 2
+      end
+
+     it "should add unique, valid email addresses to user's autocomplete while keeping what was already there" do
+        @user.store_autocomplete_info(:email, "spinosa@gmail.com, j@jay.net")
+        @user.store_autocomplete_info(:email, "spinosa@gmail.com, josh@shelby.tv")
+
+        @user.autocomplete[:email].should include('spinosa@gmail.com')
+        @user.autocomplete[:email].should include('j@jay.net')
+        @user.autocomplete[:email].should include('josh@shelby.tv')
+        @user.autocomplete[:email].length.should == 3
+      end
+
+      it "should not save email addresses to user's autocomplete if there are no valid ones" do
+        @user.store_autocomplete_info(:email, "invalidaddress")
+        @user.autocomplete.should_not include(:email)
+      end
+
+      it "should not add duplicate email addresses that are already present to a user's autocomplete" do
+        @user.store_autocomplete_info(:email, "josh@shelby.tv")
+        length = @user.autocomplete[:email].length
+
+        @user.store_autocomplete_info(:email, "josh@shelby.tv")
+        @user.autocomplete[:email].length.should == length
+      end
     end
   end
   

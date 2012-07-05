@@ -86,7 +86,7 @@ describe 'v1/user' do
         it "should have the first and second rolls be special" do
           r1 = Factory.create(:roll, :creator => @u1)
           r1.add_follower(@u1)
-          r2 = Factory.create(:roll, :creator => @u1)
+          r2 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_upvoted])
           r2.add_follower(@u1)
           r3 = Factory.create(:roll, :creator => @u1)
           r3.add_follower(@u1)
@@ -96,6 +96,7 @@ describe 'v1/user' do
         
           get '/v1/user/'+@u1.id+'/rolls/following'
           parse_json(response.body)["result"][0]["id"].should eq(r2.id.to_s)
+          parse_json(response.body)["result"][0]["roll_type"].should eq(r2.roll_type)
         end
       end
       
@@ -160,7 +161,20 @@ describe 'v1/user' do
           response.body.should be_json_eql(404).at_path("status")
         end
       end
-      
+
+      context "autocomplete" do
+        it "should return autocomplete info with user if the supplied user_id is the current_users" do
+          get '/v1/user/' + @u1.id
+          response.body.should have_json_path("result/autocomplete")
+        end
+
+       it "should NOT return autocomplete info with user if the supplied user_id is not the current_users" do
+          u2 = Factory.create(:user)
+          get '/v1/user/' + u2.id
+          response.body.should_not have_json_path("result/autocomplete")
+        end
+      end
+
     end
     
     describe "PUT" do

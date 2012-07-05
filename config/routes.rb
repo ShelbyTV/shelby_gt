@@ -33,13 +33,7 @@ ShelbyGt::Application.routes.draw do
   get 'oauth/gate' => 'oauth#gate'
   get 'oauth/index' => 'oauth#index'
   get 'oauth/clientpage' => 'oauth#clientpage'
-
-
-  ########################
-  # Video Radar / Bookmarklet
-  get '/radar/boot' => 'video_radar#boot', :format => 'js'
-  get '/radar/load' => 'video_radar#load', :format => 'js'
-
+  
   ########################
   # Namespace allows for versioning of API
   # NOTE: Must use V1::ControllerName in controllers
@@ -130,8 +124,6 @@ ShelbyGt::Application.routes.draw do
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user
   
   resources :cohort_entrance, :only => [:show]
-  
-  get '/the_bridge' => 'bridge#index'
   
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   

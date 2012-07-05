@@ -354,6 +354,7 @@ module GT
         r.creator = u
         r.public = true
         r.collaborative = false
+        r.roll_type = Roll::TYPES[:special_public]
         r.title = u.nickname
         r.creator_thumbnail_url = u.user_image || u.user_image_original
         u.public_roll = r
@@ -364,6 +365,7 @@ module GT
         r.creator = u
         r.public = false
         r.collaborative = false
+        r.roll_type = Roll::TYPES[:special_watch_later]
         r.title = "Watch Later"
         u.watch_later_roll = r
       end
@@ -374,6 +376,7 @@ module GT
         r.public = false
         r.collaborative = false
         r.upvoted_roll = true
+        r.roll_type = Roll::TYPES[:special_upvoted]
         r.title = "Upvoted"
         u.upvoted_roll = r
       end
@@ -383,6 +386,7 @@ module GT
         r.creator = u
         r.public = false
         r.collaborative = false
+        r.roll_type = Roll::TYPES[:special_viewed]
         r.title = "Viewed"
         u.viewed_roll = r
       end

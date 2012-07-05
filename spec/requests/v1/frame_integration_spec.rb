@@ -11,7 +11,7 @@ describe 'v1/frame' do
       @u1.viewed_roll = Factory.create(:roll, :creator => @u1)
       @u1.save
       
-      @r = Factory.create(:roll, :creator => @u1, :public => false)
+      @r = Factory.create(:roll, :creator => @u1, :public => false, :roll_type => Roll::TYPES[:user_private])
       @f = Factory.create(:frame, :creator => @u1, :roll => @r, :conversation => Factory.create(:conversation))
       @f2 = Factory.create(:frame, :creator => @u1, :roll => @r)
       @f3 = Factory.create(:frame, :creator => @u1, :roll => @r)
@@ -24,9 +24,10 @@ describe 'v1/frame' do
     describe "GET" do
       context 'one frame' do
         it "should return frame info on success" do
-          get '/v1/frame/'+@f.id
+          get '/v1/frame/'+@f.id+'?include_children=true'
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/score")
+          parse_json(response.body)["result"]["roll"]["roll_type"].should eq(@f.roll.roll_type)
         end
       
         it "should return error message if frame doesnt exist" do
@@ -73,7 +74,7 @@ describe 'v1/frame' do
       
       context 'all frames in a roll' do
         before(:each) do
-          @frames_roll = Factory.create(:roll, :creator_id => @u1.id)
+          @frames_roll = Factory.create(:roll, :creator_id => @u1.id, :roll_type => Roll::TYPES[:user_public])
           @f.roll_id = @frames_roll.id; @f.save
           Factory.create(:frame, :roll_id => @frames_roll.id)
         end
@@ -84,6 +85,7 @@ describe 'v1/frame' do
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/creator_id")
           parse_json(response.body)["result"]["creator_id"].should eq(@u1.id.to_s)
+          parse_json(response.body)["result"]["roll_type"].should eq(@frames_roll.roll_type)
           response.body.should have_json_size(2).at_path("result/frames")
         end
 

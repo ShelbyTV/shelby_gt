@@ -54,6 +54,7 @@ class V1::Roll::GeniusController < ApplicationController
 
       @roll = ::Roll.new(:title => "GENIUS: " + params[:search])
       @roll.genius = true
+      @roll.roll_type = ::Roll::TYPES[:genius]
       @roll.creator = current_user
 
       count = 0
