@@ -34,7 +34,7 @@ class V1::VideoController < ApplicationController
       if @video = Video.where(:provider_name => @provider_name, :provider_id => @provider_id).first
         @status = 200
       else
-        @url = params.delete(:url)
+        @url = params.delete(:website_url)
         @video = GT::VideoManager.get_or_create_videos_for_url(@url)[0] if @url
         if @video
           @status = 200
