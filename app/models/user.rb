@@ -184,6 +184,19 @@ class User
     GT::UserManager.ensure_users_special_rolls(self, true)
   end
   
+  # given a comma separated string of autocomplete items in info, store all unique, valid ones
+  # in the array at self.autocomplete[key]
+  def store_autocomplete_info(key, info)
+    items = info.split(',').map{|item| item.strip}.uniq
+    if key == :email
+      items.select! {|address| address =~ /\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/}
+    end
+    if !items.empty?
+      self.push_uniq("autocomplete.#{key}" => {:$each => items})
+      self.reload
+    end
+  end
+
   # -- Old Methods --   
   def self.find_by_nickname(n)
     return nil unless n.respond_to? :downcase

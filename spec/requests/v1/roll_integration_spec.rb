@@ -202,32 +202,6 @@ describe 'v1/roll' do
             post '/v1/roll/'+@r.id+'/share?destination[]=email&text=testing'
             response.body.should be_json_eql(404).at_path("status")
           end
-
-          it "should save only unique valid email addresses to user's autocomplete" do
-            addresses = CGI.escape 'dan@shelby.tv, badaddress, josh@correct.com,  dan@shelby.tv'
-            post '/v1/roll/'+@r.id+'/share?destination[]=email&text=testing&addresses='+addresses
-            response.body.should be_json_eql(200).at_path("status")
-
-            @u1.reload
-            @u1.autocomplete[:email].should include('dan@shelby.tv')
-            @u1.autocomplete[:email].should include('josh@correct.com')
-            @u1.autocomplete[:email].should_not include('badaddress')
-            @u1.autocomplete[:email].length.should == 2
-          end
-
-          it "should not add duplicate email addresses that are already present to a user's autocomplete" do
-            @u1.push(:"autocomplete.email" => 'josh@shelby.tv')
-            @u1.reload
-            length = @u1.autocomplete[:email].length
-
-            addresses = CGI.escape 'josh@shelby.tv'
-            post '/v1/roll/'+@r.id+'/share?destination[]=email&text=testing&addresses='+addresses
-            response.body.should be_json_eql(200).at_path("status")
-
-            @u1.reload
-            @u1.autocomplete[:email].should include('josh@shelby.tv')
-            @u1.autocomplete[:email].length.should == length
-          end
         end
           
       end

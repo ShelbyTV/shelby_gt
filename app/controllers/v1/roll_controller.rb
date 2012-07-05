@@ -164,11 +164,7 @@ class V1::RollController < ApplicationController
             return render_error(404, "you must provide addresses") if email_addresses.blank?
             
             # save any valid addresses for future use in autocomplete
-            valid_addresses = email_addresses.split(',').map{|address| address.strip}.uniq
-            valid_addresses.select! {|address| address =~ /\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/}
-            if !valid_addresses.empty?
-              current_user.push_uniq(:"autocomplete.email" => {:$each => valid_addresses})
-            end
+            current_user.store_autocomplete_info(:email, email_addresses)
 
             ShelbyGT_EM.next_tick { GT::SocialPoster.post_to_email(current_user, email_addresses, text, roll.frames.first) }
             resp &= true
