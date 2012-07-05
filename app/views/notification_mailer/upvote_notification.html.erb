@@ -1,85 +1,74 @@
-<% #standard_html_email_wrapper do %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-  <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title><%= @user_from_name %> liked your video</title>
-  </head>
-  <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="-webkit-text-size-adjust: none;margin: 0;padding: 0;background-color: #FAFAFA;width: 100%;">
-    <center>
-      <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable" style="margin: 0;padding: 0;background-color: #FAFAFA;height: 100%;width: 100%;">
-        <tr>
-          <td align="center" valign="top" style="border-collapse: collapse;">
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateContainer" style="background-color: #ececec;">
-              <tr>
-                <td align="center" valign="top" style="border-collapse: collapse;">
-                  <!-- // Begin Template Header \ -->
-                  <table border="0" cellpadding="10" cellspacing="0" width="100%" id="templateHeader" style="background-color: #FFFFFF;border-bottom: 0;position: relative;">
-                    <tr>
-                      <!-- // Begin Module: Standard Header Image \ -->
-                      <td align="center" valign="middle" class="shelby-header-logo" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;font-weight: 300;width: 100px;">
-                        <a href="<%= Settings::Email.web_url_base %>">
-                          <img src="<%= Settings::Email.shelby_logo_gt %>" id="headerImage" alt="Shelby.tv logo" title="Shelby.tv" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 97px;vertical-align: bottom;">
-                        </a>
-                      </td>
-                      <td align="right" valign="middle" class="shelby-header" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;font-weight: 300;">
-                        <span id="headerSlogan" style="color: #aaa;line-height: 2;">
-                          <%= Settings::Email.shelby_tagline %>
-                        </span>
-                      </td>
-                      <!-- // End Module: Standard Header Image \ -->
-                    </tr>
-                  </table>
-                  <!-- // End Template Header \ -->
-                </td>
-              </tr>
-              <tr>
-                <td align="center" valign="top" style="border-collapse: collapse;">
-                  <!-- // Begin Template Body \ -->
-                  <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateBody">
-                    <tr>
-                      <td valign="top" class="bodyContent" style="border-collapse: collapse;background-color: #ececec;">
-                        <!-- // Begin Module: Standard Content \ -->
-                        <table border="0" cellpadding="15" cellspacing="0" width="100%">
-                          <tr>
-                            <td align="center" valign="top" class="shelby-notification-body" style="border-collapse: collapse;border-bottom: 1px solid #ddd;">
-                              <div style="color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
-                                  <h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 1.5em;font-weight: normal;line-height: 100%;margin-top: 0.5em;margin-right: 0;margin-bottom: 10px;margin-left: 0;">
-                                    <div class="shelby-avatar" style="background: transparent;display: inline-block;height: 50px;margin-right: 1em;overflow: hidden;width: 50px;vertical-align: middle;color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
-                                      <a href="#" style="color: #777;font-weight: normal;text-decoration: underline;">
-                                        <img src="<%= @user_from.user_image %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" style="border: 0;height: 100%;line-height: 100%;outline: none;text-decoration: none;display: inline;">
-                                      </a>
-                                    </div>
-                                    <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> liked your <a href="<%= @frame_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">video</a>.
-                                  </h4>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td align="right" valign="middle" class="shelby-notification-footer" style="border-collapse: collapse;border-top: 1px solid #fff;color: #888;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 11px;line-height: 100%;text-align: right;">
-                              <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
-                                <a href="<%= Settings::ShelbyAPI.preferences_link %>" style="color: #888;">Email settings</a>
-                              </p>
-                              <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
-                                <%= Settings::ShelbyAPI.shelby_address %>
-                              </p>
-                            </td>
-                          </tr>
-                        </table>
-                        <!-- // End Module: Standard Content \ -->
-                      </td>
-                    </tr>
-                  </table>
-                  <!-- // End Template Body \ -->
-                </td>
-              </tr>
+<% standard_html_email_wrapper do %>
+  <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable" style="margin: 0;padding: 0;background-color: #FAFAFA;height: 100%;width: 100%;">
+    <tr>
+      <td align="center" valign="top" style="border-collapse: collapse;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateContainer" style="background-color: #ececec;">
+          <tr>
+            <td align="center" valign="top" style="border-collapse: collapse;">
+              <!-- // Begin Template Header \ -->
+              <table border="0" cellpadding="10" cellspacing="0" width="100%" id="templateHeader" style="background-color: #FFFFFF;border-bottom: 0;position: relative;">
+                <tr>
+                  <!-- // Begin Module: Standard Header Image \ -->
+                  <td align="center" valign="middle" class="shelby-header-logo" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;font-weight: 300;width: 100px;">
+                    <a href="<%= Settings::Email.web_url_base %>">
+                      <img src="<%= Settings::Email.shelby_logo_gt %>" id="headerImage" alt="Shelby.tv logo" title="Shelby.tv" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 97px;vertical-align: bottom;">
+                    </a>
+                  </td>
+                  <td align="right" valign="middle" class="shelby-header" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;font-weight: 300;">
+                    <span id="headerSlogan" style="color: #aaa;line-height: 2;">
+                      <%= Settings::Email.shelby_tagline %>
+                    </span>
+                  </td>
+                  <!-- // End Module: Standard Header Image \ -->
+                </tr>
+              </table>
+              <!-- // End Template Header \ -->
+            </td>
+          </tr>
+          <tr>
+            <td align="center" valign="top" style="border-collapse: collapse;">
+              <!-- // Begin Template Body \ -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateBody">
+                <tr>
+                  <td valign="top" class="bodyContent" style="border-collapse: collapse;background-color: #ececec;">
+                    <!-- // Begin Module: Standard Content \ -->
+                    <table border="0" cellpadding="15" cellspacing="0" width="100%">
+                      <tr>
+                        <td align="center" valign="top" class="shelby-notification-body" style="border-collapse: collapse;border-bottom: 1px solid #ddd;">
+                          <div style="color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
+                              <h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 1.5em;font-weight: normal;line-height: 100%;margin-top: 0.5em;margin-right: 0;margin-bottom: 10px;margin-left: 0;">
+                                <div class="shelby-avatar" style="background: transparent;display: inline-block;height: 50px;margin-right: 1em;overflow: hidden;width: 50px;vertical-align: middle;color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
+                                  <a href="#" style="color: #777;font-weight: normal;text-decoration: underline;">
+                                    <img src="<%= @user_from.user_image %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" style="border: 0;height: 100%;line-height: 100%;outline: none;text-decoration: none;display: inline;">
+                                  </a>
+                                </div>
+                                <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> liked your <a href="<%= @frame_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">video</a>.
+                              </h4>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="right" valign="middle" class="shelby-notification-footer" style="border-collapse: collapse;border-top: 1px solid #fff;color: #888;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 11px;line-height: 100%;text-align: right;">
+                          <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
+                            <a href="<%= Settings::ShelbyAPI.preferences_link %>" style="color: #888;">Email settings</a>
+                          </p>
+                          <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
+                            <%= Settings::ShelbyAPI.shelby_address %>
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                    <!-- // End Module: Standard Content \ -->
+                  </td>
+                </tr>
+              </table>
+              <!-- // End Template Body \ -->
+            </td>
+          </tr>
 
-            </table>
-            <br>
-          </td>
-        </tr>
-      </table>
-    </center>
-  </body>
-</html>
-<% #end %>
+        </table>
+        <br>
+      </td>
+    </tr>
+  </table>
+<% end %>
