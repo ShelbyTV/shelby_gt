@@ -163,6 +163,9 @@ class V1::RollController < ApplicationController
             email_addresses = params[:addresses]
             return render_error(404, "you must provide addresses") if email_addresses.blank?
             
+            # save any valid addresses for future use in autocomplete
+            current_user.store_autocomplete_info(:email, email_addresses)
+
             ShelbyGT_EM.next_tick { GT::SocialPoster.post_to_email(current_user, email_addresses, text, roll.frames.first) }
             resp &= true
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
@@ -206,6 +209,7 @@ class V1::RollController < ApplicationController
         @roll.creator = current_user
         @roll.public = params[:public]
         @roll.collaborative = params[:collaborative]
+        @roll.roll_type = @roll.public ? Roll::TYPES[:user_public] :  Roll::TYPES[:user_private]
         
         begin
           if @roll.save! and @roll.add_follower(current_user)

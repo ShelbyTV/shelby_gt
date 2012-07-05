@@ -20,7 +20,7 @@ child :frame => "frame" do |f|
   end
 	
 	child :roll => "roll" do
-		attributes :id, :collaborative, :public, :creator_id, :title, :creator_thumbnail_url => :thumbnail_url
+		attributes :id, :collaborative, :public, :creator_id, :title, :roll_type, :creator_thumbnail_url => :thumbnail_url
 		
 		code :first_frame_thumbnail_url do |r|
 			r.first_frame_thumbnail_url if r.first_frame_thumbnail_url

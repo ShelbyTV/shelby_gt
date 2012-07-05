@@ -30,9 +30,9 @@ module MongoMapper
       # Get a user by their nickname, ensure it's unique
       User.ensure_index(:nickname, :background => true, :unique => true)
       # Get a user given any casing of their nickname
-      User.ensure_index(:downcase_nickname, :background => true)
+      User.ensure_index(:downcase_nickname, :background => true, :unique => true)
       # Get a user by their primary email
-      User.ensure_index(:primary_email, :background => true)
+      User.ensure_index(:primary_email, :background => true, :unique => true, :sparse => true)
       # Get a user by their authentication_token
       User.ensure_index(:ah, :background => true, :unique => true, :sparse => true)
       # the old index was on authentications.uid, now also have a unique index on uid and provider to make sure we don't overlap

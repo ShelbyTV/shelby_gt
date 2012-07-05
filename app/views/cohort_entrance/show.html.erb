@@ -1,8 +1,27 @@
 <% if @cohort_entrance %>
-	<h1>Thank you for testing Shelby<h1>
-	<h2><%= link_to "sign up with twitter", "/auth/twitter" %></h2>
-	<h2><%= link_to "sign up with facebook", "/auth/facebook" %></h2>
-	<h2>TODO: email signup</h2>
+	<h1>Thank you for testing Shelby!<h1>
+	<h2>It's best if you sign up with twitter or facebook (we won't post anything)</h2>
+	<h3><%= link_to "sign up with twitter", "/auth/twitter" %></h3>
+	<h3><%= link_to "sign up with facebook", "/auth/facebook" %></h3>
+	<hr />
+	<h3>or sign up with email</h3>
+
+	<%= form_for(:user, :url => session_path(:user)) do |f| %>
+	  <div><%= f.label :name %><br />
+	  <%= f.text_field :name %></div>
+	
+		<div><%= f.label :nickname, "Username" %><br />
+	  <%= f.text_field :nickname %></div>
+	
+		<div><%= f.label :primary_email, "Email" %><br />
+	  <%= f.email_field :primary_email %></div>
+
+	  <div><%= f.label :password %><br />
+	  <%= f.password_field :password %></div>
+
+	  <div><%= f.submit "Create Account" %></div>
+	<% end %>
+
 <% else %>
 	<h1>Make sure you typed that URL correctly</h1>
 	or <%= link_to "request an early invite to Shelby", Settings::ShelbyAPI.web_root %>

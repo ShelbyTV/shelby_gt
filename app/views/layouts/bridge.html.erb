@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Shelby GT: the bridge</title>
+  <%= csrf_meta_tags %>
+	<%= stylesheet_link_tag "application" %>
+	<%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" %>
+</head>
+<body>
+
+<h1>the bridge</h1>
+
+<%= yield %>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		$.ajaxSetup({
+		  xhrFields: {withCredentials: true}
+		});
+		$.ajaxPrefilter(function(options, originalOptions, xhr) {
+		  //block POST, PUT, DEL requests for anon users
+		  // attach the API's csrf token to the request for logged in users
+		  if (options.type != 'GET') {
+		    var token = $('meta[name=csrf-token]').attr('content');
+		    if (token) xhr.setRequestHeader('X-CSRF-Token', token);
+		  }
+		});
+		
+	});
+</script>
+</body>
+</html>
