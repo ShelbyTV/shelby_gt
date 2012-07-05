@@ -3,8 +3,7 @@
 <html>
   <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Notification from Shelby.tv</title>
-    
+        <title><%= @user_from_name %> liked your video</title>
   </head>
   <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="-webkit-text-size-adjust: none;margin: 0;padding: 0;background-color: #FAFAFA;width: 100%;">
     <center>
@@ -48,10 +47,10 @@
                                   <h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 1.5em;font-weight: normal;line-height: 100%;margin-top: 0.5em;margin-right: 0;margin-bottom: 10px;margin-left: 0;">
                                     <div class="shelby-avatar" style="background: transparent;display: inline-block;height: 50px;margin-right: 1em;overflow: hidden;width: 50px;vertical-align: middle;color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
                                       <a href="#" style="color: #777;font-weight: normal;text-decoration: underline;">
-                                        <img src="<%= @user_from.user_image %>" alt="<%= @user_from.nickname %>" title="<%= @user_from.nickname %>" style="border: 0;height: 100%;line-height: 100%;outline: none;text-decoration: none;display: inline;">
+                                        <img src="<%= @user_from.user_image %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" style="border: 0;height: 100%;line-height: 100%;outline: none;text-decoration: none;display: inline;">
                                       </a>
                                     </div>
-                                    <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from.name %></a> liked your <a href="<%= @permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">video</a>.
+                                    <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> liked your <a href="<%= @frame_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">video</a>.
                                   </h4>
                               </div>
                             </td>
