@@ -7,11 +7,11 @@ describe GT::TwitterNormalizer do
   
   before(:each) do
     @video = Video.create
-    @frame_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+    @frame_creator = Factory.create(:user)
     @message = Message.new
   
   
-    @roll_creator = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+    @roll_creator = Factory.create(:user)
     @roll = Roll.new( :title => "title" )
     @roll.creator = @roll_creator
     @roll.save

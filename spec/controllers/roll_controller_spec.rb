@@ -231,6 +231,22 @@ describe V1::RollController do
         post :share, :roll_id => roll.id.to_s, :destination => ["email"], :text => "testing", :format => :json
         assigns(:status).should eq(404)
       end
+
+      it "should try to save email addresses to user's autocomplete" do
+        controller.current_user.should_receive(:store_autocomplete_info).once
+
+        roll = stub_model(Roll, :public => false)
+        Roll.stub!(:find).and_return(roll)
+        post :share, :roll_id => roll.id.to_s, :destination => ["email"], :text => "testing", :addresses => "spinosa@gmail.com, invalidaddress, j@jay.net", :format => :json
+      end
+
+      it "should NOT try to save email addresses to user's autocomplete if none are specified" do
+        controller.current_user.should_not_receive(:store_autocomplete_info)
+
+        roll = stub_model(Roll, :public => false)
+        Roll.stub!(:find).and_return(roll)
+        post :share, :roll_id => roll.id.to_s, :destination => ["email"], :text => "testing", :format => :json
+      end
     end
     
   end

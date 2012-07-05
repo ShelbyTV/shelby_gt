@@ -31,6 +31,7 @@ describe GT::UserManager do
     it "should get real User when one exists" do
       nick, provider, uid = "whatever", "fb", "123uid"
       u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid
@@ -47,6 +48,7 @@ describe GT::UserManager do
     it "should get faux User when one exists" do
       nick, provider, uid = "whatever2", "fb", "123uid2"
       u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:true])
+      u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid
@@ -63,6 +65,7 @@ describe GT::UserManager do
     it "should add a public roll to existing user if they're missing it" do
       nick, provider, uid = "whatever--", "fb--", "123uid--"
       u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid
@@ -84,6 +87,7 @@ describe GT::UserManager do
       nick, provider, uid = "whatever--b-", "fb--", "123uid--b-"
       thumb_url = "some://thumb.url"
       u = User.new(:nickname => nick, :faux => false)
+      u.downcase_nickname = nick
       u.user_image = thumb_url
       auth = Authentication.new
       auth.provider = provider
@@ -99,17 +103,21 @@ describe GT::UserManager do
         usr.should == u
         usr.watch_later_roll.class.should == Roll
         usr.watch_later_roll.persisted?.should == true
+        usr.watch_later_roll.roll_type.should == Roll::TYPES[:special_watch_later]
         
         usr.viewed_roll.class.should == Roll
         usr.viewed_roll.persisted?.should == true
+        usr.viewed_roll.roll_type.should == Roll::TYPES[:special_viewed]
 
         usr.upvoted_roll.class.should == Roll
         usr.upvoted_roll.upvoted_roll.should == true
         usr.upvoted_roll.persisted?.should == true
+        usr.upvoted_roll.roll_type.should == Roll::TYPES[:special_upvoted]
                 
         usr.public_roll.class.should == Roll
         usr.public_roll.persisted?.should == true
         usr.public_roll.creator_thumbnail_url.should == thumb_url
+        usr.public_roll.roll_type.should == Roll::TYPES[:special_public]
       }.should_not change { User.count }
     end
     
@@ -206,6 +214,7 @@ describe GT::UserManager do
       r.public.should == true
       r.collaborative.should == false
       r.creator.should == u
+      r.roll_type.should == Roll::TYPES[:special_public]
       
       #watch later
       r = u.watch_later_roll
@@ -214,6 +223,7 @@ describe GT::UserManager do
       r.public.should == false
       r.collaborative.should == false
       r.creator.should == u
+      r.roll_type.should == Roll::TYPES[:special_watch_later]
       
       #upvoted
       r = u.upvoted_roll
@@ -223,6 +233,7 @@ describe GT::UserManager do
       r.collaborative.should == false
       r.upvoted_roll.should == true
       r.creator.should == u
+      r.roll_type.should == Roll::TYPES[:special_upvoted]
       
       #viewed
       r = u.viewed_roll
@@ -231,6 +242,7 @@ describe GT::UserManager do
       r.public.should == false
       r.collaborative.should == false
       r.creator.should == u
+      r.roll_type.should == Roll::TYPES[:special_viewed]
     end
     
     it "should have a correct Authentication on the User it creates" do
@@ -247,6 +259,7 @@ describe GT::UserManager do
     it "should update user's image if it's null" do
       nick, provider, uid = "whatever-x1", "fb", "123uid-x1"
       u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
       auth.uid = uid

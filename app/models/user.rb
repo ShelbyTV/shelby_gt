@@ -70,6 +70,8 @@ class User
 
   key :cohorts, Array, :typecast => 'String', :abbr => :aq, :default => []
 
+  key :autocomplete, Hash, :abbr => :ar
+
   #--old keys--
   many :authentications
   
@@ -118,7 +120,7 @@ class User
   end
   
   if Settings::Performance.validate_uniqueness_primary_email
-    validates_uniqueness_of :primary_email
+    validates_uniqueness_of :primary_email, :allow_blank => true, :allow_nil => true
   end
   
   # Latin-1 and other extensions:   \u00c0 - \u02ae
@@ -182,6 +184,19 @@ class User
     GT::UserManager.ensure_users_special_rolls(self, true)
   end
   
+  # given a comma separated string of autocomplete items in info, store all unique, valid ones
+  # in the array at self.autocomplete[key]
+  def store_autocomplete_info(key, info)
+    items = info.split(',').map{|item| item.strip}.uniq
+    if key == :email
+      items.select! {|address| address =~ /\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/}
+    end
+    if !items.empty?
+      self.push_uniq("autocomplete.#{key}" => {:$each => items})
+      self.reload
+    end
+  end
+
   # -- Old Methods --   
   def self.find_by_nickname(n)
     return nil unless n.respond_to? :downcase

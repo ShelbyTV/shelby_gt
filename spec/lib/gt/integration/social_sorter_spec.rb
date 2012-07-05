@@ -117,7 +117,7 @@ describe GT::SocialSorter do
         GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
       }.should change { Frame.count }.by(1)
 
-      new_observer = User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}" )
+      new_observer = Factory.create(:user)
       
       new_observer.following_roll?(@existing_user.public_roll).should == false
       lambda {
@@ -157,9 +157,9 @@ describe GT::SocialSorter do
       
     
     it "should add DashboardEntry for multiple Users following Roll who are not the observing User" do
-      @existing_user.public_roll.add_follower(User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
-      @existing_user.public_roll.add_follower(User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
-      @existing_user.public_roll.add_follower(User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
+      @existing_user.public_roll.add_follower(Factory.create(:user))
+      @existing_user.public_roll.add_follower(Factory.create(:user))
+      @existing_user.public_roll.add_follower(Factory.create(:user))
       @existing_user.public_roll.save
       
       lambda {
@@ -275,9 +275,9 @@ describe GT::SocialSorter do
     end
     
     it "should *not* add DashboardEntrys for multiple Users following Roll who are not the observing User" do
-      @existing_user.public_roll.add_follower(User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
-      @existing_user.public_roll.add_follower(User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
-      @existing_user.public_roll.add_follower(User.create( :nickname => "#{rand.to_s}-#{Time.now.to_f}"))
+      @existing_user.public_roll.add_follower(Factory.create(:user))
+      @existing_user.public_roll.add_follower(Factory.create(:user))
+      @existing_user.public_roll.add_follower(Factory.create(:user))
       @existing_user.public_roll.save
       
       lambda {
