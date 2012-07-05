@@ -35,7 +35,7 @@ class V1::VideoController < ApplicationController
         @status = 200
       else
         @url = params.delete(:url)
-        @video = GT::VideoManager.get_or_create_videos_for_url(@url)[0] if @url
+        @video = GT::VideoManager.get_or_create_videos_for_url(@url)[:videos][0] if @url
         if @video
           @status = 200
         else
