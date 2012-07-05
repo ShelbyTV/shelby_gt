@@ -212,7 +212,7 @@ module GT
       
       # Hulu
       def self.parse_url_for_hulu_provider_info(url)
-        match_data = url.match( /hulu.+\/(\d{6,})\//i )
+        match_data = url.match( /hulu.+\/(\d{6,})/i )
         if match_data and match_data.size == 2
           return {:provider_name => "hulu", :provider_id => match_data[1]}
         end

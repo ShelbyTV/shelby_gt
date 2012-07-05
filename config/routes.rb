@@ -33,13 +33,7 @@ ShelbyGt::Application.routes.draw do
   get 'oauth/gate' => 'oauth#gate'
   get 'oauth/index' => 'oauth#index'
   get 'oauth/clientpage' => 'oauth#clientpage'
-
-
-  ########################
-  # Video Radar / Bookmarklet
-  get '/radar/boot' => 'video_radar#boot', :format => 'js'
-  get '/radar/load' => 'video_radar#load', :format => 'js'
-
+  
   ########################
   # Namespace allows for versioning of API
   # NOTE: Must use V1::ControllerName in controllers
