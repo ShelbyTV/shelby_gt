@@ -6,6 +6,9 @@ module GT
     def self.check_and_send_upvote_notification(user, frame)
       raise ArgumentError, "must supply valid user" unless user.is_a?(User) and !user.blank?
       raise ArgumentError, "must supply valid frame" unless frame.is_a?(Frame) and !frame.blank?
+      
+      # send OG action to FB
+      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('favorite', user, frame) }
             
       # don't email the creator if they are the upvoting user or they dont have an email address!
       user_to = frame.creator
@@ -15,10 +18,7 @@ module GT
       return unless frame.creator.gt_enabled
       
       return unless user_to.preferences.upvote_notifications
-      
-      # send OG action to FB
-      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('favorite', user, frame) }
-      
+            
       NotificationMailer.upvote_notification(user_to, user, frame).deliver
     end
 
