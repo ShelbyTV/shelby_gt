@@ -4,11 +4,14 @@ module GT
     def self.send_action(action, user, object, expires_in=nil)
       raise ArgumentError, "must supply user" unless user.is_a?(User)
       raise ArgumentError, "must supply an action" unless action.is_a?(String)
-
-      is_roll_share = (object.has_key?(:roll) and object.has_key?(:message)
-      is_comment = object.has_key?(:message) and object.has_key?(:conversation)
-      unless object.is_a?(Frame) or (object.is_a?(Hash) and (is_roll_share or is_comment))
-        raise ArgumentError, "must supply a frame or hash with conversation and message" 
+      
+      if object.is_a?(Hash)
+        is_roll_share = object.has_key?(:roll) and object.has_key?(:message)
+        is_comment = object.has_key?(:message) and object.has_key?(:conversation)
+      end
+      
+      unless object.is_a?(Frame) or (is_roll_share or is_comment)
+        raise ArgumentError, "must supply a frame or a valid hash" 
       end
       
       Rails.logger.info("[GT::OpenGraph] Would have sent OG action: #{action}") unless "production" == Rails.env
