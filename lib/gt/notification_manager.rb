@@ -26,6 +26,9 @@ module GT
       raise ArgumentError, "must supply valid new frame" unless new_frame.is_a?(Frame) and !new_frame.blank?
       raise ArgumentError, "must supply valid old frame" unless old_frame.is_a?(Frame) and !old_frame.blank?
       
+      # send OG action to FB
+      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', new_frame.creator, new_frame) }
+      
       # don't email the creator if they are the upvoting user or they dont have an email address!
       user_to = old_frame.creator
       return if (new_frame.creator_id == old_frame.creator_id) or !user_to.primary_email or (user_to.primary_email == "")
@@ -34,10 +37,7 @@ module GT
       return unless user_to.gt_enabled
       
       return unless user_to.preferences.reroll_notifications
-      
-      # send OG action to FB
-      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', new_frame.creator, new_frame) }
-      
+            
       NotificationMailer.reroll_notification(new_frame, old_frame).deliver
     end
     
