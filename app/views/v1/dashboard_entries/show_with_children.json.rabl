@@ -11,7 +11,7 @@ child :frame => "frame" do |f|
 	end
 
 	child :creator => "creator" do
-		attributes :id, :name, :nickname, :user_image_original, :user_image, :faux, :public_roll_id
+		attributes :id, :name, :nickname, :user_image_original, :user_image, :faux, :public_roll_id, :gt_enabled
 	end
 
 	# upvote_users is a fake attribute that is populated in the controller	
