@@ -15,29 +15,31 @@ module GT
       
       case action
       when 'watch'
-        og_url = object.permalink
         og_action = "video.watches"
+        og_object[:roll] = object.roll.permalink
+        og_object[:video] = object.permalink
       when 'favorite'
-        og_url = object.permalink
         og_action = "shelbytv:favorite"
+        og_object[:roll] = object.roll.permalink
+        og_object[:other] = object.permalink
       when 'roll'
-        og_url = object.permalink
         og_action = "shelbytv:roll"
+        og_object[:roll] = object.permalink
       when 'comment'
         conversation = object[:conversation]
         msg = object[:message]
-        frame = object[:conversation].frame
-        og_url = frame.permalink
+        frame = conversation.frame
         og_action = "shelbytv:comment"
         og_object[:message] = msg.text
         og_object[:roll] = frame.roll.permalink
+        og_object[:other] = frame.permalink
+      when 'share'
+        #TODO
       end
-
-      og_object[:video] = og_url
       
-      Rails.logger.info("[OG POST] Posted: #{og_action}::  #{og_object}")
-      
-      post_to_og(user, og_action, og_object, expires_in) if og_action
+      if og_action and post_to_og(user, og_action, og_object, expires_in) 
+        Rails.logger.info("[OG POST] Posted: #{og_action}::  #{og_object}")
+      end
     end
     
     private
