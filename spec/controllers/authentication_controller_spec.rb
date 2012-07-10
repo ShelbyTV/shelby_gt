@@ -138,7 +138,7 @@ describe AuthenticationsController do
         
         it "should accept when GtInterest found" do
           gt_interest = Factory.create(:gt_interest)
-          cookies[:gt_access_token] = gt_interest.id.to_s
+          cookies[:gt_access_token] = {:value => gt_interest.id.to_s, :domain => ".shelby.tv"}
       
           u = Factory.create(:user)
           GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
@@ -147,6 +147,7 @@ describe AuthenticationsController do
           assigns(:current_user).should == u
           assigns(:current_user).gt_enabled.should == true
           cookies[:_shelby_gt_common].should_not == nil
+          cookies[:gt_access_token].should == nil
           assigns(:opener_location).should == Settings::ShelbyAPI.web_root
         end
     
@@ -289,7 +290,7 @@ describe AuthenticationsController do
     
       it "should accept and convert if GtInterest found" do
         gt_interest = Factory.create(:gt_interest)
-        cookies[:gt_access_token] = gt_interest.id.to_s
+        cookies[:gt_access_token] = {:value => gt_interest.id.to_s, :domain => ".shelby.tv"}
       
         GT::UserManager.should_receive :convert_faux_user_to_real
         GT::UserManager.should_receive :start_user_sign_in
@@ -297,6 +298,7 @@ describe AuthenticationsController do
         get :create
         assigns(:current_user).should == @u
         cookies[:_shelby_gt_common].should_not == nil
+        cookies[:gt_access_token].should == nil
         assigns(:opener_location).should == Settings::ShelbyAPI.web_root
       end
     

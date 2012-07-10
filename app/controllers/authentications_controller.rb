@@ -38,7 +38,8 @@ class AuthenticationsController < ApplicationController
         sign_in_current_user(user, omniauth)
 
       elsif gt_interest = GtInterest.find(cookies[:gt_access_token])
-        gt_interest.used!(user)        
+        gt_interest.used!(user)
+        cookies.delete(:gt_access_token, :domain => ".shelby.tv")
         sign_in_current_user(user, omniauth)
         
       elsif cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
@@ -85,7 +86,10 @@ class AuthenticationsController < ApplicationController
           user.remember_me!(true)
           set_common_cookie(user, session[:_csrf_token])
           
-          gt_interest.used!(user) if gt_interest
+          if gt_interest
+            gt_interest.used!(user) 
+            cookies.delete(:gt_access_token, :domain => ".shelby.tv")
+          end
           use_cohort_entrance(user, cohort_entrance) if cohort_entrance
           GT::InvitationManager.private_roll_invite(user, private_invite) if private_invite
           
