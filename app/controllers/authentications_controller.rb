@@ -90,7 +90,10 @@ class AuthenticationsController < ApplicationController
             gt_interest.used!(user) 
             cookies.delete(:gt_access_token, :domain => ".shelby.tv")
           end
-          use_cohort_entrance(user, cohort_entrance) if cohort_entrance
+          if cohort_entrance
+            use_cohort_entrance(user, cohort_entrance)
+            session[:cohort_entrance_id] = nil
+          end
           GT::InvitationManager.private_roll_invite(user, private_invite) if private_invite
           
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
@@ -114,7 +117,10 @@ class AuthenticationsController < ApplicationController
         user.remember_me!(true)
         set_common_cookie(user, session[:_csrf_token])
 
-        use_cohort_entrance(user, cohort_entrance)
+        if cohort_entrance
+          use_cohort_entrance(user, cohort_entrance)
+          session[:cohort_entrance_id] = nil
+        end
         GT::InvitationManager.private_roll_invite(user, private_invite) if private_invite
 
         StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['username'])
@@ -183,7 +189,10 @@ class AuthenticationsController < ApplicationController
       GT::UserManager.convert_faux_user_to_real(user, omniauth) if user.faux == User::FAUX_STATUS[:true]
       GT::UserManager.start_user_sign_in(user, :omniauth => omniauth)
       
-      use_cohort_entrance user, CohortEntrance.find(session[:cohort_entrance_id])
+      if session[:cohort_entrance_id]
+        use_cohort_entrance user, CohortEntrance.find(session[:cohort_entrance_id])
+        session[:cohort_entrance_id] = nil
+      end
       
       sign_in(:user, user)
       

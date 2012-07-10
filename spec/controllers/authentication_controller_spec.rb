@@ -35,6 +35,7 @@ describe AuthenticationsController do
           get :create
           assigns(:current_user).cohorts.should == expected_cohorts
           @u.reload.cohorts.should == expected_cohorts
+          session[:cohort_entrance_id].should == nil
         end
     
         it "should handle redirect via session on sign in" do
@@ -205,6 +206,7 @@ describe AuthenticationsController do
           assigns(:current_user).should == u
           assigns(:current_user).gt_enabled.should == true
           cookies[:_shelby_gt_common].should_not == nil
+          session[:cohort_entrance_id].should == nil
           assigns(:opener_location).should == Settings::ShelbyAPI.web_root
         
           assigns(:current_user).cohorts.should == cohorts
@@ -225,6 +227,7 @@ describe AuthenticationsController do
           assigns(:current_user).should == u
           assigns(:current_user).gt_enabled.should == true
           cookies[:_shelby_gt_common].should_not == nil
+          session[:cohort_entrance_id].should == nil
           assigns(:opener_location).should == Settings::ShelbyAPI.web_root
         
           assigns(:current_user).cohorts.should == cohorts
