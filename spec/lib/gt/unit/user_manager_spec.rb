@@ -190,15 +190,15 @@ describe GT::UserManager do
       u.public_roll.origin_network.should == "fb"
     end
     
-    it "should have the faux user follow its own public and upvoted rolls (should not follow watch_later, viewed rolls)" do
+    it "should have the faux user follow its own public, upvoted and watch_later rolls (should not follow viewed rolls)" do
       nick, provider, uid = "whatever3-c", "fb", "123uid3-c"
       lambda {
         u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
         
         u.following_roll?(u.public_roll).should == true
         u.following_roll?(u.upvoted_roll).should == true
+        u.following_roll?(u.watch_later_roll).should == true
         
-        u.following_roll?(u.watch_later_roll).should == false
         u.following_roll?(u.viewed_roll).should == false
       }.should change { User.count }.by(1)
     end
@@ -364,6 +364,15 @@ describe GT::UserManager do
       real_u.persisted?.should == true
       real_u.faux.should == User::FAUX_STATUS[:converted]
       new_auth.should == nil
+    end
+    
+    it "should follow their watch_later roll if they're not" do
+      @faux_u.watch_later_roll.remove_follower(@faux_u)
+      @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == false
+      
+      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      
+      @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == true
     end
 
     it "should have one authentication with an oauth token" do
@@ -652,12 +661,12 @@ describe GT::UserManager do
         u.public_roll.origin_network.should == Roll::SHELBY_USER_PUBLIC_ROLL
       end
       
-      it "should have the user follow their public and upvoted rolls (and NOT the watch_later, or viewed Rolls)" do
+      it "should have the user follow their public, upvoted, and watch_later rolls (and NOT the viewed Roll)" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         
         u.following_roll?(u.public_roll).should == true
         u.following_roll?(u.upvoted_roll).should == true
-        u.following_roll?(u.watch_later_roll).should == false
+        u.following_roll?(u.watch_later_roll).should == true
         u.following_roll?(u.viewed_roll).should == false
       end
       
