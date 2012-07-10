@@ -1,5 +1,6 @@
 # encoding: utf-8
 require 'user_manager'
+require 'securerandom'
 
 # We are using the User model form Shelby (before rolls)
 # New vs. old keys will be clearly listed
@@ -195,6 +196,11 @@ class User
       self.push_uniq("autocomplete.#{key}" => {:$each => items})
       self.reload
     end
+  end
+  
+  #default implementation hits the DB, and that sucks b/c we don't index on remember_token
+  def self.remember_token
+    SecureRandom.uuid
   end
 
   # -- Old Methods --   

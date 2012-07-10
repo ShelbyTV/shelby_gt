@@ -1,19 +1,3 @@
-module Devise
-  module Models
-    module Rememberable
-      
-      require 'securerandom' # to generate a UUID
-      
-      def remember_me!(extend_period=false)
-        self.remember_token = SecureRandom.uuid if generate_remember_token?
-        self.remember_created_at = Time.now.utc if generate_remember_timestamp?(extend_period)
-        save(:validate => false)
-      end
-      
-    end
-  end
-end
-
 # Use this hook to configure devise mailer, warden hooks and so forth.
 # Many of these configuration options can be set straight in your model.
 Devise.setup do |config|
@@ -122,14 +106,15 @@ Devise.setup do |config|
 
   # ==> Configuration for :rememberable
   # The time the user will be remembered without asking for credentials again.
-  config.remember_for = 8.weeks
+  config.remember_for = 12.weeks
 
   # If true, extends the user's remember period when remembered via cookie.
   config.extend_remember_period = true
 
   # If true, uses the password salt as remember token. This should be turned
   # to false if you are not using database authenticatable.
-  config.use_salt_as_remember_token = true
+  # we are use db authenticatable, but not always, and we have a good way of generating and storing this token.
+  config.use_salt_as_remember_token = false
 
   # Options to be passed to the created cookie. For instance, you can set
   # :secure => true in order to force SSL only cookies.
