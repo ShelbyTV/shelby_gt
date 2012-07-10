@@ -66,7 +66,7 @@ module GT
       users_to_email.each { |u| NotificationMailer.comment_notification(u, new_message.user, frame, new_message).deliver unless u.primary_email.blank? }
       
       # send OG action to FB
-      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('comment', user, {:conversation => c, :message => new_message}) }
+      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('comment', user, c, new_message.text) }
 
     end
 
