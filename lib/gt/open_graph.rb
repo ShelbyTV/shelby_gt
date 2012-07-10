@@ -1,10 +1,10 @@
 module GT
   class OpenGraph
     
-    def self.send_action(action, user, object, expires_in=nil)
+    def self.send_action(action, user, object, message=nil, expires_in=nil)
       raise ArgumentError, "must supply user" unless user.is_a?(User)
       raise ArgumentError, "must supply an action" unless action.is_a?(String)
-      raise ArgumentError, "must supply a frame or hash with conversation and message" unless object.is_a?(Frame) or (object.is_a?(Hash) and (object.has_key?(:message) and object.has_key?(:conversation)))
+      raise ArgumentError, "must supply a frame, roll, or conversation"  unless object.is_a?(Conversation) or object.is_a?(Frame) or object.is_a?(Roll)
       
       Rails.logger.info("[GT::OpenGraph] Would have sent OG action: #{action}") unless "production" == Rails.env
       
@@ -26,15 +26,20 @@ module GT
         og_action = "shelbytv:roll"
         og_object[:roll] = object.permalink
       when 'comment'
-        conversation = object[:conversation]
-        msg = object[:message]
+        conversation = object
         frame = conversation.frame
         og_action = "shelbytv:comment"
-        og_object[:message] = msg.text
+        og_object[:message] = message
         og_object[:roll] = frame.roll.permalink
         og_object[:other] = frame.permalink
       when 'share'
-        #TODO
+        og_action = "shelbytv:share"
+        og_object[:message] = message
+        if object.is_a?(Roll)
+          og_object[:roll] = object.permalink
+        elsif object.is_a?(Frame)
+          og_object[:other] = object.permalink
+        end
       end
       
       if og_action and post_to_og(user, og_action, og_object, expires_in) 
