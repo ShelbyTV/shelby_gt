@@ -70,7 +70,7 @@ class User
 
   key :cohorts, Array, :typecast => 'String', :abbr => :aq, :default => []
 
-  key :autocomplete, Hash, :abbr => :ar
+  key :autocomplete, Hash, :abbr => :as
 
   #--old keys--
   many :authentications
