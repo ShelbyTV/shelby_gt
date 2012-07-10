@@ -4,7 +4,7 @@ module GT
     def self.send_action(action, user, object, message=nil, expires_in=nil)
       raise ArgumentError, "must supply user" unless user.is_a?(User)
       raise ArgumentError, "must supply an action" unless action.is_a?(String)
-      raise ArgumentError, "must supply a frame, roll, or conversation"  unless object.is_a?(Conversation) or object.is_a?(Frame) or object.is_a?(Roll)
+      raise ArgumentError, "must supply a frame, roll, or conversation" unless (object.is_a?(Conversation) or object.is_a?(Frame) or object.is_a?(Roll))
       
       Rails.logger.info("[GT::OpenGraph] Would have sent OG action: #{action}") unless "production" == Rails.env
       
@@ -24,7 +24,8 @@ module GT
         og_object[:other] = object.permalink
       when 'roll'
         og_action = "shelbytv:roll"
-        og_object[:roll] = object.permalink
+        og_object[:roll] = object.roll.permalink
+        og_object[:other] = object.permalink
       when 'comment'
         conversation = object
         frame = conversation.frame
