@@ -165,7 +165,7 @@ describe AuthenticationsController do
         end
     
         it "should accept when invited to a roll" do
-          cookies[:gt_roll_invite] = "uid,emial,rollid"
+          cookies[:gt_roll_invite] = {:value => "uid,emial,rollid", :domain => ".shelby.tv"}
           User.should_receive(:find).with("uid").and_return Factory.create(:user, :gt_enabled => true)
           Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
           GT::InvitationManager.should_receive :private_roll_invite
@@ -177,6 +177,7 @@ describe AuthenticationsController do
           assigns(:current_user).should == u
           assigns(:current_user).gt_enabled.should == true
           cookies[:_shelby_gt_common].should_not == nil
+          cookies[:gt_roll_invite].should == nil
           assigns(:opener_location).should == Settings::ShelbyAPI.web_root
         end
     
@@ -327,6 +328,7 @@ describe AuthenticationsController do
         get :create
         assigns(:current_user).reload.should == @u
         cookies[:_shelby_gt_common].should_not == nil
+        cookies[:gt_roll_invite].should == nil
         assigns(:opener_location).should == Settings::ShelbyAPI.web_root
       end
     
