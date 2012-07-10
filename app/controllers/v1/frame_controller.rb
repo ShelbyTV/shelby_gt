@@ -345,7 +345,9 @@ class V1::FrameController < ApplicationController
             StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'], current_user.id, 'frame_re_roll', request)
             
             # send email notification in a non-blocking manor
-            #ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_reroll_notification(frame_re_roll, @frame) }
+            ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_reroll_notification(frame_to_re_roll, @frame) }
+            # send OG action to FB
+            ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', current_user, @frame) }
             
             @status = 200
           else
@@ -468,6 +470,9 @@ class V1::FrameController < ApplicationController
         end
       else
         if @frame.upvote!(current_user)
+          # send OG action to FB
+          ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('favorite', current_user, @frame) }
+          
           @status = 200
           GT::UserActionManager.upvote!(current_user.id, @frame.id)
           StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote', request)

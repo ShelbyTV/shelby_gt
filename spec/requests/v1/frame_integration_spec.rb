@@ -243,7 +243,7 @@ describe 'v1/frame' do
           roll = Factory.create(:roll, :creator_id => @u1.id) 
           @f.roll_id = roll.id; @f.save
           post '/v1/roll/'+roll.id+'/frames?frame_id='+@f.id
-        
+
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/score")
           response.body.should have_json_path("result/roll")

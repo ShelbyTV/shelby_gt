@@ -15,10 +15,10 @@ module SocialPosting
       def post_comment(message, fb_post_id=nil, entity=nil)
         if Settings::Facebook.should_send_post
           # once our share action and roll object are approved by facebook, this will simplify to:
-          # return !!GT::OpenGraph.send_action('share', @user, {:roll => entity, :message => message})
+          # return !!GT::OpenGraph.send_action('share', @user, entity, message)
 
           # send OG action to FB
-          ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('share', @user, entity, message) }
+          #ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('share', @user, entity, message) }
           
           if entity.is_a? Roll            
             return !!facebook_client.put_object("me","feed",{

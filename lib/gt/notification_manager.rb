@@ -1,5 +1,3 @@
-require 'open_graph'
-
 module GT
   class NotificationManager
     
@@ -7,9 +5,6 @@ module GT
       raise ArgumentError, "must supply valid user" unless user.is_a?(User) and !user.blank?
       raise ArgumentError, "must supply valid frame" unless frame.is_a?(Frame) and !frame.blank?
       
-      # send OG action to FB
-      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('favorite', user, frame) }
-            
       # don't email the creator if they are the upvoting user or they dont have an email address!
       user_to = frame.creator
       return if !user_to or (user == user_to) or !user_to.primary_email or (user_to.primary_email == "")
@@ -25,10 +20,7 @@ module GT
     def self.check_and_send_reroll_notification(old_frame, new_frame)
       raise ArgumentError, "must supply valid new frame" unless new_frame.is_a?(Frame) and !new_frame.blank?
       raise ArgumentError, "must supply valid old frame" unless old_frame.is_a?(Frame) and !old_frame.blank?
-      
-      # send OG action to FB
-      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', new_frame.creator, new_frame) }
-      
+            
       # don't email the creator if they are the upvoting user or they dont have an email address!
       user_to = old_frame.creator
       return if (new_frame.creator_id == old_frame.creator_id) or !user_to.primary_email or (user_to.primary_email == "")
@@ -65,9 +57,6 @@ module GT
       
       users_to_email.each { |u| NotificationMailer.comment_notification(u, new_message.user, frame, new_message).deliver unless u.primary_email.blank? }
       
-      # send OG action to FB
-      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('comment', user, c, new_message.text) }
-
     end
 
     def self.check_and_send_join_roll_notification(user_from, roll)
