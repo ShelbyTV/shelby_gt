@@ -91,11 +91,10 @@ class V1::UserController < ApplicationController
         
         if @rolls
           
-          # move heart roll to @rolls[1]
-          if heartRollIndex = @rolls.index(current_user.upvoted_roll)
-            heartRoll = @rolls.slice!(heartRollIndex)
-            @rolls.insert(0, heartRoll)
-          end
+          # re-order public roll, hearts, watch later
+          self.class.move_roll(@rolls, current_user.public_roll, 0)
+          self.class.move_roll(@rolls, current_user.upvoted_roll, 1)
+          self.class.move_roll(@rolls, current_user.watch_later_roll, 2)
           
           # Load all roll creators to prevent N+1 queries
           @creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
@@ -146,5 +145,14 @@ class V1::UserController < ApplicationController
       end
     end
   end
+  
+  private
+  
+    def self.move_roll(roll_array, target_roll, pos)
+      if rollIndex = roll_array.index(target_roll)
+        r = roll_array.slice!(rollIndex)
+        roll_array.insert(pos, r)
+      end
+    end
   
 end

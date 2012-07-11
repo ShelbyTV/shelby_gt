@@ -75,6 +75,8 @@ describe 'v1/user' do
           get '/v1/user/'+@u1.id+'/rolls/following'
           response.body.should be_json_eql(200).at_path("status")
           parse_json(response.body)["result"].class.should eq(Array)
+          parse_json(response.body)["result"][0]["id"].should == r1.id.to_s
+          parse_json(response.body)["result"][0]["followed_at"].should == @u1.roll_followings[0].id.generation_time.to_f
         end
       
         it "should not show a users rolls if the supplied user_id is NOT the current_users" do
@@ -83,20 +85,27 @@ describe 'v1/user' do
           response.body.should be_json_eql(403).at_path("status")
         end
       
-        it "should have the first and second rolls be special" do
-          r1 = Factory.create(:roll, :creator => @u1)
-          r1.add_follower(@u1)
-          r2 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_upvoted])
-          r2.add_follower(@u1)
+        it "should have the first three rolls be mine, hearts, watch later" do
+          r0 = Factory.create(:roll, :creator => @u1)
+          r0.add_follower(@u1)
+          wl_roll = Factory.create(:roll, :creator => @u1)
+          wl_roll.add_follower(@u1)
+          public_roll = Factory.create(:roll, :creator => @u1)
+          public_roll.add_follower(@u1)
+          hearts_roll = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_upvoted])
+          hearts_roll.add_follower(@u1)
           r3 = Factory.create(:roll, :creator => @u1)
           r3.add_follower(@u1)
-          @u1.public_roll = r1
-          @u1.upvoted_roll = r2
+          @u1.public_roll = public_roll
+          @u1.upvoted_roll = hearts_roll
+          @u1.watch_later_roll = wl_roll
           @u1.save
         
           get '/v1/user/'+@u1.id+'/rolls/following'
-          parse_json(response.body)["result"][0]["id"].should eq(r2.id.to_s)
-          parse_json(response.body)["result"][0]["roll_type"].should eq(r2.roll_type)
+          parse_json(response.body)["result"][0]["id"].should == public_roll.id.to_s
+          parse_json(response.body)["result"][0]["roll_type"].should == public_roll.roll_type
+          parse_json(response.body)["result"][1]["id"].should == hearts_roll.id.to_s
+          parse_json(response.body)["result"][2]["id"].should == wl_roll.id.to_s
         end
       end
       
