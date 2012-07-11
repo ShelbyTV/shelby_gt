@@ -220,7 +220,7 @@ describe GT::UserManager do
       r = u.watch_later_roll
       r.class.should == Roll
       r.persisted?.should == true
-      r.public.should == false
+      r.public.should == true
       r.collaborative.should == false
       r.creator.should == u
       r.roll_type.should == Roll::TYPES[:special_watch_later]
@@ -373,6 +373,15 @@ describe GT::UserManager do
       GT::UserManager.convert_faux_user_to_real(@faux_u)
       
       @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == true
+    end
+    
+    it "should make their watch_later roll public if it's not" do
+      @faux_u.watch_later_roll.update_attribute(:public, false)
+      @faux_u.watch_later_roll.reload.public.should == false
+      
+      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      
+      @faux_u.watch_later_roll.reload.public.should == true
     end
 
     it "should have one authentication with an oauth token" do
