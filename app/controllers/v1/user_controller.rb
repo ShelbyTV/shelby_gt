@@ -91,6 +91,9 @@ class V1::UserController < ApplicationController
         
         if @rolls
           
+          # sort based on followed_at
+          @rolls.sort! { |a,b| b.roll_following_for(current_user).id.generation_time <=> a.roll_following_for(current_user).id.generation_time }
+          
           # re-order public roll, hearts, watch later
           self.class.move_roll(@rolls, current_user.public_roll, 0)
           self.class.move_roll(@rolls, current_user.upvoted_roll, 1)

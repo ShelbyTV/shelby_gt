@@ -8,7 +8,7 @@ attributes :creator_nickname, :following_user_count
 
 # Only setting this when roll is retrieved via roll_followings
 code :followed_at do |r|
-  rf = current_user.roll_followings.select { |rf| rf.roll_id == r.id } [0]
+  rf = r.roll_following_for current_user
   rf.id.generation_time.to_f if rf
 end
 
