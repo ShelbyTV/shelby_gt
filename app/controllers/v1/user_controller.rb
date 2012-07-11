@@ -91,8 +91,11 @@ class V1::UserController < ApplicationController
         
         if @rolls
           
-          # sort based on followed_at descending
-          @rolls.sort! { |a,b| current_user.roll_following_for(b).id.generation_time <=> current_user.roll_following_for(a).id.generation_time }
+          self.class.trace_execution_scoped(['UserController/roll_followings/sort']) do
+            # sort based on followed_at descending
+            # using sort_by b/c we have an expensive calculation to do when sorting
+            @rolls.sort_by! { |r| current_user.roll_following_for(r).id.generation_time } .reverse!
+          end
           
           # re-order public roll, hearts, watch later
           self.class.move_roll(@rolls, current_user.public_roll, 0)

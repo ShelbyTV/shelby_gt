@@ -136,10 +136,12 @@ describe 'v1/user' do
           public_roll = Factory.create(:roll, :creator => @u1, :collaborative => false)
           public_roll.add_follower(@u1)
           @u1.public_roll = public_roll
+          @u1.save
           
           upvoted_roll = Factory.create(:roll, :creator => @u1, :collaborative => false)
           upvoted_roll.add_follower(@u1)
           @u1.upvoted_roll = upvoted_roll
+          @u1.save
           
           r1 = Factory.create(:roll, :creator => @u1)
           r1.add_follower(@u1)
@@ -154,8 +156,8 @@ describe 'v1/user' do
           response.body.should have_json_size(4).at_path("result")
           parse_json(response.body)["result"][0]["id"].should == public_roll.id.to_s
           parse_json(response.body)["result"][1]["id"].should == upvoted_roll.id.to_s
-          parse_json(response.body)["result"][2]["id"].should == r1.id.to_s
-          parse_json(response.body)["result"][3]["id"].should == r2.id.to_s
+          parse_json(response.body)["result"][2]["id"].should == r2.id.to_s
+          parse_json(response.body)["result"][3]["id"].should == r1.id.to_s
         end
       end
       
