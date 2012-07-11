@@ -94,12 +94,10 @@ describe 'v1/user' do
           r2.add_follower(@u1)
           
           #adjust the roll followings id which in turn is used as creation time
-          r1.roll_following_for(@u1).update_attribute(:_id, BSON::ObjectId.from_time(50.days.ago))
-          r1.save
-          r2.roll_following_for(@u1).update_attribute(:_id, BSON::ObjectId.from_time(10.days.ago))
-          r2.save
-          r0.roll_following_for(@u1).update_attribute(:_id, BSON::ObjectId.from_time(1.days.ago))
-          r0.save
+          @u1.roll_following_for(r1).update_attribute(:_id, BSON::ObjectId.from_time(50.days.ago))
+          @u1.roll_following_for(r2).update_attribute(:_id, BSON::ObjectId.from_time(10.days.ago))
+          @u1.roll_following_for(r0).update_attribute(:_id, BSON::ObjectId.from_time(1.days.ago))
+          @u1.save
           
           get '/v1/user/'+@u1.id+'/rolls/following'
           response.body.should be_json_eql(200).at_path("status")
