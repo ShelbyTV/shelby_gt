@@ -193,7 +193,7 @@ class User
       items.select! {|address| address =~ /\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/}
     end
     if !items.empty?
-      User.collection.update({:_id => self.id}, {:$addToSet => {"autocomplete.#{key}" => {:$each => items}}})
+      User.collection.update({:_id => self.id}, {:$addToSet => {"as.#{key}" => {:$each => items}}})
       self.reload
     end
   end
