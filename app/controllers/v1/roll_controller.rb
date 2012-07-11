@@ -304,7 +304,7 @@ class V1::RollController < ApplicationController
       if params[:id]
         return render_error(404, "could not find roll with id #{params[:id]}") unless @roll = Roll.find(params[:id])
         return render_error(404, "you do not have permission") unless @roll.destroyable_by?(current_user)
-        if @roll.following_users.each { |fu| @roll.remove_follower(fu.user) } and @roll.destroy
+        if @roll.remove_all_followers! and @roll.destroy
           @status =  200
         else
           render_error(404, "could not destroy that roll")
