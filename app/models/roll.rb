@@ -210,9 +210,6 @@ class Roll
 
   def permalink() "#{Settings::ShelbyAPI.web_root}/roll/#{self.id}"; end
   
-  #displayed title and thumbnail_url for upvoted rolls (aka heart rolls)
-  def display_title() (self.upvoted_roll? and self.creator) ? "#{self.creator.nickname} ♥s" : self.title; end
-  
   def display_thumbnail_url() self.upvoted_roll? ? "#{Settings::ShelbyAPI.web_root}/images/assets/favorite_roll_avatar.png" : self.creator_thumbnail_url; end
   
 end

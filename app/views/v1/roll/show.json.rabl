@@ -1,7 +1,11 @@
 object @roll
 
-attributes :id, :collaborative, :public, :creator_id, :origin_network, :genius, :frame_count, :first_frame_thumbnail_url, :roll_type
-attributes :display_title => :title, :display_thumbnail_url => :thumbnail_url
+attributes :id, :collaborative, :public, :creator_id, :origin_network, :genius, :frame_count, :first_frame_thumbnail_url, :title, :roll_type, :creator_thumbnail_url => :thumbnail_url
+attributes :display_thumbnail_url => :thumbnail_url
+
+code :subdomain do |r|
+  r.subdomain if r.subdomain_active
+end
 
 node(:creator_nickname, :if => lambda { |r| r.creator != nil }) do |r|
   r.creator.nickname

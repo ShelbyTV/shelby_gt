@@ -211,16 +211,7 @@ describe Roll do
 
     end
 
-    context "upvoted_roll display_<title/thumbnail_url>" do
-      it "should return regular title when not an upvoted roll" do
-        @roll.display_title.should == @roll_title
-      end
-
-      it "should return heart title when an upvoted roll" do
-        @roll.upvoted_roll = true
-        @roll.display_title.should == "#{@roll.creator.nickname} ♥s"
-      end
-
+    context "upvoted_roll display_thumbnail_url" do
       it "should return regular thumbnail_url when not an upvoted roll" do
         @roll.display_thumbnail_url.should == "u://rl"
       end
