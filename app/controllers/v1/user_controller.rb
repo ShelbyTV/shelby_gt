@@ -110,6 +110,8 @@ class V1::UserController < ApplicationController
               creator = User.identity_map[r.creator_id]
               r[:creator_nickname] = creator.nickname if creator != nil
               r[:following_user_count] = r.following_users.length
+              rf = current_user.roll_following_for r
+              r[:followed_at] = rf.id.generation_time.to_f if rf
               r
             }
           end
