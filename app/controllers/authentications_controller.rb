@@ -47,6 +47,7 @@ class AuthenticationsController < ApplicationController
 
       elsif private_invite = cookies[:gt_roll_invite] # if they were invited via private roll, they get in
         GT::InvitationManager.private_roll_invite(user, private_invite)
+        cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
         sign_in_current_user(user, omniauth)
         
       else
@@ -94,7 +95,10 @@ class AuthenticationsController < ApplicationController
             use_cohort_entrance(user, cohort_entrance)
             session[:cohort_entrance_id] = nil
           end
-          GT::InvitationManager.private_roll_invite(user, private_invite) if private_invite
+          if private_invite
+            GT::InvitationManager.private_roll_invite(user, private_invite)
+            cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
+          end
           
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
         

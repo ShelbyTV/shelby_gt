@@ -75,6 +75,8 @@ describe 'v1/user' do
           get '/v1/user/'+@u1.id+'/rolls/following'
           response.body.should be_json_eql(200).at_path("status")
           parse_json(response.body)["result"].class.should eq(Array)
+          parse_json(response.body)["result"][0]["id"].should == r1.id.to_s
+          parse_json(response.body)["result"][0]["followed_at"].should == @u1.roll_followings[0].id.generation_time.to_f
         end
       
         it "should not show a users rolls if the supplied user_id is NOT the current_users" do
@@ -82,21 +84,50 @@ describe 'v1/user' do
           get '/v1/user/'+u2.id+'/rolls/following'
           response.body.should be_json_eql(403).at_path("status")
         end
-      
-        it "should have the first and second rolls be special" do
+        
+        it "should return rolls in followed_at descending order" do
+          r0 = Factory.create(:roll, :creator => @u1)
+          r0.add_follower(@u1)
           r1 = Factory.create(:roll, :creator => @u1)
           r1.add_follower(@u1)
-          r2 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_upvoted])
+          r2 = Factory.create(:roll, :creator => @u1)
           r2.add_follower(@u1)
+          
+          #adjust the roll followings id which in turn is used as creation time
+          @u1.roll_following_for(r1).update_attribute(:_id, BSON::ObjectId.from_time(50.days.ago))
+          @u1.roll_following_for(r2).update_attribute(:_id, BSON::ObjectId.from_time(10.days.ago))
+          @u1.roll_following_for(r0).update_attribute(:_id, BSON::ObjectId.from_time(1.days.ago))
+          @u1.save
+          
+          get '/v1/user/'+@u1.id+'/rolls/following'
+          response.body.should be_json_eql(200).at_path("status")
+          parse_json(response.body)["result"].class.should eq(Array)
+          parse_json(response.body)["result"][0]["id"].should == r0.id.to_s
+          parse_json(response.body)["result"][1]["id"].should == r2.id.to_s
+          parse_json(response.body)["result"][2]["id"].should == r1.id.to_s
+        end
+      
+        it "should have the first three rolls be mine, hearts, watch later" do
+          r0 = Factory.create(:roll, :creator => @u1)
+          r0.add_follower(@u1)
+          wl_roll = Factory.create(:roll, :creator => @u1)
+          wl_roll.add_follower(@u1)
+          public_roll = Factory.create(:roll, :creator => @u1)
+          public_roll.add_follower(@u1)
+          hearts_roll = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_upvoted])
+          hearts_roll.add_follower(@u1)
           r3 = Factory.create(:roll, :creator => @u1)
           r3.add_follower(@u1)
-          @u1.public_roll = r1
-          @u1.upvoted_roll = r2
+          @u1.public_roll = public_roll
+          @u1.upvoted_roll = hearts_roll
+          @u1.watch_later_roll = wl_roll
           @u1.save
         
           get '/v1/user/'+@u1.id+'/rolls/following'
-          parse_json(response.body)["result"][0]["id"].should eq(r2.id.to_s)
-          parse_json(response.body)["result"][0]["roll_type"].should eq(r2.roll_type)
+          parse_json(response.body)["result"][0]["id"].should == public_roll.id.to_s
+          parse_json(response.body)["result"][0]["roll_type"].should == public_roll.roll_type
+          parse_json(response.body)["result"][1]["id"].should == hearts_roll.id.to_s
+          parse_json(response.body)["result"][2]["id"].should == wl_roll.id.to_s
         end
       end
       
@@ -105,10 +136,12 @@ describe 'v1/user' do
           public_roll = Factory.create(:roll, :creator => @u1, :collaborative => false)
           public_roll.add_follower(@u1)
           @u1.public_roll = public_roll
+          @u1.save
           
           upvoted_roll = Factory.create(:roll, :creator => @u1, :collaborative => false)
           upvoted_roll.add_follower(@u1)
           @u1.upvoted_roll = upvoted_roll
+          @u1.save
           
           r1 = Factory.create(:roll, :creator => @u1)
           r1.add_follower(@u1)
@@ -123,8 +156,8 @@ describe 'v1/user' do
           response.body.should have_json_size(4).at_path("result")
           parse_json(response.body)["result"][0]["id"].should == public_roll.id.to_s
           parse_json(response.body)["result"][1]["id"].should == upvoted_roll.id.to_s
-          parse_json(response.body)["result"][2]["id"].should == r1.id.to_s
-          parse_json(response.body)["result"][3]["id"].should == r2.id.to_s
+          parse_json(response.body)["result"][2]["id"].should == r2.id.to_s
+          parse_json(response.body)["result"][3]["id"].should == r1.id.to_s
         end
       end
       
@@ -144,6 +177,15 @@ describe 'v1/user' do
         get '/v1/user/'+@u1.id
         parse_json(response.body)["result"]["watch_later_roll_id"].should eq(@u1.watch_later_roll_id)
         parse_json(response.body)["result"]["personal_roll_id"].should eq(@u1.public_roll_id)
+      end
+      
+      it "should return :creator_nickname, :following_user_count which are specially injected in the controller" do
+        r1 = Factory.create(:roll, :creator => @u1)
+        r1.add_follower(@u1)
+        get '/v1/user/'+@u1.id+'/rolls/following'
+        response.body.should be_json_eql(200).at_path("status")
+        parse_json(response.body)["result"][0]["creator_nickname"].should == @u1.nickname
+        parse_json(response.body)["result"][0]["following_user_count"].should == 1
       end
       
       context "valid_token route" do

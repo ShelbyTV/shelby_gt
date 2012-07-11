@@ -91,11 +91,16 @@ class V1::UserController < ApplicationController
         
         if @rolls
           
-          # move heart roll to @rolls[1]
-          if heartRollIndex = @rolls.index(current_user.upvoted_roll)
-            heartRoll = @rolls.slice!(heartRollIndex)
-            @rolls.insert(0, heartRoll)
+          self.class.trace_execution_scoped(['UserController/roll_followings/sort']) do
+            # sort based on followed_at descending
+            # using sort_by b/c we have an expensive calculation to do when sorting
+            @rolls.sort_by! { |r| current_user.roll_following_for(r).id.generation_time } .reverse!
           end
+          
+          # re-order public roll, hearts, watch later
+          self.class.move_roll(@rolls, current_user.public_roll, 0)
+          self.class.move_roll(@rolls, current_user.upvoted_roll, 1)
+          self.class.move_roll(@rolls, current_user.watch_later_roll, 2)
           
           # Load all roll creators to prevent N+1 queries
           @creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
@@ -108,6 +113,8 @@ class V1::UserController < ApplicationController
               creator = User.identity_map[r.creator_id]
               r[:creator_nickname] = creator.nickname if creator != nil
               r[:following_user_count] = r.following_users.length
+              rf = current_user.roll_following_for r
+              r[:followed_at] = rf.id.generation_time.to_f if rf
               r
             }
           end
@@ -146,5 +153,14 @@ class V1::UserController < ApplicationController
       end
     end
   end
+  
+  private
+  
+    def self.move_roll(roll_array, target_roll, pos)
+      if rollIndex = roll_array.index(target_roll)
+        r = roll_array.slice!(rollIndex)
+        roll_array.insert(pos, r)
+      end
+    end
   
 end

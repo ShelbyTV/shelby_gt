@@ -1,5 +1,6 @@
 # encoding: utf-8
 require 'user_manager'
+require 'securerandom'
 
 # We are using the User model form Shelby (before rolls)
 # New vs. old keys will be clearly listed
@@ -167,6 +168,12 @@ class User
     rolls_unfollowed.include? roll_id
   end
   
+  def roll_following_for(r)
+    raise ArgumentError, "must supply roll or roll_id" unless r
+    roll_id = (r.is_a?(Roll) ? r.id : r)
+    roll_followings.select { |rf| rf.roll_id == roll_id } [0]
+  end
+  
   def permalink() "#{Settings::ShelbyAPI.web_root}/user/#{self.nickname}/personal_roll"; end
 
   def revoke(client)
@@ -192,9 +199,14 @@ class User
       items.select! {|address| address =~ /\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/}
     end
     if !items.empty?
-      self.push_uniq("autocomplete.#{key}" => {:$each => items})
+      User.collection.update({:_id => self.id}, {:$addToSet => {"as.#{key}" => {:$each => items}}})
       self.reload
     end
+  end
+  
+  #default implementation hits the DB, and that sucks b/c we don't index on remember_token
+  def self.remember_token
+    SecureRandom.uuid
   end
 
   # -- Old Methods --   
