@@ -41,6 +41,9 @@ module GT
         elsif object.is_a?(Frame)
           og_object[:other] = object.permalink
         end
+      when 'save'
+        og_action = "shelbytv:save"
+        og_object[:roll] = object.roll.permalink
       end
       
       if og_action and post_to_og(user, og_action, og_object, expires_in) 

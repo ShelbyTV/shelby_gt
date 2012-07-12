@@ -37,6 +37,16 @@ describe GT::OpenGraph do
     GT::OpenGraph.stub(:post_to_og).with(@u, 'shelbytv:comment', @og_object, nil).and_return(true)
     GT::OpenGraph.send_action('comment', @u, @c, @m.text)
   end
+  
+  it "should post a share action" do
+    GT::OpenGraph.stub(:post_to_og).with(@u, 'shelbytv:share', @og_object, nil).and_return(true)
+    GT::OpenGraph.send_action('share', @u, @f)
+  end
+  
+  it "should post a save action" do
+    GT::OpenGraph.stub(:post_to_og).with(@u, 'shelbytv:save', @og_object, nil).and_return(true)
+    GT::OpenGraph.send_action('comment', @u, @f)
+  end
     
   it "should not post if user doesnt have facbeook" do
     @u.authentications.first.provider = "shelby"
