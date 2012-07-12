@@ -11,26 +11,23 @@ module StatsManager
       @@client ||= Statsd.new(Settings::StatsD.statsd_server, Settings::StatsD.statsd_port)
     end
     
-    def self.increment(stat, uid=false, action=false, request=false)
+    def self.increment(stat, request=false)
       # source = request if request
       stat = STAT_PREFIX + stat
-      stat = "#{stat}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.increment(stat)
     end
   
-    def self.decrement(stat, uid=false, action=false)
+    def self.decrement(stat)
       stat = STAT_PREFIX + stat
-      stat = "#{stat}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.decrement(stat)
     end
   
-    def self.timing(stat, time, uid=false, action=false)
+    def self.timing(stat, time)
       stat = STAT_PREFIX + stat
-      stat = "#{stat}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.timing(stat, time)
     end
     
-    def self.time(stat, uid=false, action=false, &block)
+    def self.time(stat, &block)
       start_t = Time.now
       yield block
       end_t = Time.now
@@ -39,9 +36,8 @@ module StatsManager
       client.timing(stat, ((end_t - start_t)*1000).round)
     end
   
-    def self.count(stat, amount, uid=false, action=false)
+    def self.count(stat, amount)
       stat = STAT_PREFIX + stat
-      stat = "#{stat}/?uid=#{uid.to_s}&action=#{action}" if uid and action
       client.count(stat, amount)
     end
   

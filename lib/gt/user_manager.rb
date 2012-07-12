@@ -22,7 +22,7 @@ module GT
         
         GT::PredatorManager.initialize_video_processing(user, auth)
         
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'], user.id, 'signup')
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
         
         return user
       else
@@ -44,7 +44,7 @@ module GT
         #additional meta-data for user's public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
         
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'], user.id, 'signup')
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
         
         return user
       else
@@ -80,7 +80,7 @@ module GT
       if user.save
         GT::PredatorManager.initialize_video_processing(user, new_auth)        
         
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['add_service'][new_auth.provider], user.id, 'add_service')
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['add_service'][new_auth.provider])
         
         return user
       else
@@ -177,7 +177,7 @@ module GT
       user.faux = User::FAUX_STATUS[:converted]
       if user.save
         GT::PredatorManager.initialize_video_processing(user, new_auth) if new_auth
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'], user.id, 'signup')
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'])
         return user, new_auth
       else
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])        

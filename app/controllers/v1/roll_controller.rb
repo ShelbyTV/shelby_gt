@@ -152,12 +152,12 @@ class V1::RollController < ApplicationController
             return render_error(404, "that roll is private, can not share to twitter") unless roll.public
             text = GT::SocialPostFormatter.format_for_twitter(text, short_links)
             resp &= GT::SocialPoster.post_to_twitter(current_user, text)
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d])
           when 'facebook'
             return render_error(404, "that roll is private, can not share to facebook") unless roll.public
             text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
             resp &= GT::SocialPoster.post_to_facebook(current_user, text, roll)
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d])
           when 'email'
             # If this is private roll, email sent will be an invite.  Otherwise, it's just a Frame share of the first frame (for now, since that isn't used)
             email_addresses = params[:addresses]
@@ -168,7 +168,7 @@ class V1::RollController < ApplicationController
 
             ShelbyGT_EM.next_tick { GT::SocialPoster.post_to_email(current_user, email_addresses, text, roll.frames.first) }
             resp &= true
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d], current_user.id, 'roll_share', request)
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d])
           else
             return render_error(404, "we dont support that destination yet :(")
           end
@@ -214,7 +214,7 @@ class V1::RollController < ApplicationController
         begin
           if @roll.save! and @roll.add_follower(current_user)
             roll_type = @roll.public ? 'public' : 'private'
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll[:create][roll_type], current_user.id, 'roll_create', request)
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll[:create][roll_type])
             @status = 200
           end
         rescue MongoMapper::DocumentNotValid => e
@@ -237,7 +237,7 @@ class V1::RollController < ApplicationController
         @roll.add_follower(current_user)
         GT::Framer.backfill_dashboard_entries(current_user, @roll, 5)
         @status = 200
-        StatsManager::StatsD.increment(Settings::StatsConstants.roll['join'], current_user.id, 'roll_join', request)
+        StatsManager::StatsD.increment(Settings::StatsConstants.roll['join'])
       else
         render_error(404, "could not find roll with id #{params[:roll_id]}")
       end
@@ -255,7 +255,7 @@ class V1::RollController < ApplicationController
         if @roll.leavable_by?(current_user)
           if @roll.remove_follower(current_user)
             @status = 200
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll['leave'], current_user.id, 'roll_leave', request)
+            StatsManager::StatsD.increment(Settings::StatsConstants.roll['leave'])
           else
             return render_error(404, "something went wrong leaving that roll.")
           end

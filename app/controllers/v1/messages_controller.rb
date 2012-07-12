@@ -29,7 +29,7 @@ class V1::MessagesController < ApplicationController
               
 
               @status = 200 
-              StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)
+              StatsManager::StatsD.increment(Settings::StatsConstants.message['create'])
             end
           rescue => e
             render_error(404, e)
@@ -59,7 +59,7 @@ class V1::MessagesController < ApplicationController
       else
         @conversation.pull(:messages => {:_id => message.id})
         @conversation.reload
-        StatsManager::StatsD.increment(Settings::StatsConstants.message['delete'], nil, nil, request)
+        StatsManager::StatsD.increment(Settings::StatsConstants.message['delete'])
         @status = 200
       end
     end
