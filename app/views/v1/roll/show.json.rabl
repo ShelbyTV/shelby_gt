@@ -15,6 +15,15 @@ code :following_user_count do |r|
 	r.following_users.count
 end
 
+# not too slow b/c we're only dealing with a single roll
+code :followed_at do |r|
+  if current_user and (rf = current_user.roll_following_for(r))
+    rf.id.generation_time.to_f
+  else
+    0
+  end
+end
+
 if @include_following_users == true
 	child :following_users => "following_users" do
 		attributes :id, :nickname, :name, :user_image
