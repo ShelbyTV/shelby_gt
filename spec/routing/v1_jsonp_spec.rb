@@ -177,3 +177,16 @@ describe "Messages" do
   end
   
 end
+
+describe "GtInterest" do
+  
+  # POST   /v1/gt_interest(.:format)                                v1/gt_interest#create {:format=>"json"}
+  it "routes for create" do
+    { :get => "/v1/POST/gt_interest" }.should route_to(
+      :controller => "v1/gt_interest",
+      :action => "create",
+      :format => "json"
+    )
+  end
+  
+end

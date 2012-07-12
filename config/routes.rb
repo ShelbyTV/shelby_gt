@@ -118,6 +118,8 @@ ShelbyGt::Application.routes.draw do
     # messages
     get 'POST/conversation/:conversation_id/messages' => 'messages#create'
     get 'DELETE/conversation/:conversation_id/messages/:id' => 'messages#destroy'
+    # gt_interest
+    get 'POST/gt_interest/' => 'gt_interest#create'
 
   end
   
