@@ -104,6 +104,14 @@ defaults: &defaults
       roll: "facebook.opengraph.roll"
       upvote: "facebook.opengraph.upvote"
   
+  oauth:
+    authorize: "oauth.authorize"
+    grant: "oauth.grant"
+    deny: "oauth.deny"
+    delete: "oauth.delete"
+    create: "oauth.create"
+  
+  
 development:
   <<: *defaults
 
