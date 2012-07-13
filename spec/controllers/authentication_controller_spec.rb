@@ -128,7 +128,7 @@ describe AuthenticationsController do
 
         it "should reject without additional permissions" do
           get :create
-          assigns(:opener_location).should == "#{Settings::ShelbyAPI.web_root}/?access=nos"
+          assigns(:opener_location).should == "#{Settings::ShelbyAPI.web_root}?access=nos"
         end
       end
     
@@ -426,14 +426,14 @@ describe AuthenticationsController do
 
     it "should remove previous auth failure params from the query string for redirect" do
       controller.stub!(:session).and_return({:return_url => 'http://www.example.com?auth_failure=1&auth_strategy=Facebook&param1=val1&param2=val2'})  
+      controller.should_receive(:redirect_path).and_return('http://www.example.com?param1=val1&param2=val2')
       get :create, :provider => "Twitter"
-      assigns(:opener_location).should eq('http://www.example.com?param1=val1&param2=val2')
     end
 
     it "should have no ? if the query string is empty after removing the auth failure params" do
       controller.stub!(:session).and_return({:return_url => 'http://www.example.com?auth_failure=1&auth_strategy=Facebook'})  
+      controller.should_receive(:redirect_path).and_return('http://www.example.com')
       get :create, :provider => "Twitter"
-      assigns(:opener_location).should eq('http://www.example.com')
     end
   end
 
