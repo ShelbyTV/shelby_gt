@@ -72,9 +72,13 @@ module GT
           convo = Conversation.first_including_message_origin_id(message.origin_id)
           # This has already been posted, so we weren't able to create a Frame.
           #  BUT if observing_user was just added as a follower of posting_user's public_roll, 
-          #      a DashboardEntry was never created for this Frame/observing_user...
+          #      a DashboardEntry may not have been created for this Frame/observing_user...
           if new_following and original_frame = convo.frame
-            GT::Framer.create_dashboard_entry(original_frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], observing_user)
+            # Only create if backfill didn't catch it for us
+            # Keep performance high by only looking back through 60 seconds of dashboard entries for this user
+            unless observing_user.dashboard_entries.where(:frame_id => original_frame.id, :_id.gt => BSON::ObjectId.from_time(60.seconds.ago)).exists?
+              GT::Framer.create_dashboard_entry(original_frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], observing_user)
+            end
           end
 
           return false

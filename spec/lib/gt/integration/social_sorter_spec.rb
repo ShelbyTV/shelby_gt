@@ -208,7 +208,25 @@ describe GT::SocialSorter do
           GT::Framer.should_receive(:backfill_dashboard_entries)
           GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, new_observer)
         }.should_not change { Frame.count }
-      # since we intercept backfill above, still only expecting 1 new dashbaord entry
+      # we intercept backfill above, but still expecting 1 new dashbaord entry
+      }.should change { new_observer.dashboard_entries.count } .by 1
+    end
+    
+    it "should make observing User auto-follow Roll even if this Message has already been posted to a Roll, and observering User should NOT get a second DashboardEntry if backfill created it" do
+      lambda {
+        GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, Factory.create(:user))
+      }.should change { Frame.count }.by(1)
+
+      new_observer = Factory.create(:user)
+      
+      new_observer.following_roll?(@existing_user.public_roll).should == false
+      lambda {
+        lambda {
+          #GT::Framer.should_receive(:backfill_dashboard_entries)
+          GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, new_observer)
+          GT::Framer.should_not_receive(:create_dashboard_entry)
+        }.should_not change { Frame.count }
+      # didn't intercept backfill above, make sure we don't get 2 dashboard entries
       }.should change { new_observer.dashboard_entries.count } .by 1
     end
     
