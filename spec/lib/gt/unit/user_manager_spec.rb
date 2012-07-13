@@ -229,7 +229,7 @@ describe GT::UserManager do
       r = u.upvoted_roll
       r.class.should == Roll
       r.persisted?.should == true
-      r.public.should == false
+      r.public.should == true
       r.collaborative.should == false
       r.upvoted_roll.should == true
       r.creator.should == u
@@ -382,6 +382,15 @@ describe GT::UserManager do
       GT::UserManager.convert_faux_user_to_real(@faux_u)
       
       @faux_u.watch_later_roll.reload.public.should == true
+    end
+    
+    it "should make their upvoted_roll roll public if it's not" do
+      @faux_u.upvoted_roll.update_attribute(:public, false)
+      @faux_u.upvoted_roll.reload.public.should == false
+      
+      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      
+      @faux_u.upvoted_roll.reload.public.should == true
     end
 
     it "should have one authentication with an oauth token" do
