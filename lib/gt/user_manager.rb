@@ -110,6 +110,12 @@ module GT
       raise ArgumentError, "must supply valid uid" unless uid.is_a?(String) and !uid.blank?
       
       if u = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
+        
+        # if this user was created recently, another fiber may still be working; want to let it finish setting the user up
+        # otherwise ensure_users_special_rolls can step on the other fiber's toes
+        # NB. The best way to do this would be with some sort of lock on the user, but that's overkill right now...
+        EventMachine::Synchrony.sleep(5) if u.created_at > 10.seconds.ago
+        
         ensure_users_special_rolls(u, true)
         u.update_attributes(:user_image => options[:user_thumbnail_url], :user_image_original => options[:user_thumbnail_url]) if u.user_image == nil
         return u
@@ -190,7 +196,7 @@ module GT
     # should follow just the public roll
     def self.ensure_users_special_rolls(u, save=false)
       build_public_roll_for_user(u) unless u.public_roll
-      # Must save the user (which will persistes the public roll, set that id in user, then persist the user)
+      # Must save the user (which will persist the public roll, set that id in user, then persist the user)
       # b/c add_follower does an atomic push and reloads the roll and user
       u.save if save
       u.public_roll.add_follower(u) if save and !u.following_roll?(u.public_roll)
@@ -201,7 +207,7 @@ module GT
       u.upvoted_roll.add_follower(u) if save and !u.following_roll?(u.upvoted_roll)
       
       #make sure upvoted (hearts) is public, as they weren't always this way for faux users
-      u.upvoted_roll.update_attribute(:public, true) unless  u.upvoted_roll.public?
+      u.upvoted_roll.update_attribute(:public, true) unless u.upvoted_roll.public?
       
       build_watch_later_roll_for_user(u) unless u.watch_later_roll
       u.save if save
@@ -209,7 +215,7 @@ module GT
       u.watch_later_roll.add_follower(u) if save and !u.following_roll?(u.watch_later_roll)
       
       #make sure watch later is public, as they weren't always this way for faux users
-      u.watch_later_roll.update_attribute(:public, true) unless  u.watch_later_roll.public?
+      u.watch_later_roll.update_attribute(:public, true) unless u.watch_later_roll.public?
             
       build_viewed_roll_for_user(u) unless u.viewed_roll
       #users don't follow their viewed_roll

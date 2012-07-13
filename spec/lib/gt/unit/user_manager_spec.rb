@@ -10,6 +10,11 @@ require 'predator_manager'
 describe GT::UserManager do
   
   context "get_or_create_faux_user" do
+    before(:each) do
+      # we sleep when finding a new user, need to stub that
+      EventMachine::Synchrony.stub(:sleep)
+    end
+
     it "should raise an error if nickname is invalid" do
       lambda {
         GT::UserManager.get_or_create_faux_user('', 'provider', 'uid')
@@ -331,6 +336,9 @@ describe GT::UserManager do
   
   context "convert_faux_user_to_real" do
     before(:each) do
+      # we sleep when finding a new user, need to stub that
+      EventMachine::Synchrony.stub(:sleep)
+      
       @omniauth_hash = {
         'provider' => "twitter",
         'uid' => rand.to_s,

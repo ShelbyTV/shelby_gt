@@ -5,6 +5,9 @@ require 'social_sorter'
 # INTEGRATION test (b/c it relies on and implicitly tests UserManager)
 describe GT::SocialSorter do
   before(:each) do
+    # we sleep when finding a new user, need to stub that
+    EventMachine::Synchrony.stub(:sleep)
+    
     @observer = Factory.create(:user)
     
     @existing_user = Factory.create(:user)
@@ -23,7 +26,7 @@ describe GT::SocialSorter do
   end
   
   context "public social postings" do
-    before(:each) do
+    before(:each) do      
       @existing_user_random_msg = Message.new
       @existing_user_random_msg.nickname = @existing_user.nickname
       @existing_user_random_msg.origin_network = @existing_user_provider
