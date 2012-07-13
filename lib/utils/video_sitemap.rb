@@ -23,7 +23,7 @@ def hyphenateString(title)
   title.downcase.gsub(/\W/,'-').squeeze('-').chomp('-')
 end
 
-SitemapGenerator::Sitemap.default_host = 'http://gt.shelby.tv'
+SitemapGenerator::Sitemap.default_host = 'http://shelby.tv'
 SitemapGenerator::Sitemap.create do
 
   youtubeVideos = Video.where(:provider_name => "youtube")

@@ -18,7 +18,7 @@ describe GT::OpenGraph do
     @m = Factory.create(:message, :user => @u)
     @c = Factory.create(:conversation, :messages => [@m], :frame_id => @f.id)
     
-    @og_url = "http://gt.shelby.tv/roll/#{@f.roll.id.to_s}/frame/#{@f.id.to_s}"
+    @og_url = "http://shelby.tv/roll/#{@f.roll.id.to_s}/frame/#{@f.id.to_s}"
     @og_object = {:video => @og_url}
     
   end

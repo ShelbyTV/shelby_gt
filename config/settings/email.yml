@@ -1,10 +1,10 @@
 defaults: &defaults
   shelby_address: "110 E 23rd, 10th Floor, New York NY 10010"
   shelby_logo: "http://api.gt.shelby.tv/shelby.png"
-  shelby_logo_gt: "http://gt.shelby.tv/images/assets/shelbylogo.png"
+  shelby_logo_gt: "http://shelby.tv/images/assets/shelbylogo.png"
   shelby_tagline: "An amazing way to discover and enjoy videos."
-  preferences_link: "http://gt.shelby.tv/preferences"
-  web_url_base: "http://gt.shelby.tv"
+  preferences_link: "http://shelby.tv/preferences"
+  web_url_base: "http://shelby.tv"
   # Sharing
   share_frame:
     category: "Share Frame"
