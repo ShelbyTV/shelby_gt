@@ -27,7 +27,7 @@ defaults: &defaults
   # GtInterest
   gt_interest_autoresponse:
     category: "Submit GT Interest"
-    subject: "Your request for Shelby GT has been received!"
+    subject: "Your request for Shelby has been received!"
     from: "Shelby GT <contact+gt@shelby.tv>"
 
 development:
