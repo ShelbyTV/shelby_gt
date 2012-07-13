@@ -102,9 +102,9 @@ class AuthenticationsController < ApplicationController
           end
           
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
-        
           @opener_location = redirect_path || Settings::ShelbyAPI.web_root
         else
+
           Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
           @opener_location = redirect_path || Settings::ShelbyAPI.web_root
         end
@@ -157,11 +157,11 @@ class AuthenticationsController < ApplicationController
         
       else
         #not invited, deny access
-        @opener_location = redirect_path || "#{Settings::ShelbyAPI.web_root}/?access=nos"
+        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
       end
     else
 # ---- NO GT FOR YOU!  Just redirect to error page w/o creating account
-      @opener_location = redirect_path || "#{Settings::ShelbyAPI.web_root}/?access=nos"
+      @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
     end
 
     @opener_location = clean_query_params(@opener_location)
