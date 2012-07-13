@@ -114,7 +114,10 @@ module GT
         # if this user was created recently, another fiber may still be working; want to let it finish setting the user up
         # otherwise ensure_users_special_rolls can step on the other fiber's toes
         # NB. The best way to do this would be with some sort of lock on the user, but that's overkill right now...
-        EventMachine::Synchrony.sleep(5) if u.created_at > 10.seconds.ago
+        if u.created_at > 10.seconds.ago
+          EventMachine::Synchrony.sleep(5) 
+          u.reload
+        end
         
         ensure_users_special_rolls(u, true)
         u.update_attributes(:user_image => options[:user_thumbnail_url], :user_image_original => options[:user_thumbnail_url]) if u.user_image == nil
