@@ -180,6 +180,22 @@ describe AuthenticationsController do
           cookies[:gt_roll_invite].should == nil
           assigns(:opener_location).should == Settings::ShelbyAPI.web_root
         end
+        
+        it "should set cohorts of the inviter and 'roll_invited' when creating a new user via roll invite" do
+          cookies[:gt_roll_invite] = {:value => "uid,emial,rollid", :domain => ".shelby.tv"}
+          orig_cohorts = ["a", "b"]
+          orig_user = Factory.create(:user, :gt_enabled => true, :cohorts => orig_cohorts)
+          User.should_receive(:find).with("uid").and_return orig_user
+          Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
+          GT::InvitationManager.should_receive :private_roll_invite
+      
+          u = Factory.create(:user)
+          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
+      
+          get :create
+          assigns(:current_user).should == u
+          assigns(:current_user).cohorts.should == orig_user.cohorts + ["roll_invited"]
+        end
     
         it "should be able to redirect when invited to a roll" do
           cookies[:gt_roll_invite] = "uid,emial,rollid"
@@ -251,7 +267,43 @@ describe AuthenticationsController do
           assigns(:opener_location).start_with?(cohort_entrance.url+"?").should == true
         end
         
-        it "should redirect to whatever is set when we launch"
+        it "should accept with private invite, set cohorts correctly" do
+          cookies[:gt_roll_invite] = {:value => "uid,emial,rollid", :domain => ".shelby.tv"}
+          orig_cohorts = ["a", "b"]
+          orig_user = Factory.create(:user, :gt_enabled => true, :cohorts => orig_cohorts)
+          
+          User.should_receive(:find).with("uid").and_return orig_user
+          Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
+          GT::InvitationManager.should_receive :private_roll_invite
+      
+          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [])
+          GT::UserManager.should_receive(:create_new_user_from_params).and_return u
+          get :create, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
+      
+          assigns(:current_user).should == u
+          assigns(:current_user).cohorts.should == orig_user.cohorts + ["roll_invited"]
+        end
+        
+        it "should redirect on private invite when there are user errors" do
+          cookies[:gt_roll_invite] = {:value => "uid,emial,rollid", :domain => ".shelby.tv"}
+          orig_cohorts = ["a", "b"]
+          orig_user = Factory.create(:user, :gt_enabled => true, :cohorts => orig_cohorts)
+          
+          User.should_receive(:find).with("uid").and_return orig_user
+          Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
+          GT::InvitationManager.should_not_receive :private_roll_invite
+          
+          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [])
+          u2 = User.new(:nickname => u.nickname)
+          u2.save
+          u2.valid?.should == false
+          GT::UserManager.should_receive(:create_new_user_from_params).and_return u2
+          get :create, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
+          
+          assigns(:current_user).should == nil
+          assigns(:opener_location).start_with?(Settings::ShelbyAPI.web_root+"?").should == true
+        end
+        
       end
     
     end

@@ -97,6 +97,7 @@ class AuthenticationsController < ApplicationController
           end
           if private_invite
             GT::InvitationManager.private_roll_invite(user, private_invite)
+            GT::UserManager.copy_cohorts!(inviter, user, ["roll_invited"])
             cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
           end
           
@@ -113,40 +114,57 @@ class AuthenticationsController < ApplicationController
       end
         
 # ---- New User signing up w/ email & password
-    elsif !params[:user].blank? and cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
-      user = GT::UserManager.create_new_user_from_params(params[:user])
+    elsif !params[:user].blank?
+      # if they are invited by someone via an invitation to join a private roll, let em in!
+      # gt_roll_invite consists of "inviter uid, invitee email address, roll id"
+      if private_invite = cookies[:gt_roll_invite] and invite_info = cookies[:gt_roll_invite].split(',')
+        inviter = User.find(invite_info[0])
+        roll = Roll.find(invite_info[2])
+      end
+      cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
+      
+      if private_invite or cohort_entrance
+      
+        user = GT::UserManager.create_new_user_from_params(params[:user])
 
-      if user.valid?
-        sign_in(:user, user)
-        user.remember_me!(true)
-        set_common_cookie(user, session[:_csrf_token])
+        if user.valid?
+          sign_in(:user, user)
+          user.remember_me!(true)
+          set_common_cookie(user, session[:_csrf_token])
 
-        if cohort_entrance
-          use_cohort_entrance(user, cohort_entrance)
-          session[:cohort_entrance_id] = nil
+          if cohort_entrance
+            use_cohort_entrance(user, cohort_entrance)
+            session[:cohort_entrance_id] = nil
+          end
+          if private_invite
+            GT::InvitationManager.private_roll_invite(user, private_invite)
+            GT::UserManager.copy_cohorts!(inviter, user, ["roll_invited"])
+            cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
+          end
+
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['username'])
+
+          @opener_location = redirect_path || Settings::ShelbyAPI.web_root
+        else
+          Rails.logger.error "AuthenticationsController#create_with_email - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name} -- primary_email #{user.primary_email}"
+
+          # TEMPORARILY returning user to cohort entrance as applicalbe
+          #@opener_location = add_query_params(clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), {
+          @opener_location = add_query_params(cohort_entrance ? cohort_entrance.url : (redirect_path || Settings::ShelbyAPI.web_root), {
+            :error => "new_user_invalid"
+            })
         end
-        GT::InvitationManager.private_roll_invite(user, private_invite) if private_invite
-
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['username'])
-
-        @opener_location = redirect_path || Settings::ShelbyAPI.web_root
+        
       else
-        Rails.logger.error "AuthenticationsController#create_with_email - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name} -- primary_email #{user.primary_email}"
-
-        # TEMPORARILY returning user to cohort entrance
-        #@opener_location = add_query_params(clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), {
-        @opener_location = add_query_params(cohort_entrance.url, {
-          :error => "new_user_invalid"
-          })
+        #not invited, deny access
+        @opener_location = redirect_path || "#{Settings::ShelbyAPI.web_root}/?access=nos"
       end
     else
 # ---- NO GT FOR YOU!  Just redirect to error page w/o creating account
       @opener_location = redirect_path || "#{Settings::ShelbyAPI.web_root}/?access=nos"
     end
 
-
     @opener_location = clean_query_params(@opener_location)
-
     render :action => 'redirector', :layout => 'simple'
   end
   

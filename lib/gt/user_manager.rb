@@ -288,6 +288,15 @@ module GT
       end
     end
     
+    def self.copy_cohorts!(from, to, additional_cohorts = [])
+      raise ArgumentError, "must supply valid from user" unless from.is_a? User
+      raise ArgumentError, "must supply valid to user" unless to.is_a? User
+      raise ArgumentError, "additional_cohorts must be an array" unless additional_cohorts.is_a? Array
+      
+      to.cohorts += (from.cohorts + additional_cohorts)
+      to.save
+    end
+    
     private
       
       # Takes an omniauth hash to build one user, prefs, and an auth to go along with it

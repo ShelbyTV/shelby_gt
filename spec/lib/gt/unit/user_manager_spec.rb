@@ -896,6 +896,54 @@ describe GT::UserManager do
     end    
   end
   
+  context "cohort copying" do
+    it "should copy all cohorts from inviter to user with no additional cohorts" do
+      c = ["a", "b", "c"]
+      u1 = Factory.create(:user, :cohorts => c)
+      u2 = Factory.create(:user)
+      
+      GT::UserManager.copy_cohorts!(u1, u2)
+      
+      u2.reload.cohorts.should == c
+      u1.reload.cohorts.should == c
+    end
+    
+    it "should copy zero cohorts from inviter to user with no additional cohorts" do
+      u1 = Factory.create(:user)
+      u2 = Factory.create(:user)
+      
+      GT::UserManager.copy_cohorts!(u1, u2)
+      
+      u2.reload.cohorts.should == []
+      u1.reload.cohorts.should == []
+    end
+    
+    it "should copy all cohorts from inviter to user with additional cohorts" do
+      c = ["a", "b", "c"]
+      addtl = ["x", "y"]
+      u1 = Factory.create(:user, :cohorts => c)
+      u2 = Factory.create(:user)
+      
+      GT::UserManager.copy_cohorts!(u1, u2, addtl)
+
+      u2.reload.cohorts.should == c + addtl
+      u1.reload.cohorts.should == c
+    end
+    
+    it "shouldnt fuck with original cohorts of to user" do
+      c = ["a", "b", "c"]
+      addtl = ["x", "y"]
+      to_orig_cohorts = ["o"]
+      u1 = Factory.create(:user, :cohorts => c)
+      u2 = Factory.create(:user, :cohorts => to_orig_cohorts)
+      
+      GT::UserManager.copy_cohorts!(u1, u2, addtl)
+
+      u2.reload.cohorts.should == to_orig_cohorts + c + addtl
+      u1.reload.cohorts.should == c
+    end
+  end
+  
   context "helper stuff" do
     it "should add public and watch later roll w/o saving" do
       u = Factory.create(:user)
