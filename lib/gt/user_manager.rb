@@ -115,7 +115,7 @@ module GT
         # otherwise ensure_users_special_rolls can step on the other fiber's toes
         # NB. The best way to do this would be with some sort of lock on the user, but that's overkill right now...
         if u.created_at > 10.seconds.ago
-          EventMachine::Synchrony.sleep(5) 
+          EventMachine::Synchrony.sleep(10)
           u.reload
         end
         
