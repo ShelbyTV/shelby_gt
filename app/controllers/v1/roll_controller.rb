@@ -18,9 +18,9 @@ class V1::RollController < ApplicationController
         @include_following_users = params[:following_users] == "true" ? true : false
         
         if BSON::ObjectId.legal? params[:id]
-          @roll = ::Roll.find(params[:id])
+          @roll = Roll.find(params[:id])
         else
-          @roll = ::Roll.where(:subdomain => params[:id], :subdomain_active => true).find_one
+          @roll = Roll.where(:subdomain => params[:id], :subdomain_active => true).find_one
         end
         
         if @roll
