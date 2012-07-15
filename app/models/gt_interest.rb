@@ -35,7 +35,7 @@ class GtInterest
   end
   
   def access_granted_link
-    "http://gt.shelby.tv/?gt_access_token=#{self.id}"
+    "http://shelby.tv/?gt_access_token=#{self.id}"
   end
   
 end
