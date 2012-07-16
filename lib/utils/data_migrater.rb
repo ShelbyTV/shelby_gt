@@ -4,6 +4,8 @@
 # This utility pulls the broadcasts from those arrays and adds them to the users new GT rolls, setting the _id appropriatley
 #  so the creation time of the new Frames is the same as the original broadcast.
 
+require 'video_manager'
+
 module GT
   class NOSDataMigrater
   
@@ -42,8 +44,11 @@ module GT
         #key :video_id_at_provider,    String, :abbr => :s
         #key :video_provider_name,     String, :abbr => :r
         unless video = Video.where(:provider_name => bcast_hash["r"], :provider_id => bcast_hash["s"]).first
-          puts "ERROR: couldn't find video for broadcast #{bcast_id}"
-          next
+          #key :video_source_url,        String, :abbr => :f
+          unless video = GT::VideoManager.get_or_create_videos_for_url(bcast_hash["f"])
+            puts "ERROR: couldn't find video for broadcast #{bcast_id}"
+            next
+          end
         end
         print 'v'
       
