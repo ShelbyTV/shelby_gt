@@ -66,6 +66,10 @@ defaults: &defaults
       facebook: "user.remove_service.facebook"
       tumblr: "user.remove_service.tumblr"
       error: "user.add_service.error"
+    verify_service:
+      failure:
+        twitter: "user.verify_service.failure.twitter"
+        facebook: "user.verify_service.failure.facebook"
   
   frame:
     watch: "frame.watch"
