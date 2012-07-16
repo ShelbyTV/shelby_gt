@@ -98,7 +98,7 @@ module GT
         f = Frame.new
         #backdate to the time of the original broadcast
         f.id = BSON::ObjectId.from_time(bcast_hash["_id"].generation_time, :unique => true)
-        f.creator = msg.user
+        f.creator = msg.user || user
         f.video = video
         f.video_id = video.id
         f.roll = destination_roll
