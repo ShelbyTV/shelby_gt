@@ -45,7 +45,7 @@ module GT
         #key :video_provider_name,     String, :abbr => :r
         unless video = Video.where(:provider_name => bcast_hash["r"], :provider_id => bcast_hash["s"]).first
           #key :video_source_url,        String, :abbr => :f
-          unless video = GT::VideoManager.get_or_create_videos_for_url(bcast_hash["f"])
+          unless video = GT::VideoManager.get_or_create_videos_for_url(bcast_hash["f"])[:videos][0]
             puts "ERROR: couldn't find video for broadcast #{bcast_id}"
             next
           end
