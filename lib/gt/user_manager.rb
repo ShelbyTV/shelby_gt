@@ -285,6 +285,9 @@ module GT
         return true
       rescue Grackle::TwitterError => e
         return false
+      rescue => e
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['verify_service']['failure']['twitter'])
+        return false
       end
     end
     
@@ -296,6 +299,9 @@ module GT
         graph.get_connections("me","permissions")
         return true
       rescue Koala::Facebook::APIError => e
+        return false
+      rescue => e
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['verify_service']['failure']['facebook'])
         return false
       end
     end
