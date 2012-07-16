@@ -29,9 +29,9 @@ module GT
         og_object[:roll] = object.roll.permalink
         og_object[:other] = object.permalink
       when 'comment'
-        return false unless object.roll.public
         conversation = object
         frame = conversation.frame
+        return false unless frame.roll.public
         og_action = "shelbytv:comment"
         og_object[:message] = message
         og_object[:roll] = frame.roll.permalink
