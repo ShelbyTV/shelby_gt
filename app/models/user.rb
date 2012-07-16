@@ -191,10 +191,14 @@ class User
     GT::UserManager.ensure_users_special_rolls(self, true)
   end
   
-  # given a comma separated string of autocomplete items in info, store all unique, valid ones
+  # given a comma separated string or array of strings of autocomplete items in info, store all unique, valid ones
   # in the array at self.autocomplete[key]
   def store_autocomplete_info(key, info)
-    items = info.split(',').map{|item| item.strip}.uniq
+    if info.respond_to?('map')
+      items = info.map{|item| item.to_s.strip}.uniq
+    else
+      items = info.split(',').map{|item| item.strip}.uniq
+    end
     if key == :email
       items.select! {|address| address =~ /\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/}
     end
