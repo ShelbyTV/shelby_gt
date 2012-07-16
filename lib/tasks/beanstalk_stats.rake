@@ -2,9 +2,9 @@ namespace :beanstalk do
 
   desc 'Send all beanstalk tube stats to Graphite via UDP'
   task :update_stats => :environment do
-    require 'stats_manager'
     
     @bean = Beanstalk::Connection.new(Settings::Beanstalk.url)
+    @statsd = Statsd.new(Settings::StatsD.statsd_server, Settings::StatsD.statsd_port)
     
     begin
       @bean.list_tubes.each do |t| 
@@ -15,16 +15,16 @@ namespace :beanstalk do
           # pass each stat to graphite
           stats.each do |k,v|
             unless k == "name"
-              statd_name = "#{t}.#{k}"
-              StatsManager::StatsD.count(statd_name, v)
+              statd_name = "beanstalk.#{t}.#{k}"
+              @statsd.count(statd_name, v)
             end
           end
-        rescue => e
-          puts "[ERROR] Trying to get stats for #{t} tube: #{e}"
+        rescue
+          @statsd.count("beanstalk.error.#{t}", v)
         end
       end
-    rescue => e
-      puts "[ERROR] Trying to get list of tubes: #{e} "
+    rescue
+      @statsd.count("beanstalk.error.getting_tubes", v)
     end
   end
   
