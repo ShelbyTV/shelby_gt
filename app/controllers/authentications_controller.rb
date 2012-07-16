@@ -15,7 +15,7 @@ class AuthenticationsController < ApplicationController
       if u and u.valid_password?(params[:password])
         user = u
       else
-        @opener_location = add_query_params(clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), {
+        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {
           :error => "username_password_fail"
           })
         return render :action => 'redirector', :layout => 'simple'
@@ -52,7 +52,7 @@ class AuthenticationsController < ApplicationController
         
       else
         # NO GT FOR YOU, just redirect to error page w/o signing in
-        @opener_location = redirect_path || "#{Settings::ShelbyAPI.web_root}/?access=nos"
+        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
       end
       
 # ---- Adding new authentication to current user
@@ -102,15 +102,15 @@ class AuthenticationsController < ApplicationController
           end
           
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
-        
           @opener_location = redirect_path || Settings::ShelbyAPI.web_root
         else
+
           Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
           @opener_location = redirect_path || Settings::ShelbyAPI.web_root
         end
       else
         # NO GT FOR YOU!  Just redirect to error page w/o creating account
-        @opener_location = redirect_path || "#{Settings::ShelbyAPI.web_root}/?access=nos"
+        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
       end
         
 # ---- New User signing up w/ email & password
@@ -157,11 +157,11 @@ class AuthenticationsController < ApplicationController
         
       else
         #not invited, deny access
-        @opener_location = redirect_path || "#{Settings::ShelbyAPI.web_root}/?access=nos"
+        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
       end
     else
 # ---- NO GT FOR YOU!  Just redirect to error page w/o creating account
-      @opener_location = redirect_path || "#{Settings::ShelbyAPI.web_root}/?access=nos"
+      @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
     end
 
     @opener_location = clean_query_params(@opener_location)
@@ -191,7 +191,7 @@ class AuthenticationsController < ApplicationController
 
   private
     def redirect_path
-      session[:return_url] || request.env['omniauth.origin']
+      clean_query_params(session[:return_url] || request.env['omniauth.origin'])
     end
     
     def set_common_cookie(user, form_authenticity_token)
@@ -230,13 +230,15 @@ class AuthenticationsController < ApplicationController
     end
     
     def clean_query_params(loc, params=["auth_failure", "auth_strategy"])
-      # remove parameters describing a previous auth failure from the redirect url as they are no longer relevant
-      redirect_uri = URI(loc)
-      query = Rack::Utils.parse_query redirect_uri.query
-      params.each { |p| query.delete(p) }
-      redirect_uri.query = query.empty? ? nil : query.to_query
+      if loc
+        # remove parameters describing a previous auth failure from the redirect url as they are no longer relevant
+        redirect_uri = URI(loc)
+        query = Rack::Utils.parse_query redirect_uri.query
+        params.each { |p| query.delete(p) }
+        redirect_uri.query = query.empty? ? nil : query.to_query
 
-      redirect_uri.to_s
+        redirect_uri.to_s
+      end
     end
     
     def add_query_params(loc, params)

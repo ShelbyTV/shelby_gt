@@ -24,6 +24,7 @@ module GT
         og_object[:roll] = object.roll.permalink
         og_object[:other] = object.permalink
       when 'roll'
+        return false unless object.roll.public
         og_action = "shelbytv:roll"
         og_object[:roll] = object.roll.permalink
         og_object[:other] = object.permalink
