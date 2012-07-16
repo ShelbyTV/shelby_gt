@@ -1,6 +1,7 @@
 # encoding: UTF-8
 require 'authentication_builder'
 require 'predator_manager'
+require 'api_clients/twitter_client'
 
 
 # This is the one and only place where Users are created.
@@ -263,15 +264,11 @@ module GT
       return false unless oauth_token and oauth_secret
       
       begin
-        c = Grackle::Client.new(:auth => {
-            :type => :oauth,
-            :consumer_key => Settings::Twitter.consumer_key, :consumer_secret => Settings::Twitter.consumer_secret,
-            :token => oauth_token, :token_secret => oauth_secret
-          })
+        c = APIClients::TwitterClient.build_for_token_and_secret(oauth_token, oauth_secret)
         #this will throw if user isn't auth'd
         c.statuses.home_timeline? :count => 1
         return true
-      rescue Grackle::TwitterError => e
+      rescue Grackle::TwitterError
         return false
       end
     end
@@ -283,7 +280,7 @@ module GT
         graph = Koala::Facebook::API.new(oauth_token)
         graph.get_connections("me","permissions")
         return true
-      rescue Koala::Facebook::APIError => e
+      rescue Koala::Facebook::APIError
         return false
       end
     end

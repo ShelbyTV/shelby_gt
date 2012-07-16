@@ -49,6 +49,23 @@ describe AuthenticationsController do
           get :create
           assigns(:opener_location).should == url
         end
+
+        it "should retrieve and save twitter autocomplete info" do
+          info_getter = double("info_getter")
+          info_getter.should_receive(:get_following_screen_names).and_return(['a','b'])
+          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
+          @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
+          get :create
+        end
+
+        it "should not save twitter autocomplete info if TwitterError occurs" do
+          info_getter = double("info_getter")
+          twitter_error = Grackle::TwitterError.new('', '', '', '')
+          info_getter.should_receive(:get_following_screen_names).and_raise(twitter_error)
+          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
+          @u.should_not_receive(:store_autocomplete_info)
+          get :create
+        end
       end
       
       context "via email/password" do
