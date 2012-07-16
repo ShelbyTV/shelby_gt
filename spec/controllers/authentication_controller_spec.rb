@@ -106,6 +106,11 @@ describe AuthenticationsController do
           assigns(:current_user).should == nil
           assigns(:opener_location).start_with?(url+"?").should == true
         end
+
+        it "should not save twitter autocomplete since user has no twitter auth" do
+          APIClients::TwitterInfoGetter.should_not_receive(:new)
+          get :create
+        end
       end
 
     end
@@ -134,6 +139,13 @@ describe AuthenticationsController do
         assigns(:opener_location).should == url
       end
     
+      it "should not save twitter autocomplete since this is not a signin" do
+          GT::UserManager.should_receive(:add_new_auth_from_omniauth).and_return true
+          APIClients::TwitterInfoGetter.should_not_receive(:new)
+
+          get :create
+      end
+
     end
   
     context "New User signing up" do
@@ -144,6 +156,7 @@ describe AuthenticationsController do
         end
 
         it "should reject without additional permissions" do
+          APIClients::TwitterInfoGetter.should_not_receive(:new)
           get :create
           assigns(:opener_location).should == "#{Settings::ShelbyAPI.web_root}/?access=nos"
         end
@@ -152,17 +165,22 @@ describe AuthenticationsController do
       context "via omniauth" do    
         before(:each) do
           request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
+
+          @u = Factory.create(:user)
+          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(@u)
+
+          info_getter = double("info_getter")
+          info_getter.should_receive(:get_following_screen_names).and_return(['a','b'])
+          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
+          @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
         end
-        
+
         it "should accept when GtInterest found" do
           gt_interest = Factory.create(:gt_interest)
           cookies[:gt_access_token] = {:value => gt_interest.id.to_s, :domain => ".shelby.tv"}
-      
-          u = Factory.create(:user)
-          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
-      
+
           get :create
-          assigns(:current_user).should == u
+          assigns(:current_user).should == @u
           assigns(:current_user).gt_enabled.should == true
           cookies[:_shelby_gt_common].should_not == nil
           cookies[:gt_access_token].should == nil
@@ -172,9 +190,6 @@ describe AuthenticationsController do
         it "should be able to redirect when GtInterest found" do
           gt_interest = Factory.create(:gt_interest)
           cookies[:gt_access_token] = gt_interest.id.to_s
-      
-          u = Factory.create(:user)
-          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
       
           session[:return_url] = (url = "http://danspinosa.tv")
           get :create
@@ -187,11 +202,8 @@ describe AuthenticationsController do
           Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
           GT::InvitationManager.should_receive :private_roll_invite
       
-          u = Factory.create(:user)
-          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
-      
           get :create
-          assigns(:current_user).should == u
+          assigns(:current_user).should == @u
           assigns(:current_user).gt_enabled.should == true
           cookies[:_shelby_gt_common].should_not == nil
           cookies[:gt_roll_invite].should == nil
@@ -204,9 +216,6 @@ describe AuthenticationsController do
           Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
           GT::InvitationManager.should_receive :private_roll_invite
       
-          u = Factory.create(:user)
-          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
-      
           session[:return_url] = (url = "http://danspinosa.tv")
           get :create
           assigns(:opener_location).should == url
@@ -216,19 +225,16 @@ describe AuthenticationsController do
           cohorts = ["a", "b", "c"]
           cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
           session[:cohort_entrance_id] = cohort_entrance.id
-        
-          u = Factory.create(:user)
-          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(u)
       
           get :create
-          assigns(:current_user).should == u
+          assigns(:current_user).should == @u
           assigns(:current_user).gt_enabled.should == true
           cookies[:_shelby_gt_common].should_not == nil
           session[:cohort_entrance_id].should == nil
           assigns(:opener_location).should == Settings::ShelbyAPI.web_root
         
           assigns(:current_user).cohorts.should == cohorts
-          u.reload.cohorts.should == cohorts
+          @u.reload.cohorts.should == cohorts
         end
       end
     
@@ -238,8 +244,9 @@ describe AuthenticationsController do
           cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
           session[:cohort_entrance_id] = cohort_entrance.id
         
-          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [])
+          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [], :authentications => [])
           GT::UserManager.should_receive(:create_new_user_from_params).and_return u
+          APIClients::TwitterInfoGetter.should_not_receive(:new)
           get :create, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
       
           assigns(:current_user).should == u
@@ -262,6 +269,7 @@ describe AuthenticationsController do
           u2.save
           u2.valid?.should == false
           GT::UserManager.should_receive(:create_new_user_from_params).and_return u2
+          APIClients::TwitterInfoGetter.should_not_receive(:new)
           get :create, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
           
           assigns(:current_user).should == nil
@@ -280,103 +288,115 @@ describe AuthenticationsController do
     end
 
     context "faux user" do
-      before(:each) do
-        request.stub!(:env).and_return({"omniauth.auth" => 
-          {
-            'provider'=>'twitter', 
-            'credentials'=>{'token'=>nil, 'secret'=>nil}
-          }})
-        @u = Factory.create(:user, :gt_enabled => false, :faux => User::FAUX_STATUS[:true], :cohorts => ["init"])
-        User.stub(:first).and_return(@u)
+      context "no permissions" do
+
+        it "should reject without additional permissions" do
+          APIClients::TwitterInfoGetter.should_not_receive(:new)
+          get :create
+          assigns(:current_user).should == nil
+        end
+
       end
-    
-      it "should reject without additional permissions" do
-        get :create
-        assigns(:current_user).should == nil
-      end
-    
-      it "should accept and convert if gt_enabled" do
-        @u.gt_enabled = true
-        @u.save
+
+      context "via omniauth" do
+        before(:each) do
+          request.stub!(:env).and_return({"omniauth.auth" =>
+            {
+              'provider'=>'twitter',
+              'credentials'=>{'token'=>nil, 'secret'=>nil}
+            }})
+          @u = Factory.create(:user, :gt_enabled => false, :faux => User::FAUX_STATUS[:true], :cohorts => ["init"])
+          User.stub(:first).and_return(@u)
+
+          info_getter = double("info_getter")
+          info_getter.should_receive(:get_following_screen_names).and_return(['a','b'])
+          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
+          @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
+        end
       
-        GT::UserManager.should_receive :convert_faux_user_to_real
-        GT::UserManager.should_receive :start_user_sign_in
+        it "should accept and convert if gt_enabled" do
+          @u.gt_enabled = true
+          @u.save
+
+          GT::UserManager.should_receive :convert_faux_user_to_real
+          GT::UserManager.should_receive :start_user_sign_in
+
+          get :create
+          assigns(:current_user).should == @u
+          assigns(:current_user).gt_enabled.should == true
+          cookies[:_shelby_gt_common].should_not == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        end
       
-        get :create
-        assigns(:current_user).should == @u
-        assigns(:current_user).gt_enabled.should == true
-        cookies[:_shelby_gt_common].should_not == nil
-        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-      end
-    
-      it "should accept and convert if GtInterest found" do
-        gt_interest = Factory.create(:gt_interest)
-        cookies[:gt_access_token] = {:value => gt_interest.id.to_s, :domain => ".shelby.tv"}
+        it "should accept and convert if GtInterest found" do
+          gt_interest = Factory.create(:gt_interest)
+          cookies[:gt_access_token] = {:value => gt_interest.id.to_s, :domain => ".shelby.tv"}
+
+          GT::UserManager.should_receive :convert_faux_user_to_real
+          GT::UserManager.should_receive :start_user_sign_in
+
+          get :create
+          assigns(:current_user).should == @u
+          cookies[:_shelby_gt_common].should_not == nil
+          cookies[:gt_access_token].should == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        end
       
-        GT::UserManager.should_receive :convert_faux_user_to_real
-        GT::UserManager.should_receive :start_user_sign_in
+        it "should be able to redirect on GtInterest" do
+          gt_interest = Factory.create(:gt_interest)
+          cookies[:gt_access_token] = gt_interest.id.to_s
+
+          GT::UserManager.should_receive :convert_faux_user_to_real
+          GT::UserManager.should_receive :start_user_sign_in
+
+          session[:return_url] = (url = "http://danspinosa.tv")
+          get :create
+          assigns(:opener_location).should == url
+        end
       
-        get :create
-        assigns(:current_user).should == @u
-        cookies[:_shelby_gt_common].should_not == nil
-        cookies[:gt_access_token].should == nil
-        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-      end
-    
-      it "should be able to redirect on GtInterest" do
-        gt_interest = Factory.create(:gt_interest)
-        cookies[:gt_access_token] = gt_interest.id.to_s
+        it "should accept and convert if invited to a roll" do
+          cookies[:gt_roll_invite] = :fake_invite
+          GT::InvitationManager.should_receive :private_roll_invite
+
+          GT::UserManager.should_receive :convert_faux_user_to_real
+          GT::UserManager.should_receive :start_user_sign_in
+
+          get :create
+          assigns(:current_user).reload.should == @u
+          cookies[:_shelby_gt_common].should_not == nil
+          cookies[:gt_roll_invite].should == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        end
       
-        GT::UserManager.should_receive :convert_faux_user_to_real
-        GT::UserManager.should_receive :start_user_sign_in
-      
-        session[:return_url] = (url = "http://danspinosa.tv")
-        get :create
-        assigns(:opener_location).should == url
-      end
-    
-      it "should accept and convert if invited to a roll" do
-        cookies[:gt_roll_invite] = :fake_invite
-        GT::InvitationManager.should_receive :private_roll_invite
-      
-        GT::UserManager.should_receive :convert_faux_user_to_real
-        GT::UserManager.should_receive :start_user_sign_in
-      
-        get :create
-        assigns(:current_user).reload.should == @u
-        cookies[:_shelby_gt_common].should_not == nil
-        cookies[:gt_roll_invite].should == nil
-        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-      end
-    
-      it "should be able to redirect on roll invite" do
-        cookies[:gt_roll_invite] = :fake_invite
-        GT::InvitationManager.should_receive :private_roll_invite
-      
-        GT::UserManager.should_receive :convert_faux_user_to_real
-        GT::UserManager.should_receive :start_user_sign_in
-      
-        session[:return_url] = (url = "http://danspinosa.tv")
-        get :create
-        assigns(:opener_location).should == url
-      end
-      
-      it "should accept and convert with CohortEntrance, set cohorts on user" do
-        cohorts = ["a", "b", "c"]
-        expected_cohorts = @u.cohorts + cohorts
-        cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
-        session[:cohort_entrance_id] = cohort_entrance.id
+        it "should be able to redirect on roll invite" do
+          cookies[:gt_roll_invite] = :fake_invite
+          GT::InvitationManager.should_receive :private_roll_invite
+
+          GT::UserManager.should_receive :convert_faux_user_to_real
+          GT::UserManager.should_receive :start_user_sign_in
+
+          session[:return_url] = (url = "http://danspinosa.tv")
+          get :create
+          assigns(:opener_location).should == url
+        end
         
-        GT::UserManager.should_receive :convert_faux_user_to_real
-        GT::UserManager.should_receive :start_user_sign_in
-      
-        get :create
-        assigns(:current_user).should == @u
-        cookies[:_shelby_gt_common].should_not == nil
-        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-        
-        assigns(:current_user).cohorts.should == expected_cohorts
-        @u.reload.cohorts.should == expected_cohorts
+        it "should accept and convert with CohortEntrance, set cohorts on user" do
+          cohorts = ["a", "b", "c"]
+          expected_cohorts = @u.cohorts + cohorts
+          cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
+          session[:cohort_entrance_id] = cohort_entrance.id
+
+          GT::UserManager.should_receive :convert_faux_user_to_real
+          GT::UserManager.should_receive :start_user_sign_in
+
+          get :create
+          assigns(:current_user).should == @u
+          cookies[:_shelby_gt_common].should_not == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+
+          assigns(:current_user).cohorts.should == expected_cohorts
+          @u.reload.cohorts.should == expected_cohorts
+        end
       end
     end
 
