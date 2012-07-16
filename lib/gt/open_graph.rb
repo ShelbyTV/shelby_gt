@@ -38,7 +38,7 @@ module GT
         og_object[:other] = frame.permalink
       when 'share'
         og_action = "shelbytv:share"
-        og_object[:message] = '"' + message + '"'
+        og_object[:message] = message
         if object.is_a?(Roll)
           og_object[:roll] = object.permalink
         elsif object.is_a?(Frame)
