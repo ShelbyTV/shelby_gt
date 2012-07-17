@@ -18,7 +18,7 @@ describe APIClients::TwitterInfoGetter do
         struct
       }
       @info_getter.stub_chain(:twitter_client, :users, :lookup?).and_return { |arg|
-         arg[:user_id].map {|i| 
+         arg[:user_id].split(",").map {|i|
           struct = OpenStruct.new
           struct.screen_name = 'screen_name_for_' + i.to_s
           struct

@@ -17,7 +17,7 @@ module APIClients
         friend_ids = twitter_client.friends.ids?.ids
         # users can only be looked up 100 at a time to get their screen names
         friend_ids.each_slice(100) {|user_ids|
-          user_info = twitter_client.users.lookup? :user_id => user_ids
+          user_info = twitter_client.users.lookup? :user_id => user_ids.join(",")
           following_screen_names.concat user_info.map{|user| user.screen_name}
         }
 
