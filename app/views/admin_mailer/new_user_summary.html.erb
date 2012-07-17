@@ -40,16 +40,11 @@
 												<% friends_rolls = rolls.select {|k,v| k.roll_type == 11 } || 0 %>
 												<% watch_later_roll = rolls.select {|k,v| k.roll_type == 13 } || 0 %>
 												<% upvoted_roll = rolls.select {|k,v| k.roll_type == 12 } || 0 %>
-												<% public_rolls = rolls.select {|k,v| k.roll_type == 30 or k.roll_type == 31) } || 0 %>
+												<% public_rolls = rolls.select {|k,v| k.roll_type == 30 or k.roll_type == 31 } || 0 %>
 												<% private_rolls = rolls.select {|k,v| k.roll_type == 50 } || 0 %>
 
 												<% @tw_link, @fb_link, @tu_link = nil %>
-												<% u.authentications.each do |a|
-														@tw_link = "http://twitter.com/#{a.nickname}" if a.provider == "twitter"
-														@fb_link = "http://www.facebook.com/#{a.nickname}" if a.provider == "facebook"
-														@tu_link = "http://#{a.nickname}.tumblr.com/" if a.provider == "tumblr"
-													end 
-												%>
+												<% u.authentications.each { |a| @tw_link = "http://twitter.com/#{a.nickname}" if a.provider == "twitter"; @fb_link = "http://www.facebook.com/#{a.nickname}" if a.provider == "facebook"; @tu_link = "http://#{a.nickname}.tumblr.com/" if a.provider == "tumblr"; } %>
 												
 	                      <tr>
 													<table border="0" cellspacing="0" cellpadding="0" width="100%">
@@ -62,7 +57,7 @@
 			                                    <img src="<%= u.user_image %>" alt="<%= u.nickname %>" title="<%= u.nickname %>" style="border: 0;height: 100%;line-height: 100%;outline: none;text-decoration: none;display: inline;">
 			                                  </a>
 			                                </div>
-			                                <a href="<%= u.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= u.name %></a>: <a href="<%= watch_later_roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">watch later roll</a>: <a href="<%= upvoted_roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">heart roll</a>: (<%= u.faux == 0 ? "New" : "Converted Faux" %> User)
+			                                <a href="<%= u.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= u.name %></a>: <a href="<%= watch_later_roll[0].permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">watch later roll</a>: <a href="<%= upvoted_roll[0].permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">heart roll</a>: (<%= u.faux == 0 ? "New" : "Converted Faux" %> User)
 			                              </h4>
 			                          </div>
 			                        </td>
@@ -72,19 +67,13 @@
 																<h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: normal;line-height: 100%;margin-top: 0.5em;margin-right: 0;margin-bottom: 5px;margin-left: 0;">
 																	<span class="social-links">
 																		<% if @tw_link %>
-																			<a href="<%= @tw_link %>" style="color: #777;font-weight: normal;text-decoration: underline;">
-																				<img src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" alt="" title="" style="border: 0;height: 12px;line-height: 100%;outline: none;text-decoration: none;display: inline;"/>
-																			</a>
+																			<a href="<%= @tw_link %>" style="color: #777;font-weight: normal;text-decoration: underline;"><img src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" alt="" title="" style="border: 0;height: 12px;line-height: 100%;outline: none;text-decoration: none;display: inline;"/></a>
 																		<% end %>
 																		<% if @fb_link %>
-																			<a href="<%= @tw_link %>" style="color: #777;font-weight: normal;text-decoration: underline;">
-																				<img src="http://shelby.tv/images/assets/facebook.png" alt="" title="" style="border: 0;height: 12px;line-height: 100%;outline: none;text-decoration: none;display: inline; background-color: blue">
-																			</a>
+																			<a href="<%= @tw_link %>" style="color: #777;font-weight: normal;text-decoration: underline;"><img src="http://shelby.tv/images/assets/facebook.png" alt="" title="" style="border: 0;height: 12px;line-height: 100%;outline: none;text-decoration: none;display: inline; background-color: blue"/></a>
 																		<% end %>
 																		<% if @tu_link %>
-																			<a href="<%= @tw_link %>" style="color: #777;font-weight: normal;text-decoration: underline;">
-																				<img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" alt="" title="" style="border: 0;height: 12px;line-height: 100%;outline: none;text-decoration: none;display: inline; background-color: blue">
-																			</a>
+																			<a href="<%= @tw_link %>" style="color: #777;font-weight: normal;text-decoration: underline;"><img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" alt="" title="" style="border: 0;height: 12px;line-height: 100%;outline: none;text-decoration: none;display: inline; background-color: blue"></a>
 																		<% end %>
 																	</span>
 																	
