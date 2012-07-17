@@ -7,14 +7,6 @@ describe Conversation do
   end
   
   context "database" do
-
-    it "should have an identity map" do
-      c = Conversation.new
-      m = Message.new
-      m.origin_id = rand.to_s
-      c.save
-      Conversation.identity_map.size.should >= 1
-    end
     
     it "should have an index on [video_id]" do
       indexes = Conversation.collection.index_information.values.map { |v| v["key"] }

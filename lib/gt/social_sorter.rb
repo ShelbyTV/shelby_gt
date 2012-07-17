@@ -56,24 +56,33 @@ module GT
           
           new_following = true
         end
+        
+        # If the posting user posted the same video within the last 24 hours, don't create a new frame, just add to the convo
+        if old_frame = recent_posting_of_video_on_roll(posting_user.public_roll_id, video_hash[:video].id, 24.hours.ago)
+          unless old_frame.conversation and old_frame.conversation.messages.any? { |m| m.origin_id == message.origin_id }
+            # This message hasn't been appended to the conversation yet
+            # Do so atomically (w/ set semantics so timing doesn't result in multiple posts)
+            Conversation.add_to_set(old_frame.conversation.id, :messages => message.to_mongo)
+          end
+        else
 
-        #Add Frame to posting_user's public roll
-        res = GT::Framer.create_frame(
-          :creator => posting_user,
-          :video => video_hash[:video],
-          :message => message,
-          :roll => posting_user.public_roll,
-          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-          :deep => video_hash[:from_deep]
-          )
+          # Hasn't been recently posted, add Frame to posting_user's public roll
+          # would return
+          res = GT::Framer.create_frame(
+            :creator => posting_user,
+            :video => video_hash[:video],
+            :message => message,
+            :roll => posting_user.public_roll,
+            :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+            :deep => video_hash[:from_deep]
+            )
+        end
 
         if !res
-          # conversation was already posted
-          convo = Conversation.first_including_message_origin_id(message.origin_id)
-          # This has already been posted, so we weren't able to create a Frame.
+          # New frame was not created b/c 1) conversation was already posted OR 2) video was posted recently and we added this message to it
           #  BUT if observing_user was just added as a follower of posting_user's public_roll, 
           #      a DashboardEntry may not have been created for this Frame/observing_user...
-          if new_following and original_frame = convo.frame
+          if new_following and (convo = Conversation.first_including_message_origin_id(message.origin_id)) and (original_frame = convo.frame)
             # Only create if backfill didn't catch it for us
             # Keep performance high by only looking back through 60 seconds of dashboard entries for this user
             unless observing_user.dashboard_entries.where(:frame_id => original_frame.id, :_id.gt => BSON::ObjectId.from_time(60.seconds.ago)).exists?
@@ -108,6 +117,11 @@ module GT
           Rails.logger.fatal("[GT::SocialSorter#get_or_create_posting_user_for] rescued but re-raising #{e} for message #{message.inspect}")
           raise e
         end
+      end
+      
+      def self.recent_posting_of_video_on_roll(roll_id, video_id, time_ago=24.hours.ago)
+        return nil unless roll_id and video_id
+        Frame.where(:roll_id  => roll_id, :video_id => video_id, :_id.gt => BSON::ObjectId.from_time(time_ago)).first
       end
        
   end
