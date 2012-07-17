@@ -1,6 +1,7 @@
 require 'video_manager'
 require 'twitter_normalizer'
 require 'social_sorter'
+require 'api_clients/twitter_client'
 
 # So, you want some fresh data from our Twitter stream?
 # Just run Dev::TwitterPoller.poll_for_user(your_user) to scrape as far back in your home timeline as twitter will let us.
@@ -14,7 +15,7 @@ module Dev
     def self.poll_for_user(u)
       raise ArgumentError, "must present a User" unless u.is_a?(User)
       raise ArgumentError, "User doesn't have a twitter auth" unless twitter_auth = u.authentications.select { |a| a.provider == 'twitter'  }.first
-      client = twitter_client(twitter_auth.oauth_token, twitter_auth.oauth_secret)
+      client = APIClients::TwitterClient.build_for_token_and_secret(twitter_auth.oauth_token, twitter_auth.oauth_secret)
             
       # Hit twitter, and process each tweet
       each_tweet_on_timeline(client, Settings::Twitter.dev_poller_tweets_per_page, Settings::Twitter.dev_poller_last_page) do |tweet|
@@ -59,14 +60,6 @@ module Dev
         tweet = JSON.parse(g.to_json)["table"]
         tweet["user"] = tweet["user"]["table"]
         return tweet
-      end
-    
-      def self.twitter_client(oauth_token, oauth_secret)
-        Grackle::Client.new(:auth => {
-            :type => :oauth,
-            :consumer_key => Settings::Twitter.consumer_key, :consumer_secret => Settings::Twitter.consumer_secret,
-            :token => oauth_token, :token_secret => oauth_secret
-          })
       end
     
   end

@@ -4,6 +4,8 @@
 # This utility pulls the broadcasts from those arrays and adds them to the users new GT rolls, setting the _id appropriatley
 #  so the creation time of the new Frames is the same as the original broadcast.
 
+require 'video_manager'
+
 module GT
   class NOSDataMigrater
   
@@ -13,17 +15,18 @@ module GT
     end
   
     def self.migrate_likes_for(user)
-      puts "migrating likes for #{user.nickname}..."
+      puts "---> migrating LIKES for #{user.nickname}..."
       self.migrate_broadcasts(user, user.liked_broadcasts, user.upvoted_roll)
     end
   
     def self.migrate_watch_later_for(user)
-      puts "migrating watch later for #{user.nickname}..."
+      puts "---> migrating WATCH LATER for #{user.nickname}..."
       self.migrate_broadcasts(user, user.watch_later_broadcasts, user.watch_later_roll)
     end
 
     def self.migrate_broadcasts(user, broadcasts_array, destination_roll)
       broadcasts_collection = User.collection.db['broadcasts']
+      err = 0
     
       broadcasts_array.each_with_index do |bcast_id, n|
         # get a hash of the old NOS Broadcast object directly from mongo driver (will need to translate abbreviations later)
@@ -31,6 +34,7 @@ module GT
       
         if bcast_hash.blank?
           puts "ERROR: couldn't find broadcast #{bcast_id}"
+          err += 1
           next
         end
         print 'b'
@@ -42,8 +46,12 @@ module GT
         #key :video_id_at_provider,    String, :abbr => :s
         #key :video_provider_name,     String, :abbr => :r
         unless video = Video.where(:provider_name => bcast_hash["r"], :provider_id => bcast_hash["s"]).first
-          puts "ERROR: couldn't find video for broadcast #{bcast_id}"
-          next
+          #key :video_source_url,        String, :abbr => :f
+          unless video = GT::VideoManager.get_or_create_videos_for_url(bcast_hash["f"])[:videos][0]
+            puts "ERROR: couldn't find video for broadcast #{bcast_id}"
+            err += 1
+            next
+          end
         end
         print 'v'
       
@@ -79,6 +87,7 @@ module GT
         rescue Mongo::OperationFailure
           # unique key failure due to duplicate
           puts "ERROR: conversation didn't save for broadcast #{bcast_id.to_s}"
+          err += 1
           next
         end
         print 'c'
@@ -89,7 +98,7 @@ module GT
         f = Frame.new
         #backdate to the time of the original broadcast
         f.id = BSON::ObjectId.from_time(bcast_hash["_id"].generation_time, :unique => true)
-        f.creator = msg.user
+        f.creator = msg.user || user
         f.video = video
         f.video_id = video.id
         f.roll = destination_roll
@@ -103,6 +112,8 @@ module GT
         puts "SUCCESS: migrated broadcast #{n+1}/#{broadcasts_array.count} for #{user.nickname}"
 
       end
+      
+      puts " DONE: #{broadcasts_array.count - err}/#{broadcasts_array.count} completed (#{((broadcasts_array.count-err)/broadcasts_array.count.to_f * 100).round}%)"
     end
   
   end
