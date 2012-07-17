@@ -8,8 +8,8 @@ namespace :user_notifier do
     time_as_id = BSON::ObjectId.from_time(start_at)
     
     # find all new users as of today that are real users
-    new_new_users = User.where('_id' => {'$gte' => time_as_id}, :faux => 0 ).all
-    converted_new_users = User.where('_id' => {'$gte' => time_as_id}, :faux => 2 ).all
+    new_new_users = User.where('id' => {'$gte' => time_as_id}, :faux => 0 ).all
+    converted_new_users = User.where('id' => {'$gte' => time_as_id}, :faux => 2 ).all
         
     # send email summary
     AdminMailer.new_user_summary(new_new_users, converted_new_users).deliver
