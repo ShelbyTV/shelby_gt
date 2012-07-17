@@ -12,9 +12,13 @@ describe APIClients::TwitterInfoGetter do
     end
     
     it "should return a list of screen names" do
-      @info_getter.stub_chain(:twitter_client, :friends, :ids?) {(1..4998)}
+      @info_getter.stub_chain(:twitter_client, :friends, :ids?) {
+        struct = OpenStruct.new
+        struct.ids = (1..4998).to_a
+        struct
+      }
       @info_getter.stub_chain(:twitter_client, :users, :lookup?).and_return { |arg|
-         arg[:user_ids].map {|i| 
+         arg[:user_id].map {|i| 
           struct = OpenStruct.new
           struct.screen_name = 'screen_name_for_' + i.to_s
           struct
