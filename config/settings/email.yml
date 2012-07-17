@@ -29,6 +29,9 @@ defaults: &defaults
     category: "Submit GT Interest"
     subject: "Your request for Shelby has been received!"
     from: "Shelby GT <contact+gt@shelby.tv>"
+  new_user_summary:
+    subject: "%{new_new_users} New Users, %{converted_new_users} Converted Users Yesterday"
+    from: "Shelby GT <contact+gt@shelby.tv>"    
 
 development:
   <<: *defaults

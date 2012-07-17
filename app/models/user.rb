@@ -235,32 +235,7 @@ class User
   def first_provider(provider)
     @first_provider ||= authentications.each { |a| return a if a.provider == provider }
   end
-      
-  #TODO: Update how we track social actions
-  #################################################################
-  # Social Action Tracking
-  #   -updates the hash that tracks how much a user tweets/comments
-  ################################################################
-  def update_tracker(action)
-    case action
-    when 'twitter'
-      self.social_tracker[0] += 1
-    when 'facebook'
-      self.social_tracker[1] += 1
-    when 'email'
-      self.social_tracker[2] += 1
-    when 'tumblr'
-      if self.social_tracker[3] = nil
-        self.social_tracker[3] = 1
-      else
-        self.social_tracker[3] += 1
-      end
-    end
-    self.save
-  end  
-  
-  def total_tracker_count() self.social_tracker.inject(:+); end
-  
+
   def send_email_address_to_sailthru(list=Settings::Sailthru.user_list)
     #ShelbyGT_EM.next_tick do
       #client = Bacon::Email.new()
