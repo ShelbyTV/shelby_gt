@@ -4,7 +4,7 @@ class AdminMailer < ActionMailer::Base
   helper :mail
 
   def new_user_summary(new_new_users, converted_new_users)
-    sendgrid_category Settings::Email.admin_notification["admin"]
+    sendgrid_category Settings::Email.new_user_summary["category"]
 
     @all_new_users = new_new_users.concat(converted_new_users)
 
