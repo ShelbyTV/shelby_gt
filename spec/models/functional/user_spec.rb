@@ -152,6 +152,14 @@ describe User do
         @user.autocomplete[:email].length.should == 2
       end
 
+      it "should accept an array as the second parameter" do
+        @user.store_autocomplete_info(:email, ["totallynew@gmail.com",  "  totallynew2@gmail.com   "])
+        @user.autocomplete.should include(:email)
+        @user.autocomplete[:email].should include('totallynew@gmail.com')
+        @user.autocomplete[:email].should include('totallynew2@gmail.com')
+        @user.autocomplete[:email].length.should == 2
+      end
+
      it "should add unique, valid email addresses to user's autocomplete while keeping what was already there" do
         @user.store_autocomplete_info(:email, "spinosa@gmail.com, j@jay.net")
         @user.store_autocomplete_info(:email, "spinosa@gmail.com, josh@shelby.tv")

@@ -30,7 +30,7 @@ module GT
       
       return unless user_to.preferences.reroll_notifications
             
-      NotificationMailer.reroll_notification(new_frame, old_frame).deliver
+      NotificationMailer.reroll_notification(old_frame, new_frame).deliver
     end
     
     def self.send_new_message_notifications(c, new_message, user)

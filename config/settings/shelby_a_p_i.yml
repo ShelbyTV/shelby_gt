@@ -1,5 +1,5 @@
 defaults: &defaults  
-  web_root: "http://gt.shelby.tv"
+  web_root: "http://shelby.tv"
   
 development:
   <<: *defaults

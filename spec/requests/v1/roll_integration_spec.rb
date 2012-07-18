@@ -34,6 +34,30 @@ describe 'v1/roll' do
         response.body.should have_json_path("result/title")
         parse_json(response.body)["result"]["title"].should eq(@r.title)
         parse_json(response.body)["result"]["roll_type"].should eq(@r.roll_type)
+        parse_json(response.body)["result"]["followed_at"].should == 0 #b/c user is not following
+      end
+      
+      it "should return followed at if use is following roll" do
+        r = Factory.create(:roll, :creator => @u1)
+        r.add_follower(@u1)
+        
+        get '/v1/roll/'+r.id
+        response.body.should be_json_eql(200).at_path("status")
+        
+        parse_json(response.body)["result"]["followed_at"].should == @u1.reload.roll_following_for(r).id.generation_time.to_f
+      end
+      
+      it "should not return subdomain unless subdomain_active" do
+        get '/v1/roll/'+@r.id
+        response.body.should be_json_eql(200).at_path("status")
+        parse_json(response.body)["result"]["subdomain"].should == nil
+      end
+      
+      it "shoud return subdomain when subdomain_active" do
+        r = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:global_public], :subdomain => "thesubd", :subdomain_active => true, :collaborative => false)
+        get '/v1/roll/'+r.id
+        response.body.should be_json_eql(200).at_path("status")
+        parse_json(response.body)["result"]["subdomain"].should == r.subdomain
       end
       
       it "should return roll info on success when looking up by subdomain if the subdomain is active" do
@@ -65,7 +89,7 @@ describe 'v1/roll' do
       it "should return heart roll of user when given a nickname" do
         get 'v1/user/'+@u2.nickname+'/rolls/hearted'
         response.body.should be_json_eql(200).at_path("status")
-        parse_json(response.body)["result"]["title"].should eq("#{@u2.nickname} ♥s")
+        parse_json(response.body)["result"]["title"].should == @u2.upvoted_roll.title
       end
     
       it "should return error message if roll doesnt exist" do
@@ -108,6 +132,7 @@ describe 'v1/roll' do
           parse_json(response.body)["result"]["title"].should eq("Roll me baby")
           parse_json(response.body)["result"]["thumbnail_url"].should eq("http://bar.com")
           parse_json(response.body)["result"]["roll_type"].should eq(Roll::TYPES[:user_private])
+          parse_json(response.body)["result"]["followed_at"].should == @u1.reload.roll_following_for(Roll.sort(:_id=>-1).first).id.generation_time.to_f
         end
         
         it "should create and return a public on success" do

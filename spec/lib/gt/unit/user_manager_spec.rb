@@ -10,6 +10,11 @@ require 'predator_manager'
 describe GT::UserManager do
   
   context "get_or_create_faux_user" do
+    before(:each) do
+      # we sleep when finding a new user, need to stub that
+      EventMachine::Synchrony.stub(:sleep)
+    end
+
     it "should raise an error if nickname is invalid" do
       lambda {
         GT::UserManager.get_or_create_faux_user('', 'provider', 'uid')
@@ -220,7 +225,7 @@ describe GT::UserManager do
       r = u.watch_later_roll
       r.class.should == Roll
       r.persisted?.should == true
-      r.public.should == false
+      r.public.should == true
       r.collaborative.should == false
       r.creator.should == u
       r.roll_type.should == Roll::TYPES[:special_watch_later]
@@ -229,7 +234,7 @@ describe GT::UserManager do
       r = u.upvoted_roll
       r.class.should == Roll
       r.persisted?.should == true
-      r.public.should == false
+      r.public.should == true
       r.collaborative.should == false
       r.upvoted_roll.should == true
       r.creator.should == u
@@ -331,6 +336,9 @@ describe GT::UserManager do
   
   context "convert_faux_user_to_real" do
     before(:each) do
+      # we sleep when finding a new user, need to stub that
+      EventMachine::Synchrony.stub(:sleep)
+      
       @omniauth_hash = {
         'provider' => "twitter",
         'uid' => rand.to_s,
@@ -373,6 +381,24 @@ describe GT::UserManager do
       GT::UserManager.convert_faux_user_to_real(@faux_u)
       
       @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == true
+    end
+    
+    it "should make their watch_later roll public if it's not" do
+      @faux_u.watch_later_roll.update_attribute(:public, false)
+      @faux_u.watch_later_roll.reload.public.should == false
+      
+      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      
+      @faux_u.watch_later_roll.reload.public.should == true
+    end
+    
+    it "should make their upvoted_roll roll public if it's not" do
+      @faux_u.upvoted_roll.update_attribute(:public, false)
+      @faux_u.upvoted_roll.reload.public.should == false
+      
+      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      
+      @faux_u.upvoted_roll.reload.public.should == true
     end
 
     it "should have one authentication with an oauth token" do
@@ -885,6 +911,54 @@ describe GT::UserManager do
     it "should not verify and return false if user does not have that auth" do
       GT::UserManager.verify_user(@user, "something_DNE", "some_id", "token", "secret").should == false
     end    
+  end
+  
+  context "cohort copying" do
+    it "should copy all cohorts from inviter to user with no additional cohorts" do
+      c = ["a", "b", "c"]
+      u1 = Factory.create(:user, :cohorts => c)
+      u2 = Factory.create(:user)
+      
+      GT::UserManager.copy_cohorts!(u1, u2)
+      
+      u2.reload.cohorts.should == c
+      u1.reload.cohorts.should == c
+    end
+    
+    it "should copy zero cohorts from inviter to user with no additional cohorts" do
+      u1 = Factory.create(:user)
+      u2 = Factory.create(:user)
+      
+      GT::UserManager.copy_cohorts!(u1, u2)
+      
+      u2.reload.cohorts.should == []
+      u1.reload.cohorts.should == []
+    end
+    
+    it "should copy all cohorts from inviter to user with additional cohorts" do
+      c = ["a", "b", "c"]
+      addtl = ["x", "y"]
+      u1 = Factory.create(:user, :cohorts => c)
+      u2 = Factory.create(:user)
+      
+      GT::UserManager.copy_cohorts!(u1, u2, addtl)
+
+      u2.reload.cohorts.should == c + addtl
+      u1.reload.cohorts.should == c
+    end
+    
+    it "shouldnt fuck with original cohorts of to user" do
+      c = ["a", "b", "c"]
+      addtl = ["x", "y"]
+      to_orig_cohorts = ["o"]
+      u1 = Factory.create(:user, :cohorts => c)
+      u2 = Factory.create(:user, :cohorts => to_orig_cohorts)
+      
+      GT::UserManager.copy_cohorts!(u1, u2, addtl)
+
+      u2.reload.cohorts.should == to_orig_cohorts + c + addtl
+      u1.reload.cohorts.should == c
+    end
   end
   
   context "helper stuff" do

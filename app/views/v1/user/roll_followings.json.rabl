@@ -1,8 +1,11 @@
 collection @rolls
 
-attributes :id, :collaborative, :public, :creator_id, :origin_network, :genius, :frame_count, :creator_nickname, :following_user_count, :roll_type
-attributes :display_title => :title, :display_thumbnail_url => :thumbnail_url
+attributes :id, :collaborative, :public, :creator_id, :origin_network, :genius, :frame_count, :first_frame_thumbnail_url, :title, :roll_type, :creator_thumbnail_url => :thumbnail_url
+attributes :display_thumbnail_url => :thumbnail_url
 
-code :first_frame_thumbnail_url do |r|
-	r.first_frame_thumbnail_url if r.first_frame_thumbnail_url
+# Normally these attributes have to be calculated, but here are injected by the UserController
+attributes :creator_nickname, :following_user_count, :followed_at
+
+code :subdomain do |r|
+  r.subdomain if r.subdomain_active
 end

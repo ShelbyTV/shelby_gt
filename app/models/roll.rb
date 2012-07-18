@@ -152,6 +152,12 @@ class Roll
     GT::UserActionManager.unfollow_roll!(u.id, self.id) if u.save and self.save
   end
   
+  def remove_all_followers!
+    users_to_remove = self.following_users.map { |fu| fu.user }
+    users_to_remove.each { |u| self.remove_follower(u) }
+    true
+  end
+  
   # Anybody can view a public roll
   # Creator of a roll can always view it
   # Private rolls are only viewable by followers
@@ -209,9 +215,6 @@ class Roll
   end
 
   def permalink() "#{Settings::ShelbyAPI.web_root}/roll/#{self.id}"; end
-  
-  #displayed title and thumbnail_url for upvoted rolls (aka heart rolls)
-  def display_title() (self.upvoted_roll? and self.creator) ? "#{self.creator.nickname} ♥s" : self.title; end
   
   def display_thumbnail_url() self.upvoted_roll? ? "#{Settings::ShelbyAPI.web_root}/images/assets/favorite_roll_avatar.png" : self.creator_thumbnail_url; end
   

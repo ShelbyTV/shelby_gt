@@ -106,6 +106,20 @@ describe Roll do
         @user.following_roll?(@roll).should == true
         @user.unfollowed_roll?(@roll).should == false
       end
+      
+      it "should be able to remove all followers" do
+        @roll.add_follower(@user)
+        @roll.add_follower(@stranger)
+        @roll.reload.following_users.count.should == 2
+        @user.reload.roll_followings.count.should == 1
+        @stranger.reload.roll_followings.count.should == 1
+        
+        @roll.remove_all_followers!
+        
+        @roll.reload.following_users.count.should == 0
+        @user.reload.roll_followings.count.should == 0
+        @stranger.reload.roll_followings.count.should == 0
+      end
 
       it "should be able to hold 1000 following users" do
         u = Factory.create(:user)
@@ -211,16 +225,7 @@ describe Roll do
 
     end
 
-    context "upvoted_roll display_<title/thumbnail_url>" do
-      it "should return regular title when not an upvoted roll" do
-        @roll.display_title.should == @roll_title
-      end
-
-      it "should return heart title when an upvoted roll" do
-        @roll.upvoted_roll = true
-        @roll.display_title.should == "#{@roll.creator.nickname} ♥s"
-      end
-
+    context "upvoted_roll display_thumbnail_url" do
       it "should return regular thumbnail_url when not an upvoted roll" do
         @roll.display_thumbnail_url.should == "u://rl"
       end

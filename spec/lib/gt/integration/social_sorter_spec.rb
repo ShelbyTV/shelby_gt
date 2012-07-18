@@ -5,6 +5,9 @@ require 'social_sorter'
 # INTEGRATION test (b/c it relies on and implicitly tests UserManager)
 describe GT::SocialSorter do
   before(:each) do
+    # we sleep when finding a new user, need to stub that
+    EventMachine::Synchrony.stub(:sleep)
+    
     @observer = Factory.create(:user)
     
     @existing_user = Factory.create(:user)
@@ -23,7 +26,7 @@ describe GT::SocialSorter do
   end
   
   context "public social postings" do
-    before(:each) do
+    before(:each) do      
       @existing_user_random_msg = Message.new
       @existing_user_random_msg.nickname = @existing_user.nickname
       @existing_user_random_msg.origin_network = @existing_user_provider
@@ -83,6 +86,51 @@ describe GT::SocialSorter do
         GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer).should == false
         GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer).should == false
       }.should change { @existing_user.public_roll.reload.frames.count }.by(1)
+    end
+    
+    it "should add this post as a message to previously posted Frame if Video was posted < 24 hours ago" do
+      # Often times a user/brand will post the same video multiple times to get more audience, or to fix their original tweet
+      # we don't want to have duplicate Frames, we just want to update the original frame with the addition of this message
+      # But we only look back ~24 hours to keep things reasonable
+
+      # original post
+      msg = Factory.build(:message, :text => (txt = "t1"), :origin_id => rand.to_s)
+      convo = Factory.build(:conversation)
+      convo.messages << msg
+      orig_post = Factory.create(:frame, :roll => @existing_user.public_roll, :video => @video, :conversation => convo)
+      orig_post.reload.conversation.messages.size.should == 1
+      
+      # post same video again
+      msg2 = @existing_user_random_msg.clone
+      msg2.text = (txt2 = "something else")
+      msg2.origin_id = rand.to_s
+      res2 = nil
+      lambda {
+        res2 = GT::SocialSorter.sort(msg2, {:video => @video, :from_deep => false}, @observer)
+      }.should_not change { Frame.count }
+      res2.should == false
+      orig_post.conversation.reload.messages.count.should == 2
+      orig_post.conversation.messages[0].text.should == txt
+      orig_post.conversation.messages[1].text.should == txt2
+    end
+    
+    it "should not add this post as a message to previous posted Frame if Video was posted > 24 hours ago" do
+      #see discussion above
+      
+      # original post (26 hours ago)
+      orig_post = Factory.create(:frame, :_id => BSON::ObjectId.from_time(28.hours.ago, :unique => true), :roll => @existing_user.public_roll, :video => @video)
+      
+      # post same video again
+      msg2 = @existing_user_random_msg
+      msg2.text = (txt2 = "something else")
+      msg2.origin_id = rand.to_s
+      res2 = nil
+      lambda {
+        res2 = GT::SocialSorter.sort(msg2, {:video => @video, :from_deep => false}, @observer)
+      }.should change { Frame.count } .by(1)
+      res2[:frame].should_not == orig_post
+      res2[:frame].conversation.messages.count.should == 1
+      res2[:frame].conversation.messages[0].text.should == txt2
     end
     
     it "should make observing User auto-follow Roll" do
@@ -205,7 +253,25 @@ describe GT::SocialSorter do
           GT::Framer.should_receive(:backfill_dashboard_entries)
           GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, new_observer)
         }.should_not change { Frame.count }
-      # since we intercept backfill above, still only expecting 1 new dashbaord entry
+      # we intercept backfill above, but still expecting 1 new dashbaord entry
+      }.should change { new_observer.dashboard_entries.count } .by 1
+    end
+    
+    it "should make observing User auto-follow Roll even if this Message has already been posted to a Roll, and observering User should NOT get a second DashboardEntry if backfill created it" do
+      lambda {
+        GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, Factory.create(:user))
+      }.should change { Frame.count }.by(1)
+
+      new_observer = Factory.create(:user)
+      
+      new_observer.following_roll?(@existing_user.public_roll).should == false
+      lambda {
+        lambda {
+          #GT::Framer.should_receive(:backfill_dashboard_entries)
+          GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, new_observer)
+          GT::Framer.should_not_receive(:create_dashboard_entry)
+        }.should_not change { Frame.count }
+      # didn't intercept backfill above, make sure we don't get 2 dashboard entries
       }.should change { new_observer.dashboard_entries.count } .by 1
     end
     

@@ -168,6 +168,12 @@ class User
     rolls_unfollowed.include? roll_id
   end
   
+  def roll_following_for(r)
+    raise ArgumentError, "must supply roll or roll_id" unless r
+    roll_id = (r.is_a?(Roll) ? r.id : r)
+    roll_followings.select { |rf| rf.roll_id == roll_id } [0]
+  end
+  
   def permalink() "#{Settings::ShelbyAPI.web_root}/user/#{self.nickname}/personal_roll"; end
 
   def revoke(client)
@@ -185,15 +191,19 @@ class User
     GT::UserManager.ensure_users_special_rolls(self, true)
   end
   
-  # given a comma separated string of autocomplete items in info, store all unique, valid ones
+  # given a comma separated string or array of strings of autocomplete items in info, store all unique, valid ones
   # in the array at self.autocomplete[key]
   def store_autocomplete_info(key, info)
-    items = info.split(',').map{|item| item.strip}.uniq
+    if info.respond_to?('map')
+      items = info.map{|item| item.to_s.strip}.uniq
+    else
+      items = info.split(',').map{|item| item.strip}.uniq
+    end
     if key == :email
       items.select! {|address| address =~ /\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/}
     end
     if !items.empty?
-      self.push_uniq("autocomplete.#{key}" => {:$each => items})
+      User.collection.update({:_id => self.id}, {:$addToSet => {"as.#{key}" => {:$each => items}}})
       self.reload
     end
   end
@@ -229,32 +239,7 @@ class User
   def first_provider(provider)
     @first_provider ||= authentications.each { |a| return a if a.provider == provider }
   end
-      
-  #TODO: Update how we track social actions
-  #################################################################
-  # Social Action Tracking
-  #   -updates the hash that tracks how much a user tweets/comments
-  ################################################################
-  def update_tracker(action)
-    case action
-    when 'twitter'
-      self.social_tracker[0] += 1
-    when 'facebook'
-      self.social_tracker[1] += 1
-    when 'email'
-      self.social_tracker[2] += 1
-    when 'tumblr'
-      if self.social_tracker[3] = nil
-        self.social_tracker[3] = 1
-      else
-        self.social_tracker[3] += 1
-      end
-    end
-    self.save
-  end  
-  
-  def total_tracker_count() self.social_tracker.inject(:+); end
-  
+
   def send_email_address_to_sailthru(list=Settings::Sailthru.user_list)
     #ShelbyGT_EM.next_tick do
       #client = Bacon::Email.new()
