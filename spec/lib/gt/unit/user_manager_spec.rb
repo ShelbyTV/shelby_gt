@@ -355,8 +355,8 @@ describe GT::UserManager do
         'garbage' => 'truck'
       }
       
-      nick, provider, uid = "whatever3", "fb", "123uid3"
-      @faux_u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
+      @faux_u = Factory.create(:user, :gt_enabled => false, :faux => User::FAUX_STATUS[:true], :app_progress => AppProgress.new)
+      GT::UserManager.ensure_users_special_rolls(@faux_u, true)
     end
     
     it "should convert a (persisted) faux User to real user" do
@@ -379,8 +379,8 @@ describe GT::UserManager do
       @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == false
       
       GT::UserManager.convert_faux_user_to_real(@faux_u)
-      
       @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == true
+      
     end
     
     it "should make their watch_later roll public if it's not" do

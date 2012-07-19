@@ -44,7 +44,10 @@ class AuthenticationsController < ApplicationController
         sign_in_current_user(user, omniauth)
         
       elsif cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
+        use_cohort_entrance(user, cohort_entrance)
+        session[:cohort_entrance_id] = nil        
         sign_in_current_user(user, omniauth)
+        user.gt_enable!
 
       elsif private_invite = cookies[:gt_roll_invite] # if they were invited via private roll, they get in
         GT::InvitationManager.private_roll_invite(user, private_invite)

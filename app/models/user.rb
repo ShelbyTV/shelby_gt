@@ -1,6 +1,7 @@
 # encoding: utf-8
 require 'user_manager'
 require 'securerandom'
+require 'rhombus'
 
 # We are using the User model form Shelby (before rolls)
 # New vs. old keys will be clearly listed
@@ -185,10 +186,17 @@ class User
   # Use this to convert User's created on NOS to GT
   # When we move everyone to GT, use the rake task in gt_migration.rb
   def gt_enable!
-    self.gt_enabled = true
-    self.faux = (self.faux == FAUX_STATUS[:true] ? FAUX_STATUS[:converted] : FAUX_STATUS[:false])
-    self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
-    GT::UserManager.ensure_users_special_rolls(self, true)
+    unless self.gt_enabled?
+      self.gt_enabled = true
+      self.faux = (self.faux == FAUX_STATUS[:true] ? FAUX_STATUS[:converted] : FAUX_STATUS[:false])
+      self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
+      GT::UserManager.ensure_users_special_rolls(self, true)
+    
+      #ShelbyGT_EM.next_tick { 
+      #  rhombus = Rhombus.new('shelby', '_rhombus_gt')
+      #  rhombus.post('/sadd', {:args => ['new_gt_enabled_users', self.id.to_s]})
+      #}
+    end
   end
   
   # given a comma separated string or array of strings of autocomplete items in info, store all unique, valid ones
@@ -212,7 +220,7 @@ class User
   def self.remember_token
     SecureRandom.uuid
   end
-
+  
   # -- Old Methods --   
   def self.find_by_nickname(n)
     return nil unless n.respond_to? :downcase
