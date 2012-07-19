@@ -57,7 +57,7 @@
 			                                    <img src="<%= u.user_image %>" alt="<%= u.nickname %>" title="<%= u.nickname %>" style="border: 0;height: 100%;line-height: 100%;outline: none;text-decoration: none;display: inline;">
 			                                  </a>
 			                                </div>
-			                                <a href="<%= u.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= u.name %></a>: <a href="<%= watch_later_roll[0].permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">watch later roll</a>: <a href="<%= upvoted_roll[0].permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">heart roll</a>: (<%= u.faux == 0 ? "New" : "Converted Faux" %> User)
+			                                <a href="<%= u.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= u.name %></a>: <a href="<%= watch_later_roll[0].permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">watch later roll</a>: <a href="<%= upvoted_roll[0].permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">heart roll</a>: (<%= u.faux == 0 ? "New" : u.faux == 9 ? "Old NOS" : "Converted Faux" %> User)
 			                              </h4>
 			                          </div>
 			                        </td>
@@ -88,7 +88,7 @@
                       <tr>
                         <td align="right" valign="middle" class="shelby-notification-footer" style="border-collapse: collapse;border-top: 1px solid #fff;color: #888;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 11px;line-height: 100%;text-align: right;">
                           <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
-                            <a href="<%= Settings::Email.preferences_link %>" style="color: #888;">Email settings</a>
+                            May the Schwartz be with you!
                           </p>
                           <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
                             <%= Settings::Email.shelby_address %>

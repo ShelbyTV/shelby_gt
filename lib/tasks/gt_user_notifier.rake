@@ -14,15 +14,13 @@ namespace :user_notifier do
     new_new_users = User.where('id' => {'$gte' => time_as_id}, :faux => 0 ).all
     converted_new_users = User.where('id' => {'$gte' => time_as_id}, :faux => 2 ).all
     
-    rhombus_resp = rhombus.get('/smembers', {:args => ['new_gt_enabled_users'], :limit=>24})
-    unless rhombus_resp["error"] 
-      gt_enabled_users_ids = rhombus_resp["data"].values.flatten
-    end
-    
-    new_gt_enabled_users = User.find(gt_enabled_ids).all
+    # get recent gt enabled users from rhombus
+    rhombus_resp = JSON.parse(rhombus.get('/smembers', {:args => ['new_gt_enabled_users'], :limit=>24}))
+    gt_enabled_ids = rhombus_resp["error"] ? [] : rhombus_resp["data"].values.flatten 
+    new_gt_enabled_users = User.find(gt_enabled_ids)
         
     # send email summary
-    AdminMailer.new_user_summary(new_new_users, converted_new_users).deliver
+    AdminMailer.new_user_summary(new_new_users, converted_new_users, new_gt_enabled_users).deliver
     
   end
 end

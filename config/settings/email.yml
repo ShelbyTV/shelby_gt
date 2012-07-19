@@ -31,7 +31,7 @@ defaults: &defaults
     from: "Shelby GT <contact+gt@shelby.tv>"
   new_user_summary:
     category: "Admin"
-    subject: "%{new_new_users} New Users, %{converted_new_users} Converted Users Yesterday"
+    subject: "%{new_new_users} New, %{converted_new_users} Converted, %{new_gt_enabled_users} NOS Users Yesterday"
     from: "Shelby GT <contact+gt@shelby.tv>"    
 
 development:

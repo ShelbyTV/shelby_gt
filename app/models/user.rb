@@ -192,10 +192,10 @@ class User
       self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
       GT::UserManager.ensure_users_special_rolls(self, true)
     
-      #ShelbyGT_EM.next_tick { 
-      #  rhombus = Rhombus.new('shelby', '_rhombus_gt')
-      #  rhombus.post('/sadd', {:args => ['new_gt_enabled_users', self.id.to_s]})
-      #}
+      ShelbyGT_EM.next_tick { 
+        rhombus = Rhombus.new('shelby', '_rhombus_gt')
+        rhombus.post('/sadd', {:args => ['new_gt_enabled_users', self.id.to_s]})
+      }
     end
   end
   
