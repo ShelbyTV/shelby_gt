@@ -1,7 +1,6 @@
 # encoding: UTF-8
 require 'user_manager'
 require 'invitation_manager'
-require 'api_clients/twitter_info_getter'
 
 class AuthenticationsController < ApplicationController  
  
@@ -166,19 +165,6 @@ class AuthenticationsController < ApplicationController
     end
 
     @opener_location = clean_query_params(@opener_location)
-
-    # if there is a user logged in who has twitter authorization, look up the user's followings
-    # and save them for autocomplete the next time we're free
-    if user && user.authentications.any?{|auth| auth.provider == 'twitter'}
-      ShelbyGT_EM.next_tick {
-        begin
-          following_screen_names = APIClients::TwitterInfoGetter.new(user).get_following_screen_names
-          user.store_autocomplete_info(:twitter, following_screen_names)
-        rescue Grackle::TwitterError
-          # if we have Grackle problems, just give up
-        end
-      }
-    end
 
     render :action => 'redirector', :layout => 'simple'
   end

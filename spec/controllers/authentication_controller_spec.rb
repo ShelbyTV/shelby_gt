@@ -50,22 +50,6 @@ describe AuthenticationsController do
           assigns(:opener_location).should == url
         end
 
-        it "should retrieve and save twitter autocomplete info" do
-          info_getter = double("info_getter")
-          info_getter.should_receive(:get_following_screen_names).and_return(['a','b'])
-          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
-          @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
-          get :create
-        end
-
-        it "should not save twitter autocomplete info if TwitterError occurs" do
-          info_getter = double("info_getter")
-          twitter_error = Grackle::TwitterError.new('', '', '', '')
-          info_getter.should_receive(:get_following_screen_names).and_raise(twitter_error)
-          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
-          @u.should_not_receive(:store_autocomplete_info)
-          get :create
-        end
       end
       
       context "via email/password" do
@@ -165,14 +149,8 @@ describe AuthenticationsController do
       context "via omniauth" do    
         before(:each) do
           request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
-
           @u = Factory.create(:user)
           GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(@u)
-
-          info_getter = double("info_getter")
-          info_getter.should_receive(:get_following_screen_names).and_return(['a','b'])
-          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
-          @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
         end
 
         it "should accept when GtInterest found" do
@@ -356,11 +334,6 @@ describe AuthenticationsController do
             }})
           @u = Factory.create(:user, :gt_enabled => false, :faux => User::FAUX_STATUS[:true], :cohorts => ["init"])
           User.stub(:first).and_return(@u)
-
-          info_getter = double("info_getter")
-          info_getter.should_receive(:get_following_screen_names).and_return(['a','b'])
-          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
-          @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
         end
       
         it "should accept and convert if gt_enabled" do
