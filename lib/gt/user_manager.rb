@@ -2,6 +2,7 @@
 require 'authentication_builder'
 require 'predator_manager'
 require 'api_clients/twitter_client'
+require 'api_clients/twitter_info_getter'
 
 
 # This is the one and only place where Users are created.
@@ -25,6 +26,10 @@ module GT
         
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
         
+        ShelbyGT_EM.next_tick {
+          populate_autocomplete_info(user)
+        }
+
         return user
       else
         
@@ -69,9 +74,13 @@ module GT
       update_token_and_permissions(user)
       
       ensure_app_progress_created(user)
-      
+
       # Always remember users, onus is on them to log out
       user.remember_me!(true)
+
+      ShelbyGT_EM.next_tick {
+        populate_autocomplete_info(user)
+      }
     end
     
     # Adds a new auth to an existing user
@@ -423,6 +432,19 @@ module GT
         return if u.app_progress
         u.app_progress = AppProgress.new
         u.save
+      end
+
+      def self.populate_autocomplete_info(u)
+        # if the user has twitter authorization, look up the user's twitter followings
+        # and save them for autocomplete
+        if u.authentications.any?{|auth| auth.provider == 'twitter'}
+          begin
+            following_screen_names = APIClients::TwitterInfoGetter.new(u).get_following_screen_names
+            u.store_autocomplete_info(:twitter, following_screen_names)
+          rescue Grackle::TwitterError
+            # if we have Grackle problems, just give up
+          end
+        end
       end
   end
 end
