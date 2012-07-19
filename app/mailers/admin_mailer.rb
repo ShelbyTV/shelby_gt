@@ -7,7 +7,7 @@ class AdminMailer < ActionMailer::Base
     sendgrid_category Settings::Email.new_user_summary["category"]
 
     # so we can distinguish these in the html.erb
-    new_gt_enabled_users.map! {|u| u.faux = 9 }
+    new_gt_enabled_users.map! {|u| u.faux = 9; u }
 
     # combine all users into one array
     @all_new_users = new_new_users.concat(converted_new_users).concat(new_gt_enabled_users)
