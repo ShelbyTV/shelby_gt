@@ -1,4 +1,5 @@
 class AdminController < ApplicationController  
+  before_filter :authenticate
   
   def index
     
@@ -28,5 +29,13 @@ class AdminController < ApplicationController
       end
     end
   end
+  
+  private
+  
+    def authenticate
+      authenticate_or_request_with_http_basic('Administration') do |username, password|
+        username == 'shelby' && password == 'gojesus'
+      end
+    end
   
 end
