@@ -1,0 +1,88 @@
+#admin{
+  
+  h1 {
+    font-size:35px;
+    text-align: center;
+    padding: 15px;
+  }
+  
+  hr {
+    color: #333;
+    background-color: #333;
+    height: 3px;
+    border: 0;
+    margin-bottom: 35px;
+  }
+  
+  .text-block {
+    margin: 5px;
+  }
+  
+  #user-info-area{
+    color: #505050;
+    font-family: 'Ubuntu',Trebuchet MS,sans-serif;
+    font-size: 14px;
+    text-align: center;
+    #shelby-user {
+      margin-bottom: 10px;
+      .shelby-avatar {
+        background: transparent;
+        display: inline-block;
+        height: 50px;
+        width: 50px;
+        margin-right: 10px;
+        overflow: hidden;
+        vertical-align: middle;
+
+        img {
+          height: 50px;
+          text-decoration: none;
+          display: inline;
+        }
+      }
+      #shelby-name {
+        font-size: 30px;
+        color: #777;
+        font-weight: normal;
+      }
+      
+    }
+    #special-rolls {
+      
+    }
+    #social-medias {
+      text-decoration: none;
+      img {
+        height: 18px;
+        outline: none;
+        text-decoration: none;
+        display: inline;
+      }
+    }
+  }
+  
+  #roll-info-area {
+    font-size: 16px;
+    line-height: 150%;
+    position: absolute;
+    left: 50%;
+    margin-left: -250px;
+    
+    .roll-list {
+      margin-right: 25px;
+    }
+    
+    #friends-rolls {
+      float:left;
+    }
+    
+    #user-created-public-rolls {
+      float:left;
+    }
+    
+    #user-created-private-rolls {
+      float:left;
+    }
+  }
+  
+}
