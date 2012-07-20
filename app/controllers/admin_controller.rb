@@ -14,7 +14,7 @@ class AdminController < ApplicationController
       
       @friends_rolls = @rolls.select {|k,v| k.roll_type == 11 }
       @user_created_public_rolls = @rolls.select {|k,v| k.roll_type == 30 or k.roll_type == 31 }
-      @user_created_rolls = @rolls.select {|k,v| k.roll_type == 50 }
+      @user_created_private_rolls = @rolls.select {|k,v| k.roll_type == 50 }
       
       @public_roll = @user.public_roll
       @heart_roll = @user.upvoted_roll.permalink if @user.upvoted_roll

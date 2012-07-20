@@ -54,7 +54,7 @@
 	<div id="roll-info-area">
 		<div id="friends-rolls" class="roll-list">
 			<span>Friends Rolls</span>
-			<% for roll in @rolls %>
+			<% for roll in @friends_rolls %>
 				<div class="roll-info">
 					<a href="<%= roll.permalink %>">
 						<%= roll.title %> (<%= roll.frames.count %>)
@@ -64,7 +64,7 @@
 		</div>
 		<div id="user-created-public-rolls" class="roll-list">
 			<span>Public Rolls Created</span>
-			<% for roll in @rolls %>
+			<% for roll in @user_created_public_rolls %>
 				<div class="roll-info">
 					<a href="<%= roll.permalink %>">
 						<%= roll.title %> (<%= roll.frames.count %>)
@@ -74,7 +74,7 @@
 		</div>
 		<div id="user-created-private-rolls" class="roll-list">
 			<span>Private Rolls Created</span>
-			<% for roll in @rolls %>
+			<% for roll in @user_created_private_rolls %>
 				<div class="roll-info">
 					<a href="<%= roll.permalink %>">
 						<%= roll.title %> (<%= roll.frames.count %>)
