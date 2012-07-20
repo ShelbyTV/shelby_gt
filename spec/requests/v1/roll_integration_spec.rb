@@ -130,6 +130,7 @@ describe 'v1/roll' do
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/title")
           parse_json(response.body)["result"]["title"].should eq("Roll me baby")
+          parse_json(response.body)["result"]["creator_nickname"].should eq(@u1.nickname)
           parse_json(response.body)["result"]["thumbnail_url"].should eq("http://bar.com")
           parse_json(response.body)["result"]["roll_type"].should eq(Roll::TYPES[:user_private])
           parse_json(response.body)["result"]["followed_at"].should == @u1.reload.roll_following_for(Roll.sort(:_id=>-1).first).id.generation_time.to_f

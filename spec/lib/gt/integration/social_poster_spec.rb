@@ -38,7 +38,8 @@ describe GT::SocialPoster do
       @from_user.authentications.first.provider = "facebook"; @from_user.save
       @comment = "how much would a wood chuck chuck..."
       @conversation = Factory.create(:conversation, :messages => [Factory.create(:message, :text => @comment, :user => Factory.create(:user))])
-      @frame = Factory.create(:frame, :creator_id => @from_user.id, :conversation_id => @conversation.id)
+      @video = Factory.create(:video)
+      @frame = Factory.create(:frame, :creator_id => @from_user.id, :conversation_id => @conversation.id, :video => @video)
     end
     
     it "should return true if user has facebook acct and post is sent" do
@@ -46,6 +47,12 @@ describe GT::SocialPoster do
       post.should eq(true)
     end
     
+    it "should successfully post when sharing a roll" do
+      roll = Factory.create(:roll)
+      post = GT::SocialPoster.post_to_facebook(@from_user, @comment, roll)
+      post.should eq(true)
+    end
+
     it "should return false if a parameter isn't given" do
       post = GT::SocialPoster.post_to_facebook(nil, @comment, @frame)
       post.should eq(false)
