@@ -5,7 +5,7 @@
 	</h1>
 	
 	<hr/>	
-	
+	<% if @user %>
 	<div id="user-info-area">
 		<div id="shelby-user">
 			<span class="shelby-avatar">
@@ -86,5 +86,7 @@
 		  <% end %>
 		</div>
 	</div>
-	
+	<% else %>
+	  These aren't the droids you are looking for.
+	<% end %>
 </div>
