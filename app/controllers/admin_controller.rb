@@ -9,7 +9,7 @@ class AdminController < ApplicationController
   #  requires: 
   #    params[:id]
   def user
-    if @user = User.find(params[:id])      
+    if @user = User.find(params[:id]) or @user = User.find_by_nickname(params[:id])    
       roll_followings = @user.roll_followings.map {|rf| rf.roll_id }.compact.uniq
       @rolls = Roll.where({:id => { "$in" => roll_followings  }}).limit(roll_followings.length).all
       
