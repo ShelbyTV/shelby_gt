@@ -1,0 +1,3 @@
+collection @videos
+
+attributes :id

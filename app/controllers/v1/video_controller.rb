@@ -1,4 +1,7 @@
 class V1::VideoController < ApplicationController  
+  require 'user_manager'
+  
+  before_filter :user_authenticated?, :only => [:viewed]
 
   ##
   # Returns one video, with the given parameters.
@@ -43,4 +46,23 @@ class V1::VideoController < ApplicationController
       end 
     end
   end  
+
+  ##
+  # Returns an index of all viewed videos (with only IDs)
+  #   REQUIRES AUTHENTICATION
+  #
+  # [GET] /v1/video/viewed
+  # 
+  def viewed
+    StatsManager::StatsD.time(Settings::StatsConstants.api['video']['viewed']) do
+      @user = current_user
+      @viewed_roll_frames = @user.viewed_roll ? @user.viewed_roll.frames : []
+      @videos = @viewed_roll_frames.collect {|x| x.video}
+      @videos.compact! if @videos
+      @videos.uniq! if @videos
+
+      @status = 200
+    end
+  end  
 end
+

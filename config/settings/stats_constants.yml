@@ -41,6 +41,7 @@ defaults: &defaults
     video:
       show: 'video.show'
       find: 'video.find'
+      viewed: 'video.viewed'
   
   user:
     new:

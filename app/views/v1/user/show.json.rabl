@@ -26,6 +26,10 @@ if current_user == @user
 		@user.upvoted_roll_id
 	end
 
+	node "viewed_roll_id" do
+		@user.viewed_roll_id
+	end
+
 	code :app_progress do |u|
 		u.app_progress ? u.app_progress.as_json : {}
 	end

@@ -76,6 +76,7 @@ ShelbyGt::Application.routes.draw do
     resources :video, :only => [:show] do
       get 'find_or_create', :on => :collection
       get 'conversations' => 'conversation#index'
+      get 'viewed', :on => :collection
     end
     resources :dashboard_entries, :path => "dashboard", :only => [:index, :update] do
       get 'find_entries_with_video' => 'dashboard_entries#find_entries_with_video', :on => :collection
