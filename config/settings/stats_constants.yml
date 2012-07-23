@@ -107,7 +107,10 @@ defaults: &defaults
     opengraph:
       watch: "facebook.opengraph.watch"
       roll: "facebook.opengraph.roll"
-      upvote: "facebook.opengraph.upvote"
+      favorite: "facebook.opengraph.favorite"
+      share: "facebook.opengraph.share"
+      comment: "facebook.opengraph.comment"      
+      error: "facebook.opengraph.error"
   
   oauth:
     authorize: "oauth.authorize"

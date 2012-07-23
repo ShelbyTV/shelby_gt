@@ -27,7 +27,7 @@ describe AuthenticationsController do
         end
       
         it "should add cohorts if they used a CohortEntrance link" do
-          cohorts = ["a", "b", "c"]
+          cohorts = ["a", "b", "c", "pre_onboarding"]
           expected_cohorts = @u.cohorts + cohorts
           cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
           session[:cohort_entrance_id] = cohort_entrance.id
@@ -36,6 +36,16 @@ describe AuthenticationsController do
           assigns(:current_user).cohorts.should == expected_cohorts
           @u.reload.cohorts.should == expected_cohorts
           session[:cohort_entrance_id].should == nil
+        end
+        
+        it "should gt_enable a user coming in via a cohort link" do
+          @u.gt_enabled = false; @u.save
+          cohorts = ["pre_onboarding"]
+          cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
+          session[:cohort_entrance_id] = cohort_entrance.id
+        
+          get :create          
+          assigns(:current_user).gt_enabled.should == true
         end
     
         it "should handle redirect via session on sign in" do
@@ -50,22 +60,6 @@ describe AuthenticationsController do
           assigns(:opener_location).should == url
         end
 
-        it "should retrieve and save twitter autocomplete info" do
-          info_getter = double("info_getter")
-          info_getter.should_receive(:get_following_screen_names).and_return(['a','b'])
-          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
-          @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
-          get :create
-        end
-
-        it "should not save twitter autocomplete info if TwitterError occurs" do
-          info_getter = double("info_getter")
-          twitter_error = Grackle::TwitterError.new('', '', '', '')
-          info_getter.should_receive(:get_following_screen_names).and_raise(twitter_error)
-          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
-          @u.should_not_receive(:store_autocomplete_info)
-          get :create
-        end
       end
       
       context "via email/password" do
@@ -165,14 +159,8 @@ describe AuthenticationsController do
       context "via omniauth" do    
         before(:each) do
           request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
-
           @u = Factory.create(:user)
           GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(@u)
-
-          info_getter = double("info_getter")
-          info_getter.should_receive(:get_following_screen_names).and_return(['a','b'])
-          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
-          @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
         end
 
         it "should accept when GtInterest found" do
@@ -238,7 +226,7 @@ describe AuthenticationsController do
           cohorts = ["a", "b", "c"]
           cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
           session[:cohort_entrance_id] = cohort_entrance.id
-      
+          
           get :create
           assigns(:current_user).should == @u
           assigns(:current_user).gt_enabled.should == true
@@ -253,7 +241,7 @@ describe AuthenticationsController do
     
       context "via email / password" do
         it "should accept with CohortEntrance, set cohorts" do
-          cohorts = ["a", "b", "c"]
+          cohorts = ["a", "b", "c", "pre_onboarding"]
           cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
           session[:cohort_entrance_id] = cohort_entrance.id
         
@@ -356,17 +344,12 @@ describe AuthenticationsController do
             }})
           @u = Factory.create(:user, :gt_enabled => false, :faux => User::FAUX_STATUS[:true], :cohorts => ["init"])
           User.stub(:first).and_return(@u)
-
-          info_getter = double("info_getter")
-          info_getter.should_receive(:get_following_screen_names).and_return(['a','b'])
-          APIClients::TwitterInfoGetter.stub(:new).and_return(info_getter)
-          @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
         end
       
         it "should accept and convert if gt_enabled" do
           @u.gt_enabled = true
           @u.save
-
+          
           GT::UserManager.should_receive :convert_faux_user_to_real
           GT::UserManager.should_receive :start_user_sign_in
 
@@ -430,14 +413,14 @@ describe AuthenticationsController do
         end
         
         it "should accept and convert with CohortEntrance, set cohorts on user" do
-          cohorts = ["a", "b", "c"]
+          cohorts = ["a", "b", "c", "pre_onboarding"]
           expected_cohorts = @u.cohorts + cohorts
           cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
           session[:cohort_entrance_id] = cohort_entrance.id
-
+          
           GT::UserManager.should_receive :convert_faux_user_to_real
           GT::UserManager.should_receive :start_user_sign_in
-
+          
           get :create
           assigns(:current_user).should == @u
           cookies[:_shelby_gt_common].should_not == nil

@@ -11,4 +11,9 @@ class Rhombus
     self.class.post(path, options)
   end
 
+  def get(path, data)
+    options = {:query => data, :basic_auth => @auth}
+    self.class.get(path, options)
+  end
+
 end

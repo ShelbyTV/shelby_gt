@@ -43,37 +43,37 @@
 												<% public_rolls = rolls.select {|k,v| k.roll_type == 30 or k.roll_type == 31 } || 0 %>
 												<% private_rolls = rolls.select {|k,v| k.roll_type == 50 } || 0 %>
 
-												<% @tw_link, @fb_link, @tu_link = nil %>
-												<% u.authentications.each { |a| @tw_link = "http://twitter.com/#{a.nickname}" if a.provider == "twitter"; @fb_link = "http://www.facebook.com/#{a.nickname}" if a.provider == "facebook"; @tu_link = "http://#{a.nickname}.tumblr.com/" if a.provider == "tumblr"; } %>
+												<% links = {} %>
+												<% u.authentications.each { |a| links[:tw] = "http://twitter.com/#{a.nickname}" if a.provider == "twitter"; links[:fb] = "http://www.facebook.com/#{a.nickname}" if a.provider == "facebook"; links[:tu] = "http://#{a.nickname}.tumblr.com/" if a.provider == "tumblr"; } %>
 												
 	                      <tr>
 													<table border="0" cellspacing="0" cellpadding="0" width="100%">
 														<tr>
 															<td align="center" valign="top" class="shelby-notification-body" style="border-collapse: collapse;">
 			                          <div style="color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;line-height: 100%;">
-			                              <h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: normal;line-height: 100%;margin-top: 0.5em;margin-right: 0;margin-bottom: 4px;margin-left: 0;">
-			                                <div class="shelby-avatar" style="background: transparent;display: inline-block;height: 40px;margin-right: .5em;overflow: hidden;width: 40px;vertical-align: middle;color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;line-height: 105%;">
-			                                  <a href="<%= u.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">
-			                                    <img src="<%= u.user_image %>" alt="<%= u.nickname %>" title="<%= u.nickname %>" style="border: 0;height: 100%;line-height: 100%;outline: none;text-decoration: none;display: inline;">
-			                                  </a>
-			                                </div>
-			                                <a href="<%= u.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= u.name %></a>: <a href="<%= watch_later_roll[0].permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">watch later roll</a>: <a href="<%= upvoted_roll[0].permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">heart roll</a>: (<%= u.faux == 0 ? "New" : "Converted Faux" %> User)
+																	<h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: normal;margin-top: 0.5em;margin-right: 0;margin-bottom: 4px;margin-left: 0;">
+																		<div class="shelby-avatar" style="background: transparent;display: inline-block;height: 40px;margin-right: .5em;overflow: hidden;width: 40px;vertical-align: middle;color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;">
+																			<a href="<%= u.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">
+																				<img src="<%= u.user_image %>" alt="<%= u.nickname %>" title="<%= u.nickname %>" style="height: 40px;text-decoration: none;display: inline;"/>
+																			</a>
+																		</div>
+			                                <a href="http://api.shelby.tv/admin/user/<%= u.id %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= u.name %></a>: <a href="<%= watch_later_roll[0].permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">watch later roll</a>: <a href="<%= upvoted_roll[0].permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">heart roll</a>: (<%= u.faux == 0 ? "New" : u.faux == 9 ? "Old NOS" : "Converted Faux" %> User)
 			                              </h4>
 			                          </div>
 			                        </td>
 														</tr>
 														<tr>
 															<td align="center" valign="top" class="shelby-rolls-following" style="border-collapse: collapse;border-bottom: 1px solid #ddd;">
-																<h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: normal;line-height: 100%;margin-top: 0.5em;margin-right: 0;margin-bottom: 5px;margin-left: 0;">
+																<h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: normal;margin-top: 0.5em;margin-right: 0;margin-bottom: 5px;margin-left: 0;">
 																	<span class="social-links">
-																		<% if @tw_link %>
-																			<a href="<%= @tw_link %>" style="color: #777;font-weight: normal;text-decoration: underline;"><img src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" alt="" title="" style="border: 0;height: 12px;line-height: 100%;outline: none;text-decoration: none;display: inline;"/></a>
+																		<% if links[:tw] %>
+																			<a href="<%= links[:tw] %>" style="color: #777;font-weight: normal;text-decoration: none;"><img src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" height="16" alt="" title="" style="height: 12px;outline: none;text-decoration: none;display: inline;"/></a>
 																		<% end %>
-																		<% if @fb_link %>
-																			<a href="<%= @tw_link %>" style="color: #777;font-weight: normal;text-decoration: underline;"><img src="http://shelby.tv/images/assets/facebook.png" alt="" title="" style="border: 0;height: 12px;line-height: 100%;outline: none;text-decoration: none;display: inline; background-color: blue"/></a>
+																		<% if links[:fb] %>
+																			<a href="<%= links[:fb] %>" style="color: #777;font-weight: normal;text-decoration: none;"><img src="http://forums.appsorama.com/fbb/facebook_logo_16x16.gif" alt="" title="" height="16" style="height: 12px;text-decoration: none;display: inline;"/></a>
 																		<% end %>
-																		<% if @tu_link %>
-																			<a href="<%= @tw_link %>" style="color: #777;font-weight: normal;text-decoration: underline;"><img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" alt="" title="" style="border: 0;height: 12px;line-height: 100%;outline: none;text-decoration: none;display: inline; background-color: blue"></a>
+																		<% if links[:tu] %>
+																			<a href="<%= links[:tu] %>" style="color: #777;font-weight: normal;text-decoration:none;"><img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" height="16" alt="" title="" style="height: 12px;outline: none;text-decoration: none;display: inline;"></a>
 																		<% end %>
 																	</span>
 																	
@@ -88,7 +88,7 @@
                       <tr>
                         <td align="right" valign="middle" class="shelby-notification-footer" style="border-collapse: collapse;border-top: 1px solid #fff;color: #888;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 11px;line-height: 100%;text-align: right;">
                           <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
-                            <a href="<%= Settings::Email.preferences_link %>" style="color: #888;">Email settings</a>
+                            May the Schwartz be with you!
                           </p>
                           <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
                             <%= Settings::Email.shelby_address %>
@@ -103,7 +103,6 @@
               <!-- // End Template Body \ -->
             </td>
           </tr>
-
         </table>
         <br>
       </td>

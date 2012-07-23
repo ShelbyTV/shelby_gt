@@ -128,6 +128,8 @@ ShelbyGt::Application.routes.draw do
   
   resources :cohort_entrance, :only => [:show]
   
+  get '/admin/user/:id' => 'admin#user'
+  
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   
   root :to => 'authentications#index'

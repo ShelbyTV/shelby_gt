@@ -9,6 +9,13 @@ require 'predator_manager'
 # UNIT test
 describe GT::UserManager do
   
+  before(:each) do
+    # don't want TwitterInfoGetter trying to make real requests to API
+    @info_getter = double("info_getter")
+    @info_getter.stub(:get_following_screen_names).and_return(['a','b'])
+    APIClients::TwitterInfoGetter.stub(:new).and_return(@info_getter)
+  end
+
   context "get_or_create_faux_user" do
     before(:each) do
       # we sleep when finding a new user, need to stub that
@@ -355,8 +362,8 @@ describe GT::UserManager do
         'garbage' => 'truck'
       }
       
-      nick, provider, uid = "whatever3", "fb", "123uid3"
-      @faux_u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
+      @faux_u = Factory.create(:user, :gt_enabled => false, :faux => User::FAUX_STATUS[:true], :app_progress => AppProgress.new)
+      GT::UserManager.ensure_users_special_rolls(@faux_u, true)
     end
     
     it "should convert a (persisted) faux User to real user" do
@@ -379,8 +386,8 @@ describe GT::UserManager do
       @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == false
       
       GT::UserManager.convert_faux_user_to_real(@faux_u)
-      
       @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == true
+      
     end
     
     it "should make their watch_later roll public if it's not" do
@@ -813,6 +820,42 @@ describe GT::UserManager do
       auth.oauth_secret.should == "NEW--secret"
     end
     
+    context "autocomplete" do
+
+      context "signin existing user" do
+        before(:each) do
+          @u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        end
+
+        it "should retrieve and save twitter autocomplete info on signin of existing user" do
+            @info_getter.should_receive(:get_following_screen_names)
+            @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
+            GT::UserManager.start_user_sign_in(@u, :omniauth => @omniauth_hash)
+        end
+
+        it "should not save twitter autocomplete info if TwitterError occurs" do
+            @info_getter.should_receive(:get_following_screen_names).and_raise(Grackle::TwitterError.new('', '', '', ''))
+            @u.should_not_receive(:store_autocomplete_info)
+            GT::UserManager.start_user_sign_in(@u, :omniauth => @omniauth_hash)
+        end
+
+        it "should not save twitter autocomplete info if the user doesn't have twitter auth" do
+            omniauth = @omniauth_hash.clone()
+            omniauth['provider'] = 'facebook'
+            u = GT::UserManager.create_new_user_from_omniauth(omniauth)
+            @info_getter.should_not_receive(:get_following_screen_names)
+            GT::UserManager.start_user_sign_in(u, :omniauth => omniauth)
+        end
+      end
+
+      context "create new user via omniauth" do
+        it "should retrieve and save twitter autocomplete info on creation of new user via omniauth" do
+            @info_getter.should_receive(:get_following_screen_names)
+            u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        end
+      end
+    end
+
     it "should be able to update auth tokens via direct options" do
       u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
       

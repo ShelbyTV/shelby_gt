@@ -45,6 +45,7 @@ class Message
   # Uncomment the following line to disable callbacks:
   # def self.__hack__no_callbacks() true; end
 
+  def created_at() self.id.generation_time; end
 
   ORIGIN_NETWORKS = {
     :twitter => "twitter",

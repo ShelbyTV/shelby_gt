@@ -49,7 +49,8 @@ module GT
         og_object[:roll] = object.roll.permalink
       end
       
-      if og_action and post_to_og(user, og_action, og_object, expires_in) 
+      if og_action and post_to_og(user, og_action, og_object, expires_in)
+        StatsManager::StatsD.increment(Settings::StatsConstants.facebook['opengraph'][og_action])
         Rails.logger.info("[OG POST] Posted: #{og_action}::  #{og_object}")
       end
     end
@@ -70,6 +71,7 @@ module GT
           
           return true
         rescue => e
+          StatsManager::StatsD.increment(Settings::StatsConstants.facebook['opengraph']['error'])
           Rails.logger.error("[FB OG: ERROR] #{e}")
           return false
         end
