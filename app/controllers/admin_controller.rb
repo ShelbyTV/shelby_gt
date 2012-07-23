@@ -34,9 +34,11 @@ class AdminController < ApplicationController
   
     def is_admin?
       if current_user and current_user.is_admin?
-        return true 
-      else
+        return true
+      elsif current_user and !current_user.is_admin?
         render :nothing => true
+      else
+        redirect_to '/login'
       end
     end
   
