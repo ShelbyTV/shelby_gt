@@ -94,6 +94,9 @@ class User
   # Used to track referrals (where they are coming from)
   key :referral_frame_id, ObjectId
   
+  # define admin users who can access special areas
+  key :is_admin,              Boolean, :default => false
+    
   ## For Devise
   # Rememberable
   key :remember_me,           Boolean, :default => true
@@ -220,7 +223,7 @@ class User
   def self.remember_token
     SecureRandom.uuid
   end
-  
+    
   # -- Old Methods --   
   def self.find_by_nickname(n)
     return nil unless n.respond_to? :downcase

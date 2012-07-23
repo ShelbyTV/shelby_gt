@@ -1,5 +1,5 @@
-class AdminController < ApplicationController  
-  before_filter :authenticate
+class AdminController < ApplicationController    
+  before_filter :is_admin?
   
   def index
     
@@ -32,9 +32,11 @@ class AdminController < ApplicationController
   
   private
   
-    def authenticate
-      authenticate_or_request_with_http_basic('Administration') do |username, password|
-        username == 'shelby' && password == 'gojesus'
+    def is_admin?
+      if current_user and current_user.is_admin?
+        return true 
+      else
+        render :nothing => true
       end
     end
   

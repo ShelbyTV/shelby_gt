@@ -24,7 +24,7 @@
 			(shelby) born on date: <%= distance_of_time_in_words_to_now @user.created_at %> ago
 		</div>
 		<div id="cohorts" class="text-block">
-			cohorts cohorts: <%= @user.cohorts.join(", ") if @cohorts %>
+			cohorts cohorts: <%= @user.cohorts.join(", ") if @user.cohorts %>
 		</div>
 		<div id="user-type" class="text-block">
 			<% if @user.faux = 0 %>
