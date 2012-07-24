@@ -1,2 +1,2 @@
 object false
-node(:short_link) { |m| @short_link[:email] }
+node(:short_link) { |m| @short_link['email'] }
