@@ -64,7 +64,7 @@ class V1::VideoController < ApplicationController
       @videos.uniq! if @videos
 
       # limit us to 1000 most recent video IDs returned... hopefully this works with uniq!
-      @videos = @videos.first(1000)
+      @videos = @videos.first(@videos.length > 1000 ? 1000 : @videos.length)
 
       @status = 200
     end
