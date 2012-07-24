@@ -238,7 +238,7 @@ describe 'v1/frame' do
       context 'short_link' do
         it "should return short_link for a frame on success" do
           short_link = "http://shl.by/1"
-          GT::LinkShortener.stub(:get_or_create_shortlinks).and_return(short_link)
+          GT::LinkShortener.stub(:get_or_create_shortlinks).and_return({:email=>short_link})
           get '/v1/frame/'+@f.id+'/short_link'
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/short_link")
