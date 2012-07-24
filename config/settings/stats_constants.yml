@@ -32,6 +32,7 @@ defaults: &defaults
       watched: 'frame.watched'
       destroy: 'frame.destroy'
       share: 'frame.share'
+      short_link: 'frame.short_link'
     conversation:
       show: 'conversation.show'
       index: 'conversation.index'
