@@ -56,10 +56,15 @@ class V1::VideoController < ApplicationController
   def viewed
     StatsManager::StatsD.time(Settings::StatsConstants.api['video']['viewed']) do
       @user = current_user
+
+      # might be loading more info than necessary... could possibly specify fields
       @viewed_roll_frames = @user.viewed_roll ? @user.viewed_roll.frames : []
       @videos = @viewed_roll_frames.collect {|x| x.video}
       @videos.compact! if @videos
       @videos.uniq! if @videos
+
+      # limit us to 1000 most recent video IDs returned... hopefully this works with uniq!
+      @videos = @videos.first(1000)
 
       @status = 200
     end
