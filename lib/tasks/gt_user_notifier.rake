@@ -18,6 +18,8 @@ namespace :user_notifier do
     rhombus_resp = JSON.parse(rhombus.get('/smembers', {:args => ['new_gt_enabled_users'], :limit=>24}))
     gt_enabled_ids = rhombus_resp["error"] ? [] : rhombus_resp["data"].values.flatten 
     new_gt_enabled_users = User.find(gt_enabled_ids)
+    
+    new_gt_enabled_users.delete_if { |u| new_new_users.include? u }
         
     # send email summary
     AdminMailer.new_user_summary(new_new_users, converted_new_users, new_gt_enabled_users).deliver
