@@ -12,6 +12,7 @@ role :app, "50.56.112.113"
 role :db,  "50.56.112.113", :primary => true
 
 set :user, "gt"
+set :group, "gt"
 
 set :rails_env,   "production"
 set :unicorn_env, "production"
@@ -38,28 +39,3 @@ set :deploy_via, :remote_cache #keep a local cache to speed up deploys
 #    run "cp #{release_path}/public/maintenance.html /opt/nginx/html/maintenance.html"
 #  end
 #end
-
-###################################
-# Send stat to graphite.shelby.tv #
-###################################
-#namespace :stats do
-#  task :send_deploy_message, :roles => :app do
-#    require 'socket'
-#    socket = UDPSocket.new
-#    message = "deploy.production:1|c"
-#    socket.send(message, 0, '50.56.19.195', 8125)
-#  end
-#end
-
-after "deploy:symlink" do
-  #stats.send_deploy_message
-  #five_hundred.copy_to_nginx
-end
-
-#############################################################
-#	Crontab via Whenever
-#############################################################
-
-#set :whenever_command, "bundle exec whenever -f config/schedule.rb"
-#set :whenever_roles, :app
-#require "whenever/capistrano"
