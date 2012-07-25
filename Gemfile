@@ -32,6 +32,7 @@ gem "haml"
 gem "compass", "0.11.7"
 
 group :production do
+  gem "therubyracer"
   gem "uglifier"
 end
 
