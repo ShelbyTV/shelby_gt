@@ -13,6 +13,7 @@ role :db,  "50.56.112.113", :primary => true
 
 set :user, "gt"
 set :group, "gt"
+set :usesudo, false
 
 set :rails_env,   "production"
 set :unicorn_env, "production"
