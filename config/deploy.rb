@@ -1,4 +1,4 @@
-set :application, "shelby_gt"
+#set :application, "gt"
 default_run_options[:pty] = true
 
 # Use developer's local ssh keys when git clone/updating on the remote server
