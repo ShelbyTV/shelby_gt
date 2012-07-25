@@ -1,4 +1,4 @@
-#load 'deploy/assets'
+load 'deploy/assets'
 require 'bundler/capistrano'
 
 set :deploy_to, "/home/gt/api"
