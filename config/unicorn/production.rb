@@ -9,7 +9,7 @@ app_path = "/home/gt/api/current"
 worker_processes 4
 preload_app true
 timeout 30
-#listen "127.0.0.1:9000"
+listen "127.0.0.1:9000"
 
 # Spawn unicorn master worker for user apps (group: apps)
 user 'gt'
@@ -21,8 +21,8 @@ working_directory app_path
 rails_env = ENV['RAILS_ENV'] || 'production'
 
 # Log everything to one file
-stderr_path "#{app_path}/log/unicorn.log"
-stdout_path "#{app_path}/log/unicorn.log"
+stderr_path "log/unicorn.log"
+stdout_path "log/unicorn.log"
 
 # Set master PID location
 pid "#{app_path}/../shared/pids/unicorn.pid"
