@@ -9,7 +9,7 @@ app_path = "/home/gt/api/current"
 worker_processes 4
 preload_app true
 timeout 30
-listen "127.0.0.1:9000"
+#listen "127.0.0.1:9000"
 
 # Spawn unicorn master worker for user apps (group: apps)
 user 'gt'
