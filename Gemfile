@@ -128,7 +128,7 @@ gem 'formatted_rails_logger'
 # -------- Deploy with Capistrano
 #
 gem 'capistrano'
-
+gem 'rvm-capistrano'
 group :development do
   gem 'capistrano-unicorn', :require => false
 end

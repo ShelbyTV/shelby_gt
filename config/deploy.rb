@@ -1,5 +1,7 @@
-#set :application, "gt"
+set :application, "gt"
 default_run_options[:pty] = true
+set :rvm_ruby_string, '1.9.3'
+require "rvm/capistrano"
 
 # Use developer's local ssh keys when git clone/updating on the remote server
 ssh_options[:forward_agent] = true
