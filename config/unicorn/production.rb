@@ -28,7 +28,7 @@ stdout_path "#{app_path}/log/unicorn.log"
 pid "/home/gt/api/shared/pids/unicorn.pid"
 
 before_fork do |server, worker|
-  ActiveRecord::Base.connection.disconnect!
+  #ActiveRecord::Base.connection.disconnect!
 
   old_pid = "#{server.config[:pid]}.oldbin"
   if File.exists?(old_pid) && server.pid != old_pid
@@ -41,5 +41,5 @@ before_fork do |server, worker|
 end
 
 after_fork do |server, worker|
-  ActiveRecord::Base.establish_connection
+  #ActiveRecord::Base.establish_connection
 end
