@@ -8,20 +8,20 @@ ssh_options[:forward_agent] = true
 #	Passenger
 #############################################################
 
-namespace :passenger do
-  desc "Restart Application"
-  task :restart do
-    run "touch #{current_path}/tmp/restart.txt"
-    #run 'curl -sL -w "I just tapped %{url_effective}: %{http_code}\\n" "http://shelby.tv" -o /dev/null'
-  end
-end
+#namespace :passenger do
+#  desc "Restart Application"
+#  task :restart do
+#    run "touch #{current_path}/tmp/restart.txt"
+#    #run 'curl -sL -w "I just tapped %{url_effective}: %{http_code}\\n" "http://shelby.tv" -o /dev/null'
+#  end
+#end
 
-namespace :deploy do
-  desc "Restart passenger"
-  task :restart do
-    passenger.restart
-  end
-end
+#namespace :deploy do
+#  desc "Restart passenger"
+#  task :restart do
+#    passenger.restart
+#  end
+#end
 
 #############################################################
 #	Bundler
@@ -58,3 +58,4 @@ end
 set :stages, %w(production arnold1 arnold2 arnold3 arnold4)
 set :default_stage, 'production'
 require 'capistrano/ext/multistage'
+require 'capistrano-unicorn'

@@ -124,8 +124,14 @@ end
 #
 gem 'formatted_rails_logger'
 
-# Deploy with Capistrano
+#
+# -------- Deploy with Capistrano
+#
 gem 'capistrano'
+
+group :development do
+  gem 'capistrano-unicorn', :require => false
+end
 
 # To use debugger
 # gem 'ruby-debug19', :require => 'ruby-debug'
