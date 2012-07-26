@@ -94,7 +94,13 @@ module GT
       if !u.user_image_original and auth.twitter? and !auth.image.blank? and !auth.image.include?("default_profile")
         u.user_image_original = auth.image.gsub("_normal", "")
       end
+      
       u.primary_email = auth.email if u.primary_email.blank? and !auth.email.blank?
+      
+      if u.name.blank?
+        u.name = auth.name
+        u.name = "#{auth.first_name} #{auth.last_name}" if auth.first_name
+      end
     end
 
     # Finds a users authentication and updates it
