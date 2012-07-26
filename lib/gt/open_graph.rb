@@ -50,7 +50,7 @@ module GT
       end
       
       if og_action and post_to_og(user, og_action, og_object, expires_in)
-        StatsManager::StatsD.increment(Settings::StatsConstants.facebook['opengraph'][og_action])
+        StatsManager::StatsD.increment(Settings::StatsConstants.facebook['opengraph'][action])
         Rails.logger.info("[OG POST] Posted: #{og_action}::  #{og_object}")
       end
     end
