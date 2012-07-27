@@ -536,6 +536,25 @@ class V1::FrameController < ApplicationController
   end
   
   ##
+  # gets a short link for the given frame
+  #   AUTHENTICATION OPTIONAL
+  #
+  # [POST] /v1/frame/:id/short_link
+  # 
+  # @param [Required, String] id The id of the frame
+  def short_link
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['short_link']) do
+      if @frame = Frame.find(params[:frame_id])
+        @status = 200
+        @short_link = GT::LinkShortener.get_or_create_shortlinks(@frame, 'email', current_user)
+      else
+        render_error(404, "could not find frame")
+      end
+    end
+  end
+  
+  
+  ##
   # Destroys one frame, returning Success/Failure
   #   REQUIRES AUTHENTICATION
   #

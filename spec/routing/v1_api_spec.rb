@@ -100,7 +100,7 @@ end
 
 describe V1::FrameController do
   describe "routing" do
-    it "routes for GET" do
+    it "routes for GET frame" do
       { :get => "/v1/frame/1" }.should route_to(
         :controller => "v1/frame",
         :action => "show",
@@ -108,6 +108,15 @@ describe V1::FrameController do
         :id => "1"
       )
     end 
+    
+    it "routes for GET short_link" do
+      { :get => "/v1/frame/1/short_link" }.should route_to(
+        :controller => "v1/frame",
+        :action => "short_link",
+        :format => "json",
+        :frame_id => "1"
+      )
+    end
     
     it "GET INDEX of personal_roll" do
       { :get => "/v1/user/1/rolls/personal/frames" }.should route_to(

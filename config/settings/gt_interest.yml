@@ -15,7 +15,8 @@ test:
 production: &production
   <<: *defaults
   db_name: 'gt-gt-interest'
-  db_hosts: ["10.181.135.130:27018", "10.180.131.101:27018", "10.181.131.114:27018"]
+  #db_hosts: ["10.181.135.130:27018", "10.180.131.101:27018"]
+  db_hosts: ["nos-db-s0-a:27018", "nos-db-s0-b:27018"]
 
 arnold:
   <<: *production

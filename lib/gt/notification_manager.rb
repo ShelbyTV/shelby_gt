@@ -53,7 +53,8 @@ module GT
       # except for the person who just wrote this new message
       users_to_email -= [new_message.user]
       # and those who don't wish to receive comment notifications
-      users_to_email.select! { |u| u.preferences and u.preferences.comment_notifications? }
+      # Temp: for now only send emails to gt_enabled users
+      users_to_email.select! { |u| u.gt_enabled and u.preferences and u.preferences.comment_notifications? }
       
       users_to_email.each { |u| NotificationMailer.comment_notification(u, new_message.user, frame, new_message).deliver unless u.primary_email.blank? }
       
