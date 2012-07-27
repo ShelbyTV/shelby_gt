@@ -1,7 +1,6 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   
-  before_filter :allow_faux_authentication!
   before_filter :debug_cookies_and_session
   after_filter :set_access_control_headers
   
