@@ -48,6 +48,28 @@ describe GT::AuthenticationBuilder do
     @u.user_image_original.should == "http://original.com/image.png"
   end
   
+  it "should incorporate auth.name on normalization" do
+    @u.name.blank?.should == true
+    auth = GT::AuthenticationBuilder.build_from_omniauth(@omniauth_hash)
+    @u.authentications << auth
+    
+    GT::AuthenticationBuilder.normalize_user_info(@u, auth)
+    
+    @u.name.should == "some name"
+  end
+  
+  it "should incorporate auth.first_name and auth.last_name on normalization when present" do
+    @u.name.blank?.should == true
+    @omniauth_hash['info']['first_name'] = "first"
+    @omniauth_hash['info']['last_name'] = "last"
+    auth = GT::AuthenticationBuilder.build_from_omniauth(@omniauth_hash)
+    @u.authentications << auth
+    
+    GT::AuthenticationBuilder.normalize_user_info(@u, auth)
+    
+    @u.name.should == "first last"
+  end
+  
   it "should incorporate auth user image, and larger user image if twitter, but not if it's a default image" do
     omniauth_hash = {
       'provider' => "twitter",
