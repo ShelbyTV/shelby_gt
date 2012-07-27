@@ -50,7 +50,7 @@ class ApplicationController < ActionController::Base
     # via https://developer.mozilla.org/En/HTTP_access_control#Requests_with_credentials
     # ...but Access-Control-Allow-Origin will be overridden if origin is on of ours: see config/application.rb
     def set_access_control_headers
-      headers['Access-Control-Allow-Origin'] = (['web.gt.shelby.tv', 'gt.shelby.tv', 'isoroll.shelby.tv', 'shelby.tv', 'unicorn.shelby.tv' 'localhost.shelby.tv:3000'].include?(request.domain) ? request.domain : '*')
+      headers['Access-Control-Allow-Origin'] = (['web.gt.shelby.tv', 'gt.shelby.tv', 'isoroll.shelby.tv', 'shelby.tv', 'unicorn.shelby.tv', 'localhost.shelby.tv:3000'].include?(request.domain) ? request.domain : '*')
       headers['Access-Control-Request-Method'] = '*'
       headers['Access-Control-Allow-Credentials'] = 'true'
       headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-Prototype-Version, X-CSRF-Token, X-Shelby-User-Agent'
