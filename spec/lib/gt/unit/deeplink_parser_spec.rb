@@ -4,9 +4,11 @@ require 'deeplink_parser'
 describe GT::DeeplinkParser do
   before(:all) do
 
-    @deeplink = "http://www.youtube.com/embed/lMBMcMf85ow?version=3&rel=1&fs=1&showsearch=0&showinfo=1&iv_load_policy=1&wmode=transparent"
+    @ytdeeplink = "http://www.youtube.com/watch?v=lMBMcMf85ow"
+    @vmdeeplink = "http://www.vimeo.com/2601853"
 
-    @urlhaslink = "http://www.testdeep.com/haslink.html"
+    @urlhasytlink = "http://www.testdeep.com/haslink.html"
+    @urlhasvmlink = "http://www.ifyoumakeit.com/video/cheap=girls/parking-lot/"
     @urlnolink = "http://www.testdeep.com/hasnolink.html"
     @urlbadlinks = "http://www.testdeep.com/hasbadlinks.html"
 
@@ -16,15 +18,27 @@ describe GT::DeeplinkParser do
 
 
   context "parse_deep" do
-    it "should parse deep corecctly" do
+    it "should parse yt deep corecctly" do
       fake_em_http_request = mock_model("FakeEMHttpRequest")
       fake_em_http_request.stub(:get).and_return(
           mock_model("FakeEMHttpResonse", :error => false,
             :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testhtmlfiles/rant.html",__FILE__))))
         EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
-      GT::DeeplinkParser.find_deep_link(@urlhaslink).should == {:urls => [@deeplink], :to_cache => true}
+      GT::DeeplinkParser.find_deep_link(@urlhasytlink).should == {:urls => [@ytdeeplink], :to_cache => true}
       
     end
+
+    it "should parse vm deep correctly" do
+      fake_em_http_request = mock_model("FakeEMHttpRequest")
+      fake_em_http_request.stub(:get).and_return(
+          mock_model("FakeEMHttpResonse", :error => false,
+            :response_header => mock_model("FakeResponseHeader", :status => 200), :response => open(File.expand_path("../testhtmlfiles/vimeodeeptest.html",__FILE__))))
+        EventMachine::HttpRequest.stub(:new).and_return(fake_em_http_request)
+      GT::DeeplinkParser.find_deep_link(@urlhasvmlink).should == {:urls => [@vmdeeplink], :to_cache => true}
+    end
+
+
+
 
     it "should not return bad url" do
       fake_em_http_request = mock_model("FakeEMHttpRequest")

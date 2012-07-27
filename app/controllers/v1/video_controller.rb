@@ -22,7 +22,7 @@ class V1::VideoController < ApplicationController
   #
   # [GET] /v1/video/find_or_create
   # 
-  # @param [Optional, String] url the url of the video
+  # @param [Optional, String] website_url the url of the video
   # @param [Required, String] provider_name The provider of the video
   # @param [Required, String] provider_id The id of the video
   def find_or_create
