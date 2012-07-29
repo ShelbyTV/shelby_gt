@@ -89,8 +89,8 @@ describe V1::DashboardEntriesController do
         Factory.create(:dashboard_entry, :frame=>Factory.create(:frame))
       end
       DashboardEntry.stub_chain(:skip, :sort, :where, :all).and_return(DashboardEntry.first)
-      get :index, :limit => 30, :format => :json
-      assigns(:limit).should eq(20)
+      get :index, :limit => 510, :format => :json
+      assigns(:limit).should eq(500)
       assigns(:status).should eq(200)
     end
     

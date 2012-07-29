@@ -46,7 +46,7 @@ class V1::DashboardEntriesController < ApplicationController
       # default params
       @limit = params[:limit] ? params[:limit].to_i : 20
       # put an upper limit on the number of entries returned
-      @limit = 20 if @limit.to_i > 20
+      @limit = 500 if @limit.to_i > 500
           
       skip = params[:skip] ? params[:skip] : 0
 
