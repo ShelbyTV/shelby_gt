@@ -14,7 +14,7 @@ class AdminMailer < ActionMailer::Base
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
       :to => "new_user_summary@shelby.tv", 
-      :subject => Settings::Email.new_user_summary['subject'] % { :new_users => @all_new_users.length, :date => Date.today.strftime("[%m/%d/%Y]") }
+      :subject => Settings::Email.new_user_summary['subject'] % { :new_users => @all_new_users.length, :date => Date.today.strftime("%m/%d/%Y") }
   end
   
 end
