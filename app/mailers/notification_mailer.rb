@@ -6,7 +6,9 @@ class NotificationMailer < ActionMailer::Base
 
   def comment_notification(user_to, user_from, frame, message)
     sendgrid_category Settings::Email.comment_notification["category"]
-
+    
+    sendgrid_ganalytics_options(:utm_source => 'comment', :utm_medium => 'notification', :utm_campaign => "frame_#{frame.id.to_s}")
+    
     @user_to = user_to
     @user_from = user_from
     @user_from_name = (@user_from.name || @user_from.nickname)
@@ -26,6 +28,9 @@ class NotificationMailer < ActionMailer::Base
   def upvote_notification(user_to, user_from, frame)
     sendgrid_category Settings::Email.upvote_notification["category"]
     
+    sendgrid_ganalytics_options(:utm_source => 'heart', :utm_medium => 'notification', :utm_campaign => "frame_#{frame.id.to_s}")
+    
+    
     @user_to = user_to
     @user_from = user_from
     @user_from_name = (@user_from.name || @user_from.nickname)
@@ -42,6 +47,9 @@ class NotificationMailer < ActionMailer::Base
 
   def reroll_notification(old_frame, new_frame)
     sendgrid_category Settings::Email.reroll_notification["category"]
+
+    sendgrid_ganalytics_options(:utm_source => 'reroll', :utm_medium => 'notification', :utm_campaign => "frame_#{old_frame.id.to_s}")
+
 
     @user_to = old_frame.creator
     @user_from = new_frame.creator
@@ -60,6 +68,8 @@ class NotificationMailer < ActionMailer::Base
 
   def join_roll_notification(user_to, user_from, roll)
     sendgrid_category Settings::Email.join_roll_notification["category"]
+
+    sendgrid_ganalytics_options(:utm_source => 'join-roll', :utm_medium => 'notification', :utm_campaign => "roll_#{roll.id.to_s}")
 
     @user_to = user_to
     @user_from = user_from
