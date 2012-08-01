@@ -121,6 +121,7 @@ class V1::DashboardEntriesController < ApplicationController
         
         @include_children = params[:include_children] != "false" ? true : false
         @status = 200
+#        render :handlers => [:rep]
       else
         render_error(404, "no user info found")
       end    

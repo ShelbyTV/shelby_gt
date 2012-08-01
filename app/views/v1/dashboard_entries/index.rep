@@ -1,0 +1,80 @@
+r.list_of :entries, @entries do
+
+  r.element :id
+  r.element :action
+  r.element :actor_id
+  r.element :read
+  
+  r.element :frame do
+    r.element :id
+    r.element :score
+    r.element :upvoters
+    r.element :view_count
+    r.element :frame_ancestors
+    r.element :frame_children
+    r.element :creator_id
+    r.element :conversation_id
+    r.element :roll_id
+    r.element :video_id
+
+    r.element :creator do
+      r.element :id
+      r.element :name
+      r.element :nickname
+      r.element :user_image_original
+      r.element :user_image
+      r.element :faux
+      r.element :public_roll_id
+      r.element :gt_enabled
+    end
+
+    r.element :roll do
+      r.element :id
+      r.element :collaborative
+      r.element :public
+      r.element :creator_id
+      r.element :origin_network
+      r.element :genius
+      r.element :frame_count
+      r.element :first_frame_thumbnail_url
+      r.element :title
+      r.element :roll_type
+      r.element :creator_thumbnail_url
+    end
+
+    r.element :video do
+      r.element :id
+      r.element :provider_name
+      r.element :provider_id
+      r.element :title
+      r.element :description
+      r.element :duration
+      r.element :author
+      r.element :thumbnail_url
+      r.element :tags
+      r.element :categories
+      r.element :source_url
+      r.element :embed_url
+      r.element :view_count
+    end
+
+    r.element :conversation do
+      r.element :id
+      r.element :public
+
+      r.list_of :messages do
+        r.element :id
+        r.element :nickname
+        r.element :realname
+        r.element :user_image_url
+        r.element :text
+        r.element :origin_network
+        r.element :origin_id
+        r.element :origin_user_id
+        r.element :user_id
+        r.element :public
+      end
+    end 
+  end
+end
+

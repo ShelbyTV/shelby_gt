@@ -20,7 +20,8 @@ gem "settingslogic"
 #
 # ---------- API
 #
-gem 'rabl','~> 0.6.0'
+gem 'rabl','~> 0.7.0'
+gem 'representative_view'
 gem 'yajl-ruby', :require => "yajl"
 gem "statsd-ruby" # for communicating with graphite server
 gem 'rack-cors', :require => 'rack/cors' # for cors preflight requests
