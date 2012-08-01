@@ -22,7 +22,7 @@ namespace :user_notifier do
     new_gt_enabled_users.delete_if { |u| new_new_users.include? u }
       
     # send email summary if there are new users
-    unless (new_new_users.empty? or new_gt_enabled_users.empty? or converted_new_users.empty?)
+    if !new_new_users.concat(new_gt_enabled_users).concat(converted_new_users).empty?
       AdminMailer.new_user_summary(new_new_users, converted_new_users, new_gt_enabled_users).deliver
     end
     
