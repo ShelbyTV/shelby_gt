@@ -32,6 +32,7 @@ gem "haml"
 gem "compass", "0.11.7"
 
 group :production do
+  gem "therubyracer"
   gem "uglifier"
 end
 
@@ -124,8 +125,20 @@ end
 #
 gem 'formatted_rails_logger'
 
-# Deploy with Capistrano
+#
+# -------- Deploy with Capistrano
+#
 gem 'capistrano'
+gem 'rvm-capistrano'
+group :development do
+  gem 'capistrano-unicorn', :require => false
+end
+
+
+#
+# ----------- Web Server
+#
+gem 'unicorn'
 
 # To use debugger
 # gem 'ruby-debug19', :require => 'ruby-debug'
