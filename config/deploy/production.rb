@@ -7,9 +7,9 @@ set :deploy_to, "/home/gt/api"
 #	Servers
 #############################################################
 
-role :web, "50.56.112.113"
-role :app, "50.56.112.113"
-role :db,  "50.56.112.113", :primary => true
+role :web, "108.166.56.26"
+role :app, "108.166.56.26"
+role :db,  "108.166.56.26", :primary => true
 
 set :user, "gt"
 set :group, "gt"
@@ -25,7 +25,7 @@ set :app_env,     "production"
 
 set :scm, :git
 set :repository,  "git@github.com:ShelbyTV/shelby_gt.git"
-set :branch, "unicorn"
+set :branch, "master"
 #set :git_enable_submodules, 1
 set :deploy_via, :remote_cache #keep a local cache to speed up deploys
 
