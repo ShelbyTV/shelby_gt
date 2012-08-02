@@ -7,7 +7,7 @@ ssh_options[:forward_agent] = true
 $:.unshift(File.expand_path('./lib', ENV['rvm_path']))
 require "rvm/capistrano"
 set :rvm_type, :user
-set :rvm_ruby_string, '1.9.3-p194'
+set :rvm_ruby_string, '1.9.3-p125'
 set :current_path, '/home/gt/api/current'
 
 #############################################################
