@@ -1,0 +1,16 @@
+sourceFiles = Split("""
+                       main.cpp
+                    """)
+
+Import('env')
+dashboardIndexEnv = env.Clone()
+
+dashboardIndexEnv.MergeFlags('-O6 -pthread -Wall -Werror -DMONGO_HAVE_UNISTD -static')
+dashboardIndexEnv['CXXFLAGS'] = ['-std=c++0x'] # works around bug in scons MergeFlags, fixed in later versions of scons
+dashboardIndexEnv['CPPPATH'] = ['#/source', '#']
+
+dashboardIndex = dashboardIndexEnv.Program(target = 'dashboardIndex', source = sourceFiles + ['#/build/mongo-c-driver/libmongoc.a'])
+dashboardIndexInstall = dashboardIndexEnv.Install('#/bin', dashboardIndex)
+
+dashboardIndexEnv.Default(dashboardIndex)
+dashboardIndexEnv.Default(dashboardIndexInstall)

@@ -1,0 +1,14 @@
+env = Environment().Clone()
+Export('env')
+
+if GetOption("clean"):
+
+   env.Default('.')
+   Clean('.', [ ".sconsign.dblite", ".sconf_temp", "config.log", "build", "bin" ])
+
+else:
+
+   SConscript('source/dashboardIndex/SConscript', variant_dir='build/dashboardIndex/', duplicate=0)
+
+   # Git submodule
+   SConscript('lib/mongo-c-driver/SConstruct', variant_dir='build/mongo-c-driver/', duplicate=0)
