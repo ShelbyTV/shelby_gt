@@ -163,6 +163,12 @@ class Frame
     end
   end
   
+  def permalink_to_frame_comments()
+    permalink = self.permalink
+    permalink += "/comments" if self.roll_id
+    return permalink
+  end
+
   private
     
     # Score increases linearly with time, logarithmically with votes

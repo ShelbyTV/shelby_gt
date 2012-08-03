@@ -273,6 +273,22 @@ describe Frame do
     end
   end
   
+  context "permalinks" do
+
+    it "should generate permalinks for frame with a roll" do
+      roll = Factory.create(:roll)
+      frame = Factory.create(:frame, :roll => roll)
+      frame.permalink.should == "#{Settings::ShelbyAPI.web_root}/roll/#{roll.id}/frame/#{frame.id}"
+      frame.permalink_to_frame_comments.should == "#{Settings::ShelbyAPI.web_root}/roll/#{roll.id}/frame/#{frame.id}/comments"
+    end
+
+    it "should generate permalinks for frame without a roll" do
+      frame = Factory.create(:frame)
+      frame.permalink.should == "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{frame.id}"
+      frame.permalink_to_frame_comments.should == "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{frame.id}"
+    end
+  end
+
   context "viewed" do
     before(:each) do
       @frame = Factory.create(:frame)

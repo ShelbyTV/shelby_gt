@@ -16,7 +16,7 @@ class NotificationMailer < ActionMailer::Base
     
     @frame = frame
     @frame_title = @frame.video.title
-    @frame_permalink = @frame.permalink
+    @frame_permalink = @frame.permalink_to_frame_comments
 
     @message = message
 
