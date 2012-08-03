@@ -18,6 +18,8 @@ class NotificationMailer < ActionMailer::Base
     @frame_title = @frame.video.title
     @frame_permalink = @frame.permalink_to_frame_comments
 
+    @frame_conversation_messages = (frame.conversation && frame.conversation.messages) || nil
+
     @message = message
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
