@@ -47,7 +47,9 @@ ShelbyGt::Application.routes.draw do
     # WHY? We support some browsers that don't suppot CORS, and they use jsonp which only does GETs.
     # Sometimes we have the same route do different things depending on the verb, and that doens't play nice w/ jsonp.
     
-    resources :user, :only => [:show, :update] do
+    resources :user, :only => [:update] do
+      # constraints allows for nicknames that include dots, prevents changing format (we're json only, that's ok).
+      get ':id' => 'user#show', :as => :show, :on => :collection, :constraints => { :id => /[^\/]+/ }
       get 'is_token_valid' => 'user#valid_token', :on => :member
       get 'rolls/following' => 'user#roll_followings', :on => :member
       get 'rolls/postable' => 'user#roll_followings', :on => :member, :defaults => { :postable => true }
@@ -129,7 +131,8 @@ ShelbyGt::Application.routes.draw do
   
   resources :cohort_entrance, :only => [:show]
   
-  get '/admin/user/:id' => 'admin#user'
+  # constraints allows for nicknames that include dots, prevents changing format (we're json only, that's ok).
+  get '/admin/user/:id' => 'admin#user', :constraints => { :id => /[^\/]+/ }
   
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   

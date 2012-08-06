@@ -30,6 +30,24 @@ describe V1::UserController do
       )
     end
     
+    it "routes for user GET with nickname" do
+      { :get => "/v1/user/nickname" }.should route_to(
+        :controller => "v1/user",
+        :action => "show",
+        :format => "json",
+        :id => "nickname"
+      )
+    end
+    
+    it "routes for user GET with nickname that includes a dot" do
+      { :get => "/v1/user/nick.name" }.should route_to(
+        :controller => "v1/user",
+        :action => "show",
+        :format => "json",
+        :id => "nick.name"
+      )
+    end
+    
     it "routes for signed_in GET" do
       { :get => "/v1/signed_in" }.should route_to(
         :controller => "v1/user",
