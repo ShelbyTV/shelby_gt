@@ -329,6 +329,9 @@ describe Frame do
     end
     
     it "should update view_count of Frame" do
+      # initiate the abbreviated view_count to make sure that gets updates on .view!
+      @frame.view_count = 33
+      @frame.save
       lambda {
         @frame.view!(@u1)
       }.should change { @frame.reload.view_count } .by 1
@@ -343,6 +346,9 @@ describe Frame do
     end
     
     it "should update view_count of Frame's Video" do
+      # initiate the abbreviated view_count to make sure that gets updates on .view!
+      @frame.video.view_count = 33
+      @frame.video.save
       lambda {
         @frame.view!(@u1)
       }.should change { @frame.video.reload.view_count } .by 1
