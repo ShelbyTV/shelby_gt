@@ -19,7 +19,7 @@
 /*/*/.DS_Store
 
 # Ignore cpp build files
-/cpp/bin
+# /cpp/bin -- we'll go ahead and check in a copy of the binary for now...
 /cpp/build
 /cpp/.sconsign.dblite
 /cpp/.sconf_temp

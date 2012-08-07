@@ -63,7 +63,7 @@ class V1::DashboardEntriesController < ApplicationController
       end
     
       if params[:fast]
-        fast_stdout = `cpp/bin/dashboardIndex -u #{user.nickname} -l #{@limit}`
+        fast_stdout = `cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{@limit}`
         fast_status = $?.to_i
         if (fast_status == 0)
           @status = 200
