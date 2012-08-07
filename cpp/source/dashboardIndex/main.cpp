@@ -26,7 +26,8 @@ static struct Options {
 	int limit;
 } options;
 
-static mongo conn;
+mongo conn;
+struct timeval beginTime;
 
 bson_oid_t userId;
 
@@ -388,7 +389,7 @@ void setDefaultOptions()
    options.limit = 20;
 }
 
-void timeSince(struct timeval begin)
+unsigned int timeSinceMS(struct timeval begin)
 {
    struct timeval currentTime;
    gettimeofday(&currentTime, NULL);
@@ -396,15 +397,47 @@ void timeSince(struct timeval begin)
    struct timeval difference;
    timersub(&currentTime, &begin, &difference);
 
-   cout << "Time: " << difference.tv_sec << "s, " << (difference.tv_usec / 1000) << "ms" << endl;
+   return difference.tv_sec * 1000 + (difference.tv_usec / 1000); 
+}
+
+void printJsonMessage(mrjsonContext *context, bson *message)
+{
+   mrbsonOidAttribute(context, message, "_id", "id");
+   mrbsonStringAttribute(context, message, "e", "nickname");
+   mrbsonStringAttribute(context, message, "f", "realname");
+   mrbsonStringAttribute(context, message, "g", "user_image_url");
+   mrbsonStringAttribute(context, message, "h", "text");
+   mrbsonStringAttribute(context, message, "a", "origin_network");
+   mrbsonStringAttribute(context, message, "b", "origin_id");
+   mrbsonStringAttribute(context, message, "c", "origin_user_id");
+   mrbsonOidAttribute(context, message, "d", "user_id");
+   mrbsonBoolAttribute(context, message, "i", "public");
+
+   // TODO: created_at
+   mrjsonStringAttribute(context, "created_at", "");
 }
 
 void printJsonConversation(mrjsonContext *context, bson *conversation)
 {
    mrbsonOidAttribute(context, conversation, "_id", "id");
    mrbsonBoolAttribute(context, conversation, "b", "public");
-  
-   // TODO: need to walk through messages array 
+ 
+   bson messages;
+   bson_iterator iterator;
+   bson_find(&iterator, conversation, "messages");
+   bson_iterator_subobject(&iterator, &messages);
+
+   bson_iterator_from_buffer(&iterator, messages.data);
+
+   mrjsonStartArray(context, "messages");
+
+   while (bson_iterator_next(&iterator)) {
+      bson message;
+      bson_iterator_subobject(&iterator, &message);
+      printJsonMessage(context, &message);
+   }
+
+   mrjsonEndArray(context); 
 }
 
 void printJsonVideo(mrjsonContext *context, bson *video)
@@ -590,12 +623,14 @@ void printJsonOutput()
    } 
 
    mrjsonEndArray(&context);
+
+   mrjsonIntAttribute(&context, "cApiTimeMs", timeSinceMS(beginTime));
+
    mrjsonEndResponse(&context);
 }
 
 int main(int argc, char **argv)
 {
-   struct timeval beginTime;
    gettimeofday(&beginTime, NULL);
 
    int status = 0;
@@ -621,6 +656,5 @@ int main(int argc, char **argv)
 mongoCleanup:
    mongo_destroy(&conn);
 
-   timeSince(beginTime);
    return status;
 }
