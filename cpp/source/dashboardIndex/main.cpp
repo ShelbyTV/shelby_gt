@@ -623,8 +623,8 @@ void printJsonOutput()
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartArray(context, "result");
 
-   for (map<string, bson *>::const_iterator iter = dashboardEntries.begin();
-        iter != dashboardEntries.end();
+   for (map<string, bson *>::const_reverse_iterator iter = dashboardEntries.rbegin();
+        iter != dashboardEntries.rend();
         ++iter) {
 
       mrjsonStartObject(context);
