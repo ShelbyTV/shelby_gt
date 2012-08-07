@@ -39,7 +39,7 @@ bool mrbsonFindOid(bson *data,
    return true;
 }
 
-void mrbsonOidAttribute(mrjsonContext *context,
+void mrbsonOidAttribute(mrjsonContext context,
                         bson *data, 
                         const string &bsonField, 
                         const string& outputName)
@@ -55,7 +55,7 @@ void mrbsonOidAttribute(mrjsonContext *context,
    }
 }
 
-void mrbsonIntAttribute(mrjsonContext *context,
+void mrbsonIntAttribute(mrjsonContext context,
                         bson *data, 
                         const string &bsonField, 
                         const string& outputName)
@@ -71,7 +71,7 @@ void mrbsonIntAttribute(mrjsonContext *context,
    }
 }
 
-void mrbsonBoolAttribute(mrjsonContext *context,
+void mrbsonBoolAttribute(mrjsonContext context,
                          bson *data, 
                          const string &bsonField, 
                          const string& outputName)
@@ -87,7 +87,7 @@ void mrbsonBoolAttribute(mrjsonContext *context,
    }
 }
 
-void mrbsonDoubleAttribute(mrjsonContext *context,
+void mrbsonDoubleAttribute(mrjsonContext context,
                            bson *data,
                            const string &bsonField,
                            const string& outputName)
@@ -103,7 +103,7 @@ void mrbsonDoubleAttribute(mrjsonContext *context,
    }
 }
 
-void mrbsonStringAttribute(mrjsonContext *context,
+void mrbsonStringAttribute(mrjsonContext context,
                            bson *data,
                            const string &bsonField,
                            const string& outputName)

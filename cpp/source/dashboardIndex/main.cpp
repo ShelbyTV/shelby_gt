@@ -400,7 +400,7 @@ unsigned int timeSinceMS(struct timeval begin)
    return difference.tv_sec * 1000 + (difference.tv_usec / 1000); 
 }
 
-void printJsonMessage(mrjsonContext *context, bson *message)
+void printJsonMessage(mrjsonContext context, bson *message)
 {
    mrbsonOidAttribute(context, message, "_id", "id");
    mrbsonStringAttribute(context, message, "e", "nickname");
@@ -417,7 +417,7 @@ void printJsonMessage(mrjsonContext *context, bson *message)
    mrjsonStringAttribute(context, "created_at", "");
 }
 
-void printJsonConversation(mrjsonContext *context, bson *conversation)
+void printJsonConversation(mrjsonContext context, bson *conversation)
 {
    mrbsonOidAttribute(context, conversation, "_id", "id");
    mrbsonBoolAttribute(context, conversation, "b", "public");
@@ -440,7 +440,7 @@ void printJsonConversation(mrjsonContext *context, bson *conversation)
    mrjsonEndArray(context); 
 }
 
-void printJsonVideo(mrjsonContext *context, bson *video)
+void printJsonVideo(mrjsonContext context, bson *video)
 {
    mrbsonOidAttribute(context, video, "_id", "id");
    mrbsonStringAttribute(context, video, "a", "provider_name");
@@ -461,7 +461,7 @@ void printJsonVideo(mrjsonContext *context, bson *video)
    
 }
 
-void printJsonRoll(mrjsonContext *context, bson *roll)
+void printJsonRoll(mrjsonContext context, bson *roll)
 {
    mrbsonOidAttribute(context, roll, "_id", "id");
    mrbsonBoolAttribute(context, roll, "e", "collaborative");
@@ -476,7 +476,7 @@ void printJsonRoll(mrjsonContext *context, bson *roll)
    mrbsonStringAttribute(context, roll, "c", "thumbnail_url");
 }
 
-void printJsonUser(mrjsonContext *context, bson *user)
+void printJsonUser(mrjsonContext context, bson *user)
 {
    mrbsonOidAttribute(context, user, "_id", "id");
    mrbsonStringAttribute(context, user, "name", "name");
@@ -488,7 +488,7 @@ void printJsonUser(mrjsonContext *context, bson *user)
    mrbsonBoolAttribute(context, user, "ag", "gt_enabled");
 }
 
-void printJsonFrame(mrjsonContext *context, bson *frame)
+void printJsonFrame(mrjsonContext context, bson *frame)
 {
    mrbsonOidAttribute(context, frame, "_id", "id");
    mrbsonDoubleAttribute(context, frame, "e", "score");
@@ -578,7 +578,7 @@ void printJsonFrame(mrjsonContext *context, bson *frame)
    }
 }
 
-void printJsonDashboardEntry(mrjsonContext *context, bson *dbEntry)
+void printJsonDashboardEntry(mrjsonContext context, bson *dbEntry)
 {
    mrbsonOidAttribute(context, dbEntry, "_id", "id"); 
    mrbsonIntAttribute(context, dbEntry, "e", "action");
@@ -604,29 +604,30 @@ void printJsonDashboardEntry(mrjsonContext *context, bson *dbEntry)
 
 void printJsonOutput()
 {
-   mrjsonContext context;
-   mrjsonInitContext(&context);
+   mrjsonContext context = mrjsonAllocContext(true);
    
-   mrjsonSetPretty(&context, true);
-   mrjsonStartResponse(&context); 
+   mrjsonStartResponse(context); 
 
-   mrjsonIntAttribute(&context, "status", 200);
-   mrjsonStartArray(&context, "result");
+   mrjsonIntAttribute(context, "status", 200);
+   mrjsonStartArray(context, "result");
 
    for (map<string, bson *>::const_iterator iter = dashboardEntries.begin();
         iter != dashboardEntries.end();
         ++iter) {
 
-      mrjsonStartObject(&context);
-      printJsonDashboardEntry(&context, iter->second);
-      mrjsonEndObject(&context);
+      mrjsonStartObject(context);
+      printJsonDashboardEntry(context, iter->second);
+      mrjsonEndObject(context);
    } 
 
-   mrjsonEndArray(&context);
+   mrjsonEndArray(context);
 
-   mrjsonIntAttribute(&context, "cApiTimeMs", timeSinceMS(beginTime));
+   mrjsonIntAttribute(context, "cApiTimeMs", timeSinceMS(beginTime));
 
-   mrjsonEndResponse(&context);
+   mrjsonEndResponse(context);
+
+   mrjsonPrintContext(context);
+   mrjsonFreeContext(context);
 }
 
 int main(int argc, char **argv)

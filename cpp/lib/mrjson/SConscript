@@ -1,0 +1,23 @@
+sourceFiles = Split("""
+                       mrjson.cpp
+                       yajl/src/yajl.c
+                       yajl/src/yajl_alloc.c
+                       yajl/src/yajl_buf.c
+                       yajl/src/yajl_encode.c
+                       yajl/src/yajl_gen.c
+                       yajl/src/yajl_lex.c
+                       yajl/src/yajl_parser.c
+                       yajl/src/yajl_tree.c
+                       yajl/src/yajl_version.c
+                    """)
+
+Import('env')
+mrjsonEnv = env.Clone()
+
+mrjsonEnv.MergeFlags('-O6 -pthread -Wall -Werror -static')
+mrjsonEnv['CXXFLAGS'] = ['-std=c++0x'] # works around bug in scons MergeFlags, fixed in later versions of scons
+mrjsonEnv['CPPPATH'] = ['#/source', '#', '#/lib/mrjson', '#/lib/mrjson/yajl-hacks/']
+
+mrjson = mrjsonEnv.Library(target = 'mrjson', source = sourceFiles)
+
+mrjsonEnv.Default(mrjson)
