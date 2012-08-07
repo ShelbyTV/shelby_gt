@@ -434,7 +434,10 @@ void printJsonConversation(mrjsonContext context, bson *conversation)
    while (bson_iterator_next(&iterator)) {
       bson message;
       bson_iterator_subobject(&iterator, &message);
+
+      mrjsonStartObject(context);
       printJsonMessage(context, &message);
+      mrjsonEndObject(context);
    }
 
    mrjsonEndArray(context); 
