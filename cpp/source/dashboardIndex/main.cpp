@@ -24,6 +24,7 @@ using namespace std;
 static struct Options {
 	string user;
 	int limit;
+	int skip;
 } options;
 
 mongo conn;
@@ -50,6 +51,7 @@ void printHelpText()
    cout << "   -h --help        Print this help message" << endl;
    cout << "   -u --user        Lowercase nickname of user" << endl;
    cout << "   -l --limit       Limit to this number of dashboard entries" << endl;
+   cout << "   -s --skip        Skip this number of dashboard entries" << endl;
 }
 
 bool connectToMongo()
@@ -115,6 +117,7 @@ void loadDashboardEntries()
    mongo_cursor_init(&cursor, &conn, "dev-gt-dashboard-entry.dashboard_entries");
    mongo_cursor_set_query(&cursor, &query);
    mongo_cursor_set_limit(&cursor, options.limit);
+   mongo_cursor_set_skip(&cursor, options.skip);
    
    while (mongo_cursor_next(&cursor) == MONGO_OK) {
      bson_iterator iterator;
@@ -354,11 +357,12 @@ void parseUserOptions(int argc, char **argv)
          {"help",        no_argument,       0, 'h'},
          {"user",        required_argument, 0, 'u'},
          {"limit",       required_argument, 0, 'l'},
+         {"skip",        required_argument, 0, 's'},
          {0, 0, 0, 0}
       };
       
       int option_index = 0;
-      c = getopt_long(argc, argv, "hu:l:", long_options, &option_index);
+      c = getopt_long(argc, argv, "hu:l:s:", long_options, &option_index);
    
       /* Detect the end of the options. */
       if (c == -1) {
@@ -375,6 +379,10 @@ void parseUserOptions(int argc, char **argv)
             options.limit = atoi(optarg);
             break;
 
+         case 's':
+            options.skip = atoi(optarg);
+            break;
+
          case 'h': 
          case '?':
          default:
@@ -387,6 +395,7 @@ void parseUserOptions(int argc, char **argv)
 void setDefaultOptions()
 {
    options.limit = 20;
+   options.skip = 0;
 }
 
 unsigned int timeSinceMS(struct timeval begin)
