@@ -315,7 +315,23 @@ describe V1::VideoController do
         :format => "json",
         :id => "1"
       )
-    end 
+    end
+    
+    it "routes for GET viewed" do
+      { :get => "/v1/video/viewed" }.should route_to(
+        :controller => "v1/video",
+        :action => "viewed",
+        :format => "json"
+      )
+    end
+    
+    it "routes for GET queued" do
+      { :get => "/v1/video/queued" }.should route_to(
+        :controller => "v1/video",
+        :action => "queued",
+        :format => "json"
+      )
+    end
   end
 end
 
