@@ -281,7 +281,7 @@ describe Roll do
 
   context "testing subdomain" do
     before(:each) do
-      @roll = Factory.create(:roll)
+      @roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public_real_user])
       @roll_title = @roll.title
     end
 
@@ -293,6 +293,7 @@ describe Roll do
     end
 
     it "should NOT have a subdomain if it's private" do
+      @roll.roll_type = Roll::TYPES[:user_private]
       @roll.collaborative = false
       @roll.public = false
       @roll.save
@@ -305,6 +306,7 @@ describe Roll do
     end
 
     it "should NOT have a subdomain if it's a genius roll" do
+      @roll.roll_type = Roll::TYPES[:genius]
       @roll.collaborative = false
       @roll.genius = true
       @roll.save
@@ -317,6 +319,7 @@ describe Roll do
     end
 
     it "should NOT have a subdomain if it's collaborative" do
+      @roll.roll_type = Roll::TYPES[:user_public]
       @roll.collaborative = true
       @roll.save
       @roll.subdomain.nil?.should == true
