@@ -23,6 +23,45 @@ string mrbsonOidString(bson_oid_t *oid)
    return string(buffer); 
 }
 
+string oidConciseTimeAgoInWordsString(bson_oid_t *oid)
+{
+   time_t oidTime = bson_oid_generated_time(oid);
+   struct timeval oidTimeVal;
+   oidTimeVal.tv_sec = oidTime;
+   oidTimeVal.tv_usec = 0;
+
+   struct timeval currentTime;
+   gettimeofday(&currentTime, NULL);
+
+   struct timeval difference;
+   timersub(&currentTime, &oidTimeVal, &difference);
+
+   /*
+    * future times => "just now"
+    * < 1 minute => "just now"
+    * 1m - 59m => "Xm"
+    * 1h - 12h => "Xh"
+    * > 12h => "MMM dd" (Feb 22 or Dec 1)
+    */
+
+    time_t minutes = (difference.tv_sec / 60);
+   
+    char buffer[100];
+
+    if (minutes <= 1) {
+       return "just now";
+    } else if (minutes <= 59) {
+       snprintf(buffer, 100, "%dm ago", (int)minutes);
+    } else if (minutes <= 720) {
+       snprintf(buffer, 100, "%dh ago", (int)minutes / 60);
+    } else {
+       struct tm *date = gmtime(&oidTime);
+       strftime(buffer, 100, "%b %-d", date);
+    }
+
+    return string(buffer);
+}
+
 bool mrbsonFindOid(bson *data,
                    const string &bsonField,
                    string &outputOidString)
@@ -38,6 +77,23 @@ bool mrbsonFindOid(bson *data,
    outputOidString = mrbsonOidString(bson_iterator_oid(&iterator));
    return true;
 }
+
+void mrbsonOidConciseTimeAgoAttribute(mrjsonContext context,
+                                      bson *data, 
+                                      const string &bsonField, 
+                                      const string& outputName)
+{
+   bson_iterator iterator;
+   bson_type type;
+ 
+   type = bson_find(&iterator, data, bsonField.c_str());
+   if (type == BSON_OID) {
+     mrjsonStringAttribute(context, outputName, oidConciseTimeAgoInWordsString(bson_iterator_oid(&iterator)));
+   } else {
+     mrjsonStringAttribute(context, outputName, ""); 
+   }
+}
+
 
 void mrbsonOidAttribute(mrjsonContext context,
                         bson *data, 

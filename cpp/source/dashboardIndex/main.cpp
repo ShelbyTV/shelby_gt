@@ -409,6 +409,8 @@ unsigned int timeSinceMS(struct timeval begin)
    return difference.tv_sec * 1000 + (difference.tv_usec / 1000); 
 }
 
+
+
 void printJsonMessage(mrjsonContext context, bson *message)
 {
    mrbsonOidAttribute(context, message, "_id", "id");
@@ -421,9 +423,7 @@ void printJsonMessage(mrjsonContext context, bson *message)
    mrbsonStringAttribute(context, message, "c", "origin_user_id");
    mrbsonOidAttribute(context, message, "d", "user_id");
    mrbsonBoolAttribute(context, message, "i", "public");
-
-   // TODO: created_at
-   mrjsonStringAttribute(context, "created_at", "");
+   mrbsonOidConciseTimeAgoAttribute(context, message, "_id", "created_at");
 }
 
 void printJsonConversation(mrjsonContext context, bson *conversation)
@@ -522,8 +522,7 @@ void printJsonFrame(mrjsonContext context, bson *frame)
    // TODO: timestamp
    mrjsonNullAttribute(context, "timestamp");
 
-   // TODO: created_at
-   mrjsonNullAttribute(context, "created_at");
+   mrbsonOidConciseTimeAgoAttribute(context, frame, "_id", "created_at");
 
 
    string creatorOid;
