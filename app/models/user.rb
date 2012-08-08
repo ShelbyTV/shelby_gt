@@ -194,6 +194,7 @@ class User
       self.faux = (self.faux == FAUX_STATUS[:true] ? FAUX_STATUS[:converted] : FAUX_STATUS[:false])
       self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
       GT::UserManager.ensure_users_special_rolls(self, true)
+      self.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
     
       ShelbyGT_EM.next_tick { 
         rhombus = Rhombus.new('shelby', '_rhombus_gt')
