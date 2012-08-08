@@ -91,8 +91,10 @@ class V1::VideoController < ApplicationController
       #frames = Frame.where(:roll_id => roll_id).limit(1000).fields(:b).all
       #return frames.collect { |f| f.video_id }.compact.uniq
       
-      # Very nice, but distinct doesn't support limit yet :(
-      return Frame.where(:roll_id => roll_id).distinct(:b)
+      # Since distinct doesn't support limit, we impose some artificial limit via time to keep the query reasonable
+      video_ids = Frame.where(:roll_id => roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}).distinct(:b)
+      # and then limit the results array
+      return video_ids[0..limit]
     end
 end
 
