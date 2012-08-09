@@ -24,3 +24,13 @@ describe AdminController do
     end
   end
 end
+
+describe AuthenticationsController do
+  describe "routing" do
+    it "routes for login POST" do
+      { :post => "/authentications/login" }.should route_to(
+        :controller => "authentications",
+        :action => "login")
+    end
+  end
+end

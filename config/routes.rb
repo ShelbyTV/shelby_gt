@@ -14,10 +14,13 @@ ShelbyGt::Application.routes.draw do
     get 'login' => 'authentications#index', :as => :new_user_session
   end
   
-  resources :authentications
+  resources :authentications do
+    post 'login' => 'authentications#login', :on => :collection
+  end
   get '/auth/:provider/callback' => 'authentications#create'
   get '/auth/failure' => 'authentications#fail'
   post '/user/sign_in' => 'authentications#create', :as => :user_session
+  
 
   ########################
   # OAuth Provider
