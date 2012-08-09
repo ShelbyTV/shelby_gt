@@ -21,7 +21,7 @@ class AuthenticationsController < ApplicationController
     if u and u.valid_password?(params[:password])
       user = u
     else
-      @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {
+      @opener_location = add_query_params(request.url || Settings::ShelbyAPI.web_root, {
         :error => "username_password_fail"
         })
       return render :action => 'redirector', :layout => 'simple'
@@ -214,7 +214,7 @@ class AuthenticationsController < ApplicationController
 
   private
     def redirect_path
-      clean_query_params(session[:return_url] || request.env['omniauth.origin'])
+      clean_query_params(session[:return_url] || request.env['omniauth.origin'] || params[:redir])
     end
     
     def set_common_cookie(user, form_authenticity_token)

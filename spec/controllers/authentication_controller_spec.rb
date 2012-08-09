@@ -38,6 +38,11 @@ describe AuthenticationsController do
         post :login, :username => @u.nickname, :password => @password
         assigns(:opener_location).should == url
       end
+      
+      it "should handle redirect via redir query param" do
+        post :login, :redir => "localhost", :username => @u.nickname, :password => @password
+        assigns(:opener_location).should == "localhost"
+      end
     end
 
     context "fail" do
@@ -59,6 +64,12 @@ describe AuthenticationsController do
       it "should return proper error on password incorrect" do
         post :login, :username => @u.nickname, :password => @password+"X"
         assigns(:opener_location).should match /.*error=username_password_fail.*/
+      end
+      
+      it "should preserve redirect on error" do
+        post :login, :redir => "localhost"
+        assigns(:opener_location).should match /.*error=username_password_fail.*/
+        assigns(:opener_location).should match /.*redir=localhost.*/
       end
     end
   
