@@ -49,38 +49,38 @@ describe AuthenticationsController do
       it "should redirect back to the submitting page on error" do
         request.stub(:referer).and_return(referer="http://whatever.com/")
         post :login
-        assigns(:opener_location).should == "#{referer}?error=username_password_fail"
+        assigns(:opener_location).should match /#{referer}.*/
       end
       
       it "should redirect to API root when referer is missing" do
         request.stub(:referer).and_return nil
         post :login
-        assigns(:opener_location).should == "#{Settings::ShelbyAPI.web_root}?error=username_password_fail"
+        assigns(:opener_location).should match /#{Settings::ShelbyAPI.web_root}.*/
       end
       
       it "should return proper error when username is missing" do
         post :login, :password => @password
-        assigns(:opener_location).should match /.*error=username_password_fail.*/
+        assigns(:opener_location).should match /.*auth_failure=1.*/
       end
       
       it "should return proper error when password is missing" do
         post :login, :username => @u.nickname
-        assigns(:opener_location).should match /.*error=username_password_fail.*/
+        assigns(:opener_location).should match /.*auth_failure=1.*/
       end
       
       it "should return proper error on username/email has no match" do
         post :login, :username => "asdflio24523ln", :password => @password
-        assigns(:opener_location).should match /.*error=username_password_fail.*/
+        assigns(:opener_location).should match /.*auth_failure=1.*/
       end
 
       it "should return proper error on password incorrect" do
         post :login, :username => @u.nickname, :password => @password+"X"
-        assigns(:opener_location).should match /.*error=username_password_fail.*/
+        assigns(:opener_location).should match /.*auth_failure=1.*/
       end
       
       it "should preserve redirect on error" do
         post :login, :redir => "localhost"
-        assigns(:opener_location).should match /.*error=username_password_fail.*/
+        assigns(:opener_location).should match /.*auth_failure=1.*/
         assigns(:opener_location).should match /.*redir=localhost.*/
       end
     end
