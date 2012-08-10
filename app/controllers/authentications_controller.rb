@@ -21,9 +21,9 @@ class AuthenticationsController < ApplicationController
     if u and u.valid_password?(params[:password])
       user = u
     else
-      @opener_location = add_query_params(request.url || Settings::ShelbyAPI.web_root, {
-        :error => "username_password_fail"
-        })
+      query = {:error => "username_password_fail"}
+      query[:redir] = params[:redir] if params[:redir]
+      @opener_location = add_query_params(request.referer || Settings::ShelbyAPI.web_root, query)
       return render :action => 'redirector', :layout => 'simple'
     end
     

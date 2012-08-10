@@ -46,6 +46,18 @@ describe AuthenticationsController do
     end
 
     context "fail" do
+      it "should redirect back to the submitting page on error" do
+        request.stub(:referer).and_return(referer="http://whatever.com/")
+        post :login
+        assigns(:opener_location).should == "#{referer}?error=username_password_fail"
+      end
+      
+      it "should redirect to API root when referer is missing" do
+        request.stub(:referer).and_return nil
+        post :login
+        assigns(:opener_location).should == "#{Settings::ShelbyAPI.web_root}?error=username_password_fail"
+      end
+      
       it "should return proper error when username is missing" do
         post :login, :password => @password
         assigns(:opener_location).should match /.*error=username_password_fail.*/
