@@ -54,6 +54,9 @@ class V1::UserController < ApplicationController
         
         if @user.update_attributes(params)
           @status = 200
+          
+          # When changing the password, need to re-sign in (and bypass validation)
+          sign_in(@user, :bypass => true) if params[:password]
         else
           render_error(404, "error updating user.")
         end
