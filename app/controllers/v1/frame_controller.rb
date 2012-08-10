@@ -565,16 +565,16 @@ class V1::FrameController < ApplicationController
   def destroy
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['destroy']) do
       @frame = Frame.find(params[:id])
-      
-      #XXX Can't just destory the frame!  
-      # What about the conversation?
-      # What about any DashboardEntries pointing to this Frame?
-      #  It seems the front end handles bad dashboard entries gracefully, but I don't like that as a solution.
-      
-      if @frame and @frame.destroy 
+
+      if @frame and @frame.destroyable_by?(current_user) and @frame.destroy
+        @frame.conversation.destroy if @frame.conversation
+        # front-end gracefully handles DashboardEntries w/o Frames, but we'll try to delete a bunch of them anyway
+        # (It takes ~25s for a find of this size to return.  Since remove is fire and forget, no need to wrap in next_tick)
+        DashboardEntry.collection.remove({:c => @frame.id}, {:max_scan => 5_000_000, :sort => [:_id, :desc]})
+        
         @status = 200
       else
-        render_error(404, "could not destroy that frame with id #{params[:id]}")
+        render_error(404, "You cannot destroy that frame.")
       end
     end
   end
