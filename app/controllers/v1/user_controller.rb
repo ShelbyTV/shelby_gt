@@ -47,12 +47,15 @@ class V1::UserController < ApplicationController
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['update']) do
       @user = current_user
-      params.keep_if {|key,value| [:name, :nickname, :primary_email, :preferences, :app_progress].include?key.to_sym}
       begin
-        if @user.update_attributes!(params)
+        if params[:password] and (params[:password] != params[:password_confirmation])
+          return render_error(409, "Passwords did not match.")
+        end
+        
+        if @user.update_attributes(params)
           @status = 200
         else
-          render_error(404, "error while updating user.")
+          render_error(404, "error updating user.")
         end
       rescue => e
         render_error(404, "error while updating user: #{e}")
