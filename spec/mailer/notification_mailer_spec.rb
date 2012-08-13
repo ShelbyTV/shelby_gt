@@ -9,7 +9,8 @@ describe NotificationMailer do
       @message = Factory.create(:message, :text => @comment, :user => @user_to)
       @conversation = Factory.create(:conversation, :messages => [@message])
       @video = Factory.create(:video, :title => 'tit')
-      @frame = Factory.create(:frame, :roll=> Factory.create(:roll, :creator => @user_to), :video => @video)
+      @roll = Factory.create(:roll, :creator => @user_to)
+      @frame = Factory.create(:frame, :roll=> @roll, :video => @video)
       @email = NotificationMailer.comment_notification(@user_to, @user_from, @frame, @message)
     end
  
@@ -25,6 +26,10 @@ describe NotificationMailer do
       @email.from.should eq([Settings::Email.notification_sender])
     end
     
+    it 'should contain a link to the frame comments' do
+      @email.body.encoded.should match("#{Settings::ShelbyAPI.web_root}/roll/#{@roll.id}/frame/#{@frame.id}/comments")
+    end
+
     #ensure that the an instance var is assigned properly, eg @confirmation_url variable appears in the email body
     #it 'assigns @confirmation_url' do
     #  mail.body.encoded.should match("http://aplication_url/#{user.id}/confirmation")

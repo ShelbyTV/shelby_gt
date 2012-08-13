@@ -21,7 +21,6 @@ RSpec.configure do |config|
   
   # to user helpers included with json_spec gem:
   config.include JsonSpec::Helpers
-
 end
 
 # Before running tests, drop all the collections across the DBs and re-create the indexes

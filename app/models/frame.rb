@@ -85,8 +85,8 @@ class Frame
       return false
     else
       #update view counts and add dupe for this 'viewing'
-      Frame.increment(self.id, :view_count => 1)
-      Video.increment(self.video_id, :view_count => 1)
+      Frame.increment(self.id, :i => 1)        # :view_count is :i in Frame
+      Video.increment(self.video_id, :q => 1)  # :view_count is :q in Video
 
       # send OG action to FB
       # TODO: in future, send expires in time to get present tense open graph sentences.
@@ -163,6 +163,12 @@ class Frame
     end
   end
   
+  def permalink_to_frame_comments()
+    permalink = self.permalink
+    permalink += "/comments" if self.roll_id
+    return permalink
+  end
+
   private
     
     # Score increases linearly with time, logarithmically with votes

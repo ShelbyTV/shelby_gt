@@ -5,10 +5,10 @@ describe V1::UserController do
   before(:each) do
     @u1 = Factory.create(:user)
     User.stub(:find) { @u1 }
-    r1 = Factory.create(:roll, :creator => @u1)
+    r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user])
     r1.add_follower(@u1)
     r1.add_follower(Factory.create(:user))
-    r2 = Factory.create(:roll, :creator => @u1)
+    r2 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_upvoted])
     r2.add_follower(@u1)
     @u1.public_roll = r1
     @u1.upvoted_roll = r2

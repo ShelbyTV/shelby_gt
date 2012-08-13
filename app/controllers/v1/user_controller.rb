@@ -83,9 +83,13 @@ class V1::UserController < ApplicationController
         #  V1::UserController::Roll which does not exist, for now, just forcing the global Roll
         @roll_ids = current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq
         
-        # I really wanted to make a mongo query with $and / $or, but it doesn't seem doable with current semantics
-        @rolls = ::Roll.where({:id => { "$in" => @roll_ids }}).limit(@roll_ids.length).all
+        # No longer returning the faux users' public rolls (:roll_type abbrv as :n)
+        @rolls = ::Roll.where({
+          :id => { "$in" => @roll_ids }, 
+          :n => { "$not" => { "$in" => [Roll::TYPES[:special_public], Roll::TYPES[:special_roll]] }}
+          }).limit(@roll_ids.length).all
         if params[:postable]
+          # I really wanted to make a mongo query with $and / $or, but it doesn't seem doable with current semantics
           @rolls = @rolls.select { |r| r.postable_by?(current_user) }
         end
         

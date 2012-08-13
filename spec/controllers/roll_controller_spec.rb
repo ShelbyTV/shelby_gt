@@ -148,6 +148,7 @@ describe V1::RollController do
     end
     
     it "returns 409 if reserved subdomain is set" do
+      Roll.any_instance.stub(:has_subdomain_access?).and_return(true)
       sign_in @u1
       post :create, :title => "anal", :public => true, :collaborative => false, :format => :json
       assigns(:status).should eq(409)

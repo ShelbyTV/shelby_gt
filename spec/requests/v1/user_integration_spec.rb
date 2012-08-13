@@ -65,16 +65,56 @@ describe 'v1/user' do
       end
       
       context "rolls/following" do
-        it "should show a users rolls if the supplied user_id is the current_users" do
-          r1 = Factory.create(:roll, :creator => @u1)
+        it "should show a users roll followings if the supplied user_id is the current_users" do
+          r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
           r1.add_follower(@u1)
-          r2 = Factory.create(:roll, :creator => @u1)
+          r2 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
           r2.add_follower(@u1)
           @u1.upvoted_roll = r2
           @u1.save
           get '/v1/user/'+@u1.id+'/rolls/following'
           response.body.should be_json_eql(200).at_path("status")
           parse_json(response.body)["result"].class.should eq(Array)
+          response.body.should have_json_size(2).at_path('result')
+          parse_json(response.body)["result"][0]["id"].should == r1.id.to_s
+          parse_json(response.body)["result"][0]["followed_at"].should == @u1.roll_followings[0].id.generation_time.to_f
+        end
+        
+        it "should not return special_roll or special_public rolls (since they come from faux users)" do
+          r1 = Factory.create(:roll, :creator => Factory.create(:user), :roll_type => Roll::TYPES[:special_public])
+          r1.add_follower(@u1)
+          r2 = Factory.create(:roll, :creator => Factory.create(:user), :roll_type => Roll::TYPES[:special_roll])
+          r2.add_follower(@u1)
+
+          @u1.save
+          get '/v1/user/'+@u1.id+'/rolls/following'
+          response.body.should be_json_eql(200).at_path("status")
+          parse_json(response.body)["result"].class.should eq(Array)
+          response.body.should have_json_size(0).at_path('result')
+        end
+        
+        it "should return special_public_real_user rolls" do
+          r1 = Factory.create(:roll, :creator => Factory.create(:user), :roll_type => Roll::TYPES[:special_public_real_user])
+          r1.add_follower(@u1)
+
+          @u1.save
+          get '/v1/user/'+@u1.id+'/rolls/following'
+          response.body.should be_json_eql(200).at_path("status")
+          parse_json(response.body)["result"].class.should eq(Array)
+          response.body.should have_json_size(1).at_path('result')
+          parse_json(response.body)["result"][0]["id"].should == r1.id.to_s
+          parse_json(response.body)["result"][0]["followed_at"].should == @u1.roll_followings[0].id.generation_time.to_f
+        end
+        
+        it "should return special_public_upgraded rolls" do
+          r1 = Factory.create(:roll, :creator => Factory.create(:user), :roll_type => Roll::TYPES[:special_public_upgraded])
+          r1.add_follower(@u1)
+
+          @u1.save
+          get '/v1/user/'+@u1.id+'/rolls/following'
+          response.body.should be_json_eql(200).at_path("status")
+          parse_json(response.body)["result"].class.should eq(Array)
+          response.body.should have_json_size(1).at_path('result')
           parse_json(response.body)["result"][0]["id"].should == r1.id.to_s
           parse_json(response.body)["result"][0]["followed_at"].should == @u1.roll_followings[0].id.generation_time.to_f
         end
@@ -86,11 +126,11 @@ describe 'v1/user' do
         end
         
         it "should return rolls in followed_at descending order" do
-          r0 = Factory.create(:roll, :creator => @u1)
+          r0 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
           r0.add_follower(@u1)
-          r1 = Factory.create(:roll, :creator => @u1)
+          r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
           r1.add_follower(@u1)
-          r2 = Factory.create(:roll, :creator => @u1)
+          r2 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
           r2.add_follower(@u1)
           
           #adjust the roll followings id which in turn is used as creation time
@@ -108,11 +148,11 @@ describe 'v1/user' do
         end
       
         it "should have the first three rolls be mine, hearts, watch later" do
-          r0 = Factory.create(:roll, :creator => @u1)
+          r0 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
           r0.add_follower(@u1)
-          wl_roll = Factory.create(:roll, :creator => @u1)
+          wl_roll = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_watch_later])
           wl_roll.add_follower(@u1)
-          public_roll = Factory.create(:roll, :creator => @u1)
+          public_roll = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user])
           public_roll.add_follower(@u1)
           hearts_roll = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_upvoted])
           hearts_roll.add_follower(@u1)
@@ -133,21 +173,21 @@ describe 'v1/user' do
       
       context "rolls/postable" do
         it "should only return the subset of rolls that the user can post to" do
-          public_roll = Factory.create(:roll, :creator => @u1, :collaborative => false)
+          public_roll = Factory.create(:roll, :creator => @u1, :collaborative => false, :roll_type => Roll::TYPES[:special_public_real_user])
           public_roll.add_follower(@u1)
           @u1.public_roll = public_roll
           @u1.save
           
-          upvoted_roll = Factory.create(:roll, :creator => @u1, :collaborative => false)
+          upvoted_roll = Factory.create(:roll, :creator => @u1, :collaborative => false, :roll_type => Roll::TYPES[:special_upvoted])
           upvoted_roll.add_follower(@u1)
           @u1.upvoted_roll = upvoted_roll
           @u1.save
           
-          r1 = Factory.create(:roll, :creator => @u1)
+          r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user])
           r1.add_follower(@u1)
-          r2 = Factory.create(:roll, :creator => Factory.create(:user), :public => false, :collaborative => true)
+          r2 = Factory.create(:roll, :creator => Factory.create(:user), :public => false, :collaborative => true, :roll_type => Roll::TYPES[:user_public])
           r2.add_follower(@u1)
-          r3 = Factory.create(:roll, :creator => Factory.create(:user), :public => true, :collaborative => false)
+          r3 = Factory.create(:roll, :creator => Factory.create(:user), :public => true, :collaborative => false, :roll_type => Roll::TYPES[:user_public])
           r3.add_follower(@u1)
           
           @u1.save
@@ -163,7 +203,7 @@ describe 'v1/user' do
       
       it "should return frames if they are asked for in roll followings" do
         url = 'http://url.here'
-        r1 = Factory.create(:roll, :creator => @u1, :first_frame_thumbnail_url => url)
+        r1 = Factory.create(:roll, :creator => @u1, :first_frame_thumbnail_url => url, :roll_type => Roll::TYPES[:user_public])
         r1.add_follower(@u1)
         get '/v1/user/'+@u1.id+'/rolls/following'
         response.body.should be_json_eql(200).at_path("status")
@@ -180,7 +220,7 @@ describe 'v1/user' do
       end
       
       it "should return :creator_nickname, :following_user_count which are specially injected in the controller" do
-        r1 = Factory.create(:roll, :creator => @u1)
+        r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
         r1.add_follower(@u1)
         get '/v1/user/'+@u1.id+'/rolls/following'
         response.body.should be_json_eql(200).at_path("status")

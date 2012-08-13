@@ -58,6 +58,10 @@ class Roll
     :special_upvoted => 12,
     :special_watch_later => 13,
     :special_viewed => 14,
+    
+    # Differentiate special_public rolls of real shelby users and faux users we deem important
+    :special_public_real_user => 15,
+    :special_public_upgraded => 16,
 
     # User-created non-collaborative public rolls (previously these were collaborative, we're changing that)
     :user_public => 30,
@@ -104,8 +108,8 @@ class Roll
   end
 
   def has_subdomain_access?
-    # only user's personal roll gets a subdomain
-    public and !collaborative and !genius
+    # only "real" personal rolls get subdomain
+    self.roll_type == TYPES[:special_public_real_user] or self.roll_type == TYPES[:special_public_upgraded]
   end
   
   def created_at() self.id.generation_time; end

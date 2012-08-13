@@ -22,7 +22,7 @@ end
 
 Factory.define :user do |user|
   user.nickname                 { Factory.next :nickname }
-  user.downcase_nickname        { user.nickname }
+  user.downcase_nickname        { self.nickname }
   user.authentications          { [FactoryGirl.create(:authentication)] }
   user.primary_email            { Factory.next :primary_email }
   user.gt_enabled true

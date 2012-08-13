@@ -391,7 +391,7 @@ module GT
         r.creator = u
         r.public = true
         r.collaborative = false
-        r.roll_type = Roll::TYPES[:special_public]
+        r.roll_type = (u.faux == User::FAUX_STATUS[:true] ? Roll::TYPES[:special_public] : Roll::TYPES[:special_public_real_user])
         r.title = u.nickname
         r.creator_thumbnail_url = u.user_image || u.user_image_original
         u.public_roll = r

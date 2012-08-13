@@ -2,7 +2,7 @@
 require 'spec_helper' 
 
 describe 'v1/roll' do
-  before(:all) do
+  before(:each) do
     @u1 = Factory.create(:user)
     @uv_roll1 = Factory.create(:roll, :creator => @u1)
     @pub_roll1 = Factory.create(:roll, :creator => @u1)
@@ -22,7 +22,7 @@ describe 'v1/roll' do
   end
   
   context 'logged in' do
-    before(:all) do
+    before(:each) do
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
     end
@@ -61,6 +61,7 @@ describe 'v1/roll' do
       end
       
       it "should return roll info on success when looking up by subdomain if the subdomain is active" do
+        @r.roll_type = Roll::TYPES[:special_public_real_user]
         @r.collaborative = false
         @r.save
         get '/v1/roll/'+@r.subdomain
@@ -157,6 +158,8 @@ describe 'v1/roll' do
         end
 
         it "should return 409 if trying to set a reserved subdomain" do
+          Roll.any_instance.stub(:has_subdomain_access?).and_return(true)
+          
           post '/v1/roll?title=anal&thumbnail_url=http://bar.com&public=1&collaborative=0'
           response.body.should be_json_eql(409).at_path("status")
         end
@@ -279,10 +282,12 @@ describe 'v1/roll' do
       end
 
       it "should return 409 if trying to set a reserved subdomain" do
-          @r.collaborative = false
-          @r.save
-          put '/v1/roll/'+@r.id+'?title=anal'
-          response.body.should be_json_eql(409).at_path("status")
+        Roll.any_instance.stub(:has_subdomain_access?).and_return(true)
+        
+        @r.collaborative = false
+        @r.save
+        put '/v1/roll/'+@r.id+'?title=anal'
+        response.body.should be_json_eql(409).at_path("status")
       end
     end
     
