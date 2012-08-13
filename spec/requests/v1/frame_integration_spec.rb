@@ -21,7 +21,7 @@ describe 'v1/frame' do
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
     end
-    
+
     describe "GET" do
       context 'one frame' do
         it "should return frame info on success" do
@@ -413,19 +413,45 @@ describe 'v1/frame' do
         end
       end
     end
-    
+
     describe "DELETE" do
-      it "should delete the frame and return success" do
+      it "should delete the Frame and return success (if it's destroybale by the User)" do
+        Frame.any_instance.should_receive(:destroyable_by?).with(@u1).and_return(true)
         delete '/v1/frame/'+@f.id
         response.body.should be_json_eql(200).at_path("status")
       end
       
-      it "should return an error if a deletion fails" do
-        get '/v1/frame/'+@f.id+'xxx'
+      it "should fail to delete the Frame (if it's not destroyable by the User)" do
+        Frame.any_instance.should_receive(:destroyable_by?).with(@u1).and_return(false)
+        delete '/v1/frame/'+@f.id
         response.body.should be_json_eql(404).at_path("status")
       end
       
+      it "should return an error if a deletion fails" do
+        delete '/v1/frame/'+@f.id+'xxx'
+        response.body.should be_json_eql(404).at_path("status")
+      end
+      
+      it "should destroy the Frame's Conversation" do
+        @f.conversation.should_not be_nil
+        lambda {
+          delete '/v1/frame/'+@f.id
+        }.should change { Conversation.count } .by(-1)
+        @f.conversation.reload.should be_nil
+      end
+      
+      it "should destroy DashboardEntries related to that Frame" do
+        lambda {
+          Factory.create(:dashboard_entry, :frame_id => @f.id)
+          Factory.create(:dashboard_entry, :frame_id => @f.id)
+        }.should change { DashboardEntry.count } .by(2)
+        lambda {
+          delete '/v1/frame/'+@f.id
+        }.should change { DashboardEntry.count } .by(-2)
+      end
+      
     end
+    
   end
   
   context "not logged in" do

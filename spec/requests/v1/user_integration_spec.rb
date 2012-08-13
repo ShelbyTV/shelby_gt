@@ -307,6 +307,33 @@ describe 'v1/user' do
         @u1.reload
         @u1.public_roll.title.should == "not-the-users-nickname"
       end
+      
+      it "should not change password if password isn't sent" do
+        lambda {
+          put '/v1/user/'+@u1.id+'?nickname=ramses'
+          response.body.should be_json_eql(200).at_path("status")
+        }.should_not change { @u1.encrypted_password }
+      end
+      
+      it "should not change the password if the confirmation doesn't match" do
+        pass = "the_new-PASS"
+        lambda {
+          put "/v1/user/#{@u1.id}?nickname=ramses&password=#{pass}&password_confirmation=WRONG"
+          response.body.should be_json_eql(409).at_path("status")
+        }.should_not change { @u1.encrypted_password }
+      end
+      
+      it "should change password if password and password_confirmation are sent" do
+        pass = "the_new-PASS"
+        lambda {
+          put "/v1/user/#{@u1.id}?nickname=ramses&password=#{pass}&password_confirmation=#{pass}"
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should_not have_json_path("result/password")
+          response.body.should_not have_json_path("result/password_confirmation")
+          response.body.should_not have_json_path("result/encrypted_password")
+        }.should change { @u1.reload.encrypted_password }
+        @u1.reload.valid_password?(pass).should == true
+      end
 
     end
   end
