@@ -3,8 +3,6 @@ require 'spec_helper'
 describe 'v1/dashboard' do
   context 'logged in' do
     before(:each) do
-      GT::UserManager.stub(:start_user_sign_in)
-      
       @u1 = Factory.create(:user)
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'      

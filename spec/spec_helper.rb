@@ -32,6 +32,10 @@ RSpec.configure do |config|
     StatsManager::StatsD.stub(:timing)
     StatsManager::StatsD.stub(:count)
   end
+  
+  config.before(:type => :request) do
+    GT::UserManager.stub(:start_user_sign_in)
+  end
 end
 
 # Before running tests, drop all the collections across the DBs and re-create the indexes
