@@ -25,8 +25,7 @@
 										"provider_name": "<%= frame.video.provider_name %>",
 										"provider_id": "<%= frame.video.provider_id %>",
 										"title": "<%= frame.video.title %>",
-										"description": "<%= frame.video.description %>",
-										"duration": <%= frame.video.duration.to_json %>,
+										"duration": <%= frame.video.duration ? frame.video.duration : 'null' %>,
 										"thumbnail_url": "<%= frame.video.thumbnail_url %>",
 										"view_count": <%= frame.video.view_count %>
 									}
