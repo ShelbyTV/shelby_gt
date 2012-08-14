@@ -410,14 +410,14 @@ class V1::FrameController < ApplicationController
             t = GT::SocialPostFormatter.format_for_facebook(text, short_links)
             resp &= GT::SocialPoster.post_to_facebook(current_user, t, frame)
           when 'email'
-            #NB if frame is on a private roll, this is a private roll invite.  Otherwise, it's just a Frame share
+            # This is just a Frame share
             email_addresses = params[:addresses]
             return render_error(404, "you must provide addresses") if email_addresses.blank?
             
             # save any valid addresses for future use in autocomplete
             current_user.store_autocomplete_info(:email, email_addresses)
 
-            resp &= GT::SocialPoster.post_to_email(current_user, params[:addresses], text, frame)
+            resp &= GT::SocialPoster.email_frame(current_user, params[:addresses], text, frame)
           else
             return render_error(404, "we dont support that destination yet :(")
           end

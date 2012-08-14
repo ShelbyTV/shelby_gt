@@ -213,43 +213,7 @@ describe V1::RollController do
         assigns(:message).should eq("could not find roll with id ")
       end
     end
-    
-    context "email share" do
-      it "should return 200 when sharing a private roll via email" do
-        GT::SocialPoster.should_receive(:post_to_email).once
-        
-        roll = stub_model(Roll, :public => false)
-        Roll.stub!(:find).and_return(roll)
-        post :share, :roll_id => roll.id.to_s, :destination => ["email"], :text => "testing", :addresses => "spinosa@gmail.com", :format => :json
-        assigns(:status).should eq(200)
-      end
       
-      it "should return 404 if you don't includ email addresses" do
-        GT::SocialPoster.should_receive(:post_to_email).exactly(0).times
-        
-        roll = stub_model(Roll, :public => false)
-        Roll.stub!(:find).and_return(roll)
-        post :share, :roll_id => roll.id.to_s, :destination => ["email"], :text => "testing", :format => :json
-        assigns(:status).should eq(404)
-      end
-
-      it "should try to save email addresses to user's autocomplete" do
-        controller.current_user.should_receive(:store_autocomplete_info).once
-
-        roll = stub_model(Roll, :public => false)
-        Roll.stub!(:find).and_return(roll)
-        post :share, :roll_id => roll.id.to_s, :destination => ["email"], :text => "testing", :addresses => "spinosa@gmail.com, invalidaddress, j@jay.net", :format => :json
-      end
-
-      it "should NOT try to save email addresses to user's autocomplete if none are specified" do
-        controller.current_user.should_not_receive(:store_autocomplete_info)
-
-        roll = stub_model(Roll, :public => false)
-        Roll.stub!(:find).and_return(roll)
-        post :share, :roll_id => roll.id.to_s, :destination => ["email"], :text => "testing", :format => :json
-      end
-    end
-    
   end
   
   describe "POST join/leave" do

@@ -15,11 +15,8 @@
 						</td>
 						<td  valign="top">
 							<div>
-								<a href="<%= @user_from.permalink %>"><%= @user_from.name %></a> has invited you to join a private roll: <span style="font-weight:bold;">"<%= @frame.roll.title %>"
+								<a href="<%= @user_from.permalink %>"><%= @user_from.name %></a> found a video to share with you...
 							</div>
-							<p>
-								What's a <a href="<%= Settings::ShelbyAPI.web_root %>/help">private roll</a>?
-							</p>
 						</td>
 					</tr>
 				</table>
@@ -28,7 +25,6 @@
 						<td width="185"  valign="top">
 							<a href="<%= @frame_permalink %>" style="float:left; padding-right:10px; padding-bottom: 10px;"><img class="image_fix" src="<%= @frame.video.thumbnail_url %>" alt="user_image" title="user_image" width="175" /></a>
 							<div style="float:left; width: 66%">
-								<div style="font-weight:bold;">Check out a video in this roll:</div>
 								<p><%= @message %></p>	
 							</div>
 						</td>

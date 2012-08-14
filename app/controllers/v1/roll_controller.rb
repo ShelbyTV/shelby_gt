@@ -195,17 +195,6 @@ class V1::RollController < ApplicationController
             text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
             resp &= GT::SocialPoster.post_to_facebook(current_user, text, roll)
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d])
-          when 'email'
-            # If this is private roll, email sent will be an invite.  Otherwise, it's just a Frame share of the first frame (for now, since that isn't used)
-            email_addresses = params[:addresses]
-            return render_error(404, "you must provide addresses") if email_addresses.blank?
-            
-            # save any valid addresses for future use in autocomplete
-            current_user.store_autocomplete_info(:email, email_addresses)
-
-            ShelbyGT_EM.next_tick { GT::SocialPoster.post_to_email(current_user, email_addresses, text, roll.frames.first) }
-            resp &= true
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d])
           else
             return render_error(404, "we dont support that destination yet :(")
           end

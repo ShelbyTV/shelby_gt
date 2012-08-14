@@ -256,22 +256,6 @@ describe 'v1/roll' do
             parse_json(response.body)["message"].should eq("a destination and a text is required to post")
           end
         end
-      
-        context "email share" do
-          it "should return 200 when sharing to email" do
-            GT::SocialPoster.should_receive(:post_to_email).once
-            
-            post '/v1/roll/'+@r.id+'/share?destination[]=email&text=testing&addresses=dan@shelby.tv'
-            response.body.should be_json_eql(200).at_path("status")
-          end
-          
-          it "should return 404 if addresses aren't included" do
-            GT::SocialPoster.should_receive(:post_to_email).exactly(0).times
-            
-            post '/v1/roll/'+@r.id+'/share?destination[]=email&text=testing'
-            response.body.should be_json_eql(404).at_path("status")
-          end
-        end
           
       end
 
