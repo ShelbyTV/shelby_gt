@@ -1,6 +1,23 @@
 #ifndef __SOB_DATABASES_H__
 #define __SOB_DATABASES_H__
 
+/*
+ * Here we use a modified version of the "X" Macro technique. See here for an explanation:
+ *
+ * http://www.drdobbs.com/cpp/the-x-macro/228700289
+ *
+ * Format:
+ *
+ *   env ALL CAPS, DB name in mongo, collection name, replset?, replset name,
+ *      primary server, secondary server, username, password
+ *
+ * NOTE:
+ *
+ *   All entries must have the same number of lines (environments) ordered in the same
+ *   way. Client code accesses this by treating arrays like they're 2D arrays (multiplying
+ *   type index * num environments + environment).
+ */
+
 // ordered in the same order as sobType so that arrays get populated correctly
 #define ALL_DATABASES(apply)        \
    USER_DATABASES(apply)            \

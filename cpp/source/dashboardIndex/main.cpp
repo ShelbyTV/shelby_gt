@@ -335,35 +335,34 @@ bool loadData(sobContext sob)
 {
    bson_oid_t userOid;
 
-   userOid = sobGetUniqueOidByStringField(sob, SOB_USER, "downcase_nickname", options.user);
+   userOid = sobGetUniqueOidByStringField(sob, SOB_USER, SOB_USER_DOWNCASE_NICKNAME, options.user);
    // TODO: if invalid userOid, status = 1, cleanup
    sobLoadAllByOidField(sob,
                         SOB_DASHBOARD_ENTRY, 
-                        "TODO: dashboard user field",
+                        SOB_DASHBOARD_ENTRY_USER_ID,
                         userOid,
                         options.limit,
                         options.skip,
                         -1);
    
    vector<bson_oid_t> frameOids;
-   sobGetOidVectorFromObjectField(sob, SOB_DASHBOARD_ENTRY, "TODO: dashboard frame field", frameOids);
+   sobGetOidVectorFromObjectField(sob, SOB_DASHBOARD_ENTRY, SOB_DASHBOARD_ENTRY_FRAME_ID, frameOids);
    sobLoadAllById(sob, SOB_FRAME, frameOids);
 
    vector<bson_oid_t> rollOids;
-   sobGetOidVectorFromObjectField(sob, SOB_FRAME, "TODO: roll frame field", rollOids);
+   sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_ROLL_ID, rollOids);
    sobLoadAllById(sob, SOB_ROLL, rollOids);
 
-   // TODO: also get upvote users?
    vector<bson_oid_t> userOids;
-   sobGetOidVectorFromObjectField(sob, SOB_FRAME, "TODO: user frame field", userOids);
+   sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_CREATOR_ID, userOids);
    sobLoadAllById(sob, SOB_USER, userOids);
  
    vector<bson_oid_t> videoOids;
-   sobGetOidVectorFromObjectField(sob, SOB_FRAME, "TODO: video frame field", videoOids);
+   sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_VIDEO_ID, videoOids);
    sobLoadAllById(sob, SOB_VIDEO, videoOids);
    
    vector<bson_oid_t> conversationOids;
-   sobGetOidVectorFromObjectField(sob, SOB_FRAME, "TODO: conversation frame field", conversationOids);
+   sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_CONVERSATION_ID, conversationOids);
    sobLoadAllById(sob, SOB_FRAME, conversationOids);
 
    return true;

@@ -47,6 +47,16 @@ static const char *sobDBCollection[] =
    { ALL_DATABASES(DBCOLLECTION) };
 #undef DBCOLLECTION 
 
+#define DBNAME(a,b,c,d,e,f,g,h,i) #b
+static const char *sobDBName[] =
+   { ALL_DATABASES(DBNAME) };
+#undef DBNAME
+
+#define FIELD_DB_NAME(a,b,c,d,e) #e,
+static const char *sobFieldDBName[] =
+   { ALL_PROPERTIES(FIELD_DB_NAME) };
+#undef FIELD_DB_NAME
+
 bson_oid_t userId;
 
 map<string, bson *> dashboardEntries;
@@ -82,7 +92,14 @@ sobContext sobAllocContext(sobEnvironment env)
 
 void sobFreeContext(sobContext context)
 {
+   for (unsigned int i = 0 ; i < SOB_NUMTYPES ; i++) {
+      if (context->allocatedConn[i] != NULL) {
+         mongo_destroy(context->allocatedConn[i]); 
+         free(context->allocatedConn[i]);
+      }
+   }
 
+   free(context);
 }
 
 unsigned int sobArrayIndex(sobType type, sobEnvironment env)
@@ -92,14 +109,22 @@ unsigned int sobArrayIndex(sobType type, sobEnvironment env)
 
 bool sobTypesUseSameServer(sobType type1, sobType type2, sobEnvironment env)
 {
-   return ((sobIsReplSetConnection[sobArrayIndex(type1, env)] &&
-            sobIsReplSetConnection[type2 + env] &&
-            strcmp(sobSecondaryServer[type1 + env], sobSecondaryServer[type2 + env]) == 0) ||
-           (!sobIsReplSetConnection[type1 + env] &&
-            !sobIsReplSetConnection[type2 + env])) &&
-          (strcmp(sobPrimaryServer[type1 + env], sobPrimaryServer[type2 + env]) == 0 &&
-           strcmp(sobDBUser[type1 + env], sobDBUser[type2 + env]) == 0 &&
-           strcmp(sobDBPassword[type1 + env], sobDBUser[type2 + env]) == 0
+   unsigned int type1Index = sobArrayIndex(type1, env);
+   unsigned int type2Index = sobArrayIndex(type2, env);
+
+   return (strcmp(sobPrimaryServer[type1Index], sobPrimaryServer[type2Index]) == 0)
+
+          &&
+
+          (
+              (sobIsReplSetConnection[type1Index] &&
+               sobIsReplSetConnection[type2Index] &&
+               strcmp(sobSecondaryServer[type1Index], sobSecondaryServer[type2Index]) == 0)
+
+                 ||
+
+              (!sobIsReplSetConnection[type1Index] &&
+               !sobIsReplSetConnection[type2Index])
           );
 }
 
@@ -109,13 +134,13 @@ bool sobTypesUseSameServer(sobType type1, sobType type2, sobEnvironment env)
  */
 bool sobConnect(sobContext context)
 {
-   for (unsigned int i = 0 ; i < SOB_NUMTYPES ; i++) {
+   for (sobType i = (sobType)0 ; i < SOB_NUMTYPES ; i = (sobType)((unsigned int)i + 1)) {
       bool previousConnectionExists = false;
-      bool isReplSet = sobIsReplSetConnection[i + context->env];
+      bool isReplSet = sobIsReplSetConnection[sobArrayIndex(i, context->env)];
 
-      for (unsigned int j = 0 ; j < i; j++) {
-         // if 2 types need the exact same conn, don't bother connecting again
-         if (sobTypesUseSameServer((sobType)i, (sobType)j, context->env)) {
+      for (sobType j = (sobType)0 ; j < i; j = (sobType)((unsigned int)j + 1)) {
+         // if 2 types need the exact same conn, don't allocate a duplicate connection
+         if (sobTypesUseSameServer(i, j, context->env)) {
             previousConnectionExists = true;
             context->typeToConn[i] = context->typeToConn[j];
             break;
@@ -136,10 +161,11 @@ bool sobConnect(sobContext context)
          mongo_host_port primary;
          mongo_host_port secondary;
 
-         mongo_replset_init(context->allocatedConn[i], sobReplSetName[i + context->env]);
+         mongo_replset_init(context->allocatedConn[i],
+                            sobReplSetName[sobArrayIndex(i, context->env)]);
 
-         mongo_parse_host(sobPrimaryServer[i + context->env], &primary);
-         mongo_parse_host(sobSecondaryServer[i + context->env] , &secondary);
+         mongo_parse_host(sobPrimaryServer[sobArrayIndex(i, context->env)], &primary);
+         mongo_parse_host(sobSecondaryServer[sobArrayIndex(i, context->env)] , &secondary);
 
          mongo_replset_add_seed(context->allocatedConn[i], primary.host, primary.port);
          mongo_replset_add_seed(context->allocatedConn[i], secondary.host, secondary.port);
@@ -150,7 +176,7 @@ bool sobConnect(sobContext context)
          mongo_host_port primary;
 
          mongo_init(context->allocatedConn[i]);
-         mongo_parse_host(sobPrimaryServer[i + context->env], &primary);
+         mongo_parse_host(sobPrimaryServer[sobArrayIndex(i, context->env)], &primary);
 
          status = mongo_connect(context->allocatedConn[i], primary.host, primary.port);            
       }
@@ -167,10 +193,36 @@ bool sobConnect(sobContext context)
          printf("mongo connected\n");
       }
 
-      //TODO: authenticate?
-
    }     
      
+   return true;
+}
+
+bool sobAuthenticate(sobContext context, sobType type)
+{
+   if (strcmp(sobDBUser[sobArrayIndex(type, context->env)], "") != 0 &&
+       strcmp(sobDBPassword[sobArrayIndex(type, context->env)], "") != 0) {
+
+      int status;
+
+      status = mongo_cmd_authenticate(context->allocatedConn[type],
+                                      sobDBName[sobArrayIndex(type, context->env)],
+                                      sobDBUser[sobArrayIndex(type, context->env)],
+                                      sobDBPassword[sobArrayIndex(type, context->env)]);
+
+      if (MONGO_OK != status) {
+         switch (context->allocatedConn[type]->err) {
+            case MONGO_CONN_SUCCESS:    printf("mongo authenticated\n"); break;
+            case MONGO_CONN_NO_SOCKET:  printf("no socket\n"); return false;
+            case MONGO_CONN_FAIL:       printf("connection failed\n"); return false;
+            case MONGO_CONN_NOT_MASTER: printf("not master\n"); return false;
+            default:                    printf("received unknown status\n"); return false;
+         }
+      } else {
+         printf("mongo authenticated\n");
+      }
+   }
+
    return true;
 }
 
@@ -183,7 +235,7 @@ bson_oid_t sobGetUniqueOidByStringField(sobContext context,
 
    bson query;
    bson_init(&query);
-   bson_append_string(&query, field.c_str(), value.c_str());
+   bson_append_string(&query, sobFieldDBName[field], value.c_str());
    bson_finish(&query);
    
    bson fields;
@@ -193,6 +245,9 @@ bson_oid_t sobGetUniqueOidByStringField(sobContext context,
    
    bson out;
    bson_init(&out);
+
+   // TODO: check return status
+   sobAuthenticate(context, type);
 
    if (mongo_find_one(context->typeToConn[type], 
                       sobDBCollection[sobArrayIndex(type, context->env)],
@@ -231,7 +286,10 @@ void sobLoadAllByOidField(sobContext context,
       bson_append_finish_object(&query);
    }
    bson_finish(&query);
-   
+  
+   // TODO: check return status
+   sobAuthenticate(context, type);
+ 
    mongo_cursor cursor;
    mongo_cursor_init(&cursor, 
                      context->typeToConn[type],
@@ -285,7 +343,10 @@ void sobLoadAllById(sobContext context,
    bson_append_finish_array(&query);
    bson_append_finish_object(&query);
    bson_finish(&query);
-  
+ 
+   // TODO: check return status
+   sobAuthenticate(context, type);
+ 
    mongo_cursor cursor;
    mongo_cursor_init(&cursor,
                      context->typeToConn[type], 

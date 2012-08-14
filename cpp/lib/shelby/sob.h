@@ -8,6 +8,16 @@
 #include <string>
 #include <vector>
 
+#include "sobProperties.h"
+
+/*
+ * Right now these are only the top level types used for DB
+ * querying.
+ *
+ * Sub-types like MESSAGE are aviailable in sobField, etc. but
+ * not here since they're currently only accessible via a 
+ * CONVERSATION.
+ */
 typedef enum sobType
 {
    SOB_USER = 0,
@@ -31,8 +41,13 @@ typedef enum sobEnvironment
    SOB_NUMENVIRONMENTS
 } sobEnvironment;
 
+#define SOB_FIELD(a,b,c,d,e) SOB_##a##_##c,
+typedef enum sobField
+{
+   ALL_PROPERTIES(SOB_FIELD) 
+} sobField;
+
 typedef struct sobContextStruct *sobContext;
-typedef std::string sobField; // TODO
 
 sobContext sobAllocContext(sobEnvironment env);
 void sobFreeContext(sobContext context);
