@@ -3,7 +3,23 @@ defaults: &defaults
   db_port: '27017'
   db_options: {}
   mm_use_identity_map: true
-
+  explore:
+    cat1:
+      category_name: "Technolgoy"
+      rolls: ['4f99c6d0b415cc07f9000c3e' ,'4f933289b415cc5b250003fc', '4fdf3d27b415cc69340008f8', '4f901d4bb415cc661405fde9', '4f95630e9a725b76d40019d1']
+    cat2:
+      category_name: "Sports"
+      rolls: ['4f900d56b415cc6614056681', '4f9ec30c9a725b424e00442e', '4f8feb54b415cc6614041213', '4f902217b415cc466a000909', '4f95db5388ba6b61a3004577']
+    cat3:
+      category_name: "Reality"
+      rolls: ['4fa057c388ba6b0f4200183c', '4fa28d309a725b77f700070f', '4fbad2c5d1041266bc000d4f', '4fb40c9bd104126ad900a57b', '4fb489939a725b5ca8003e9b']
+    cat4:
+      category_name: "Editors Picks"
+      rolls: ['4fa41cfa88ba6b0dcf001a65', '4f9c3588b415cc0f0f000893']
+    cat5:
+      category_name: "Best of Shelby"
+      rolls: ['4fbe42069a725b686300004a', '4f9e93879a725b12ab001c48', '4fa1eef188ba6b5f440007b9', '4fb3d39988ba6b33460043bb', '4f95cfe19a725b0a8c0384af', '4f902316b415cc466a0009dd']
+      
 development:
   <<: *defaults
   db_name: 'dev-gt-roll-frame'
@@ -11,6 +27,13 @@ development:
 test:
   <<: *defaults
   db_name: 'test-gt-roll-frame'
+  explore:
+    cat1:
+      category_name: "Category One (1 Roll)"
+      rolls: ['4f99c6d0b415cc07f9000c3e']
+    cat2:
+      category_name: "Category Two (2 Rolls)"
+      rolls: ['4f900d56b415cc6614056681', '4f9ec30c9a725b424e00442e']
 
 production: &production
   <<: *defaults

@@ -239,10 +239,18 @@ describe V1::RollController do
       )
     end
     
-    it "route to browser roll" do
+    it "routes to Browse roll" do
       { :get => "/v1/roll/browse" }.should route_to(
         :controller => "v1/roll",
         :action => "browse",
+        :format => "json"
+      )
+    end
+    
+    it "routes to Explore roll" do
+      { :get => "/v1/roll/explore" }.should route_to(
+        :controller => "v1/roll",
+        :action => "explore",
         :format => "json"
       )
     end

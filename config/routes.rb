@@ -61,13 +61,14 @@ ShelbyGt::Application.routes.draw do
       get 'rolls/hearted' => 'roll#show_users_heart_roll'
       get 'rolls/heart/frames' => 'frame#index_for_users_heart_roll'
     end
-    get 'roll/browse' => 'roll#browse'
     resources :roll, :only => [:show, :create, :update, :destroy] do
       get 'frames' => 'frame#index'
       post 'frames' => 'frame#create'
       post 'share' => 'roll#share'
       post 'join' => 'roll#join'
       post 'leave' => 'roll#leave'
+      get 'browse' => 'roll#browse', :on => :collection
+      get 'explore' => 'roll#explore', :on => :collection
     end
     namespace :roll do
        resources :genius, :only => [:create]
