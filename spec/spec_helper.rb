@@ -21,9 +21,14 @@ RSpec.configure do |config|
   
   # to user helpers included with json_spec gem:
   config.include JsonSpec::Helpers
+  
+  #never hit Rhombus
+  config.before(:each) do
+    Rhombus.stub(:post)
+    Rhombus.stub(:get)
+  end
 end
 
 # Before running tests, drop all the collections across the DBs and re-create the indexes
 MongoMapper::Helper.drop_all_dbs
 MongoMapper::Helper.ensure_all_indexes
-
