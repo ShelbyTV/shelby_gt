@@ -70,13 +70,13 @@ describe 'v1/user' do
           r1.add_follower(@u1)
           r2 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
           r2.add_follower(@u1)
-          @u1.upvoted_roll = r2
-          @u1.save
+
           get '/v1/user/'+@u1.id+'/rolls/following'
           response.body.should be_json_eql(200).at_path("status")
           parse_json(response.body)["result"].class.should eq(Array)
           response.body.should have_json_size(2).at_path('result')
-          parse_json(response.body)["result"][0]["id"].should == r1.id.to_s
+          #most recently followed roll is returned first
+          parse_json(response.body)["result"][0]["id"].should == r2.id.to_s
           parse_json(response.body)["result"][0]["followed_at"].should == @u1.roll_followings[0].id.generation_time.to_f
         end
         
@@ -166,8 +166,8 @@ describe 'v1/user' do
           get '/v1/user/'+@u1.id+'/rolls/following'
           parse_json(response.body)["result"][0]["id"].should == public_roll.id.to_s
           parse_json(response.body)["result"][0]["roll_type"].should == public_roll.roll_type
-          parse_json(response.body)["result"][1]["id"].should == hearts_roll.id.to_s
-          parse_json(response.body)["result"][2]["id"].should == wl_roll.id.to_s
+          #no longer returning hearts roll
+          parse_json(response.body)["result"][1]["id"].should == wl_roll.id.to_s
         end
       end
       
@@ -193,11 +193,11 @@ describe 'v1/user' do
           @u1.save
         
           get '/v1/user/'+@u1.id+'/rolls/postable'
-          response.body.should have_json_size(4).at_path("result")
+          response.body.should have_json_size(3).at_path("result")
           parse_json(response.body)["result"][0]["id"].should == public_roll.id.to_s
-          parse_json(response.body)["result"][1]["id"].should == upvoted_roll.id.to_s
-          parse_json(response.body)["result"][2]["id"].should == r2.id.to_s
-          parse_json(response.body)["result"][3]["id"].should == r1.id.to_s
+          #no longer returning hearts roll
+          parse_json(response.body)["result"][1]["id"].should == r2.id.to_s
+          parse_json(response.body)["result"][2]["id"].should == r1.id.to_s
         end
       end
       
