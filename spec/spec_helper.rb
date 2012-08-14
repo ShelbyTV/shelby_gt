@@ -22,10 +22,15 @@ RSpec.configure do |config|
   # to user helpers included with json_spec gem:
   config.include JsonSpec::Helpers
   
-  #never hit Rhombus
   config.before(:each) do
+    #never hit Rhombus (stats)
     Rhombus.stub(:post)
     Rhombus.stub(:get)
+    #never hits statsD (stats)
+    StatsManager::StatsD.stub(:increment)
+    StatsManager::StatsD.stub(:decrement)
+    StatsManager::StatsD.stub(:timing)
+    StatsManager::StatsD.stub(:count)
   end
 end
 
