@@ -9,7 +9,13 @@ dashboardIndexEnv.MergeFlags('-O6 -pthread -Wall -Werror -DMONGO_HAVE_UNISTD -st
 dashboardIndexEnv['CXXFLAGS'] = ['-std=c++0x'] # works around bug in scons MergeFlags, fixed in later versions of scons
 dashboardIndexEnv['CPPPATH'] = ['#/source', '#']
 
-dashboardIndex = dashboardIndexEnv.Program(target = 'dashboardIndex', source = sourceFiles + ['#/build/mongo-c-driver/libmongoc.a'] + ['#/build/mrjson/libmrjson.a'])
+
+libMongo = File('#/build/mongo-c-driver/libmongoc.a')
+dashboardIndex = dashboardIndexEnv.Program(target = 'dashboardIndex', 
+                                           source = sourceFiles,
+                                           LIBS = ['mrjson', 'mrbson', 'shelby', libMongo],
+                                           LIBPATH = ['#/build/mrjson/', '#/build/mrbson/', '#/build/shelby/'])
+
 dashboardIndexInstall = dashboardIndexEnv.Install('#/bin', dashboardIndex)
 
 dashboardIndexEnv.Default(dashboardIndex)

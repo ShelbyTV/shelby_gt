@@ -1,10 +1,7 @@
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <map>
 #include <vector>
-#include <sstream>
-#include <limits>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,32 +15,17 @@
 #include "lib/mongo-c-driver/src/mongo.h"
 #include "lib/mrjson/mrjson.h"
 #include "lib/mrbson/mrbson.h"
+#include "lib/shelby/shelby.h"
 
 using namespace std;
 
-static struct Options {
+static struct options {
 	string user;
 	int limit;
 	int skip;
 } options;
 
-mongo conn;
 struct timeval beginTime;
-
-bson_oid_t userId;
-
-map<string, bson *> dashboardEntries;
-map<string, bson *> frames;
-map<string, bson *> users;
-map<string, bson *> rolls;
-map<string, bson *> videos;
-map<string, bson *> conversations;
-
-vector<bson_oid_t> framesToLoad;
-vector<bson_oid_t> rollsToLoad;
-vector<bson_oid_t> usersToLoad;
-vector<bson_oid_t> videosToLoad;
-vector<bson_oid_t> conversationsToLoad;
 
 void printHelpText()
 {
@@ -52,299 +34,6 @@ void printHelpText()
    cout << "   -u --user        Lowercase nickname of user" << endl;
    cout << "   -l --limit       Limit to this number of dashboard entries" << endl;
    cout << "   -s --skip        Skip this number of dashboard entries" << endl;
-}
-
-bool connectToMongo()
-{
-   mongo_init(&conn);
-   
-   int status = mongo_connect(&conn, "127.0.0.1", 27017);
-   
-   if (MONGO_OK != status) {
-      switch (conn.err) {
-         case MONGO_CONN_SUCCESS:    break;
-         case MONGO_CONN_NO_SOCKET:  printf("no socket\n"); return false;
-         case MONGO_CONN_FAIL:       printf("connection failed\n"); return false;
-         case MONGO_CONN_NOT_MASTER: printf("not master\n"); return false;
-         default:                    printf("received unknown status\n"); return false;
-      }
-   }
-   
-   return true;
-}
-
-void loadUserIdByNickname()
-{
-   bson query;
-   bson_init(&query);
-   bson_append_string(&query, "downcase_nickname", options.user.c_str());
-   bson_finish(&query);
-   
-   bson fields;
-   bson_init(&fields);
-   bson_append_int(&fields, "_id", 1);
-   bson_finish(&fields);
-   
-   bson out;
-   bson_init(&out);
-   
-   if (mongo_find_one(&conn, "dev-gt-user.users", &query, &fields, &out) == MONGO_OK) {
-      bson_iterator iterator;
-      bson_iterator_init(&iterator, &out);
-      userId = *bson_iterator_oid(&iterator);
-   } else {
-      cout << "Error querying for user." << endl;
-   }
-   
-   bson_destroy(&out);
-   bson_destroy(&fields);
-   bson_destroy(&query);
-}
-
-void loadDashboardEntries()
-{
-   bson query;
-   bson_init(&query);
-   bson_append_start_object(&query, "$query");
-     bson_append_oid(&query, "a", &userId); // user_id
-   bson_append_finish_object(&query);
-   bson_append_start_object(&query, "$orderby");
-     bson_append_int(&query, "_id", -1);
-   bson_append_finish_object(&query);
-   bson_finish(&query);
-   
-   mongo_cursor cursor;
-   mongo_cursor_init(&cursor, &conn, "dev-gt-dashboard-entry.dashboard_entries");
-   mongo_cursor_set_query(&cursor, &query);
-   mongo_cursor_set_limit(&cursor, options.limit);
-   mongo_cursor_set_skip(&cursor, options.skip);
-   
-   while (mongo_cursor_next(&cursor) == MONGO_OK) {
-     bson_iterator iterator;
-     if (bson_find(&iterator, mongo_cursor_bson(&cursor), "c" )) {
-     	framesToLoad.push_back(*bson_iterator_oid(&iterator));
-     }
-     if (bson_find(&iterator, mongo_cursor_bson(&cursor), "_id" )) {
-
-        bson *newValue = (bson *)malloc(sizeof(bson));
-        bson_copy(newValue, mongo_cursor_bson(&cursor));
-
-        string newKey = mrbsonOidString(bson_iterator_oid(&iterator));
-
-        dashboardEntries.insert(pair<string, bson *>(newKey, newValue));
-     }
-   }
-
-  bson_destroy(&query);
-  mongo_cursor_destroy(&cursor);
-}
-
-void loadFrames()
-{
-   bson query;
-   bson_init(&query);
-   bson_append_start_object(&query, "_id");
-   bson_append_start_array(&query, "$in");
-
-   for (unsigned int i = 0; i < framesToLoad.size(); i++) {
-     ostringstream stringStream;
-     stringStream << i;
-
-     bson_append_oid(&query, stringStream.str().c_str(), &framesToLoad[i]);
-   }
-
-   bson_append_finish_array(&query);
-   bson_append_finish_object(&query);
-   bson_finish(&query);
-  
-   mongo_cursor cursor;
-   mongo_cursor_init(&cursor, &conn, "dev-gt-roll-frame.frames");
-   mongo_cursor_set_query(&cursor, &query);
-   
-   while (mongo_cursor_next(&cursor) == MONGO_OK) {
-      bson_iterator iterator;
-      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "a" )) {
-      	rollsToLoad.push_back(*bson_iterator_oid(&iterator));
-      }
-      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "d" )) {
-      	usersToLoad.push_back(*bson_iterator_oid(&iterator));
-      }
-      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "c" )) {
-      	conversationsToLoad.push_back(*bson_iterator_oid(&iterator));
-      }
-      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "b" )) {
-      	videosToLoad.push_back(*bson_iterator_oid(&iterator));
-      }
-      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "_id" )) {
-
-         bson *newValue = (bson *)malloc(sizeof(bson));
-         bson_copy(newValue, mongo_cursor_bson(&cursor));
-
-         string newKey = mrbsonOidString(bson_iterator_oid(&iterator));
-
-         frames.insert(pair<string, bson *>(newKey, newValue));
-      }
-
-   }
-   
-   bson_destroy(&query);
-   mongo_cursor_destroy(&cursor);
-}
-
-void loadRolls()
-{
-   bson query;
-   bson_init(&query);
-   bson_append_start_object(&query, "_id");
-   bson_append_start_array(&query, "$in");
-
-   for (unsigned int i = 0; i < rollsToLoad.size(); i++) {
-     ostringstream stringStream;
-     stringStream << i;
-
-     bson_append_oid(&query, stringStream.str().c_str(), &rollsToLoad[i]);
-   }
-
-   bson_append_finish_array(&query);
-   bson_append_finish_object(&query);
-   bson_finish(&query);
-  
-   mongo_cursor cursor;
-   mongo_cursor_init(&cursor, &conn, "dev-gt-roll-frame.rolls");
-   mongo_cursor_set_query(&cursor, &query);
-   
-   while (mongo_cursor_next(&cursor) == MONGO_OK) {
-      bson_iterator iterator;
-      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "_id" )) {
-
-        bson *newValue = (bson *)malloc(sizeof(bson));
-        bson_copy(newValue, mongo_cursor_bson(&cursor));
-
-        string newKey = mrbsonOidString(bson_iterator_oid(&iterator));
-
-        rolls.insert(pair<string, bson *>(newKey, newValue));
-     }
-   }
-   
-   bson_destroy(&query);
-   mongo_cursor_destroy(&cursor);
-}
-
-void loadUsers()
-{
-   bson query;
-   bson_init(&query);
-   bson_append_start_object(&query, "_id");
-   bson_append_start_array(&query, "$in");
-
-   for (unsigned int i = 0; i < usersToLoad.size(); i++) {
-     ostringstream stringStream;
-     stringStream << i;
-
-     bson_append_oid(&query, stringStream.str().c_str(), &usersToLoad[i]);
-   }
-
-   bson_append_finish_array(&query);
-   bson_append_finish_object(&query);
-   bson_finish(&query);
-  
-   mongo_cursor cursor;
-   mongo_cursor_init(&cursor, &conn, "dev-gt-user.users");
-   mongo_cursor_set_query(&cursor, &query);
-   
-   while (mongo_cursor_next(&cursor) == MONGO_OK) {
-      bson_iterator iterator;
-      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "_id" )) {
-
-         bson *newValue = (bson *)malloc(sizeof(bson));
-         bson_copy(newValue, mongo_cursor_bson(&cursor));
-
-         string newKey = mrbsonOidString(bson_iterator_oid(&iterator));
-
-         users.insert(pair<string, bson *>(newKey, newValue));
-     }
-   }
-   
-   bson_destroy(&query);
-   mongo_cursor_destroy(&cursor);
-}
-
-void loadVideos()
-{
-   bson query;
-   bson_init(&query);
-   bson_append_start_object(&query, "_id");
-   bson_append_start_array(&query, "$in");
-
-   for (unsigned int i = 0; i < videosToLoad.size(); i++) {
-     ostringstream stringStream;
-     stringStream << i;
-
-     bson_append_oid(&query, stringStream.str().c_str(), &videosToLoad[i]);
-   }
-
-   bson_append_finish_array(&query);
-   bson_append_finish_object(&query);
-   bson_finish(&query);
-  
-   mongo_cursor cursor;
-   mongo_cursor_init(&cursor, &conn, "dev-gt-video.videos");
-   mongo_cursor_set_query(&cursor, &query);
-   
-   while (mongo_cursor_next(&cursor) == MONGO_OK) {
-      bson_iterator iterator;
-      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "_id" )) {
-
-         bson *newValue = (bson *)malloc(sizeof(bson));
-         bson_copy(newValue, mongo_cursor_bson(&cursor));
-
-         string newKey = mrbsonOidString(bson_iterator_oid(&iterator));
-
-         videos.insert(pair<string, bson *>(newKey, newValue));
-      }
-   }
-   
-   bson_destroy(&query);
-   mongo_cursor_destroy(&cursor);
-}
-
-void loadConversations()
-{
-   bson query;
-   bson_init(&query);
-   bson_append_start_object(&query, "_id");
-   bson_append_start_array(&query, "$in");
-
-   for (unsigned int i = 0; i < conversationsToLoad.size(); i++) {
-     ostringstream stringStream;
-     stringStream << i;
-
-     bson_append_oid(&query, stringStream.str().c_str(), &conversationsToLoad[i]);
-   }
-
-   bson_append_finish_array(&query);
-   bson_append_finish_object(&query);
-   bson_finish(&query);
-  
-   mongo_cursor cursor;
-   mongo_cursor_init(&cursor, &conn, "dev-gt-conversation.conversations");
-   mongo_cursor_set_query(&cursor, &query);
-   
-   while (mongo_cursor_next(&cursor) == MONGO_OK) {
-      bson_iterator iterator;
-      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "_id" )) {
-
-         bson *newValue = (bson *)malloc(sizeof(bson));
-         bson_copy(newValue, mongo_cursor_bson(&cursor));
-
-         string newKey = mrbsonOidString(bson_iterator_oid(&iterator));
-
-         conversations.insert(pair<string, bson *>(newKey, newValue));
-      }
-   }
-   
-   bson_destroy(&query);
-   mongo_cursor_destroy(&cursor);
 }
 
 void parseUserOptions(int argc, char **argv)
@@ -408,8 +97,6 @@ unsigned int timeSinceMS(struct timeval begin)
 
    return difference.tv_sec * 1000 + (difference.tv_usec / 1000); 
 }
-
-
 
 void printJsonMessage(mrjsonContext context, bson *message)
 {
@@ -500,7 +187,7 @@ void printJsonUser(mrjsonContext context, bson *user)
    mrbsonBoolAttribute(context, user, "ag", "gt_enabled");
 }
 
-void printJsonFrame(mrjsonContext context, bson *frame)
+void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
 {
    mrbsonOidAttribute(context, frame, "_id", "id");
    mrbsonDoubleAttribute(context, frame, "e", "score");
@@ -524,15 +211,14 @@ void printJsonFrame(mrjsonContext context, bson *frame)
 
    mrbsonOidConciseTimeAgoAttribute(context, frame, "_id", "created_at");
 
+   bson_oid_t creatorOid;
+   bson *creatorBson;
 
-   string creatorOid;
-   map<string, bson *>::const_iterator creatorBson;
-
-   if (mrbsonFindOid(frame, "d", creatorOid) &&
-       (creatorBson = users.find(creatorOid)) != users.end()) {
+   if (mrbsonFindOid(frame, "d", &creatorOid) &&
+       sobGetBsonByOid(sob, SOB_USER, creatorOid, &creatorBson)) {
 
       mrjsonStartObject(context, "creator");
-      printJsonUser(context, creatorBson->second);
+      printJsonUser(context, creatorBson);
       mrjsonEndObject(context);
 
    } else {
@@ -544,14 +230,14 @@ void printJsonFrame(mrjsonContext context, bson *frame)
    mrjsonEmptyArrayAttribute(context, "upvote_users");
 
 
-   string rollOid;
-   map<string, bson *>::const_iterator rollBson;
+   bson_oid_t rollOid;
+   bson *rollBson;
 
-   if (mrbsonFindOid(frame, "a", rollOid) &&
-       (rollBson = rolls.find(rollOid)) != rolls.end()) {
+   if (mrbsonFindOid(frame, "a", &rollOid) &&
+       sobGetBsonByOid(sob, SOB_ROLL, rollOid, &rollBson)) {
 
       mrjsonStartObject(context, "roll");
-      printJsonRoll(context, rollBson->second);
+      printJsonRoll(context, rollBson);
       mrjsonEndObject(context);
 
    } else {
@@ -559,14 +245,14 @@ void printJsonFrame(mrjsonContext context, bson *frame)
    }
 
 
-   string videoOid;
-   map<string, bson *>::const_iterator videoBson;
+   bson_oid_t videoOid;
+   bson *videoBson;
 
-   if (mrbsonFindOid(frame, "b", videoOid) &&
-       (videoBson = videos.find(videoOid)) != videos.end()) {
+   if (mrbsonFindOid(frame, "b", &videoOid) &&
+       sobGetBsonByOid(sob, SOB_VIDEO, videoOid, &videoBson)) {
 
       mrjsonStartObject(context, "video");
-      printJsonVideo(context, videoBson->second);
+      printJsonVideo(context, videoBson);
       mrjsonEndObject(context);
 
    } else {
@@ -574,14 +260,14 @@ void printJsonFrame(mrjsonContext context, bson *frame)
    }
 
 
-   string conversationOid;
-   map<string, bson *>::const_iterator conversationBson;
+   bson_oid_t conversationOid;
+   bson *conversationBson;
 
-   if (mrbsonFindOid(frame, "c", conversationOid) &&
-       (conversationBson = conversations.find(conversationOid)) != conversations.end()) {
+   if (mrbsonFindOid(frame, "c", &conversationOid) &&
+       sobGetBsonByOid(sob, SOB_CONVERSATION, conversationOid, &conversationBson)) {
 
       mrjsonStartObject(context, "conversation");
-      printJsonConversation(context, conversationBson->second);
+      printJsonConversation(context, conversationBson);
       mrjsonEndObject(context);
 
    } else {
@@ -589,7 +275,7 @@ void printJsonFrame(mrjsonContext context, bson *frame)
    }
 }
 
-void printJsonDashboardEntry(mrjsonContext context, bson *dbEntry)
+void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntry)
 {
    mrbsonOidAttribute(context, dbEntry, "_id", "id"); 
    mrbsonIntAttribute(context, dbEntry, "e", "action");
@@ -598,14 +284,14 @@ void printJsonDashboardEntry(mrjsonContext context, bson *dbEntry)
    // TODO : what should we do about this? 
    mrjsonNullAttribute(context, "read");
 
-   string frameOid;
-   map<string, bson *>::const_iterator frameBson;
+   bson_oid_t frameOid;
+   bson *frameBson;
 
-   if (mrbsonFindOid(dbEntry, "c", frameOid) &&
-       (frameBson = frames.find(frameOid)) != frames.end()) {
+   if (mrbsonFindOid(dbEntry, "c", &frameOid) &&
+       sobGetBsonByOid(sob, SOB_FRAME, frameOid, &frameBson)) {
 
       mrjsonStartObject(context, "frame");
-      printJsonFrame(context, frameBson->second);
+      printJsonFrame(sob, context, frameBson);
       mrjsonEndObject(context);
 
    } else {
@@ -613,7 +299,7 @@ void printJsonDashboardEntry(mrjsonContext context, bson *dbEntry)
    }
 }
 
-void printJsonOutput()
+void printJsonOutput(sobContext sob)
 {
    mrjsonContext context = mrjsonAllocContext(true);
    
@@ -622,12 +308,16 @@ void printJsonOutput()
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartArray(context, "result");
 
-   for (map<string, bson *>::const_reverse_iterator iter = dashboardEntries.rbegin();
+   vector<bson *> dashboardEntries;
+
+   sobGetBsonVector(sob, SOB_DASHBOARD_ENTRY, dashboardEntries);
+
+   for (vector<bson *>::const_reverse_iterator iter = dashboardEntries.rbegin();
         iter != dashboardEntries.rend();
         ++iter) {
 
       mrjsonStartObject(context);
-      printJsonDashboardEntry(context, iter->second);
+      printJsonDashboardEntry(sob, context, *iter);
       mrjsonEndObject(context);
    } 
 
@@ -641,6 +331,44 @@ void printJsonOutput()
    mrjsonFreeContext(context);
 }
 
+bool loadData(sobContext sob)
+{
+   bson_oid_t userOid;
+
+   userOid = sobGetUniqueOidByStringField(sob, SOB_USER, "downcase_nickname", options.user);
+   // TODO: if invalid userOid, status = 1, cleanup
+   sobLoadAllByOidField(sob,
+                        SOB_DASHBOARD_ENTRY, 
+                        "TODO: dashboard user field",
+                        userOid,
+                        options.limit,
+                        options.skip,
+                        -1);
+   
+   vector<bson_oid_t> frameOids;
+   sobGetOidVectorFromObjectField(sob, SOB_DASHBOARD_ENTRY, "TODO: dashboard frame field", frameOids);
+   sobLoadAllById(sob, SOB_FRAME, frameOids);
+
+   vector<bson_oid_t> rollOids;
+   sobGetOidVectorFromObjectField(sob, SOB_FRAME, "TODO: roll frame field", rollOids);
+   sobLoadAllById(sob, SOB_ROLL, rollOids);
+
+   // TODO: also get upvote users?
+   vector<bson_oid_t> userOids;
+   sobGetOidVectorFromObjectField(sob, SOB_FRAME, "TODO: user frame field", userOids);
+   sobLoadAllById(sob, SOB_USER, userOids);
+ 
+   vector<bson_oid_t> videoOids;
+   sobGetOidVectorFromObjectField(sob, SOB_FRAME, "TODO: video frame field", videoOids);
+   sobLoadAllById(sob, SOB_VIDEO, videoOids);
+   
+   vector<bson_oid_t> conversationOids;
+   sobGetOidVectorFromObjectField(sob, SOB_FRAME, "TODO: conversation frame field", conversationOids);
+   sobLoadAllById(sob, SOB_FRAME, conversationOids);
+
+   return true;
+}
+
 int main(int argc, char **argv)
 {
    gettimeofday(&beginTime, NULL);
@@ -650,23 +378,21 @@ int main(int argc, char **argv)
    setDefaultOptions();
    parseUserOptions(argc, argv);
 
-   if (!connectToMongo()) {
+   sobContext sob = sobAllocContext(SOB_DEVELOPMENT);
+   if (!sob || !sobConnect(sob)) {
       status = 1;
-      goto mongoCleanup;
+      goto cleanup;
    } 
 
-   loadUserIdByNickname();
-   loadDashboardEntries();
-   loadFrames();
-   loadRolls();
-   loadUsers();
-   loadVideos();
-   loadConversations();
+   if (!loadData(sob)) {
+      status = 2;
+      goto cleanup;
+   }
 
-   printJsonOutput();
+   printJsonOutput(sob);
 
-mongoCleanup:
-   mongo_destroy(&conn);
+cleanup:
+   sobFreeContext(sob);
 
    return status;
 }
