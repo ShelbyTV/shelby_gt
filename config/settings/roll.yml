@@ -5,7 +5,7 @@ defaults: &defaults
   mm_use_identity_map: true
   explore:
     cat1:
-      category_name: "Technolgoy"
+      category_name: "Technology"
       rolls: ['4f99c6d0b415cc07f9000c3e' ,'4f933289b415cc5b250003fc', '4fdf3d27b415cc69340008f8', '4f901d4bb415cc661405fde9', '4f95630e9a725b76d40019d1']
     cat2:
       category_name: "Sports"
