@@ -183,16 +183,13 @@ bool sobConnect(sobContext context)
 
       if (MONGO_OK != status) {
          switch (context->allocatedConn[i]->err) {
-            case MONGO_CONN_SUCCESS:    printf("mongo connected\n"); break;
+            case MONGO_CONN_SUCCESS:    break;
             case MONGO_CONN_NO_SOCKET:  printf("no socket\n"); return false;
             case MONGO_CONN_FAIL:       printf("connection failed\n"); return false;
             case MONGO_CONN_NOT_MASTER: printf("not master\n"); return false;
             default:                    printf("received unknown status\n"); return false;
          }
-      } else {
-         printf("mongo connected\n");
       }
-
    }     
      
    return true;
@@ -212,14 +209,12 @@ bool sobAuthenticate(sobContext context, sobType type)
 
       if (MONGO_OK != status) {
          switch (context->allocatedConn[type]->err) {
-            case MONGO_CONN_SUCCESS:    printf("mongo authenticated\n"); break;
+            case MONGO_CONN_SUCCESS:    break;
             case MONGO_CONN_NO_SOCKET:  printf("no socket\n"); return false;
             case MONGO_CONN_FAIL:       printf("connection failed\n"); return false;
             case MONGO_CONN_NOT_MASTER: printf("not master\n"); return false;
             default:                    printf("received unknown status\n"); return false;
          }
-      } else {
-         printf("mongo authenticated\n");
       }
    }
 
@@ -272,19 +267,15 @@ void insertMongoCursorIntoObjectMap(sobContext context,
                                     mongo_cursor *cursor)
 {
    while (mongo_cursor_next(cursor) == MONGO_OK) {
-      cout << "Iterating inside insertMongoCursor..." << endl;
       bson_iterator iterator;
       if (bson_find(&iterator, mongo_cursor_bson(cursor), "_id" )) {
 
-         cout << "bson_find found something inside insertMongoCursor..." << endl;
          bson *newValue = (bson *)malloc(sizeof(bson));
          bson_copy(newValue, mongo_cursor_bson(cursor));
 
          string newKey = mrbsonOidString(bson_iterator_oid(&iterator));
 
-         cout << "about to insert into map inside insertMongoCursor..." << endl;
          context->objectMap[type]->insert(pair<string, bson *>(newKey, newValue));
-         cout << "after insert into map inside insertMongoCursor..." << endl;
       }
    }
 }

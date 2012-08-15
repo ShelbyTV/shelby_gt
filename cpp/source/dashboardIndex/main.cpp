@@ -192,14 +192,14 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
    mrbsonOidAttribute(context, frame, "_id", "id");
    mrbsonDoubleAttribute(context, frame, "e", "score");
    
-   // TODO: need to figure out correct approach to upvoters
-   mrjsonEmptyArrayAttribute(context, "upvoters");
+   // no more upvoters in newest Shelby
+   // mrjsonEmptyArrayAttribute(context, "upvoters");
 
    mrbsonIntAttribute(context, frame, "view_count", "view_count");
 
-   // TODO: need to figure these out
-   mrjsonEmptyArrayAttribute(context, "frame_ancestors");
-   mrjsonEmptyArrayAttribute(context, "frame_children");
+   // don't think we need these in newest Shelby, either...
+   // mrjsonEmptyArrayAttribute(context, "frame_ancestors");
+   // mrjsonEmptyArrayAttribute(context, "frame_children");
 
    mrbsonOidAttribute(context, frame, "d", "creator_id");
    mrbsonOidAttribute(context, frame, "c", "conversation_id");
@@ -225,10 +225,8 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
       mrjsonNullAttribute(context, "creator");
    }
 
-
-   // TODO: upvote_users
-   mrjsonEmptyArrayAttribute(context, "upvote_users");
-
+   // don't need these in newest Shelby
+   // mrjsonEmptyArrayAttribute(context, "upvote_users");
 
    bson_oid_t rollOid;
    bson *rollBson;
@@ -335,14 +333,8 @@ bool loadData(sobContext sob)
 {
    bson_oid_t userOid;
 
-   cout << "Calling sobGetUniqueOidByStringField" << endl;
-
    userOid = sobGetUniqueOidByStringField(sob, SOB_USER, SOB_USER_DOWNCASE_NICKNAME, options.user);
-
-   cout << "userOid = " << mrbsonOidString(&userOid) << endl;
-
    // TODO: if invalid userOid, status = 1, cleanup
-   cout << "Calling sobLoadAllByOidField" << endl;
    sobLoadAllByOidField(sob,
                         SOB_DASHBOARD_ENTRY, 
                         SOB_DASHBOARD_ENTRY_USER_ID,
@@ -353,9 +345,7 @@ bool loadData(sobContext sob)
    
    vector<bson_oid_t> frameOids;
 
-   cout << "Calling sobGetOidVectorFromObjectField" << endl;
    sobGetOidVectorFromObjectField(sob, SOB_DASHBOARD_ENTRY, SOB_DASHBOARD_ENTRY_FRAME_ID, frameOids);
-   cout << "Calling sobLoadAllById" << endl;
    sobLoadAllById(sob, SOB_FRAME, frameOids);
 
    vector<bson_oid_t> rollOids;
@@ -372,7 +362,7 @@ bool loadData(sobContext sob)
    
    vector<bson_oid_t> conversationOids;
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_CONVERSATION_ID, conversationOids);
-   sobLoadAllById(sob, SOB_FRAME, conversationOids);
+   sobLoadAllById(sob, SOB_CONVERSATION, conversationOids);
 
    return true;
 }
