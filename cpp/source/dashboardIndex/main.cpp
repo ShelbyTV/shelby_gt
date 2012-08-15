@@ -278,9 +278,7 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
    mrbsonOidAttribute(context, dbEntry, "_id", "id"); 
    mrbsonIntAttribute(context, dbEntry, "e", "action");
    mrbsonOidAttribute(context, dbEntry, "f", "actor_id"); 
-
-   // TODO : what should we do about this? 
-   mrjsonNullAttribute(context, "read");
+   mrbsonBoolAttribute(context, dbEntry, "d", "read");
 
    bson_oid_t frameOid;
    bson *frameBson;
