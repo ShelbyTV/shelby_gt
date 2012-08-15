@@ -5,21 +5,45 @@ defaults: &defaults
   mm_use_identity_map: true
   explore:
     cat1:
-      category_name: "Technology"
-      rolls: ['4f99c6d0b415cc07f9000c3e' ,'4f933289b415cc5b250003fc', '4fdf3d27b415cc69340008f8', '4f901d4bb415cc661405fde9', '4f95630e9a725b76d40019d1']
-    cat2:
       category_name: "Sports"
-      rolls: ['4f900d56b415cc6614056681', '4f9ec30c9a725b424e00442e', '4f8feb54b415cc6614041213', '4f902217b415cc466a000909', '4f95db5388ba6b61a3004577']
+      rolls: ["4fb413bb9a725b650900195a", "4f91700d88ba6b2aab000fba", "4fbe42069a725b686300004a", "4f9889fd9a725b0db2003876", "4f94a9f89a725b7207000006", "4f962a5588ba6b1de300503a"]
+    cat2:
+      category_name: "Music"
+      rolls: ["4fa41cfa88ba6b0dcf001a65", "4fc52c659a725b73f80011c0", "4fd1083cd10412183a00346b"]
     cat3:
-      category_name: "Reality"
-      rolls: ['4fa057c388ba6b0f4200183c', '4fa28d309a725b77f700070f', '4fbad2c5d1041266bc000d4f', '4fb40c9bd104126ad900a57b', '4fb489939a725b5ca8003e9b']
+      category_name: "Offbeat"
+      rolls: ["4fa28d309a725b77f700070f", "4fa28d849a725b79c9000228", "4fa28d8c9a725b7a2a0001e6", "4fc532789a725b2999000906"]
     cat4:
-      category_name: "Editors Picks"
-      rolls: ['4fa41cfa88ba6b0dcf001a65', '4f9c3588b415cc0f0f000893']
+      category_name: "Fitness"
+      rolls: ["4fdee5f91c1cf4714200a607"]
     cat5:
-      category_name: "Best of Shelby"
-      rolls: ['4fbe42069a725b686300004a', '4f9e93879a725b12ab001c48', '4fa1eef188ba6b5f440007b9', '4fb3d39988ba6b33460043bb', '4f95cfe19a725b0a8c0384af', '4f902316b415cc466a0009dd']
-      
+      category_name: "Gaming"
+      rolls: ["4f987a5e9a725b032b002f13", "4f902217b415cc466a000909"]
+    cat6:
+      category_name: "Science/Nature"
+      rolls: ["4fd8f8f3d104125fe305187d", "4fa057c388ba6b0f4200183c", "4fcce43988ba6b5b7400054a", "4f9b11f09a725b352f0020c4"]
+    cat7:
+      category_name: "Shelby Recommended"
+      rolls: ["4f900cf5b415cc466a0005bb", "4fbbc4211c1cf42b91002eac", "4fe77a4088ba6b569800d673", "4fa28d309a725b77f700070f", "4f958e049a725b0dba014577"]
+    cat8:
+      category_name: "Tech"
+      rolls: ["4fccef549a725b7d4a005363", "4fb6c97788ba6b4f3e0048fb"]
+    cat9:
+      category_name: "Causes"
+      rolls: ["4fe2425b9a725b08ec00ade8", "4fabff20d10412263a01c009"]
+    cat10:
+      category_name: "New/Business"
+      rolls: ["4f95622b9a725b72e700106b", "4fa8542c88ba6b669b000bcd"]
+    cat11:
+      category_name: "Comedy"
+      rolls: ["4f97304088ba6b5309024b32", "4fbd2d24d10412081e00042e", "4fbffb5fd1041206f6002355", "4fb3d39988ba6b33460043bb"]
+    cat12:
+      category_name: "Pop Culture"
+      rolls: ["4fbbc4211c1cf42b91002eac", "4faabca99a725b5cd50026a2"]
+    cat13:
+      category_name: "Education"
+      rolls: ["4fa39bd89a725b1f920008f3", "4fa054ff88ba6b09c8000e93", "4fbad2c5d1041266bc000d4f"]
+    
 development:
   <<: *defaults
   db_name: 'dev-gt-roll-frame'

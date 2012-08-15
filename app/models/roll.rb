@@ -54,14 +54,14 @@ class Roll
   TYPES = {
     # special rolls that have not yet been updated to their specific type default to :special_roll
     :special_roll => 10,
-    :special_public => 11,
+    :special_public => 11, # <-- faux user
     :special_upvoted => 12,
     :special_watch_later => 13,
     :special_viewed => 14,
     
     # Differentiate special_public rolls of real shelby users and faux users we deem important
-    :special_public_real_user => 15,
-    :special_public_upgraded => 16,
+    :special_public_real_user => 15, # <-- actual user
+    :special_public_upgraded => 16,  # <-- faux user who we deem worthy
 
     # User-created non-collaborative public rolls (previously these were collaborative, we're changing that)
     :user_public => 30,
