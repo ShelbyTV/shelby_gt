@@ -30,7 +30,7 @@ body {
   position: absolute;
   right: 0;
   top: 0;
- background: url("assets/noise.png") black;
+ background: url("assets/noise.png") #47274e;
 }
 
 /* line 33, ../../../app/stylesheets/partials/app.html.scss */
