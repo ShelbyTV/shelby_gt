@@ -331,7 +331,7 @@ describe V1::FrameController do
 
     context "email share" do
       before(:each) do
-        GT::SocialPoster.stub(:post_to_email)
+        GT::SocialPoster.stub(:email_frame)
       end
 
       it "should try to save email addresses to user's autocomplete" do

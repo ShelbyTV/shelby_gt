@@ -13,6 +13,9 @@ describe AuthenticationsController do
       before(:each) do
         #make sure all methods below end up with a successful sign in
         AuthenticationsController.any_instance.stub(:sign_in).with(:user, @u)
+        
+        # no need to hit the Internet
+        GT::UserManager.stub(:start_user_sign_in)
       end
       
       it "should login user via email" do

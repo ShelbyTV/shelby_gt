@@ -4,6 +4,9 @@ describe V1::TokenController do
   before(:each) do
     @user = Factory.create(:user) #adds a twitter authentication
     @twt_auth = @user.authentications[0]
+    
+    #no need to hit the net here
+    GT::UserManager.stub(:start_user_sign_in)
   end
 
   describe "POST token" do

@@ -8,8 +8,7 @@ defaults: &defaults
   # Sharing
   share_frame:
     category: "Share Frame"
-    subject: "%{sharers_name} has shared a video with you"
-    private_roll_invite_subject: "%{inviters_name} invites you to private roll '%{roll_title}'"
+    subject: "%{sharers_name} found a video to share with you"
   # Notifications
   notification_sender: "notifications@shelby.tv"
   comment_notification:

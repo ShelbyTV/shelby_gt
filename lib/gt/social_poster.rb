@@ -46,8 +46,8 @@ module GT
     end
     
     # to_emails is an array of email addresses
-    def self.post_to_email(from_user, to_emails, text, entity)
-      return send_email(from_user, to_emails, text, entity)
+    def self.email_frame(from_user, to_emails, message, frame)
+      return send_email(from_user, to_emails, message, frame)
     end
     
     private 
@@ -82,19 +82,14 @@ module GT
       end
       
       # to_emails is an array of email addresses
-      def self.send_email(user, to_emails, message=nil, entity=nil)
+      def self.send_email(user, to_emails, message, frame)
         from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
         
-        to_emails = to_emails.split(',')
+        to_emails = to_emails.split(/[,;]/)
         res = []
         # send email to anyone in the array of emails provided
-        to_emails.each do |email|
-          if entity.is_a? Roll
-            res << SharingMailer.share_roll(user, from_email, email, message, entity).deliver
-          elsif entity.is_a? Frame
-            res << SharingMailer.share_frame(user, from_email, email, message, entity).deliver
-          end
-        end
+        to_emails.each { |email| res << SharingMailer.share_frame(user, from_email, email, message, frame).deliver }
+
         res
       end
     

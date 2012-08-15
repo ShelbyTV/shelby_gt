@@ -11,7 +11,7 @@ describe V1::UserController do
     r2 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_upvoted])
     r2.add_follower(@u1)
     @u1.public_roll = r1
-    @u1.upvoted_roll = r2
+    @u1.watch_later_roll = r2
     @u1.save
   end
     

@@ -107,10 +107,11 @@ class V1::UserController < ApplicationController
             @rolls.sort_by! { |r| current_user.roll_following_for(r).id.generation_time } .reverse!
           end
           
-          # re-order public roll, hearts, watch later
+          # don't return hearts roll anymore
+          @rolls.delete(current_user.upvoted_roll)
+          # re-order public roll, watch later
           self.class.move_roll(@rolls, current_user.public_roll, 0)
-          self.class.move_roll(@rolls, current_user.upvoted_roll, 1)
-          self.class.move_roll(@rolls, current_user.watch_later_roll, 2)
+          self.class.move_roll(@rolls, current_user.watch_later_roll, 1)
           
           # Load all roll creators to prevent N+1 queries
           @creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq

@@ -4,7 +4,7 @@ require "social_post_formatter"
 
 class V1::RollController < ApplicationController  
   
-  before_filter :user_authenticated?, :except => [:show]
+  before_filter :user_authenticated?, :except => [:show, :explore]
   ##
   # Returns one roll, with the given parameters.
   #
@@ -63,6 +63,43 @@ class V1::RollController < ApplicationController
       else
         render_error(404, "could not find the roll of the user specified")
       end    
+    end
+  end
+  
+  ##
+  # Returns a hierarchy of rolls to explore.
+  #
+  # Returns an array of objects that define the hierarchy of Rolls for the Explore section.
+  # [{category_name: "sports", rolls: [array_of_rolls]}, {category_name: "tech", rolls: [array_of_rolls]}, ...]
+  #
+  # The rolls will include the first three Frames which will include Video information sufficient to display on an Explore view.
+  #
+  # [GET] /v1/roll/explore
+  #
+  def explore
+    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
+      
+      # Get all the Documents from the DB so we don't hit N+1 problem later
+      rolls = Roll.find( Settings::Roll.explore.map { |name, cat| cat['rolls'] }.flatten )
+      @frames_map = {}
+      rolls.each do |r|
+        @frames_map[r.id.to_s] = r.frames.limit(3).all
+      end
+      videos = Video.find( (@frames_map.values.flatten.compact.uniq).map { |f| f.video_id }.compact.uniq )
+      
+      @categories = []
+      
+      Settings::Roll.explore.each do |foo, cat|
+        # single Roll.find uses identity map, preventing N+1
+        rolls = []
+        cat['rolls'].each { |roll_id| rolls << Roll.find(roll_id) }
+        @categories << { 
+          :category_name => cat['category_name'],
+          :rolls => rolls.flatten
+        }
+      end
+      
+      @status = 200
     end
   end
   
@@ -157,17 +194,6 @@ class V1::RollController < ApplicationController
             return render_error(404, "that roll is private, can not share to facebook") unless roll.public
             text = GT::SocialPostFormatter.format_for_facebook(text, short_links)
             resp &= GT::SocialPoster.post_to_facebook(current_user, text, roll)
-            StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d])
-          when 'email'
-            # If this is private roll, email sent will be an invite.  Otherwise, it's just a Frame share of the first frame (for now, since that isn't used)
-            email_addresses = params[:addresses]
-            return render_error(404, "you must provide addresses") if email_addresses.blank?
-            
-            # save any valid addresses for future use in autocomplete
-            current_user.store_autocomplete_info(:email, email_addresses)
-
-            ShelbyGT_EM.next_tick { GT::SocialPoster.post_to_email(current_user, email_addresses, text, roll.frames.first) }
-            resp &= true
             StatsManager::StatsD.increment(Settings::StatsConstants.roll['share'][d])
           else
             return render_error(404, "we dont support that destination yet :(")

@@ -21,9 +21,23 @@ RSpec.configure do |config|
   
   # to user helpers included with json_spec gem:
   config.include JsonSpec::Helpers
+  
+  config.before(:each) do
+    #never hit Rhombus (stats)
+    Rhombus.stub(:post)
+    Rhombus.stub(:get)
+    #never hits statsD (stats)
+    StatsManager::StatsD.stub(:increment)
+    StatsManager::StatsD.stub(:decrement)
+    StatsManager::StatsD.stub(:timing)
+    StatsManager::StatsD.stub(:count)
+  end
+  
+  config.before(:type => :request) do
+    GT::UserManager.stub(:start_user_sign_in)
+  end
 end
 
 # Before running tests, drop all the collections across the DBs and re-create the indexes
 MongoMapper::Helper.drop_all_dbs
 MongoMapper::Helper.ensure_all_indexes
-

@@ -1,0 +1,42 @@
+[
+	<% @categories.each_with_index do |cat, i| %>
+		{
+			"category": "<%= cat[:category_name] %>",
+		 	"rolls": [
+				<% cat[:rolls].each_with_index do |roll, j| %>
+					{
+						"id": "<%= roll.id %>",
+						"collaborative": <%= roll.collaborative? ? 'true' : 'false' %>,
+						"public": <%= roll.public? ? 'true' : 'false' %>,
+						"creator_id": "<%= roll.creator_id %>",
+						"frame_count": <%= roll.frame_count %>,
+						"title": "<%= roll.title %>",
+						"roll_type": <%= roll.roll_type %>,
+						"thumbnail_url": "<%= roll.creator_thumbnail_url %>",
+						
+						"frames": [
+							<% @frames_map[roll.id.to_s].each_with_index do |frame, k| %>
+								{
+									"id": "<%= frame.id %>",
+									"view_count": <%= frame.view_count %>,
+									
+									"video": {
+										"id": "<%= frame.video.id %>",
+										"provider_name": "<%= frame.video.provider_name %>",
+										"provider_id": "<%= frame.video.provider_id %>",
+										"title": "<%= frame.video.title %>",
+										"duration": <%= frame.video.duration ? frame.video.duration : 'null' %>,
+										"thumbnail_url": "<%= frame.video.thumbnail_url %>",
+										"view_count": <%= frame.video.view_count %>
+									}
+									
+								}<%= ',' unless k == @frames_map[roll.id.to_s].size-1 %>
+							<% end %>
+						]
+
+					}<%= ',' unless j == cat[:rolls].size-1 %>
+				<% end %>
+			]
+		}<%= ',' unless i == @categories.size-1 %>
+	<% end %>
+]
