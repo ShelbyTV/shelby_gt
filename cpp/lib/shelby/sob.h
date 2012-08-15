@@ -84,4 +84,20 @@ void sobLoadAllById(sobContext context,
                     sobType type,
                     const std::vector<bson_oid_t> &oids);
 
+void sobPrintAttributes(mrjsonContext context,
+                        bson *object,
+                        sobField *fieldArray,
+                        unsigned int numFields);
+
+
+typedef void (*sobSubobjectPrintCallback)(sobContext, mrjsonContext, bson *);
+
+void sobPrintSubobjectByOid(sobContext sob,
+                            mrjsonContext context,
+                            bson *object,
+                            sobField subobjectOidField,
+                            sobType subobjectType,
+                            const char *key,
+                            sobSubobjectPrintCallback);
+
 #endif // __SOB_H__

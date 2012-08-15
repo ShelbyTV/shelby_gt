@@ -57,4 +57,9 @@ void mrbsonStringAttribute(mrjsonContext context,
                            const string &bsonField,
                            const string& outputName);
 
+void mrbsonSimpleArrayAttribute(mrjsonContext context,
+                                bson *data,
+                                const string &bsonField,
+                                const string& outputName);
+
 #endif  // __MRBSON_H__

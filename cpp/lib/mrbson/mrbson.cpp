@@ -184,4 +184,51 @@ void mrbsonStringAttribute(mrjsonContext context,
    }
 }
 
-#
+void mrbsonSimpleArrayAttribute(mrjsonContext context,
+                                bson *data,
+                                const string &bsonField,
+                                const string& outputName)
+{
+   bson array;
+   bson_iterator iterator;
+   bson_type type;
+
+   type = bson_find(&iterator, data, bsonField.c_str());
+   assert(type == BSON_ARRAY);
+
+   bson_iterator_subobject(&iterator, &array);
+   bson_iterator_from_buffer(&iterator, array.data);
+
+   mrjsonStartArray(context, outputName.c_str());
+   while ((type = bson_iterator_next(&iterator))) {
+      switch (type) {
+         case BSON_STRING:
+            mrjsonStringArrayEntry(context, bson_iterator_string(&iterator));
+            break;
+
+         case BSON_EOO:
+         case BSON_DOUBLE:
+         case BSON_OBJECT:
+         case BSON_ARRAY:
+         case BSON_BINDATA:
+         case BSON_UNDEFINED:
+         case BSON_OID:
+         case BSON_BOOL:
+         case BSON_DATE:
+         case BSON_NULL:
+         case BSON_REGEX:
+         case BSON_DBREF:
+         case BSON_CODE:
+         case BSON_SYMBOL:
+         case BSON_CODEWSCOPE:
+         case BSON_INT:
+         case BSON_TIMESTAMP:
+         case BSON_LONG:
+            assert(false); // not implemented yet or not simple type
+            break;
+      }
+   }
+   mrjsonEndArray(context); 
+}
+
+

@@ -100,24 +100,39 @@ unsigned int timeSinceMS(struct timeval begin)
 
 void printJsonMessage(mrjsonContext context, bson *message)
 {
-   mrbsonOidAttribute(context, message, "_id", "id");
-   mrbsonStringAttribute(context, message, "e", "nickname");
-   mrbsonStringAttribute(context, message, "f", "realname");
-   mrbsonStringAttribute(context, message, "g", "user_image_url");
-   mrbsonStringAttribute(context, message, "h", "text");
-   mrbsonStringAttribute(context, message, "a", "origin_network");
-   mrbsonStringAttribute(context, message, "b", "origin_id");
-   mrbsonStringAttribute(context, message, "c", "origin_user_id");
-   mrbsonOidAttribute(context, message, "d", "user_id");
-   mrbsonBoolAttribute(context, message, "i", "public");
+   static sobField messageAttributes[] = {
+      SOB_MESSAGE_ID,
+      SOB_MESSAGE_NICKNAME,
+      SOB_MESSAGE_REALNAME,
+      SOB_MESSAGE_USER_IMAGE_URL,
+      SOB_MESSAGE_TEXT,
+      SOB_MESSAGE_ORIGIN_NETWORK,
+      SOB_MESSAGE_ORIGIN_ID,
+      SOB_MESSAGE_ORIGIN_USER_ID,
+      SOB_MESSAGE_USER_ID,
+      SOB_MESSAGE_PUBLIC
+   };
+
+   sobPrintAttributes(context,
+                      message,
+                      messageAttributes,
+                      sizeof(messageAttributes) / sizeof(sobField));
+
    mrbsonOidConciseTimeAgoAttribute(context, message, "_id", "created_at");
 }
 
-void printJsonConversation(mrjsonContext context, bson *conversation)
+void printJsonConversation(sobContext sob, mrjsonContext context, bson *conversation)
 {
-   mrbsonOidAttribute(context, conversation, "_id", "id");
-   mrbsonBoolAttribute(context, conversation, "b", "public");
- 
+   static sobField conversationAttributes[] = {
+      SOB_CONVERSATION_ID,
+      SOB_CONVERSATION_PUBLIC
+   };
+
+   sobPrintAttributes(context,
+                      conversation,
+                      conversationAttributes,
+                      sizeof(conversationAttributes) / sizeof(sobField));
+
    bson messages;
    bson_iterator iterator;
    bson_find(&iterator, conversation, "messages");
@@ -139,195 +154,171 @@ void printJsonConversation(mrjsonContext context, bson *conversation)
    mrjsonEndArray(context); 
 }
 
-void printJsonVideo(mrjsonContext context, bson *video)
+void printJsonVideo(sobContext sob, mrjsonContext context, bson *video)
 {
-   mrbsonOidAttribute(context, video, "_id", "id");
-   mrbsonStringAttribute(context, video, "a", "provider_name");
-   mrbsonStringAttribute(context, video, "b", "provider_id");
-   mrbsonStringAttribute(context, video, "c", "title");
-   mrbsonStringAttribute(context, video, "e", "description");
-   mrbsonStringAttribute(context, video, "f", "duration");
-   mrbsonStringAttribute(context, video, "g", "author");
-   mrbsonStringAttribute(context, video, "j", "thumbnail_url");
+   static sobField videoAttributes[] = {
+      SOB_VIDEO_ID,
+      SOB_VIDEO_PROVIDER_NAME,
+      SOB_VIDEO_PROVIDER_ID,
+      SOB_VIDEO_TITLE,
+      SOB_VIDEO_DESCRIPTION,
+      SOB_VIDEO_DURATION,
+      SOB_VIDEO_AUTHOR,
+      SOB_VIDEO_THUMBNAIL_URL,
+      SOB_VIDEO_SOURCE_URL,
+      SOB_VIDEO_EMBED_URL,
+      SOB_VIDEO_VIEW_COUNT,
+      SOB_VIDEO_TAGS,
+      SOB_VIDEO_CATEGORIES
+   };
 
-   bson tags;
-   bson_iterator iterator;
-   bson_find(&iterator, video, "m");
-   bson_iterator_subobject(&iterator, &tags);
-
-   bson_iterator_from_buffer(&iterator, tags.data);
-
-   mrjsonStartArray(context, "tags");
-   while (bson_iterator_next(&iterator)) {
-      mrjsonStringArrayEntry(context, bson_iterator_string(&iterator));
-   }
-   mrjsonEndArray(context); 
-
-   bson categories;
-   bson_find(&iterator, video, "n");
-   bson_iterator_subobject(&iterator, &categories);
-   
-   bson_iterator_from_buffer(&iterator, categories.data);
-
-   mrjsonStartArray(context, "categories");
-   while (bson_iterator_next(&iterator)) {
-      mrjsonStringArrayEntry(context, bson_iterator_string(&iterator));
-   }
-   mrjsonEndArray(context); 
-
-   mrbsonStringAttribute(context, video, "o", "source_url");
-   mrbsonStringAttribute(context, video, "p", "embed_url");
-   mrbsonIntAttribute(context, video, "view_count", "view_count");
+   sobPrintAttributes(context,
+                      video,
+                      videoAttributes,
+                      sizeof(videoAttributes) / sizeof(sobField));
 }
 
-void printJsonRoll(mrjsonContext context, bson *roll)
+void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
 {
-   mrbsonOidAttribute(context, roll, "_id", "id");
-   mrbsonBoolAttribute(context, roll, "e", "collaborative");
-   mrbsonBoolAttribute(context, roll, "d", "public");
-   mrbsonOidAttribute(context, roll, "a", "creator_id");
-   mrbsonStringAttribute(context, roll, "f", "origin_network");
-   mrbsonBoolAttribute(context, roll, "h", "genius");
-   mrbsonIntAttribute(context, roll, "j", "frame_count");
-   mrbsonStringAttribute(context, roll, "m", "first_frame_thumbnail_url");
-   mrbsonStringAttribute(context, roll, "b", "title");
-   mrbsonIntAttribute(context, roll, "n", "roll_type");
+   static sobField rollAttributes[] = {
+      SOB_ROLL_ID,
+      SOB_ROLL_COLLABORATIVE,
+      SOB_ROLL_PUBLIC,
+      SOB_ROLL_CREATOR_ID,
+      SOB_ROLL_ORIGIN_NETWORK,
+      SOB_ROLL_GENIUS,
+      SOB_ROLL_FRAME_COUNT,
+      SOB_ROLL_FIRST_FRAME_THUMBNAIL_URL,
+      SOB_ROLL_TITLE,
+      SOB_ROLL_ROLL_TYPE,
+   };
+
+   sobPrintAttributes(context,
+                      roll,
+                      rollAttributes,
+                      sizeof(rollAttributes) / sizeof(sobField));
+
    mrbsonStringAttribute(context, roll, "c", "thumbnail_url");
 }
 
-void printJsonUser(mrjsonContext context, bson *user)
+void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
 {
-   mrbsonOidAttribute(context, user, "_id", "id");
-   mrbsonStringAttribute(context, user, "name", "name");
-   mrbsonStringAttribute(context, user, "nickname", "nickname");
-   mrbsonStringAttribute(context, user, "user_image_original", "user_image_original");
-   mrbsonStringAttribute(context, user, "user_image", "user_image");
-   mrbsonIntAttribute(context, user, "ac", "faux");
-   mrbsonOidAttribute(context, user, "ab", "public_roll_id");
-   mrbsonBoolAttribute(context, user, "ag", "gt_enabled");
+   static sobField userAttributes[] = {
+      SOB_USER_ID,
+      SOB_USER_NAME,
+      SOB_USER_NICKNAME,
+      SOB_USER_USER_IMAGE_ORIGINAL,
+      SOB_USER_USER_IMAGE,
+      SOB_USER_FAUX,
+      SOB_USER_PUBLIC_ROLL_ID,
+      SOB_USER_GT_ENABLED,
+   };
+
+   sobPrintAttributes(context,
+                      user,
+                      userAttributes,
+                      sizeof(userAttributes) / sizeof(sobField));
 }
 
+/*
+ * There are some attributes in the Ruby API that this C API is not printing 
+ * (because they seem outdated / unused):
+ *
+ *  - upvoters
+ *  - frame_ancestors
+ *  - frame_children
+ *  - timestamp
+ *  - upvote_users
+ *
+ */
 void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
 {
-   mrbsonOidAttribute(context, frame, "_id", "id");
-   mrbsonDoubleAttribute(context, frame, "e", "score");
-   
-   // no more upvoters in newest Shelby
-   // mrjsonEmptyArrayAttribute(context, "upvoters");
+   static sobField frameAttributes[] = {
+      SOB_FRAME_ID,
+      SOB_FRAME_SCORE,
+      SOB_FRAME_VIEW_COUNT,
+      SOB_FRAME_CREATOR_ID,
+      SOB_FRAME_CONVERSATION_ID,
+      SOB_FRAME_ROLL_ID,
+      SOB_FRAME_VIDEO_ID,
+   };
 
-   mrbsonIntAttribute(context, frame, "view_count", "view_count");
-
-   // don't think we need these in newest Shelby, either...
-   // mrjsonEmptyArrayAttribute(context, "frame_ancestors");
-   // mrjsonEmptyArrayAttribute(context, "frame_children");
-
-   mrbsonOidAttribute(context, frame, "d", "creator_id");
-   mrbsonOidAttribute(context, frame, "c", "conversation_id");
-   mrbsonOidAttribute(context, frame, "a", "roll_id");
-   mrbsonOidAttribute(context, frame, "b", "video_id");
-
-   // unused property, atypical output, not implementing for now...
-   // mrjsonNullAttribute(context, "timestamp");
+   sobPrintAttributes(context,
+                      frame,
+                      frameAttributes,
+                      sizeof(frameAttributes) / sizeof(sobField));
 
    mrbsonOidConciseTimeAgoAttribute(context, frame, "_id", "created_at");
 
-   bson_oid_t creatorOid;
-   bson *creatorBson;
+   sobPrintSubobjectByOid(sob,
+                          context,
+                          frame,
+                          SOB_FRAME_CREATOR_ID,
+                          SOB_USER,
+                          "creator",
+                          &printJsonUser);
 
-   if (mrbsonFindOid(frame, "d", &creatorOid) &&
-       sobGetBsonByOid(sob, SOB_USER, creatorOid, &creatorBson)) {
+   sobPrintSubobjectByOid(sob,
+                          context,
+                          frame,
+                          SOB_FRAME_ROLL_ID,
+                          SOB_ROLL,
+                          "roll",
+                          &printJsonRoll);
 
-      mrjsonStartObject(context, "creator");
-      printJsonUser(context, creatorBson);
-      mrjsonEndObject(context);
+   sobPrintSubobjectByOid(sob,
+                          context,
+                          frame,
+                          SOB_FRAME_VIDEO_ID,
+                          SOB_VIDEO,
+                          "video",
+                          &printJsonVideo);
 
-   } else {
-      mrjsonNullAttribute(context, "creator");
-   }
-
-   // don't need these in newest Shelby
-   // mrjsonEmptyArrayAttribute(context, "upvote_users");
-
-   bson_oid_t rollOid;
-   bson *rollBson;
-
-   if (mrbsonFindOid(frame, "a", &rollOid) &&
-       sobGetBsonByOid(sob, SOB_ROLL, rollOid, &rollBson)) {
-
-      mrjsonStartObject(context, "roll");
-      printJsonRoll(context, rollBson);
-      mrjsonEndObject(context);
-
-   } else {
-      mrjsonNullAttribute(context, "roll");
-   }
-
-
-   bson_oid_t videoOid;
-   bson *videoBson;
-
-   if (mrbsonFindOid(frame, "b", &videoOid) &&
-       sobGetBsonByOid(sob, SOB_VIDEO, videoOid, &videoBson)) {
-
-      mrjsonStartObject(context, "video");
-      printJsonVideo(context, videoBson);
-      mrjsonEndObject(context);
-
-   } else {
-      mrjsonNullAttribute(context, "video");
-   }
-
-
-   bson_oid_t conversationOid;
-   bson *conversationBson;
-
-   if (mrbsonFindOid(frame, "c", &conversationOid) &&
-       sobGetBsonByOid(sob, SOB_CONVERSATION, conversationOid, &conversationBson)) {
-
-      mrjsonStartObject(context, "conversation");
-      printJsonConversation(context, conversationBson);
-      mrjsonEndObject(context);
-
-   } else {
-      mrjsonNullAttribute(context, "conversation");
-   }
+   sobPrintSubobjectByOid(sob,
+                          context,
+                          frame,
+                          SOB_FRAME_CONVERSATION_ID,
+                          SOB_CONVERSATION,
+                          "conversation",
+                          &printJsonConversation);
 }
 
 void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntry)
 {
-   mrbsonOidAttribute(context, dbEntry, "_id", "id"); 
-   mrbsonIntAttribute(context, dbEntry, "e", "action");
-   mrbsonOidAttribute(context, dbEntry, "f", "actor_id"); 
-   mrbsonBoolAttribute(context, dbEntry, "d", "read");
+   static sobField dashboardEntryAttributes[] = {
+      SOB_DASHBOARD_ENTRY_ID,
+      SOB_DASHBOARD_ENTRY_ACTION,
+      SOB_DASHBOARD_ENTRY_ACTOR_ID,
+      SOB_DASHBOARD_ENTRY_READ,
+   };
 
-   bson_oid_t frameOid;
-   bson *frameBson;
+   sobPrintAttributes(context,
+                      dbEntry,
+                      dashboardEntryAttributes,
+                      sizeof(dashboardEntryAttributes) / sizeof(sobField));
 
-   if (mrbsonFindOid(dbEntry, "c", &frameOid) &&
-       sobGetBsonByOid(sob, SOB_FRAME, frameOid, &frameBson)) {
-
-      mrjsonStartObject(context, "frame");
-      printJsonFrame(sob, context, frameBson);
-      mrjsonEndObject(context);
-
-   } else {
-      mrjsonNullAttribute(context, "frame");
-   }
+   sobPrintSubobjectByOid(sob,
+                          context,
+                          dbEntry,
+                          SOB_DASHBOARD_ENTRY_FRAME_ID,
+                          SOB_FRAME,
+                          "frame",
+                          &printJsonFrame);
 }
 
 void printJsonOutput(sobContext sob)
 {
-   mrjsonContext context = mrjsonAllocContext(true);
-   
-   mrjsonStartResponse(context); 
+   // get dashboard entries; we'll iterate ourselves for the ordering hack (see below)
+   vector<bson *> dashboardEntries;
+   sobGetBsonVector(sob, SOB_DASHBOARD_ENTRY, dashboardEntries);
 
+   // allocate context; match Ruby API "status" and "result" response syntax
+   mrjsonContext context = mrjsonAllocContext(true);
+   mrjsonStartResponse(context); 
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartArray(context, "result");
 
-   vector<bson *> dashboardEntries;
-
-   sobGetBsonVector(sob, SOB_DASHBOARD_ENTRY, dashboardEntries);
-
+   // hack to match ordering of Ruby API - reverse iterate over map order returned
    for (vector<bson *>::const_reverse_iterator iter = dashboardEntries.rbegin();
         iter != dashboardEntries.rend();
         ++iter) {
@@ -337,22 +328,33 @@ void printJsonOutput(sobContext sob)
       mrjsonEndObject(context);
    } 
 
+   // finish dashboard entries; we also tack on a field to track execution time of the API
    mrjsonEndArray(context);
-
    mrjsonIntAttribute(context, "cApiTimeMs", timeSinceMS(beginTime));
-
    mrjsonEndResponse(context);
 
+   // until now the output has just been buffered. now we dump it all out.
    mrjsonPrintContext(context);
+
+   // not a big deal to prevent memory leaks until we have persistent FastCGI, but this is easy
    mrjsonFreeContext(context);
 }
 
+/*
+ * TODO: This function needs error checking, since some sob calls can fail...
+ */
 bool loadData(sobContext sob)
 {
    bson_oid_t userOid;
+   vector<bson_oid_t> frameOids, rollOids, userOids, videoOids, conversationOids;
 
-   userOid = sobGetUniqueOidByStringField(sob, SOB_USER, SOB_USER_DOWNCASE_NICKNAME, options.user);
-   // TODO: if invalid userOid, status = 1, cleanup
+   // first we get the user id for the target user (passed in as an option)
+   userOid = sobGetUniqueOidByStringField(sob,
+                                          SOB_USER,
+                                          SOB_USER_DOWNCASE_NICKNAME,
+                                          options.user);
+
+   // then we load all the requested dashboard entries for the user
    sobLoadAllByOidField(sob,
                         SOB_DASHBOARD_ENTRY, 
                         SOB_DASHBOARD_ENTRY_USER_ID,
@@ -360,26 +362,23 @@ bool loadData(sobContext sob)
                         options.limit,
                         options.skip,
                         -1);
-   
-   vector<bson_oid_t> frameOids;
 
-   sobGetOidVectorFromObjectField(sob, SOB_DASHBOARD_ENTRY, SOB_DASHBOARD_ENTRY_FRAME_ID, frameOids);
+   // then we get all frames referenced by the dashboard entries   
+   sobGetOidVectorFromObjectField(sob,
+                                  SOB_DASHBOARD_ENTRY,
+                                  SOB_DASHBOARD_ENTRY_FRAME_ID,
+                                  frameOids);
+
    sobLoadAllById(sob, SOB_FRAME, frameOids);
 
-   vector<bson_oid_t> rollOids;
+   // and frames have references to everything else, so we load it all up...
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_ROLL_ID, rollOids);
-   sobLoadAllById(sob, SOB_ROLL, rollOids);
-
-   vector<bson_oid_t> userOids;
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_CREATOR_ID, userOids);
-   sobLoadAllById(sob, SOB_USER, userOids);
- 
-   vector<bson_oid_t> videoOids;
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_VIDEO_ID, videoOids);
-   sobLoadAllById(sob, SOB_VIDEO, videoOids);
-   
-   vector<bson_oid_t> conversationOids;
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_CONVERSATION_ID, conversationOids);
+   sobLoadAllById(sob, SOB_ROLL, rollOids);
+   sobLoadAllById(sob, SOB_USER, userOids);
+   sobLoadAllById(sob, SOB_VIDEO, videoOids);
    sobLoadAllById(sob, SOB_CONVERSATION, conversationOids);
 
    return true;

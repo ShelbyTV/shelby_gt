@@ -59,6 +59,16 @@ static const char *sobFieldDBName[] =
    { ALL_PROPERTIES(FIELD_DB_NAME) };
 #undef FIELD_DB_NAME
 
+#define FIELD_BSON_TYPE(a,b,c,d,e) BSON_##d,
+static bson_type sobFieldBSONType[] =
+   { ALL_PROPERTIES(FIELD_BSON_TYPE) };
+#undef FIELD_BSON_TYPE
+
+#define FIELD_LONG_NAME(a,b,c,d,e) #b,
+static const char *sobFieldLongName[] = 
+   { ALL_PROPERTIES(FIELD_LONG_NAME) };
+#undef FIELD_LONG_NAME
+
 typedef map<string, bson *> oidStringToBSONMap;
 
 struct sobContextStruct
@@ -404,6 +414,88 @@ void sobGetOidVectorFromObjectField(sobContext context,
       if (type == BSON_OID) {
          result.push_back(*bson_iterator_oid(&iterator));
       }
+   }
+}
+
+void sobPrintAttributes(mrjsonContext context,
+                        bson *object,
+                        sobField *fieldArray,
+                        unsigned int numFields)
+{
+   for (unsigned int i = 0; i < numFields; i++) {
+      sobField field = fieldArray[i];
+      const char *dbName = sobFieldDBName[field];
+      const char *longName = sobFieldLongName[field];
+
+      switch(sobFieldBSONType[field])
+      {
+         case BSON_OID:
+            mrbsonOidAttribute(context, object, dbName, longName);
+            break;
+
+         case BSON_DOUBLE:
+            mrbsonDoubleAttribute(context, object, dbName, longName);
+            break;
+
+         case BSON_STRING:
+            mrbsonStringAttribute(context, object, dbName, longName);
+            break;
+
+         case BSON_BOOL:
+            mrbsonBoolAttribute(context, object, dbName, longName);
+            break;
+
+         case BSON_NULL:
+            mrjsonNullAttribute(context, longName);
+            break;
+
+         case BSON_INT:
+            mrbsonIntAttribute(context, object, dbName, longName);
+            break;
+         
+         case BSON_ARRAY:
+            mrbsonSimpleArrayAttribute(context, object, dbName, longName);
+            break;
+
+         case BSON_TIMESTAMP:
+         case BSON_LONG:
+         case BSON_EOO:
+         case BSON_OBJECT:
+         case BSON_BINDATA:
+         case BSON_UNDEFINED:
+         case BSON_DATE:
+         case BSON_REGEX:
+         case BSON_DBREF:
+         case BSON_CODE:
+         case BSON_SYMBOL:
+         case BSON_CODEWSCOPE:
+            assert(false); // not implemented
+            break;
+      }
+   }
+}
+
+void sobPrintSubobjectByOid(sobContext sob,
+                            mrjsonContext context,
+                            bson *object,
+                            sobField subobjectOidField,
+                            sobType subobjectType,
+                            const char *key,
+                            sobSubobjectPrintCallback subobjectPrintCallback)
+{
+   bson_oid_t subobjectOid;
+   bson *subobjectBson = NULL;
+   const char *subobjectOidDBName = sobFieldDBName[subobjectOidField];
+
+   if (mrbsonFindOid(object, subobjectOidDBName, &subobjectOid) &&
+       sobGetBsonByOid(sob, subobjectType, subobjectOid, &subobjectBson)) {
+
+      mrjsonStartObject(context, key);
+      subobjectPrintCallback(sob, context, subobjectBson);
+      mrjsonEndObject(context);
+
+   } else {
+      mrjsonNullAttribute(context, key);
    }
 }
 
