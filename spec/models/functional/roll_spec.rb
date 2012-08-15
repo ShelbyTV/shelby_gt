@@ -120,6 +120,17 @@ describe Roll do
         @user.reload.roll_followings.count.should == 0
         @stranger.reload.roll_followings.count.should == 0
       end
+      
+      it "should be able to remove all followers even if some are nil" do
+        @roll.add_follower(@user)
+        @roll.add_follower(@stranger)
+        @stranger.destroy
+        @roll.reload.following_users.count.should == 2
+
+        @roll.remove_all_followers!
+        
+        @roll.reload.following_users.count.should == 0
+      end
 
       it "should be able to hold 1000 following users" do
         u = Factory.create(:user)
