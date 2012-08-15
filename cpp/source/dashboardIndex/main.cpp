@@ -335,8 +335,14 @@ bool loadData(sobContext sob)
 {
    bson_oid_t userOid;
 
+   cout << "Calling sobGetUniqueOidByStringField" << endl;
+
    userOid = sobGetUniqueOidByStringField(sob, SOB_USER, SOB_USER_DOWNCASE_NICKNAME, options.user);
+
+   cout << "userOid = " << mrbsonOidString(&userOid) << endl;
+
    // TODO: if invalid userOid, status = 1, cleanup
+   cout << "Calling sobLoadAllByOidField" << endl;
    sobLoadAllByOidField(sob,
                         SOB_DASHBOARD_ENTRY, 
                         SOB_DASHBOARD_ENTRY_USER_ID,
@@ -346,7 +352,10 @@ bool loadData(sobContext sob)
                         -1);
    
    vector<bson_oid_t> frameOids;
+
+   cout << "Calling sobGetOidVectorFromObjectField" << endl;
    sobGetOidVectorFromObjectField(sob, SOB_DASHBOARD_ENTRY, SOB_DASHBOARD_ENTRY_FRAME_ID, frameOids);
+   cout << "Calling sobLoadAllById" << endl;
    sobLoadAllById(sob, SOB_FRAME, frameOids);
 
    vector<bson_oid_t> rollOids;

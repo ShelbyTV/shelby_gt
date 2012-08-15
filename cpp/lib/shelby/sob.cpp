@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 
+#include <assert.h>
+
 #include "lib/mongo-c-driver/src/mongo.h"
 #include "lib/mrbson/mrbson.h"
 
@@ -57,20 +59,7 @@ static const char *sobFieldDBName[] =
    { ALL_PROPERTIES(FIELD_DB_NAME) };
 #undef FIELD_DB_NAME
 
-bson_oid_t userId;
-
-map<string, bson *> dashboardEntries;
-map<string, bson *> frames;
-map<string, bson *> users;
-map<string, bson *> rolls;
-map<string, bson *> videos;
-map<string, bson *> conversations;
-
-vector<bson_oid_t> framesToLoad;
-vector<bson_oid_t> rollsToLoad;
-vector<bson_oid_t> usersToLoad;
-vector<bson_oid_t> videosToLoad;
-vector<bson_oid_t> conversationsToLoad;
+typedef map<string, bson *> oidStringToBSONMap;
 
 struct sobContextStruct
 {
@@ -78,6 +67,8 @@ struct sobContextStruct
 
    mongo *allocatedConn[SOB_NUMTYPES];
    mongo *typeToConn[SOB_NUMTYPES];
+
+   oidStringToBSONMap *objectMap[SOB_NUMTYPES];
 };
 
 sobContext sobAllocContext(sobEnvironment env)
@@ -86,6 +77,10 @@ sobContext sobAllocContext(sobEnvironment env)
    memset(toReturn, 0, sizeof(struct sobContextStruct));
 
    toReturn->env = env;
+
+   for (unsigned int i = 0 ; i < SOB_NUMTYPES ; i++) {
+      toReturn->objectMap[i] = new oidStringToBSONMap();
+   }
 
    return toReturn;
 }
@@ -97,6 +92,8 @@ void sobFreeContext(sobContext context)
          mongo_destroy(context->allocatedConn[i]); 
          free(context->allocatedConn[i]);
       }
+
+      delete context->objectMap[i];
    }
 
    free(context);
@@ -112,17 +109,20 @@ bool sobTypesUseSameServer(sobType type1, sobType type2, sobEnvironment env)
    unsigned int type1Index = sobArrayIndex(type1, env);
    unsigned int type2Index = sobArrayIndex(type2, env);
 
+   // primary servers always have to match if it's the same type->server mapping
    return (strcmp(sobPrimaryServer[type1Index], sobPrimaryServer[type2Index]) == 0)
 
           &&
 
           (
+              // replsets need to have the same secondary server also
               (sobIsReplSetConnection[type1Index] &&
                sobIsReplSetConnection[type2Index] &&
                strcmp(sobSecondaryServer[type1Index], sobSecondaryServer[type2Index]) == 0)
 
                  ||
 
+              // otherwise both server mappings must not be replsets
               (!sobIsReplSetConnection[type1Index] &&
                !sobIsReplSetConnection[type2Index])
           );
@@ -267,6 +267,28 @@ bson_oid_t sobGetUniqueOidByStringField(sobContext context,
    return result; 
 }
 
+void insertMongoCursorIntoObjectMap(sobContext context,
+                                    sobType type,
+                                    mongo_cursor *cursor)
+{
+   while (mongo_cursor_next(cursor) == MONGO_OK) {
+      cout << "Iterating inside insertMongoCursor..." << endl;
+      bson_iterator iterator;
+      if (bson_find(&iterator, mongo_cursor_bson(cursor), "_id" )) {
+
+         cout << "bson_find found something inside insertMongoCursor..." << endl;
+         bson *newValue = (bson *)malloc(sizeof(bson));
+         bson_copy(newValue, mongo_cursor_bson(cursor));
+
+         string newKey = mrbsonOidString(bson_iterator_oid(&iterator));
+
+         cout << "about to insert into map inside insertMongoCursor..." << endl;
+         context->objectMap[type]->insert(pair<string, bson *>(newKey, newValue));
+         cout << "after insert into map inside insertMongoCursor..." << endl;
+      }
+   }
+}
+
 void sobLoadAllByOidField(sobContext context,
                           sobType type,
                           sobField field,
@@ -286,10 +308,13 @@ void sobLoadAllByOidField(sobContext context,
       bson_append_finish_object(&query);
    }
    bson_finish(&query);
-  
+
+   assert(context); 
+   assert(context->typeToConn[type]);
+ 
    // TODO: check return status
    sobAuthenticate(context, type);
- 
+
    mongo_cursor cursor;
    mongo_cursor_init(&cursor, 
                      context->typeToConn[type],
@@ -303,25 +328,11 @@ void sobLoadAllByOidField(sobContext context,
    if (skip != 0) {
       mongo_cursor_set_skip(&cursor, skip);
    }
-   
-   while (mongo_cursor_next(&cursor) == MONGO_OK) {
-     bson_iterator iterator;
-     //if (bson_find(&iterator, mongo_cursor_bson(&cursor), "c" )) {
-     //	framesToLoad.push_back(*bson_iterator_oid(&iterator));
-     //}
-     if (bson_find(&iterator, mongo_cursor_bson(&cursor), "_id" )) {
 
-        bson *newValue = (bson *)malloc(sizeof(bson));
-        bson_copy(newValue, mongo_cursor_bson(&cursor));
+   insertMongoCursorIntoObjectMap(context, type, &cursor);
 
-        string newKey = mrbsonOidString(bson_iterator_oid(&iterator));
-
-        //dashboardEntries.insert(pair<string, bson *>(newKey, newValue));
-     }
-   }
-
-  bson_destroy(&query);
-  mongo_cursor_destroy(&cursor);
+   bson_destroy(&query);
+   mongo_cursor_destroy(&cursor);
 }
 
 void sobLoadAllById(sobContext context,
@@ -353,31 +364,7 @@ void sobLoadAllById(sobContext context,
                      sobDBCollection[sobArrayIndex(type, context->env)]);
    mongo_cursor_set_query(&cursor, &query);
    
-   while (mongo_cursor_next(&cursor) == MONGO_OK) {
-      bson_iterator iterator;
-//      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "a" )) {
-//      	rollsToLoad.push_back(*bson_iterator_oid(&iterator));
-//      }
-//      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "d" )) {
-//      	usersToLoad.push_back(*bson_iterator_oid(&iterator));
-//      }
-//      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "c" )) {
-//      	conversationsToLoad.push_back(*bson_iterator_oid(&iterator));
-//      }
-//      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "b" )) {
-//      	videosToLoad.push_back(*bson_iterator_oid(&iterator));
-//      }
-      if (bson_find(&iterator, mongo_cursor_bson(&cursor), "_id" )) {
-
-         bson *newValue = (bson *)malloc(sizeof(bson));
-         bson_copy(newValue, mongo_cursor_bson(&cursor));
-
-         string newKey = mrbsonOidString(bson_iterator_oid(&iterator));
-
-   //      frames.insert(pair<string, bson *>(newKey, newValue));
-      }
-
-   }
+   insertMongoCursorIntoObjectMap(context, type, &cursor);
    
    bson_destroy(&query);
    mongo_cursor_destroy(&cursor);
@@ -388,23 +375,44 @@ bool sobGetBsonByOid(sobContext context,
                      bson_oid_t oid,
                      bson **result)
 {
-   return false;
+   map<string, bson *>::const_iterator it;
+
+   it = context->objectMap[type]->find(mrbsonOidString(&oid));
+   if (it == context->objectMap[type]->end()) {
+      return false;
+   }  
+
+   *result = it->second;
+ 
+   return true;
 }
 
-bool sobGetBsonVector(sobContext context,
+void sobGetBsonVector(sobContext context,
                       sobType type,
                       std::vector<bson *> &result)
 {
-   return false;
+   map<string, bson *>::const_iterator it;
+
+   for (it = context->objectMap[type]->begin(); it != context->objectMap[type]->end(); ++it) {
+      result.push_back(it->second);
+   }
 }
 
-bool sobGetOidVectorFromObjectField(sobContext context,
+void sobGetOidVectorFromObjectField(sobContext context,
                                     sobType type,
                                     sobField field,
                                     vector<bson_oid_t> &result)
 {
-   return false;
+   map<string, bson *>::const_iterator it;
+
+   for (it = context->objectMap[type]->begin(); it != context->objectMap[type]->end(); ++it) {
+      bson_iterator iterator;
+      bson_type type;
+ 
+      type = bson_find(&iterator, it->second, sobFieldDBName[field]);
+      if (type == BSON_OID) {
+         result.push_back(*bson_iterator_oid(&iterator));
+      }
+   }
 }
-
-
 

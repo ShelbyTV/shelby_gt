@@ -71,11 +71,11 @@ bool sobGetBsonByOid(sobContext context,
                      bson_oid_t oid,
                      bson **result);
 
-bool sobGetBsonVector(sobContext context,
+void sobGetBsonVector(sobContext context,
                       sobType type,
                       std::vector<bson *> &result);
 
-bool sobGetOidVectorFromObjectField(sobContext context,
+void sobGetOidVectorFromObjectField(sobContext context,
                                     sobType type,
                                     sobField field,
                                     std::vector<bson_oid_t> &result);
