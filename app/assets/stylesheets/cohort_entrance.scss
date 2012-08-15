@@ -1,0 +1,43 @@
+.cohort-entrance-wrapper {
+  width: 625px;
+  margin: 100px auto 0;
+  
+  h1 {
+    font-size: 4em;
+    text-shadow: black 2px 2px 0px;
+  }
+  
+  h2 {
+    margin: 20px 0;
+    color: #eeeeff;
+  }
+  
+  hr {
+    margin: 30px 70px;
+    color: #47474e;
+    border-color: #47474e;
+  }
+  
+  .social-signup-wrapper {
+    text-align: center;
+    
+    a {
+      display: inline-block;
+      padding: 10px;
+      font-size: 2em;
+      color: #efafff;
+      &:hover {
+        background-color: white;
+        color: black;
+      };
+    }
+  }
+  
+  .email-signup-wrapper {
+    label, input {
+      font-size: 1.5em;
+    }
+  }
+  
+}
+
