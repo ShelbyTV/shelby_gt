@@ -79,6 +79,21 @@ describe User do
       @user.following_roll?(@roll).should == true
     end
     
+    it "should NOT be considered 'following_roll?' if followings are asymetic (ie. user has roll_rollowing but roll doesn't have following_user)" do
+      @roll.add_follower(@user)
+      
+      #this is normal
+      @user.reload.following_roll?(@roll).should == true
+      
+      #make it asymetric
+      @roll.update_attribute(:following_users, [])
+      
+      #should no longer be considered followed_by
+      @user.reload.following_roll?(@roll).should == false
+      #should be considered followed_by in the asymetric sense
+      @user.reload.following_roll?(@roll, false).should == true
+    end
+    
     it "should know what Rolls it's un-followed" do
       @roll.add_follower(@user)
       @user.unfollowed_roll?(@roll).should == false

@@ -55,6 +55,49 @@ describe Roll do
         @roll.reload.followed_by?(@user).should == true
         @user.reload.following_roll?(@roll).should == true
       end
+      
+      it "should NOT be considered 'followed_by' when followings are asymetic (ie. roll has following_user but user doesn't have roll_rollowing)" do
+        @roll.add_follower(@user)
+        
+        #this is normal
+        @roll.reload.followed_by?(@user).should == true
+        
+        #make it asymetric
+        @user.update_attribute(:roll_followings, [])
+        
+        #should no longer be considered followed_by
+        @roll.reload.followed_by?(@user).should == false
+        #should be considered followed_by in the asymetric sense
+        @roll.reload.followed_by?(@user, false).should == true
+      end
+      
+      it "should add follower when followings are asymetric (ie. roll has following_user but user doesn't have roll_rollowing)" do
+        @roll.add_follower(@user)
+
+        #make it asymetric (on user side)
+        @user.update_attribute(:roll_followings, [])
+        
+        #should no longer be considered followed_by
+        @roll.reload.followed_by?(@user).should == false
+        
+        #should add follower correctly
+        @roll.add_follower(@user)
+        @roll.reload.followed_by?(@user).should == true
+      end
+      
+      it "should add follower when followings are asymetric (ie. user has roll_rollowing but roll doesn't have following_user)" do
+        @roll.add_follower(@user)
+
+        #make it asymetric (on roll side)
+        @roll.update_attribute(:following_users, [])
+        
+        #should no longer be considered followed_by
+        @roll.reload.followed_by?(@user).should == false
+        
+        #should add follower correctly
+        @roll.add_follower(@user)
+        @roll.reload.followed_by?(@user).should == true
+      end
 
       it "should email on add follower" do
         lambda {

@@ -160,10 +160,16 @@ class User
   
   def created_at() self.id.generation_time; end
   
-  def following_roll?(r)
+  # only return true if a correct, symmetric following is in the DB (when given a proper Roll and not roll_id)
+  # (this works in concert with Roll#add_follower which will fix an asymetric following)
+  def following_roll?(r, must_be_symmetric=true)
     raise ArgumentError, "must supply roll or roll_id" unless r
     roll_id = (r.is_a?(Roll) ? r.id : r)
-    roll_followings.any? { |rf| rf.roll_id == roll_id }
+    following = roll_followings.any? { |rf| rf.roll_id == roll_id }
+    if r.is_a?(Roll) and must_be_symmetric
+      following &= r.following_users.any? { |fu| fu.user_id == self.id }
+    end
+    return following
   end
   
   def unfollowed_roll?(r)

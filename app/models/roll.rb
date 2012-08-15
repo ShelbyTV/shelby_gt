@@ -114,23 +114,30 @@ class Roll
   
   def created_at() self.id.generation_time; end
 
-  def followed_by?(u)
+  # only return true if a correct, symmetric following is in the DB (when given a proper User and not user_id)
+  # (this works in concert with add_follower which will fix an asymetric following)
+  def followed_by?(u, must_be_symmetric=true)
     raise ArgumentError, "must supply user or user_id" unless u
     user_id = (u.is_a?(User) ? u.id : u)
-    following_users.any? { |fu| fu.user_id == user_id }
+    followed = following_users.any? { |fu| fu.user_id == user_id }
+    if u.is_a?(User) and must_be_symmetric
+      followed &= u.roll_followings.any? { |rf| rf.roll_id == self.id }
+    end
+    return followed
   end
   
   def following_users_ids() following_users.map { |fu| fu.user_id }; end
   
   def following_users_models() following_users.map { |fu| fu.user }; end
   
+  # Will create a symmetric following or make a broken, asymetric following correct.
   def add_follower(u, send_notification=true)
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
     
     return false if self.followed_by?(u)
   
-    self.push :following_users => FollowingUser.new(:user => u).to_mongo
-    u.push :roll_followings => RollFollowing.new(:roll => self).to_mongo
+    self.push_uniq :following_users => FollowingUser.new(:user => u).to_mongo
+    u.push_uniq :roll_followings => RollFollowing.new(:roll => self).to_mongo
     
     #need to reload so the local copy is up to date for future operations
     self.reload 
@@ -148,7 +155,7 @@ class Roll
   def remove_follower(u)
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
     
-    return false unless self.followed_by?(u)
+    return false unless self.followed_by?(u, false) #doesntt have to be symmetric for remove to proceed
     
     self.following_users.delete_if { |fu| fu.user_id == u.id }
     u.roll_followings.delete_if { |rf| rf.roll_id == self.id }
