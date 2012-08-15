@@ -26,12 +26,16 @@ void mrjsonFreeContext(mrjsonContext context);
 void mrjsonStartResponse(mrjsonContext context);
 void mrjsonEndResponse(mrjsonContext context);
 
+// object attributes
 void mrjsonIntAttribute(mrjsonContext context, const std::string& name, int value);
 void mrjsonBoolAttribute(mrjsonContext context, const std::string& name, bool value);
 void mrjsonDoubleAttribute(mrjsonContext context, const std::string& name, double value);
 void mrjsonStringAttribute(mrjsonContext context, const std::string& name, const std::string& value);
 void mrjsonNullAttribute(mrjsonContext context, const std::string& name);
 void mrjsonEmptyArrayAttribute(mrjsonContext context, const std::string& name);
+
+// array entries
+void mrjsonStringArrayEntry(mrjsonContext context, const std::string &value);
 
 void mrjsonStartArray(mrjsonContext context, const std::string& name);
 void mrjsonStartArray(mrjsonContext context);

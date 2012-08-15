@@ -176,6 +176,17 @@ void mrjsonEmptyArrayAttribute(mrjsonContext context, const string& name)
    yajl_gen_array_close(context->yajl);
 }
 
+void mrjsonStringArrayEntry(mrjsonContext context, const std::string &value) 
+{
+   assert(context);
+   assert(OPEN == context->status);
+   assert(context->levels[context->currentLevel].arrayOpen);
+   assert(!context->levels[context->currentLevel].objectOpen);
+   assert(context->currentLevel > 0); // level 0 is always the response, not an array
+
+   yajl_gen_string(context->yajl, (const unsigned char *)value.c_str(), value.length());
+}
+
 void mrjsonStartArray(mrjsonContext context, const string& name)
 {
    assert(context);

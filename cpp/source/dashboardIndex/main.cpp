@@ -150,14 +150,34 @@ void printJsonVideo(mrjsonContext context, bson *video)
    mrbsonStringAttribute(context, video, "g", "author");
    mrbsonStringAttribute(context, video, "j", "thumbnail_url");
 
-   // TODO: need these
-   mrjsonEmptyArrayAttribute(context, "tags");
-   mrjsonEmptyArrayAttribute(context, "categories");
+   bson tags;
+   bson_iterator iterator;
+   bson_find(&iterator, video, "m");
+   bson_iterator_subobject(&iterator, &tags);
+
+   bson_iterator_from_buffer(&iterator, tags.data);
+
+   mrjsonStartArray(context, "tags");
+   while (bson_iterator_next(&iterator)) {
+      mrjsonStringArrayEntry(context, bson_iterator_string(&iterator));
+   }
+   mrjsonEndArray(context); 
+
+   bson categories;
+   bson_find(&iterator, video, "n");
+   bson_iterator_subobject(&iterator, &categories);
+   
+   bson_iterator_from_buffer(&iterator, categories.data);
+
+   mrjsonStartArray(context, "categories");
+   while (bson_iterator_next(&iterator)) {
+      mrjsonStringArrayEntry(context, bson_iterator_string(&iterator));
+   }
+   mrjsonEndArray(context); 
 
    mrbsonStringAttribute(context, video, "o", "source_url");
    mrbsonStringAttribute(context, video, "p", "embed_url");
    mrbsonIntAttribute(context, video, "view_count", "view_count");
-   
 }
 
 void printJsonRoll(mrjsonContext context, bson *roll)
@@ -206,8 +226,8 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
    mrbsonOidAttribute(context, frame, "a", "roll_id");
    mrbsonOidAttribute(context, frame, "b", "video_id");
 
-   // TODO: timestamp
-   mrjsonNullAttribute(context, "timestamp");
+   // unused property, atypical output, not implementing for now...
+   // mrjsonNullAttribute(context, "timestamp");
 
    mrbsonOidConciseTimeAgoAttribute(context, frame, "_id", "created_at");
 
