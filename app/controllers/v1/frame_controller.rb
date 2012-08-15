@@ -417,7 +417,8 @@ class V1::FrameController < ApplicationController
             # save any valid addresses for future use in autocomplete
             current_user.store_autocomplete_info(:email, email_addresses)
 
-            resp &= GT::SocialPoster.email_frame(current_user, params[:addresses], text, frame)
+            # Best effort.  For speed, not checking if send succeeds (front-end should validate eaddresses format)
+            ShelbyGT_EM.next_tick { GT::SocialPoster.email_frame(current_user, params[:addresses], text, frame) }
           else
             return render_error(404, "we dont support that destination yet :(")
           end
