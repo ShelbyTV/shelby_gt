@@ -8,6 +8,10 @@
 #include "sobProperties.h"
 #include "lib/cvector/cvector.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Right now these are only the top level types used for DB
  * querying.
@@ -118,5 +122,9 @@ void sobPrintSubobjectArray(sobContext sob,
                             bson *object,
                             sobField subobjectOidField,
                             sobSubobjectPrintCallback);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __SOB_H__

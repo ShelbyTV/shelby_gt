@@ -9,6 +9,9 @@
 #include "lib/shelby/shelby.h"
 #include "lib/cvector/cvector.h"
 
+#define TRUE 1
+#define FALSE 0
+
 static struct options {
 	char *user;
 	int limit;
@@ -299,7 +302,7 @@ void printJsonOutput(sobContext sob)
    sobGetBsonVector(sob, SOB_DASHBOARD_ENTRY, dashboardEntries);
 
    // allocate context; match Ruby API "status" and "result" response syntax
-   mrjsonContext context = mrjsonAllocContext(true);
+   mrjsonContext context = mrjsonAllocContext(TRUE);
    mrjsonStartResponse(context); 
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartArray(context, "result");
@@ -326,7 +329,7 @@ void printJsonOutput(sobContext sob)
 /*
  * TODO: This function needs error checking, since some sob calls can fail...
  */
-bool loadData(sobContext sob)
+int loadData(sobContext sob)
 {
    bson_oid_t userOid;
    cvector frameOids = cvectorAlloc(sizeof(bson_oid_t));
@@ -368,7 +371,7 @@ bool loadData(sobContext sob)
    sobLoadAllById(sob, SOB_VIDEO, videoOids);
    sobLoadAllById(sob, SOB_CONVERSATION, conversationOids);
 
-   return true;
+   return TRUE;
 }
 
 int main(int argc, char **argv)

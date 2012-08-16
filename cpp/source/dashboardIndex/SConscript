@@ -1,13 +1,13 @@
 sourceFiles = Split("""
-                       main.cpp
+                       main.c
                     """)
 
 Import('env')
 dashboardIndexEnv = env.Clone()
 
-dashboardIndexEnv.MergeFlags('-O6 -pthread -Wall -Werror -DMONGO_HAVE_UNISTD -static')
-dashboardIndexEnv['CXXFLAGS'] = ['-std=c++0x'] # works around bug in scons MergeFlags, fixed in later versions of scons
+dashboardIndexEnv.MergeFlags('-std=c99 -O6 -pthread -Wall -Werror -DMONGO_HAVE_UNISTD -D_BSD_SOURCE -static')
 dashboardIndexEnv['CPPPATH'] = ['#/source', '#']
+dashboardIndexEnv['LINK'] = ['g++']
 
 # NOTE: Unfortunately, order of these static libs matters... lib 'shelby' uses all of the
 #       other libs, so it must come first to make sure other lib inclusions aren't auto-pruned
