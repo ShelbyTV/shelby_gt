@@ -31,6 +31,17 @@ RSpec.configure do |config|
     StatsManager::StatsD.stub(:decrement)
     StatsManager::StatsD.stub(:timing)
     StatsManager::StatsD.stub(:count)
+    
+    # don't want TwitterInfoGetter trying to make real requests to API
+    @twt_info_getter = double("twt_info_getter")
+    @twt_info_getter.stub(:get_following_screen_names).and_return(['a','b'])
+    @twt_info_getter.stub(:get_following_ids).and_return([0, 1])
+    APIClients::TwitterInfoGetter.stub(:new).and_return(@twt_info_getter)
+    
+    # don't want FacebookInfoGetter trying to make real requests to API
+    @fb_info_getter = double("fb_info_getter")
+    @fb_info_getter.stub(:get_following_ids).and_return([0, 1])
+    APIClients::FacebookInfoGetter.stub(:new).and_return(@fb_info_getter)
   end
   
   config.before(:type => :request) do

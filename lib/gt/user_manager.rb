@@ -1,8 +1,11 @@
 # encoding: UTF-8
 require 'authentication_builder'
 require 'predator_manager'
+require 'user_twitter_manager'
+require 'user_facebook_manager'
 require 'api_clients/twitter_client'
 require 'api_clients/twitter_info_getter'
+require 'api_clients/facebook_info_getter'
 
 
 # This is the one and only place where Users are created.
@@ -22,6 +25,11 @@ module GT
         #additional meta-data for user's public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
         
+        #start following
+        GT::UserTwitterManager.follow_all_friends_public_rolls(user)
+        GT::UserFacebookManager.follow_all_friends_public_rolls(user)
+        
+        #start processing
         GT::PredatorManager.initialize_video_processing(user, auth)
         
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
@@ -88,6 +96,11 @@ module GT
       new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
       user.authentications << new_auth
       if user.save
+        #start following (okay to try to follow everybody)
+        GT::UserTwitterManager.follow_all_friends_public_rolls(user)
+        GT::UserFacebookManager.follow_all_friends_public_rolls(user)
+        
+        #start processing
         GT::PredatorManager.initialize_video_processing(user, new_auth)        
         
         StatsManager::StatsD.increment(Settings::StatsConstants.user['add_service'][new_auth.provider])
@@ -195,6 +208,11 @@ module GT
 
       user.faux = User::FAUX_STATUS[:converted]
       if user.save
+        #start following
+        GT::UserTwitterManager.follow_all_friends_public_rolls(user)
+        GT::UserFacebookManager.follow_all_friends_public_rolls(user)
+        
+        #start processing
         GT::PredatorManager.initialize_video_processing(user, new_auth) if new_auth
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'])
         return user, new_auth
@@ -254,8 +272,8 @@ module GT
       
       # Check if the given token and secret allow us access to the user's secure data...
       case provider
-      when "twitter" then return verify_users_twitter(oauth_token, oauth_secret)
-      when "facebook" then return verify_users_facebook(oauth_token)
+      when "twitter" then return GT::UserTwitterManager.verify_auth(oauth_token, oauth_secret)
+      when "facebook" then return GT::UserFacebookManager.verify_auth(oauth_token)
       else return false
       end
       
@@ -279,37 +297,6 @@ module GT
       end
       #this happens in a before_save, but doesn't hurt to do it here
       user.downcase_nickname = user.nickname.downcase
-    end
-
-    def self.verify_users_twitter(oauth_token, oauth_secret)
-      return false unless oauth_token and oauth_secret
-      
-      begin
-        c = APIClients::TwitterClient.build_for_token_and_secret(oauth_token, oauth_secret)
-        #this will throw if user isn't auth'd
-        c.statuses.home_timeline? :count => 1
-        return true
-      rescue Grackle::TwitterError
-        return false
-      rescue => e
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['verify_service']['failure']['twitter'])
-        return false
-      end
-    end
-    
-    def self.verify_users_facebook(oauth_token)
-      return false unless oauth_token
-      
-      begin
-        graph = Koala::Facebook::API.new(oauth_token)
-        graph.get_connections("me","permissions")
-        return true
-      rescue Koala::Facebook::APIError
-        return false
-      rescue => e
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['verify_service']['failure']['facebook'])
-        return false
-      end
     end
     
     def self.copy_cohorts!(from, to, additional_cohorts = [])

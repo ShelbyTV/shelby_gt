@@ -440,16 +440,6 @@ describe 'v1/frame' do
         @f.conversation.reload.should be_nil
       end
       
-      it "should destroy DashboardEntries related to that Frame" do
-        lambda {
-          Factory.create(:dashboard_entry, :frame_id => @f.id)
-          Factory.create(:dashboard_entry, :frame_id => @f.id)
-        }.should change { DashboardEntry.count } .by(2)
-        lambda {
-          delete '/v1/frame/'+@f.id
-        }.should change { DashboardEntry.count } .by(-2)
-      end
-      
     end
     
   end

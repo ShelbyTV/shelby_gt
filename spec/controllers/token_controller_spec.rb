@@ -17,7 +17,7 @@ describe V1::TokenController do
     end
     
     it "returns a 404 if credentials aren't okay" do
-      GT::UserManager.should_receive(:verify_users_twitter).with(@twt_auth.oauth_token, "bad").and_return(false)
+      GT::UserTwitterManager.should_receive(:verify_auth).with(@twt_auth.oauth_token, "bad").and_return(false)
       
       post :create, :provider_name => "twitter", :uid => @twt_auth.uid, :token => @twt_auth.oauth_token, :secret => "bad", :format => :json
       assigns(:status).should eq(404)
