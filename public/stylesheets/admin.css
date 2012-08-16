@@ -1,0 +1,90 @@
+/* line 1, ../../app/assets/stylesheets/admin.scss */
+#admin {
+  overflow: auto;
+}
+/* line 3, ../../app/assets/stylesheets/admin.scss */
+#admin h1 {
+  font-size: 35px;
+  text-align: center;
+  padding: 15px;
+}
+/* line 9, ../../app/assets/stylesheets/admin.scss */
+#admin hr {
+  color: #333;
+  background-color: #333;
+  height: 3px;
+  border: 0;
+  margin-bottom: 35px;
+}
+/* line 17, ../../app/assets/stylesheets/admin.scss */
+#admin .text-block {
+  margin: 5px;
+}
+/* line 21, ../../app/assets/stylesheets/admin.scss */
+#admin #user-info-area {
+  color: #505050;
+  font-family: 'Ubuntu',Trebuchet MS,sans-serif;
+  font-size: 14px;
+  text-align: center;
+}
+/* line 26, ../../app/assets/stylesheets/admin.scss */
+#admin #user-info-area #shelby-user {
+  margin-bottom: 10px;
+}
+/* line 28, ../../app/assets/stylesheets/admin.scss */
+#admin #user-info-area #shelby-user .shelby-avatar {
+  background: transparent;
+  display: inline-block;
+  height: 50px;
+  width: 50px;
+  margin-right: 10px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+/* line 37, ../../app/assets/stylesheets/admin.scss */
+#admin #user-info-area #shelby-user .shelby-avatar img {
+  height: 50px;
+  text-decoration: none;
+  display: inline;
+}
+/* line 43, ../../app/assets/stylesheets/admin.scss */
+#admin #user-info-area #shelby-user #shelby-name {
+  font-size: 30px;
+  color: #777;
+  font-weight: normal;
+}
+/* line 53, ../../app/assets/stylesheets/admin.scss */
+#admin #user-info-area #social-medias {
+  text-decoration: none;
+}
+/* line 55, ../../app/assets/stylesheets/admin.scss */
+#admin #user-info-area #social-medias img {
+  height: 18px;
+  outline: none;
+  text-decoration: none;
+  display: inline;
+}
+/* line 64, ../../app/assets/stylesheets/admin.scss */
+#admin #roll-info-area {
+  font-size: 16px;
+  line-height: 150%;
+  position: absolute;
+  left: 50%;
+  margin-left: -330px;
+}
+/* line 71, ../../app/assets/stylesheets/admin.scss */
+#admin #roll-info-area .roll-list {
+  margin-right: 25px;
+}
+/* line 75, ../../app/assets/stylesheets/admin.scss */
+#admin #roll-info-area #friends-rolls {
+  float: left;
+}
+/* line 79, ../../app/assets/stylesheets/admin.scss */
+#admin #roll-info-area #user-created-public-rolls {
+  float: left;
+}
+/* line 83, ../../app/assets/stylesheets/admin.scss */
+#admin #roll-info-area #user-created-private-rolls {
+  float: left;
+}

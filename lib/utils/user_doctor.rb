@@ -23,6 +23,23 @@ module GT
       end
     end
     
+    # For each of the user's rolls pointed to by a roll_following: make sure there's a matching following_user on the roll pointing to the user
+    def self.ensure_roll_followings_mirrored(u)
+      should_clean_roll_followings = false
+      u.roll_followings.each do |rf|
+        if rf.roll
+          unless rf.roll.following_users.any? { |fu| fu.user_id == u.id }
+            #User had a roll following, but the roll it pointed to DID NOT have a matching following user
+            puts "User #{u.nickname} followed #{rf.roll.id}, needed mirroring following_user"
+            rf.roll.push :following_users => FollowingUser.new(:user => u).to_mongo
+          end
+        else
+          should_clean_roll_followings = true
+        end
+      end
+      clean_roll_followings(u) if should_clean_roll_followings
+    end
+    
     def self.examine(u)
       puts "==user info=="
       puts " id         : #{u.id}"

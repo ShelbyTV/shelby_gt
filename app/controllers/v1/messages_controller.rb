@@ -24,10 +24,12 @@ class V1::MessagesController < ApplicationController
           begin
             if @conversation.save!
 
-              ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(@conversation, @new_message, current_user) }
+              ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(@conversation, @new_message, current_user) }              
+              ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('comment', current_user, @conversation, @new_message.text) }
+              
 
               @status = 200 
-              StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)
+              StatsManager::StatsD.increment(Settings::StatsConstants.message['create'])
             end
           rescue => e
             render_error(404, e)
@@ -57,7 +59,7 @@ class V1::MessagesController < ApplicationController
       else
         @conversation.pull(:messages => {:_id => message.id})
         @conversation.reload
-        StatsManager::StatsD.increment(Settings::StatsConstants.message['delete'], nil, nil, request)
+        StatsManager::StatsD.increment(Settings::StatsConstants.message['delete'])
         @status = 200
       end
     end

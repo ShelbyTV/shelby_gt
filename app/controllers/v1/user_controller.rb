@@ -47,12 +47,18 @@ class V1::UserController < ApplicationController
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['update']) do
       @user = current_user
-      params.keep_if {|key,value| [:name, :nickname, :primary_email, :preferences, :app_progress].include?key.to_sym}
       begin
-        if @user.update_attributes!(params)
+        if params[:password] and (params[:password] != params[:password_confirmation])
+          return render_error(409, "Passwords did not match.")
+        end
+        
+        if @user.update_attributes(params)
           @status = 200
+          
+          # When changing the password, need to re-sign in (and bypass validation)
+          sign_in(@user, :bypass => true) if params[:password]
         else
-          render_error(404, "error while updating user.")
+          render_error(404, "error updating user.")
         end
       rescue => e
         render_error(404, "error while updating user: #{e}")
@@ -83,19 +89,29 @@ class V1::UserController < ApplicationController
         #  V1::UserController::Roll which does not exist, for now, just forcing the global Roll
         @roll_ids = current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq
         
-        # I really wanted to make a mongo query with $and / $or, but it doesn't seem doable with current semantics
-        @rolls = ::Roll.where({:id => { "$in" => @roll_ids }}).limit(@roll_ids.length).all
+        # No longer returning the faux users' public rolls (:roll_type abbrv as :n)
+        @rolls = ::Roll.where({
+          :id => { "$in" => @roll_ids }, 
+          :n => { "$not" => { "$in" => [Roll::TYPES[:special_public], Roll::TYPES[:special_roll]] }}
+          }).limit(@roll_ids.length).all
         if params[:postable]
+          # I really wanted to make a mongo query with $and / $or, but it doesn't seem doable with current semantics
           @rolls = @rolls.select { |r| r.postable_by?(current_user) }
         end
         
         if @rolls
           
-          # move heart roll to @rolls[1]
-          if heartRollIndex = @rolls.index(current_user.upvoted_roll)
-            heartRoll = @rolls.slice!(heartRollIndex)
-            @rolls.insert(0, heartRoll)
+          self.class.trace_execution_scoped(['UserController/roll_followings/sort']) do
+            # sort based on followed_at descending
+            # using sort_by b/c we have an expensive calculation to do when sorting
+            @rolls.sort_by! { |r| current_user.roll_following_for(r).id.generation_time } .reverse!
           end
+          
+          # don't return hearts roll anymore
+          @rolls.delete(current_user.upvoted_roll)
+          # re-order public roll, watch later
+          self.class.move_roll(@rolls, current_user.public_roll, 0)
+          self.class.move_roll(@rolls, current_user.watch_later_roll, 1)
           
           # Load all roll creators to prevent N+1 queries
           @creator_ids = @rolls.map {|r| r.creator_id }.compact.uniq
@@ -108,6 +124,8 @@ class V1::UserController < ApplicationController
               creator = User.identity_map[r.creator_id]
               r[:creator_nickname] = creator.nickname if creator != nil
               r[:following_user_count] = r.following_users.length
+              rf = current_user.roll_following_for r
+              r[:followed_at] = rf.id.generation_time.to_f if rf
               r
             }
           end
@@ -146,5 +164,14 @@ class V1::UserController < ApplicationController
       end
     end
   end
+  
+  private
+  
+    def self.move_roll(roll_array, target_roll, pos)
+      if rollIndex = roll_array.index(target_roll)
+        r = roll_array.slice!(rollIndex)
+        roll_array.insert(pos, r)
+      end
+    end
   
 end

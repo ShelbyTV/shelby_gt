@@ -1,12 +1,10 @@
-require 'open_graph'
-
 module GT
   class NotificationManager
     
     def self.check_and_send_upvote_notification(user, frame)
       raise ArgumentError, "must supply valid user" unless user.is_a?(User) and !user.blank?
       raise ArgumentError, "must supply valid frame" unless frame.is_a?(Frame) and !frame.blank?
-            
+      
       # don't email the creator if they are the upvoting user or they dont have an email address!
       user_to = frame.creator
       return if !user_to or (user == user_to) or !user_to.primary_email or (user_to.primary_email == "")
@@ -15,17 +13,14 @@ module GT
       return unless frame.creator.gt_enabled
       
       return unless user_to.preferences.upvote_notifications
-      
-      # send OG action to FB
-      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('favorite', user, frame) }
-      
+            
       NotificationMailer.upvote_notification(user_to, user, frame).deliver
     end
 
     def self.check_and_send_reroll_notification(old_frame, new_frame)
       raise ArgumentError, "must supply valid new frame" unless new_frame.is_a?(Frame) and !new_frame.blank?
       raise ArgumentError, "must supply valid old frame" unless old_frame.is_a?(Frame) and !old_frame.blank?
-      
+            
       # don't email the creator if they are the upvoting user or they dont have an email address!
       user_to = old_frame.creator
       return if (new_frame.creator_id == old_frame.creator_id) or !user_to.primary_email or (user_to.primary_email == "")
@@ -34,11 +29,8 @@ module GT
       return unless user_to.gt_enabled
       
       return unless user_to.preferences.reroll_notifications
-      
-      # send OG action to FB
-      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', new_frame.creator, new_frame) }
-      
-      NotificationMailer.reroll_notification(new_frame, old_frame).deliver
+            
+      NotificationMailer.reroll_notification(old_frame, new_frame).deliver
     end
     
     def self.send_new_message_notifications(c, new_message, user)
@@ -61,13 +53,11 @@ module GT
       # except for the person who just wrote this new message
       users_to_email -= [new_message.user]
       # and those who don't wish to receive comment notifications
-      users_to_email.select! { |u| u.preferences and u.preferences.comment_notifications? }
+      # Temp: for now only send emails to gt_enabled users
+      users_to_email.select! { |u| u.gt_enabled and u.preferences and u.preferences.comment_notifications? }
       
       users_to_email.each { |u| NotificationMailer.comment_notification(u, new_message.user, frame, new_message).deliver unless u.primary_email.blank? }
       
-      # send OG action to FB
-      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('comment', user, {:conversation => c, :message => new_message}) }
-
     end
 
     def self.check_and_send_join_roll_notification(user_from, roll)

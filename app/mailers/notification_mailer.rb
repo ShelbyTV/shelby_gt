@@ -2,11 +2,13 @@ class NotificationMailer < ActionMailer::Base
   include SendGrid
   sendgrid_enable   :opentrack, :clicktrack, :ganalytics
   
-  helper :mail
+  helper :mail, :roll
 
   def comment_notification(user_to, user_from, frame, message)
     sendgrid_category Settings::Email.comment_notification["category"]
-
+    
+    sendgrid_ganalytics_options(:utm_source => 'comment', :utm_medium => 'notification', :utm_campaign => "frame_#{frame.id.to_s}")
+    
     @user_to = user_to
     @user_from = user_from
     @user_from_name = (@user_from.name || @user_from.nickname)
@@ -14,7 +16,9 @@ class NotificationMailer < ActionMailer::Base
     
     @frame = frame
     @frame_title = @frame.video.title
-    @frame_permalink = @frame.permalink
+    @frame_permalink = @frame.permalink_to_frame_comments
+
+    @frame_conversation_messages = (frame.conversation && frame.conversation.messages) || nil
 
     @message = message
 
@@ -25,6 +29,9 @@ class NotificationMailer < ActionMailer::Base
 
   def upvote_notification(user_to, user_from, frame)
     sendgrid_category Settings::Email.upvote_notification["category"]
+    
+    sendgrid_ganalytics_options(:utm_source => 'heart', :utm_medium => 'notification', :utm_campaign => "frame_#{frame.id.to_s}")
+    
     
     @user_to = user_to
     @user_from = user_from
@@ -42,6 +49,9 @@ class NotificationMailer < ActionMailer::Base
 
   def reroll_notification(old_frame, new_frame)
     sendgrid_category Settings::Email.reroll_notification["category"]
+
+    sendgrid_ganalytics_options(:utm_source => 'reroll', :utm_medium => 'notification', :utm_campaign => "frame_#{old_frame.id.to_s}")
+
 
     @user_to = old_frame.creator
     @user_from = new_frame.creator
@@ -61,14 +71,14 @@ class NotificationMailer < ActionMailer::Base
   def join_roll_notification(user_to, user_from, roll)
     sendgrid_category Settings::Email.join_roll_notification["category"]
 
+    sendgrid_ganalytics_options(:utm_source => 'join-roll', :utm_medium => 'notification', :utm_campaign => "roll_#{roll.id.to_s}")
+
     @user_to = user_to
     @user_from = user_from
     @user_from_name = (@user_from.name || @user_from.nickname)
     @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
 
     @roll = roll
-    @roll_title = @roll.title
-    @roll_permalink = @roll.permalink
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
       :to => @user_to.primary_email, 

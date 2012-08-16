@@ -18,7 +18,7 @@ describe GT::OpenGraph do
     @m = Factory.create(:message, :user => @u)
     @c = Factory.create(:conversation, :messages => [@m], :frame_id => @f.id)
     
-    @og_url = "http://gt.shelby.tv/roll/#{@f.roll.id.to_s}/frame/#{@f.id.to_s}"
+    @og_url = "http://shelby.tv/roll/#{@f.roll.id.to_s}/frame/#{@f.id.to_s}"
     @og_object = {:video => @og_url}
     
   end
@@ -35,7 +35,17 @@ describe GT::OpenGraph do
   
   it "should post a comment action" do
     GT::OpenGraph.stub(:post_to_og).with(@u, 'shelbytv:comment', @og_object, nil).and_return(true)
-    GT::OpenGraph.send_action('comment', @u, {:conversation => @c, :message => @m})
+    GT::OpenGraph.send_action('comment', @u, @c, @m.text)
+  end
+  
+  it "should post a share action" do
+    GT::OpenGraph.stub(:post_to_og).with(@u, 'shelbytv:share', @og_object, nil).and_return(true)
+    GT::OpenGraph.send_action('share', @u, @f)
+  end
+  
+  it "should post a save action" do
+    GT::OpenGraph.stub(:post_to_og).with(@u, 'shelbytv:save', @og_object, nil).and_return(true)
+    GT::OpenGraph.send_action('comment', @u, @f)
   end
     
   it "should not post if user doesnt have facbeook" do

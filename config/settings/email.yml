@@ -1,15 +1,14 @@
 defaults: &defaults
   shelby_address: "110 E 23rd, 10th Floor, New York NY 10010"
-  shelby_logo: "http://api.gt.shelby.tv/shelby.png"
-  shelby_logo_gt: "http://gt.shelby.tv/images/assets/shelbylogo.png"
+  shelby_logo: "http://api.shelby.tv/shelby.png"
+  shelby_logo_gt: "http://shelby.tv/images/assets/shelby_logo.png"
   shelby_tagline: "An amazing way to discover and enjoy videos."
-  preferences_link: "http://gt.shelby.tv/preferences"
-  web_url_base: "http://gt.shelby.tv"
+  preferences_link: "http://shelby.tv/preferences"
+  web_url_base: "http://shelby.tv"
   # Sharing
   share_frame:
     category: "Share Frame"
-    subject: "%{sharers_name} has shared a video with you"
-    private_roll_invite_subject: "%{inviters_name} invites you to private roll '%{roll_title}'"
+    subject: "%{sharers_name} found a video to share with you"
   # Notifications
   notification_sender: "notifications@shelby.tv"
   comment_notification:
@@ -23,12 +22,16 @@ defaults: &defaults
     subject: "%{re_rollers_name} rolled your video"
   join_roll_notification:
     category: "Join Roll Notifications"
-    subject: "%{users_name} joined your roll!"
+    subject: "%{users_name} is following your roll!"
   # GtInterest
   gt_interest_autoresponse:
     category: "Submit GT Interest"
-    subject: "Your request for Shelby GT has been received!"
+    subject: "Your request for Shelby has been received!"
     from: "Shelby GT <contact+gt@shelby.tv>"
+  new_user_summary:
+    category: "Admin"
+    subject: "[%{date}] %{new_users} New Users Yesterday"
+    from: "Shelby GT <contact+gt@shelby.tv>"    
 
 development:
   <<: *defaults

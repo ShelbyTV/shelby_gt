@@ -7,19 +7,38 @@ class AuthenticationsController < ApplicationController
   def index
   end
   
+  ##
+  # Authenticates user via email or username and password.
+  #
+  # This route should only be used over HTTPS
+  #
+  # [POST] /authentications/login
+  # 
+  # @param [Required, String] username May be the username or the primary email address of the user
+  # @param [Required, String] password The plaintext password
+  def login
+    u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s)) if params[:username]
+    if u and u.valid_password?(params[:password])
+      user = u
+    else
+      query = {:auth_failure => 1, :auth_strategy => "that username/password"}
+      query[:redir] = params[:redir] if params[:redir]
+      @opener_location = add_query_params(request.referer || Settings::ShelbyAPI.web_root, query)
+      return render :action => 'redirector', :layout => 'simple'
+    end
+    
+    # any user with valid email/password is a valid Shelby user
+    # this sets up redirect
+    sign_in_current_user(user)
+    @opener_location = clean_query_params(@opener_location)
+    render :action => 'redirector', :layout => 'simple'
+  end
+  
+  # This method has grown into a fucking beast.  
+  # ==> Needs *serious* refactoring and simplification. <==
   def create
     if omniauth = request.env["omniauth.auth"]
       user = User.first( :conditions => { 'authentications.provider' => omniauth['provider'], 'authentications.uid' => omniauth['uid'] } )
-    elsif !params[:username].blank?
-      u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s))
-      if u and u.valid_password?(params[:password])
-        user = u
-      else
-        @opener_location = add_query_params(clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), {
-          :error => "username_password_fail"
-          })
-        return render :action => 'redirector', :layout => 'simple'
-      end
     end
       
 
@@ -38,19 +57,24 @@ class AuthenticationsController < ApplicationController
         sign_in_current_user(user, omniauth)
 
       elsif gt_interest = GtInterest.find(cookies[:gt_access_token])
-        gt_interest.used!(user)        
+        gt_interest.used!(user)
+        cookies.delete(:gt_access_token, :domain => ".shelby.tv")
         sign_in_current_user(user, omniauth)
         
       elsif cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
+        use_cohort_entrance(user, cohort_entrance)
+        session[:cohort_entrance_id] = nil        
         sign_in_current_user(user, omniauth)
+        user.gt_enable!
 
       elsif private_invite = cookies[:gt_roll_invite] # if they were invited via private roll, they get in
         GT::InvitationManager.private_roll_invite(user, private_invite)
+        cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
         sign_in_current_user(user, omniauth)
         
       else
         # NO GT FOR YOU, just redirect to error page w/o signing in
-        @opener_location = redirect_path || "#{Settings::ShelbyAPI.web_root}/?access=nos"
+        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
       end
       
 # ---- Adding new authentication to current user
@@ -85,51 +109,82 @@ class AuthenticationsController < ApplicationController
           user.remember_me!(true)
           set_common_cookie(user, session[:_csrf_token])
           
-          gt_interest.used!(user) if gt_interest
-          use_cohort_entrance(user, cohort_entrance) if cohort_entrance
-          GT::InvitationManager.private_roll_invite(user, private_invite) if private_invite
+          if gt_interest
+            gt_interest.used!(user) 
+            cookies.delete(:gt_access_token, :domain => ".shelby.tv")
+          end
+          if cohort_entrance
+            use_cohort_entrance(user, cohort_entrance)
+            session[:cohort_entrance_id] = nil
+          end
+          if private_invite
+            GT::InvitationManager.private_roll_invite(user, private_invite)
+            GT::UserManager.copy_cohorts!(inviter, user, ["roll_invited"])
+            cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
+          end
           
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
-        
           @opener_location = redirect_path || Settings::ShelbyAPI.web_root
         else
+
           Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
           @opener_location = redirect_path || Settings::ShelbyAPI.web_root
         end
       else
         # NO GT FOR YOU!  Just redirect to error page w/o creating account
-        @opener_location = redirect_path || "#{Settings::ShelbyAPI.web_root}/?access=nos"
+        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
       end
         
 # ---- New User signing up w/ email & password
-    elsif !params[:user].blank? and cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
-      user = GT::UserManager.create_new_user_from_params(params[:user])
+    elsif !params[:user].blank?
+      # if they are invited by someone via an invitation to join a private roll, let em in!
+      # gt_roll_invite consists of "inviter uid, invitee email address, roll id"
+      if private_invite = cookies[:gt_roll_invite] and invite_info = cookies[:gt_roll_invite].split(',')
+        inviter = User.find(invite_info[0])
+        roll = Roll.find(invite_info[2])
+      end
+      cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
+      
+      if private_invite or cohort_entrance
+      
+        user = GT::UserManager.create_new_user_from_params(params[:user])
 
-      if user.valid?
-        sign_in(:user, user)
-        user.remember_me!(true)
-        set_common_cookie(user, session[:_csrf_token])
+        if user.valid?
+          sign_in(:user, user)
+          user.remember_me!(true)
+          set_common_cookie(user, session[:_csrf_token])
 
-        use_cohort_entrance(user, cohort_entrance)
-        GT::InvitationManager.private_roll_invite(user, private_invite) if private_invite
+          if cohort_entrance
+            use_cohort_entrance(user, cohort_entrance)
+            session[:cohort_entrance_id] = nil
+          end
+          if private_invite
+            GT::InvitationManager.private_roll_invite(user, private_invite)
+            GT::UserManager.copy_cohorts!(inviter, user, ["roll_invited"])
+            cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
+          end
 
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['username'])
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['username'])
 
-        @opener_location = redirect_path || Settings::ShelbyAPI.web_root
+          @opener_location = redirect_path || Settings::ShelbyAPI.web_root
+        else
+          Rails.logger.error "AuthenticationsController#create_with_email - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name} -- primary_email #{user.primary_email}"
+
+          # TEMPORARILY returning user to cohort entrance as applicalbe
+          #@opener_location = add_query_params(clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), {
+          @opener_location = add_query_params(cohort_entrance ? cohort_entrance.url : (redirect_path || Settings::ShelbyAPI.web_root), {
+            :error => "new_user_invalid"
+            })
+        end
+        
       else
-        Rails.logger.error "AuthenticationsController#create_with_email - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name} -- primary_email #{user.primary_email}"
-
-        # TEMPORARILY returning user to cohort entrance
-        #@opener_location = add_query_params(clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), {
-        @opener_location = add_query_params(cohort_entrance.url, {
-          :error => "new_user_invalid"
-          })
+        #not invited, deny access
+        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
       end
     else
 # ---- NO GT FOR YOU!  Just redirect to error page w/o creating account
-      @opener_location = redirect_path || "#{Settings::ShelbyAPI.web_root}/?access=nos"
+      @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
     end
-
 
     @opener_location = clean_query_params(@opener_location)
 
@@ -159,7 +214,7 @@ class AuthenticationsController < ApplicationController
 
   private
     def redirect_path
-      session[:return_url] || request.env['omniauth.origin']
+      clean_query_params(session[:return_url] || request.env['omniauth.origin'] || params[:redir])
     end
     
     def set_common_cookie(user, form_authenticity_token)
@@ -179,7 +234,10 @@ class AuthenticationsController < ApplicationController
       GT::UserManager.convert_faux_user_to_real(user, omniauth) if user.faux == User::FAUX_STATUS[:true]
       GT::UserManager.start_user_sign_in(user, :omniauth => omniauth)
       
-      use_cohort_entrance user, CohortEntrance.find(session[:cohort_entrance_id])
+      if session[:cohort_entrance_id]
+        use_cohort_entrance user, CohortEntrance.find(session[:cohort_entrance_id])
+        session[:cohort_entrance_id] = nil
+      end
       
       sign_in(:user, user)
       
@@ -195,13 +253,15 @@ class AuthenticationsController < ApplicationController
     end
     
     def clean_query_params(loc, params=["auth_failure", "auth_strategy"])
-      # remove parameters describing a previous auth failure from the redirect url as they are no longer relevant
-      redirect_uri = URI(loc)
-      query = Rack::Utils.parse_query redirect_uri.query
-      params.each { |p| query.delete(p) }
-      redirect_uri.query = query.empty? ? nil : query.to_query
+      if loc
+        # remove parameters describing a previous auth failure from the redirect url as they are no longer relevant
+        redirect_uri = URI(loc)
+        query = Rack::Utils.parse_query redirect_uri.query
+        params.each { |p| query.delete(p) }
+        redirect_uri.query = query.empty? ? nil : query.to_query
 
-      redirect_uri.to_s
+        redirect_uri.to_s
+      end
     end
     
     def add_query_params(loc, params)

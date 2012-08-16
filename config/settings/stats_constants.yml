@@ -32,6 +32,7 @@ defaults: &defaults
       watched: 'frame.watched'
       destroy: 'frame.destroy'
       share: 'frame.share'
+      short_link: 'frame.short_link'
     conversation:
       show: 'conversation.show'
       index: 'conversation.index'
@@ -41,6 +42,8 @@ defaults: &defaults
     video:
       show: 'video.show'
       find: 'video.find'
+      viewed: 'video.viewed'
+      queued: 'video.queued'
   
   user:
     new:
@@ -66,6 +69,10 @@ defaults: &defaults
       facebook: "user.remove_service.facebook"
       tumblr: "user.remove_service.tumblr"
       error: "user.add_service.error"
+    verify_service:
+      failure:
+        twitter: "user.verify_service.failure.twitter"
+        facebook: "user.verify_service.failure.facebook"
   
   frame:
     watch: "frame.watch"
@@ -102,7 +109,18 @@ defaults: &defaults
     opengraph:
       watch: "facebook.opengraph.watch"
       roll: "facebook.opengraph.roll"
-      upvote: "facebook.opengraph.upvote"
+      favorite: "facebook.opengraph.favorite"
+      share: "facebook.opengraph.share"
+      comment: "facebook.opengraph.comment"      
+      error: "facebook.opengraph.error"
+  
+  oauth:
+    authorize: "oauth.authorize"
+    grant: "oauth.grant"
+    deny: "oauth.deny"
+    delete: "oauth.delete"
+    create: "oauth.create"
+  
   
 development:
   <<: *defaults

@@ -1,15 +1,13 @@
+require "api_clients/twitter_client"
+
 module SocialPosting
-  
-  private
-  
-    class Twitter
+
+    class Twitter<APIClients::TwitterClient
 
       def initialize(user)
-        raise ArgumentError, 'Must provide User' unless @user = user
-        @twitter_auth = @user.authentications.select { |a| a.provider == 'twitter'  }.first
-        raise ArgumentError, 'User must have twitter authentication' unless @twitter_auth
+        self.setup_for_user user
       end
-        
+
       def post_tweet(message, in_reply_to_tweet_id=nil)
         opts = { :status => message } #XXX Do we need to truncate the message?
         opts[:in_reply_to_status_id] = in_reply_to_tweet_id if in_reply_to_tweet_id
@@ -20,19 +18,7 @@ module SocialPosting
           return true
         end
       end
-    
-      private
-    
-        def twitter_client
-          @client ||= Grackle::Client.new(:auth => {
-              :type => :oauth,
-              :consumer_key => Settings::Twitter.consumer_key, 
-              :consumer_secret => Settings::Twitter.consumer_secret,
-              :token => @twitter_auth.oauth_token, 
-              :token_secret => @twitter_auth.oauth_secret
-            })
-        end
-      
+
     end
-  
+
 end

@@ -1,4 +1,12 @@
 GIT
+  remote: git://github.com/PracticallyGreen/sendgrid.git
+  revision: 0a302a0707714294adf9a3affc62ce63e64c7502
+  specs:
+    sendgrid (1.0.1)
+      json
+      json
+
+GIT
   remote: git://github.com/ShelbyTV/beanstalk-client-ruby.git
   revision: b2a94be9f9a4f1a8a495fdea078055aee5ea8bcb
   specs:
@@ -49,7 +57,7 @@ GIT
 
 GIT
   remote: git@github.com:ShelbyTV/awesm.git
-  revision: 32dd3fc009799433de876c11266f54e2880bd22d
+  revision: 4255653a0c84be9a0f42dccc6ef7f1663164501e
   specs:
     awesm (0.1.8)
       hashie
@@ -178,7 +186,7 @@ GEM
     mongo (1.6.4)
       bson (~> 1.6.4)
     multi_json (1.3.6)
-    multi_xml (0.4.4)
+    multi_xml (0.5.1)
     multipart-post (1.1.5)
     net-scp (1.0.4)
       net-ssh (>= 1.99.1)
@@ -267,9 +275,6 @@ GEM
     sanitize (2.0.3)
       nokogiri (>= 1.4.4, < 1.6)
     sass (3.1.15)
-    sendgrid (1.0.1)
-      json
-      json
     settingslogic (2.0.8)
     shoulda (3.0.1)
       shoulda-context (~> 1.0.0)
@@ -350,7 +355,7 @@ DEPENDENCIES
   rspec-rails
   sailthru-client
   sanitize
-  sendgrid
+  sendgrid!
   settingslogic
   shoulda
   sitemap_generator

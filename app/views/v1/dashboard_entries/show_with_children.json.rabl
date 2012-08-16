@@ -11,7 +11,7 @@ child :frame => "frame" do |f|
 	end
 
 	child :creator => "creator" do
-		attributes :id, :name, :nickname, :user_image_original, :user_image, :faux, :public_roll_id
+		attributes :id, :name, :nickname, :user_image_original, :user_image, :faux, :public_roll_id, :gt_enabled
 	end
 
 	# upvote_users is a fake attribute that is populated in the controller	
@@ -20,12 +20,11 @@ child :frame => "frame" do |f|
   end
 	
 	child :roll => "roll" do
-		attributes :id, :collaborative, :public, :creator_id, :title, :roll_type, :creator_thumbnail_url => :thumbnail_url
+		attributes :id, :collaborative, :public, :creator_id, :origin_network, :genius, :frame_count, :first_frame_thumbnail_url, :title, :roll_type, :creator_thumbnail_url => :thumbnail_url
 		
-		code :first_frame_thumbnail_url do |r|
-			r.first_frame_thumbnail_url if r.first_frame_thumbnail_url
-		end
-		
+		code :subdomain do |r|
+      r.subdomain if r.subdomain_active
+    end
 	end
 	
 	child :video => "video" do

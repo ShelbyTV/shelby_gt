@@ -1,6 +1,8 @@
 # encoding: UTF-8
 require 'authentication_builder'
 require 'predator_manager'
+require 'api_clients/twitter_client'
+require 'api_clients/twitter_info_getter'
 
 
 # This is the one and only place where Users are created.
@@ -22,8 +24,12 @@ module GT
         
         GT::PredatorManager.initialize_video_processing(user, auth)
         
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'], user.id, 'signup')
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
         
+        ShelbyGT_EM.next_tick {
+          populate_autocomplete_info(user)
+        }
+
         return user
       else
         
@@ -44,7 +50,7 @@ module GT
         #additional meta-data for user's public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
         
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'], user.id, 'signup')
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
         
         return user
       else
@@ -68,9 +74,13 @@ module GT
       update_token_and_permissions(user)
       
       ensure_app_progress_created(user)
-      
+
       # Always remember users, onus is on them to log out
       user.remember_me!(true)
+
+      ShelbyGT_EM.next_tick {
+        populate_autocomplete_info(user)
+      }
     end
     
     # Adds a new auth to an existing user
@@ -80,7 +90,7 @@ module GT
       if user.save
         GT::PredatorManager.initialize_video_processing(user, new_auth)        
         
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['add_service'][new_auth.provider], user.id, 'add_service')
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['add_service'][new_auth.provider])
         
         return user
       else
@@ -110,6 +120,15 @@ module GT
       raise ArgumentError, "must supply valid uid" unless uid.is_a?(String) and !uid.blank?
       
       if u = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
+        
+        # if this user was created recently, another fiber may still be working; want to let it finish setting the user up
+        # otherwise ensure_users_special_rolls can step on the other fiber's toes
+        # NB. The best way to do this would be with some sort of lock on the user, but that's overkill right now...
+        if u.created_at > 10.seconds.ago
+          EventMachine::Synchrony.sleep(10)
+          u.reload
+        end
+        
         ensure_users_special_rolls(u, true)
         u.update_attributes(:user_image => options[:user_thumbnail_url], :user_image_original => options[:user_thumbnail_url]) if u.user_image == nil
         return u
@@ -177,7 +196,7 @@ module GT
       user.faux = User::FAUX_STATUS[:converted]
       if user.save
         GT::PredatorManager.initialize_video_processing(user, new_auth) if new_auth
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'], user.id, 'signup')
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'])
         return user, new_auth
       else
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])        
@@ -190,7 +209,7 @@ module GT
     # should follow just the public roll
     def self.ensure_users_special_rolls(u, save=false)
       build_public_roll_for_user(u) unless u.public_roll
-      # Must save the user (which will persistes the public roll, set that id in user, then persist the user)
+      # Must save the user (which will persist the public roll, set that id in user, then persist the user)
       # b/c add_follower does an atomic push and reloads the roll and user
       u.save if save
       u.public_roll.add_follower(u) if save and !u.following_roll?(u.public_roll)
@@ -200,9 +219,16 @@ module GT
       #users now follow their upvoted_roll, from the consumer side of the api its known as the heart_roll
       u.upvoted_roll.add_follower(u) if save and !u.following_roll?(u.upvoted_roll)
       
+      #make sure upvoted (hearts) is public, as they weren't always this way for faux users
+      u.upvoted_roll.update_attribute(:public, true) unless u.upvoted_roll.public?
+      
       build_watch_later_roll_for_user(u) unless u.watch_later_roll
-      #users don't follow their watch_later_roll
-      u.watch_later_roll.save if save
+      u.save if save
+      #users follow their watch_later roll
+      u.watch_later_roll.add_follower(u) if save and !u.following_roll?(u.watch_later_roll)
+      
+      #make sure watch later is public, as they weren't always this way for faux users
+      u.watch_later_roll.update_attribute(:public, true) unless u.watch_later_roll.public?
             
       build_viewed_roll_for_user(u) unless u.viewed_roll
       #users don't follow their viewed_roll
@@ -259,15 +285,14 @@ module GT
       return false unless oauth_token and oauth_secret
       
       begin
-        c = Grackle::Client.new(:auth => {
-            :type => :oauth,
-            :consumer_key => Settings::Twitter.consumer_key, :consumer_secret => Settings::Twitter.consumer_secret,
-            :token => oauth_token, :token_secret => oauth_secret
-          })
+        c = APIClients::TwitterClient.build_for_token_and_secret(oauth_token, oauth_secret)
         #this will throw if user isn't auth'd
         c.statuses.home_timeline? :count => 1
         return true
-      rescue Grackle::TwitterError => e
+      rescue Grackle::TwitterError
+        return false
+      rescue => e
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['verify_service']['failure']['twitter'])
         return false
       end
     end
@@ -279,9 +304,21 @@ module GT
         graph = Koala::Facebook::API.new(oauth_token)
         graph.get_connections("me","permissions")
         return true
-      rescue Koala::Facebook::APIError => e
+      rescue Koala::Facebook::APIError
+        return false
+      rescue => e
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['verify_service']['failure']['facebook'])
         return false
       end
+    end
+    
+    def self.copy_cohorts!(from, to, additional_cohorts = [])
+      raise ArgumentError, "must supply valid from user" unless from.is_a? User
+      raise ArgumentError, "must supply valid to user" unless to.is_a? User
+      raise ArgumentError, "additional_cohorts must be an array" unless additional_cohorts.is_a? Array
+      
+      to.cohorts += (from.cohorts + additional_cohorts)
+      to.save
     end
     
     private
@@ -354,7 +391,7 @@ module GT
         r.creator = u
         r.public = true
         r.collaborative = false
-        r.roll_type = Roll::TYPES[:special_public]
+        r.roll_type = (u.faux == User::FAUX_STATUS[:true] ? Roll::TYPES[:special_public] : Roll::TYPES[:special_public_real_user])
         r.title = u.nickname
         r.creator_thumbnail_url = u.user_image || u.user_image_original
         u.public_roll = r
@@ -363,7 +400,7 @@ module GT
       def self.build_watch_later_roll_for_user(u)
         r = Roll.new
         r.creator = u
-        r.public = false
+        r.public = true
         r.collaborative = false
         r.roll_type = Roll::TYPES[:special_watch_later]
         r.title = "Watch Later"
@@ -373,11 +410,11 @@ module GT
       def self.build_upvoted_roll_for_user(u)
         r = Roll.new
         r.creator = u
-        r.public = false
+        r.public = true
         r.collaborative = false
         r.upvoted_roll = true
         r.roll_type = Roll::TYPES[:special_upvoted]
-        r.title = "Upvoted"
+        r.title = "Hearts"
         u.upvoted_roll = r
       end
       
@@ -395,6 +432,19 @@ module GT
         return if u.app_progress
         u.app_progress = AppProgress.new
         u.save
+      end
+
+      def self.populate_autocomplete_info(u)
+        # if the user has twitter authorization, look up the user's twitter followings
+        # and save them for autocomplete
+        if u.authentications.any?{|auth| auth.provider == 'twitter'}
+          begin
+            following_screen_names = APIClients::TwitterInfoGetter.new(u).get_following_screen_names
+            u.store_autocomplete_info(:twitter, following_screen_names)
+          rescue Grackle::TwitterError
+            # if we have Grackle problems, just give up
+          end
+        end
       end
   end
 end

@@ -38,7 +38,8 @@ describe GT::SocialPoster do
       @from_user.authentications.first.provider = "facebook"; @from_user.save
       @comment = "how much would a wood chuck chuck..."
       @conversation = Factory.create(:conversation, :messages => [Factory.create(:message, :text => @comment, :user => Factory.create(:user))])
-      @frame = Factory.create(:frame, :creator_id => @from_user.id, :conversation_id => @conversation.id)
+      @video = Factory.create(:video)
+      @frame = Factory.create(:frame, :creator_id => @from_user.id, :conversation_id => @conversation.id, :video => @video)
     end
     
     it "should return true if user has facebook acct and post is sent" do
@@ -46,6 +47,12 @@ describe GT::SocialPoster do
       post.should eq(true)
     end
     
+    it "should successfully post when sharing a roll" do
+      roll = Factory.create(:roll)
+      post = GT::SocialPoster.post_to_facebook(@from_user, @comment, roll)
+      post.should eq(true)
+    end
+
     it "should return false if a parameter isn't given" do
       post = GT::SocialPoster.post_to_facebook(nil, @comment, @frame)
       post.should eq(false)
@@ -62,10 +69,10 @@ describe GT::SocialPoster do
 
   context "posting to tumblr" do
     #we need an iframe player for gt before we can post to tumblr!
-    it 'should post to tumblr'
+    #it 'should post to tumblr'
   end
   
-  context "send via email" do
+  context "send a Frame via email" do
     before(:all) do
       @from_user = Factory.create(:user)
       @from_user.primary_email = "my@email.com"; @from_user.save
@@ -77,7 +84,7 @@ describe GT::SocialPoster do
     
     it "should send an email to 1 addess of a frame and return a Mail::Message" do
       email_address = ["some_other@email.com"]
-      email = GT::SocialPoster.post_to_email(@from_user, email_address, @comment, @frame)
+      email = GT::SocialPoster.email_frame(@from_user, email_address, @comment, @frame)
 
       email.length.should eq(1)
       email.first.class.should eq(Mail::Message)
@@ -86,8 +93,8 @@ describe GT::SocialPoster do
     end
     
     it "should send more than one emails if asked to" do
-      email_address = "some_other@email.com,tit@tat.com,jack@sprat.edu"
-      email = GT::SocialPoster.post_to_email(@from_user, email_address, @comment, @frame)
+      email_address = "some_other@email.com;tit@tat.com,jack@sprat.edu"
+      email = GT::SocialPoster.email_frame(@from_user, email_address, @comment, @frame)
       email.length.should eq(3)
     end
     

@@ -5,6 +5,8 @@
 #
 # This utility gets the same info and puts it into a compatible format so we can pass it around in the same way.
 #
+require "api_clients/twitter_client"
+
 module GT
   class ImposterOmniauth
     
@@ -67,14 +69,10 @@ module GT
     private
     
       def self.get_twitter_user_info(oauth_token, oauth_secret)
-        c = Grackle::Client.new(:auth => {
-            :type => :oauth,
-            :consumer_key => Settings::Twitter.consumer_key, :consumer_secret => Settings::Twitter.consumer_secret,
-            :token => oauth_token, :token_secret => oauth_secret
-          })
+        c = APIClients::TwitterClient.build_for_token_and_secret(oauth_token, oauth_secret)
         begin
           return c.account.verify_credentials?
-        rescue Grackle::TwitterError => e
+        rescue Grackle::TwitterError
           return nil
         end
       end
@@ -83,7 +81,7 @@ module GT
         graph = Koala::Facebook::API.new(oauth_token)
         begin
           me = graph.get_object "me"
-        rescue Koala::Facebook::APIError => e
+        rescue Koala::Facebook::APIError
           return {}
         end
       end

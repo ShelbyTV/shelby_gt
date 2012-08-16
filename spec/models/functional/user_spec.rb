@@ -79,6 +79,21 @@ describe User do
       @user.following_roll?(@roll).should == true
     end
     
+    it "should NOT be considered 'following_roll?' if followings are asymetic (ie. user has roll_rollowing but roll doesn't have following_user)" do
+      @roll.add_follower(@user)
+      
+      #this is normal
+      @user.reload.following_roll?(@roll).should == true
+      
+      #make it asymetric
+      @roll.update_attribute(:following_users, [])
+      
+      #should no longer be considered followed_by
+      @user.reload.following_roll?(@roll).should == false
+      #should be considered followed_by in the asymetric sense
+      @user.reload.following_roll?(@roll, false).should == true
+    end
+    
     it "should know what Rolls it's un-followed" do
       @roll.add_follower(@user)
       @user.unfollowed_roll?(@roll).should == false
@@ -149,6 +164,14 @@ describe User do
         @user.autocomplete[:email].should include('spinosa@gmail.com')
         @user.autocomplete[:email].should include('j@jay.net')
         @user.autocomplete[:email].should_not include('invalidaddress')
+        @user.autocomplete[:email].length.should == 2
+      end
+
+      it "should accept an array as the second parameter" do
+        @user.store_autocomplete_info(:email, ["totallynew@gmail.com",  "  totallynew2@gmail.com   "])
+        @user.autocomplete.should include(:email)
+        @user.autocomplete[:email].should include('totallynew@gmail.com')
+        @user.autocomplete[:email].should include('totallynew2@gmail.com')
         @user.autocomplete[:email].length.should == 2
       end
 

@@ -42,11 +42,39 @@
                                     <img src="<%= @user_from.user_image %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" style="border: 0;height: 100%;line-height: 100%;outline: none;text-decoration: none;display: inline;">
                                   </a>
                                 </div>
-                                <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> commented on your <a href="<%= @frame_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">video</a>.
+                                <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> commented on  <a href="<%= @frame_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @frame_title %></a>.
                               </h4>
                           </div>
                         </td>
                       </tr>
+                      <% if @frame_conversation_messages %>
+                        <tr>
+                          <td align="center" valign="top" class="shelby-notification-body" style="border-collapse: collapse;border-bottom: 1px solid #ddd;">
+                            <table border="0" cellpadding="4" cellspacing="0" width="330">
+                              <% @frame_conversation_messages.each_with_index do |message, i| %>
+                                <% if i == @frame_conversation_messages.length - 1 %>
+                                  <tr style="background-color: #E2E2E2">
+                                    <td valign="top">
+                                <% else %>
+                                  <tr>
+                                    <td valign="top" style="border-collapse: collapse;border-bottom: 1px solid #BBB;">
+                                <% end %>
+                                  <img src="<%= message.user_image_url %>" alt="<%= message.nickname %>" title="<%= message.nickname %>" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 50px;vertical-align: bottom;" />
+                                </td>
+                                <% if i == @frame_conversation_messages.length - 1 %>
+                                  <td valign="top">
+                                <% else %>
+                                  <td valign="top" style="border-collapse: collapse;border-bottom: 1px solid #BBB;">
+                                <% end %>
+                                  <h5 style="margin-top: .25em;margin-right: 0;margin-bottom: 0;margin-left: 0;color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: bold;"><%= message.nickname %></h5>
+                                  <p style="margin-top: .5em;margin-right: 0;margin-bottom: .5em;margin-left: 0;color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: normal;"><%= message.text %></p>
+                                </td>
+                              </tr>
+                              <% end %>
+                            </table>
+                          </td>
+                        </tr>
+                      <% end %>
                       <tr>
                         <td align="right" valign="middle" class="shelby-notification-footer" style="border-collapse: collapse;border-top: 1px solid #fff;color: #888;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 11px;line-height: 100%;text-align: right;">
                           <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">

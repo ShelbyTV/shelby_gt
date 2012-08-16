@@ -307,13 +307,13 @@ class V1::FrameController < ApplicationController
         # set the action, defaults to new_bookmark_frame
         case params[:source]
         when "bookmark", nil, ""
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["bookmarklet"], current_user.id, 'frame_create_bookmarklet', request)
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["bookmarklet"])
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
         when "extension"
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["extionsion"], current_user.id, 'frame_create_extension', request)
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["extionsion"])
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
         when "webapp"
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["webapp"], current_user.id, 'frame_create_inapp', request)
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["webapp"])
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_in_app_frame]
         else
           return render_error(404, "that action isn't cool.")
@@ -342,10 +342,12 @@ class V1::FrameController < ApplicationController
           if roll.postable_by?(current_user)
             @frame = frame_to_re_roll.re_roll(current_user, roll)
             @frame = @frame[:frame]
-            StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'], current_user.id, 'frame_re_roll', request)
+            StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'])
             
             # send email notification in a non-blocking manor
-            #ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_reroll_notification(frame_re_roll, @frame) }
+            ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_reroll_notification(frame_to_re_roll, @frame) }
+            # send OG action to FB
+            ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', current_user, @frame) }
             
             @status = 200
           else
@@ -395,7 +397,7 @@ class V1::FrameController < ApplicationController
         
         # params[:destination] is an array of destinations, 
         #  short_links will be a hash of desinations/links
-        short_links = GT::LinkShortener.get_or_create_shortlinks(frame, params[:destination].join(','))
+        short_links = GT::LinkShortener.get_or_create_shortlinks(frame, params[:destination].join(','), current_user)
         
         resp = true
         
@@ -408,18 +410,19 @@ class V1::FrameController < ApplicationController
             t = GT::SocialPostFormatter.format_for_facebook(text, short_links)
             resp &= GT::SocialPoster.post_to_facebook(current_user, t, frame)
           when 'email'
-            #NB if frame is on a private roll, this is a private roll invite.  Otherwise, it's just a Frame share
+            # This is just a Frame share
             email_addresses = params[:addresses]
             return render_error(404, "you must provide addresses") if email_addresses.blank?
             
             # save any valid addresses for future use in autocomplete
             current_user.store_autocomplete_info(:email, email_addresses)
 
-            resp &= GT::SocialPoster.post_to_email(current_user, params[:addresses], text, frame)
+            # Best effort.  For speed, not checking if send succeeds (front-end should validate eaddresses format)
+            ShelbyGT_EM.next_tick { GT::SocialPoster.email_frame(current_user, params[:addresses], text, frame) }
           else
             return render_error(404, "we dont support that destination yet :(")
           end
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d], current_user.id, 'frame_share', request)
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d])
         end
         
         if resp
@@ -429,7 +432,7 @@ class V1::FrameController < ApplicationController
             frame.conversation.messages << new_message
             if frame.conversation.save
               ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(frame.conversation, new_message, current_user) }
-              StatsManager::StatsD.increment(Settings::StatsConstants.message['create'], nil, nil, request)
+              StatsManager::StatsD.increment(Settings::StatsConstants.message['create'])
             end
           end
           
@@ -461,16 +464,19 @@ class V1::FrameController < ApplicationController
         if @frame.upvote_undo!(current_user)
           @status = 200
           GT::UserActionManager.unupvote!(current_user.id, @frame.id)
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote_undo', request)
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"])
           @frame.reload
         else
           render_error(404, "Failed to undo upvote frame #{@frame.id}")
         end
       else
         if @frame.upvote!(current_user)
+          # send OG action to FB
+          ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('favorite', current_user, @frame) }
+          
           @status = 200
           GT::UserActionManager.upvote!(current_user.id, @frame.id)
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"], current_user.id, 'frame_upvote', request)
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["upvote"])
           @frame.reload
         else
           render_error(404, "Failed to upvote frame #{@frame.id}")
@@ -494,7 +500,7 @@ class V1::FrameController < ApplicationController
         if @new_frame = @frame.add_to_watch_later!(current_user)
           @status = 200
           GT::UserActionManager.watch_later!(current_user.id, @frame.id)
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch_later"], current_user.id, 'frame_watch_later', request)
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch_later"])
         end
     end
   end
@@ -522,13 +528,32 @@ class V1::FrameController < ApplicationController
 
         if params[:start_time] and params[:end_time]
           GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch"], current_user ? current_user.id : nil , 'frame_watch', request)
+          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch"])
         end
       else
         render_error(404, "could not find frame")
       end
     end
   end
+  
+  ##
+  # gets a short link for the given frame
+  #   AUTHENTICATION OPTIONAL
+  #
+  # [POST] /v1/frame/:id/short_link
+  # 
+  # @param [Required, String] id The id of the frame
+  def short_link
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['short_link']) do
+      if @frame = Frame.find(params[:frame_id])
+        @status = 200
+        @short_link = GT::LinkShortener.get_or_create_shortlinks(@frame, 'email', current_user)
+      else
+        render_error(404, "could not find frame")
+      end
+    end
+  end
+  
   
   ##
   # Destroys one frame, returning Success/Failure
@@ -541,16 +566,16 @@ class V1::FrameController < ApplicationController
   def destroy
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['destroy']) do
       @frame = Frame.find(params[:id])
-      
-      #XXX Can't just destory the frame!  
-      # What about the conversation?
-      # What about any DashboardEntries pointing to this Frame?
-      #  It seems the front end handles bad dashboard entries gracefully, but I don't like that as a solution.
-      
-      if @frame and @frame.destroy 
+
+      if @frame and @frame.destroyable_by?(current_user) and @frame.destroy
+        @frame.conversation.destroy if @frame.conversation
+        # front-end gracefully handles DashboardEntries w/o Frames, but we'll try to delete a bunch of them anyway
+        # (It takes ~25s for a find of this size to return.  Since remove is fire and forget, no need to wrap in next_tick)
+        DashboardEntry.collection.remove({:c => @frame.id}, {:max_scan => 5_000_000, :sort => [:_id, :desc]})
+        
         @status = 200
       else
-        render_error(404, "could not destroy that frame with id #{params[:id]}")
+        render_error(404, "You cannot destroy that frame.")
       end
     end
   end

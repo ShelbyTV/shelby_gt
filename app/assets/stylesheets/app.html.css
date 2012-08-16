@@ -17,7 +17,6 @@ h1, h2, h3, h4, h5, h6 {
 html, body {
   height: 100%;
   margin: 0;
-  overflow: hidden;
   padding: 0;
   width: 100%;
 }
@@ -31,7 +30,7 @@ body {
   position: absolute;
   right: 0;
   top: 0;
- background: url("assets/noise.png") black;
+ background: url("assets/noise.png") #47274e;
 }
 
 /* line 33, ../../../app/stylesheets/partials/app.html.scss */

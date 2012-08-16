@@ -9,7 +9,19 @@ require 'predator_manager'
 # UNIT test
 describe GT::UserManager do
   
+  before(:each) do
+    # don't want TwitterInfoGetter trying to make real requests to API
+    @info_getter = double("info_getter")
+    @info_getter.stub(:get_following_screen_names).and_return(['a','b'])
+    APIClients::TwitterInfoGetter.stub(:new).and_return(@info_getter)
+  end
+
   context "get_or_create_faux_user" do
+    before(:each) do
+      # we sleep when finding a new user, need to stub that
+      EventMachine::Synchrony.stub(:sleep)
+    end
+
     it "should raise an error if nickname is invalid" do
       lambda {
         GT::UserManager.get_or_create_faux_user('', 'provider', 'uid')
@@ -30,7 +42,8 @@ describe GT::UserManager do
     
     it "should get real User when one exists" do
       nick, provider, uid = "whatever", "fb", "123uid"
-      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u = User.new(:nickname => nick)
+      u.faux = User::FAUX_STATUS[:true]
       u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
@@ -47,7 +60,8 @@ describe GT::UserManager do
     
     it "should get faux User when one exists" do
       nick, provider, uid = "whatever2", "fb", "123uid2"
-      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:true])
+      u = User.new(:nickname => nick)
+      u.faux = User::FAUX_STATUS[:true]
       u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
@@ -64,7 +78,8 @@ describe GT::UserManager do
     
     it "should add a public roll to existing user if they're missing it" do
       nick, provider, uid = "whatever--", "fb--", "123uid--"
-      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u = User.new(:nickname => nick)
+      u.faux = User::FAUX_STATUS[:true]
       u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
@@ -86,7 +101,8 @@ describe GT::UserManager do
     it "should add a watch_later_roll, upvoted_roll, viewed_roll, public_roll to existing user if they're missing it" do
       nick, provider, uid = "whatever--b-", "fb--", "123uid--b-"
       thumb_url = "some://thumb.url"
-      u = User.new(:nickname => nick, :faux => false)
+      u = User.new(:nickname => nick)
+      u.faux = User::FAUX_STATUS[:true]
       u.downcase_nickname = nick
       u.user_image = thumb_url
       auth = Authentication.new
@@ -97,6 +113,7 @@ describe GT::UserManager do
       
       u.persisted?.should == true
       u.watch_later_roll.should == nil
+      u.public_roll.should == nil
       
       lambda {
         usr = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
@@ -190,15 +207,15 @@ describe GT::UserManager do
       u.public_roll.origin_network.should == "fb"
     end
     
-    it "should have the faux user follow its own public and upvoted rolls (should not follow watch_later, viewed rolls)" do
+    it "should have the faux user follow its own public, upvoted and watch_later rolls (should not follow viewed rolls)" do
       nick, provider, uid = "whatever3-c", "fb", "123uid3-c"
       lambda {
         u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
         
         u.following_roll?(u.public_roll).should == true
         u.following_roll?(u.upvoted_roll).should == true
+        u.following_roll?(u.watch_later_roll).should == true
         
-        u.following_roll?(u.watch_later_roll).should == false
         u.following_roll?(u.viewed_roll).should == false
       }.should change { User.count }.by(1)
     end
@@ -220,7 +237,7 @@ describe GT::UserManager do
       r = u.watch_later_roll
       r.class.should == Roll
       r.persisted?.should == true
-      r.public.should == false
+      r.public.should == true
       r.collaborative.should == false
       r.creator.should == u
       r.roll_type.should == Roll::TYPES[:special_watch_later]
@@ -229,7 +246,7 @@ describe GT::UserManager do
       r = u.upvoted_roll
       r.class.should == Roll
       r.persisted?.should == true
-      r.public.should == false
+      r.public.should == true
       r.collaborative.should == false
       r.upvoted_roll.should == true
       r.creator.should == u
@@ -258,7 +275,8 @@ describe GT::UserManager do
     
     it "should update user's image if it's null" do
       nick, provider, uid = "whatever-x1", "fb", "123uid-x1"
-      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u = User.new(:nickname => nick)
+      u.faux = User::FAUX_STATUS[:true]
       u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
@@ -331,6 +349,9 @@ describe GT::UserManager do
   
   context "convert_faux_user_to_real" do
     before(:each) do
+      # we sleep when finding a new user, need to stub that
+      EventMachine::Synchrony.stub(:sleep)
+      
       @omniauth_hash = {
         'provider' => "twitter",
         'uid' => rand.to_s,
@@ -347,8 +368,8 @@ describe GT::UserManager do
         'garbage' => 'truck'
       }
       
-      nick, provider, uid = "whatever3", "fb", "123uid3"
-      @faux_u = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
+      @faux_u = Factory.create(:user, :gt_enabled => false, :faux => User::FAUX_STATUS[:true], :app_progress => AppProgress.new)
+      GT::UserManager.ensure_users_special_rolls(@faux_u, true)
     end
     
     it "should convert a (persisted) faux User to real user" do
@@ -364,6 +385,39 @@ describe GT::UserManager do
       real_u.persisted?.should == true
       real_u.faux.should == User::FAUX_STATUS[:converted]
       new_auth.should == nil
+    end
+    
+    it "should update their public roll's roll_type" do
+      @faux_u.public_roll.roll_type.should == Roll::TYPES[:special_public]
+      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      @faux_u.public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
+    end
+    
+    it "should follow their watch_later roll if they're not" do
+      @faux_u.watch_later_roll.remove_follower(@faux_u)
+      @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == false
+      
+      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == true
+      
+    end
+    
+    it "should make their watch_later roll public if it's not" do
+      @faux_u.watch_later_roll.update_attribute(:public, false)
+      @faux_u.watch_later_roll.reload.public.should == false
+      
+      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      
+      @faux_u.watch_later_roll.reload.public.should == true
+    end
+    
+    it "should make their upvoted_roll roll public if it's not" do
+      @faux_u.upvoted_roll.update_attribute(:public, false)
+      @faux_u.upvoted_roll.reload.public.should == false
+      
+      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      
+      @faux_u.upvoted_roll.reload.public.should == true
     end
 
     it "should have one authentication with an oauth token" do
@@ -628,6 +682,7 @@ describe GT::UserManager do
         
         u.public_roll.class.should == Roll
         u.public_roll.persisted?.should == true
+        u.public_roll.reload.roll_type.should == Roll::TYPES[:special_public_real_user]
         
         u.watch_later_roll.class.should == Roll
         u.watch_later_roll.persisted?.should == true
@@ -652,12 +707,12 @@ describe GT::UserManager do
         u.public_roll.origin_network.should == Roll::SHELBY_USER_PUBLIC_ROLL
       end
       
-      it "should have the user follow their public and upvoted rolls (and NOT the watch_later, or viewed Rolls)" do
+      it "should have the user follow their public, upvoted, and watch_later rolls (and NOT the viewed Roll)" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         
         u.following_roll?(u.public_roll).should == true
         u.following_roll?(u.upvoted_roll).should == true
-        u.following_roll?(u.watch_later_roll).should == false
+        u.following_roll?(u.watch_later_roll).should == true
         u.following_roll?(u.viewed_roll).should == false
       end
       
@@ -778,6 +833,42 @@ describe GT::UserManager do
       auth.oauth_secret.should == "NEW--secret"
     end
     
+    context "autocomplete" do
+
+      context "signin existing user" do
+        before(:each) do
+          @u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        end
+
+        it "should retrieve and save twitter autocomplete info on signin of existing user" do
+            @info_getter.should_receive(:get_following_screen_names)
+            @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
+            GT::UserManager.start_user_sign_in(@u, :omniauth => @omniauth_hash)
+        end
+
+        it "should not save twitter autocomplete info if TwitterError occurs" do
+            @info_getter.should_receive(:get_following_screen_names).and_raise(Grackle::TwitterError.new('', '', '', ''))
+            @u.should_not_receive(:store_autocomplete_info)
+            GT::UserManager.start_user_sign_in(@u, :omniauth => @omniauth_hash)
+        end
+
+        it "should not save twitter autocomplete info if the user doesn't have twitter auth" do
+            omniauth = @omniauth_hash.clone()
+            omniauth['provider'] = 'facebook'
+            u = GT::UserManager.create_new_user_from_omniauth(omniauth)
+            @info_getter.should_not_receive(:get_following_screen_names)
+            GT::UserManager.start_user_sign_in(u, :omniauth => omniauth)
+        end
+      end
+
+      context "create new user via omniauth" do
+        it "should retrieve and save twitter autocomplete info on creation of new user via omniauth" do
+            @info_getter.should_receive(:get_following_screen_names)
+            u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        end
+      end
+    end
+
     it "should be able to update auth tokens via direct options" do
       u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
       
@@ -876,6 +967,54 @@ describe GT::UserManager do
     it "should not verify and return false if user does not have that auth" do
       GT::UserManager.verify_user(@user, "something_DNE", "some_id", "token", "secret").should == false
     end    
+  end
+  
+  context "cohort copying" do
+    it "should copy all cohorts from inviter to user with no additional cohorts" do
+      c = ["a", "b", "c"]
+      u1 = Factory.create(:user, :cohorts => c)
+      u2 = Factory.create(:user)
+      
+      GT::UserManager.copy_cohorts!(u1, u2)
+      
+      u2.reload.cohorts.should == c
+      u1.reload.cohorts.should == c
+    end
+    
+    it "should copy zero cohorts from inviter to user with no additional cohorts" do
+      u1 = Factory.create(:user)
+      u2 = Factory.create(:user)
+      
+      GT::UserManager.copy_cohorts!(u1, u2)
+      
+      u2.reload.cohorts.should == []
+      u1.reload.cohorts.should == []
+    end
+    
+    it "should copy all cohorts from inviter to user with additional cohorts" do
+      c = ["a", "b", "c"]
+      addtl = ["x", "y"]
+      u1 = Factory.create(:user, :cohorts => c)
+      u2 = Factory.create(:user)
+      
+      GT::UserManager.copy_cohorts!(u1, u2, addtl)
+
+      u2.reload.cohorts.should == c + addtl
+      u1.reload.cohorts.should == c
+    end
+    
+    it "shouldnt fuck with original cohorts of to user" do
+      c = ["a", "b", "c"]
+      addtl = ["x", "y"]
+      to_orig_cohorts = ["o"]
+      u1 = Factory.create(:user, :cohorts => c)
+      u2 = Factory.create(:user, :cohorts => to_orig_cohorts)
+      
+      GT::UserManager.copy_cohorts!(u1, u2, addtl)
+
+      u2.reload.cohorts.should == to_orig_cohorts + c + addtl
+      u1.reload.cohorts.should == c
+    end
   end
   
   context "helper stuff" do

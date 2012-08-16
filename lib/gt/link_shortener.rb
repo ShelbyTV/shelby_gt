@@ -6,7 +6,7 @@ module GT
    
    # linkable is an entitly link a roll or frame that has a permalink
    # destinations is a comma seperated string eg "email,twitter"
-   def self.get_or_create_shortlinks(linkable, destinations)
+   def self.get_or_create_shortlinks(linkable, destinations, user=nil)
      raise ArgumentError, "must supply at least one destination" unless destinations and destinations.is_a?(String)
      raise ArgumentError, "must supply a roll or frame" unless linkable and (linkable.is_a?(Roll) or linkable.is_a?(Frame))
      
@@ -33,8 +33,11 @@ module GT
        params = {  :url => long_url,
                    :channel => d_copy,
                    :key=> Settings::Awesm.api_key,
-                   :tool => Settings::Awesm.tool_key 
+                   :tool => Settings::Awesm.tool_key
                  }
+       
+       params[:user_id] = user.id.to_s if user
+       
        code, resp = Awesm::Url.batch( params )
        
        if code == 200

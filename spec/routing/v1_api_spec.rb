@@ -30,6 +30,24 @@ describe V1::UserController do
       )
     end
     
+    it "routes for user GET with nickname" do
+      { :get => "/v1/user/nickname" }.should route_to(
+        :controller => "v1/user",
+        :action => "show",
+        :format => "json",
+        :id => "nickname"
+      )
+    end
+    
+    it "routes for user GET with nickname that includes a dot" do
+      { :get => "/v1/user/nick.name" }.should route_to(
+        :controller => "v1/user",
+        :action => "show",
+        :format => "json",
+        :id => "nick.name"
+      )
+    end
+    
     it "routes for signed_in GET" do
       { :get => "/v1/signed_in" }.should route_to(
         :controller => "v1/user",
@@ -100,7 +118,7 @@ end
 
 describe V1::FrameController do
   describe "routing" do
-    it "routes for GET" do
+    it "routes for GET frame" do
       { :get => "/v1/frame/1" }.should route_to(
         :controller => "v1/frame",
         :action => "show",
@@ -108,6 +126,15 @@ describe V1::FrameController do
         :id => "1"
       )
     end 
+    
+    it "routes for GET short_link" do
+      { :get => "/v1/frame/1/short_link" }.should route_to(
+        :controller => "v1/frame",
+        :action => "short_link",
+        :format => "json",
+        :frame_id => "1"
+      )
+    end
     
     it "GET INDEX of personal_roll" do
       { :get => "/v1/user/1/rolls/personal/frames" }.should route_to(
@@ -212,10 +239,18 @@ describe V1::RollController do
       )
     end
     
-    it "route to browser roll" do
+    it "routes to Browse roll" do
       { :get => "/v1/roll/browse" }.should route_to(
         :controller => "v1/roll",
         :action => "browse",
+        :format => "json"
+      )
+    end
+    
+    it "routes to Explore roll" do
+      { :get => "/v1/roll/explore" }.should route_to(
+        :controller => "v1/roll",
+        :action => "explore",
         :format => "json"
       )
     end
@@ -288,7 +323,23 @@ describe V1::VideoController do
         :format => "json",
         :id => "1"
       )
-    end 
+    end
+    
+    it "routes for GET viewed" do
+      { :get => "/v1/video/viewed" }.should route_to(
+        :controller => "v1/video",
+        :action => "viewed",
+        :format => "json"
+      )
+    end
+    
+    it "routes for GET queued" do
+      { :get => "/v1/video/queued" }.should route_to(
+        :controller => "v1/video",
+        :action => "queued",
+        :format => "json"
+      )
+    end
   end
 end
 

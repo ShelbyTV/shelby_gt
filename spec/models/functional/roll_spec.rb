@@ -55,6 +55,49 @@ describe Roll do
         @roll.reload.followed_by?(@user).should == true
         @user.reload.following_roll?(@roll).should == true
       end
+      
+      it "should NOT be considered 'followed_by' when followings are asymetic (ie. roll has following_user but user doesn't have roll_rollowing)" do
+        @roll.add_follower(@user)
+        
+        #this is normal
+        @roll.reload.followed_by?(@user).should == true
+        
+        #make it asymetric
+        @user.update_attribute(:roll_followings, [])
+        
+        #should no longer be considered followed_by
+        @roll.reload.followed_by?(@user).should == false
+        #should be considered followed_by in the asymetric sense
+        @roll.reload.followed_by?(@user, false).should == true
+      end
+      
+      it "should add follower when followings are asymetric (ie. roll has following_user but user doesn't have roll_rollowing)" do
+        @roll.add_follower(@user)
+
+        #make it asymetric (on user side)
+        @user.update_attribute(:roll_followings, [])
+        
+        #should no longer be considered followed_by
+        @roll.reload.followed_by?(@user).should == false
+        
+        #should add follower correctly
+        @roll.add_follower(@user)
+        @roll.reload.followed_by?(@user).should == true
+      end
+      
+      it "should add follower when followings are asymetric (ie. user has roll_rollowing but roll doesn't have following_user)" do
+        @roll.add_follower(@user)
+
+        #make it asymetric (on roll side)
+        @roll.update_attribute(:following_users, [])
+        
+        #should no longer be considered followed_by
+        @roll.reload.followed_by?(@user).should == false
+        
+        #should add follower correctly
+        @roll.add_follower(@user)
+        @roll.reload.followed_by?(@user).should == true
+      end
 
       it "should email on add follower" do
         lambda {
@@ -105,6 +148,31 @@ describe Roll do
         @roll.followed_by?(@user).should == true
         @user.following_roll?(@roll).should == true
         @user.unfollowed_roll?(@roll).should == false
+      end
+      
+      it "should be able to remove all followers" do
+        @roll.add_follower(@user)
+        @roll.add_follower(@stranger)
+        @roll.reload.following_users.count.should == 2
+        @user.reload.roll_followings.count.should == 1
+        @stranger.reload.roll_followings.count.should == 1
+        
+        @roll.remove_all_followers!
+        
+        @roll.reload.following_users.count.should == 0
+        @user.reload.roll_followings.count.should == 0
+        @stranger.reload.roll_followings.count.should == 0
+      end
+      
+      it "should be able to remove all followers even if some are nil" do
+        @roll.add_follower(@user)
+        @roll.add_follower(@stranger)
+        @stranger.destroy
+        @roll.reload.following_users.count.should == 2
+
+        @roll.remove_all_followers!
+        
+        @roll.reload.following_users.count.should == 0
       end
 
       it "should be able to hold 1000 following users" do
@@ -211,16 +279,7 @@ describe Roll do
 
     end
 
-    context "upvoted_roll display_<title/thumbnail_url>" do
-      it "should return regular title when not an upvoted roll" do
-        @roll.display_title.should == @roll_title
-      end
-
-      it "should return heart title when an upvoted roll" do
-        @roll.upvoted_roll = true
-        @roll.display_title.should == "#{@roll.creator.nickname} ♥s"
-      end
-
+    context "upvoted_roll display_thumbnail_url" do
       it "should return regular thumbnail_url when not an upvoted roll" do
         @roll.display_thumbnail_url.should == "u://rl"
       end
@@ -276,7 +335,7 @@ describe Roll do
 
   context "testing subdomain" do
     before(:each) do
-      @roll = Factory.create(:roll)
+      @roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public_real_user])
       @roll_title = @roll.title
     end
 
@@ -288,6 +347,7 @@ describe Roll do
     end
 
     it "should NOT have a subdomain if it's private" do
+      @roll.roll_type = Roll::TYPES[:user_private]
       @roll.collaborative = false
       @roll.public = false
       @roll.save
@@ -300,6 +360,7 @@ describe Roll do
     end
 
     it "should NOT have a subdomain if it's a genius roll" do
+      @roll.roll_type = Roll::TYPES[:genius]
       @roll.collaborative = false
       @roll.genius = true
       @roll.save
@@ -312,6 +373,7 @@ describe Roll do
     end
 
     it "should NOT have a subdomain if it's collaborative" do
+      @roll.roll_type = Roll::TYPES[:user_public]
       @roll.collaborative = true
       @roll.save
       @roll.subdomain.nil?.should == true

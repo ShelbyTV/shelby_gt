@@ -1,5 +1,6 @@
 require 'spec_helper' 
 require 'video_manager'
+require 'link_shortener'
 
 describe 'v1/frame' do
   
@@ -20,7 +21,7 @@ describe 'v1/frame' do
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
     end
-    
+
     describe "GET" do
       context 'one frame' do
         it "should return frame info on success" do
@@ -227,11 +228,23 @@ describe 'v1/frame' do
           
           response.body.should be_json_eql(404).at_path("status")
         end
-      
+        
         it "should return error message if frame doesnt exist" do
           get '/v1/roll/'+@f.id+'xxx/frames'
           response.body.should be_json_eql(404).at_path("status")
-        end        
+        end
+      end
+      
+      context 'short_link' do
+        it "should return short_link for a frame on success" do
+          short_link = "http://shl.by/1"
+          GT::LinkShortener.stub(:get_or_create_shortlinks).and_return({'email'=>short_link})
+          get '/v1/frame/'+@f.id+'/short_link'
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/short_link")
+          parse_json(response.body)["result"]["short_link"].should eq(short_link)
+        end
+        
       end
     end
     
@@ -243,7 +256,7 @@ describe 'v1/frame' do
           roll = Factory.create(:roll, :creator_id => @u1.id) 
           @f.roll_id = roll.id; @f.save
           post '/v1/roll/'+roll.id+'/frames?frame_id='+@f.id
-        
+
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/score")
           response.body.should have_json_path("result/roll")
@@ -400,19 +413,45 @@ describe 'v1/frame' do
         end
       end
     end
-    
+
     describe "DELETE" do
-      it "should delete the frame and return success" do
+      it "should delete the Frame and return success (if it's destroybale by the User)" do
+        Frame.any_instance.should_receive(:destroyable_by?).with(@u1).and_return(true)
         delete '/v1/frame/'+@f.id
         response.body.should be_json_eql(200).at_path("status")
       end
       
-      it "should return an error if a deletion fails" do
-        get '/v1/frame/'+@f.id+'xxx'
+      it "should fail to delete the Frame (if it's not destroyable by the User)" do
+        Frame.any_instance.should_receive(:destroyable_by?).with(@u1).and_return(false)
+        delete '/v1/frame/'+@f.id
         response.body.should be_json_eql(404).at_path("status")
       end
       
+      it "should return an error if a deletion fails" do
+        delete '/v1/frame/'+@f.id+'xxx'
+        response.body.should be_json_eql(404).at_path("status")
+      end
+      
+      it "should destroy the Frame's Conversation" do
+        @f.conversation.should_not be_nil
+        lambda {
+          delete '/v1/frame/'+@f.id
+        }.should change { Conversation.count } .by(-1)
+        @f.conversation.reload.should be_nil
+      end
+      
+      it "should destroy DashboardEntries related to that Frame" do
+        lambda {
+          Factory.create(:dashboard_entry, :frame_id => @f.id)
+          Factory.create(:dashboard_entry, :frame_id => @f.id)
+        }.should change { DashboardEntry.count } .by(2)
+        lambda {
+          delete '/v1/frame/'+@f.id
+        }.should change { DashboardEntry.count } .by(-2)
+      end
+      
     end
+    
   end
   
   context "not logged in" do

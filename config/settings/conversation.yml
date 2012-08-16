@@ -11,6 +11,7 @@ development:
 test:
   <<: *defaults
   db_name: 'test-gt-conversation'
+  mm_use_identity_map: false
 
 production: &production
   <<: *defaults

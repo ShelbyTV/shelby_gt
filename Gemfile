@@ -54,7 +54,7 @@ gem 'httparty'
 gem "youtube_it" #youtube api
 gem "grackle" 		# twitter
 gem "koala"				# facebook
-gem "sendgrid" 		# email
+gem "sendgrid", :git => "git://github.com/PracticallyGreen/sendgrid.git" 	# email, with g.analytics customization
 gem "sailthru-client"
 gem "awesm", :git => 'git@github.com:ShelbyTV/awesm.git'
 

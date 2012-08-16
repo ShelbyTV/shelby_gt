@@ -42,7 +42,7 @@
                                     <img src="<%= @user_from.user_image %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" style="border: 0;height: 100%;line-height: 100%;outline: none;text-decoration: none;display: inline;">
                                   </a>
                                 </div>
-                                <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> joined your <a href="<%= @roll_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">roll</a>.
+                                <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> is following your <a href="<%= @roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@roll) %></a>.
                               </h4>
                           </div>
                         </td>

@@ -1,5 +1,7 @@
 # encoding: utf-8
 require 'user_manager'
+require 'securerandom'
+require 'rhombus'
 
 # We are using the User model form Shelby (before rolls)
 # New vs. old keys will be clearly listed
@@ -70,7 +72,7 @@ class User
 
   key :cohorts, Array, :typecast => 'String', :abbr => :aq, :default => []
 
-  key :autocomplete, Hash, :abbr => :ar
+  key :autocomplete, Hash, :abbr => :as
 
   #--old keys--
   many :authentications
@@ -92,6 +94,9 @@ class User
   # Used to track referrals (where they are coming from)
   key :referral_frame_id, ObjectId
   
+  # define admin users who can access special areas
+  key :is_admin,              Boolean, :default => false
+    
   ## For Devise
   # Rememberable
   key :remember_me,           Boolean, :default => true
@@ -108,7 +113,7 @@ class User
   # [twitter, facebook, email, tumblr]
   key :social_tracker,        Array, :default => [0, 0, 0, 0]
 
-  attr_accessible :name, :nickname, :primary_email, :preferences, :app_progress, :user_image, :user_image_original
+  attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original
   
   # Arnold does a *shit ton* of user saving, which runs this validation, which turns out to be very expensive 
   # (see shelby_gt/etc/performance/unique_nickname_realtime_profile.gif)
@@ -155,16 +160,28 @@ class User
   
   def created_at() self.id.generation_time; end
   
-  def following_roll?(r)
+  # only return true if a correct, symmetric following is in the DB (when given a proper Roll and not roll_id)
+  # (this works in concert with Roll#add_follower which will fix an asymetric following)
+  def following_roll?(r, must_be_symmetric=true)
     raise ArgumentError, "must supply roll or roll_id" unless r
     roll_id = (r.is_a?(Roll) ? r.id : r)
-    roll_followings.any? { |rf| rf.roll_id == roll_id }
+    following = roll_followings.any? { |rf| rf.roll_id == roll_id }
+    if r.is_a?(Roll) and must_be_symmetric
+      following &= r.following_users.any? { |fu| fu.user_id == self.id }
+    end
+    return following
   end
   
   def unfollowed_roll?(r)
     raise ArgumentError, "must supply roll or roll_id" unless r
     roll_id = (r.is_a?(Roll) ? r.id : r)
     rolls_unfollowed.include? roll_id
+  end
+  
+  def roll_following_for(r)
+    raise ArgumentError, "must supply roll or roll_id" unless r
+    roll_id = (r.is_a?(Roll) ? r.id : r)
+    roll_followings.select { |rf| rf.roll_id == roll_id } [0]
   end
   
   def permalink() "#{Settings::ShelbyAPI.web_root}/user/#{self.nickname}/personal_roll"; end
@@ -178,25 +195,42 @@ class User
   # Use this to convert User's created on NOS to GT
   # When we move everyone to GT, use the rake task in gt_migration.rb
   def gt_enable!
-    self.gt_enabled = true
-    self.faux = (self.faux == FAUX_STATUS[:true] ? FAUX_STATUS[:converted] : FAUX_STATUS[:false])
-    self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
-    GT::UserManager.ensure_users_special_rolls(self, true)
+    unless self.gt_enabled?
+      self.gt_enabled = true
+      self.faux = (self.faux == FAUX_STATUS[:true] ? FAUX_STATUS[:converted] : FAUX_STATUS[:false])
+      self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
+      GT::UserManager.ensure_users_special_rolls(self, true)
+      self.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
+    
+      ShelbyGT_EM.next_tick { 
+        rhombus = Rhombus.new('shelby', '_rhombus_gt')
+        rhombus.post('/sadd', {:args => ['new_gt_enabled_users', self.id.to_s]})
+      }
+    end
   end
   
-  # given a comma separated string of autocomplete items in info, store all unique, valid ones
+  # given a comma separated string or array of strings of autocomplete items in info, store all unique, valid ones
   # in the array at self.autocomplete[key]
   def store_autocomplete_info(key, info)
-    items = info.split(',').map{|item| item.strip}.uniq
+    if info.respond_to?('map')
+      items = info.map{|item| item.to_s.strip}.uniq
+    else
+      items = info.split(',').map{|item| item.strip}.uniq
+    end
     if key == :email
       items.select! {|address| address =~ /\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/}
     end
     if !items.empty?
-      self.push_uniq("autocomplete.#{key}" => {:$each => items})
+      User.collection.update({:_id => self.id}, {:$addToSet => {"as.#{key}" => {:$each => items}}})
       self.reload
     end
   end
-
+  
+  #default implementation hits the DB, and that sucks b/c we don't index on remember_token
+  def self.remember_token
+    SecureRandom.uuid
+  end
+    
   # -- Old Methods --   
   def self.find_by_nickname(n)
     return nil unless n.respond_to? :downcase
@@ -223,32 +257,7 @@ class User
   def first_provider(provider)
     @first_provider ||= authentications.each { |a| return a if a.provider == provider }
   end
-      
-  #TODO: Update how we track social actions
-  #################################################################
-  # Social Action Tracking
-  #   -updates the hash that tracks how much a user tweets/comments
-  ################################################################
-  def update_tracker(action)
-    case action
-    when 'twitter'
-      self.social_tracker[0] += 1
-    when 'facebook'
-      self.social_tracker[1] += 1
-    when 'email'
-      self.social_tracker[2] += 1
-    when 'tumblr'
-      if self.social_tracker[3] = nil
-        self.social_tracker[3] = 1
-      else
-        self.social_tracker[3] += 1
-      end
-    end
-    self.save
-  end  
-  
-  def total_tracker_count() self.social_tracker.inject(:+); end
-  
+
   def send_email_address_to_sailthru(list=Settings::Sailthru.user_list)
     #ShelbyGT_EM.next_tick do
       #client = Bacon::Email.new()
