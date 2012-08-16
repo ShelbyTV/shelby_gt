@@ -311,7 +311,7 @@ void printJsonOutput(sobContext sob)
         iter != dashboardEntries.rend();
         ++iter) {
 
-      mrjsonStartObject(context);
+      mrjsonStartNamelessObject(context);
       printJsonDashboardEntry(sob, context, *iter);
       mrjsonEndObject(context);
    } 

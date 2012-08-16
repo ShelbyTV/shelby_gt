@@ -543,7 +543,7 @@ void sobPrintSubobjectArray(sobContext sob,
       bson element;
       bson_iterator_subobject(&iterator, &element);
 
-      mrjsonStartObject(context);
+      mrjsonStartNamelessObject(context);
       subobjectPrintCallback(sob, context, &element);
       mrjsonEndObject(context);
    }

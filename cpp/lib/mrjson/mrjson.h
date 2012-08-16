@@ -15,9 +15,13 @@
  *
  */ 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct mrjsonContextStruct *mrjsonContext;
 
-mrjsonContext mrjsonAllocContext(bool pretty);
+mrjsonContext mrjsonAllocContext(int pretty);
 void mrjsonPrintContext(mrjsonContext context);
 void mrjsonFreeContext(mrjsonContext context);
 
@@ -26,7 +30,7 @@ void mrjsonEndResponse(mrjsonContext context);
 
 // object attributes
 void mrjsonIntAttribute(mrjsonContext context, const char *name, int value);
-void mrjsonBoolAttribute(mrjsonContext context, const char *name, bool value);
+void mrjsonBoolAttribute(mrjsonContext context, const char *name, int value);
 void mrjsonDoubleAttribute(mrjsonContext context, const char *name, double value);
 void mrjsonStringAttribute(mrjsonContext context, const char *name, const char *value);
 void mrjsonNullAttribute(mrjsonContext context, const char *name);
@@ -36,11 +40,15 @@ void mrjsonEmptyArrayAttribute(mrjsonContext context, const char *name);
 void mrjsonStringArrayEntry(mrjsonContext context, const char *value);
 
 void mrjsonStartArray(mrjsonContext context, const char *name);
-void mrjsonStartArray(mrjsonContext context);
+void mrjsonStartNamelessArray(mrjsonContext context);
 void mrjsonEndArray(mrjsonContext context);
 
 void mrjsonStartObject(mrjsonContext context, const char *name);
-void mrjsonStartObject(mrjsonContext context);
+void mrjsonStartNamelessObject(mrjsonContext context);
 void mrjsonEndObject(mrjsonContext context);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // __MRJSON_H__

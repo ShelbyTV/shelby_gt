@@ -1,12 +1,13 @@
-#include <iostream>
-
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "mrjson.h"
 #include "yajl/src/api/yajl_gen.h"
 
-using namespace std;
+#define FALSE 0
+#define TRUE 1
 
 /* DATA STRUCTURES AND CONSTANTS */
 
@@ -21,14 +22,14 @@ typedef enum mrjsonResponseStatus
 
 typedef struct mrjsonLevel
 {
-   bool objectOpen;
-   bool arrayOpen;
+   int objectOpen;
+   int arrayOpen;
 
 } mrjsonLevel;
 
 struct mrjsonContextStruct
 {
-   mrjsonResponseStatus status;
+   enum mrjsonResponseStatus status;
    unsigned int currentLevel;
 
    mrjsonLevel levels[MRJSON_MAX_LEVELS];
@@ -38,7 +39,7 @@ struct mrjsonContextStruct
 
 /* PUBLIC FUNCTIONS */
 
-mrjsonContext mrjsonAllocContext(bool pretty)
+mrjsonContext mrjsonAllocContext(int pretty)
 {
    mrjsonContext toReturn = (struct mrjsonContextStruct *)malloc(sizeof(struct mrjsonContextStruct));
    memset(toReturn, 0, sizeof(struct mrjsonContextStruct));
@@ -80,7 +81,7 @@ void mrjsonStartResponse(mrjsonContext context)
    yajl_gen_map_open(context->yajl);
 
    context->status = OPEN;
-   context->levels[0].objectOpen = true;
+   context->levels[0].objectOpen = TRUE;
 }
 
 void mrjsonEndResponse(mrjsonContext context)
@@ -110,7 +111,7 @@ void mrjsonIntAttribute(mrjsonContext context, const char *name, int value)
    yajl_gen_integer(context->yajl, value);
 }
 
-void mrjsonBoolAttribute(mrjsonContext context, const char *name, bool value)
+void mrjsonBoolAttribute(mrjsonContext context, const char *name, int value)
 {
    assert(context);
    assert(OPEN == context->status);
@@ -205,7 +206,7 @@ void mrjsonStartArray(mrjsonContext context, const char *name)
    }
    context->currentLevel++;
    memset(&context->levels[context->currentLevel], 0, sizeof(mrjsonLevel));
-   context->levels[context->currentLevel].arrayOpen = true;
+   context->levels[context->currentLevel].arrayOpen = TRUE;
 }
 
 void mrjsonEndArray(mrjsonContext context)
@@ -223,7 +224,7 @@ void mrjsonEndArray(mrjsonContext context)
    context->currentLevel--;
 }
 
-void mrjsonStartArray(mrjsonContext context) 
+void mrjsonStartNamelessArray(mrjsonContext context) 
 {
    mrjsonStartArray(context, "");
 }
@@ -247,10 +248,10 @@ void mrjsonStartObject(mrjsonContext context, const char *name)
 
    context->currentLevel++;
    memset(&context->levels[context->currentLevel], 0, sizeof(mrjsonLevel));
-   context->levels[context->currentLevel].objectOpen = true;
+   context->levels[context->currentLevel].objectOpen = TRUE;
 }
 
-void mrjsonStartObject(mrjsonContext context) 
+void mrjsonStartNamelessObject(mrjsonContext context) 
 {
    mrjsonStartObject(context, "");
 }

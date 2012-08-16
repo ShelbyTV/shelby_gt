@@ -1,5 +1,5 @@
 sourceFiles = Split("""
-                       mrjson.cpp
+                       mrjson.c
                        yajl/src/yajl.c
                        yajl/src/yajl_alloc.c
                        yajl/src/yajl_buf.c
