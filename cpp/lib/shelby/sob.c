@@ -46,7 +46,7 @@ static const char *sobDBCollection[] =
    { ALL_DATABASES(DBCOLLECTION) };
 #undef DBCOLLECTION 
 
-#define DBNAME(a,b,c,d,e,f,g,h,i) #b
+#define DBNAME(a,b,c,d,e,f,g,h,i) #b,
 static const char *sobDBName[] =
    { ALL_DATABASES(DBNAME) };
 #undef DBNAME
@@ -224,7 +224,7 @@ int sobAuthenticate(sobContext context, sobType type)
 
       int status;
 
-      status = mongo_cmd_authenticate(context->allocatedConn[type],
+      status = mongo_cmd_authenticate(context->typeToConn[type],
                                       sobDBName[sobArrayIndex(type, context->env)],
                                       sobDBUser[sobArrayIndex(type, context->env)],
                                       sobDBPassword[sobArrayIndex(type, context->env)]);
