@@ -152,12 +152,12 @@ class V1::UserController < ApplicationController
   # @param [Required, String] provider provider that want to check on
   def valid_token
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['valid_token']) do
-      if !["facebook"].include?(params[:provider]) # using indludes allows us to do this for twitter/tumblr in the future
+      if !["facebook"].include?(params[:provider]) # using include? allows us to do this for twitter/tumblr in the future
         return render_error(404, "this route only currently supports facebook as a provider.")
       end
       
       if auth = current_user.first_provider(params[:provider]) and auth.is_a? Authentication
-        @token_valid = GT::UserManager.verify_users_facebook(auth.oauth_token) ? true : false
+        @token_valid = GT::UserFacebookManager.verify_auth(auth.oauth_token)
         @status = 200
       else
         return render_error(404, "This user does not have a #{params[:provider]} authentication to check on")

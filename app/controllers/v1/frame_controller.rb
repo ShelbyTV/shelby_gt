@@ -400,13 +400,16 @@ class V1::FrameController < ApplicationController
         short_links = GT::LinkShortener.get_or_create_shortlinks(frame, params[:destination].join(','), current_user)
         
         resp = true
+        should_add_to_conversation = false #only adding to convo on public posts to twitter/facebook
         
         params[:destination].each do |d|
           case d
           when 'twitter'
+            should_add_to_conversation = true
             t = GT::SocialPostFormatter.format_for_twitter(text, short_links)
             resp &= GT::SocialPoster.post_to_twitter(current_user, t)
           when 'facebook'
+            should_add_to_conversation = true
             t = GT::SocialPostFormatter.format_for_facebook(text, short_links)
             resp &= GT::SocialPoster.post_to_facebook(current_user, t, frame)
           when 'email'
@@ -426,7 +429,7 @@ class V1::FrameController < ApplicationController
         end
         
         if resp
-          if text.length > 0
+          if text.length > 0 and should_add_to_conversation
             # Since the message was posted, add it to the Frame's conversation
             new_message = GT::MessageManager.build_message(:user => current_user, :public => true, :text => text)
             frame.conversation.messages << new_message

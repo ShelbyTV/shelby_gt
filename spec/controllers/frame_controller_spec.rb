@@ -345,6 +345,13 @@ describe V1::FrameController do
 
         post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :format => :json
       end
+      
+      it "should not add message to the conversation" do
+        lambda {
+          post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :addresses => "spinosa@gmail.com, invalidaddress, j@jay.net", :format => :json
+        }.should_not change { @frame.conversation.messages.count }
+      end
+      
     end
     
   end
