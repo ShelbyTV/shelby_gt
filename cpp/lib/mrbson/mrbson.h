@@ -8,59 +8,54 @@
  *
  */ 
 
-#include <sys/time.h>
-#include <string>
-
 #include "lib/mongo-c-driver/src/mongo.h"
 #include "lib/mrjson/mrjson.h"
 
-using namespace std;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-string mrbsonOidString(bson_oid_t *oid);
-
-string oidConciseTimeAgoInWordsString(bson_oid_t *oid);
-
-bool mrbsonFindOidString(bson *data,
-                         const string &bsonField,
-                         string &outputOidString);
-
-bool mrbsonFindOid(bson *data,
-                   const string &bsonField,
-                   bson_oid_t *outputOid);
+int mrbsonFindOid(bson *data,
+                  const char *bsonField,
+                  bson_oid_t *outputOid);
 
 void mrbsonOidConciseTimeAgoAttribute(mrjsonContext context,
                                       bson *data, 
-                                      const string &bsonField, 
-                                      const string& outputName);
+                                      const char *bsonField, 
+                                      const char *outputName);
 
 void mrbsonOidAttribute(mrjsonContext context,
                         bson *data, 
-                        const string &bsonField, 
-                        const string& outputName);
+                        const char *bsonField, 
+                        const char *outputName);
 
 void mrbsonIntAttribute(mrjsonContext context,
                         bson *data, 
-                        const string &bsonField, 
-                        const string& outputName);
+                        const char *bsonField, 
+                        const char *outputName);
 
 void mrbsonBoolAttribute(mrjsonContext context,
                          bson *data, 
-                         const string &bsonField, 
-                         const string& outputName);
+                         const char *bsonField, 
+                         const char *outputName);
 
 void mrbsonDoubleAttribute(mrjsonContext context,
                            bson *data,
-                           const string &bsonField,
-                           const string& outputName);
+                           const char *bsonField,
+                           const char *outputName);
 
 void mrbsonStringAttribute(mrjsonContext context,
                            bson *data,
-                           const string &bsonField,
-                           const string& outputName);
+                           const char *bsonField,
+                           const char *outputName);
 
 void mrbsonSimpleArrayAttribute(mrjsonContext context,
                                 bson *data,
-                                const string &bsonField,
-                                const string& outputName);
+                                const char *bsonField,
+                                const char *outputName);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // __MRBSON_H__

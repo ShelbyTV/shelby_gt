@@ -1,5 +1,5 @@
 sourceFiles = Split("""
-                       mrbson.cpp
+                       mrbson.c
                     """)
 
 Import('env')

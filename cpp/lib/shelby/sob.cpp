@@ -138,6 +138,14 @@ bool sobTypesUseSameServer(sobType type1, sobType type2, sobEnvironment env)
           );
 }
 
+string sobOidString(bson_oid_t *oid)
+{
+   char buffer[100]; // an oid is 24 hex chars + null byte, let's go big to ensure compatibility
+  
+   bson_oid_to_string(oid, buffer);
+   return string(buffer); 
+}
+
 /*
  * For now, at initialization, we'll just connect to all databases;
  * later, we should lazily connect.
@@ -283,7 +291,7 @@ void insertMongoCursorIntoObjectMap(sobContext context,
          bson *newValue = (bson *)malloc(sizeof(bson));
          bson_copy(newValue, mongo_cursor_bson(cursor));
 
-         string newKey = mrbsonOidString(bson_iterator_oid(&iterator));
+         string newKey = sobOidString(bson_iterator_oid(&iterator));
 
          context->objectMap[type]->insert(pair<string, bson *>(newKey, newValue));
       }
@@ -378,7 +386,7 @@ bool sobGetBsonByOid(sobContext context,
 {
    map<string, bson *>::const_iterator it;
 
-   it = context->objectMap[type]->find(mrbsonOidString(&oid));
+   it = context->objectMap[type]->find(sobOidString(&oid));
    if (it == context->objectMap[type]->end()) {
       return false;
    }  

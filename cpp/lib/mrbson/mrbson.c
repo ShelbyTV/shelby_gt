@@ -5,17 +5,10 @@
 #include "lib/mrjson/mrjson.h"
 #include "lib/mrbson/mrbson.h"
 
-using namespace std;
+#define FALSE 0
+#define TRUE 1
 
-string mrbsonOidString(bson_oid_t *oid)
-{
-   char buffer[100]; // an oid is 24 hex chars + null byte, let's go big to ensure compatibility
-  
-   bson_oid_to_string(oid, buffer);
-   return string(buffer); 
-}
-
-string oidConciseTimeAgoInWordsString(bson_oid_t *oid)
+void oidConciseTimeAgoInWordsString(bson_oid_t *oid, char *buffer)
 {
    time_t oidTime = bson_oid_generated_time(oid);
    struct timeval oidTimeVal;
@@ -37,11 +30,9 @@ string oidConciseTimeAgoInWordsString(bson_oid_t *oid)
     */
 
     time_t minutes = (difference.tv_sec / 60);
-   
-    char buffer[100];
 
     if (minutes <= 1) {
-       return "just now";
+       snprintf(buffer, 100, "just now");
     } else if (minutes <= 59) {
        snprintf(buffer, 100, "%dm ago", (int)minutes);
     } else if (minutes <= 720) {
@@ -50,156 +41,142 @@ string oidConciseTimeAgoInWordsString(bson_oid_t *oid)
        struct tm *date = gmtime(&oidTime);
        strftime(buffer, 100, "%b %-d", date);
     }
-
-    return string(buffer);
 }
 
-bool mrbsonFindOidString(bson *data,
-                         const string &bsonField,
-                         string &outputOidString)
+int mrbsonFindOid(bson *data,
+                  const char *bsonField,
+                  bson_oid_t *outputOid)
 {
    bson_iterator iterator;
    bson_type type;
  
-   type = bson_find(&iterator, data, bsonField.c_str());
+   type = bson_find(&iterator, data, bsonField);
    if (type != BSON_OID) {
-      return false;
-   }
-
-   outputOidString = mrbsonOidString(bson_iterator_oid(&iterator));
-   return true;
-}
-
-bool mrbsonFindOid(bson *data,
-                   const string &bsonField,
-                   bson_oid_t *outputOid)
-{
-   bson_iterator iterator;
-   bson_type type;
- 
-   type = bson_find(&iterator, data, bsonField.c_str());
-   if (type != BSON_OID) {
-      return false;
+      return FALSE;
    }
 
    // possibly we should just return the reference instead of the copy?
    *outputOid = *bson_iterator_oid(&iterator);
-   return true;
+   return TRUE;
 }
 
 void mrbsonOidConciseTimeAgoAttribute(mrjsonContext context,
                                       bson *data, 
-                                      const string &bsonField, 
-                                      const string& outputName)
+                                      const char *bsonField, 
+                                      const char *outputName)
 {
    bson_iterator iterator;
    bson_type type;
  
-   type = bson_find(&iterator, data, bsonField.c_str());
-   if (type == BSON_OID) {
-     mrjsonStringAttribute(context, outputName.c_str(), oidConciseTimeAgoInWordsString(bson_iterator_oid(&iterator)).c_str());
+   type = bson_find(&iterator, data, bsonField);
+   if (type == BSON_OID) {   
+     char buffer[100];
+     oidConciseTimeAgoInWordsString(bson_iterator_oid(&iterator), buffer);
+     mrjsonStringAttribute(context, outputName, buffer);
    } else {
-     mrjsonStringAttribute(context, outputName.c_str(), ""); 
+     mrjsonStringAttribute(context, outputName, ""); 
    }
 }
 
 
 void mrbsonOidAttribute(mrjsonContext context,
                         bson *data, 
-                        const string &bsonField, 
-                        const string& outputName)
+                        const char *bsonField, 
+                        const char *outputName)
 {
    bson_iterator iterator;
    bson_type type;
- 
-   type = bson_find(&iterator, data, bsonField.c_str());
+
+   type = bson_find(&iterator, data, bsonField);
    if (type == BSON_OID) {
-     mrjsonStringAttribute(context, outputName.c_str(), mrbsonOidString(bson_iterator_oid(&iterator)).c_str());
+     char buffer[100];
+     bson_oid_to_string(bson_iterator_oid(&iterator), buffer);
+     mrjsonStringAttribute(context, outputName, buffer);
    } else {
-     mrjsonNullAttribute(context, outputName.c_str()); 
+     mrjsonNullAttribute(context, outputName); 
    }
 }
 
 void mrbsonIntAttribute(mrjsonContext context,
                         bson *data, 
-                        const string &bsonField, 
-                        const string& outputName)
+                        const char *bsonField, 
+                        const char *outputName)
 {
    bson_iterator iterator;
    bson_type type;
  
-   type = bson_find(&iterator, data, bsonField.c_str());
+   type = bson_find(&iterator, data, bsonField);
    if (type == BSON_INT) {
-     mrjsonIntAttribute(context, outputName.c_str(), bson_iterator_int(&iterator));
+     mrjsonIntAttribute(context, outputName, bson_iterator_int(&iterator));
    } else {
-     mrjsonIntAttribute(context, outputName.c_str(), 0); 
+     mrjsonIntAttribute(context, outputName, 0); 
    }
 }
 
 void mrbsonBoolAttribute(mrjsonContext context,
                          bson *data, 
-                         const string &bsonField, 
-                         const string& outputName)
+                         const char *bsonField, 
+                         const char *outputName)
 {
    bson_iterator iterator;
    bson_type type;
  
-   type = bson_find(&iterator, data, bsonField.c_str());
+   type = bson_find(&iterator, data, bsonField);
    if (type == BSON_BOOL) {
-     mrjsonBoolAttribute(context, outputName.c_str(), bson_iterator_bool(&iterator));
+     mrjsonBoolAttribute(context, outputName, bson_iterator_bool(&iterator));
    } else {
-     mrjsonNullAttribute(context, outputName.c_str()); 
+     mrjsonNullAttribute(context, outputName); 
    }
 }
 
 void mrbsonDoubleAttribute(mrjsonContext context,
                            bson *data,
-                           const string &bsonField,
-                           const string& outputName)
+                           const char *bsonField,
+                           const char *outputName)
 {
    bson_iterator iterator;
    bson_type type;
  
-   type = bson_find(&iterator, data, bsonField.c_str());
+   type = bson_find(&iterator, data, bsonField);
    if (type == BSON_DOUBLE) {
-     mrjsonDoubleAttribute(context, outputName.c_str(), bson_iterator_double(&iterator));
+     mrjsonDoubleAttribute(context, outputName, bson_iterator_double(&iterator));
    } else {
-     mrjsonDoubleAttribute(context, outputName.c_str(), 0); 
+     mrjsonDoubleAttribute(context, outputName, 0); 
    }
 }
 
 void mrbsonStringAttribute(mrjsonContext context,
                            bson *data,
-                           const string &bsonField,
-                           const string& outputName)
+                           const char *bsonField,
+                           const char *outputName)
 {
    bson_iterator iterator;
    bson_type type;
  
-   type = bson_find(&iterator, data, bsonField.c_str());
+   type = bson_find(&iterator, data, bsonField);
    if (type == BSON_STRING) {
-     mrjsonStringAttribute(context, outputName.c_str(), bson_iterator_string(&iterator));
+     mrjsonStringAttribute(context, outputName, bson_iterator_string(&iterator));
    } else {
-     mrjsonNullAttribute(context, outputName.c_str()); 
+     mrjsonNullAttribute(context, outputName); 
    }
 }
 
 void mrbsonSimpleArrayAttribute(mrjsonContext context,
                                 bson *data,
-                                const string &bsonField,
-                                const string& outputName)
+                                const char *bsonField,
+                                const char *outputName)
 {
    bson array;
    bson_iterator iterator;
    bson_type type;
 
-   type = bson_find(&iterator, data, bsonField.c_str());
+   type = bson_find(&iterator, data, bsonField);
    assert(type == BSON_ARRAY);
 
    bson_iterator_subobject(&iterator, &array);
    bson_iterator_from_buffer(&iterator, array.data);
 
-   mrjsonStartArray(context, outputName.c_str());
+   mrjsonStartArray(context, outputName);
    while ((type = bson_iterator_next(&iterator))) {
       switch (type) {
          case BSON_STRING:
@@ -224,7 +201,7 @@ void mrbsonSimpleArrayAttribute(mrjsonContext context,
          case BSON_INT:
          case BSON_TIMESTAMP:
          case BSON_LONG:
-            assert(false); // not implemented yet or not simple type
+            assert(FALSE); // not implemented yet or not simple type
             break;
       }
    }
