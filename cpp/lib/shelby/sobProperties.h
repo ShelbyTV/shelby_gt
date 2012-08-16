@@ -85,12 +85,13 @@
    apply(ROLL , first_frame_thumbnail_url , FIRST_FRAME_THUMBNAIL_URL , STRING , m   ) \
    apply(ROLL , roll_type                 , ROLL_TYPE                 , INT    , n   )
 
-#define CONVERSATION_PROPERTIES(apply)                \
-   apply(CONVERSATION , id            , ID            , OID  , _id ) \
-   apply(CONVERSATION , video_id      , VIDEO_ID      , OID  , a   ) \
-   apply(CONVERSATION , public        , PUBLIC        , BOOL , b   ) \
-   apply(CONVERSATION , frame_id      , FRAME_ID      , OID  , c   ) \
-   apply(CONVERSATION , from_deeplink , FROM_DEEPLINK , BOOL , d   )
+#define CONVERSATION_PROPERTIES(apply)                                     \
+   apply(CONVERSATION , id            , ID            , OID   , _id      ) \
+   apply(CONVERSATION , video_id      , VIDEO_ID      , OID   , a        ) \
+   apply(CONVERSATION , public        , PUBLIC        , BOOL  , b        ) \
+   apply(CONVERSATION , frame_id      , FRAME_ID      , OID   , c        ) \
+   apply(CONVERSATION , from_deeplink , FROM_DEEPLINK , BOOL  , d        ) \
+   apply(CONVERSATION , messages      , MESSAGES      , ARRAY , messages )
  
 #define VIDEO_PROPERTIES(apply)                               \
    apply(VIDEO , id               , ID               , OID    , _id ) \

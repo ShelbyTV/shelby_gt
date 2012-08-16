@@ -234,13 +234,13 @@ bool sobAuthenticate(sobContext context, sobType type)
 bson_oid_t sobGetUniqueOidByStringField(sobContext context,
                                    sobType type,
                                    sobField field,
-                                   const string &value)
+                                   const char *value)
 {
    bson_oid_t result;
 
    bson query;
    bson_init(&query);
-   bson_append_string(&query, sobFieldDBName[field], value.c_str());
+   bson_append_string(&query, sobFieldDBName[field], value);
    bson_finish(&query);
    
    bson fields;
@@ -424,55 +424,78 @@ void sobPrintAttributes(mrjsonContext context,
 {
    for (unsigned int i = 0; i < numFields; i++) {
       sobField field = fieldArray[i];
-      const char *dbName = sobFieldDBName[field];
       const char *longName = sobFieldLongName[field];
 
-      switch(sobFieldBSONType[field])
-      {
-         case BSON_OID:
-            mrbsonOidAttribute(context, object, dbName, longName);
-            break;
-
-         case BSON_DOUBLE:
-            mrbsonDoubleAttribute(context, object, dbName, longName);
-            break;
-
-         case BSON_STRING:
-            mrbsonStringAttribute(context, object, dbName, longName);
-            break;
-
-         case BSON_BOOL:
-            mrbsonBoolAttribute(context, object, dbName, longName);
-            break;
-
-         case BSON_NULL:
-            mrjsonNullAttribute(context, longName);
-            break;
-
-         case BSON_INT:
-            mrbsonIntAttribute(context, object, dbName, longName);
-            break;
-         
-         case BSON_ARRAY:
-            mrbsonSimpleArrayAttribute(context, object, dbName, longName);
-            break;
-
-         case BSON_TIMESTAMP:
-         case BSON_LONG:
-         case BSON_EOO:
-         case BSON_OBJECT:
-         case BSON_BINDATA:
-         case BSON_UNDEFINED:
-         case BSON_DATE:
-         case BSON_REGEX:
-         case BSON_DBREF:
-         case BSON_CODE:
-         case BSON_SYMBOL:
-         case BSON_CODEWSCOPE:
-            assert(false); // not implemented
-            break;
-      }
+      // the name of this method is really for users...
+      sobPrintAttributeWithKeyOverride(context, object, field, longName);
    }
+}
+
+void sobPrintAttributeWithKeyOverride(mrjsonContext context,
+                                      bson *object,
+                                      sobField field,
+                                      const char *key)
+{
+   const char *dbName = sobFieldDBName[field];
+
+   switch(sobFieldBSONType[field])
+   {
+      case BSON_OID:
+         mrbsonOidAttribute(context, object, dbName, key);
+         break;
+
+      case BSON_DOUBLE:
+         mrbsonDoubleAttribute(context, object, dbName, key);
+         break;
+
+      case BSON_STRING:
+         mrbsonStringAttribute(context, object, dbName, key);
+         break;
+
+      case BSON_BOOL:
+         mrbsonBoolAttribute(context, object, dbName, key);
+         break;
+
+      case BSON_NULL:
+         mrjsonNullAttribute(context, key);
+         break;
+
+      case BSON_INT:
+         mrbsonIntAttribute(context, object, dbName, key);
+         break;
+      
+      case BSON_ARRAY:
+         mrbsonSimpleArrayAttribute(context, object, dbName, key);
+         break;
+
+      case BSON_TIMESTAMP:
+      case BSON_LONG:
+      case BSON_EOO:
+      case BSON_OBJECT:
+      case BSON_BINDATA:
+      case BSON_UNDEFINED:
+      case BSON_DATE:
+      case BSON_REGEX:
+      case BSON_DBREF:
+      case BSON_CODE:
+      case BSON_SYMBOL:
+      case BSON_CODEWSCOPE:
+         assert(false); // not implemented
+         break;
+   }
+}
+
+void sobPrintOidConciseTimeAgoAttribute(mrjsonContext context,
+                                        bson *object,
+                                        sobField oidField,
+                                        const char *key)
+{
+   const char *dbName = sobFieldDBName[oidField];
+
+   mrbsonOidConciseTimeAgoAttribute(context,
+                                    object,
+                                    dbName,
+                                    key);
 }
 
 void sobPrintSubobjectByOid(sobContext sob,
@@ -498,4 +521,34 @@ void sobPrintSubobjectByOid(sobContext sob,
       mrjsonNullAttribute(context, key);
    }
 }
+
+void sobPrintSubobjectArray(sobContext sob,
+                            mrjsonContext context,
+                            bson *object,
+                            sobField objectArrayField,
+                            sobSubobjectPrintCallback subobjectPrintCallback)
+{
+   bson arrayBson;
+   const char *objectArrayDBName = sobFieldDBName[objectArrayField];
+
+   bson_iterator iterator;
+   bson_find(&iterator, object, objectArrayDBName);
+
+   bson_iterator_subobject(&iterator, &arrayBson);
+   bson_iterator_from_buffer(&iterator, arrayBson.data);
+
+   mrjsonStartArray(context, sobFieldLongName[objectArrayField]);
+
+   while (bson_iterator_next(&iterator)) {
+      bson element;
+      bson_iterator_subobject(&iterator, &element);
+
+      mrjsonStartObject(context);
+      subobjectPrintCallback(sob, context, &element);
+      mrjsonEndObject(context);
+   }
+
+   mrjsonEndArray(context); 
+}
+
 

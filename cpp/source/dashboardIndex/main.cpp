@@ -1,12 +1,6 @@
-#include <iostream>
-#include <string>
-#include <map>
 #include <vector>
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <sys/time.h>
-#include <sys/resource.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -14,13 +8,12 @@
 
 #include "lib/mongo-c-driver/src/mongo.h"
 #include "lib/mrjson/mrjson.h"
-#include "lib/mrbson/mrbson.h"
 #include "lib/shelby/shelby.h"
 
 using namespace std;
 
 static struct options {
-	string user;
+	char *user;
 	int limit;
 	int skip;
 } options;
@@ -29,11 +22,11 @@ struct timeval beginTime;
 
 void printHelpText()
 {
-   cout << "dashboardIndex usage:" << endl;
-   cout << "   -h --help        Print this help message" << endl;
-   cout << "   -u --user        Lowercase nickname of user" << endl;
-   cout << "   -l --limit       Limit to this number of dashboard entries" << endl;
-   cout << "   -s --skip        Skip this number of dashboard entries" << endl;
+   printf("dashboardIndex usage:\n"); 
+   printf("   -h --help        Print this help message\n");
+   printf("   -u --user        Lowercase nickname of user\n");
+   printf("   -l --limit       Limit to this number of dashboard entries\n");
+   printf("   -s --skip        Skip this number of dashboard entries\n");
 }
 
 void parseUserOptions(int argc, char **argv)
@@ -98,7 +91,7 @@ unsigned int timeSinceMS(struct timeval begin)
    return difference.tv_sec * 1000 + (difference.tv_usec / 1000); 
 }
 
-void printJsonMessage(mrjsonContext context, bson *message)
+void printJsonMessage(sobContext sob, mrjsonContext context, bson *message)
 {
    static sobField messageAttributes[] = {
       SOB_MESSAGE_ID,
@@ -118,7 +111,10 @@ void printJsonMessage(mrjsonContext context, bson *message)
                       messageAttributes,
                       sizeof(messageAttributes) / sizeof(sobField));
 
-   mrbsonOidConciseTimeAgoAttribute(context, message, "_id", "created_at");
+   sobPrintOidConciseTimeAgoAttribute(context,
+                                      message,
+                                      SOB_MESSAGE_ID,
+                                      "created_at");
 }
 
 void printJsonConversation(sobContext sob, mrjsonContext context, bson *conversation)
@@ -133,25 +129,11 @@ void printJsonConversation(sobContext sob, mrjsonContext context, bson *conversa
                       conversationAttributes,
                       sizeof(conversationAttributes) / sizeof(sobField));
 
-   bson messages;
-   bson_iterator iterator;
-   bson_find(&iterator, conversation, "messages");
-   bson_iterator_subobject(&iterator, &messages);
-
-   bson_iterator_from_buffer(&iterator, messages.data);
-
-   mrjsonStartArray(context, "messages");
-
-   while (bson_iterator_next(&iterator)) {
-      bson message;
-      bson_iterator_subobject(&iterator, &message);
-
-      mrjsonStartObject(context);
-      printJsonMessage(context, &message);
-      mrjsonEndObject(context);
-   }
-
-   mrjsonEndArray(context); 
+   sobPrintSubobjectArray(sob,
+                          context,
+                          conversation,
+                          SOB_CONVERSATION_MESSAGES,
+                          &printJsonMessage);
 }
 
 void printJsonVideo(sobContext sob, mrjsonContext context, bson *video)
@@ -198,7 +180,10 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
                       rollAttributes,
                       sizeof(rollAttributes) / sizeof(sobField));
 
-   mrbsonStringAttribute(context, roll, "c", "thumbnail_url");
+   sobPrintAttributeWithKeyOverride(context,
+                                    roll,
+                                    SOB_ROLL_CREATOR_THUMBNAIL_URL,
+                                    "thumbnail_url");
 }
 
 void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
@@ -248,7 +233,10 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
                       frameAttributes,
                       sizeof(frameAttributes) / sizeof(sobField));
 
-   mrbsonOidConciseTimeAgoAttribute(context, frame, "_id", "created_at");
+   sobPrintOidConciseTimeAgoAttribute(context,
+                                      frame,
+                                      SOB_FRAME_ID,
+                                      "created_at");
 
    sobPrintSubobjectByOid(sob,
                           context,

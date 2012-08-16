@@ -5,7 +5,6 @@
  * sob.h -- Shelby Objects
  */
 
-#include <string>
 #include <vector>
 
 #include "sobProperties.h"
@@ -56,7 +55,7 @@ bool sobConnect(sobContext context);
 bson_oid_t sobGetUniqueOidByStringField(sobContext context,
                                         sobType type, 
                                         sobField field,
-                                        const std::string &value);
+                                        const char *value);
 
 void sobLoadAllByOidField(sobContext context, 
                           sobType type,
@@ -89,6 +88,15 @@ void sobPrintAttributes(mrjsonContext context,
                         sobField *fieldArray,
                         unsigned int numFields);
 
+void sobPrintAttributeWithKeyOverride(mrjsonContext context,
+                                      bson *object,
+                                      sobField field,
+                                      const char *key);
+
+void sobPrintOidConciseTimeAgoAttribute(mrjsonContext context,
+                                        bson *object,
+                                        sobField oidField,
+                                        const char *key);
 
 typedef void (*sobSubobjectPrintCallback)(sobContext, mrjsonContext, bson *);
 
@@ -98,6 +106,12 @@ void sobPrintSubobjectByOid(sobContext sob,
                             sobField subobjectOidField,
                             sobType subobjectType,
                             const char *key,
+                            sobSubobjectPrintCallback);
+
+void sobPrintSubobjectArray(sobContext sob,
+                            mrjsonContext context,
+                            bson *object,
+                            sobField subobjectOidField,
                             sobSubobjectPrintCallback);
 
 #endif // __SOB_H__

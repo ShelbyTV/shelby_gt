@@ -9,11 +9,14 @@ dashboardIndexEnv.MergeFlags('-O6 -pthread -Wall -Werror -DMONGO_HAVE_UNISTD -st
 dashboardIndexEnv['CXXFLAGS'] = ['-std=c++0x'] # works around bug in scons MergeFlags, fixed in later versions of scons
 dashboardIndexEnv['CPPPATH'] = ['#/source', '#']
 
+# NOTE: Unfortunately, order of these static libs matters... lib 'shelby' uses all of the
+#       other libs, so it must come first to make sure other lib inclusions aren't auto-pruned
+#       (which happens if none of their symbols were used in the original executable or previous libraries)
 
 libMongo = File('#/build/mongo-c-driver/libmongoc.a')
 dashboardIndex = dashboardIndexEnv.Program(target = 'dashboardIndex', 
                                            source = sourceFiles,
-                                           LIBS = ['mrjson', 'mrbson', 'shelby', libMongo],
+                                           LIBS = ['shelby', 'mrjson', 'mrbson', libMongo],
                                            LIBPATH = ['#/build/mrjson/', '#/build/mrbson/', '#/build/shelby/'])
 
 dashboardIndexInstall = dashboardIndexEnv.Install('#/bin', dashboardIndex)
