@@ -9,6 +9,7 @@
  */ 
 
 #include <sys/time.h>
+#include <string>
 
 #include "lib/mongo-c-driver/src/mongo.h"
 #include "lib/mrjson/mrjson.h"

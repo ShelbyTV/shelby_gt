@@ -97,9 +97,9 @@ void mrbsonOidConciseTimeAgoAttribute(mrjsonContext context,
  
    type = bson_find(&iterator, data, bsonField.c_str());
    if (type == BSON_OID) {
-     mrjsonStringAttribute(context, outputName, oidConciseTimeAgoInWordsString(bson_iterator_oid(&iterator)));
+     mrjsonStringAttribute(context, outputName.c_str(), oidConciseTimeAgoInWordsString(bson_iterator_oid(&iterator)).c_str());
    } else {
-     mrjsonStringAttribute(context, outputName, ""); 
+     mrjsonStringAttribute(context, outputName.c_str(), ""); 
    }
 }
 
@@ -114,9 +114,9 @@ void mrbsonOidAttribute(mrjsonContext context,
  
    type = bson_find(&iterator, data, bsonField.c_str());
    if (type == BSON_OID) {
-     mrjsonStringAttribute(context, outputName, mrbsonOidString(bson_iterator_oid(&iterator)));
+     mrjsonStringAttribute(context, outputName.c_str(), mrbsonOidString(bson_iterator_oid(&iterator)).c_str());
    } else {
-     mrjsonNullAttribute(context, outputName); 
+     mrjsonNullAttribute(context, outputName.c_str()); 
    }
 }
 
@@ -130,9 +130,9 @@ void mrbsonIntAttribute(mrjsonContext context,
  
    type = bson_find(&iterator, data, bsonField.c_str());
    if (type == BSON_INT) {
-     mrjsonIntAttribute(context, outputName, bson_iterator_int(&iterator));
+     mrjsonIntAttribute(context, outputName.c_str(), bson_iterator_int(&iterator));
    } else {
-     mrjsonIntAttribute(context, outputName, 0); 
+     mrjsonIntAttribute(context, outputName.c_str(), 0); 
    }
 }
 
@@ -146,9 +146,9 @@ void mrbsonBoolAttribute(mrjsonContext context,
  
    type = bson_find(&iterator, data, bsonField.c_str());
    if (type == BSON_BOOL) {
-     mrjsonBoolAttribute(context, outputName, bson_iterator_bool(&iterator));
+     mrjsonBoolAttribute(context, outputName.c_str(), bson_iterator_bool(&iterator));
    } else {
-     mrjsonNullAttribute(context, outputName); 
+     mrjsonNullAttribute(context, outputName.c_str()); 
    }
 }
 
@@ -162,9 +162,9 @@ void mrbsonDoubleAttribute(mrjsonContext context,
  
    type = bson_find(&iterator, data, bsonField.c_str());
    if (type == BSON_DOUBLE) {
-     mrjsonDoubleAttribute(context, outputName, bson_iterator_double(&iterator));
+     mrjsonDoubleAttribute(context, outputName.c_str(), bson_iterator_double(&iterator));
    } else {
-     mrjsonDoubleAttribute(context, outputName, 0); 
+     mrjsonDoubleAttribute(context, outputName.c_str(), 0); 
    }
 }
 
@@ -178,9 +178,9 @@ void mrbsonStringAttribute(mrjsonContext context,
  
    type = bson_find(&iterator, data, bsonField.c_str());
    if (type == BSON_STRING) {
-     mrjsonStringAttribute(context, outputName, bson_iterator_string(&iterator));
+     mrjsonStringAttribute(context, outputName.c_str(), bson_iterator_string(&iterator));
    } else {
-     mrjsonNullAttribute(context, outputName); 
+     mrjsonNullAttribute(context, outputName.c_str()); 
    }
 }
 

@@ -97,7 +97,7 @@ void mrjsonEndResponse(mrjsonContext context)
    yajl_gen_map_close(context->yajl);
 }
 
-void mrjsonIntAttribute(mrjsonContext context, const string& name, int value)
+void mrjsonIntAttribute(mrjsonContext context, const char *name, int value)
 {
    assert(context);
    assert(OPEN == context->status);
@@ -106,11 +106,11 @@ void mrjsonIntAttribute(mrjsonContext context, const string& name, int value)
    assert(!(context->levels[context->currentLevel].objectOpen &&
             context->levels[context->currentLevel].arrayOpen));
 
-   yajl_gen_string(context->yajl, (const unsigned char *)name.c_str(), name.length());
+   yajl_gen_string(context->yajl, (const unsigned char *)name, strlen(name));
    yajl_gen_integer(context->yajl, value);
 }
 
-void mrjsonBoolAttribute(mrjsonContext context, const string& name, bool value)
+void mrjsonBoolAttribute(mrjsonContext context, const char *name, bool value)
 {
    assert(context);
    assert(OPEN == context->status);
@@ -119,11 +119,11 @@ void mrjsonBoolAttribute(mrjsonContext context, const string& name, bool value)
    assert(!(context->levels[context->currentLevel].objectOpen &&
             context->levels[context->currentLevel].arrayOpen));
 
-   yajl_gen_string(context->yajl, (const unsigned char *)name.c_str(), name.length());
+   yajl_gen_string(context->yajl, (const unsigned char *)name, strlen(name));
    yajl_gen_bool(context->yajl, value);
 }
 
-void mrjsonDoubleAttribute(mrjsonContext context, const string& name, double value)
+void mrjsonDoubleAttribute(mrjsonContext context, const char *name, double value)
 {
    assert(context);
    assert(OPEN == context->status);
@@ -132,11 +132,11 @@ void mrjsonDoubleAttribute(mrjsonContext context, const string& name, double val
    assert(!(context->levels[context->currentLevel].objectOpen &&
             context->levels[context->currentLevel].arrayOpen));
 
-   yajl_gen_string(context->yajl, (const unsigned char *)name.c_str(), name.length());
+   yajl_gen_string(context->yajl, (const unsigned char *)name, strlen(name));
    yajl_gen_double(context->yajl, value);
 }
 
-void mrjsonStringAttribute(mrjsonContext context, const string& name, const string& value)
+void mrjsonStringAttribute(mrjsonContext context, const char *name, const char *value)
 {
    assert(context);
    assert(OPEN == context->status);
@@ -145,11 +145,11 @@ void mrjsonStringAttribute(mrjsonContext context, const string& name, const stri
    assert(!(context->levels[context->currentLevel].objectOpen &&
             context->levels[context->currentLevel].arrayOpen));
 
-   yajl_gen_string(context->yajl, (const unsigned char *)name.c_str(), name.length());
-   yajl_gen_string(context->yajl, (const unsigned char *)value.c_str(), value.length());
+   yajl_gen_string(context->yajl, (const unsigned char *)name, strlen(name));
+   yajl_gen_string(context->yajl, (const unsigned char *)value, strlen(value));
 }
 
-void mrjsonNullAttribute(mrjsonContext context, const string& name)
+void mrjsonNullAttribute(mrjsonContext context, const char *name)
 {
    assert(context);
    assert(OPEN == context->status);
@@ -158,11 +158,11 @@ void mrjsonNullAttribute(mrjsonContext context, const string& name)
    assert(!(context->levels[context->currentLevel].objectOpen &&
             context->levels[context->currentLevel].arrayOpen));
 
-   yajl_gen_string(context->yajl, (const unsigned char *)name.c_str(), name.length());
+   yajl_gen_string(context->yajl, (const unsigned char *)name, strlen(name));
    yajl_gen_null(context->yajl);
 }
 
-void mrjsonEmptyArrayAttribute(mrjsonContext context, const string& name)
+void mrjsonEmptyArrayAttribute(mrjsonContext context, const char *name)
 {
    assert(context);
    assert(OPEN == context->status);
@@ -171,12 +171,12 @@ void mrjsonEmptyArrayAttribute(mrjsonContext context, const string& name)
    assert(!(context->levels[context->currentLevel].objectOpen &&
             context->levels[context->currentLevel].arrayOpen));
 
-   yajl_gen_string(context->yajl, (const unsigned char *)name.c_str(), name.length());
+   yajl_gen_string(context->yajl, (const unsigned char *)name, strlen(name));
    yajl_gen_array_open(context->yajl);
    yajl_gen_array_close(context->yajl);
 }
 
-void mrjsonStringArrayEntry(mrjsonContext context, const std::string &value) 
+void mrjsonStringArrayEntry(mrjsonContext context, const char *value) 
 {
    assert(context);
    assert(OPEN == context->status);
@@ -184,10 +184,10 @@ void mrjsonStringArrayEntry(mrjsonContext context, const std::string &value)
    assert(!context->levels[context->currentLevel].objectOpen);
    assert(context->currentLevel > 0); // level 0 is always the response, not an array
 
-   yajl_gen_string(context->yajl, (const unsigned char *)value.c_str(), value.length());
+   yajl_gen_string(context->yajl, (const unsigned char *)value, strlen(value));
 }
 
-void mrjsonStartArray(mrjsonContext context, const string& name)
+void mrjsonStartArray(mrjsonContext context, const char *name)
 {
    assert(context);
    assert(OPEN == context->status);
@@ -197,8 +197,8 @@ void mrjsonStartArray(mrjsonContext context, const string& name)
           context->levels[context->currentLevel].arrayOpen));
    assert(context->currentLevel + 1 < MRJSON_MAX_LEVELS);
 
-   if (name != "") {
-      yajl_gen_string(context->yajl, (const unsigned char *)name.c_str(), name.length());
+   if (strcmp(name, "") != 0) {
+      yajl_gen_string(context->yajl, (const unsigned char *)name, strlen(name));
       yajl_gen_array_open(context->yajl);
    } else {
       yajl_gen_array_open(context->yajl);
@@ -228,7 +228,7 @@ void mrjsonStartArray(mrjsonContext context)
    mrjsonStartArray(context, "");
 }
 
-void mrjsonStartObject(mrjsonContext context, const string& name)
+void mrjsonStartObject(mrjsonContext context, const char *name)
 {
    assert(context);
    assert(OPEN == context->status);
@@ -238,8 +238,8 @@ void mrjsonStartObject(mrjsonContext context, const string& name)
           context->levels[context->currentLevel].arrayOpen));
    assert(context->currentLevel + 1 < MRJSON_MAX_LEVELS);
 
-   if (name != "") {
-      yajl_gen_string(context->yajl, (const unsigned char *)name.c_str(), name.length());
+   if (strcmp(name, "") != 0) {
+      yajl_gen_string(context->yajl, (const unsigned char *)name, strlen(name));
       yajl_gen_map_open(context->yajl);
    } else {
       yajl_gen_map_open(context->yajl);
