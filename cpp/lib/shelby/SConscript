@@ -5,8 +5,7 @@ sourceFiles = Split("""
 Import('env')
 shelbyEnv = env.Clone()
 
-shelbyEnv.MergeFlags('-O6 -pthread -Wall -Werror -DMONGO_HAVE_UNISTD -static')
-shelbyEnv['CXXFLAGS'] = ['-std=c++0x'] # works around bug in scons MergeFlags, fixed in later versions of scons
+shelbyEnv.MergeFlags('-O6 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
 shelbyEnv['CPPPATH'] = ['#/source', '#']
 
 shelby = shelbyEnv.Library(target = 'shelby', source = sourceFiles)

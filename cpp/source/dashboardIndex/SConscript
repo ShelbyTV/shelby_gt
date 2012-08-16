@@ -5,7 +5,7 @@ sourceFiles = Split("""
 Import('env')
 dashboardIndexEnv = env.Clone()
 
-dashboardIndexEnv.MergeFlags('-std=c99 -O6 -pthread -Wall -Werror -DMONGO_HAVE_UNISTD -D_BSD_SOURCE -static')
+dashboardIndexEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
 dashboardIndexEnv['CPPPATH'] = ['#/source', '#']
 dashboardIndexEnv['LINK'] = ['g++']
 

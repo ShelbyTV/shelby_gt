@@ -14,8 +14,7 @@ sourceFiles = Split("""
 Import('env')
 mrjsonEnv = env.Clone()
 
-mrjsonEnv.MergeFlags('-O6 -pthread -Wall -Werror -static')
-mrjsonEnv['CXXFLAGS'] = ['-std=c++0x'] # works around bug in scons MergeFlags, fixed in later versions of scons
+mrjsonEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -static')
 mrjsonEnv['CPPPATH'] = ['#/source', '#', '#/lib/mrjson', '#/lib/mrjson/yajl-hacks/']
 
 mrjson = mrjsonEnv.Library(target = 'mrjson', source = sourceFiles)

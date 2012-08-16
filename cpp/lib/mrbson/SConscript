@@ -5,8 +5,7 @@ sourceFiles = Split("""
 Import('env')
 mrbsonEnv = env.Clone()
 
-mrbsonEnv.MergeFlags('-O6 -pthread -Wall -Werror -DMONGO_HAVE_UNISTD -static')
-mrbsonEnv['CXXFLAGS'] = ['-std=c++0x'] # works around bug in scons MergeFlags, fixed in later versions of scons
+mrbsonEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
 mrbsonEnv['CPPPATH'] = ['#/source', '#', '#/lib/mrbson']
 
 mrbson = mrbsonEnv.Library(target = 'mrbson', source = sourceFiles)
