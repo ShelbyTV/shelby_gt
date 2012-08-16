@@ -1,0 +1,14 @@
+sourceFiles = Split("""
+                       cvector.c
+                    """)
+
+Import('env')
+cvectorEnv = env.Clone()
+
+cvectorEnv.MergeFlags('-O6 -pthread -Wall -Werror -DMONGO_HAVE_UNISTD -static')
+cvectorEnv['CXXFLAGS'] = ['-std=c++0x'] # works around bug in scons MergeFlags, fixed in later versions of scons
+cvectorEnv['CPPPATH'] = ['#/source', '#', '#/lib/cvector']
+
+cvector = cvectorEnv.Library(target = 'cvector', source = sourceFiles)
+
+cvectorEnv.Default(cvector)

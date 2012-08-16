@@ -84,7 +84,7 @@ struct sobContextStruct
 sobContext sobAllocContext(sobEnvironment env)
 {
    sobContext toReturn = (sobContextStruct *)malloc(sizeof(sobContextStruct));
-   memset(toReturn, 0, sizeof(struct sobContextStruct));
+   memset(toReturn, 0, sizeof(sobContextStruct));
 
    toReturn->env = env;
 
@@ -114,7 +114,7 @@ unsigned int sobArrayIndex(sobType type, sobEnvironment env)
    return ((unsigned int)type * SOB_NUMENVIRONMENTS) + (unsigned int)env;
 }
 
-bool sobTypesUseSameServer(sobType type1, sobType type2, sobEnvironment env)
+int sobTypesUseSameServer(sobType type1, sobType type2, sobEnvironment env)
 {
    unsigned int type1Index = sobArrayIndex(type1, env);
    unsigned int type2Index = sobArrayIndex(type2, env);
@@ -150,7 +150,7 @@ string sobOidString(bson_oid_t *oid)
  * For now, at initialization, we'll just connect to all databases;
  * later, we should lazily connect.
  */
-bool sobConnect(sobContext context)
+int sobConnect(sobContext context)
 {
    for (sobType i = (sobType)0 ; i < SOB_NUMTYPES ; i = (sobType)((unsigned int)i + 1)) {
       bool previousConnectionExists = false;
@@ -346,18 +346,20 @@ void sobLoadAllByOidField(sobContext context,
 
 void sobLoadAllById(sobContext context,
                     sobType type,
-                    const vector<bson_oid_t> &oids)
+                    cvector oids)
 {
+   assert(cvectorElementSize(oids) == sizeof(bson_oid_t));
+
    bson query;
    bson_init(&query);
    bson_append_start_object(&query, "_id");
    bson_append_start_array(&query, "$in");
 
-   for (unsigned int i = 0; i < oids.size(); i++) {
+   for (unsigned int i = 0; i < cvectorCount(oids); i++) {
      ostringstream stringStream;
      stringStream << i;
 
-     bson_append_oid(&query, stringStream.str().c_str(), &oids[i]);
+     bson_append_oid(&query, stringStream.str().c_str(), (bson_oid_t *)cvectorGetElement(oids, i));
    }
 
    bson_append_finish_array(&query);
@@ -379,7 +381,7 @@ void sobLoadAllById(sobContext context,
    mongo_cursor_destroy(&cursor);
 }
 
-bool sobGetBsonByOid(sobContext context,
+int sobGetBsonByOid(sobContext context,
                      sobType type,
                      bson_oid_t oid,
                      bson **result)
@@ -398,20 +400,24 @@ bool sobGetBsonByOid(sobContext context,
 
 void sobGetBsonVector(sobContext context,
                       sobType type,
-                      std::vector<bson *> &result)
+                      cvector result)
 {
+   assert(cvectorElementSize(result) == sizeof(bson *));
+
    map<string, bson *>::const_iterator it;
 
    for (it = context->objectMap[type]->begin(); it != context->objectMap[type]->end(); ++it) {
-      result.push_back(it->second);
+      cvectorAddElement(result, &(it->second));
    }
 }
 
 void sobGetOidVectorFromObjectField(sobContext context,
                                     sobType type,
                                     sobField field,
-                                    vector<bson_oid_t> &result)
+                                    cvector result)
 {
+   assert(cvectorElementSize(result) == sizeof(bson_oid_t));
+
    map<string, bson *>::const_iterator it;
 
    for (it = context->objectMap[type]->begin(); it != context->objectMap[type]->end(); ++it) {
@@ -420,7 +426,7 @@ void sobGetOidVectorFromObjectField(sobContext context,
  
       type = bson_find(&iterator, it->second, sobFieldDBName[field]);
       if (type == BSON_OID) {
-         result.push_back(*bson_iterator_oid(&iterator));
+         cvectorAddElement(result, bson_iterator_oid(&iterator));
       }
    }
 }

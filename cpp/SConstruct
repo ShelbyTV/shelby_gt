@@ -13,6 +13,7 @@ else:
    # libs 
    SConscript('lib/mrjson/SConscript', variant_dir='build/mrjson/', duplicate=0)
    SConscript('lib/mrbson/SConscript', variant_dir='build/mrbson/', duplicate=0)
+   SConscript('lib/cvector/SConscript', variant_dir='build/cvector/', duplicate=0)
    SConscript('lib/shelby/SConscript', variant_dir='build/shelby/', duplicate=0)
 
    # Straight Git submodule - easy since they use scons

@@ -16,8 +16,8 @@ dashboardIndexEnv['CPPPATH'] = ['#/source', '#']
 libMongo = File('#/build/mongo-c-driver/libmongoc.a')
 dashboardIndex = dashboardIndexEnv.Program(target = 'dashboardIndex', 
                                            source = sourceFiles,
-                                           LIBS = ['shelby', 'mrjson', 'mrbson', libMongo],
-                                           LIBPATH = ['#/build/mrjson/', '#/build/mrbson/', '#/build/shelby/'])
+                                           LIBS = ['shelby', 'mrjson', 'mrbson', 'cvector', libMongo],
+                                           LIBPATH = ['#/build/mrjson/', '#/build/mrbson/', '#/build/cvector/', '#/build/shelby/'])
 
 dashboardIndexInstall = dashboardIndexEnv.Install('#/bin', dashboardIndex)
 

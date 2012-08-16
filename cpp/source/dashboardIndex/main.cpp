@@ -1,5 +1,3 @@
-#include <vector>
-
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -9,8 +7,7 @@
 #include "lib/mongo-c-driver/src/mongo.h"
 #include "lib/mrjson/mrjson.h"
 #include "lib/shelby/shelby.h"
-
-using namespace std;
+#include "lib/cvector/cvector.h"
 
 static struct options {
 	char *user;
@@ -297,7 +294,8 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
 void printJsonOutput(sobContext sob)
 {
    // get dashboard entries; we'll iterate ourselves for the ordering hack (see below)
-   vector<bson *> dashboardEntries;
+   cvector dashboardEntries = cvectorAlloc(sizeof(bson *));
+
    sobGetBsonVector(sob, SOB_DASHBOARD_ENTRY, dashboardEntries);
 
    // allocate context; match Ruby API "status" and "result" response syntax
@@ -307,12 +305,9 @@ void printJsonOutput(sobContext sob)
    mrjsonStartArray(context, "result");
 
    // hack to match ordering of Ruby API - reverse iterate over map order returned
-   for (vector<bson *>::const_reverse_iterator iter = dashboardEntries.rbegin();
-        iter != dashboardEntries.rend();
-        ++iter) {
-
+   for (unsigned int i = 0; i < cvectorCount(dashboardEntries); i++) {
       mrjsonStartNamelessObject(context);
-      printJsonDashboardEntry(sob, context, *iter);
+      printJsonDashboardEntry(sob, context, *(bson **)cvectorGetElement(dashboardEntries, i));
       mrjsonEndObject(context);
    } 
 
@@ -334,7 +329,11 @@ void printJsonOutput(sobContext sob)
 bool loadData(sobContext sob)
 {
    bson_oid_t userOid;
-   vector<bson_oid_t> frameOids, rollOids, userOids, videoOids, conversationOids;
+   cvector frameOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector rollOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector userOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector videoOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector conversationOids = cvectorAlloc(sizeof(bson_oid_t));
 
    // first we get the user id for the target user (passed in as an option)
    userOid = sobGetUniqueOidByStringField(sob,

@@ -5,9 +5,8 @@
  * sob.h -- Shelby Objects
  */
 
-#include <vector>
-
 #include "sobProperties.h"
+#include "lib/cvector/cvector.h"
 
 /*
  * Right now these are only the top level types used for DB
@@ -50,7 +49,7 @@ typedef struct sobContextStruct *sobContext;
 
 sobContext sobAllocContext(sobEnvironment env);
 void sobFreeContext(sobContext context);
-bool sobConnect(sobContext context);
+int sobConnect(sobContext context);
 
 bson_oid_t sobGetUniqueOidByStringField(sobContext context,
                                         sobType type, 
@@ -65,23 +64,29 @@ void sobLoadAllByOidField(sobContext context,
                           unsigned int skip,
                           int order);
 
-bool sobGetBsonByOid(sobContext context,
-                     sobType type,
-                     bson_oid_t oid,
-                     bson **result);
+int sobGetBsonByOid(sobContext context,
+                    sobType type,
+                    bson_oid_t oid,
+                    bson **result);
 
+/*
+ * cvector should be initialized with sizeof(bson *)
+ */
 void sobGetBsonVector(sobContext context,
                       sobType type,
-                      std::vector<bson *> &result);
+                      cvector result);
 
+/*
+ * cvector should be initialized with sizeof(bson_oid_t)
+ */
 void sobGetOidVectorFromObjectField(sobContext context,
                                     sobType type,
                                     sobField field,
-                                    std::vector<bson_oid_t> &result);
+                                    cvector result);
 
 void sobLoadAllById(sobContext context,
                     sobType type,
-                    const std::vector<bson_oid_t> &oids);
+                    cvector oids);
 
 void sobPrintAttributes(mrjsonContext context,
                         bson *object,
