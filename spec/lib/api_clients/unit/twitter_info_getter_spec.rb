@@ -8,7 +8,19 @@ describe APIClients::TwitterInfoGetter do
   
     before(:each) do
       @user = Factory.create(:user)
+      APIClients::TwitterInfoGetter.unstub(:new)
       @info_getter = APIClients::TwitterInfoGetter.new(@user)
+    end
+    
+    it "should return a list of friends ids" do
+      @info_getter.stub_chain(:twitter_client, :friends, :ids?) {
+        struct = OpenStruct.new
+        struct.ids = (1..4998).to_a
+        struct
+      }
+      
+      response = @info_getter.get_following_ids
+      response.should == (1..4998).map {|i| i}
     end
     
     it "should return a list of screen names" do

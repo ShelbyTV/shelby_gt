@@ -4,6 +4,9 @@ describe V1::TokenController do
   before(:each) do
     @user = Factory.create(:user) #adds a twitter authentication
     @twt_auth = @user.authentications[0]
+    
+    #no need to hit the net here
+    GT::UserManager.stub(:start_user_sign_in)
   end
 
   describe "POST token" do
@@ -14,7 +17,7 @@ describe V1::TokenController do
     end
     
     it "returns a 404 if credentials aren't okay" do
-      GT::UserManager.should_receive(:verify_users_twitter).with(@twt_auth.oauth_token, "bad").and_return(false)
+      GT::UserTwitterManager.should_receive(:verify_auth).with(@twt_auth.oauth_token, "bad").and_return(false)
       
       post :create, :provider_name => "twitter", :uid => @twt_auth.uid, :token => @twt_auth.oauth_token, :secret => "bad", :format => :json
       assigns(:status).should eq(404)

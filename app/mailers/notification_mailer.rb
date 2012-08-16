@@ -2,7 +2,7 @@ class NotificationMailer < ActionMailer::Base
   include SendGrid
   sendgrid_enable   :opentrack, :clicktrack, :ganalytics
   
-  helper :mail
+  helper :mail, :roll
 
   def comment_notification(user_to, user_from, frame, message)
     sendgrid_category Settings::Email.comment_notification["category"]
@@ -16,7 +16,9 @@ class NotificationMailer < ActionMailer::Base
     
     @frame = frame
     @frame_title = @frame.video.title
-    @frame_permalink = @frame.permalink
+    @frame_permalink = @frame.permalink_to_frame_comments
+
+    @frame_conversation_messages = (frame.conversation && frame.conversation.messages) || nil
 
     @message = message
 
@@ -77,8 +79,6 @@ class NotificationMailer < ActionMailer::Base
     @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
 
     @roll = roll
-    @roll_title = @roll.title
-    @roll_permalink = @roll.permalink
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
       :to => @user_to.primary_email, 

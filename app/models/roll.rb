@@ -54,10 +54,14 @@ class Roll
   TYPES = {
     # special rolls that have not yet been updated to their specific type default to :special_roll
     :special_roll => 10,
-    :special_public => 11,
+    :special_public => 11, # <-- faux user
     :special_upvoted => 12,
     :special_watch_later => 13,
     :special_viewed => 14,
+    
+    # Differentiate special_public rolls of real shelby users and faux users we deem important
+    :special_public_real_user => 15, # <-- actual user
+    :special_public_upgraded => 16,  # <-- faux user who we deem worthy
 
     # User-created non-collaborative public rolls (previously these were collaborative, we're changing that)
     :user_public => 30,
@@ -104,29 +108,36 @@ class Roll
   end
 
   def has_subdomain_access?
-    # only user's personal roll gets a subdomain
-    public and !collaborative and !genius
+    # only "real" personal rolls get subdomain
+    self.roll_type == TYPES[:special_public_real_user] or self.roll_type == TYPES[:special_public_upgraded]
   end
   
   def created_at() self.id.generation_time; end
 
-  def followed_by?(u)
+  # only return true if a correct, symmetric following is in the DB (when given a proper User and not user_id)
+  # (this works in concert with add_follower which will fix an asymetric following)
+  def followed_by?(u, must_be_symmetric=true)
     raise ArgumentError, "must supply user or user_id" unless u
     user_id = (u.is_a?(User) ? u.id : u)
-    following_users.any? { |fu| fu.user_id == user_id }
+    followed = following_users.any? { |fu| fu.user_id == user_id }
+    if u.is_a?(User) and must_be_symmetric
+      followed &= u.roll_followings.any? { |rf| rf.roll_id == self.id }
+    end
+    return followed
   end
   
   def following_users_ids() following_users.map { |fu| fu.user_id }; end
   
   def following_users_models() following_users.map { |fu| fu.user }; end
   
+  # Will create a symmetric following or make a broken, asymetric following correct.
   def add_follower(u, send_notification=true)
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
     
     return false if self.followed_by?(u)
   
-    self.push :following_users => FollowingUser.new(:user => u).to_mongo
-    u.push :roll_followings => RollFollowing.new(:roll => self).to_mongo
+    self.push_uniq :following_users => FollowingUser.new(:user => u).to_mongo
+    u.push_uniq :roll_followings => RollFollowing.new(:roll => self).to_mongo
     
     #need to reload so the local copy is up to date for future operations
     self.reload 
@@ -140,10 +151,11 @@ class Roll
     GT::UserActionManager.follow_roll!(u.id, self.id)
   end
   
+  # Should be used when a user explicity takes the action to unfollow the roll
   def remove_follower(u)
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
     
-    return false unless self.followed_by?(u)
+    return false unless self.followed_by?(u, false) #doesntt have to be symmetric for remove to proceed
     
     self.following_users.delete_if { |fu| fu.user_id == u.id }
     u.roll_followings.delete_if { |rf| rf.roll_id == self.id }
@@ -152,9 +164,20 @@ class Roll
     GT::UserActionManager.unfollow_roll!(u.id, self.id) if u.save and self.save
   end
   
+  # For all followers, remove their roll following, but do not save this as a UserAction since it isn't
+  # Sets this roll's following_users to an empty array when complete
+  #
+  # N.B. When a user unfollows a roll, should use remove_follower as that tracks the action properly
   def remove_all_followers!
-    users_to_remove = self.following_users.map { |fu| fu.user }
-    users_to_remove.each { |u| self.remove_follower(u) }
+    # not using remove_follower on each one of these users b/c it's not an action taken by an individual
+    self.following_users.each do |fu|
+      if fu.user
+        fu.user.roll_followings.delete_if { |rf| rf.roll_id == self.id }
+        fu.user.save
+      end
+    end
+    self.following_users = []
+    self.save
     true
   end
   

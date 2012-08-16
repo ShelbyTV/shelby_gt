@@ -1,6 +1,94 @@
 require 'spec_helper'
 
 describe AuthenticationsController do
+
+  context "POST login" do
+    before(:each) do
+      @u = Factory.create(:user)
+      @u.password = (@password = "password")
+      @u.save
+    end
+    
+    context "success" do
+      before(:each) do
+        #make sure all methods below end up with a successful sign in
+        AuthenticationsController.any_instance.stub(:sign_in).with(:user, @u)
+        
+        # no need to hit the Internet
+        GT::UserManager.stub(:start_user_sign_in)
+      end
+      
+      it "should login user via email" do
+        post :login, :username => @u.primary_email, :password => @password
+      end
+
+      it "should login user via username" do
+        post :login, :username => @u.nickname, :password => @password
+      end
+
+      it "should set common cookie on login" do
+        post :login, :username => @u.nickname, :password => @password
+        cookies[:_shelby_gt_common].should_not == nil
+      end
+
+      it "should send user to root of web app on login" do
+        post :login, :username => @u.nickname, :password => @password
+        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+      end
+
+      it "should honor session based redirects on login" do
+        session[:return_url] = (url = "http://danspinosa.tv")
+        post :login, :username => @u.nickname, :password => @password
+        assigns(:opener_location).should == url
+      end
+      
+      it "should handle redirect via redir query param" do
+        post :login, :redir => "localhost", :username => @u.nickname, :password => @password
+        assigns(:opener_location).should == "localhost"
+      end
+    end
+
+    context "fail" do
+      it "should redirect back to the submitting page on error" do
+        request.stub(:referer).and_return(referer="http://whatever.com/")
+        post :login
+        assigns(:opener_location).should match /#{referer}.*/
+      end
+      
+      it "should redirect to API root when referer is missing" do
+        request.stub(:referer).and_return nil
+        post :login
+        assigns(:opener_location).should match /#{Settings::ShelbyAPI.web_root}.*/
+      end
+      
+      it "should return proper error when username is missing" do
+        post :login, :password => @password
+        assigns(:opener_location).should match /.*auth_failure=1.*/
+      end
+      
+      it "should return proper error when password is missing" do
+        post :login, :username => @u.nickname
+        assigns(:opener_location).should match /.*auth_failure=1.*/
+      end
+      
+      it "should return proper error on username/email has no match" do
+        post :login, :username => "asdflio24523ln", :password => @password
+        assigns(:opener_location).should match /.*auth_failure=1.*/
+      end
+
+      it "should return proper error on password incorrect" do
+        post :login, :username => @u.nickname, :password => @password+"X"
+        assigns(:opener_location).should match /.*auth_failure=1.*/
+      end
+      
+      it "should preserve redirect on error" do
+        post :login, :redir => "localhost"
+        assigns(:opener_location).should match /.*auth_failure=1.*/
+        assigns(:opener_location).should match /.*redir=localhost.*/
+      end
+    end
+  
+  end
     
   context "with faked sign_in and current_user" do
     # We're not trying to test Devise here, so just set current_user as expected when they get signed in...
@@ -8,7 +96,7 @@ describe AuthenticationsController do
       def sign_in(resource_or_scope, resource=nil) @current_user = resource; end
       def current_user() @current_user; end
     end
-  
+
     context "gt_enabled, non-faux user, just signing in" do
       context "via omniauth" do
         before(:each) do
@@ -60,51 +148,6 @@ describe AuthenticationsController do
           assigns(:opener_location).should == url
         end
 
-      end
-      
-      context "via email/password" do
-        before(:each) do
-          @password = "pass"
-          @user = Factory.create(:user, :password => @password, :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => ["init"])
-        end
-        
-        it "should sign in if nickname & password is correct" do
-          User.should_receive(:find_by_nickname).with(@user.nickname).and_return @user
-          GT::UserManager.should_receive :start_user_sign_in
-          
-          get :create, :username => @user.nickname, :password => @password
-          assigns(:current_user).should == @user
-        end
-        
-        it "should sign in if email & password is correct" do
-          User.should_receive(:find_by_primary_email).with(@user.primary_email).and_return @user
-          GT::UserManager.should_receive :start_user_sign_in
-          
-          get :create, :username => @user.primary_email, :password => @password
-          assigns(:current_user).should == @user
-        end
-        
-        it "should return error and redirect with error query params if password is incorrect" do
-          session[:return_url] = (url = "http://wherever.com")
-          User.should_receive(:find_by_primary_email).with(@user.primary_email).and_return @user
-          
-          get :create, :username => @user.primary_email, :password => @password + "WRONG"
-          assigns(:current_user).should == nil
-          assigns(:opener_location).start_with?(url+"?").should == true
-        end
-        
-        it "should return error and redirect with error query params if username is incorrect" do
-          session[:return_url] = (url = "http://wherever.com")
-          User.should_receive(:find_by_primary_email).with(@user.primary_email).and_return nil
-          get :create, :username => @user.primary_email, :password => @password
-          assigns(:current_user).should == nil
-          assigns(:opener_location).start_with?(url+"?").should == true
-        end
-
-        it "should not save twitter autocomplete since user has no twitter auth" do
-          APIClients::TwitterInfoGetter.should_not_receive(:new)
-          get :create
-        end
       end
 
     end

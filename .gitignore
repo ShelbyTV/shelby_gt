@@ -18,8 +18,12 @@
 .yardoc/*
 /*/*/.DS_Store
 
-# Ignore cpp build files
-# /cpp/bin -- we'll go ahead and check in a copy of the binary for now...
+.sass-cache
+
+/public/assets
+/public/javascripts/compiled
+
+# Ignore cpp temp build files
 /cpp/build
 /cpp/.sconsign.dblite
 /cpp/.sconf_temp

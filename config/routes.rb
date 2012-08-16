@@ -14,10 +14,13 @@ ShelbyGt::Application.routes.draw do
     get 'login' => 'authentications#index', :as => :new_user_session
   end
   
-  resources :authentications
+  resources :authentications do
+    post 'login' => 'authentications#login', :on => :collection
+  end
   get '/auth/:provider/callback' => 'authentications#create'
   get '/auth/failure' => 'authentications#fail'
   post '/user/sign_in' => 'authentications#create', :as => :user_session
+  
 
   ########################
   # OAuth Provider
@@ -47,7 +50,9 @@ ShelbyGt::Application.routes.draw do
     # WHY? We support some browsers that don't suppot CORS, and they use jsonp which only does GETs.
     # Sometimes we have the same route do different things depending on the verb, and that doens't play nice w/ jsonp.
     
-    resources :user, :only => [:show, :update] do
+    resources :user, :only => [:update] do
+      # constraints allows for nicknames that include dots, prevents changing format (we're json only, that's ok).
+      get ':id' => 'user#show', :as => :show, :on => :collection, :constraints => { :id => /[^\/]+/ }
       get 'is_token_valid' => 'user#valid_token', :on => :member
       get 'rolls/following' => 'user#roll_followings', :on => :member
       get 'rolls/postable' => 'user#roll_followings', :on => :member, :defaults => { :postable => true }
@@ -56,13 +61,14 @@ ShelbyGt::Application.routes.draw do
       get 'rolls/hearted' => 'roll#show_users_heart_roll'
       get 'rolls/heart/frames' => 'frame#index_for_users_heart_roll'
     end
-    get 'roll/browse' => 'roll#browse'
     resources :roll, :only => [:show, :create, :update, :destroy] do
       get 'frames' => 'frame#index'
       post 'frames' => 'frame#create'
       post 'share' => 'roll#share'
       post 'join' => 'roll#join'
       post 'leave' => 'roll#leave'
+      get 'browse' => 'roll#browse', :on => :collection
+      get 'explore' => 'roll#explore', :on => :collection
     end
     namespace :roll do
        resources :genius, :only => [:create]
@@ -78,6 +84,7 @@ ShelbyGt::Application.routes.draw do
       get 'find_or_create', :on => :collection
       get 'conversations' => 'conversation#index'
       get 'viewed', :on => :collection
+      get 'queued', :on => :collection
     end
     resources :dashboard_entries, :path => "dashboard", :only => [:index, :update] do
       get 'find_entries_with_video' => 'dashboard_entries#find_entries_with_video', :on => :collection
@@ -129,7 +136,8 @@ ShelbyGt::Application.routes.draw do
   
   resources :cohort_entrance, :only => [:show]
   
-  get '/admin/user/:id' => 'admin#user'
+  # constraints allows for nicknames that include dots, prevents changing format (we're json only, that's ok).
+  get '/admin/user/:id' => 'admin#user', :constraints => { :id => /[^\/]+/ }
   
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   

@@ -55,19 +55,46 @@ class V1::VideoController < ApplicationController
   # 
   def viewed
     StatsManager::StatsD.time(Settings::StatsConstants.api['video']['viewed']) do
-      @user = current_user
-
-      # might be loading more info than necessary... could possibly specify fields
-      @viewed_roll_frames = @user.viewed_roll ? @user.viewed_roll.frames : []
-      @videos = @viewed_roll_frames.collect {|x| x.video}
-      @videos.compact! if @videos
-      @videos.uniq! if @videos
-
-      # limit us to 1000 most recent video IDs returned... hopefully this works with uniq!
-      @videos = @videos.first(@videos.length > 1000 ? 1000 : @videos.length)
+      if user = current_user
+        @video_ids = video_ids_on_roll(user.viewed_roll.id)
+      else
+        @video_ids = []
+      end
 
       @status = 200
     end
   end  
+  
+  ##
+  # Returns an index of all viewed queued (with only IDs)
+  #   REQUIRES AUTHENTICATION
+  #
+  # [GET] /v1/video/queued
+  # 
+  def queued
+    StatsManager::StatsD.time(Settings::StatsConstants.api['video']['queued']) do
+      if user = current_user
+        @video_ids = video_ids_on_roll(user.watch_later_roll.id)
+      else
+        @video_ids = []
+      end
+
+      @status = 200
+    end
+  end
+  
+  private
+  
+    def video_ids_on_roll(roll_id, limit=1000)
+      # This stuff works, but it's slower than using distinct
+      #Only return the video_id (abbreviated as :b) for the first 1,000 frames
+      #frames = Frame.where(:roll_id => roll_id).limit(1000).fields(:b).all
+      #return frames.collect { |f| f.video_id }.compact.uniq
+      
+      # Since distinct doesn't support limit, we impose some artificial limit via time to keep the query reasonable
+      video_ids = Frame.where(:roll_id => roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}).distinct(:b)
+      # and then limit the results array
+      return video_ids[0..limit]
+    end
 end
 

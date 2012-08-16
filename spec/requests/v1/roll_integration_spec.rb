@@ -2,7 +2,7 @@
 require 'spec_helper' 
 
 describe 'v1/roll' do
-  before(:all) do
+  before(:each) do
     @u1 = Factory.create(:user)
     @uv_roll1 = Factory.create(:roll, :creator => @u1)
     @pub_roll1 = Factory.create(:roll, :creator => @u1)
@@ -22,11 +22,11 @@ describe 'v1/roll' do
   end
   
   context 'logged in' do
-    before(:all) do
+    before(:each) do
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
     end
-    
+
     describe "GET" do
       it "should return roll info on success" do
         get '/v1/roll/'+@r.id
@@ -61,6 +61,7 @@ describe 'v1/roll' do
       end
       
       it "should return roll info on success when looking up by subdomain if the subdomain is active" do
+        @r.roll_type = Roll::TYPES[:special_public_real_user]
         @r.collaborative = false
         @r.save
         get '/v1/roll/'+@r.subdomain
@@ -121,6 +122,46 @@ describe 'v1/roll' do
       end
       
     end
+
+    describe "GET Explore" do
+      before(:each) do
+        @v1, @v2 = Factory.create(:video), Factory.create(:video)
+        #Video.stub(:find).and_return([@v1, @v2])
+        @r1, @r2 = Factory.create(:roll), Factory.create(:roll)
+        Roll.stub(:find).and_return([@r1, @r2])
+        @f1_1, @f1_2, @f1_3 = Factory.create(:frame, :roll => @r1, :video => @v1), Factory.create(:frame, :roll => @r1, :video => @v2), Factory.create(:frame, :roll => @r1, :video => @v2)
+        @f2_1, @f2_2, @f2_3 = Factory.create(:frame, :roll => @r2, :video => @v1), Factory.create(:frame, :roll => @r2, :video => @v2), Factory.create(:frame, :roll => @r2, :video => @v2)
+      end
+      
+      it "should return an array of objects" do
+        get 'v1/roll/explore'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_size(Settings::Roll.explore.size).at_path("result")
+      end
+      
+      it "should include the category name for each object" do
+        get 'v1/roll/explore'
+        response.body.should have_json_path("result/0/category")
+      end
+      
+      it "should include a rolls array for each object" do
+        get 'v1/roll/explore'
+        response.body.should have_json_path("result/0/rolls")
+      end
+      
+      it "should include three frames for each Roll in the rolls array" do
+        get 'v1/roll/explore'
+        response.body.should have_json_size(3).at_path("result/0/rolls/0/frames")
+        response.body.should have_json_size(3).at_path("result/1/rolls/0/frames")
+        response.body.should have_json_size(3).at_path("result/1/rolls/1/frames")
+      end
+      
+      it "should only call find on Videos once" do
+        Video.should_receive(:find).exactly(1).times
+        get 'v1/roll/explore'
+      end
+      
+    end
     
     describe "POST" do
       context "roll creation" do
@@ -157,6 +198,8 @@ describe 'v1/roll' do
         end
 
         it "should return 409 if trying to set a reserved subdomain" do
+          Roll.any_instance.stub(:has_subdomain_access?).and_return(true)
+          
           post '/v1/roll?title=anal&thumbnail_url=http://bar.com&public=1&collaborative=0'
           response.body.should be_json_eql(409).at_path("status")
         end
@@ -213,22 +256,6 @@ describe 'v1/roll' do
             parse_json(response.body)["message"].should eq("a destination and a text is required to post")
           end
         end
-      
-        context "email share" do
-          it "should return 200 when sharing to email" do
-            GT::SocialPoster.should_receive(:post_to_email).once
-            
-            post '/v1/roll/'+@r.id+'/share?destination[]=email&text=testing&addresses=dan@shelby.tv'
-            response.body.should be_json_eql(200).at_path("status")
-          end
-          
-          it "should return 404 if addresses aren't included" do
-            GT::SocialPoster.should_receive(:post_to_email).exactly(0).times
-            
-            post '/v1/roll/'+@r.id+'/share?destination[]=email&text=testing'
-            response.body.should be_json_eql(404).at_path("status")
-          end
-        end
           
       end
 
@@ -279,10 +306,12 @@ describe 'v1/roll' do
       end
 
       it "should return 409 if trying to set a reserved subdomain" do
-          @r.collaborative = false
-          @r.save
-          put '/v1/roll/'+@r.id+'?title=anal'
-          response.body.should be_json_eql(409).at_path("status")
+        Roll.any_instance.stub(:has_subdomain_access?).and_return(true)
+        
+        @r.collaborative = false
+        @r.save
+        put '/v1/roll/'+@r.id+'?title=anal'
+        response.body.should be_json_eql(409).at_path("status")
       end
     end
     

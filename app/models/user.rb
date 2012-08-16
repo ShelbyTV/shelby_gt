@@ -113,7 +113,7 @@ class User
   # [twitter, facebook, email, tumblr]
   key :social_tracker,        Array, :default => [0, 0, 0, 0]
 
-  attr_accessible :name, :nickname, :primary_email, :preferences, :app_progress, :user_image, :user_image_original
+  attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original
   
   # Arnold does a *shit ton* of user saving, which runs this validation, which turns out to be very expensive 
   # (see shelby_gt/etc/performance/unique_nickname_realtime_profile.gif)
@@ -160,10 +160,16 @@ class User
   
   def created_at() self.id.generation_time; end
   
-  def following_roll?(r)
+  # only return true if a correct, symmetric following is in the DB (when given a proper Roll and not roll_id)
+  # (this works in concert with Roll#add_follower which will fix an asymetric following)
+  def following_roll?(r, must_be_symmetric=true)
     raise ArgumentError, "must supply roll or roll_id" unless r
     roll_id = (r.is_a?(Roll) ? r.id : r)
-    roll_followings.any? { |rf| rf.roll_id == roll_id }
+    following = roll_followings.any? { |rf| rf.roll_id == roll_id }
+    if r.is_a?(Roll) and must_be_symmetric
+      following &= r.following_users.any? { |fu| fu.user_id == self.id }
+    end
+    return following
   end
   
   def unfollowed_roll?(r)
@@ -194,6 +200,7 @@ class User
       self.faux = (self.faux == FAUX_STATUS[:true] ? FAUX_STATUS[:converted] : FAUX_STATUS[:false])
       self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
       GT::UserManager.ensure_users_special_rolls(self, true)
+      self.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
     
       ShelbyGT_EM.next_tick { 
         rhombus = Rhombus.new('shelby', '_rhombus_gt')

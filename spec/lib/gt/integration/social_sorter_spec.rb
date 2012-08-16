@@ -191,6 +191,19 @@ describe GT::SocialSorter do
       @observer.following_roll?(res[:frame].roll).should == false
     end
     
+    it "should not create DashboardEntry for observing user if they unfollowed the poster's roll" do
+      #need to follow first
+      @existing_user.public_roll.add_follower(@observer)
+      #can now un-follow
+      @existing_user.public_roll.remove_follower(@observer)
+      @existing_user.public_roll.save
+      @observer.save
+
+      lambda {
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
+      }.should_not change { @observer.dashboard_entries.count }
+    end
+    
     it "should add DashboardEntry for observing User" do
       # b/c we unfollowed earlier...
       @existing_user.public_roll.add_follower(@observer)

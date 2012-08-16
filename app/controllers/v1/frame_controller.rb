@@ -410,14 +410,15 @@ class V1::FrameController < ApplicationController
             t = GT::SocialPostFormatter.format_for_facebook(text, short_links)
             resp &= GT::SocialPoster.post_to_facebook(current_user, t, frame)
           when 'email'
-            #NB if frame is on a private roll, this is a private roll invite.  Otherwise, it's just a Frame share
+            # This is just a Frame share
             email_addresses = params[:addresses]
             return render_error(404, "you must provide addresses") if email_addresses.blank?
             
             # save any valid addresses for future use in autocomplete
             current_user.store_autocomplete_info(:email, email_addresses)
 
-            resp &= GT::SocialPoster.post_to_email(current_user, params[:addresses], text, frame)
+            # Best effort.  For speed, not checking if send succeeds (front-end should validate eaddresses format)
+            ShelbyGT_EM.next_tick { GT::SocialPoster.email_frame(current_user, params[:addresses], text, frame) }
           else
             return render_error(404, "we dont support that destination yet :(")
           end
@@ -565,16 +566,15 @@ class V1::FrameController < ApplicationController
   def destroy
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['destroy']) do
       @frame = Frame.find(params[:id])
-      
-      #XXX Can't just destory the frame!  
-      # What about the conversation?
-      # What about any DashboardEntries pointing to this Frame?
-      #  It seems the front end handles bad dashboard entries gracefully, but I don't like that as a solution.
-      
-      if @frame and @frame.destroy 
+
+      if @frame and @frame.destroyable_by?(current_user) and @frame.destroy
+        @frame.conversation.destroy if @frame.conversation
+        # front-end gracefully handles DashboardEntries w/o Frames
+        # Since we're not indexed on :c, it *kills* the DB to try to remove any meaningful amount of entries
+        
         @status = 200
       else
-        render_error(404, "could not destroy that frame with id #{params[:id]}")
+        render_error(404, "You cannot destroy that frame.")
       end
     end
   end

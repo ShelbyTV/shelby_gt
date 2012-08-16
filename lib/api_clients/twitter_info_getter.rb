@@ -7,14 +7,19 @@ module APIClients
       def initialize(user)
         self.setup_for_user user
       end
+      
+      def get_following_ids
+        # gets 5,000 ids at a time, we'll take a max of 5,000 for now
+        twitter_client.friends.ids?.ids
+      end
 
       def get_following_screen_names
         following_screen_names = []
 
         # two step process as required by twitter API:
-        # 1) get user ids (5000 at a time, we'll take a max of 5000) of who a user is following
+        # 1) get user ids of who a user is following
         # 2) lookup user info for 100 user ids at a time - this info will contain the users' screen names
-        friend_ids = twitter_client.friends.ids?.ids
+        friend_ids = get_following_ids
         # users can only be looked up 100 at a time to get their screen names
         friend_ids.each_slice(100) {|user_ids|
           user_info = twitter_client.users.lookup? :user_id => user_ids.join(",")

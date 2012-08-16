@@ -7,19 +7,38 @@ class AuthenticationsController < ApplicationController
   def index
   end
   
+  ##
+  # Authenticates user via email or username and password.
+  #
+  # This route should only be used over HTTPS
+  #
+  # [POST] /authentications/login
+  # 
+  # @param [Required, String] username May be the username or the primary email address of the user
+  # @param [Required, String] password The plaintext password
+  def login
+    u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s)) if params[:username]
+    if u and u.valid_password?(params[:password])
+      user = u
+    else
+      query = {:auth_failure => 1, :auth_strategy => "that username/password"}
+      query[:redir] = params[:redir] if params[:redir]
+      @opener_location = add_query_params(request.referer || Settings::ShelbyAPI.web_root, query)
+      return render :action => 'redirector', :layout => 'simple'
+    end
+    
+    # any user with valid email/password is a valid Shelby user
+    # this sets up redirect
+    sign_in_current_user(user)
+    @opener_location = clean_query_params(@opener_location)
+    render :action => 'redirector', :layout => 'simple'
+  end
+  
+  # This method has grown into a fucking beast.  
+  # ==> Needs *serious* refactoring and simplification. <==
   def create
     if omniauth = request.env["omniauth.auth"]
       user = User.first( :conditions => { 'authentications.provider' => omniauth['provider'], 'authentications.uid' => omniauth['uid'] } )
-    elsif !params[:username].blank?
-      u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s))
-      if u and u.valid_password?(params[:password])
-        user = u
-      else
-        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {
-          :error => "username_password_fail"
-          })
-        return render :action => 'redirector', :layout => 'simple'
-      end
     end
       
 
@@ -195,7 +214,7 @@ class AuthenticationsController < ApplicationController
 
   private
     def redirect_path
-      clean_query_params(session[:return_url] || request.env['omniauth.origin'])
+      clean_query_params(session[:return_url] || request.env['omniauth.origin'] || params[:redir])
     end
     
     def set_common_cookie(user, form_authenticity_token)

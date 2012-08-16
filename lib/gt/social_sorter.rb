@@ -49,7 +49,7 @@ module GT
         
         #observing_user should be following the posting_user's public roll, unless they specifically unfollowed it
         unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)
-          posting_user.public_roll.add_follower(observing_user, false)
+          posting_user.public_roll.add_follower(observing_user, true)
           # To make sure new users get a bunch of historical content, backfill.
           # (This means old users will also get the backfill when they follow sombody new on twitter/fb)
           GT::Framer.backfill_dashboard_entries(observing_user, posting_user.public_roll, 20)

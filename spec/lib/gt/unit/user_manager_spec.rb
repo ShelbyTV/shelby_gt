@@ -8,13 +8,6 @@ require 'predator_manager'
 
 # UNIT test
 describe GT::UserManager do
-  
-  before(:each) do
-    # don't want TwitterInfoGetter trying to make real requests to API
-    @info_getter = double("info_getter")
-    @info_getter.stub(:get_following_screen_names).and_return(['a','b'])
-    APIClients::TwitterInfoGetter.stub(:new).and_return(@info_getter)
-  end
 
   context "get_or_create_faux_user" do
     before(:each) do
@@ -42,7 +35,8 @@ describe GT::UserManager do
     
     it "should get real User when one exists" do
       nick, provider, uid = "whatever", "fb", "123uid"
-      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u = User.new(:nickname => nick)
+      u.faux = User::FAUX_STATUS[:true]
       u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
@@ -59,7 +53,8 @@ describe GT::UserManager do
     
     it "should get faux User when one exists" do
       nick, provider, uid = "whatever2", "fb", "123uid2"
-      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:true])
+      u = User.new(:nickname => nick)
+      u.faux = User::FAUX_STATUS[:true]
       u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
@@ -76,7 +71,8 @@ describe GT::UserManager do
     
     it "should add a public roll to existing user if they're missing it" do
       nick, provider, uid = "whatever--", "fb--", "123uid--"
-      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u = User.new(:nickname => nick)
+      u.faux = User::FAUX_STATUS[:true]
       u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
@@ -98,7 +94,8 @@ describe GT::UserManager do
     it "should add a watch_later_roll, upvoted_roll, viewed_roll, public_roll to existing user if they're missing it" do
       nick, provider, uid = "whatever--b-", "fb--", "123uid--b-"
       thumb_url = "some://thumb.url"
-      u = User.new(:nickname => nick, :faux => false)
+      u = User.new(:nickname => nick)
+      u.faux = User::FAUX_STATUS[:true]
       u.downcase_nickname = nick
       u.user_image = thumb_url
       auth = Authentication.new
@@ -109,6 +106,7 @@ describe GT::UserManager do
       
       u.persisted?.should == true
       u.watch_later_roll.should == nil
+      u.public_roll.should == nil
       
       lambda {
         usr = GT::UserManager.get_or_create_faux_user(nick, provider, uid)
@@ -270,7 +268,8 @@ describe GT::UserManager do
     
     it "should update user's image if it's null" do
       nick, provider, uid = "whatever-x1", "fb", "123uid-x1"
-      u = User.new(:nickname => nick, :faux => User::FAUX_STATUS[:false])
+      u = User.new(:nickname => nick)
+      u.faux = User::FAUX_STATUS[:true]
       u.downcase_nickname = nick
       auth = Authentication.new
       auth.provider = provider
@@ -381,6 +380,12 @@ describe GT::UserManager do
       new_auth.should == nil
     end
     
+    it "should update their public roll's roll_type" do
+      @faux_u.public_roll.roll_type.should == Roll::TYPES[:special_public]
+      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      @faux_u.public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
+    end
+    
     it "should follow their watch_later roll if they're not" do
       @faux_u.watch_later_roll.remove_follower(@faux_u)
       @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == false
@@ -427,6 +432,12 @@ describe GT::UserManager do
     it "should have at least one cohort" do
       real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
       real_u.cohorts.size.should > 0
+    end
+    
+    it "should follow all twitter and facebook friends" do
+      GT::UserTwitterManager.should_receive(:follow_all_friends_public_rolls).exactly(1).times
+      GT::UserFacebookManager.should_receive(:follow_all_friends_public_rolls).exactly(1).times
+      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
     end
   end
   
@@ -670,6 +681,7 @@ describe GT::UserManager do
         
         u.public_roll.class.should == Roll
         u.public_roll.persisted?.should == true
+        u.public_roll.reload.roll_type.should == Roll::TYPES[:special_public_real_user]
         
         u.watch_later_roll.class.should == Roll
         u.watch_later_roll.persisted?.should == true
@@ -701,6 +713,12 @@ describe GT::UserManager do
         u.following_roll?(u.upvoted_roll).should == true
         u.following_roll?(u.watch_later_roll).should == true
         u.following_roll?(u.viewed_roll).should == false
+      end
+      
+      it "should follow all twitter and facebook friends" do
+        GT::UserTwitterManager.should_receive(:follow_all_friends_public_rolls).exactly(1).times
+        GT::UserFacebookManager.should_receive(:follow_all_friends_public_rolls).exactly(1).times
+        current_user = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
       end
       
     end
@@ -828,13 +846,13 @@ describe GT::UserManager do
         end
 
         it "should retrieve and save twitter autocomplete info on signin of existing user" do
-            @info_getter.should_receive(:get_following_screen_names)
+            @twt_info_getter.should_receive(:get_following_screen_names)
             @u.should_receive(:store_autocomplete_info).with(:twitter,['a','b'])
             GT::UserManager.start_user_sign_in(@u, :omniauth => @omniauth_hash)
         end
 
         it "should not save twitter autocomplete info if TwitterError occurs" do
-            @info_getter.should_receive(:get_following_screen_names).and_raise(Grackle::TwitterError.new('', '', '', ''))
+            @twt_info_getter.should_receive(:get_following_screen_names).and_raise(Grackle::TwitterError.new('', '', '', ''))
             @u.should_not_receive(:store_autocomplete_info)
             GT::UserManager.start_user_sign_in(@u, :omniauth => @omniauth_hash)
         end
@@ -843,14 +861,14 @@ describe GT::UserManager do
             omniauth = @omniauth_hash.clone()
             omniauth['provider'] = 'facebook'
             u = GT::UserManager.create_new_user_from_omniauth(omniauth)
-            @info_getter.should_not_receive(:get_following_screen_names)
+            @twt_info_getter.should_not_receive(:get_following_screen_names)
             GT::UserManager.start_user_sign_in(u, :omniauth => omniauth)
         end
       end
 
       context "create new user via omniauth" do
         it "should retrieve and save twitter autocomplete info on creation of new user via omniauth" do
-            @info_getter.should_receive(:get_following_screen_names)
+            @twt_info_getter.should_receive(:get_following_screen_names)
             u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         end
       end
@@ -874,29 +892,6 @@ describe GT::UserManager do
       auth.oauth_secret.should == "NEW--secret"
     end
 
-    it "should add a new auth to an existing user" do
-      u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
-
-      new_omniauth_hash = {
-        'provider' => "facebook",
-        'uid' => '333',
-        'credentials' => {
-          'token' => "somelongtoken",
-          'secret' => 'foreskin',
-          'garbage' => 'truck'
-        },
-        'info' => {
-          'name' => 'some name',
-          'nickname' => 'ironically nick',
-          'garbage' => 'truck'
-        },
-        'garbage' => 'truck'
-      }
-      
-      updated_u = GT::UserManager.add_new_auth_from_omniauth(u, new_omniauth_hash)
-      u.id.should == updated_u.id
-    end
-
     it "should create app_progress if it doesnt exist" do
       u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
       u.app_progress = nil; u.save
@@ -908,6 +903,54 @@ describe GT::UserManager do
       u = Factory.create(:user)
       GT::UserManager.start_user_sign_in(u)
       u.app_progress.class.should eq(AppProgress)
+    end
+    
+    context "adding new auth" do
+      before(:each) do
+        @nickname = "nick-#{rand.to_s}"
+        @new_omniauth_hash = {
+          'provider' => "facebook",
+          'uid' => "#{rand.to_s}-#{Time.now.to_f}",
+          'credentials' => {
+            'token' => "somelongtoken",
+            'secret' => 'foreskin',
+            'garbage' => 'truck'
+          },
+          'info' => {
+            'name' => 'some name',
+            'nickname' => @nickname,
+            'garbage' => 'truck'
+          },
+          'garbage' => 'truck'
+        }
+      end
+      
+      it "should add a new auth to an existing user" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        
+        updated_u = GT::UserManager.add_new_auth_from_omniauth(u, @new_omniauth_hash)
+        u.id.should == updated_u.id
+      end
+      
+      it "should follow all twitter and facebook friends when adding a twitter auth" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        
+        @new_omniauth_hash['provider'] = "twitter"
+        
+        GT::UserTwitterManager.should_receive(:follow_all_friends_public_rolls).exactly(1).times
+        GT::UserFacebookManager.should_receive(:follow_all_friends_public_rolls).exactly(1).times
+        updated_u = GT::UserManager.add_new_auth_from_omniauth(u, @new_omniauth_hash)
+      end
+    
+      it "should follow all twitter and facebook friends when adding a facebook auth" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        
+        @new_omniauth_hash['provider'] = "facebook"
+        
+        GT::UserTwitterManager.should_receive(:follow_all_friends_public_rolls).exactly(1).times
+        GT::UserFacebookManager.should_receive(:follow_all_friends_public_rolls).exactly(1).times
+        updated_u = GT::UserManager.add_new_auth_from_omniauth(u, @new_omniauth_hash)
+      end
     end
   end
   
@@ -927,26 +970,26 @@ describe GT::UserManager do
     it "should verify w/ twitter externally if token/secret don't match" do
       token = "fake_token"
       secret = "fake_secret"
-      GT::UserManager.should_receive(:verify_users_twitter).with(token, secret).and_return(true)
+      GT::UserTwitterManager.should_receive(:verify_auth).with(token, secret).and_return(true)
           
       GT::UserManager.verify_user(@user, "twitter", @twt_auth.uid, token, secret).should == true
     end
   
     it "should verify w/ twitter internally if token/secret do match" do
-      GT::UserManager.should_receive(:verify_users_twitter).exactly(0).times
+      GT::UserTwitterManager.should_receive(:verify_auth).exactly(0).times
           
       GT::UserManager.verify_user(@user, "twitter", @twt_auth.uid, @twt_auth.oauth_token, @twt_auth.oauth_secret).should == true
     end
   
     it "should verify w/ FB externally if token/secret don't match" do
       token = "fake_token"
-      GT::UserManager.should_receive(:verify_users_facebook).with(token).and_return(true)
+      GT::UserFacebookManager.should_receive(:verify_auth).with(token).and_return(true)
           
       GT::UserManager.verify_user(@user, "facebook", @fb_auth.uid, token).should == true
     end
   
     it "should verify w/ FB internally if token/secret do match" do
-      GT::UserManager.should_receive(:verify_users_facebook).exactly(0).times
+      GT::UserFacebookManager.should_receive(:verify_auth).exactly(0).times
           
       GT::UserManager.verify_user(@user, "facebook", @fb_auth.uid, @fb_auth.oauth_token).should == true
     end
