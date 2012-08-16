@@ -25,12 +25,14 @@ module GT
         #additional meta-data for user's public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
         
-        #start following
-        GT::UserTwitterManager.follow_all_friends_public_rolls(user)
-        GT::UserFacebookManager.follow_all_friends_public_rolls(user)
+        ShelbyGT_EM.next_tick {
+          #start following
+          GT::UserTwitterManager.follow_all_friends_public_rolls(user)
+          GT::UserFacebookManager.follow_all_friends_public_rolls(user)
         
-        #start processing
-        GT::PredatorManager.initialize_video_processing(user, auth)
+          #start processing
+          GT::PredatorManager.initialize_video_processing(user, auth)
+        }
         
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
         
@@ -96,12 +98,14 @@ module GT
       new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
       user.authentications << new_auth
       if user.save
-        #start following (okay to try to follow everybody)
-        GT::UserTwitterManager.follow_all_friends_public_rolls(user)
-        GT::UserFacebookManager.follow_all_friends_public_rolls(user)
+        ShelbyGT_EM.next_tick {
+          #start following (okay to try to follow everybody)
+          GT::UserTwitterManager.follow_all_friends_public_rolls(user)
+          GT::UserFacebookManager.follow_all_friends_public_rolls(user)
         
-        #start processing
-        GT::PredatorManager.initialize_video_processing(user, new_auth)        
+          #start processing
+          GT::PredatorManager.initialize_video_processing(user, new_auth)
+        }
         
         StatsManager::StatsD.increment(Settings::StatsConstants.user['add_service'][new_auth.provider])
         
@@ -208,12 +212,15 @@ module GT
 
       user.faux = User::FAUX_STATUS[:converted]
       if user.save
-        #start following
-        GT::UserTwitterManager.follow_all_friends_public_rolls(user)
-        GT::UserFacebookManager.follow_all_friends_public_rolls(user)
+        ShelbyGT_EM.next_tick {
+          #start following
+          GT::UserTwitterManager.follow_all_friends_public_rolls(user)
+          GT::UserFacebookManager.follow_all_friends_public_rolls(user)
         
-        #start processing
-        GT::PredatorManager.initialize_video_processing(user, new_auth) if new_auth
+          #start processing
+          GT::PredatorManager.initialize_video_processing(user, new_auth) if new_auth
+        }
+        
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'])
         return user, new_auth
       else
