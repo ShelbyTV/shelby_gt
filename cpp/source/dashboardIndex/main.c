@@ -16,6 +16,7 @@ static struct options {
 	char *user;
 	int limit;
 	int skip;
+	char *environment;
 } options;
 
 struct timeval beginTime;
@@ -23,10 +24,11 @@ struct timeval beginTime;
 void printHelpText()
 {
    printf("dashboardIndex usage:\n"); 
-   printf("   -h --help        Print this help message\n");
-   printf("   -u --user        Lowercase nickname of user\n");
-   printf("   -l --limit       Limit to this number of dashboard entries\n");
-   printf("   -s --skip        Skip this number of dashboard entries\n");
+   printf("   -h --help           Print this help message\n");
+   printf("   -u --user           Lowercase nickname of user\n");
+   printf("   -l --limit          Limit to this number of dashboard entries\n");
+   printf("   -s --skip           Skip this number of dashboard entries\n");
+   printf("   -e --environment    Specify environment: production, test, or development\n");
 }
 
 void parseUserOptions(int argc, char **argv)
@@ -40,11 +42,12 @@ void parseUserOptions(int argc, char **argv)
          {"user",        required_argument, 0, 'u'},
          {"limit",       required_argument, 0, 'l'},
          {"skip",        required_argument, 0, 's'},
+         {"environment", required_argument, 0, 'e'},
          {0, 0, 0, 0}
       };
       
       int option_index = 0;
-      c = getopt_long(argc, argv, "hu:l:s:", long_options, &option_index);
+      c = getopt_long(argc, argv, "hu:l:s:e:", long_options, &option_index);
    
       /* Detect the end of the options. */
       if (c == -1) {
@@ -65,6 +68,10 @@ void parseUserOptions(int argc, char **argv)
             options.skip = atoi(optarg);
             break;
 
+         case 'e':
+            options.environment = optarg;
+            break;
+
          case 'h': 
          case '?':
          default:
@@ -72,12 +79,26 @@ void parseUserOptions(int argc, char **argv)
             exit(1);
       }
    }
+
+   if (strcmp(options.environment, "") == 0) {
+      printf("Specifying -e or --environment is required.\n");
+      printHelpText();
+      exit(1);
+   }
+   
+   if (strcmp(options.user, "") == 0) {
+      printf("Specifying -u or --user is required.\n");
+      printHelpText();
+      exit(1);
+   }
 }
 
 void setDefaultOptions()
 {
+   options.user = "";
    options.limit = 20;
    options.skip = 0;
+   options.environment = "";
 }
 
 unsigned int timeSinceMS(struct timeval begin)
@@ -383,7 +404,8 @@ int main(int argc, char **argv)
    setDefaultOptions();
    parseUserOptions(argc, argv);
 
-   sobContext sob = sobAllocContext(SOB_DEVELOPMENT);
+   sobEnvironment env = sobEnvironmentFromString(options.environment); 
+   sobContext sob = sobAllocContext(env);
    if (!sob || !sobConnect(sob)) {
       status = 1;
       goto cleanup;

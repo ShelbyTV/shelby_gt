@@ -51,6 +51,8 @@ typedef enum sobField
 
 typedef struct sobContextStruct *sobContext;
 
+sobEnvironment sobEnvironmentFromString(char *env);
+
 sobContext sobAllocContext(sobEnvironment env);
 void sobFreeContext(sobContext context);
 int sobConnect(sobContext context);
