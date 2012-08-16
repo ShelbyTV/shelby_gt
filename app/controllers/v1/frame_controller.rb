@@ -569,9 +569,8 @@ class V1::FrameController < ApplicationController
 
       if @frame and @frame.destroyable_by?(current_user) and @frame.destroy
         @frame.conversation.destroy if @frame.conversation
-        # front-end gracefully handles DashboardEntries w/o Frames, but we'll try to delete a bunch of them anyway
-        # Since we're not indexed on :c, it *kills* the DB if we scan too much
-        DashboardEntry.collection.remove({:c => @frame.id}, {:max_scan => 1_000, :sort => [:_id, :desc]})
+        # front-end gracefully handles DashboardEntries w/o Frames
+        # Since we're not indexed on :c, it *kills* the DB to try to remove any meaningful amount of entries
         
         @status = 200
       else
