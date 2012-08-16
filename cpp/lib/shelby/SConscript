@@ -1,11 +1,11 @@
 sourceFiles = Split("""
-                       sob.cpp
+                       sob.c
                     """)
 
 Import('env')
 shelbyEnv = env.Clone()
 
-shelbyEnv.MergeFlags('-O6 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
+shelbyEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
 shelbyEnv['CPPPATH'] = ['#/source', '#']
 
 shelby = shelbyEnv.Library(target = 'shelby', source = sourceFiles)

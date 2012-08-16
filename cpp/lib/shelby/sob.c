@@ -1,21 +1,18 @@
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <map>
-
 #include <assert.h>
 
 #include "lib/mongo-c-driver/src/mongo.h"
 #include "lib/mrbson/mrbson.h"
+#include "lib/cvector/cvector.h"
 
 #include "sob.h"
 #include "sobDatabases.h"
 #include "sobProperties.h"
 
-using namespace std;
+#define FALSE 0
+#define TRUE 1
 
 #define ISREPLSET(a,b,c,d,e,f,g,h,i) d,
-static bool sobIsReplSetConnection[] =
+static int sobIsReplSetConnection[] =
    { ALL_DATABASES(ISREPLSET) };
 #undef ISREPLSET
 
@@ -69,17 +66,15 @@ static const char *sobFieldLongName[] =
    { ALL_PROPERTIES(FIELD_LONG_NAME) };
 #undef FIELD_LONG_NAME
 
-typedef map<string, bson *> oidStringToBSONMap;
-
-struct sobContextStruct
+typedef struct sobContextStruct
 {
    sobEnvironment env;
 
    mongo *allocatedConn[SOB_NUMTYPES];
    mongo *typeToConn[SOB_NUMTYPES];
 
-   oidStringToBSONMap *objectMap[SOB_NUMTYPES];
-};
+   cvector objectVector[SOB_NUMTYPES];
+} sobContextStruct;
 
 sobContext sobAllocContext(sobEnvironment env)
 {
@@ -89,7 +84,7 @@ sobContext sobAllocContext(sobEnvironment env)
    toReturn->env = env;
 
    for (unsigned int i = 0 ; i < SOB_NUMTYPES ; i++) {
-      toReturn->objectMap[i] = new oidStringToBSONMap();
+      toReturn->objectVector[i] = cvectorAlloc(sizeof(bson *));
    }
 
    return toReturn;
@@ -103,7 +98,7 @@ void sobFreeContext(sobContext context)
          free(context->allocatedConn[i]);
       }
 
-      delete context->objectMap[i];
+      cvectorFree(context->objectVector[i]);
    }
 
    free(context);
@@ -138,14 +133,6 @@ int sobTypesUseSameServer(sobType type1, sobType type2, sobEnvironment env)
           );
 }
 
-string sobOidString(bson_oid_t *oid)
-{
-   char buffer[100]; // an oid is 24 hex chars + null byte, let's go big to ensure compatibility
-  
-   bson_oid_to_string(oid, buffer);
-   return string(buffer); 
-}
-
 /*
  * For now, at initialization, we'll just connect to all databases;
  * later, we should lazily connect.
@@ -153,13 +140,13 @@ string sobOidString(bson_oid_t *oid)
 int sobConnect(sobContext context)
 {
    for (sobType i = (sobType)0 ; i < SOB_NUMTYPES ; i = (sobType)((unsigned int)i + 1)) {
-      bool previousConnectionExists = false;
-      bool isReplSet = sobIsReplSetConnection[sobArrayIndex(i, context->env)];
+      int previousConnectionExists = FALSE;
+      int isReplSet = sobIsReplSetConnection[sobArrayIndex(i, context->env)];
 
       for (sobType j = (sobType)0 ; j < i; j = (sobType)((unsigned int)j + 1)) {
          // if 2 types need the exact same conn, don't allocate a duplicate connection
          if (sobTypesUseSameServer(i, j, context->env)) {
-            previousConnectionExists = true;
+            previousConnectionExists = TRUE;
             context->typeToConn[i] = context->typeToConn[j];
             break;
          }
@@ -202,18 +189,18 @@ int sobConnect(sobContext context)
       if (MONGO_OK != status) {
          switch (context->allocatedConn[i]->err) {
             case MONGO_CONN_SUCCESS:    break;
-            case MONGO_CONN_NO_SOCKET:  printf("no socket\n"); return false;
-            case MONGO_CONN_FAIL:       printf("connection failed\n"); return false;
-            case MONGO_CONN_NOT_MASTER: printf("not master\n"); return false;
-            default:                    printf("received unknown status\n"); return false;
+            case MONGO_CONN_NO_SOCKET:  printf("no socket\n"); return FALSE;
+            case MONGO_CONN_FAIL:       printf("connection failed\n"); return FALSE;
+            case MONGO_CONN_NOT_MASTER: printf("not master\n"); return FALSE;
+            default:                    printf("received unknown status\n"); return FALSE;
          }
       }
    }     
      
-   return true;
+   return TRUE;
 }
 
-bool sobAuthenticate(sobContext context, sobType type)
+int sobAuthenticate(sobContext context, sobType type)
 {
    if (strcmp(sobDBUser[sobArrayIndex(type, context->env)], "") != 0 &&
        strcmp(sobDBPassword[sobArrayIndex(type, context->env)], "") != 0) {
@@ -228,15 +215,15 @@ bool sobAuthenticate(sobContext context, sobType type)
       if (MONGO_OK != status) {
          switch (context->allocatedConn[type]->err) {
             case MONGO_CONN_SUCCESS:    break;
-            case MONGO_CONN_NO_SOCKET:  printf("no socket\n"); return false;
-            case MONGO_CONN_FAIL:       printf("connection failed\n"); return false;
-            case MONGO_CONN_NOT_MASTER: printf("not master\n"); return false;
-            default:                    printf("received unknown status\n"); return false;
+            case MONGO_CONN_NO_SOCKET:  printf("no socket\n"); return FALSE;
+            case MONGO_CONN_FAIL:       printf("connection failed\n"); return FALSE;
+            case MONGO_CONN_NOT_MASTER: printf("not master\n"); return FALSE;
+            default:                    printf("received unknown status\n"); return FALSE;
          }
       }
    }
 
-   return true;
+   return TRUE;
 }
 
 bson_oid_t sobGetUniqueOidByStringField(sobContext context,
@@ -291,9 +278,7 @@ void insertMongoCursorIntoObjectMap(sobContext context,
          bson *newValue = (bson *)malloc(sizeof(bson));
          bson_copy(newValue, mongo_cursor_bson(cursor));
 
-         string newKey = sobOidString(bson_iterator_oid(&iterator));
-
-         context->objectMap[type]->insert(pair<string, bson *>(newKey, newValue));
+         cvectorAddElement(context->objectVector[type], &newValue);
       }
    }
 }
@@ -356,10 +341,10 @@ void sobLoadAllById(sobContext context,
    bson_append_start_array(&query, "$in");
 
    for (unsigned int i = 0; i < cvectorCount(oids); i++) {
-     ostringstream stringStream;
-     stringStream << i;
+     char buffer[100]; // plenty big, way bigger than necessary for even 64-bit unsigned ints
+     snprintf(buffer, 100, "%d", i);
 
-     bson_append_oid(&query, stringStream.str().c_str(), (bson_oid_t *)cvectorGetElement(oids, i));
+     bson_append_oid(&query, buffer, (bson_oid_t *)cvectorGetElement(oids, i));
    }
 
    bson_append_finish_array(&query);
@@ -381,21 +366,40 @@ void sobLoadAllById(sobContext context,
    mongo_cursor_destroy(&cursor);
 }
 
+int sobBsonOidEqual(bson_oid_t oid1, bson_oid_t oid2)
+{
+   for (unsigned int i = 0; i < sizeof(bson_oid_t); i++) {
+      if (oid1.bytes[i] != oid2.bytes[i]) {
+         return FALSE;
+      }
+   }
+
+   return TRUE;
+}
+
 int sobGetBsonByOid(sobContext context,
                      sobType type,
                      bson_oid_t oid,
                      bson **result)
 {
-   map<string, bson *>::const_iterator it;
+   cvector vec = context->objectVector[type];
+  
+   // slow linear search, but should be fine until we get tons of objects... 
+   for (unsigned int i = 0; i < cvectorCount(vec); i++) {
+      bson_iterator iterator;
+      bson_type type;
+      bson *object = *(bson **)cvectorGetElement(vec, i);
 
-   it = context->objectMap[type]->find(sobOidString(&oid));
-   if (it == context->objectMap[type]->end()) {
-      return false;
-   }  
+      if ((type = bson_find(&iterator, object, "_id"))) {
+         assert(BSON_OID == type);
+         if (sobBsonOidEqual(*bson_iterator_oid(&iterator), oid)) {
+            *result = object;
+            return TRUE;
+         }
+      }
+   }
 
-   *result = it->second;
- 
-   return true;
+   return FALSE;
 }
 
 void sobGetBsonVector(sobContext context,
@@ -404,10 +408,11 @@ void sobGetBsonVector(sobContext context,
 {
    assert(cvectorElementSize(result) == sizeof(bson *));
 
-   map<string, bson *>::const_iterator it;
+   cvector objectVector = context->objectVector[type];
 
-   for (it = context->objectMap[type]->begin(); it != context->objectMap[type]->end(); ++it) {
-      cvectorAddElement(result, &(it->second));
+   // TODO: ideally would make this a generic copy function for all cvectors...
+   for (unsigned int i = 0; i < cvectorCount(objectVector); i++) {
+      cvectorAddElement(result, cvectorGetElement(objectVector, i));
    }
 }
 
@@ -417,14 +422,13 @@ void sobGetOidVectorFromObjectField(sobContext context,
                                     cvector result)
 {
    assert(cvectorElementSize(result) == sizeof(bson_oid_t));
+   cvector objectVector = context->objectVector[type];
 
-   map<string, bson *>::const_iterator it;
-
-   for (it = context->objectMap[type]->begin(); it != context->objectMap[type]->end(); ++it) {
+   for (unsigned int i = 0; i < cvectorCount(objectVector); i++) {
       bson_iterator iterator;
       bson_type type;
  
-      type = bson_find(&iterator, it->second, sobFieldDBName[field]);
+      type = bson_find(&iterator, *(bson **)cvectorGetElement(objectVector, i), sobFieldDBName[field]);
       if (type == BSON_OID) {
          cvectorAddElement(result, bson_iterator_oid(&iterator));
       }
@@ -494,7 +498,7 @@ void sobPrintAttributeWithKeyOverride(mrjsonContext context,
       case BSON_CODE:
       case BSON_SYMBOL:
       case BSON_CODEWSCOPE:
-         assert(false); // not implemented
+         assert(FALSE); // not implemented
          break;
    }
 }

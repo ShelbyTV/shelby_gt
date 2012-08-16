@@ -7,7 +7,7 @@ dashboardIndexEnv = env.Clone()
 
 dashboardIndexEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
 dashboardIndexEnv['CPPPATH'] = ['#/source', '#']
-dashboardIndexEnv['LINK'] = ['g++']
+# dashboardIndexEnv['LINK'] = ['g++']
 
 # NOTE: Unfortunately, order of these static libs matters... lib 'shelby' uses all of the
 #       other libs, so it must come first to make sure other lib inclusions aren't auto-pruned
