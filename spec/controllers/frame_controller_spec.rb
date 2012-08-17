@@ -284,18 +284,6 @@ describe V1::FrameController do
       GT::SocialPoster.should_receive(:post_to_facebook).with(@u1, "testing http://shl.by/fb", @frame)
       post :share, :frame_id => @frame.id.to_s, :destination => ["twitter", "facebook"], :text => "testing", :format => :json
     end
-    
-    it "should add text as a message to the frames conversation" do
-      txt = "just testing here boys"
-      post :share, :frame_id => @frame.id.to_s, :destination => ["twitter"], :text => txt, :format => :json
-      @frame.conversation.messages.size.should == 1
-      @frame.conversation.messages[0].text.should == txt
-    end
-
-    it "should NOT add text as a message to the frames conversation if the share had no explicit comment" do
-      post :share, :frame_id => @frame.id.to_s, :destination => ["twitter"], :text => '', :format => :json
-      @frame.conversation.messages.size.should == 0
-    end
 
     it "should return 404 if destination is not an array" do
       post :share, :frame_id => @frame.id.to_s, :destination => "twitter", :text => "testing", :format => :json
@@ -344,12 +332,6 @@ describe V1::FrameController do
         controller.current_user.should_not_receive(:store_autocomplete_info)
 
         post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :format => :json
-      end
-      
-      it "should not add message to the conversation" do
-        lambda {
-          post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :addresses => "spinosa@gmail.com, invalidaddress, j@jay.net", :format => :json
-        }.should_not change { @frame.conversation.messages.count }
       end
       
     end

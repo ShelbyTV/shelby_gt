@@ -249,7 +249,7 @@ describe 'v1/frame' do
     end
     
     describe "POST" do
-      context 'frame creation' do 
+      context 're-rolling' do
         it "should create and return a frame on success if its payload is a frame_id" do
           # @f = the frame to be re_rolled
           # roll = the roll to re_roll into
@@ -265,6 +265,20 @@ describe 'v1/frame' do
           response.body.should have_json_path("result/conversation")
         end
         
+        it "should add text to the conversation of the newly rolled frame" do
+          message_text = "this is my reroll, there are many like it, but this one is mine"
+          roll = Factory.create(:roll, :creator_id => @u1.id) 
+          @f.roll_id = roll.id; @f.save
+          post '/v1/roll/'+roll.id+'/frames?frame_id='+@f.id+'&text='+CGI::escape(message_text)
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/conversation/messages")
+          response.body.should have_json_size(1).at_path("result/conversation/messages")
+          parse_json(response.body)["result"]["conversation"]["messages"][0]["text"].should == message_text
+        end
+      end
+      
+      context 'frame creation from url' do         
         it "should create and return a frame and success if its payload is a url and text" do
           message_text = "awesome video!"
           video_url = "http://some.video.url.com/of_a_movie_i_like"
@@ -275,6 +289,20 @@ describe 'v1/frame' do
         
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/video_id")
+        end
+        
+        it "should add text to the conversation of the newly created frame" do
+          message_text = "awesome video!"
+          video_url = "http://some.video.url.com/of_a_movie_i_like"
+          video = Factory.create(:video, :source_url => video_url)
+          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return({:videos=> [video]})
+          roll = Factory.create(:roll, :creator_id => @u1.id)
+          post '/v1/roll/'+roll.id+'/frames?url='+CGI::escape(video_url)+'&text='+CGI::escape(message_text)
+        
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/conversation/messages")
+          response.body.should have_json_size(1).at_path("result/conversation/messages")
+          parse_json(response.body)["result"]["conversation"]["messages"][0]["text"].should == message_text
         end
         
         it "should return 404 error if trying to create a frame via url and action is not known" do
