@@ -278,6 +278,8 @@ describe V1::FrameController do
     end
     
     it "should only add link text to each individual service's post" do
+      @u1.authentications << Authentication.new(:provider => "twitter")
+      @u1.authentications << Authentication.new(:provider => "facebook")
       GT::SocialPoster.should_receive(:post_to_twitter).with(@u1, "testing http://shl.by/4")
       GT::SocialPoster.should_receive(:post_to_facebook).with(@u1, "testing http://shl.by/fb", @frame)
       post :share, :frame_id => @frame.id.to_s, :destination => ["twitter", "facebook"], :text => "testing", :format => :json
@@ -303,13 +305,11 @@ describe V1::FrameController do
     it "should return 404 if the user cant post to the destination" do
       post :share, :frame_id => @frame.id.to_s, :destination => ["facebook"], :text => "testing", :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("that user cant post to that destination")      
     end
     
     it "should not post if the destination is not supported" do
       post :share, :frame_id => @frame.id.to_s, :destination => ["awesome_service"], :text => "testing", :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("we dont support that destination yet :(")
     end
     
     it "should return 404 if a comment or destination is not present" do

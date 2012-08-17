@@ -392,57 +392,22 @@ class V1::FrameController < ApplicationController
         frame = Frame.find(params[:frame_id])
         return render_error(404, "could not find frame with id #{params[:frame_id]}") unless frame
         
-        # truncate text so that our link can fit fo sure
-        text = params[:text]
-        
-        # params[:destination] is an array of destinations, 
-        #  short_links will be a hash of desinations/links
-        short_links = GT::LinkShortener.get_or_create_shortlinks(frame, params[:destination].join(','), current_user)
-        
-        resp = true
-        should_add_to_conversation = false #only adding to convo on public posts to twitter/facebook
-        
-        params[:destination].each do |d|
-          case d
-          when 'twitter'
-            should_add_to_conversation = true
-            t = GT::SocialPostFormatter.format_for_twitter(text, short_links)
-            resp &= GT::SocialPoster.post_to_twitter(current_user, t)
-          when 'facebook'
-            should_add_to_conversation = true
-            t = GT::SocialPostFormatter.format_for_facebook(text, short_links)
-            resp &= GT::SocialPoster.post_to_facebook(current_user, t, frame)
-          when 'email'
-            # This is just a Frame share
-            email_addresses = params[:addresses]
-            return render_error(404, "you must provide addresses") if email_addresses.blank?
-            
-            # save any valid addresses for future use in autocomplete
-            current_user.store_autocomplete_info(:email, email_addresses)
+        return render_error(404, "invalid destinations #{params[:destination]}") unless can_share_frame_to_destinations(params[:destination], current_user)
 
-            # Best effort.  For speed, not checking if send succeeds (front-end should validate eaddresses format)
-            ShelbyGT_EM.next_tick { GT::SocialPoster.email_frame(current_user, params[:addresses], text, frame) }
-          else
-            return render_error(404, "we dont support that destination yet :(")
+        #Do the sharing in the background, hope it works (we don't want to wait for slow external API calls, like awe.sm)
+        ShelbyGT_EM.next_tick { share_frame_to_destinations(frame, params[:destination], params[:addresses], params[:text], current_user) }
+        
+        # If the message was posted publicly, add it to the Frame's conversation
+        if (params[:destination].include?("twitter") or params[:destination].include?("facebook")) and params[:text].length > 0
+          new_message = GT::MessageManager.build_message(:user => current_user, :public => true, :text => params[:text])
+          frame.conversation.messages << new_message
+          if frame.conversation.save
+            ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(frame.conversation, new_message, current_user) }
+            StatsManager::StatsD.increment(Settings::StatsConstants.message['create'])
           end
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d])
         end
         
-        if resp
-          if text.length > 0 and should_add_to_conversation
-            # Since the message was posted, add it to the Frame's conversation
-            new_message = GT::MessageManager.build_message(:user => current_user, :public => true, :text => text)
-            frame.conversation.messages << new_message
-            if frame.conversation.save
-              ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(frame.conversation, new_message, current_user) }
-              StatsManager::StatsD.increment(Settings::StatsConstants.message['create'])
-            end
-          end
-          
-          @status = 200
-        else
-          render_error(404, "that user cant post to that destination")
-        end
+        @status = 200
         
       else
         render_error(404, "could not find that frame")
@@ -581,5 +546,41 @@ class V1::FrameController < ApplicationController
       end
     end
   end
+  
+  private
+  
+    def can_share_frame_to_destinations(destinations, user)
+      (destinations-['email']).each do |dest|
+        return false unless user.authentications.any? { |auth| auth.provider == dest }
+      end
+    end
+  
+    def share_frame_to_destinations(frame, destinations, email_addresses, text, user)
+      #  short_links will be a hash of desinations/links
+      short_links = GT::LinkShortener.get_or_create_shortlinks(frame, destinations.join(','), user)
+
+      destinations.each do |d|
+        case d
+        when 'twitter'
+          t = GT::SocialPostFormatter.format_for_twitter(text, short_links)
+          GT::SocialPoster.post_to_twitter(user, t)
+        when 'facebook'
+          t = GT::SocialPostFormatter.format_for_facebook(text, short_links)
+          GT::SocialPoster.post_to_facebook(user, t, frame)
+        when 'email'
+          # This is just a Frame share
+          return render_error(404, "you must provide addresses") if email_addresses.blank?
+
+          # save any valid addresses for future use in autocomplete
+          user.store_autocomplete_info(:email, email_addresses)
+
+          # Best effort.  For speed, not checking if send succeeds (front-end should validate eaddresses format)
+          ShelbyGT_EM.next_tick { GT::SocialPoster.email_frame(user, email_addresses, text, frame) }
+        else
+          return render_error(404, "we dont support that destination yet :(")
+        end
+        StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d])
+      end
+    end
 
 end

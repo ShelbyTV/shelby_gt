@@ -394,7 +394,6 @@ describe 'v1/frame' do
 
           response.body.should be_json_eql(404).at_path("status")
           response.body.should have_json_path("message")
-          parse_json(response.body)["message"].should eq("that user cant post to that destination")
         end
 
         it "should return 404 if destination not supported" do
@@ -402,7 +401,6 @@ describe 'v1/frame' do
 
           response.body.should be_json_eql(404).at_path("status")
           response.body.should have_json_path("message")
-          parse_json(response.body)["message"].should eq("we dont support that destination yet :(")
         end
         
         it "should return 404 if destination and/or comment not incld" do
