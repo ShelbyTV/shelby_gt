@@ -8,6 +8,8 @@ class SharingMailer < ActionMailer::Base
   helper :mail
 
   def share_frame(user_from, email_from, email_to, message, frame)
+    sendgrid_ganalytics_options(:utm_source => user_from.name, :utm_medium => 'sharing', :utm_campaign => "frame_#{frame.id.to_s}")
+    
     @user_from = user_from
     @email_to = email_to
     @message = message ? message : frame.video.description
