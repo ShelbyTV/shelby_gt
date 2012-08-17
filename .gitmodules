@@ -1,0 +1,6 @@
+[submodule "cpp/lib/mongo-c-driver"]
+	path = cpp/lib/mongo-c-driver
+	url = https://github.com/mongodb/mongo-c-driver.git
+[submodule "cpp/lib/mrjson/yajl"]
+	path = cpp/lib/mrjson/yajl
+	url = https://github.com/lloyd/yajl.git

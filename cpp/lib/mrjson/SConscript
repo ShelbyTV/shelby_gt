@@ -1,0 +1,22 @@
+sourceFiles = Split("""
+                       mrjson.c
+                       yajl/src/yajl.c
+                       yajl/src/yajl_alloc.c
+                       yajl/src/yajl_buf.c
+                       yajl/src/yajl_encode.c
+                       yajl/src/yajl_gen.c
+                       yajl/src/yajl_lex.c
+                       yajl/src/yajl_parser.c
+                       yajl/src/yajl_tree.c
+                       yajl/src/yajl_version.c
+                    """)
+
+Import('env')
+mrjsonEnv = env.Clone()
+
+mrjsonEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -static')
+mrjsonEnv['CPPPATH'] = ['#/source', '#', '#/lib/mrjson', '#/lib/mrjson/yajl-hacks/']
+
+mrjson = mrjsonEnv.Library(target = 'mrjson', source = sourceFiles)
+
+mrjsonEnv.Default(mrjson)

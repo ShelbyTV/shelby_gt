@@ -1,0 +1,13 @@
+sourceFiles = Split("""
+                       cvector.c
+                    """)
+
+Import('env')
+cvectorEnv = env.Clone()
+
+cvectorEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
+cvectorEnv['CPPPATH'] = ['#/source', '#', '#/lib/cvector']
+
+cvector = cvectorEnv.Library(target = 'cvector', source = sourceFiles)
+
+cvectorEnv.Default(cvector)

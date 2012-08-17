@@ -22,3 +22,9 @@
 
 /public/assets
 /public/javascripts/compiled
+
+# Ignore cpp temp build files
+/cpp/build
+/cpp/.sconsign.dblite
+/cpp/.sconf_temp
+/cpp/config.log
