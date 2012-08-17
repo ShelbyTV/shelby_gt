@@ -28,8 +28,13 @@
 										"duration": <%= frame.video.duration ? frame.video.duration : 'null' %>,
 										"thumbnail_url": "<%= frame.video.thumbnail_url %>",
 										"view_count": <%= frame.video.view_count %>
+									},
+
+									"creator": {
+										"id": "<%= frame.creator.id %>",
+										"nickname": "<%= frame.creator.nickname %>"
 									}
-									
+
 								}<%= ',' unless k == @frames_map[roll.id.to_s].size-1 %>
 							<% end %>
 						]
