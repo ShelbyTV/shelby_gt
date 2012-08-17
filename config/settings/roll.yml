@@ -32,7 +32,7 @@ defaults: &defaults
       category_name: "Causes"
       rolls: ["4fe2425b9a725b08ec00ade8", "4fabff20d10412263a01c009"]
     cat10:
-      category_name: "New/Business"
+      category_name: "News/Business"
       rolls: ["4f95622b9a725b72e700106b", "4fa8542c88ba6b669b000bcd"]
     cat11:
       category_name: "Comedy"
