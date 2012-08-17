@@ -60,7 +60,7 @@ void cvectorAddElement(cvector vec, const void *element)
 
       vec->elementsAllocated *= 2;
       void *tmp = malloc(vec->elementSize * vec->elementsAllocated);
-      memcpy(tmp, vec->elements, vec->elementsCount * vec->elementsCount);
+      memcpy(tmp, vec->elements, vec->elementsCount * vec->elementSize);
       free(vec->elements);
       vec->elements = tmp;
    }
