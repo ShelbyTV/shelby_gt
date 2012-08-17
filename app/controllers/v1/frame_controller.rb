@@ -28,7 +28,18 @@ class V1::FrameController < ApplicationController
   
       skip = params[:skip] ? params[:skip].to_i : 0
 
-      @roll = Roll.find(params[:roll_id])
+      if params[:fast]
+        fast_stdout = `cpp/bin/frameIndex -r #{params[:roll_id]} -l #{@limit} -s #{skip} -e #{Rails.env}`
+        fast_status = $?.to_i
+        if (fast_status == 0)
+          @status = 200
+          render :text => fast_stdout and return
+        else 
+          render_error(404, "fast index failed with status #{fast_status}") and return
+        end
+      end
+
+      @roll = ::Roll.find(params[:roll_id])
       
       # User's can currently tweet out links to frames on private rolls.  Thus, we need to show them the roll.
       # The better UX is probably to show them a "locked roll" with just the requested frame, but that's future work.

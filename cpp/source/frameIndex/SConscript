@@ -1,0 +1,25 @@
+sourceFiles = Split("""
+                       main.c
+                    """)
+
+Import('env')
+frameIndexEnv = env.Clone()
+
+frameIndexEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
+frameIndexEnv['CPPPATH'] = ['#/source', '#']
+# frameIndexEnv['LINK'] = ['g++']
+
+# NOTE: Unfortunately, order of these static libs matters... lib 'shelby' uses all of the
+#       other libs, so it must come first to make sure other lib inclusions aren't auto-pruned
+#       (which happens if none of their symbols were used in the original executable or previous libraries)
+
+libMongo = File('#/build/mongo-c-driver/libmongoc.a')
+frameIndex = frameIndexEnv.Program(target = 'frameIndex', 
+                                           source = sourceFiles,
+                                           LIBS = ['shelby', 'mrjson', 'mrbson', 'cvector', libMongo],
+                                           LIBPATH = ['#/build/mrjson/', '#/build/mrbson/', '#/build/cvector/', '#/build/shelby/'])
+
+frameIndexInstall = frameIndexEnv.Install('#/bin', frameIndex)
+
+frameIndexEnv.Default(frameIndex)
+frameIndexEnv.Default(frameIndexInstall)
