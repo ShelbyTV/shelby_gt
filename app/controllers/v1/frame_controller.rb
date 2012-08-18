@@ -351,9 +351,15 @@ class V1::FrameController < ApplicationController
         begin
           # only allow roll creation if user is authorized to access the given roll
           if roll.postable_by?(current_user)
-            @frame = frame_to_re_roll.re_roll(current_user, roll)
-            @frame = @frame[:frame]
+            #do the re rolling
+            res = frame_to_re_roll.re_roll(current_user, roll)
+            @frame = res[:frame]
             StatsManager::StatsD.increment(Settings::StatsConstants.frame['re_roll'])
+            
+            if params[:text]
+              @frame.conversation.messages << GT::MessageManager.build_message(:user => current_user, :public => true, :text => CGI::unescape(params[:text]))
+              @frame.conversation.save
+            end
             
             # send email notification in a non-blocking manor
             ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_reroll_notification(frame_to_re_roll, @frame) }
@@ -407,16 +413,6 @@ class V1::FrameController < ApplicationController
 
         #Do the sharing in the background, hope it works (we don't want to wait for slow external API calls, like awe.sm)
         ShelbyGT_EM.next_tick { share_frame_to_destinations(frame, params[:destination], params[:addresses], params[:text], current_user) }
-        
-        # If the message was posted publicly, add it to the Frame's conversation
-        if (params[:destination].include?("twitter") or params[:destination].include?("facebook")) and params[:text].length > 0
-          new_message = GT::MessageManager.build_message(:user => current_user, :public => true, :text => params[:text])
-          frame.conversation.messages << new_message
-          if frame.conversation.save
-            ShelbyGT_EM.next_tick { GT::NotificationManager.send_new_message_notifications(frame.conversation, new_message, current_user) }
-            StatsManager::StatsD.increment(Settings::StatsConstants.message['create'])
-          end
-        end
         
         @status = 200
         
