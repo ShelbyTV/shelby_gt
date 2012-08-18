@@ -419,6 +419,24 @@ int sobGetBsonByOid(sobContext context,
    return FALSE;
 }
 
+int sobGetBsonByOidField(sobContext context,
+                         sobType typeToGet,
+                         bson *object,
+                         sobField objectOidField, 
+                         bson **result)
+{
+   bson_iterator iterator;
+   bson_type type;
+
+   if ((type = bson_find(&iterator, object, sobFieldDBName[objectOidField]))) {
+      assert(BSON_OID == type);
+      bson_oid_t oidToGet = *bson_iterator_oid(&iterator);
+      return sobGetBsonByOid(context, typeToGet, oidToGet, result);
+   }
+
+   return FALSE;
+}
+
 void sobGetBsonVector(sobContext context,
                       sobType type,
                       cvector result)
@@ -585,5 +603,23 @@ void sobPrintSubobjectArray(sobContext sob,
 
    mrjsonEndArray(context); 
 }
+
+void sobPrintFieldIfBoolField(mrjsonContext context,
+                              bson *object,
+                              sobField fieldToPrint,
+                              sobField fieldToCheck)
+{
+   bson_iterator iterator;
+   bson_type type;
+   sobField attributeToPrint[] = { fieldToPrint };
+
+   if ((type = bson_find(&iterator, object, sobFieldDBName[fieldToCheck]))) {
+      assert(BSON_BOOL == type);
+      if (bson_iterator_bool(&iterator)) {
+         sobPrintAttributes(context, object, attributeToPrint, 1);
+      }
+   }
+}
+
 
 

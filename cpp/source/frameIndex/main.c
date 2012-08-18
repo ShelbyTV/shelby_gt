@@ -208,7 +208,11 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
                                     SOB_ROLL_CREATOR_THUMBNAIL_URL,
                                     "thumbnail_url");
 
-   //TODO: subdomain
+   sobPrintFieldIfBoolField(context,
+                            roll,
+                            SOB_ROLL_SUBDOMAIN,
+                            SOB_ROLL_SUBDOMAIN_ACTIVE);
+
 }
 
 void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
@@ -309,13 +313,29 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
       SOB_ROLL_ROLL_TYPE,
    };
 
-   // TODO: subdomain, r.creator.nickname
-
    sobPrintAttributes(context,
                       roll,
                       rollAttributes,
                       sizeof(rollAttributes) / sizeof(sobField));
 
+   sobPrintFieldIfBoolField(context,
+                            roll,
+                            SOB_ROLL_SUBDOMAIN,
+                            SOB_ROLL_SUBDOMAIN_ACTIVE);
+
+   bson *rollCreator;
+   int status = sobGetBsonByOidField(sob, 
+                                     SOB_USER,
+                                     roll,
+                                     SOB_ROLL_CREATOR_ID,
+                                     &rollCreator);
+   if (status) {
+      sobPrintAttributeWithKeyOverride(context,
+                                       rollCreator,
+                                       SOB_USER_NICKNAME,
+                                       "creator_nickname");
+   }
+   
    sobPrintAttributeWithKeyOverride(context,
                                     roll,
                                     SOB_ROLL_CREATOR_THUMBNAIL_URL,

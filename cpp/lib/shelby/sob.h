@@ -75,6 +75,12 @@ int sobGetBsonByOid(sobContext context,
                     bson_oid_t oid,
                     bson **result);
 
+int sobGetBsonByOidField(sobContext context,
+                         sobType typeToGet,
+                         bson *object,
+                         sobField objectOidField, 
+                         bson **result);
+
 /*
  * cvector should be initialized with sizeof(bson *)
  */
@@ -124,6 +130,11 @@ void sobPrintSubobjectArray(sobContext sob,
                             bson *object,
                             sobField subobjectOidField,
                             sobSubobjectPrintCallback);
+
+void sobPrintFieldIfBoolField(mrjsonContext context,
+                              bson *object,
+                              sobField fieldToPrint,
+                              sobField fieldToCheck);
 
 #ifdef __cplusplus
 }
