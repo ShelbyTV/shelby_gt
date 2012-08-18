@@ -365,15 +365,13 @@ void printJsonOutput(sobContext sob)
    mrjsonContext context = mrjsonAllocContext(TRUE);
    mrjsonStartResponse(context); 
    mrjsonIntAttribute(context, "status", 200);
-   mrjsonStartArray(context, "result");
+   mrjsonStartObject(context, "result");
 
-   mrjsonStartNamelessObject(context);
    // print main roll with all frames
    printJsonRollWithFrames(sob, context, roll);
+
    mrjsonEndObject(context);
 
-   // finish dashboard entries; we also tack on a field to track execution time of the API
-   mrjsonEndArray(context);
    mrjsonIntAttribute(context, "cApiTimeMs", timeSinceMS(beginTime));
    mrjsonEndResponse(context);
 
