@@ -330,6 +330,7 @@ void sobLoadAllByOidField(sobContext context,
    mongo_cursor_init(&cursor, 
                      context->typeToConn[type],
                      sobDBCollection[sobArrayIndex(type, context->env)]);
+   mongo_cursor_set_options(&cursor, MONGO_SLAVE_OK);
 
    mongo_cursor_set_query(&cursor, &query);
 
@@ -375,6 +376,8 @@ void sobLoadAllById(sobContext context,
    mongo_cursor_init(&cursor,
                      context->typeToConn[type], 
                      sobDBCollection[sobArrayIndex(type, context->env)]);
+   mongo_cursor_set_options(&cursor, MONGO_SLAVE_OK);
+
    mongo_cursor_set_query(&cursor, &query);
    
    insertMongoCursorIntoObjectMap(context, type, &cursor);
