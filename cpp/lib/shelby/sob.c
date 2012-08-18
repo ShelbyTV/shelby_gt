@@ -121,6 +121,12 @@ void sobFreeContext(sobContext context)
    free(context);
 }
 
+sobEnvironment sobGetEnvironment(sobContext context)
+{
+   assert(context);
+   return context->env;
+}
+
 unsigned int sobArrayIndex(sobType type, sobEnvironment env)
 {
    return ((unsigned int)type * SOB_NUMENVIRONMENTS) + (unsigned int)env;

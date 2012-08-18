@@ -362,7 +362,7 @@ void printJsonOutput(sobContext sob)
    sobGetBsonByOid(sob, SOB_ROLL, options.roll, &roll);
 
    // allocate context; match Ruby API "status" and "result" response syntax
-   mrjsonContext context = mrjsonAllocContext(TRUE);
+   mrjsonContext context = mrjsonAllocContext(sobGetEnvironment(sob) != SOB_PRODUCTION);
    mrjsonStartResponse(context); 
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartObject(context, "result");
