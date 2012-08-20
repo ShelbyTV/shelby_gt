@@ -24,7 +24,7 @@ defaults: &defaults
       rolls: ["4fd8f8f3d104125fe305187d", "4fa057c388ba6b0f4200183c", "4fcce43988ba6b5b7400054a", "4f9b11f09a725b352f0020c4"]
     cat7:
       category_name: "Shelby Recommended"
-      rolls: ["4f900cf5b415cc466a0005bb", "4fbbc4211c1cf42b91002eac", "4fe77a4088ba6b569800d673", "4fa28d309a725b77f700070f", "4f958e049a725b0dba014577"]
+      rolls: ["4f900cf5b415cc466a0005bb", "4fbbc4211c1cf42b91002eac", "4f901bd8b415cc466a0008ec", "4fa28d309a725b77f700070f", "4f958e049a725b0dba014577"]
     cat8:
       category_name: "Tech"
       rolls: ["4fccef549a725b7d4a005363", "4fb6c97788ba6b4f3e0048fb"]
