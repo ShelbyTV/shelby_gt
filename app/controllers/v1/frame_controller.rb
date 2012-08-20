@@ -287,10 +287,11 @@ class V1::FrameController < ApplicationController
   #
   # If trying to re-roll:
   # @param [Required, String] frame_id A frame to be re_rolled
+  # @param [Optional, Escaped String] text Message text to be added to the conversation
   #
   # If trying to add a frame via a url:
   # @param [Required, Escaped String] url A video url
-  # @param [Optional, Escaped String] text Message text to via added to the conversation
+  # @param [Optional, Escaped String] text Message text to be added to the conversation
   # @param [Optional, String] source The source could be bookmarklet, webapp, etc
   #
   # Returns: The new Frame, including all children expanded.
