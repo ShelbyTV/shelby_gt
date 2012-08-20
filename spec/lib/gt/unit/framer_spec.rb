@@ -429,7 +429,7 @@ describe GT::Framer do
       lambda {
         GT::Framer.remove_dupe_of_frame_from_roll!(@frame, @roll)
         Frame.find(@frame.id).should == @frame
-        Frame.find(@dupe.id).should == nil
+        Frame.find(@dupe.id).roll_id.should == nil
       }.should change { @roll.frames.count } .by(-1)
     end
     

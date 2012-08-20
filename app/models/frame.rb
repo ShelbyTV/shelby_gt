@@ -12,6 +12,8 @@ class Frame
   # In some special cases, a Frame may *not* have a Roll (ie a private Facebook post creates a Frame that only attaches to DashboardEntry)
   belongs_to :roll, :required => true
   key :roll_id, ObjectId, :abbr => :a
+  # When "destroyed" we actually just nil out the roll_id so the Frame stops getting returned
+  key :deleted_from_roll_id, ObjectId, :abbr => :l
   
   # It must reference a video, post, and creator
   belongs_to :video, :required => true
@@ -56,12 +58,12 @@ class Frame
   before_validation :update_score
   
   after_create :increment_rolls_frame_count
-  after_destroy :decrement_rolls_frame_count
   
   def created_at() self.id.generation_time; end
   
   #------ Permissions -------
   
+  #N.B. Destroy does not actually remove the record from the DB, #destroy below
   def destroyable_by?(user)
     return !!(self.creator == nil or self.creator == user or (self.roll and self.roll.creator == user))
   end
@@ -168,6 +170,29 @@ class Frame
     permalink += "/comments" if self.roll_id
     return permalink
   end
+  
+  #------ Lifecycle -------
+  
+  # Generally not great to destroy actual data, things get messy and broken.
+  # By moving roll_id into deleted_from_roll_id, we prevent this Frame from being returned with the Roll,
+  # but we allow other API calls that reference the frame by ID to continue working.
+  # (ie. Commenting, DashboardEntries, upvoting, watched, etc.)
+  def destroy
+    roll = self.roll
+    
+    # move roll_id into deleted_from_roll_id and save
+    self.deleted_from_roll_id = self.roll_id
+    self.roll_id = nil
+    self.save(:validate => false)
+    
+    #update the roll (on DB and in memory if loaded)
+    Roll.decrement(self.deleted_from_roll_id, :j => -1) if self.deleted_from_roll_id
+    roll.frame_count -= 1 if roll
+    
+    true
+  end
+  
+  def virtually_destroyed?() self.deleted_from_roll_id != nil; end
 
   private
     
@@ -227,12 +252,6 @@ class Frame
     def increment_rolls_frame_count
       Roll.increment(self.roll_id, :j => 1) if self.roll_id
       self.roll.frame_count += 1 if self.roll
-      true
-    end
-
-    def decrement_rolls_frame_count
-      Roll.decrement(self.roll_id, :j => -1) if self.roll_id
-      self.roll.frame_count -= 1 if self.roll
       true
     end
 

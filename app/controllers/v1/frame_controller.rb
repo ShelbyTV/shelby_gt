@@ -544,10 +544,7 @@ class V1::FrameController < ApplicationController
       @frame = Frame.find(params[:id])
 
       if @frame and @frame.destroyable_by?(current_user) and @frame.destroy
-        @frame.conversation.destroy if @frame.conversation
-        # front-end gracefully handles DashboardEntries w/o Frames
-        # Since we're not indexed on :c, it *kills* the DB to try to remove any meaningful amount of entries
-        
+        #N.B. Frame#destroy does not destroy data, but the Frame won't be returned w/ the Roll anymore (see Frame#destroy)
         @status = 200
       else
         render_error(404, "You cannot destroy that frame.")
