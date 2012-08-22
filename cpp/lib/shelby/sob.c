@@ -438,9 +438,10 @@ int sobGetBsonByOidField(sobContext context,
    bson_type type;
 
    if ((type = bson_find(&iterator, object, sobFieldDBName[objectOidField]))) {
-      assert(BSON_OID == type);
-      bson_oid_t oidToGet = *bson_iterator_oid(&iterator);
-      return sobGetBsonByOid(context, typeToGet, oidToGet, result);
+      if (BSON_OID == type) {
+         bson_oid_t oidToGet = *bson_iterator_oid(&iterator);
+         return sobGetBsonByOid(context, typeToGet, oidToGet, result);
+      }
    }
 
    return FALSE;
