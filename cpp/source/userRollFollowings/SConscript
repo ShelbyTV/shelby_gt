@@ -1,0 +1,8 @@
+
+Import('*')
+
+shelbySimpleApiProgram('userRollFollowings',
+                       ['main.c'],
+                       defaultDebugEnv,
+                       defaultOptEnv)
+
