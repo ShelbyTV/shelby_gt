@@ -48,13 +48,13 @@ module GT
         into_user.authentications += other_user.authentications
         other_user.authentications = []
         # need to remove old auths first b/c of index requirements
-        if other_user.save
-          if into_user.save
+        if other_user.save(:validate => false)
+          if into_user.save(:validate => false)
             return true
           else
             #restore the old auths
             other_user.authentications = other_user_auths
-            other_user.save
+            other_user.save(:validate => false)
             return false
           end
         end
