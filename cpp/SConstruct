@@ -6,7 +6,7 @@ defaultDebugEnv = env.Clone()
 defaultOptEnv = env.Clone()
 
 defaultDebugEnv.MergeFlags('-ggdb')
-defaultOptEnv.MergeFlags('-06')
+defaultOptEnv.MergeFlags('-O6')
 
 Export('defaultDebugEnv')
 Export('defaultOptEnv')
