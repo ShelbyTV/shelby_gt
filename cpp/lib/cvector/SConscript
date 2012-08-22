@@ -1,13 +1,12 @@
+
+Import('*')
+
+libraryName = 'cvector'
 sourceFiles = Split("""
                        cvector.c
                     """)
 
-Import('env')
-cvectorEnv = env.Clone()
+cppPath = ['#/source', '#', '#/lib/cvector']
 
-cvectorEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
-cvectorEnv['CPPPATH'] = ['#/source', '#', '#/lib/cvector']
+shelbySimpleLibrary(libraryName, sourceFiles, cppPath, defaultDebugEnv, defaultOptEnv)
 
-cvector = cvectorEnv.Library(target = 'cvector', source = sourceFiles)
-
-cvectorEnv.Default(cvector)

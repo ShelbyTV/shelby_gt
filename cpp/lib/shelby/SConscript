@@ -1,13 +1,12 @@
+
+Import('*')
+
+libraryName = 'shelby'
 sourceFiles = Split("""
                        sob.c
                     """)
 
-Import('env')
-shelbyEnv = env.Clone()
+cppPath = ['#/source', '#']
 
-shelbyEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
-shelbyEnv['CPPPATH'] = ['#/source', '#']
+shelbySimpleLibrary(libraryName, sourceFiles, cppPath, defaultDebugEnv, defaultOptEnv)
 
-shelby = shelbyEnv.Library(target = 'shelby', source = sourceFiles)
-
-shelbyEnv.Default(shelby)

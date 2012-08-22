@@ -1,3 +1,7 @@
+
+Import('*')
+
+libraryName = 'mrjson'
 sourceFiles = Split("""
                        mrjson.c
                        yajl/src/yajl.c
@@ -11,12 +15,7 @@ sourceFiles = Split("""
                        yajl/src/yajl_version.c
                     """)
 
-Import('env')
-mrjsonEnv = env.Clone()
+cppPath = ['#/source', '#', '#/lib/mrjson', '#/lib/mrjson/yajl-hacks/']
 
-mrjsonEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -static')
-mrjsonEnv['CPPPATH'] = ['#/source', '#', '#/lib/mrjson', '#/lib/mrjson/yajl-hacks/']
+shelbySimpleLibrary(libraryName, sourceFiles, cppPath, defaultDebugEnv, defaultOptEnv)
 
-mrjson = mrjsonEnv.Library(target = 'mrjson', source = sourceFiles)
-
-mrjsonEnv.Default(mrjson)

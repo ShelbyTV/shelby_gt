@@ -1,5 +1,15 @@
 env = Environment().Clone()
-Export('env')
+
+env.MergeFlags('-std=gnu99 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
+
+defaultDebugEnv = env.Clone()
+defaultOptEnv = env.Clone()
+
+defaultDebugEnv.MergeFlags('-ggdb')
+defaultOptEnv.MergeFlags('-06')
+
+Export('defaultDebugEnv')
+Export('defaultOptEnv')
 
 if GetOption("clean"):
 
@@ -10,6 +20,7 @@ else:
 
    SConscript('source/dashboardIndex/SConscript', variant_dir='build/dashboardIndex/', duplicate=0)
    SConscript('source/frameIndex/SConscript', variant_dir='build/frameIndex/', duplicate=0)
+   SConscript('source/userRollFollowings/SConscript', variant_dir='build/userRollFollowings/', duplicate=0)
 
    # libs 
    SConscript('lib/mrjson/SConscript', variant_dir='build/mrjson/', duplicate=0)

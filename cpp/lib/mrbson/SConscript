@@ -1,13 +1,12 @@
+
+Import('*')
+
+libraryName = 'mrbson'
 sourceFiles = Split("""
                        mrbson.c
                     """)
 
-Import('env')
-mrbsonEnv = env.Clone()
+cppPath = ['#/source', '#', '#/lib/mrbson']
 
-mrbsonEnv.MergeFlags('-std=gnu99 -O6 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
-mrbsonEnv['CPPPATH'] = ['#/source', '#', '#/lib/mrbson']
+shelbySimpleLibrary(libraryName, sourceFiles, cppPath, defaultDebugEnv, defaultOptEnv)
 
-mrbson = mrbsonEnv.Library(target = 'mrbson', source = sourceFiles)
-
-mrbsonEnv.Default(mrbson)
