@@ -1,12 +1,14 @@
 env = Environment().Clone()
 
-env.MergeFlags('-std=gnu99 -Wall -Werror -DMONGO_HAVE_UNISTD -static')
+env.MergeFlags('-std=gnu99 -Wall -Werror -DMONGO_HAVE_UNISTD')
 
 defaultDebugEnv = env.Clone()
 defaultOptEnv = env.Clone()
 
 defaultDebugEnv.MergeFlags('-ggdb')
 defaultOptEnv.MergeFlags('-O6')
+
+defaultOptEnv['LINKFLAGS'] = '-s'
 
 Export('defaultDebugEnv')
 Export('defaultOptEnv')
