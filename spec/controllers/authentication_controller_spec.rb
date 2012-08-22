@@ -90,6 +90,85 @@ describe AuthenticationsController do
   
   end
     
+  context "Current user merging in another account" do
+    before(:each) do
+      # Setup and sign in a user
+      @into_user = Factory.create(:user)
+      AuthenticationsController.any_instance.stub(:current_user).and_return(@into_user)
+      AuthenticationsController.any_instance.stub(:authenticate_user!).and_return(true)
+      
+      # Have omniauth stuff return another one
+      request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}}) #so that we look for a User
+      @other_user = Factory.create(:user) #returned as if it was found via omniauth
+      User.stub(:first).and_return(@other_user)
+    end
+
+    context "create (merge via omniauth)" do
+      it "should put the omniauth'd user's id into the session" do
+        get :create
+      
+        session[:user_to_merge_in_id].should == @other_user.id.to_s
+      end
+
+      it "should route to should_merge_accounts path when a current user authenticates a different user via omniauth" do
+        get :create
+      
+        assigns(:opener_location).should == should_merge_accounts_authentications_path
+      end
+    end
+    
+    context "should_merge_accounts" do
+      it "should set other_user via the id stored in the session" do
+        session[:user_to_merge_in_id] = @other_user.id.to_s
+
+        get :should_merge_accounts
+
+        assigns(:other_user).should == @other_user
+      end
+
+      it "should set into_user as the currently signed in user" do
+        get :should_merge_accounts
+        
+        assigns(:into_user).should == @into_user
+      end
+      
+      it "should sign user out if other_user cannot be found" do
+        session[:user_to_merge_in_id] = "some_crap"
+
+        get :should_merge_accounts
+        
+        response.should redirect_to(sign_out_user_path)
+      end
+    end
+    
+    context "POST do_merge_accounts" do
+      before(:each) do
+        session[:user_to_merge_in_id] = @other_user.id.to_s
+      end
+      
+      it "should merge the user from the session into the current user" do
+        GT::UserMerger.should_receive(:merge_users).with(@other_user, @into_user).exactly(1).times.and_return(true)
+        post :do_merge_accounts
+      end
+      
+      it "should redirect to web root on successfull merge" do
+        GT::UserMerger.should_receive(:merge_users).with(@other_user, @into_user).and_return(true)
+        post :do_merge_accounts
+        
+        response.should redirect_to(Settings::ShelbyAPI.web_root)
+      end
+      
+      it "should sign the user out if there is no user to merge in in the session" do
+        session[:user_to_merge_in_id] = nil
+        GT::UserMerger.should_receive(:merge_users).with(@other_user, @into_user).exactly(0).times
+        post :do_merge_accounts
+        
+        response.should redirect_to(sign_out_user_path)
+      end
+    end
+  
+  end
+    
   context "with faked sign_in and current_user" do
     # We're not trying to test Devise here, so just set current_user as expected when they get signed in...
     controller(AuthenticationsController) do
@@ -361,11 +440,6 @@ describe AuthenticationsController do
     
     end
 
-    context "Current user with two seperate accounts" do
-
-      it "should be tested when implemented"
-    
-    end
 
     context "faux user" do
       context "no permissions" do
@@ -482,6 +556,8 @@ describe AuthenticationsController do
       request.stub!(:env).and_return({"omniauth.auth" => {}})
       @u1 = Factory.create(:user, :gt_enabled => false)
       User.stub(:first).and_return(@u1)
+      
+      AuthenticationsController.any_instance.stub(:current_user).and_return(nil)
     end
 
     it "should remove previous auth failure params from the query string for redirect" do

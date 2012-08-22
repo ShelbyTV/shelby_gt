@@ -2,40 +2,41 @@
 .cohort-entrance-wrapper {
   width: 625px;
   margin: 100px auto 0;
+  padding-bottom: 100px;
 }
-/* line 5, ../../app/assets/stylesheets/cohort_entrance.scss */
+/* line 6, ../../app/assets/stylesheets/cohort_entrance.scss */
 .cohort-entrance-wrapper h1 {
   font-size: 4em;
   text-shadow: black 2px 2px 0px;
 }
-/* line 10, ../../app/assets/stylesheets/cohort_entrance.scss */
+/* line 11, ../../app/assets/stylesheets/cohort_entrance.scss */
 .cohort-entrance-wrapper h2 {
   margin: 20px 0;
   color: #eeeeff;
 }
-/* line 15, ../../app/assets/stylesheets/cohort_entrance.scss */
+/* line 16, ../../app/assets/stylesheets/cohort_entrance.scss */
 .cohort-entrance-wrapper hr {
   margin: 30px 70px;
   color: #47474e;
   border-color: #47474e;
 }
-/* line 21, ../../app/assets/stylesheets/cohort_entrance.scss */
+/* line 22, ../../app/assets/stylesheets/cohort_entrance.scss */
 .cohort-entrance-wrapper .social-signup-wrapper {
   text-align: center;
 }
-/* line 24, ../../app/assets/stylesheets/cohort_entrance.scss */
+/* line 25, ../../app/assets/stylesheets/cohort_entrance.scss */
 .cohort-entrance-wrapper .social-signup-wrapper a {
   display: inline-block;
   padding: 10px;
   font-size: 2em;
   color: #efafff;
 }
-/* line 29, ../../app/assets/stylesheets/cohort_entrance.scss */
+/* line 30, ../../app/assets/stylesheets/cohort_entrance.scss */
 .cohort-entrance-wrapper .social-signup-wrapper a:hover {
   background-color: white;
   color: black;
 }
-/* line 37, ../../app/assets/stylesheets/cohort_entrance.scss */
+/* line 38, ../../app/assets/stylesheets/cohort_entrance.scss */
 .cohort-entrance-wrapper .email-signup-wrapper label, .cohort-entrance-wrapper .email-signup-wrapper input {
   font-size: 1.5em;
 }

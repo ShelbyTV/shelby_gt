@@ -1,8 +1,11 @@
 # encoding: UTF-8
 require 'user_manager'
+require 'user_merger'
 require 'invitation_manager'
 
 class AuthenticationsController < ApplicationController  
+  
+  before_filter :authenticate_user!, :only => [:should_merge_accounts, :do_merge_accounts]
  
   def index
   end
@@ -40,18 +43,18 @@ class AuthenticationsController < ApplicationController
     if omniauth = request.env["omniauth.auth"]
       user = User.first( :conditions => { 'authentications.provider' => omniauth['provider'], 'authentications.uid' => omniauth['uid'] } )
     end
-      
 
-=begin    
-#TODO: ---- Current user with two seperate accounts
+
+# ---- Current user with two seperate accounts
     if current_user and user and user != current_user
       # make sure they want to merge "user" into "current_user"
       session[:user_to_merge_in_id] = user.id.to_s
       
-      @opener_location = merge_accounts_path
-=end
+      @opener_location = should_merge_accounts_authentications_path
+
+
 # ---- Current user, just signing in
-    if user
+    elsif user
       
       if user.gt_enabled
         sign_in_current_user(user, omniauth)
@@ -191,6 +194,28 @@ class AuthenticationsController < ApplicationController
     render :action => 'redirector', :layout => 'simple'
   end
   
+  # confirm that they want to merge, will post to do_merge_accounts
+  def should_merge_accounts
+    @into_user = current_user  
+    redirect_to sign_out_user_path unless @other_user = User.find_by_id(session[:user_to_merge_in_id])
+  end
+  
+  def do_merge_accounts
+    # Not looking at params, that would be a security issue
+    @into_user = current_user
+    @other_user = User.find_by_id(session[:user_to_merge_in_id])
+    
+    if @other_user and @into_user
+      session[:user_to_merge_in_id] = nil
+      if GT::UserMerger.merge_users(@other_user, @into_user)
+        redirect_to Settings::ShelbyAPI.web_root and return
+      end
+    end
+    
+    # if we fell through
+    redirect_to sign_out_user_path
+  end
+  
   def fail
     #if their session is fucked, it will cause bad auth params.
     reset_session
@@ -209,7 +234,7 @@ class AuthenticationsController < ApplicationController
     sign_out(:user)
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signout'])
     
-    redirect_to request.referer || Settings::ShelbyAPI.web_root
+    redirect_to Settings::ShelbyAPI.web_root
   end
 
   private
