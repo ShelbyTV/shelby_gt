@@ -34,7 +34,7 @@ module GT
     private
     
       def self.friends_ids(user)
-        APIClients::FacebookInfoGetter.new(user).get_following_ids
+        APIClients::FacebookInfoGetter.new(user).get_friends_ids
       end
 
   end
