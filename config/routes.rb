@@ -16,6 +16,8 @@ ShelbyGt::Application.routes.draw do
   
   resources :authentications do
     post 'login' => 'authentications#login', :on => :collection
+    get 'should_merge' => 'authentications#should_merge_accounts', :on => :collection, :as => :should_merge_accounts
+    post 'do_merge' => 'authentications#do_merge_accounts', :on => :collection, :as => :do_merge_accounts
   end
   get '/auth/:provider/callback' => 'authentications#create'
   get '/auth/failure' => 'authentications#fail'

@@ -367,6 +367,7 @@ describe Frame do
     before(:each) do
       @creator = Factory.create(:user)
       @frame = Factory.create(:frame, :creator => @creator)
+      @frame_id = @frame.id
       @stranger = Factory.create(:user)
     end
     
@@ -397,6 +398,34 @@ describe Frame do
       lambda {
         @frame.destroy
       }.should change { roll.reload.frame_count }.by -1
+    end
+    
+    it "should still be in the DB" do
+      @frame.destroy.should == true
+      
+      Frame.find(@frame_id).should_not == nil
+    end
+    
+    it "should have a nil roll_id" do
+      roll = Factory.create(:roll, :creator => @stranger)
+      @frame.roll = roll
+      @frame.save
+      
+      @frame.destroy
+      
+      Frame.find(@frame_id).roll_id.should == nil
+    end
+      
+    
+    it "should have the original roll_id in deleted_from_froll_id" do
+      roll = Factory.create(:roll, :creator => @stranger)
+      @frame.roll = roll
+      @frame.save
+      
+      @frame.destroy
+      
+      Frame.find(@frame_id).deleted_from_roll_id.should == roll.id
+      Frame.find(@frame_id).virtually_destroyed?.should == true
     end
     
   end

@@ -40,7 +40,9 @@ RSpec.configure do |config|
     
     # don't want FacebookInfoGetter trying to make real requests to API
     @fb_info_getter = double("fb_info_getter")
-    @fb_info_getter.stub(:get_following_ids).and_return([0, 1])
+    @fb_info_getter.stub(:get_friends_ids).and_return([0, 1])
+    @fb_info_getter.stub(:get_friends_names).and_return(["andy", "beth"])
+    @fb_info_getter.stub(:get_friends_names_ids_dictionary).and_return({"dan" => 33, "frank" => 22})
     APIClients::FacebookInfoGetter.stub(:new).and_return(@fb_info_getter)
   end
   

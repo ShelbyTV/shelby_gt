@@ -324,12 +324,12 @@ describe 'v1/frame' do
         response.body.should be_json_eql(404).at_path("status")
       end
       
-      it "should destroy the Frame's Conversation" do
+      it "should *NOT* destroy the Frame's Conversation" do
         @f.conversation.should_not be_nil
         lambda {
           delete '/v1/frame/'+@f.id
-        }.should change { Conversation.count } .by(-1)
-        @f.conversation.reload.should be_nil
+        }.should_not change { Conversation.count }
+        @f.conversation.reload.should_not == nil
       end
       
     end

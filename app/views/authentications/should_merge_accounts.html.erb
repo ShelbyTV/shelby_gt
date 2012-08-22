@@ -1,0 +1,77 @@
+<div class="cohort-entrance-wrapper">
+	
+	<h1>You have two Shelby accounts...</h1>
+
+	<div class="shelby-user-summary">
+		<h2>Your permanent account is <span class="shelby-username"><%= @into_user.nickname %></span></h2>
+		<%= image_tag @into_user.user_image %>
+		
+		<% if !@into_user.authentications.empty? %>
+			<div class="external-services">
+				<%= pluralize @into_user.authentications.size, "external service" %> is connected to <%= @into_user.nickname %>
+				<ul>
+				<% @into_user.authentications.each do |auth| %>
+					<li><em><%= auth.nickname %></em> on <%= auth.provider %></li>
+				<% end %>
+				</ul>
+			</div>
+		<% end %>
+	</div>
+
+	<div class="shelby-user-summary">
+		<h2>Your other account <span class="shelby-username"><%= @other_user.nickname %></span> can be merged into <span class="shelby-username"><%= @into_user.nickname %></span></h2>
+		<%= image_tag @other_user.user_image %>
+		
+		<% if !@other_user.authentications.empty? %>
+			<div class="external-services">
+				<%= pluralize @other_user.authentications.size, "external service" %> is connected to <%= @other_user.nickname %>
+				<ul>
+				<% @other_user.authentications.each do |auth| %>
+					<li><em><%= auth.nickname %></em> on <%= auth.provider %></li>
+				<% end %>
+				</ul>
+			</div>
+		<% end %>
+	</div>
+
+	<hr />
+	
+	<h1>If we merge them...</h1>
+	
+	<div class="shelby-user-summary">
+		<% all_auths =  @into_user.authentications + @other_user.authentications%>
+		
+		<h2>You will be <span class="shelby-username"><%= @into_user.nickname %></span></h2>
+		<%= image_tag @into_user.user_image %>
+		
+		<% if !@into_user.authentications.empty? %>
+			<div class="external-services">
+				You will have <%= pluralize all_auths.size, "external service" %> connected to <%= @into_user.nickname %>
+				<ul>
+				<% all_auths.each do |auth| %>
+					<li><em><%= auth.nickname %></em> on <%= auth.provider %></li>
+				<% end %>
+				</ul>
+			</div>
+		<% end %>
+		
+		<h2>Videos Rolled, history, account info for <span class="shelby-username"><%= @other_user.nickname %></span> will belong to <span class="shelby-username"><%= @into_user.nickname %></span></h2>
+		<h2>The <span class="shelby-username"><%= @other_user.nickname %></span> account will be deleted</h2>
+	</div>
+
+	<%= form_for(:user, :url => do_merge_accounts_authentications_path) do |f| %>
+		<div>
+			<%= f.submit "Merge These Users", :id => "do-merge" %>
+			<spanb id="cancel-merge">or <%= link_to "Cancel and Sign Out", sign_out_user_path, :class => "cancel" %></span>
+			</div>
+	<% end %>
+	
+</div>
+
+<script>
+	$("input#do-merge").click( function(e){
+		$(this).attr('disabled', 'disabled');
+		$(this).attr('value', 'Merging!  This may take a few minutes...');
+		$("#cancel-merge").hide();
+	});
+</script>

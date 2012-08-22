@@ -25,7 +25,7 @@ module ShelbyGt
     # -- all .rb files in that directory are automatically loaded.
 
     # Custom directories with classes and modules you want to be autoloadable.
-    config.autoload_paths += %W(#{Rails.root}/lib/plugins #{Rails.root}/lib/db #{Rails.root}/lib/gt #{Rails.root}/lib/gt/arnold #{Rails.root}/lib/cache #{Rails.root}/lib/embedly #{Rails.root}/lib/utils #{Rails.root}/lib/stats #{Rails.root}/lib/social_postings)
+    config.autoload_paths += %W(#{Rails.root}/lib/plugins #{Rails.root}/lib/db #{Rails.root}/lib/gt #{Rails.root}/lib/gt/arnold #{Rails.root}/lib/gt/user #{Rails.root}/lib/cache #{Rails.root}/lib/embedly #{Rails.root}/lib/utils #{Rails.root}/lib/stats #{Rails.root}/lib/social_postings)
 
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.

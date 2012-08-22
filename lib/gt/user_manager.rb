@@ -12,6 +12,7 @@ require 'api_clients/facebook_info_getter'
 #
 # Used to create actual users (on signup) and faux Users (for public Roll)
 #
+# REFACTOR: move this lib into ./user
 module GT
   class UserManager
     
