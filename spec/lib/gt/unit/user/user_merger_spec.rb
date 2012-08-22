@@ -204,6 +204,18 @@ describe GT::UserMerger do
         @f6.reload.creator_id.should == @into_user.id
         @third_party_frame.creator_id.should == @third_party.id
       end
+      
+      it "should not choke if some of other_user's special rolls are nil" do
+        @other_user.public_roll = nil
+        @other_user.watch_later_roll = nil
+        @other_user.upvoted_roll = nil
+        @other_user.viewed_roll = nil
+        @other_user.save
+        
+        lambda {
+          GT::UserMerger.merge_users(@other_user, @into_user).should == true
+        }.should_not change { Frame.count }
+      end
     end
     
     

@@ -19,10 +19,10 @@ module GT
       return false unless self.move_authentications(other_user, into_user)
       
       # Merge the special rolls (and destroy the old ones)
-      self.merge_rolls(other_user.public_roll, other_user, into_user.public_roll, into_user)
-      self.merge_rolls(other_user.watch_later_roll, other_user, into_user.watch_later_roll, into_user)
-      self.merge_rolls(other_user.upvoted_roll, other_user, into_user.upvoted_roll, into_user)
-      self.merge_rolls(other_user.viewed_roll, other_user, into_user.viewed_roll, into_user)
+      self.merge_rolls(other_user.public_roll, other_user, into_user.public_roll, into_user) if other_user.public_roll
+      self.merge_rolls(other_user.watch_later_roll, other_user, into_user.watch_later_roll, into_user) if other_user.watch_later_roll
+      self.merge_rolls(other_user.upvoted_roll, other_user, into_user.upvoted_roll, into_user) if other_user.upvoted_roll
+      self.merge_rolls(other_user.viewed_roll, other_user, into_user.viewed_roll, into_user) if other_user.viewed_roll
       
       # Change ownership of rolls created by other_user (also takes care Frames)
       Roll.where(:creator_id => other_user.id).each do |other_roll|
