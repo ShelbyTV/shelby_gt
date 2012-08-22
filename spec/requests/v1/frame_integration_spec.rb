@@ -41,36 +41,6 @@ describe 'v1/frame' do
           get '/v1/frame/'+@f.id
           response.body.should be_json_eql(404).at_path("status")
         end
-        
-        context "upvoters" do
-          it "should return an array with upvote users and their attributes" do
-            @f.upvoters << Factory.create(:user).id
-            @f.upvoters << Factory.create(:user).id
-            @f.save
-            
-            get '/v1/frame/'+@f.id+'?include_children=true'
-            response.body.should be_json_eql(200).at_path("status")
-            response.body.should have_json_size(2).at_path("result/upvote_users")
-          end
-
-          it "should return an empty array if no upvoters on a frame" do
-            get '/v1/frame/'+@f.id+'?include_children=true'
-            response.body.should be_json_eql(200).at_path("status")
-            response.body.should have_json_size(0).at_path("result/upvote_users")
-          end
-
-          it "should make one single User.find query for all upvoters" do
-            @f.upvoters << Factory.create(:user).id
-            @f.upvoters << Factory.create(:user).id
-            @f.upvoters << Factory.create(:user).id
-            @f.upvoters << Factory.create(:user).id
-            @f.save
-            
-            User.should_receive(:find).exactly(1).times
-                        
-            get '/v1/frame/'+@f.id+'?include_children=true'
-          end
-        end
       end
       
       context 'all frames in a roll' do
@@ -82,7 +52,7 @@ describe 'v1/frame' do
 
         it "should return frame info on success" do
           get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
-          
+        
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/creator_id")
           parse_json(response.body)["result"]["creator_id"].should eq(@u1.id.to_s)
@@ -100,94 +70,6 @@ describe 'v1/frame' do
           parse_json(response.body)["result"]["first_frame_thumbnail_url"].should eq(@frames_roll.first_frame_thumbnail_url)
         end
         
-        context "upvoters" do
-          before(:each) do
-            @roll = Factory.create(:roll, :creator_id => @u1.id)
-            @f.roll_id = @roll.id
-            @f.save
-            @f2 = Factory.create(:frame, :roll_id => @roll.id)
-          end
-          
-          it "should return an array with upvote users and their attributes (in the first frame of the roll)" do
-            @f.upvoters << (upvoter = Factory.create(:user)).id
-            @f.upvoters << (upvoter = Factory.create(:user)).id
-            @f.upvoters << (upvoter = Factory.create(:user)).id
-            @f.upvoters << (upvoter = Factory.create(:user)).id
-            @f.upvoters << (upvoter = Factory.create(:user)).id
-            @f.upvoters << (upvoter = Factory.create(:user)).id
-            @f.upvoters << (upvoter = Factory.create(:user)).id
-            @f.save
-            
-            get "/v1/roll/#{@roll.id}/frames"
-            response.body.should be_json_eql(200).at_path("status")
-            response.body.should have_json_size(7).at_path("result/frames/0/upvote_users")
-          end
-
-          it "should return an empty array if no upvoters on the first frame of the roll" do
-            get "/v1/roll/#{@roll.id}/frames"
-            response.body.should be_json_eql(200).at_path("status")
-            response.body.should have_json_size(0).at_path("result/frames/0/upvote_users")
-          end
-
-          it "should make one single User.find query for all upvoters (in all frames of the roll)" do
-            @f.upvoters << Factory.create(:user).id
-            @f.upvoters << Factory.create(:user).id
-            @f.upvoters << Factory.create(:user).id
-            @f.upvoters << Factory.create(:user).id
-            @f.upvoters << Factory.create(:user).id
-            @f.upvoters << Factory.create(:user).id
-            @f.upvoters << Factory.create(:user).id
-            @f.save
-            
-            @f2.upvoters << Factory.create(:user).id
-            @f2.upvoters << Factory.create(:user).id
-            @f2.upvoters << Factory.create(:user).id
-            @f2.upvoters << Factory.create(:user).id
-            @f2.save
-            
-            # 1 time to load current_user
-            # 1 time to load all the upvote users
-            # 1 time for ??? signed_in? ???
-            # although thre is 1 unexpected load, it's O(1) and this at least shows we don't have an N+1 problem w/ users
-            User.should_receive(:find).exactly(12).times
-                        
-            get "/v1/roll/#{@roll.id}/frames"
-          end
-        end
-
-#TODO: finishe these tests... I SUCK AT WRITING TESTS! Code works. can't work out why tests aren't working
-=begin
-        it "should return frame info with a since_id" do
-          roll = Factory.create(:roll, :creator_id => @u1.id)
-          @f.roll_id = roll.id; @f.save
-          @f2.roll_id = roll.id; @f2.save
-          @f3.roll_id = roll.id; @f3.save
-          
-          puts "f: #{@f.score}, f2: #{@f2.score}, f3: #{@f3.score}"
-
-          get '/v1/roll/'+roll.id.to_s+'/frames?since_id='+@f3.id.to_s
-          
-          parse_json(response.body)["result"]["frames"].each {|f| puts f["score"]}
-          
-          response.body.should be_json_eql(200).at_path("status")
-          parse_json(response.body)["result"]["frames"].last["id"].should eq(@f2.id.to_s)
-          response.body.should have_json_size(2).at_path("result/frames")
-        end
-        
-        it "should return frame info with a since_id AND reverse order" do
-          roll = Factory.create(:roll, :creator_id => @u1.id)
-          @f.roll_id = roll.id; @f.save
-          @f2.roll_id = roll.id; @f2.save
-          @f3.roll_id = roll.id; @f3.save
-          @f4.roll_id = roll.id; @f4.save
-          
-          get '/v1/roll/'+roll.id.to_s+'/frames?since_id='+@f3.id.to_s+'&order=-1'
-          
-          response.body.should be_json_eql(200).at_path("status")
-          response.body.should have_json_size(2).at_path("result/frames")
-          parse_json(response.body)["result"]["frames"][0]["id"].should eq(@f2.id.to_s)
-        end
-=end
         it "should return frames of personal roll of user when given a nickname" do
           u2 = Factory.create(:user)
           u2.downcase_nickname = u2.nickname.downcase
@@ -204,22 +86,6 @@ describe 'v1/frame' do
           response.body.should have_json_size(2).at_path("result/frames")
         end
 
-        it "should return frames of heart roll of user when given a nickname" do
-          u2 = Factory.create(:user)
-          u2.downcase_nickname = u2.nickname.downcase
-          u2.save
-          r2 = Factory.create(:roll, :creator => u2, :public => true)
-          u2.upvoted_roll_id = r2.id; u2.save
-          f1 = Factory.create(:frame, :roll_id => r2.id)
-          f2 = Factory.create(:frame, :roll_id => r2.id)
-          
-          get 'v1/user/'+u2.nickname+'/rolls/heart/frames'
-          
-          response.body.should be_json_eql(200).at_path("status")
-          response.body.should be_json_eql(2).at_path("result/frame_count")
-          response.body.should have_json_size(2).at_path("result/frames")
-        end
-        
         it "should return 404 if cant access frames in a roll" do
           roll = Factory.create(:roll, :creator_id => Factory.create(:user).id, :public => false)
           @f.roll_id = roll.id; @f.save

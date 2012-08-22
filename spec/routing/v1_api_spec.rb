@@ -99,7 +99,7 @@ describe V1::DashboardEntriesController do
   describe "routing" do
     it "routes for GET" do
       { :get => "/v1/dashboard" }.should route_to(
-        :controller => "v1/dashboard_entries",
+        :controller => "v1/dashboard_entries_metal",
         :format => "json",
         :action => "index"
       )
@@ -138,17 +138,8 @@ describe V1::FrameController do
     
     it "GET INDEX of personal_roll" do
       { :get => "/v1/user/1/rolls/personal/frames" }.should route_to(
-        :controller => "v1/frame",
+        :controller => "v1/frame_metal",
         :action => "index_for_users_public_roll",
-        :format => "json",
-        :user_id => "1"
-      )
-    end
-
-    it "GET INDEX of heart_roll" do
-      { :get => "/v1/user/1/rolls/heart/frames" }.should route_to(
-        :controller => "v1/frame",
-        :action => "index_for_users_heart_roll",
         :format => "json",
         :user_id => "1"
       )

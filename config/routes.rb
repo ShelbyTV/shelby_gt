@@ -57,12 +57,12 @@ ShelbyGt::Application.routes.draw do
       get 'rolls/following' => 'user#roll_followings', :on => :member
       get 'rolls/postable' => 'user#roll_followings', :on => :member, :defaults => { :postable => true }
       get 'rolls/personal' => 'roll#show_users_public_roll'
-      get 'rolls/personal/frames' => 'frame#index_for_users_public_roll'
+      get 'rolls/personal/frames' => 'frame_metal#index_for_users_public_roll'
       get 'rolls/hearted' => 'roll#show_users_heart_roll'
       get 'rolls/heart/frames' => 'frame#index_for_users_heart_roll'
     end
     resources :roll, :only => [:show, :create, :update, :destroy] do
-      get 'frames' => 'frame#index'
+      get 'frames' => 'frame_metal#index'
       post 'frames' => 'frame#create'
       post 'share' => 'roll#share'
       post 'join' => 'roll#join'
@@ -86,9 +86,10 @@ ShelbyGt::Application.routes.draw do
       get 'viewed', :on => :collection
       get 'queued', :on => :collection
     end
-    resources :dashboard_entries, :path => "dashboard", :only => [:index, :update] do
+    resources :dashboard_entries, :path => "dashboard", :only => [:update] do
       get 'find_entries_with_video' => 'dashboard_entries#find_entries_with_video', :on => :collection
     end
+    resources :dashboard_entries_metal, :path => "dashboard", :only => [:index]
     resources :conversation, :only => [:show] do 
       resources :messages, :only => [:create, :destroy]
     end

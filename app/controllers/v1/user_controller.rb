@@ -74,9 +74,6 @@ class V1::UserController < ApplicationController
   # [GET] /v1/user/:id/rolls/postable (returns the subset of rolls the user is following which they can also post to)
   # 
   # @param [Required, String] id The id of the user
-  # @param [Optional, boolean] include_children Return the following_users?
-  # @param [Optional, boolean] frames Returns a shallow version of frames
-  # @param [Optional, boolean] frames_limit limit number of shallow frames to return 
   # @param [Optional, boolean] postable Set this to true (or use the second route) if you only want rolls postable by current user returned (used by bookmarklet)
   def roll_followings
     # disabling garbage collection here because we are loading a whole bunch of documents, and my hypothesis (HIS) is 
@@ -84,7 +81,18 @@ class V1::UserController < ApplicationController
     GC.disable
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
       if current_user.id.to_s == params[:id]
-        
+       
+        if params[:fast]
+          fast_stdout = `cpp/bin/userRollFollowings -u #{current_user.downcase_nickname} #{params[:postable] ? "-p" : ""} -e #{Rails.env}`
+          fast_status = $?.to_i
+          if (fast_status == 0)
+            @status = 200
+            render :text => fast_stdout and return
+          else 
+            render_error(404, "fast index failed with status #{fast_status}") and return
+          end
+        end 
+ 
         # for some reason calling Roll.find is throwing an error, its thinking its calling:
         #  V1::UserController::Roll which does not exist, for now, just forcing the global Roll
         @roll_ids = current_user.roll_followings.map {|rf| rf.roll_id }.compact.uniq
