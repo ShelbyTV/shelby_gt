@@ -403,10 +403,38 @@ int sobBsonOidEqual(bson_oid_t oid1, bson_oid_t oid2)
    return TRUE;
 }
 
+int sobBsonOidFieldEqual(sobContext context,
+                         sobType objectType,
+                         sobField objectOidField,
+                         bson_oid_t objectOid,
+                         bson_oid_t oidEqual)
+{
+   bson_iterator iterator;
+   bson_type type;
+   bson *object;
+
+   assert(sobFieldBSONType[objectOidField] == BSON_OID);
+
+   if (!sobGetBsonByOid(context,
+                        objectType,
+                        objectOid,
+                        &object))
+   {
+      return FALSE;
+   }
+
+   type = bson_find(&iterator, object, sobFieldDBName[objectOidField]);
+   if (BSON_OID != type) {
+      return FALSE;
+   }
+
+   return sobBsonOidEqual(*bson_iterator_oid(&iterator), oidEqual);
+}
+
 int sobGetBsonByOid(sobContext context,
-                     sobType type,
-                     bson_oid_t oid,
-                     bson **result)
+                    sobType type,
+                    bson_oid_t oid,
+                    bson **result)
 {
    cvector vec = context->objectVector[type];
   
@@ -612,6 +640,33 @@ void sobPrintSubobjectArray(sobContext sob,
    }
 
    mrjsonEndArray(context); 
+}
+
+int sobBsonBoolField(sobContext context,
+                     sobType objectType,
+                     sobField fieldToCheck,
+                     bson_oid_t objectOid)
+{
+   bson_iterator iterator;
+   bson_type type;
+   bson *object;
+
+   assert(sobFieldBSONType[fieldToCheck] == BSON_BOOL);
+
+   if (!sobGetBsonByOid(context,
+                        objectType,
+                        objectOid,
+                        &object))
+   {
+      return FALSE;
+   }
+
+   type = bson_find(&iterator, object, sobFieldDBName[fieldToCheck]);
+   if (BSON_BOOL!= type) {
+      return FALSE;
+   }
+
+   return bson_iterator_bool(&iterator);
 }
 
 void sobPrintFieldIfBoolField(mrjsonContext context,

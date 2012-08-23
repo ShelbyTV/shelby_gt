@@ -137,6 +137,17 @@ void sobPrintFieldIfBoolField(mrjsonContext context,
                               sobField fieldToPrint,
                               sobField fieldToCheck);
 
+int sobBsonOidFieldEqual(sobContext context,
+                         sobType objectType,
+                         sobField objectOidField,
+                         bson_oid_t objectOid,
+                         bson_oid_t oidEqual);
+
+int sobBsonBoolField(sobContext context,
+                     sobType objectType,
+                     sobField fieldToCheck,
+                     bson_oid_t objectOid);
+
 #ifdef __cplusplus
 }
 #endif

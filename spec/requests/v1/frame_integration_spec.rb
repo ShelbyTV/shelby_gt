@@ -70,7 +70,7 @@ describe 'v1/frame' do
           parse_json(response.body)["result"]["first_frame_thumbnail_url"].should eq(@frames_roll.first_frame_thumbnail_url)
         end
         
-        it "should return frames of personal roll of user when given a nickname" do
+        it "should return frames of personal roll of user when given a user id" do
           u2 = Factory.create(:user)
           u2.downcase_nickname = u2.nickname.downcase
           u2.save
@@ -79,7 +79,7 @@ describe 'v1/frame' do
           f1 = Factory.create(:frame, :roll_id => r2.id)
           f2 = Factory.create(:frame, :roll_id => r2.id)
           
-          get 'v1/user/'+u2.nickname+'/rolls/personal/frames'
+          get 'v1/user/'+u2.id+'/rolls/personal/frames'
           
           response.body.should be_json_eql(200).at_path("status")
           response.body.should be_json_eql(2).at_path("result/frame_count")

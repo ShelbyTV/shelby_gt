@@ -1,4 +1,8 @@
 class V1::FrameMetalController < ActionController::Metal
+  include AbstractController::Logger
+  include AbstractController::Callbacks
+  include AbstractController::Helpers
+  include Devise::Controllers::Helpers
 
   ##
   # Returns frames in a roll
@@ -12,7 +16,11 @@ class V1::FrameMetalController < ActionController::Metal
        limit = [params[:limit] ? params[:limit].to_i : 20, 500].min
        skip = params[:skip] ? params[:skip] : 0
 
-       fast_stdout = `cpp/bin/frameIndex -r #{params[:roll_id]} -l #{@limit} -s #{skip} -e #{Rails.env}`
+       if (current_user)
+         fast_stdout = `cpp/bin/frameIndex -u #{current_user.id} -r #{params[:roll_id]} -l #{@limit} -s #{skip} -e #{Rails.env}`
+       else
+         fast_stdout = `cpp/bin/frameIndex -r #{params[:roll_id]} -l #{@limit} -s #{skip} -e #{Rails.env}`
+       end
        fast_status = $?.to_i
 
        if (fast_status == 0)
@@ -33,8 +41,8 @@ class V1::FrameMetalController < ActionController::Metal
   # Returns frames in a user's personal roll
   #   AUTHENTICATION OPTIONAL
   #
-  # [GET] /v1/roll/:id/frames
-  # @param [Required, ] user_id ID of the user
+  # [GET] /v1/user/:id/personal/frames
+  # @param [Required, String] id The id of the user
   # @param [Optional, Integer] limit limit the number of frames returned, default 20
   # @param [Optional, Integer] skip the number of frames to skip, default 0
   def index_for_users_public_roll
@@ -46,7 +54,9 @@ class V1::FrameMetalController < ActionController::Metal
            
        skip = params[:skip] ? params[:skip] : 0
 
-       fast_stdout = `cpp/bin/frameIndex -p #{params[:user_id]} -l #{@limit} -s #{skip} -e #{Rails.env}`
+       Rails.logger.info params
+
+       fast_stdout = `cpp/bin/frameIndex -u #{params[:user_id]} -l #{@limit} -s #{skip} -e #{Rails.env}`
        fast_status = $?.to_i
 
        if (fast_status == 0)

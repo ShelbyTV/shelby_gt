@@ -13,11 +13,15 @@
 #define FALSE 0
 
 static struct options {
-        char* rollString;
-	bson_oid_t roll;
-	int limit;
-	int skip;
-	char *environment;
+   char* rollString;
+   bson_oid_t roll;
+   
+   char* userString;
+   bson_oid_t user;
+   
+   int limit;
+   int skip;
+   char *environment;
 } options;
 
 struct timeval beginTime;
@@ -26,6 +30,7 @@ void printHelpText()
 {
    printf("frameIndex usage:\n"); 
    printf("   -h --help           Print this help message\n");
+   printf("   -u --user           String representation of user OID\n");
    printf("   -r --roll           String representation of roll OID\n");
    printf("   -l --limit          Limit to this number of frames\n");
    printf("   -s --skip           Skip this number of frames\n");
@@ -40,6 +45,7 @@ void parseUserOptions(int argc, char **argv)
       static struct option long_options[] =
       {
          {"help",        no_argument,       0, 'h'},
+         {"user",        required_argument, 0, 'u'},
          {"roll",        required_argument, 0, 'r'},
          {"limit",       required_argument, 0, 'l'},
          {"skip",        required_argument, 0, 's'},
@@ -48,7 +54,7 @@ void parseUserOptions(int argc, char **argv)
       };
       
       int option_index = 0;
-      c = getopt_long(argc, argv, "hr:l:s:e:", long_options, &option_index);
+      c = getopt_long(argc, argv, "hr:l:s:e:u:", long_options, &option_index);
    
       /* Detect the end of the options. */
       if (c == -1) {
@@ -57,6 +63,11 @@ void parseUserOptions(int argc, char **argv)
    
       switch (c)
       {
+         case 'u':
+            options.userString = optarg;
+            bson_oid_from_string(&options.user, optarg); 
+            break;
+
          case 'r':
             options.rollString = optarg;
             bson_oid_from_string(&options.roll, optarg); 
@@ -88,8 +99,9 @@ void parseUserOptions(int argc, char **argv)
       exit(1);
    }
    
-   if (strcmp(options.rollString, "") == 0) {
-      printf("Specifying -r or --roll is required.\n");
+   if (strcmp(options.rollString, "") == 0 &&
+       strcmp(options.userString, "") == 0) {
+      printf("Must specify either -u/--user or -r/--roll.\n");
       printHelpText();
       exit(1);
    }
@@ -98,6 +110,7 @@ void parseUserOptions(int argc, char **argv)
 void setDefaultOptions()
 {
    options.rollString = "";
+   options.userString = "";
    options.limit = 20;
    options.skip = 0;
    options.environment = "";
@@ -392,6 +405,25 @@ int loadData(sobContext sob)
    cvector videoOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector conversationOids = cvectorAlloc(sizeof(bson_oid_t));
 
+   // means we're looking up the public_roll of a user
+   if (strcmp(options.rollString, "") == 0 &&
+       strcmp(options.userString, "") != 0)
+   {
+      cvectorAddElement(userOids, &options.user);
+      sobLoadAllById(sob, SOB_USER, userOids);
+      sobGetOidVectorFromObjectField(sob, SOB_USER, SOB_USER_PUBLIC_ROLL_ID, rollOids);
+
+      assert(cvectorCount(rollOids) == 1);
+
+      // TODO: this is a hack, we should probably be storing this to a better name...
+      options.roll = *(bson_oid_t *)cvectorGetElement(rollOids, 0);
+   } else {
+      assert(strcmp(options.rollString, "") != 0); 
+
+      // add this particular roll ID to our vector of rolls to fetch
+      cvectorAddElement(rollOids, &options.roll);
+   }
+
    // load all frames with roll oid
    sobLoadAllByOidField(sob,
                         SOB_FRAME, 
@@ -400,10 +432,6 @@ int loadData(sobContext sob)
                         options.limit,
                         options.skip,
                         -1);
-
-   // add this particular roll ID to our vector of rolls to fetch
-   cvectorAddElement(rollOids, &options.roll);
-   sobLoadAllById(sob, SOB_ROLL, rollOids);
 
    // and frames have references to everything else, so we load it all up...
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_ROLL_ID, rollOids);
@@ -414,6 +442,13 @@ int loadData(sobContext sob)
    sobLoadAllById(sob, SOB_USER, userOids);
    sobLoadAllById(sob, SOB_VIDEO, videoOids);
    sobLoadAllById(sob, SOB_CONVERSATION, conversationOids);
+
+   // need to fail if non-public roll has a different user as its creator
+   if (!sobBsonBoolField(sob, SOB_ROLL, SOB_ROLL_PUBLIC, options.roll) &&
+       !sobBsonOidFieldEqual(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, options.roll, options.user))
+   {
+      return FALSE;
+   }
 
    return TRUE;
 }

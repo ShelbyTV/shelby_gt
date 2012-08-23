@@ -87,12 +87,6 @@ describe 'v1/roll' do
         response.body.should be_json_eql(200).at_path("status")
       end
 
-      it "should return heart roll of user when given a nickname" do
-        get 'v1/user/'+@u2.nickname+'/rolls/hearted'
-        response.body.should be_json_eql(200).at_path("status")
-        parse_json(response.body)["result"]["title"].should == @u2.upvoted_roll.title
-      end
-    
       it "should return error message if roll doesnt exist" do
         get '/v1/roll/'+ BSON::ObjectId.new.to_s
         response.body.should be_json_eql(404).at_path("status")

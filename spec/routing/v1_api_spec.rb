@@ -221,15 +221,6 @@ describe V1::RollController do
       )
     end 
     
-    it "GET hearted roll" do
-      { :get => "/v1/user/1/rolls/hearted" }.should route_to(
-        :controller => "v1/roll",
-        :action => "show_users_heart_roll",
-        :format => "json",
-        :user_id => "1"
-      )
-    end
-    
     it "routes to Browse roll" do
       { :get => "/v1/roll/browse" }.should route_to(
         :controller => "v1/roll",

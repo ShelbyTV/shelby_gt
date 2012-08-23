@@ -60,8 +60,6 @@ ShelbyGt::Application.routes.draw do
       get 'rolls/postable' => 'user#roll_followings', :on => :member, :defaults => { :postable => true }
       get 'rolls/personal' => 'roll#show_users_public_roll'
       get 'rolls/personal/frames' => 'frame_metal#index_for_users_public_roll'
-      get 'rolls/hearted' => 'roll#show_users_heart_roll'
-      get 'rolls/heart/frames' => 'frame#index_for_users_heart_roll'
     end
     resources :roll, :only => [:show, :create, :update, :destroy] do
       get 'frames' => 'frame_metal#index'
