@@ -21,7 +21,7 @@ class AuthenticationsController < ApplicationController
   # @param [Required, String] password The plaintext password
   def login
     u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s)) if params[:username]
-    if u and u.valid_password?(params[:password])
+    if u and u.encrypted_password? and u.valid_password?(params[:password])
       user = u
     else
       query = {:auth_failure => 1, :auth_strategy => "that username/password"}
