@@ -57,7 +57,7 @@ class V1::FrameMetalController < ActionController::Metal
 
        Rails.logger.info params
 
-       fast_stdout = `cpp/bin/frameIndex -u #{params[:user_id]} -l #{@limit} -s #{skip} -e #{Rails.env}`
+       fast_stdout = `cpp/bin/frameIndex -u #{params[:user_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
        fast_status = $?.to_i
 
        if (fast_status == 0)
