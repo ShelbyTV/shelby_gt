@@ -13,8 +13,9 @@ class V1::FrameMetalController < ActionController::Metal
   # @param [Optional, Integer] skip the number of frames to skip, default 0
   def index
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['index']) do
-       limit = [params[:limit] ? params[:limit].to_i : 20, 500].min
+       limit = params[:limit] ? params[:limit].to_i : 20
        skip = params[:skip] ? params[:skip] : 0
+       limit = 500 if limit.to_i > 500
 
        if (current_user)
          fast_stdout = `cpp/bin/frameIndex -u #{current_user.id} -r #{params[:roll_id]} -l #{@limit} -s #{skip} -e #{Rails.env}`
