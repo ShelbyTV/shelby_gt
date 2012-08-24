@@ -226,6 +226,10 @@ class User
     end
   end
   
+  def has_password?
+    !self.encrypted_password.blank? and self.encrypted_password.length > 10
+  end
+  
   #default implementation hits the DB, and that sucks b/c we don't index on remember_token
   def self.remember_token
     SecureRandom.uuid
