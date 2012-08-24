@@ -26,9 +26,10 @@
    CONVERSATION_PROPERTIES(apply)    \
    VIDEO_PROPERTIES(apply)           \
    DASHBOARD_ENTRY_PROPERTIES(apply) \
-   MESSAGE_PROPERTIES(apply)
+   MESSAGE_PROPERTIES(apply)         \
+   ROLL_FOLLOWING_PROPERTIES(apply)
 
-#define USER_PROPERTIES(apply)                                                          \
+#define USER_PROPERTIES(apply)                                                                 \
    apply(USER , id                   ,  ID                   ,  OID    , _id                 ) \
    apply(USER , rolls_unfollowed     ,  ROLLS_UNFOLLOWED     ,  ARRAY  , aa                  ) \
    apply(USER , public_roll_id       ,  PUBLIC_ROLL_ID       ,  OID    , ab                  ) \
@@ -52,9 +53,10 @@
    apply(USER , server_created_on    ,  SERVER_CREATED_ON    ,  STRING , server_created_on   ) \
    apply(USER , referral_frame_id    ,  REFERRAL_FRAME_ID    ,  OID    , referral_frame_id   ) \
    apply(USER , is_admin             ,  IS_ADMIN             ,  BOOL   , is_admin            ) \
-   apply(USER , social_tracker       ,  SOCIAL_TRACKER       ,  ARRAY  , social_tracker      )
+   apply(USER , social_tracker       ,  SOCIAL_TRACKER       ,  ARRAY  , social_tracker      ) \
+   apply(USER , roll_followings      ,  ROLL_FOLLOWINGS      ,  ARRAY  , roll_followings     )
 
-#define FRAME_PROPERTIES(apply)                             \
+#define FRAME_PROPERTIES(apply)                                     \
    apply(FRAME , id              , ID              , OID    , _id ) \
    apply(FRAME , roll_id         , ROLL_ID         , OID    , a   ) \
    apply(FRAME , video_id        , VIDEO_ID        , OID    , b   ) \
@@ -68,22 +70,23 @@
    apply(FRAME , short_links     , SHORT_LINKS     , ARRAY  , j   ) \
    apply(FRAME , order           , ORDER           , DOUBLE , k   )
 
-#define ROLL_PROPERTIES(apply)                                                  \
-   apply(ROLL , id                        , ID                        , OID    , _id ) \
-   apply(ROLL , creator_id                , CREATOR_ID                , OID    , a   ) \
-   apply(ROLL , title                     , TITLE                     , STRING , b   ) \
-   apply(ROLL , creator_thumbnail_url     , CREATOR_THUMBNAIL_URL     , STRING , c   ) \
-   apply(ROLL , public                    , PUBLIC                    , BOOL   , d   ) \
-   apply(ROLL , collaborative             , COLLABORATIVE             , BOOL   , e   ) \
-   apply(ROLL , origin_network            , ORIGIN_NETWORK            , STRING , f   ) \
-   apply(ROLL , short_links               , SHORT_LINKS               , ARRAY  , g   ) \
-   apply(ROLL , genius                    , GENIUS                    , BOOL   , h   ) \
-   apply(ROLL , upvoted_roll              , UPVOTED_ROLL              , BOOL   , i   ) \
-   apply(ROLL , frame_count               , FRAME_COUNT               , INT    , j   ) \
-   apply(ROLL , subdomain                 , SUBDOMAIN                 , STRING , k   ) \
-   apply(ROLL , subdomain_active          , SUBDOMAIN_ACTIVE          , BOOL   , l   ) \
-   apply(ROLL , first_frame_thumbnail_url , FIRST_FRAME_THUMBNAIL_URL , STRING , m   ) \
-   apply(ROLL , roll_type                 , ROLL_TYPE                 , INT    , n   )
+#define ROLL_PROPERTIES(apply)                                                                     \
+   apply(ROLL , id                        , ID                        , OID    , _id             ) \
+   apply(ROLL , creator_id                , CREATOR_ID                , OID    , a               ) \
+   apply(ROLL , title                     , TITLE                     , STRING , b               ) \
+   apply(ROLL , creator_thumbnail_url     , CREATOR_THUMBNAIL_URL     , STRING , c               ) \
+   apply(ROLL , public                    , PUBLIC                    , BOOL   , d               ) \
+   apply(ROLL , collaborative             , COLLABORATIVE             , BOOL   , e               ) \
+   apply(ROLL , origin_network            , ORIGIN_NETWORK            , STRING , f               ) \
+   apply(ROLL , short_links               , SHORT_LINKS               , ARRAY  , g               ) \
+   apply(ROLL , genius                    , GENIUS                    , BOOL   , h               ) \
+   apply(ROLL , upvoted_roll              , UPVOTED_ROLL              , BOOL   , i               ) \
+   apply(ROLL , frame_count               , FRAME_COUNT               , INT    , j               ) \
+   apply(ROLL , subdomain                 , SUBDOMAIN                 , STRING , k               ) \
+   apply(ROLL , subdomain_active          , SUBDOMAIN_ACTIVE          , BOOL   , l               ) \
+   apply(ROLL , first_frame_thumbnail_url , FIRST_FRAME_THUMBNAIL_URL , STRING , m               ) \
+   apply(ROLL , roll_type                 , ROLL_TYPE                 , INT    , n               ) \
+   apply(ROLL , following_users           , FOLLOWING_USERS           , ARRAY  , following_users )
 
 #define CONVERSATION_PROPERTIES(apply)                                     \
    apply(CONVERSATION , id            , ID            , OID   , _id      ) \
@@ -114,7 +117,7 @@
    apply(VIDEO , view_count       , VIEW_COUNT       , INT    , q   ) \
    apply(VIDEO , recs             , RECS             , ARRAY  , r   )
 
-#define DASHBOARD_ENTRY_PROPERTIES(apply)   \
+#define DASHBOARD_ENTRY_PROPERTIES(apply)                     \
    apply(DASHBOARD_ENTRY , id       , ID       , OID  , _id ) \
    apply(DASHBOARD_ENTRY , user_id  , USER_ID  , OID  , a   ) \
    apply(DASHBOARD_ENTRY , roll_id  , ROLL_ID  , OID  , b   ) \
@@ -123,7 +126,7 @@
    apply(DASHBOARD_ENTRY , action   , ACTION   , INT  , e   ) \
    apply(DASHBOARD_ENTRY , actor_id , ACTOR_ID , OID  , f   )
 
-#define MESSAGE_PROPERTIES(apply)                         \
+#define MESSAGE_PROPERTIES(apply)                                   \
    apply(MESSAGE , id             , ID             , OID    , _id ) \
    apply(MESSAGE , origin_network , ORIGIN_NETWORK , STRING , a   ) \
    apply(MESSAGE , origin_id      , ORIGIN_ID      , STRING , b   ) \
@@ -134,5 +137,9 @@
    apply(MESSAGE , user_image_url , USER_IMAGE_URL , STRING , g   ) \
    apply(MESSAGE , text           , TEXT           , STRING , h   ) \
    apply(MESSAGE , public         , PUBLIC         , BOOL   , i   )
+
+#define ROLL_FOLLOWING_PROPERTIES(apply)           \
+   apply(ROLL_FOLLOWING , id      , ID      , OID , _id ) \
+   apply(ROLL_FOLLOWING , roll_id , ROLL_ID , OID , a   ) \
 
 #endif // __SOB_PROPERTIES_H__

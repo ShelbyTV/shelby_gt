@@ -662,11 +662,59 @@ int sobBsonBoolField(sobContext context,
    }
 
    type = bson_find(&iterator, object, sobFieldDBName[fieldToCheck]);
-   if (BSON_BOOL!= type) {
+   if (BSON_BOOL != type) {
       return FALSE;
    }
 
    return bson_iterator_bool(&iterator);
+}
+
+// hacky, returns -1 if int not found. could do pointer-based output var, but seems ugly
+int sobBsonIntField(sobContext context,
+                    sobType objectType,
+                    sobField fieldToCheck,
+                    bson_oid_t objectOid)
+{
+   bson_iterator iterator;
+   bson_type type;
+   bson *object;
+
+   assert(sobFieldBSONType[fieldToCheck] == BSON_INT);
+
+   if (!sobGetBsonByOid(context,
+                        objectType,
+                        objectOid,
+                        &object))
+   {
+      return -1;
+   }
+
+   type = bson_find(&iterator, object, sobFieldDBName[fieldToCheck]);
+   if (BSON_INT != type) {
+      return -1;
+   }
+
+   return bson_iterator_int(&iterator);
+}
+
+int sobBsonOidField(sobContext context,
+                    sobType objectType,
+                    sobField fieldToCheck,
+                    bson* object,
+                    bson_oid_t *output)
+{
+   bson_iterator iterator;
+   bson_type type;
+
+   assert(sobFieldBSONType[fieldToCheck] == BSON_OID);
+
+   type = bson_find(&iterator, object, sobFieldDBName[fieldToCheck]);
+   if (BSON_OID != type) {
+      return FALSE;
+   }
+
+   *output = *bson_iterator_oid(&iterator);
+   return TRUE;
 }
 
 void sobPrintFieldIfBoolField(mrjsonContext context,
@@ -684,6 +732,67 @@ void sobPrintFieldIfBoolField(mrjsonContext context,
          sobPrintAttributes(context, object, attributeToPrint, 1);
       }
    }
+}
+
+int sobOidArrayFieldContainsOid(sobContext context,
+                                sobType objectType,
+                                sobField fieldToCheck,
+                                bson *object,
+                                bson_oid_t oidToCheck)
+{
+   bson arrayBson;
+   const char *objectArrayDBName = sobFieldDBName[fieldToCheck];
+
+   bson_iterator iterator;
+   bson_find(&iterator, object, objectArrayDBName);
+
+   bson_iterator_subobject(&iterator, &arrayBson);
+   bson_iterator_from_buffer(&iterator, arrayBson.data);
+
+   while (bson_iterator_next(&iterator)) {
+      if (sobBsonOidEqual(*bson_iterator_oid(&iterator), oidToCheck)) {
+         return TRUE;
+      }
+   }
+
+   return FALSE;
+}
+
+void sobGetOidVectorFromObjectArrayField(sobContext context,
+                                         sobType type,
+                                         sobField arrayField,
+                                         sobField subObjectOidField,
+                                         cvector result)
+{
+   assert(cvectorElementSize(result) == sizeof(bson_oid_t));
+   cvector objectVector = context->objectVector[type];
+
+   for (unsigned int i = 0; i < cvectorCount(objectVector); i++) {
+      bson_iterator iterator;
+      bson_type type;
+ 
+      type = bson_find(&iterator, *(bson **)cvectorGetElement(objectVector, i), sobFieldDBName[arrayField]);
+      if (type != BSON_ARRAY) {
+         continue;
+      }
+
+     bson arrayBson;
+     bson_iterator_subobject(&iterator, &arrayBson);
+     bson_iterator_from_buffer(&iterator, arrayBson.data);
+
+     while (bson_iterator_next(&iterator)) {
+        bson element;
+        bson_iterator subIterator;
+        bson_iterator_subobject(&iterator, &element);
+
+        type = bson_find(&subIterator, &element, sobFieldDBName[subObjectOidField]);
+        if (type != BSON_OID) {
+           continue;
+        }
+
+        cvectorAddElement(result, bson_iterator_oid(&subIterator));
+     }
+  }
 }
 
 

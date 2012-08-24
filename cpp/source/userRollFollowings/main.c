@@ -18,6 +18,8 @@ static struct options {
 	char *environment;
 } options;
 
+bson_oid_t userOid;
+
 struct timeval beginTime;
 
 void printHelpText()
@@ -104,8 +106,52 @@ unsigned int timeSinceMS(struct timeval begin)
    return difference.tv_sec * 1000 + (difference.tv_usec / 1000); 
 }
 
-void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
+int rollPostable(sobContext sob, bson_oid_t rollOid, bson *roll)
 {
+   if (sobBsonOidEqual(rollOid, userOid)) {
+      return TRUE;
+   } else if (!sobBsonBoolField(sob, SOB_ROLL, SOB_ROLL_COLLABORATIVE, rollOid)) {
+      return FALSE;
+   } else if (sobBsonBoolField(sob, SOB_ROLL, SOB_ROLL_PUBLIC, rollOid)) {
+      return TRUE;
+   } else if (sobOidArrayFieldContainsOid(sob, SOB_ROLL, SOB_ROLL_FOLLOWING_USERS, roll, userOid)) {
+      return TRUE;
+   }
+
+   return FALSE;
+}
+
+void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, int printSpecialRoll)
+{
+   bson_oid_t rollOid;
+   sobBsonOidField(sob, SOB_ROLL, SOB_ROLL_ID, roll, &rollOid);
+
+   if (options.postable && !rollPostable(sob, rollOid, roll)) {
+      return;
+   }
+   
+   const int rollType = sobBsonIntField(sob, SOB_ROLL, SOB_ROLL_ROLL_TYPE, rollOid);
+
+   // 10 is generic special roll, and 11 is special_public (faux user), types we don't display anymore
+   if (10 == rollType || 11 == rollType) {
+      return;
+   }
+
+   // we don't use the upvoted roll anymore
+   if (sobBsonOidFieldEqual(sob, SOB_USER, SOB_USER_UPVOTED_ROLL_ID, userOid, rollOid)) {
+      return;
+   }
+
+   // these get printed out by the calling function first, and are ordered / treated specially
+   if (!printSpecialRoll &&
+       (sobBsonOidFieldEqual(sob, SOB_USER, SOB_USER_PUBLIC_ROLL_ID, userOid, rollOid) ||
+       sobBsonOidFieldEqual(sob, SOB_USER, SOB_USER_WATCH_LATER_ROLL_ID, userOid, rollOid)))
+   {
+      return;
+   }
+
+   mrjsonStartNamelessObject(context);
+
    static sobField rollAttributes[] = {
       SOB_ROLL_ID,
       SOB_ROLL_COLLABORATIVE,
@@ -147,19 +193,71 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
                                     SOB_ROLL_CREATOR_THUMBNAIL_URL,
                                     "thumbnail_url");
 
-   // TODO: following_user_count, followed_at
+   // sobPrintArrayAttributeCountWithKey(context,
+   //                                    roll,
+   //                                    SOB_ROLL_FOLLOWING_USERS,
+   //                                    "following_user_count");
+
+   // bson *rollFollowing;
+   // sobGetBsonForArrayObjectWithOidField(context,
+   //                                       
+
+   // sobPrintOidGenerationTimeSinceEpochWithKey(context,
+   //                                            rollFollowing,
+   //                                            SOB_ROLL_FOLLOWING_ID,
+   //                                            "followed_at");
+   // 
+   mrjsonEndObject(context);
 }
 
 void printJsonOutput(sobContext sob)
 {
+   // get rolls
+   cvector rolls = cvectorAlloc(sizeof(bson *));
+   sobGetBsonVector(sob, SOB_ROLL, rolls);
+
    // allocate context; match Ruby API "status" and "result" response syntax
    mrjsonContext context = mrjsonAllocContext(sobGetEnvironment(sob) != SOB_PRODUCTION);
    mrjsonStartResponse(context); 
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartArray(context, "result");
 
-   // TODO: print all rolls
-   // printJsonRoll(sob, context, roll);
+   bson *userBson;
+   bson *publicRoll;
+   bson *watchLaterRoll;
+
+   int publicRollStatus = FALSE;
+   int watchLaterRollStatus = FALSE;
+
+   int userStatus = sobGetBsonByOid(sob, SOB_USER, userOid, &userBson);
+
+   if (userStatus) {
+      publicRollStatus = sobGetBsonByOidField(sob, 
+                                              SOB_ROLL,
+                                              userBson,
+                                              SOB_USER_PUBLIC_ROLL_ID,
+                                              &publicRoll);
+   
+      watchLaterRollStatus = sobGetBsonByOidField(sob, 
+                                                  SOB_ROLL,
+                                                  userBson,
+                                                  SOB_USER_WATCH_LATER_ROLL_ID,
+                                                  &watchLaterRoll);
+   }
+
+   // first 2 rolls are always the user public roll and the user watch later roll
+   if (publicRollStatus) {
+      printJsonRoll(sob, context, publicRoll, TRUE);
+   } 
+
+   if (watchLaterRollStatus) {
+      printJsonRoll(sob, context, watchLaterRoll, TRUE);
+   } 
+
+   // iterate backwards so we see rolls in order of most recently followed
+   for (int i = (cvectorCount(rolls) - 1); i >= 0; i--) {
+      printJsonRoll(sob, context, *(bson **)cvectorGetElement(rolls, i), FALSE);
+   }
 
    mrjsonEndArray(context);
 
@@ -178,33 +276,22 @@ void printJsonOutput(sobContext sob)
  */
 int loadData(sobContext sob)
 {
-//   bson_oid_t userOid;
+   cvector rollOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector userOids = cvectorAlloc(sizeof(bson_oid_t));
 
-//   cvector rollOids = cvectorAlloc(sizeof(bson_oid_t));
-//   cvector userOids = cvectorAlloc(sizeof(bson_oid_t));
+   userOid = sobGetUniqueOidByStringField(sob,
+                                          SOB_USER,
+                                          SOB_USER_DOWNCASE_NICKNAME,
+                                          options.user);
 
-   // first we get the user id for the target user (passed in as an option)
-//   userOid = sobGetUniqueOidByStringField(sob,
-//                                          SOB_USER,
-//                                          SOB_USER_DOWNCASE_NICKNAME,
-//                                          options.user);
+   cvectorAddElement(userOids, &userOid);
+   sobLoadAllById(sob, SOB_USER, userOids);
 
-   // load all frames with roll oid
-//   sobLoadAllByOidField(sob,
-//                        SOB_FRAME, 
-//                        SOB_FRAME_ROLL_ID,
-//                        userOid, // TODO: fix
-//                        0,
-//                        0,
-//                        -1);
-//
-//   sobLoadAllById(sob, SOB_ROLL, rollOids);
+   sobGetOidVectorFromObjectArrayField(sob, SOB_USER, SOB_USER_ROLL_FOLLOWINGS, SOB_ROLL_FOLLOWING_ROLL_ID, rollOids);
+   sobLoadAllById(sob, SOB_ROLL, rollOids);
 
-   // and frames have references to everything else, so we load it all up...
-//   sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_ROLL_ID, rollOids);
-//   sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_CREATOR_ID, userOids);
-//   sobLoadAllById(sob, SOB_ROLL, rollOids);
-//   sobLoadAllById(sob, SOB_USER, userOids);
+   sobGetOidVectorFromObjectField(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, userOids);
+   sobLoadAllById(sob, SOB_USER, userOids); 
 
    return TRUE;
 }

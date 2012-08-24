@@ -317,7 +317,7 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
 
 void printJsonOutput(sobContext sob)
 {
-   // get dashboard entries; we'll iterate ourselves for the ordering hack (see below)
+   // get dashboard entries
    cvector dashboardEntries = cvectorAlloc(sizeof(bson *));
 
    sobGetBsonVector(sob, SOB_DASHBOARD_ENTRY, dashboardEntries);
@@ -328,7 +328,6 @@ void printJsonOutput(sobContext sob)
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartArray(context, "result");
 
-   // hack to match ordering of Ruby API - reverse iterate over map order returned
    for (unsigned int i = 0; i < cvectorCount(dashboardEntries); i++) {
       mrjsonStartNamelessObject(context);
       printJsonDashboardEntry(sob, context, *(bson **)cvectorGetElement(dashboardEntries, i));

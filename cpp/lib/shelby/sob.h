@@ -97,6 +97,12 @@ void sobGetOidVectorFromObjectField(sobContext context,
                                     sobField field,
                                     cvector result);
 
+void sobGetOidVectorFromObjectArrayField(sobContext context,
+                                         sobType type,
+                                         sobField arrayField,
+                                         sobField subObjectOidField,
+                                         cvector result);
+
 void sobLoadAllById(sobContext context,
                     sobType type,
                     cvector oids);
@@ -147,6 +153,25 @@ int sobBsonBoolField(sobContext context,
                      sobType objectType,
                      sobField fieldToCheck,
                      bson_oid_t objectOid);
+
+int sobBsonIntField(sobContext context,
+                    sobType objectType,
+                    sobField fieldToCheck,
+                    bson_oid_t objectOid);
+
+int sobBsonOidField(sobContext context,
+                    sobType objectType,
+                    sobField fieldToCheck,
+                    bson* object,
+                    bson_oid_t *output);
+
+int sobOidArrayFieldContainsOid(sobContext context,
+                                sobType objectType,
+                                sobField fieldToCheck,
+                                bson *object,
+                                bson_oid_t oidToCheck);
+
+int sobBsonOidEqual(bson_oid_t oid1, bson_oid_t oid2);
 
 #ifdef __cplusplus
 }
