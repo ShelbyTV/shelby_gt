@@ -18,9 +18,9 @@ class V1::FrameMetalController < ActionController::Metal
        limit = 500 if limit.to_i > 500
 
        if (current_user)
-         fast_stdout = `cpp/bin/frameIndex -u #{current_user.id} -r #{params[:roll_id]} -l #{@limit} -s #{skip} -e #{Rails.env}`
+         fast_stdout = `cpp/bin/frameIndex -u #{current_user.id} -r #{params[:roll_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
        else
-         fast_stdout = `cpp/bin/frameIndex -r #{params[:roll_id]} -l #{@limit} -s #{skip} -e #{Rails.env}`
+         fast_stdout = `cpp/bin/frameIndex -r #{params[:roll_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
        end
        fast_status = $?.to_i
 
