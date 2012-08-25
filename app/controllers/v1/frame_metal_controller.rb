@@ -55,8 +55,6 @@ class V1::FrameMetalController < ActionController::Metal
            
        skip = params[:skip] ? params[:skip] : 0
 
-       Rails.logger.info params
-
        fast_stdout = `cpp/bin/frameIndex -u #{params[:user_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
        fast_status = $?.to_i
 
