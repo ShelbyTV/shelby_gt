@@ -26,12 +26,12 @@ class V1::DashboardEntriesMetalController < ActionController::Metal
 
        if (fast_status == 0)
          self.status = 200
-         self.content_type = "text/plain"
+         self.content_type = "application/json"
          self.response_body = "#{fast_stdout}"
        else 
          self.status = 404
-         self.content_type = "text/plain"
-         self.response_body = "fast index failed with status #{fast_status}"
+         self.content_type = "application/json"
+         self.response_body = "{\"status\" : 404, \"message\" : \"fast index failed with status #{fast_status}\"}"
        end
     end
   end
