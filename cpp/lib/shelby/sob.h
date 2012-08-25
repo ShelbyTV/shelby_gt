@@ -138,6 +138,11 @@ void sobPrintSubobjectArray(sobContext sob,
                             sobField subobjectOidField,
                             sobSubobjectPrintCallback);
 
+void sobPrintArrayAttributeCountWithKey(mrjsonContext context,
+                                        bson *object,
+                                        sobField objectArrayField,
+                                        const char *key);
+
 void sobPrintFieldIfBoolField(mrjsonContext context,
                               bson *object,
                               sobField fieldToPrint,
@@ -157,10 +162,10 @@ int sobBsonBoolField(sobContext context,
 int sobBsonIntField(sobContext context,
                     sobType objectType,
                     sobField fieldToCheck,
-                    bson_oid_t objectOid);
+                    bson_oid_t objectOid,
+                    int *result);
 
-int sobBsonOidField(sobContext context,
-                    sobType objectType,
+int sobBsonOidField(sobType objectType,
                     sobField fieldToCheck,
                     bson* object,
                     bson_oid_t *output);
@@ -172,6 +177,19 @@ int sobOidArrayFieldContainsOid(sobContext context,
                                 bson_oid_t oidToCheck);
 
 int sobBsonOidEqual(bson_oid_t oid1, bson_oid_t oid2);
+
+int sobGetBsonForArrayObjectWithOidField(sobContext sob,
+                                         sobType objectType,
+                                         bson_oid_t objectOid,
+                                         sobField objectField,
+                                         sobField arrayObjectField,
+                                         bson_oid_t oidToCheck,
+                                         bson *output);
+
+void sobPrintOidGenerationTimeSinceEpochWithKey(mrjsonContext context,
+                                                bson *object,
+                                                sobField objectField,
+                                                char *key);
 
 #ifdef __cplusplus
 }

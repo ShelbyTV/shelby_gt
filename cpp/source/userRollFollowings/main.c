@@ -124,13 +124,23 @@ int rollPostable(sobContext sob, bson_oid_t rollOid, bson *roll)
 void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, int printSpecialRoll)
 {
    bson_oid_t rollOid;
-   sobBsonOidField(sob, SOB_ROLL, SOB_ROLL_ID, roll, &rollOid);
+   sobBsonOidField(SOB_ROLL, SOB_ROLL_ID, roll, &rollOid);
 
    if (options.postable && !rollPostable(sob, rollOid, roll)) {
       return;
    }
    
-   const int rollType = sobBsonIntField(sob, SOB_ROLL, SOB_ROLL_ROLL_TYPE, rollOid);
+   int rollType = 10;
+   int status = sobBsonIntField(sob, SOB_ROLL, SOB_ROLL_ROLL_TYPE, rollOid, &rollType);
+   if (!status) {
+      /*
+       * this is supposed to be the default; rails version was dumb about this...
+       * basically, rails roll model says 10 is the default. but following API was
+       * only querying for rolls with roll_type *NOT* 10 or 11. so if roll_type was missing
+       * in the DB, it would still get printed out.
+       */
+      rollType = 10; 
+   }
 
    // 10 is generic special roll, and 11 is special_public (faux user), types we don't display anymore
    if (10 == rollType || 11 == rollType) {
@@ -176,11 +186,12 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, int printS
                             SOB_ROLL_SUBDOMAIN_ACTIVE);
 
    bson *rollCreator;
-   int status = sobGetBsonByOidField(sob, 
-                                     SOB_USER,
-                                     roll,
-                                     SOB_ROLL_CREATOR_ID,
-                                     &rollCreator);
+   status = sobGetBsonByOidField(sob, 
+                                 SOB_USER,
+                                 roll,
+                                 SOB_ROLL_CREATOR_ID,
+                                 &rollCreator);
+
    if (status) {
       sobPrintAttributeWithKeyOverride(context,
                                        rollCreator,
@@ -193,20 +204,25 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, int printS
                                     SOB_ROLL_CREATOR_THUMBNAIL_URL,
                                     "thumbnail_url");
 
-   // sobPrintArrayAttributeCountWithKey(context,
-   //                                    roll,
-   //                                    SOB_ROLL_FOLLOWING_USERS,
-   //                                    "following_user_count");
+   sobPrintArrayAttributeCountWithKey(context,
+                                      roll,
+                                      SOB_ROLL_FOLLOWING_USERS,
+                                      "following_user_count");
 
-   // bson *rollFollowing;
-   // sobGetBsonForArrayObjectWithOidField(context,
-   //                                       
+   bson rollFollowing;
+   sobGetBsonForArrayObjectWithOidField(sob,
+                                        SOB_USER,
+                                        userOid,
+                                        SOB_USER_ROLL_FOLLOWINGS,
+                                        SOB_ROLL_FOLLOWING_ROLL_ID,
+                                        rollOid,
+                                        &rollFollowing);
 
-   // sobPrintOidGenerationTimeSinceEpochWithKey(context,
-   //                                            rollFollowing,
-   //                                            SOB_ROLL_FOLLOWING_ID,
-   //                                            "followed_at");
-   // 
+   sobPrintOidGenerationTimeSinceEpochWithKey(context,
+                                              &rollFollowing,
+                                              SOB_ROLL_FOLLOWING_ID,
+                                              "followed_at");
+   
    mrjsonEndObject(context);
 }
 

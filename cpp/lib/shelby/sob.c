@@ -642,6 +642,29 @@ void sobPrintSubobjectArray(sobContext sob,
    mrjsonEndArray(context); 
 }
 
+void sobPrintArrayAttributeCountWithKey(mrjsonContext context,
+                                        bson *object,
+                                        sobField objectArrayField,
+                                        const char *key)
+{
+   bson arrayBson;
+   const char *objectArrayDBName = sobFieldDBName[objectArrayField];
+
+   bson_iterator iterator;
+   bson_find(&iterator, object, objectArrayDBName);
+
+   bson_iterator_subobject(&iterator, &arrayBson);
+   bson_iterator_from_buffer(&iterator, arrayBson.data);
+
+   unsigned int count = 0;
+
+   while (bson_iterator_next(&iterator)) {
+      count++;
+   }
+   
+   mrjsonIntAttribute(context, key, count);
+}
+
 int sobBsonBoolField(sobContext context,
                      sobType objectType,
                      sobField fieldToCheck,
@@ -669,11 +692,11 @@ int sobBsonBoolField(sobContext context,
    return bson_iterator_bool(&iterator);
 }
 
-// hacky, returns -1 if int not found. could do pointer-based output var, but seems ugly
 int sobBsonIntField(sobContext context,
                     sobType objectType,
                     sobField fieldToCheck,
-                    bson_oid_t objectOid)
+                    bson_oid_t objectOid,
+                    int *result)
 {
    bson_iterator iterator;
    bson_type type;
@@ -686,19 +709,19 @@ int sobBsonIntField(sobContext context,
                         objectOid,
                         &object))
    {
-      return -1;
+      return FALSE;
    }
 
    type = bson_find(&iterator, object, sobFieldDBName[fieldToCheck]);
    if (BSON_INT != type) {
-      return -1;
+      return FALSE;
    }
 
-   return bson_iterator_int(&iterator);
+   *result = bson_iterator_int(&iterator);
+   return TRUE;
 }
 
-int sobBsonOidField(sobContext context,
-                    sobType objectType,
+int sobBsonOidField(sobType objectType,
                     sobField fieldToCheck,
                     bson* object,
                     bson_oid_t *output)
@@ -795,5 +818,74 @@ void sobGetOidVectorFromObjectArrayField(sobContext context,
   }
 }
 
+int sobGetBsonForArrayObjectWithOidField(sobContext sob,
+                                         sobType objectType,
+                                         bson_oid_t objectOid,
+                                         sobField objectField,
+                                         sobField arrayObjectField,
+                                         bson_oid_t oidToCheck,
+                                         bson *result)
+{
+   cvector objectVector = sob->objectVector[objectType];
+   bson *object = NULL;
+   bson_type type;
+   bson_iterator iterator;
 
+   for (unsigned int i = 0; i < cvectorCount(objectVector); i++) {
+      object = *(bson **)cvectorGetElement(objectVector, i);
+
+      if ((type = bson_find(&iterator, object, "_id"))) {
+         assert(BSON_OID == type);
+         if (sobBsonOidEqual(*bson_iterator_oid(&iterator), objectOid)) {
+            break;
+         }
+      }
+   }
+
+   if (NULL == object) {
+      return FALSE;
+   }
+
+   type = bson_find(&iterator, object, sobFieldDBName[objectField]);
+
+   if (type != BSON_ARRAY) {
+      return FALSE;
+   }
+ 
+   bson arrayBson;
+   bson_iterator_subobject(&iterator, &arrayBson);
+   bson_iterator_from_buffer(&iterator, arrayBson.data);
+ 
+   while (bson_iterator_next(&iterator)) {
+      bson element;
+      bson_iterator subIterator;
+      bson_iterator_subobject(&iterator, &element);
+ 
+      type = bson_find(&subIterator, &element, sobFieldDBName[arrayObjectField]);
+      if (type != BSON_OID) {
+         continue;
+      }
+ 
+      if (sobBsonOidEqual(*bson_iterator_oid(&subIterator), oidToCheck)) {
+         *result = element;
+         return TRUE;
+      }
+   }
+
+   return FALSE;
+}
+
+void sobPrintOidGenerationTimeSinceEpochWithKey(mrjsonContext context,
+                                               bson *object,
+                                               sobField objectField,
+                                               char *key)
+{
+   bson_iterator iterator;
+
+   if (bson_find(&iterator, object, "_id" )) {
+      mrjsonIntAttribute(context, key, bson_oid_generated_time(bson_iterator_oid(&iterator)));
+   } else {
+      mrjsonIntAttribute(context, key, 0);
+   }
+}
 
