@@ -4,6 +4,9 @@
 
 #include "cvector.h"
 
+#define TRUE 1
+#define FALSE 0
+
 typedef struct cvectorStruct {
 
    void *elements;
@@ -78,5 +81,45 @@ void *cvectorGetElement(const cvector vec, const unsigned int index)
    assert(index < vec->elementsCount);
 
    return vec->elements + (index * vec->elementSize);
+}
+
+void cvectorSwapElements(cvector vec, unsigned int one, unsigned int two)
+{
+   assert(vec);
+   assert(one < vec->elementsCount);
+   assert(two < vec->elementsCount);
+
+   char tmp[vec->elementSize];
+
+   memcpy(tmp,                                      // dest
+          vec->elements + (one * vec->elementSize), // source
+          vec->elementSize);
+
+   memcpy(vec->elements + (one * vec->elementSize), // dest
+          vec->elements + (two * vec->elementSize), // source
+          vec->elementSize);
+
+   memcpy(vec->elements + (two * vec->elementSize), // dest
+          tmp,                                      // source
+          vec->elementSize);
+}
+
+void cvectorSort(cvector vec, cvectorCompareElementCallback compare)
+{
+   if (cvectorCount(vec) <= 1) {
+      return;
+   }
+
+   // simple swap sort algorithm; not the fastest, but probably doesn't matter for our vectors
+   int swappedElement;
+   do {
+      swappedElement = FALSE;
+      for (unsigned int i = 0; i < cvectorCount(vec) - 1; i++) {
+         if (!compare(cvectorGetElement(vec, i), cvectorGetElement(vec, i + 1))) {
+            cvectorSwapElements(vec, i, i + 1);
+            swappedElement = TRUE;
+         }
+      }
+   } while (swappedElement);
 }
 

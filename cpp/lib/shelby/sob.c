@@ -875,17 +875,14 @@ int sobGetBsonForArrayObjectWithOidField(sobContext sob,
    return FALSE;
 }
 
-void sobPrintOidGenerationTimeSinceEpochWithKey(mrjsonContext context,
-                                               bson *object,
-                                               sobField objectField,
-                                               char *key)
+unsigned int sobGetOidGenerationTimeSinceEpoch(bson *object)
 {
    bson_iterator iterator;
 
    if (bson_find(&iterator, object, "_id" )) {
-      mrjsonIntAttribute(context, key, bson_oid_generated_time(bson_iterator_oid(&iterator)));
+      return bson_oid_generated_time(bson_iterator_oid(&iterator));
    } else {
-      mrjsonIntAttribute(context, key, 0);
+      return 0;
    }
 }
 

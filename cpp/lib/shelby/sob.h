@@ -186,10 +186,7 @@ int sobGetBsonForArrayObjectWithOidField(sobContext sob,
                                          bson_oid_t oidToCheck,
                                          bson *output);
 
-void sobPrintOidGenerationTimeSinceEpochWithKey(mrjsonContext context,
-                                                bson *object,
-                                                sobField objectField,
-                                                char *key);
+unsigned int sobGetOidGenerationTimeSinceEpoch(bson *object);
 
 #ifdef __cplusplus
 }

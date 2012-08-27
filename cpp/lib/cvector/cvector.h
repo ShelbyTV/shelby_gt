@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 typedef struct cvectorStruct *cvector;
+typedef int (*cvectorCompareElementCallback)(void *, void *);
 
 cvector cvectorAlloc(const unsigned int elementSize);
 void cvectorFree(cvector vec);
@@ -15,6 +16,8 @@ unsigned int cvectorElementSize(const cvector vec);
 
 void cvectorAddElement(cvector vec, const void *element);
 void *cvectorGetElement(const cvector vec, const unsigned int index);
+
+void cvectorSort(cvector vec, cvectorCompareElementCallback compare);
 
 #ifdef __cplusplus
 }

@@ -13,12 +13,17 @@
 #define FALSE 0
 
 static struct options {
-        char* user;
-	int postable;
-	char *environment;
+   char* user;
+   int postable;
+   char *environment;
 } options;
 
 bson_oid_t userOid;
+
+typedef struct rollSortable {
+   bson *roll;
+   unsigned int followedAt;
+} rollSortable; 
 
 struct timeval beginTime;
 
@@ -121,13 +126,13 @@ int rollPostable(sobContext sob, bson_oid_t rollOid, bson *roll)
    return FALSE;
 }
 
-void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, int printSpecialRoll)
+int shouldPrintRegularRoll(sobContext sob, bson *roll)
 {
    bson_oid_t rollOid;
    sobBsonOidField(SOB_ROLL, SOB_ROLL_ID, roll, &rollOid);
 
    if (options.postable && !rollPostable(sob, rollOid, roll)) {
-      return;
+      return FALSE;
    }
    
    int rollType = 10;
@@ -144,22 +149,26 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, int printS
 
    // 10 is generic special roll, and 11 is special_public (faux user), types we don't display anymore
    if (10 == rollType || 11 == rollType) {
-      return;
+      return FALSE;
    }
 
    // we don't use the upvoted roll anymore
    if (sobBsonOidFieldEqual(sob, SOB_USER, SOB_USER_UPVOTED_ROLL_ID, userOid, rollOid)) {
-      return;
+      return FALSE;
    }
 
    // these get printed out by the calling function first, and are ordered / treated specially
-   if (!printSpecialRoll &&
-       (sobBsonOidFieldEqual(sob, SOB_USER, SOB_USER_PUBLIC_ROLL_ID, userOid, rollOid) ||
-       sobBsonOidFieldEqual(sob, SOB_USER, SOB_USER_WATCH_LATER_ROLL_ID, userOid, rollOid)))
+   if (sobBsonOidFieldEqual(sob, SOB_USER, SOB_USER_PUBLIC_ROLL_ID, userOid, rollOid) ||
+       sobBsonOidFieldEqual(sob, SOB_USER, SOB_USER_WATCH_LATER_ROLL_ID, userOid, rollOid))
    {
-      return;
+      return FALSE;
    }
 
+   return TRUE;
+}
+
+void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, unsigned int followedAtTime)
+{
    mrjsonStartNamelessObject(context);
 
    static sobField rollAttributes[] = {
@@ -186,11 +195,11 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, int printS
                             SOB_ROLL_SUBDOMAIN_ACTIVE);
 
    bson *rollCreator;
-   status = sobGetBsonByOidField(sob, 
-                                 SOB_USER,
-                                 roll,
-                                 SOB_ROLL_CREATOR_ID,
-                                 &rollCreator);
+   int status = sobGetBsonByOidField(sob, 
+                                     SOB_USER,
+                                     roll,
+                                     SOB_ROLL_CREATOR_ID,
+                                     &rollCreator);
 
    if (status) {
       sobPrintAttributeWithKeyOverride(context,
@@ -209,6 +218,16 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, int printS
                                       SOB_ROLL_FOLLOWING_USERS,
                                       "following_user_count");
 
+   mrjsonIntAttribute(context, "followed_at", followedAtTime);
+
+   mrjsonEndObject(context);
+}
+
+int getRollFollowedAtTime(sobContext sob, bson *roll)
+{
+   bson_oid_t rollOid;
+   sobBsonOidField(SOB_ROLL, SOB_ROLL_ID, roll, &rollOid);
+
    bson rollFollowing;
    sobGetBsonForArrayObjectWithOidField(sob,
                                         SOB_USER,
@@ -218,12 +237,15 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, int printS
                                         rollOid,
                                         &rollFollowing);
 
-   sobPrintOidGenerationTimeSinceEpochWithKey(context,
-                                              &rollFollowing,
-                                              SOB_ROLL_FOLLOWING_ID,
-                                              "followed_at");
-   
-   mrjsonEndObject(context);
+   return sobGetOidGenerationTimeSinceEpoch(&rollFollowing);
+}
+
+int rollSortByFollowedAt(void *one, void *two)
+{
+   rollSortable *rsOne = (rollSortable *)one;
+   rollSortable *rsTwo = (rollSortable *)two;
+
+   return (rsOne->followedAt > rsTwo->followedAt);
 }
 
 void printJsonOutput(sobContext sob)
@@ -263,16 +285,35 @@ void printJsonOutput(sobContext sob)
 
    // first 2 rolls are always the user public roll and the user watch later roll
    if (publicRollStatus) {
-      printJsonRoll(sob, context, publicRoll, TRUE);
+      printJsonRoll(sob, context, publicRoll, getRollFollowedAtTime(sob, publicRoll));
    } 
 
    if (watchLaterRollStatus) {
-      printJsonRoll(sob, context, watchLaterRoll, TRUE);
+      printJsonRoll(sob, context, watchLaterRoll, getRollFollowedAtTime(sob, watchLaterRoll));
    } 
 
-   // iterate backwards so we see rolls in order of most recently followed
-   for (int i = (cvectorCount(rolls) - 1); i >= 0; i--) {
-      printJsonRoll(sob, context, *(bson **)cvectorGetElement(rolls, i), FALSE);
+   cvector rollSortVec = cvectorAlloc(sizeof(rollSortable));
+
+   // create sortable vector of rolls we should print
+   for (int i = 0; i < cvectorCount(rolls); i++) {
+
+      bson *roll = *(bson **)cvectorGetElement(rolls, i);
+
+      if (shouldPrintRegularRoll(sob, roll)) {
+
+         rollSortable *rs = malloc(sizeof(rollSortable));
+         rs->roll = roll;
+         rs->followedAt = getRollFollowedAtTime(sob, roll);
+
+         cvectorAddElement(rollSortVec, rs);
+      }
+   }
+
+   cvectorSort(rollSortVec, &rollSortByFollowedAt);
+   
+   for (int i = 0; i < cvectorCount(rollSortVec); i++) {
+      rollSortable *rs = (rollSortable *)cvectorGetElement(rollSortVec, i);
+      printJsonRoll(sob, context, rs->roll, rs->followedAt);
    }
 
    mrjsonEndArray(context);
