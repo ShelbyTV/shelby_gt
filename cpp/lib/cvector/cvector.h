@@ -6,6 +6,12 @@ extern "C" {
 #endif
 
 typedef struct cvectorStruct *cvector;
+
+/*
+ * < should return -1
+ * = should return 0
+ * > should return 1
+ */
 typedef int (*cvectorCompareElementCallback)(void *, void *);
 
 cvector cvectorAlloc(const unsigned int elementSize);

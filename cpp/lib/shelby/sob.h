@@ -171,7 +171,7 @@ int sobBsonOidField(sobType objectType,
                     bson_oid_t *output);
 
 int sobOidArrayFieldContainsOid(sobContext context,
-                                sobType objectType,
+                                sobField arrayField,
                                 sobField fieldToCheck,
                                 bson *object,
                                 bson_oid_t oidToCheck);
@@ -186,7 +186,7 @@ int sobGetBsonForArrayObjectWithOidField(sobContext sob,
                                          bson_oid_t oidToCheck,
                                          bson *output);
 
-unsigned int sobGetOidGenerationTimeSinceEpoch(bson *object);
+unsigned int sobGetOidGenerationTimeSinceEpoch(bson *object, bson_timestamp_t *ts);
 
 #ifdef __cplusplus
 }

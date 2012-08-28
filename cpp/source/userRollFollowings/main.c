@@ -22,7 +22,7 @@ bson_oid_t userOid;
 
 typedef struct rollSortable {
    bson *roll;
-   unsigned int followedAt;
+   bson_timestamp_t followedAt;
 } rollSortable; 
 
 struct timeval beginTime;
@@ -122,7 +122,7 @@ int rollPostable(sobContext sob, bson_oid_t rollOid, bson *roll)
       return FALSE;
    } else if (sobBsonBoolField(sob, SOB_ROLL, SOB_ROLL_PUBLIC, rollOid)) {
       return TRUE;
-   } else if (sobOidArrayFieldContainsOid(sob, SOB_ROLL, SOB_ROLL_FOLLOWING_USERS, roll, userOid)) {
+   } else if (sobOidArrayFieldContainsOid(sob, SOB_ROLL_FOLLOWING_USERS, SOB_FOLLOWING_USER_USER_ID, roll, userOid)) {
       return TRUE;
    }
 
@@ -226,7 +226,7 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, unsigned i
    mrjsonEndObject(context);
 }
 
-int getRollFollowedAtTime(sobContext sob, bson *roll)
+int getRollFollowedAtTime(sobContext sob, bson *roll, bson_timestamp_t *ts)
 {
    bson_oid_t rollOid;
    sobBsonOidField(SOB_ROLL, SOB_ROLL_ID, roll, &rollOid);
@@ -240,7 +240,7 @@ int getRollFollowedAtTime(sobContext sob, bson *roll)
                                         rollOid,
                                         &rollFollowing);
 
-   return sobGetOidGenerationTimeSinceEpoch(&rollFollowing);
+   return sobGetOidGenerationTimeSinceEpoch(&rollFollowing, ts);
 }
 
 int rollSortByFollowedAt(void *one, void *two)
@@ -248,7 +248,16 @@ int rollSortByFollowedAt(void *one, void *two)
    rollSortable *rsOne = (rollSortable *)one;
    rollSortable *rsTwo = (rollSortable *)two;
 
-   return (rsOne->followedAt > rsTwo->followedAt);
+   if ((rsOne->followedAt.t == rsTwo->followedAt.t) &&
+       (rsOne->followedAt.i == rsTwo->followedAt.i)) {
+      return 0;
+   } else if ((rsOne->followedAt.t < rsTwo->followedAt.t) ||
+              (rsOne->followedAt.t == rsTwo->followedAt.t &&
+               rsOne->followedAt.i < rsTwo->followedAt.i)) {
+      return 1;
+   } else {
+      return -1;
+   }
 }
 
 void printJsonOutput(sobContext sob)
@@ -288,11 +297,11 @@ void printJsonOutput(sobContext sob)
 
    // first 2 rolls are always the user public roll and the user watch later roll
    if (publicRollStatus) {
-      printJsonRoll(sob, context, publicRoll, getRollFollowedAtTime(sob, publicRoll));
+      printJsonRoll(sob, context, publicRoll, getRollFollowedAtTime(sob, publicRoll, NULL));
    } 
 
    if (watchLaterRollStatus) {
-      printJsonRoll(sob, context, watchLaterRoll, getRollFollowedAtTime(sob, watchLaterRoll));
+      printJsonRoll(sob, context, watchLaterRoll, getRollFollowedAtTime(sob, watchLaterRoll, NULL));
    } 
 
    cvector rollSortVec = cvectorAlloc(sizeof(rollSortable));
@@ -306,7 +315,7 @@ void printJsonOutput(sobContext sob)
 
          rollSortable *rs = malloc(sizeof(rollSortable));
          rs->roll = roll;
-         rs->followedAt = getRollFollowedAtTime(sob, roll);
+         getRollFollowedAtTime(sob, roll, &(rs->followedAt));
 
          cvectorAddElement(rollSortVec, rs);
       }
@@ -316,7 +325,7 @@ void printJsonOutput(sobContext sob)
    
    for (int i = 0; i < cvectorCount(rollSortVec); i++) {
       rollSortable *rs = (rollSortable *)cvectorGetElement(rollSortVec, i);
-      printJsonRoll(sob, context, rs->roll, rs->followedAt);
+      printJsonRoll(sob, context, rs->roll, rs->followedAt.t);
    }
 
    mrjsonEndArray(context);

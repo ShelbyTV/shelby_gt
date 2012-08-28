@@ -110,16 +110,19 @@ void cvectorSort(cvector vec, cvectorCompareElementCallback compare)
       return;
    }
 
-   // simple swap sort algorithm; not the fastest, but probably doesn't matter for our vectors
+   // simple bubble sort algorithm; not the fastest, but probably doesn't matter for our vectors
    int swappedElement;
+   int count = 0;
    do {
       swappedElement = FALSE;
       for (unsigned int i = 0; i < cvectorCount(vec) - 1; i++) {
-         if (!compare(cvectorGetElement(vec, i), cvectorGetElement(vec, i + 1))) {
+         if (compare(cvectorGetElement(vec, i), cvectorGetElement(vec, i + 1)) > 0) {
             cvectorSwapElements(vec, i, i + 1);
             swappedElement = TRUE;
          }
       }
+      count++;
+      assert(count <= cvectorCount(vec)); // should always be true, given compare assert above
    } while (swappedElement);
 }
 

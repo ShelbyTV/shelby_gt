@@ -14,14 +14,6 @@ class V1::DashboardEntriesMetalController < ActionController::Metal
   # @param [Optional, Integer] skip The number of entries to skip (default 0)
   def index
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['index']) do
-      if current_user.id.to_s != params[:id]
-        self.status = 403
-        self.content_type = "application/json"
-        self.response_body = "{\"status\" : 403, \"message\" : \"you are not authorized to view that users rolls.""}"
-        return
-      end 
-
-
       # default params
       limit = params[:limit] ? params[:limit].to_i : 20
       # put an upper limit on the number of entries returned

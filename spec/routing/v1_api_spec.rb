@@ -58,7 +58,7 @@ describe V1::UserController do
 
     it "routes for GET users rolls following" do
       { :get => "/v1/user/1/rolls/following" }.should route_to(
-        :controller => "v1/user",
+        :controller => "v1/user_metal",
         :action => "roll_followings",
         :format => "json",
         :id => "1"
@@ -67,7 +67,7 @@ describe V1::UserController do
     
     it "routes for GET users rolls collaborating" do
       { :get => "/v1/user/1/rolls/postable" }.should route_to(
-        :controller => "v1/user",
+        :controller => "v1/user_metal",
         :action => "roll_followings",
         :format => "json",
         :id => "1",

@@ -27,7 +27,8 @@
    VIDEO_PROPERTIES(apply)           \
    DASHBOARD_ENTRY_PROPERTIES(apply) \
    MESSAGE_PROPERTIES(apply)         \
-   ROLL_FOLLOWING_PROPERTIES(apply)
+   ROLL_FOLLOWING_PROPERTIES(apply)  \
+   FOLLOWING_USER_PROPERTIES(apply)
 
 #define USER_PROPERTIES(apply)                                                                 \
    apply(USER , id                   ,  ID                   ,  OID    , _id                 ) \
@@ -138,8 +139,12 @@
    apply(MESSAGE , text           , TEXT           , STRING , h   ) \
    apply(MESSAGE , public         , PUBLIC         , BOOL   , i   )
 
-#define ROLL_FOLLOWING_PROPERTIES(apply)           \
+#define ROLL_FOLLOWING_PROPERTIES(apply)                  \
    apply(ROLL_FOLLOWING , id      , ID      , OID , _id ) \
-   apply(ROLL_FOLLOWING , roll_id , ROLL_ID , OID , a   ) \
+   apply(ROLL_FOLLOWING , roll_id , ROLL_ID , OID , a   )
+
+#define FOLLOWING_USER_PROPERTIES(apply)                  \
+   apply(FOLLOWING_USER , id      , ID      , OID , _id ) \
+   apply(FOLLOWING_USER , user_id , USER_ID , OID , a   )
 
 #endif // __SOB_PROPERTIES_H__

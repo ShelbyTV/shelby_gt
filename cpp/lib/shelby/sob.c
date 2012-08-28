@@ -758,13 +758,13 @@ void sobPrintFieldIfBoolField(mrjsonContext context,
 }
 
 int sobOidArrayFieldContainsOid(sobContext context,
-                                sobType objectType,
+                                sobField arrayField,
                                 sobField fieldToCheck,
                                 bson *object,
                                 bson_oid_t oidToCheck)
 {
    bson arrayBson;
-   const char *objectArrayDBName = sobFieldDBName[fieldToCheck];
+   const char *objectArrayDBName = sobFieldDBName[arrayField];
 
    bson_iterator iterator;
    bson_find(&iterator, object, objectArrayDBName);
@@ -773,7 +773,17 @@ int sobOidArrayFieldContainsOid(sobContext context,
    bson_iterator_from_buffer(&iterator, arrayBson.data);
 
    while (bson_iterator_next(&iterator)) {
-      if (sobBsonOidEqual(*bson_iterator_oid(&iterator), oidToCheck)) {
+       bson element;
+       bson_type type;
+       bson_iterator subIterator;
+       bson_iterator_subobject(&iterator, &element);
+
+       type = bson_find(&subIterator, &element, sobFieldDBName[fieldToCheck]);
+       if (type != BSON_OID) {
+          continue;
+       }
+
+      if (sobBsonOidEqual(*bson_iterator_oid(&subIterator), oidToCheck)) {
          return TRUE;
       }
    }
@@ -875,12 +885,25 @@ int sobGetBsonForArrayObjectWithOidField(sobContext sob,
    return FALSE;
 }
 
-unsigned int sobGetOidGenerationTimeSinceEpoch(bson *object)
+bson_timestamp_t sobGetBsonOidTimestamp(bson_oid_t *oid)
+{
+  bson_timestamp_t ts;
+  bson_big_endian32(&ts.t, &oid->ints[0]);
+  bson_big_endian32(&ts.i, &oid->ints[2]);
+  return ts;
+}
+
+unsigned int sobGetOidGenerationTimeSinceEpoch(bson *object, bson_timestamp_t *ts)
 {
    bson_iterator iterator;
 
    if (bson_find(&iterator, object, "_id" )) {
-      return bson_oid_generated_time(bson_iterator_oid(&iterator));
+      if (ts) {
+        *ts = sobGetBsonOidTimestamp(bson_iterator_oid(&iterator));
+        return ts->t;
+      } else {
+        return bson_oid_generated_time(bson_iterator_oid(&iterator));
+      }
    } else {
       return 0;
    }

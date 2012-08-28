@@ -43,33 +43,6 @@ describe V1::UserController do
     end
   end
 
-  describe "GET rolls" do
-    before(:each) do
-      sign_in @u1
-    end
-    
-    it "returns rolls followed of the authed in user" do
-      get :roll_followings, :id => @u1.id, :format => :json
-      assigns(:status).should eq(200)
-      assigns(:rolls).size.should == 2
-    end
-            
-    it "returns 403 if the user is not the authed in user" do
-      u2 = Factory.create(:user, :nickname => "name")
-      get :roll_followings, :id => u2.id, :format => :json
-      assigns(:status).should eq(403)
-    end
-    
-    it "should handle bad roll_rollowings gracefully" do
-      @u1.roll_followings << RollFollowing.new(:roll_id => @u1.id)
-      @u1.save
-      
-      get :roll_followings, :id => @u1.id, :format => :json
-      assigns(:status).should eq(200)
-      assigns(:rolls).size.should == 2
-    end
-  end
-  
   describe "PUT update" do
     before(:each) do
       sign_in @u1
