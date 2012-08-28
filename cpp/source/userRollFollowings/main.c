@@ -113,7 +113,10 @@ unsigned int timeSinceMS(struct timeval begin)
 
 int rollPostable(sobContext sob, bson_oid_t rollOid, bson *roll)
 {
-   if (sobBsonOidEqual(rollOid, userOid)) {
+   bson_oid_t rollCreatorOid;
+   sobBsonOidField(SOB_ROLL, SOB_ROLL_CREATOR_ID, roll, &rollCreatorOid);
+
+   if (sobBsonOidEqual(rollCreatorOid, userOid)) {
       return TRUE;
    } else if (!sobBsonBoolField(sob, SOB_ROLL, SOB_ROLL_COLLABORATIVE, rollOid)) {
       return FALSE;
