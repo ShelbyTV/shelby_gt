@@ -175,6 +175,9 @@ common: &default_settings
   # Certain types of instrumentation such as GC stats will not work if 
   # you are running multi-threaded.  Please let us know.
   # multi_threaded = false
+  
+  # Disable tracing (and ugly puts) on AWS gem
+  disable_aws-s3: true
 
 # Application Environments
 # ------------------------------------------

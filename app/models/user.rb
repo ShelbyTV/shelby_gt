@@ -12,6 +12,8 @@ class User
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::User
   
+  include Paperclip::Glue
+  
   before_validation(:on => :update) { self.ensure_valid_unique_nickname }
   before_save :update_public_roll_title
 
@@ -84,10 +86,18 @@ class User
   #So we downcase the nickname into User and then query based on that (which is now indexed)
   key :nickname,              String, :required => true
   key :downcase_nickname,     String
-  key :user_image,            String
-  key :user_image_original,   String
+  key :user_image,            String  # actual URL provided by service
+  key :user_image_original,   String  # guess of URL to original upload that became user_image
   key :primary_email,         String
   key :encrypted_password,    String, :abbr => :ar
+  
+  # uploadable avatar via paperclip (see config/initializers/paperclip.rb for more info, like how to display the avatar)
+  has_attached_file :avatar, :styles => { :sq192x192 => "192x192#", :sq48x48 => "48x48#" }
+  key :avatar_file_name,      String, :abbr => :at
+  key :avatar_file_size,      String, :abbr => :au
+  key :avatar_content_type,   String, :abbr => :av
+  key :avatar_updated_at,     String, :abbr => :aw
+  
   
   # so we know where a user was created...
   key :server_created_on,     String, :default => "gt"
@@ -113,7 +123,7 @@ class User
   # [twitter, facebook, email, tumblr]
   key :social_tracker,        Array, :default => [0, 0, 0, 0]
 
-  attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original
+  attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original, :avatar
   
   # Arnold does a *shit ton* of user saving, which runs this validation, which turns out to be very expensive 
   # (see shelby_gt/etc/performance/unique_nickname_realtime_profile.gif)
