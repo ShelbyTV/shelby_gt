@@ -56,8 +56,8 @@ ShelbyGt::Application.routes.draw do
       # constraints allows for nicknames that include dots, prevents changing format (we're json only, that's ok).
       get ':id' => 'user#show', :as => :show, :on => :collection, :constraints => { :id => /[^\/]+/ }
       get 'is_token_valid' => 'user#valid_token', :on => :member
-      get 'rolls/following' => 'user#roll_followings', :on => :member
-      get 'rolls/postable' => 'user#roll_followings', :on => :member, :defaults => { :postable => true }
+      get 'rolls/following' => 'user_metal#roll_followings', :on => :member
+      get 'rolls/postable' => 'user_metal#roll_followings', :on => :member, :defaults => { :postable => true }
       get 'rolls/personal' => 'roll#show_users_public_roll'
       get 'rolls/personal/frames' => 'frame_metal#index_for_users_public_roll'
     end
