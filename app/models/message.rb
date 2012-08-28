@@ -25,8 +25,12 @@ class Message
   # The Shelby or external real name
   key :realname, String, :required => true, :abbr => :f
   
-  # The Shelby or external user avatar
+  # The external user avatar
   key :user_image_url, String, :required => true, :abbr => :g
+  
+  # Does the user has a deterministic Shelby avatar?  (If so, we should display it)
+  # NB: A Shelby avatar that was set after this message was created will not change this attribute to true
+  key :user_has_shelby_avatar, Boolean, :abbr => :j, :default => false
   
   # The message itself
   key :text, String, :abbr => :h

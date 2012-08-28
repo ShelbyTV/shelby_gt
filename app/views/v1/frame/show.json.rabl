@@ -18,7 +18,7 @@ if @include_frame_children == true
 	end
 
 	child :creator => "creator" do
-		attributes :id, :name, :nickname, :user_image_original, :user_image
+		attributes :id, :name, :nickname, :user_image_original, :user_image, :has_shelby_avatar
 	end
 	
         #child User.find(@frame.upvoters) => :upvote_users do
@@ -35,6 +35,7 @@ if @include_frame_children == true
                 user_data[:nickname] = user.nickname
                 user_data[:user_image_orignal] = user.user_image_original
                 user_data[:user_image] = user.user_image
+                user_data[:has_shelby_avatar] = user.has_shelby_avatar
                 user_data[:public_roll_id] = user.public_roll_id
                 jsonList << user_data.to_s
               end
@@ -52,7 +53,7 @@ if @include_frame_children == true
 		attributes :id, :public
 
 		child :messages => 'messages' do
-			attributes :id, :nickname, :realname, :user_image_url, :text, :origin_network, :origin_id, :origin_user_id, :user_id, :public
+			attributes :id, :nickname, :realname, :user_image_url, :text, :origin_network, :origin_id, :origin_user_id, :user_id, :public, :user_has_shelby_avatar
 
 			code :created_at do |c|
 				concise_time_ago_in_words(c.created_at) if c.created_at

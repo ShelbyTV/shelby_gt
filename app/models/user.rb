@@ -170,6 +170,9 @@ class User
   
   def created_at() self.id.generation_time; end
   
+  # When true, you should display this user's avatar via a deterministic S3 file location (see initializers/paperclip.rb)
+  def has_shelby_avatar() !self.avatar_file_name.blank?; end
+  
   # only return true if a correct, symmetric following is in the DB (when given a proper Roll and not roll_id)
   # (this works in concert with Roll#add_follower which will fix an asymetric following)
   def following_roll?(r, must_be_symmetric=true)

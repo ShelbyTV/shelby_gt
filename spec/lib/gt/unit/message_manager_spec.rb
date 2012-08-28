@@ -28,6 +28,14 @@ describe GT::MessageManager do
     message.public.should eq(@public)
   end
   
+  it "should set user_has_shelby_avatar" do
+    @u.stub(:has_shelby_avatar).and_return(true)
+    options = { :user => @u, :public => @public }
+    message = GT::MessageManager.build_message(options)    
+    message.should be_valid
+    message.user_has_shelby_avatar.should == true
+  end
+  
   it "should return error if no user, public attr or text is passed" do
     options = { :public => true, :text => @text }
     lambda { GT::MessageManager.build_message(options) }.should raise_error(ArgumentError)
