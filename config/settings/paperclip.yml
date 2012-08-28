@@ -1,0 +1,19 @@
+defaults: &defaults
+  access_key_id: "AKIAJSMOE5P3PQHPYOOQ"
+  secret_access_key: "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"
+
+development:
+  <<: *defaults
+  bucket: "dev-shelby-gt-user-avatars"
+
+test:
+  <<: *defaults
+  bucket: "test-shelby-gt-user-avatars"
+
+production: &production
+  <<: *defaults
+  bucket: "shelby-gt-user-avatars"
+
+arnold:
+  <<: *production
+  

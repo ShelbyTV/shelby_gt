@@ -49,6 +49,12 @@ gem 'omniauth-tumblr', :git => 'git://github.com/jamiew/omniauth-tumblr.git'
 gem 'httparty'
 
 #
+# ---------- User Avatar
+#
+gem 'paperclip'
+gem 'aws-sdk', '~> 1.3.4'
+
+#
 # ---------- External Services
 #
 gem "youtube_it" #youtube api

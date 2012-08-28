@@ -33,4 +33,7 @@ ShelbyGt::Application.configure do
   # Expands the lines which load the assets
   config.assets.debug = true
 
+  # Paperclip for user avatars (needs location of convert - `which convert`)
+  Paperclip.options[:command_path] = "/usr/local/bin/"
+
 end
