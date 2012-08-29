@@ -69,7 +69,7 @@ void sobLoadAllByOidField(sobContext context,
                           bson_oid_t oid,
                           unsigned int limit,
                           unsigned int skip,
-                          int order);
+                          const char *sinceIdString);
 
 int sobGetBsonByOid(sobContext context,
                     sobType type,

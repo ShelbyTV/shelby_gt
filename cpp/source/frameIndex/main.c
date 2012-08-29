@@ -22,6 +22,8 @@ static struct options {
    int limit;
    int skip;
    char *environment;
+
+   char *sinceIdString;
 } options;
 
 struct timeval beginTime;
@@ -34,6 +36,7 @@ void printHelpText()
    printf("   -r --roll           String representation of roll OID\n");
    printf("   -l --limit          Limit to this number of frames\n");
    printf("   -s --skip           Skip this number of frames\n");
+   printf("   -i --sinceid        Frames since this one (inclusive)\n");
    printf("   -e --environment    Specify environment: production, test, or development\n");
 }
 
@@ -49,12 +52,13 @@ void parseUserOptions(int argc, char **argv)
          {"roll",        required_argument, 0, 'r'},
          {"limit",       required_argument, 0, 'l'},
          {"skip",        required_argument, 0, 's'},
+         {"sinceid",     required_argument, 0, 'i'},
          {"environment", required_argument, 0, 'e'},
          {0, 0, 0, 0}
       };
       
       int option_index = 0;
-      c = getopt_long(argc, argv, "hr:l:s:e:u:", long_options, &option_index);
+      c = getopt_long(argc, argv, "hr:l:s:e:u:i:", long_options, &option_index);
    
       /* Detect the end of the options. */
       if (c == -1) {
@@ -83,6 +87,10 @@ void parseUserOptions(int argc, char **argv)
 
          case 'e':
             options.environment = optarg;
+            break;
+
+         case 'i':
+            options.sinceIdString = optarg;
             break;
 
          case 'h': 
@@ -114,6 +122,7 @@ void setDefaultOptions()
    options.limit = 20;
    options.skip = 0;
    options.environment = "";
+   options.sinceIdString = "";
 }
 
 unsigned int timeSinceMS(struct timeval begin)
@@ -431,7 +440,7 @@ int loadData(sobContext sob)
                         options.roll,
                         options.limit,
                         options.skip,
-                        -1);
+                        options.sinceIdString);
 
    // and frames have references to everything else, so we load it all up...
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_ROLL_ID, rollOids);

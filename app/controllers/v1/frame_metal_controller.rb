@@ -11,16 +11,26 @@ class V1::FrameMetalController < ActionController::Metal
   # [GET] /v1/roll/:id/frames
   # @param [Optional, Integer] limit limit the number of frames returned, default 20
   # @param [Optional, Integer] skip the number of frames to skip, default 0
+  # @param [Optional, String]  since_id the id of the frame to start from (inclusive)
   def index
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['index']) do
       limit = params[:limit] ? params[:limit].to_i : 20
       skip = params[:skip] ? params[:skip] : 0
       limit = 500 if limit.to_i > 500
+      sinceId = params[:since_id]
 
       if (current_user)
-        fast_stdout = `cpp/bin/frameIndex -u #{current_user.id} -r #{params[:roll_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
+        if (sinceId) 
+          fast_stdout = `cpp/bin/frameIndex -u #{current_user.id} -r #{params[:roll_id]} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
+        else
+          fast_stdout = `cpp/bin/frameIndex -u #{current_user.id} -r #{params[:roll_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
+        end
       else
-        fast_stdout = `cpp/bin/frameIndex -r #{params[:roll_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
+        if (sinceId) 
+          fast_stdout = `cpp/bin/frameIndex -r #{params[:roll_id]} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
+        else
+          fast_stdout = `cpp/bin/frameIndex -r #{params[:roll_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
+        end
       end
       fast_status = $?.to_i
 
@@ -46,6 +56,7 @@ class V1::FrameMetalController < ActionController::Metal
   # @param [Required, String] id The id of the user
   # @param [Optional, Integer] limit limit the number of frames returned, default 20
   # @param [Optional, Integer] skip the number of frames to skip, default 0
+  # @param [Optional, String]  since_id the id of the frame to start from (inclusive)
   def index_for_users_public_roll
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['index_for_users_public_roll']) do 
       # default params
@@ -54,8 +65,13 @@ class V1::FrameMetalController < ActionController::Metal
       limit = 500 if limit.to_i > 500
           
       skip = params[:skip] ? params[:skip] : 0
+      sinceId = params[:since_id]
 
-      fast_stdout = `cpp/bin/frameIndex -u #{params[:user_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
+      if (sinceId) 
+        fast_stdout = `cpp/bin/frameIndex -u #{params[:user_id]} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
+      else
+        fast_stdout = `cpp/bin/frameIndex -u #{params[:user_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
+      end
       fast_status = $?.to_i
 
       if (fast_status == 0)

@@ -312,18 +312,23 @@ void sobLoadAllByOidField(sobContext context,
                           bson_oid_t oid,
 			  unsigned int limit,
                           unsigned int skip,
-                          int order)
+                          const char *sinceIdString)
 {
+   bson_oid_t sinceId;
    bson query;
    bson_init(&query);
    bson_append_start_object(&query, "$query");
-     bson_append_oid(&query, "a", &oid);
+      bson_append_oid(&query, "a", &oid);
+      if (strcmp("", sinceIdString) != 0) {
+         bson_oid_from_string(&sinceId, sinceIdString);
+         bson_append_start_object(&query, "_id");
+            bson_append_oid(&query, "$lte", &sinceId);
+         bson_append_finish_object(&query);
+      }
    bson_append_finish_object(&query);
-   if (order != 0) {
-      bson_append_start_object(&query, "$orderby");
-        bson_append_int(&query, "_id", order);
-      bson_append_finish_object(&query);
-   }
+   bson_append_start_object(&query, "$orderby");
+      bson_append_int(&query, "_id", -1);
+   bson_append_finish_object(&query);
    bson_finish(&query);
 
    assert(context); 
