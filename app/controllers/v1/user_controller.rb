@@ -52,6 +52,10 @@ class V1::UserController < ApplicationController
           return render_error(409, "Passwords did not match.")
         end
         
+        if params[:nickname] and params[:nickname] != @user.nickname
+          return render_error(409, "Nickname taken") if User.exists?(:nickname => params[:nickname])
+        end
+        
         if @user.update_attributes(params)
           @status = 200
           

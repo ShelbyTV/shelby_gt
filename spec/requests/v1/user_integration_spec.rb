@@ -281,9 +281,20 @@ describe 'v1/user' do
       
       it "should update nickname and that should be reflected in new downcase_nickname" do
         new_nick = "WhAtaintUniQUE--123"
-        put "/v1/user/#{@u1.id}?nickname=#{new_nick}"
-        @u1.reload
-        @u1.downcase_nickname.should == new_nick.downcase
+        lambda {
+          put "/v1/user/#{@u1.id}?nickname=#{new_nick}"
+        }.should change { @u1.reload.nickname }
+        response.body.should be_json_eql(200).at_path("status")
+        @u1.reload.downcase_nickname.should == new_nick.downcase
+      end
+      
+      it "should return 409 if another user has the proposed nickname" do
+        u2 = Factory.create(:user)
+        new_nick = u2.nickname
+        lambda {
+          put "/v1/user/#{@u1.id}?nickname=#{new_nick}"
+        }.should_not change { @u1.reload.nickname }
+        response.body.should be_json_eql(409).at_path("status")
       end
       
       it "should update the user's public_roll title when changing the user nickname if the roll has nickname as its title" do
@@ -310,7 +321,7 @@ describe 'v1/user' do
       
       it "should not change password if password isn't sent" do
         lambda {
-          put '/v1/user/'+@u1.id+'?nickname=ramses'
+          put '/v1/user/'+@u1.id
           response.body.should be_json_eql(200).at_path("status")
         }.should_not change { @u1.encrypted_password }
       end
@@ -318,7 +329,7 @@ describe 'v1/user' do
       it "should not change the password if the confirmation doesn't match" do
         pass = "the_new-PASS"
         lambda {
-          put "/v1/user/#{@u1.id}?nickname=ramses&password=#{pass}&password_confirmation=WRONG"
+          put "/v1/user/#{@u1.id}?password=#{pass}&password_confirmation=WRONG"
           response.body.should be_json_eql(409).at_path("status")
         }.should_not change { @u1.encrypted_password }
       end
@@ -326,7 +337,7 @@ describe 'v1/user' do
       it "should change password if password and password_confirmation are sent" do
         pass = "the_new-PASS"
         lambda {
-          put "/v1/user/#{@u1.id}?nickname=ramses&password=#{pass}&password_confirmation=#{pass}"
+          put "/v1/user/#{@u1.id}?password=#{pass}&password_confirmation=#{pass}"
           response.body.should be_json_eql(200).at_path("status")
           response.body.should_not have_json_path("result/password")
           response.body.should_not have_json_path("result/password_confirmation")
