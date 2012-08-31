@@ -14,7 +14,11 @@ class SharingMailer < ActionMailer::Base
     @email_to = email_to
     @message = message ? message : frame.video.description
     @frame = frame
-    params = "?gt_ref_uid=#{user_from.id.to_s}&gt_ref_email=#{email_to}&gt_ref_roll=#{frame.roll_id}"
+    # user that is sharing
+    utm_source = user_from.name ? URI.encode(user_from.name) : user_from.nickname
+    # avatar of the user that is sharing
+    utm_medium = user_from.has_shelby_avatar ? user_from.shelby_avatar_url("small") : user_from.user_image_original
+    params = "?utm_campaign=email-share&utm_source=#{utm_source}&utm_medium=#{utm_medium}"
     @frame_permalink = frame.permalink + params
     
     subj = Settings::Email.share_frame['subject'] % {:sharers_name => user_from.name || user_from.nickname}

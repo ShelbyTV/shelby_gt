@@ -305,45 +305,7 @@ describe AuthenticationsController do
           get :create
           assigns(:opener_location).should == url
         end
-    
-        it "should accept when invited to a roll" do
-          cookies[:gt_roll_invite] = {:value => "uid,emial,rollid", :domain => ".shelby.tv"}
-          User.should_receive(:find).with("uid").and_return Factory.create(:user, :gt_enabled => true)
-          Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
-          GT::InvitationManager.should_receive :private_roll_invite
-      
-          get :create
-          assigns(:current_user).should == @u
-          assigns(:current_user).gt_enabled.should == true
-          cookies[:_shelby_gt_common].should_not == nil
-          cookies[:gt_roll_invite].should == nil
-          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-        end
         
-        it "should set cohorts of the inviter and 'roll_invited' when creating a new user via roll invite" do
-          cookies[:gt_roll_invite] = {:value => "uid,emial,rollid", :domain => ".shelby.tv"}
-          orig_cohorts = ["a", "b"]
-          orig_user = Factory.create(:user, :gt_enabled => true, :cohorts => orig_cohorts)
-          User.should_receive(:find).with("uid").and_return orig_user
-          Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
-          GT::InvitationManager.should_receive :private_roll_invite
-      
-          get :create
-          assigns(:current_user).should == @u
-          assigns(:current_user).cohorts.should == orig_user.cohorts + ["roll_invited"]
-        end
-    
-        it "should be able to redirect when invited to a roll" do
-          cookies[:gt_roll_invite] = "uid,emial,rollid"
-          User.should_receive(:find).with("uid").and_return Factory.create(:user, :gt_enabled => true)
-          Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
-          GT::InvitationManager.should_receive :private_roll_invite
-      
-          session[:return_url] = (url = "http://danspinosa.tv")
-          get :create
-          assigns(:opener_location).should == url
-        end
-      
         it "should accept with CohortEntrance, set cohorts" do
           cohorts = ["a", "b", "c"]
           cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
@@ -398,44 +360,7 @@ describe AuthenticationsController do
           assigns(:current_user).should == nil
           assigns(:opener_location).start_with?(cohort_entrance.url+"?").should == true
         end
-        
-        it "should accept with private invite, set cohorts correctly" do
-          cookies[:gt_roll_invite] = {:value => "uid,emial,rollid", :domain => ".shelby.tv"}
-          orig_cohorts = ["a", "b"]
-          orig_user = Factory.create(:user, :gt_enabled => true, :cohorts => orig_cohorts)
-          
-          User.should_receive(:find).with("uid").and_return orig_user
-          Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
-          GT::InvitationManager.should_receive :private_roll_invite
-      
-          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [])
-          GT::UserManager.should_receive(:create_new_user_from_params).and_return u
-          get :create, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
-      
-          assigns(:current_user).should == u
-          assigns(:current_user).cohorts.should == orig_user.cohorts + ["roll_invited"]
-        end
-        
-        it "should redirect on private invite when there are user errors" do
-          cookies[:gt_roll_invite] = {:value => "uid,emial,rollid", :domain => ".shelby.tv"}
-          orig_cohorts = ["a", "b"]
-          orig_user = Factory.create(:user, :gt_enabled => true, :cohorts => orig_cohorts)
-          
-          User.should_receive(:find).with("uid").and_return orig_user
-          Roll.should_receive(:find).with("rollid").and_return Factory.create(:roll)
-          GT::InvitationManager.should_not_receive :private_roll_invite
-          
-          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [])
-          u2 = User.new(:nickname => u.nickname)
-          u2.save
-          u2.valid?.should == false
-          GT::UserManager.should_receive(:create_new_user_from_params).and_return u2
-          get :create, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
-          
-          assigns(:current_user).should == nil
-          assigns(:opener_location).start_with?(Settings::ShelbyAPI.web_root+"?").should == true
-        end
-        
+                
       end
     
     end
@@ -494,32 +419,6 @@ describe AuthenticationsController do
         it "should be able to redirect on GtInterest" do
           gt_interest = Factory.create(:gt_interest)
           cookies[:gt_access_token] = gt_interest.id.to_s
-
-          GT::UserManager.should_receive :convert_faux_user_to_real
-          GT::UserManager.should_receive :start_user_sign_in
-
-          session[:return_url] = (url = "http://danspinosa.tv")
-          get :create
-          assigns(:opener_location).should == url
-        end
-      
-        it "should accept and convert if invited to a roll" do
-          cookies[:gt_roll_invite] = :fake_invite
-          GT::InvitationManager.should_receive :private_roll_invite
-
-          GT::UserManager.should_receive :convert_faux_user_to_real
-          GT::UserManager.should_receive :start_user_sign_in
-
-          get :create
-          assigns(:current_user).reload.should == @u
-          cookies[:_shelby_gt_common].should_not == nil
-          cookies[:gt_roll_invite].should == nil
-          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-        end
-      
-        it "should be able to redirect on roll invite" do
-          cookies[:gt_roll_invite] = :fake_invite
-          GT::InvitationManager.should_receive :private_roll_invite
 
           GT::UserManager.should_receive :convert_faux_user_to_real
           GT::UserManager.should_receive :start_user_sign_in

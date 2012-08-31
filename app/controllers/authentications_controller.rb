@@ -1,7 +1,6 @@
 # encoding: UTF-8
 require 'user_manager'
 require 'user_merger'
-require 'invitation_manager'
 
 class AuthenticationsController < ApplicationController  
   
@@ -71,11 +70,6 @@ class AuthenticationsController < ApplicationController
         session[:cohort_entrance_id] = nil        
         sign_in_current_user(user, omniauth)
         user.gt_enable!
-
-      elsif private_invite = cookies[:gt_roll_invite] # if they were invited via private roll, they get in
-        GT::InvitationManager.private_roll_invite(user, private_invite)
-        cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
-        sign_in_current_user(user, omniauth)
         
       else
         # NO GT FOR YOU, just redirect to error page w/o signing in

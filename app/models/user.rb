@@ -173,6 +173,19 @@ class User
   # When true, you should display this user's avatar via a deterministic S3 file location (see initializers/paperclip.rb)
   def has_shelby_avatar() !self.avatar_file_name.blank?; end
   
+  def shelby_avatar_url(size)
+    avatar_size = case size
+                  when "small"
+                    "sq48x48"
+                  when "large"
+                    "sq192x192"
+                  when "original"
+                    "original"
+                  end
+    
+    "http://s3.amazonaws.com/#{Settings::Paperclip.bucket}/#{avatar_size}/#{id.to_s}?#{avatar_updated_at}" if has_shelby_avatar
+  end
+  
   # only return true if a correct, symmetric following is in the DB (when given a proper Roll and not roll_id)
   # (this works in concert with Roll#add_follower which will fix an asymetric following)
   def following_roll?(r, must_be_symmetric=true)
