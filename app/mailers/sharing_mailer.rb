@@ -11,7 +11,8 @@ class SharingMailer < ActionMailer::Base
     # user that is sharing
     utm_source = user_from.name ? URI.encode(user_from.name) : user_from.nickname
     # avatar of the user that is sharing
-    utm_medium = user_from.has_shelby_avatar ? user_from.shelby_avatar_url("small") : user_from.user_image_original
+    @user_from_avatar = user_from.has_shelby_avatar ? user_from.shelby_avatar_url("small") : user_from.user_image_original
+    utm_medium = @user_from_avatar
     sendgrid_ganalytics_options(:utm_source => utm_source, :utm_medium => utm_medium, :utm_campaign => "email-share")
     
     @user_from = user_from
