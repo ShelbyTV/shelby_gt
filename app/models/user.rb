@@ -183,7 +183,7 @@ class User
                     "original"
                   end
     
-    "http://s3.amazonaws.com/#{Settings::Paperclip.bucket}/#{avatar_size}/#{id.to_s}?#{avatar_updated_at}" if has_shelby_avatar
+    "http://s3.amazonaws.com/#{Settings::Paperclip.bucket}/#{avatar_size}/#{id.to_s}?" if has_shelby_avatar
   end
   
   # only return true if a correct, symmetric following is in the DB (when given a proper Roll and not roll_id)
