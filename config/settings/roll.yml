@@ -27,7 +27,7 @@ defaults: &defaults
       rolls: ["4f987a5e9a725b032b002f13", "4f902217b415cc466a000909", "4f98926f88ba6b626701474c"]
     cat80:
       category_name: "Music"
-      rolls: ["4fa41cfa88ba6b0dcf001a65", "4fd1083cd10412183a00346b", "4fa41cfa88ba6b0dcf001a65", "4fa31cd888ba6b2fae00004a", "4f9ed72288ba6b205b00257c", "4fa2908088ba6b61770010ad", "4fd1083cd10412183a00346b"]
+      rolls: ["4fa41cfa88ba6b0dcf001a65", "4fd1083cd10412183a00346b", "4fa41cfa88ba6b0dcf001a65", "4fa31cd888ba6b2fae00004a", "4f9ed72288ba6b205b00257c", "4fa2908088ba6b61770010af", "4fd1083cd10412183a00346b"]
     cat90:
       category_name: "News/Business"
       rolls: ["4fccef549a725b7d4a005363", "4f95622b9a725b72e700106b", "4fa8542c88ba6b669b000bcd"]
