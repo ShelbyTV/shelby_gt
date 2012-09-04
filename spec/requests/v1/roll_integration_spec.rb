@@ -90,31 +90,7 @@ describe 'v1/roll' do
       it "should return error message if roll doesnt exist" do
         get '/v1/roll/'+ BSON::ObjectId.new.to_s
         response.body.should be_json_eql(404).at_path("status")
-      end
-      
-      it "should return a list of rolls to browse" do
-        @r1 = Factory.create(:roll, :creator => @u1)
-        @r2 = Factory.create(:roll, :creator => @u1)
-        @r3 = Factory.create(:roll, :creator => @u1)
-        @r4 = Factory.create(:roll, :creator => @u1)
-        roll_arry = [@r1,@r2,@r3,@r4].map!{|r| "rolls[]=#{r.id.to_s}"}
-        
-        get 'v1/roll/browse?'+roll_arry.join('&')
-        response.body.should be_json_eql(200).at_path("status")
-      end
-      
-      it "roll followings should contain first frame thumb url" do
-        url = 'http://url.here'
-        r1 = Factory.create(:roll, :creator => @u1, :first_frame_thumbnail_url => url)
-        r1.add_follower(@u1)
-        
-        roll_arry = [r1].map!{|r| "rolls[]=#{r.id.to_s}"}
-        
-        get 'v1/roll/browse?'+roll_arry.join('&')
-        response.body.should be_json_eql(200).at_path("status")
-        parse_json(response.body)["result"][0]["first_frame_thumbnail_url"].should eq(url)
-      end
-      
+      end      
     end
 
     describe "GET Explore" do
