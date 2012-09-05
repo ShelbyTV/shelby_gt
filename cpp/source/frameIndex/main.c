@@ -148,6 +148,7 @@ void printJsonMessage(sobContext sob, mrjsonContext context, bson *message)
       SOB_MESSAGE_ORIGIN_ID,
       SOB_MESSAGE_ORIGIN_USER_ID,
       SOB_MESSAGE_USER_ID,
+      SOB_MESSAGE_USER_HAS_SHELBY_AVATAR,
       SOB_MESSAGE_PUBLIC
    };
 
