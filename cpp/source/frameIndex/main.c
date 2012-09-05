@@ -248,6 +248,10 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
       SOB_USER_USER_IMAGE,
       SOB_USER_PUBLIC_ROLL_ID,
    };
+   
+   sobPrintStringToBoolAttribute(context,
+                                 user,
+                                 SOB_USER_HAS_SHELBY_AVATAR);
 
    sobPrintAttributes(context,
                       user,

@@ -112,6 +112,11 @@ void sobPrintAttributes(mrjsonContext context,
                         sobField *fieldArray,
                         unsigned int numFields);
 
+// If the field exists and is a non-empty string, prints true, else false
+void sobPrintStringToBoolAttribute(mrjsonContext context,
+                                   bson *object,
+                                   sobField field);
+
 void sobPrintAttributeWithKeyOverride(mrjsonContext context,
                                       bson *object,
                                       sobField field,

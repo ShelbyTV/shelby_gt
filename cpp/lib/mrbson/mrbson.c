@@ -114,7 +114,7 @@ void mrbsonIntAttribute(mrjsonContext context,
 }
 
 void mrbsonBoolAttribute(mrjsonContext context,
-                         bson *data, 
+                         bson *data,
                          const char *bsonField, 
                          const char *outputName)
 {
@@ -126,6 +126,24 @@ void mrbsonBoolAttribute(mrjsonContext context,
      mrjsonBoolAttribute(context, outputName, bson_iterator_bool(&iterator));
    } else {
      mrjsonNullAttribute(context, outputName); 
+   }
+}
+
+void mrbsonStringAsBoolAttribute(mrjsonContext context,
+                                 bson *data,
+                                 const char *bsonField,
+                                 const char *outputName)
+{
+   bson_iterator iterator;
+   bson_type type;
+   int stringIsNotEmpty;
+
+   type = bson_find(&iterator, data, bsonField);
+   if (type == BSON_STRING) {
+     stringIsNotEmpty = strlen(bson_iterator_string(&iterator)) > 0;
+     mrjsonBoolAttribute(context, outputName, stringIsNotEmpty);
+   } else {
+     mrjsonBoolAttribute(context, outputName, FALSE);
    }
 }
 
