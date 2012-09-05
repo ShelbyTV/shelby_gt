@@ -1,46 +1,71 @@
-<% standard_html_email_wrapper do %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="-webkit-text-size-adjust: none;margin: 0;padding: 0;background-color: #FAFAFA;width: 100%;">
+    <center>
 	<!-- Wrapper/Container Table: Use a wrapper table to control the width and the background color consistently of your email. Use this approach instead of setting attributes on the body tag. -->
-	<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#f6f6f6; border:1px solid #b5b5b5; color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
+	<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#E2E2E2; color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
 		<tr>
-			<td valign="top" class="shelby-email-lining" style="padding:20px;">
-				<h1 class="shelby-logo" style="margin-top:5px;">
-					<a href="<%= Settings::Email.web_url_base %>">
-						<img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv logo" title="Shelby.tv" width="156" height="42" />
-					</a>
+			<td valign="top" class="shelby-email-lining" style="padding:0px;">
+				<h1 class="shelby-logo" style="margin:0px;padding:5px;background-color:#1F1F21;">
+					<!-- <a href="<%= Settings::Email.web_url_base %>"> -->
+						<!-- <img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv logo" title="Shelby.tv" width="156" height="42" /> -->
+						<img class="image_fix" src="http://api.shelby.tv/shelby.png" alt="Shelby.tv logo" title="Shelby.tv" width="156" height="42" />
+					<!--</a>-->
 				</h1>
-				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:1px solid #b5b5b5; padding:20px; width:100%;">
-					<tr height="75">
-						<td width="75"  valign="top">
-							<a href="<%= @user_from.permalink %>"><img class="image_fix" src="<%= @user_from_avatar %>" alt="user_image" title="user_image" width="60" height="60" /></a>
+				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; border-top:1px solid #b5b5b5; padding:20px 20px; width:100%;">
+					<tr height="35">
+						<td colspan="2" valign="top" style="font-weight:bold;">
+							<a href="<%= @user_from.permalink %>"><%= @user_from.name %></a> shared a video with you:
 						</td>
-						<td  valign="top">
-							<div>
-								<a href="<%= @user_from.permalink %>"><%= @user_from.name %></a> found a video to share with you...
-							</div>
+					</tr>
+					<tr height="10">
+						<td width="45" valign="top">
+							<a href="<%= @user_from.permalink %>">
+								<img class="image_fix" src="<%= @user_from_avatar %>" alt="user_image" title="user_image" width="45" height="45" style="margin-right: 15px;"/>
+							</a>
+						</td>
+						<td valign="top" style="float:left;max-width:450px">
+							<%= @message %>
 						</td>
 					</tr>
 				</table>
-				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:0px; padding:0px 0px 15px 20px; width:100%;">
+				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:0px; padding:0px 0px 15px 0px; width:100%;">
 					<tr>
-						<td width="185"  valign="top">
-							<a href="<%= @frame_permalink %>" style="float:left; padding-right:10px; padding-bottom: 10px;"><img class="image_fix" src="<%= @frame.video.thumbnail_url %>" alt="user_image" title="user_image" width="175" /></a>
-							<div style="float:left; width: 66%">
-								<p><%= @message %></p>	
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<td colspan="2" align="center">
-							<a href="<%= @frame_permalink %>" class="shelby-email-button" style="background:#69BD46; border:1px outset #ddd; color:white; display:inline-block; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-size:16px; font-weight:bold; margin:15px auto; padding:12px 33px; text-decoration:none; width: 165px">
-								Watch Now
+						<td align="center" valign="top">
+								<a href="<%= @frame_permalink %>" style="padding-right:10px; padding-bottom: 10px; text-decoration: none;color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
+									<table border="0" cellspacing="0" cellpadding="0">
+										<tr>
+											<td style="font-weight:bold;text-align:center;">
+												<%= truncate(@frame.video.title, :length => 50, :separator => ' ') %>
+											</td>
+										</tr>
+										<tr height="80" style="overflow-y:hidden;">
+											<td valign="top">
+												<div style="max-height: 130px;overflow-y:hidden;">
+													<img class="image_fix" src="<%= @frame.video.thumbnail_url %>" alt="user_image" title="video_thumbnail" width="300" style="margin-top:-30px"/>													
+												</div>
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<div style="padding: 8px 25px; background-color: green; color: white;text-align: center;font-weight: bold;margin-top: 5px;">
+													play video
+												</div>												
+											</td>
+										</tr>
+									</table>
 							</a>
 						</td>
 					</tr>
 					<tr>
-						<td colspan="2" style="padding-top:10px;">
-							<small class="shelby-email-message-footer" style="font-size:11px; margin-top: 10px;">
-								Please remember you can always go into your <a href="<%= Settings::ShelbyAPI.web_root %>/preferences">Preferences</a> page and adjust your account and contact info, privacy controls and emails preferences.
-							</small>
+						<td colspan="2">
+							<hr style="background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #EFEFEF;"/>
+							<div style="margin-right:5px;float:right;font-size:11px;">
+								110 E 23rd St, 10th Floor, New York, NY 10010
+							</div>
 						</td>
 					</tr>
 				</table>
@@ -48,4 +73,6 @@
 		</tr>
 	</table>  
 	<!-- End of wrapper table -->
-<% end %>
+    </center>
+  </body>
+</html>

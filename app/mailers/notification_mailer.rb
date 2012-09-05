@@ -27,26 +27,6 @@ class NotificationMailer < ActionMailer::Base
       :subject => Settings::Email.comment_notification['subject'] % { :commenters_name => @user_from_name, :video_title => @frame_title }
   end
 
-  def upvote_notification(user_to, user_from, frame)
-    sendgrid_category Settings::Email.upvote_notification["category"]
-    
-    sendgrid_ganalytics_options(:utm_source => 'heart', :utm_medium => 'notification', :utm_campaign => "frame_#{frame.id.to_s}")
-    
-    
-    @user_to = user_to
-    @user_from = user_from
-    @user_from_name = (@user_from.name || @user_from.nickname)
-    @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
-
-    @frame = frame
-    @frame_title = @frame.video.title
-    @frame_permalink = @frame.permalink
-    
-    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
-      :to => user_to.primary_email, 
-      :subject => Settings::Email.upvote_notification['subject'] % { :upvoters_name => @user_from_name, :video_title => @frame_title }
-  end
-
   def reroll_notification(old_frame, new_frame)
     sendgrid_category Settings::Email.reroll_notification["category"]
 
@@ -83,6 +63,26 @@ class NotificationMailer < ActionMailer::Base
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
       :to => @user_to.primary_email, 
       :subject => (Settings::Email.join_roll_notification['subject'] % { :users_name => @user_from_name, :roll_title => @roll_title })
+  end
+
+  def upvote_notification(user_to, user_from, frame)
+    sendgrid_category Settings::Email.upvote_notification["category"]
+    
+    sendgrid_ganalytics_options(:utm_source => 'heart', :utm_medium => 'notification', :utm_campaign => "frame_#{frame.id.to_s}")
+    
+    
+    @user_to = user_to
+    @user_from = user_from
+    @user_from_name = (@user_from.name || @user_from.nickname)
+    @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
+
+    @frame = frame
+    @frame_title = @frame.video.title
+    @frame_permalink = @frame.permalink
+    
+    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>", 
+      :to => user_to.primary_email, 
+      :subject => Settings::Email.upvote_notification['subject'] % { :upvoters_name => @user_from_name, :video_title => @frame_title }
   end
 
 end
