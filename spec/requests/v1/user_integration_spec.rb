@@ -14,6 +14,7 @@ describe 'v1/user' do
         get '/v1/user'
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result/nickname")
+        response.body.should have_json_path("result/has_password")
       end
       
       it "should return cohorts with user" do
