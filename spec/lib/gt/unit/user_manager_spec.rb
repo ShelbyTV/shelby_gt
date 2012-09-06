@@ -230,7 +230,7 @@ describe GT::UserManager do
       r = u.watch_later_roll
       r.class.should == Roll
       r.persisted?.should == true
-      r.public.should == true
+      r.public.should == false
       r.collaborative.should == false
       r.creator.should == u
       r.roll_type.should == Roll::TYPES[:special_watch_later]
@@ -395,13 +395,13 @@ describe GT::UserManager do
       
     end
     
-    it "should make their watch_later roll public if it's not" do
-      @faux_u.watch_later_roll.update_attribute(:public, false)
-      @faux_u.watch_later_roll.reload.public.should == false
+    it "should make their watch_later roll private if it's not" do
+      @faux_u.watch_later_roll.update_attribute(:public, true)
+      @faux_u.watch_later_roll.reload.public.should == true
       
       GT::UserManager.convert_faux_user_to_real(@faux_u)
       
-      @faux_u.watch_later_roll.reload.public.should == true
+      @faux_u.watch_later_roll.reload.public.should == false
     end
     
     it "should make their upvoted_roll roll public if it's not" do

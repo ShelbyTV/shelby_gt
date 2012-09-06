@@ -253,8 +253,8 @@ module GT
       #users follow their watch_later roll
       u.watch_later_roll.add_follower(u) if save and !u.following_roll?(u.watch_later_roll)
       
-      #make sure watch later is public, as they weren't always this way for faux users
-      u.watch_later_roll.update_attribute(:public, true) unless u.watch_later_roll.public?
+      #make sure watch later is not public
+      u.watch_later_roll.update_attribute(:public, false) unless !u.watch_later_roll.public?
             
       build_viewed_roll_for_user(u) unless u.viewed_roll
       #users don't follow their viewed_roll
@@ -395,7 +395,7 @@ module GT
       def self.build_watch_later_roll_for_user(u)
         r = Roll.new
         r.creator = u
-        r.public = true
+        r.public = false
         r.collaborative = false
         r.roll_type = Roll::TYPES[:special_watch_later]
         r.title = "Watch Later"
