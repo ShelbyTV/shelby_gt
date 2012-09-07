@@ -58,7 +58,7 @@ class V1::Roll::GeniusController < ApplicationController
       @roll.creator = current_user
 
       count = 0
-      finalVidIds.each do |videoId|
+      finalVidIds.reverse.each do |videoId|
         frame_options = { :roll => @roll }
         frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_genius_frame]
         frame_options[:video_id] = videoId
