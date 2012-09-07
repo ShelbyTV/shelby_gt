@@ -11,7 +11,7 @@ module Dev
   class WatchLaterPrivateFixer 
     
     def self.fix!
-      rollsToFix = Roll.where(:roll_type => Roll::TYPES[:special_watch_later]).limit(10)
+      rollsToFix = Roll.where(:roll_type => Roll::TYPES[:special_watch_later])
       rollsToFix.each do |r|
         r.remove_all_followers!
         r.push_uniq :following_users => FollowingUser.new(:user => r.creator).to_mongo
