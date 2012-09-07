@@ -1,6 +1,6 @@
 <% standard_html_email_wrapper do %>
 	<!-- Wrapper/Container Table: Use a wrapper table to control the width and the background color consistently of your email. Use this approach instead of setting attributes on the body tag. -->
-	<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#E2E2E2; color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;margin: 0px 10%;min-width: 350px;width: 80%;">
+	<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#E2E2E2; color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
 		<tr>
 			<td valign="middle" class="shelby-email-lining" style="padding:0px;">
 				<!--  show message in email preview-->
@@ -23,28 +23,28 @@
 					<tr height="10">
 						<td width="45" valign="top">
 							<a href="<%= @user_from.permalink %>">
-								<img class="image_fix" src="<%= @user_from_avatar %>" alt="user_image" title="user_image" width="45" height="45" style="margin-right: 15px;display:block;"/>
+								<img class="image_fix" src="<%= @user_from_avatar %>" alt="user_image" title="<%= @user_from.name %>" width="45" height="45" style="margin-right: 15px;display:block;"/>
 							</a>
 						</td>
-						<td valign="top" style="float:left;max-width:250px;font-size:12px;color:333;">
+						<td valign="top" style="float:left;max-width:218px;font-size:12px;color:333;">
 							<%= @message %>
 						</td>
 					</tr>
 				</table>
-				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; border-top:0px; padding:0px; max-width:400px;margin: 0px auto">
+				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; border-top:0px; padding:0px 20px; max-width:400px;margin: 0px auto;">
 					<tr>
 						<td align="center" valign="top">
-								<a href="<%= @frame_permalink %>" style="padding-right:10px; padding-bottom: 10px; text-decoration: none;color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
+								<a href="<%= @frame_permalink %>" style="padding-bottom: 10px; text-decoration: none;color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
 									<table border="0" cellspacing="0" cellpadding="0">
 										<tr height="25">
 											<td style="font-weight:bold;text-align:center;">
-												<%= truncate(@frame.video.title, :length => 50, :separator => ' ') %>
+												<%= truncate(@frame.video.title, :length => 45, :separator => ' ') %>
 											</td>
 										</tr>
 										<tr height="80" style="overflow-y:hidden;">
 											<td valign="top">
 												<div style="max-height: 130px;overflow-y:hidden;">
-													<img class="image_fix" src="<%= @frame.video.thumbnail_url %>" alt="user_image" title="video_thumbnail" width="280" style="margin:-30px 0; display:block;"/>
+													<img class="image_fix" src="<%= @frame.video.thumbnail_url %>" alt="video thumbnail" title="video_thumbnail" width="280" style="margin:-30px 0; display:block;"/>
 												</div>
 											</td>
 										</tr>
