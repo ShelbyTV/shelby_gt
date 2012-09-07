@@ -14,10 +14,10 @@ module Dev
       rollsToFix = Roll.where(:roll_type => Roll::TYPES[:special_watch_later])
       rollsToFix.each do |r|
         r.remove_all_followers!
-        r.push_uniq :following_users => FollowingUser.new(:user => r.creator).to_mongo
-        r.creator.push_uniq :roll_followings => RollFollowing.new(:roll => r).to_mongo
+        r.creator && r.push_uniq :following_users => FollowingUser.new(:user => r.creator).to_mongo
+        r.creator && r.creator.push_uniq :roll_followings => RollFollowing.new(:roll => r).to_mongo
         r.save
-        r.creator.save
+        r.creator && r.creator.save
       end
     end
   end
