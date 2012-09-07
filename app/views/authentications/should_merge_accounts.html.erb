@@ -4,7 +4,7 @@
 
 	<div class="shelby-user-summary">
 		<h2>Your permanent account is <span class="shelby-username"><%= @into_user.nickname %></span></h2>
-		<%= image_tag @into_user.user_image %>
+		<%= image_tag avatar_url_for_user(@into_user) %>
 		
 		<% if !@into_user.authentications.empty? %>
 			<div class="external-services">
@@ -20,7 +20,7 @@
 
 	<div class="shelby-user-summary">
 		<h2>Your other account <span class="shelby-username"><%= @other_user.nickname %></span> can be merged into <span class="shelby-username"><%= @into_user.nickname %></span></h2>
-		<%= image_tag @other_user.user_image %>
+		<%= image_tag avatar_url_for_user(@other_user) %>
 		
 		<% if !@other_user.authentications.empty? %>
 			<div class="external-services">
@@ -42,7 +42,7 @@
 		<% all_auths =  @into_user.authentications + @other_user.authentications%>
 		
 		<h2>You will be <span class="shelby-username"><%= @into_user.nickname %></span></h2>
-		<%= image_tag @into_user.user_image %>
+		<%= image_tag avatar_url_for_user(@into_user) %>
 		
 		<% if !@into_user.authentications.empty? %>
 			<div class="external-services">
