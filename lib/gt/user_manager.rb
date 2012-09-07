@@ -261,7 +261,7 @@ module GT
       u.viewed_roll.save if save
       
       if save and !u.save
-        Rails.logger.error "[GT::UserManager#ensure_users_speical_rolls] Failed to save user: #{u.errors.full_messages.join(',')}"
+        Rails.logger.error "[GT::UserManager#ensure_users_special_rolls] Failed to save user: #{u.errors.full_messages.join(',')}"
       end
     end
     
