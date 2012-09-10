@@ -30,6 +30,12 @@
    ROLL_FOLLOWING_PROPERTIES(apply)  \
    FOLLOWING_USER_PROPERTIES(apply)
 
+/*
+ * Notable fields:
+ *
+ * :avatar_file_name abbreviated as :at -> :has_shelby_avatar calculated based on its existence
+ *
+ */
 #define USER_PROPERTIES(apply)                                                                 \
    apply(USER , id                   ,  ID                   ,  OID    , _id                 ) \
    apply(USER , rolls_unfollowed     ,  ROLLS_UNFOLLOWED     ,  ARRAY  , aa                  ) \
@@ -44,6 +50,7 @@
    apply(USER , clients              ,  CLIENTS              ,  ARRAY  , ai                  ) \
    apply(USER , cohorts              ,  COHORTS              ,  ARRAY  , aq                  ) \
    apply(USER , autocomplete         ,  AUTOCOMPLETE         ,  ARRAY  , as                  ) \
+   apply(USER , has_shelby_avatar    ,  HAS_SHELBY_AVATAR    ,  BOOL   , at                  ) \
    apply(USER , name                 ,  NAME                 ,  STRING , name                ) \
    apply(USER , nickname             ,  NICKNAME             ,  STRING , nickname            ) \
    apply(USER , downcase_nickname    ,  DOWNCASE_NICKNAME    ,  STRING , downcase_nickname   ) \
@@ -128,16 +135,17 @@
    apply(DASHBOARD_ENTRY , actor_id , ACTOR_ID , OID  , f   )
 
 #define MESSAGE_PROPERTIES(apply)                                   \
-   apply(MESSAGE , id             , ID             , OID    , _id ) \
-   apply(MESSAGE , origin_network , ORIGIN_NETWORK , STRING , a   ) \
-   apply(MESSAGE , origin_id      , ORIGIN_ID      , STRING , b   ) \
-   apply(MESSAGE , origin_user_id , ORIGIN_USER_ID , STRING , c   ) \
-   apply(MESSAGE , user_id        , USER_ID        , OID    , d   ) \
-   apply(MESSAGE , nickname       , NICKNAME       , STRING , e   ) \
-   apply(MESSAGE , realname       , REALNAME       , STRING , f   ) \
-   apply(MESSAGE , user_image_url , USER_IMAGE_URL , STRING , g   ) \
-   apply(MESSAGE , text           , TEXT           , STRING , h   ) \
-   apply(MESSAGE , public         , PUBLIC         , BOOL   , i   )
+   apply(MESSAGE , id                     , ID                      , OID    , _id ) \
+   apply(MESSAGE , origin_network         , ORIGIN_NETWORK          , STRING , a   ) \
+   apply(MESSAGE , origin_id              , ORIGIN_ID               , STRING , b   ) \
+   apply(MESSAGE , origin_user_id         , ORIGIN_USER_ID          , STRING , c   ) \
+   apply(MESSAGE , user_id                , USER_ID                 , OID    , d   ) \
+   apply(MESSAGE , nickname               , NICKNAME                , STRING , e   ) \
+   apply(MESSAGE , realname               , REALNAME                , STRING , f   ) \
+   apply(MESSAGE , user_image_url         , USER_IMAGE_URL          , STRING , g   ) \
+   apply(MESSAGE , text                   , TEXT                    , STRING , h   ) \
+   apply(MESSAGE , public                 , PUBLIC                  , BOOL   , i   ) \
+   apply(MESSAGE , user_has_shelby_avatar , USER_HAS_SHELBY_AVATAR  , BOOL   , j   )
 
 #define ROLL_FOLLOWING_PROPERTIES(apply)                  \
    apply(ROLL_FOLLOWING , id      , ID      , OID , _id ) \

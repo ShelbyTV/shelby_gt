@@ -4,45 +4,48 @@ defaults: &defaults
   db_options: {}
   mm_use_identity_map: true
   explore:
-    cat1:
+    cat10:
       category_name: "★ Shelby Recommended ★"
       rolls: ["4f900cf5b415cc466a0005bb", "4fbbc4211c1cf42b91002eac", "4f901bd8b415cc466a0008ec", "4fa28d309a725b77f700070f", "4f958e049a725b0dba014577"]
-    cat2:
+    cat20:
       category_name: "Causes"
       rolls: ["4fe2425b9a725b08ec00ade8", "4fabff20d10412263a01c009"]
-    cat3:
+    cat30:
       category_name: "Comedy"
-      rolls: ["4f97304088ba6b5309024b32", "4fbd2d24d10412081e00042e", "4fbffb5fd1041206f6002355", "4fb3d39988ba6b33460043bb"]
-    cat4:
+      rolls: ["4fbd2d24d10412081e00042e", "4fbffb5fd1041206f6002355", "4fb3d39988ba6b33460043bb", "4fc532169a725b2999000354"]
+    cat40:
+      category_name: "Cool People"
+      rolls: ["4f901d4bb415cc661405fde9", "4f900d56b415cc6614056681", "4f8f7ef6b415cc476200004a", "4f902316b415cc466a0009dd", "4f9faa9b9a725b17de01e9c5", "4f900012b415cc661404e72b", "4f98d30a9a725b2dfb010cb6", "4f8f7ef2b415cc4762000002"]
+    cat50:
       category_name: "Education"
-      rolls: ["4fa39bd89a725b1f920008f3", "4fa054ff88ba6b09c8000e93", "4fbad2c5d1041266bc000d4f"]
-    cat5:
+      rolls: ["4fa39bd89a725b1f920008f3", "4fa054ff88ba6b09c8000e93", "4fbad2c5d1041266bc000d4f", "4faabca99a725b5cd50026a2"]
+    cat60:
       category_name: "Fitness"
       rolls: ["4fdee5f91c1cf4714200a607"]
-    cat6:
+    cat70:
       category_name: "Gaming"
-      rolls: ["4f987a5e9a725b032b002f13", "4f902217b415cc466a000909"]
-    cat7:
+      rolls: ["4f987a5e9a725b032b002f13", "4f902217b415cc466a000909", "4f98926f88ba6b626701474c"]
+    cat80:
       category_name: "Music"
-      rolls: ["4fa41cfa88ba6b0dcf001a65", "4fc52c659a725b73f80011c0", "4fd1083cd10412183a00346b"]
-    cat8:
+      rolls: ["4fa41cfa88ba6b0dcf001a65", "4fd1083cd10412183a00346b", "4fa41cfa88ba6b0dcf001a65", "4fa31cd888ba6b2fae00004a", "4f9ed72288ba6b205b00257c", "4fa2908088ba6b61770010af", "4fd1083cd10412183a00346b"]
+    cat90:
       category_name: "News/Business"
-      rolls: ["4f95622b9a725b72e700106b", "4fa8542c88ba6b669b000bcd"]
-    cat9:
+      rolls: ["4fccef549a725b7d4a005363", "4f95622b9a725b72e700106b", "4fa8542c88ba6b669b000bcd"]
+    cat100:
       category_name: "Offbeat"
-      rolls: ["4fa28d309a725b77f700070f", "4fa28d849a725b79c9000228", "4fa28d8c9a725b7a2a0001e6", "4fc532789a725b2999000906"]
-    cat10:
+      rolls: ["4fa28d309a725b77f700070f", "4fa28d849a725b79c9000228", "4fa28d8c9a725b7a2a0001e6"]
+    cat110:
       category_name: "Pop Culture"
-      rolls: ["4fbbc4211c1cf42b91002eac", "4faabca99a725b5cd50026a2"]
-    cat11:
+      rolls: ["4f901242b415cc466a00082d", "4faabca99a725b5cd50026a2", "4fbbc4211c1cf42b91002eac", "50072ee988ba6b796b00e4fd"]
+    cat120:
       category_name: "Science/Nature"
-      rolls: ["4fd8f8f3d104125fe305187d", "4fa057c388ba6b0f4200183c", "4fcce43988ba6b5b7400054a", "4f9b11f09a725b352f0020c4"]
-    cat12:
+      rolls: ["4fd8f8f3d104125fe305187d", "4fa057c388ba6b0f4200183c", "4fcce43988ba6b5b7400054a", "4f9b11f09a725b352f0020c4", "4f95929288ba6b17c10209a4"]
+    cat130:
       category_name: "Sports"
       rolls: ["4fb413bb9a725b650900195a", "4f91700d88ba6b2aab000fba", "4fbe42069a725b686300004a", "4f9889fd9a725b0db2003876", "4f94a9f89a725b7207000006", "4f962a5588ba6b1de300503a"]
-    cat13:
+    cat140:
       category_name: "Tech"
-      rolls: ["4fccef549a725b7d4a005363", "4fb6c97788ba6b4f3e0048fb"]
+      rolls: ["4fccef549a725b7d4a005363"]
 
 
     

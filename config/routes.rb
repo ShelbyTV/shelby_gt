@@ -67,7 +67,6 @@ ShelbyGt::Application.routes.draw do
       post 'share' => 'roll#share'
       post 'join' => 'roll#join'
       post 'leave' => 'roll#leave'
-      get 'browse' => 'roll#browse', :on => :collection
       get 'explore' => 'roll#explore', :on => :collection
     end
     namespace :roll do

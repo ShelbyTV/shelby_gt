@@ -527,6 +527,16 @@ void sobPrintAttributes(mrjsonContext context,
    }
 }
 
+void sobPrintStringToBoolAttribute(mrjsonContext context,
+                                   bson *object,
+                                   sobField field)
+{
+  mrbsonStringAsBoolAttribute(context,
+                              object,
+                              sobFieldDBName[field],
+                              sobFieldLongName[field]);
+}
+
 void sobPrintAttributeWithKeyOverride(mrjsonContext context,
                                       bson *object,
                                       sobField field,

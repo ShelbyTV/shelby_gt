@@ -83,7 +83,7 @@ class V1::RollController < ApplicationController
       rolls = Roll.find( Settings::Roll.explore.map { |name, cat| cat['rolls'] }.flatten )
       @frames_map = {}
       rolls.each do |r|
-        @frames_map[r.id.to_s] = r.frames.limit(3).all
+        @frames_map[r.id.to_s] = r.frames.limit(10).all
       end
       videos = Video.find( (@frames_map.values.flatten.compact.uniq).map { |f| f.video_id }.compact.uniq )
       
@@ -102,60 +102,7 @@ class V1::RollController < ApplicationController
       @status = 200
     end
   end
-  
-  ##
-  # Returns rolls to browse.
-  #
-  # [GET] /v1/roll/browse
-  # 
-  def browse
-    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
-      
-      case Rails.env
-      when 'production'
-        hot_rolls = ['4f99c6d0b415cc07f9000c3e' ,'4f933289b415cc5b250003fc', '4fdf3d27b415cc69340008f8', '4f901d4bb415cc661405fde9', '4f95630e9a725b76d40019d1', '4f900d56b415cc6614056681', '4f9ec30c9a725b424e00442e', '4f8feb54b415cc6614041213', '4f902217b415cc466a000909', '4f95db5388ba6b61a3004577', '4fa057c388ba6b0f4200183c', '4fa28d309a725b77f700070f', '4fbad2c5d1041266bc000d4f', '4fb40c9bd104126ad900a57b', '4fb489939a725b5ca8003e9b', '4fa41cfa88ba6b0dcf001a65', '4f9c3588b415cc0f0f000893', '4fbe42069a725b686300004a', '4f9e93879a725b12ab001c48', '4fa1eef188ba6b5f440007b9', '4fb3d39988ba6b33460043bb', '4f95cfe19a725b0a8c0384af', '4f902316b415cc466a0009dd']
-      when 'development'
-        hot_rolls = [Roll.all[0].id, Roll.all[1].id]
-      else
-        hot_rolls = params[:rolls]
-      end
-      
-      if @rolls = Roll.find(hot_rolls)
-        
-        # load frames with select attributes, if params say to
-        if params[:frames] == "true"
-          # default params
-          limit = params[:frames_limit] ? params[:frames_limit] : 1
-          # put an upper limit on the number of entries returned
-          limit = 20 if limit.to_i > 20
-
-          # intelligently fetching frames and videos for performance purposes
-          @frames =[]
-          @rolls.each { |r| @frames << r.frames.limit(limit).all }
-          @videos = Video.find( @frames.flatten!.compact.uniq.map {|f| f.video_id }.compact.uniq )
-          
-          @rolls.each do |r|
-            r['frames_subset'] = []
-            r.frames.limit(limit).all.each do |f| 
-              if f.video # NOTE: not sure why some frames dont have videos, but this is necessary until we know why
-                r['frames_subset'] << {
-                  :id => f.id, :video => {
-                    :id => f.video.id, :thumbnail_url => f.video.thumbnail_url
-                  }
-                }
-              end
-            end
-          end
-        end
-        
-        @status = 200
-      else
-        render_error(404, "something went wrong finding those rolls.")
-      end
-      
-    end
-  end
-  
+    
   ##
   # Returns success if roll is shared successfully, with the given parameters.
   #

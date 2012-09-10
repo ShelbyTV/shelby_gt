@@ -133,6 +133,7 @@ void printJsonMessage(sobContext sob, mrjsonContext context, bson *message)
       SOB_MESSAGE_ORIGIN_ID,
       SOB_MESSAGE_ORIGIN_USER_ID,
       SOB_MESSAGE_USER_ID,
+      SOB_MESSAGE_USER_HAS_SHELBY_AVATAR,
       SOB_MESSAGE_PUBLIC
    };
 
@@ -228,6 +229,10 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
       SOB_USER_PUBLIC_ROLL_ID,
       SOB_USER_GT_ENABLED,
    };
+   
+   sobPrintStringToBoolAttribute(context,
+                                 user,
+                                 SOB_USER_HAS_SHELBY_AVATAR);
 
    sobPrintAttributes(context,
                       user,

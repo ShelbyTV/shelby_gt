@@ -35,9 +35,15 @@ void mrbsonIntAttribute(mrjsonContext context,
                         const char *outputName);
 
 void mrbsonBoolAttribute(mrjsonContext context,
-                         bson *data, 
+                         bson *data,
                          const char *bsonField, 
                          const char *outputName);
+
+// If the String exists and is a non-empty string, prints true, else false
+void mrbsonStringAsBoolAttribute(mrjsonContext context,
+                                 bson *data,
+                                 const char *bsonField,
+                                 const char *outputName);
 
 void mrbsonDoubleAttribute(mrjsonContext context,
                            bson *data,
