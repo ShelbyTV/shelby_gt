@@ -23,7 +23,7 @@ defaults: &defaults
     subject: "%{re_rollers_name} rolled your video"
   join_roll_notification:
     category: "Join Roll Notifications"
-    subject: "%{users_name} is following your roll!"
+    subject: "%{users_name} is following your Roll!"
   # GtInterest
   gt_interest_autoresponse:
     category: "Submit GT Interest"
