@@ -6,8 +6,8 @@ class ApplicationController < ActionController::Base
   
   respond_to :json
   
-  def render_error(code, message)
-    @status, @message = code, message
+  def render_error(code, message, errors=nil)
+    @status, @message, @errors = code, message, errors
     Rails.logger.error "render_error(#{code}, '#{message}')"
     render 'v1/blank', :status => @status
   end

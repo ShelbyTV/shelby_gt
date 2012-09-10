@@ -23,4 +23,14 @@ module ApplicationHelper
       from_time.respond_to?(:strftime) ? from_time.strftime("%b %-d") : ""
     end
   end
+  
+  #valid avatar_size options are "small", "large", "original"
+  def avatar_url_for_user(user, avatar_size="small")
+    if user.avatar?
+      return user.shelby_avatar_url(avatar_size)
+    else
+      return user.user_image_original || user.user_image || "/images/assets/avatar.png"
+    end
+  end
+  
 end
