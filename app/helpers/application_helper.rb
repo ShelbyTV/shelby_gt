@@ -32,5 +32,17 @@ module ApplicationHelper
       return user.user_image_original || user.user_image || "/images/assets/avatar.png"
     end
   end
+
+  def avatar_url_for_message(message, avatar_size="small")
+    if message && message.user_has_shelby_avatar
+      size = "sq48x48" if avatar_size == "small"
+      size = "sq192x192" if avatar_size == "large"
+      size = "original" if avatar_size == "original"
+      
+      return "http://s3.amazonaws.com/#{Settings::Paperclip.bucket}/#{size}/#{message.user_id}"
+    else
+      return message.user_image_url
+    end
+  end
   
 end

@@ -13,9 +13,10 @@ defaults: &defaults
   notification_sender: "notifications@shelby.tv"
   comment_notification:
     category: "Comment Notifications"
-    subject: "%{commenters_name} commented on your video"
+    subject_a: "%{commenters_name} commented on a video you rolled"
+    subject_b: "%{commenters_name} commented on a video on Shelby.tv"
   upvote_notification:
-    category: "Comment Notifications"
+    category: "Heart Notifications"
     subject: "%{upvoters_name} liked your video"
   reroll_notification:
     category: "Reroll Notifications"
