@@ -268,9 +268,18 @@ describe 'v1/user' do
         parse_json(response.body)["result"]["name"].should eq("Barack Obama")
       end
       
-      it "should return an error if a validation fails" do
-        put '/v1/user/'+@u1.id+'?nickname=signout'
-        response.body.should be_json_eql(404).at_path("status")
+      it "should return an error if nickname validation fails" do
+        u2 = Factory.create(:user)
+        put '/v1/user/'+@u1.id+'?nickname='+u2.nickname
+        response.body.should be_json_eql(409).at_path("status")
+        response.body.should have_json_path("errors/user/nickname")
+      end
+      
+      it "should return an error if email validation fails" do
+        u2 = Factory.create(:user)
+        put '/v1/user/'+@u1.id+'?primary_email='+u2.primary_email
+        response.body.should be_json_eql(409).at_path("status")
+        response.body.should have_json_path("errors/user/primary_email")
       end
       
       it "should update a users app_progress successfuly" do

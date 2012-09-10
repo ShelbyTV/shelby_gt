@@ -48,12 +48,16 @@ class V1::UserController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['update']) do
       @user = current_user
       begin
-        if params[:password] and (params[:password] != params[:password_confirmation])
-          return render_error(409, "Passwords did not match.")
-        end
         
+        #DEBT: This is a little ghetto, should check all conditions and then return error
+        if params[:password] and (params[:password] != params[:password_confirmation])
+          return render_error(409, "Passwords did not match.", {:user => {:password => "did not match confirmation"}})
+        end
         if params[:nickname] and params[:nickname] != @user.nickname
-          return render_error(409, "Nickname taken") if User.exists?(:nickname => params[:nickname])
+          return render_error(409, "Nickname taken", {:user => {:nickname => "already taken"}}) if User.exists?(:nickname => params[:nickname])
+        end
+        if params[:primary_email] and params[:primary_email] != @user.primary_email
+          return render_error(409, "Email taken", {:user => {:primary_email => "already taken"}}) if User.exists?(:primary_email => params[:primary_email])
         end
         
         if @user.update_attributes(params)
@@ -62,7 +66,7 @@ class V1::UserController < ApplicationController
           # When changing the password, need to re-sign in (and bypass validation)
           sign_in(@user, :bypass => true) if params[:password]
         else
-          render_error(404, "error updating user.")
+          render_error(409, "error updating user.")
         end
       rescue => e
         render_error(404, "error while updating user: #{e}")
