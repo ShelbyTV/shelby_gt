@@ -13,22 +13,16 @@ module Dev
     def self.fix!
       total = 0
       fixed = 0
-      rollsToFix = Roll.where(:roll_type => Roll::TYPES[:special_public], :origin_network => nil).limit(100)
+      rollsToFix = Roll.where(:roll_type => Roll::TYPES[:special_public], :origin_network => nil)
       rollsToFix.each do |r|
         total += 1
         if u = User.find(r.creator_id)
           if u.authentications.count == 1
-            #r.origin_network = u.authentications.first.provider
-            puts "r.origin_network = #{u.authentications.first.provider}"
-            #r.save
+            r.origin_network = u.authentications.first.provider
+            r.save
             fixed += 1
-          else
-            puts "More authentications."
-          end
-        else
-          puts "No creator."
         end
-        if total % 10 == 0
+        if total % 10000 == 0
           puts "Total: #{total}, Fixed: #{fixed}"
         end
       end if rollsToFix
