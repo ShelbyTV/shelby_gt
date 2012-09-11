@@ -13,7 +13,7 @@ module Dev
     def self.fix!
       total = 0
       fixed = 0
-      while (true) {
+      while (true)
         begin
           rollsToFix = Roll.where(:roll_type => Roll::TYPES[:special_public], :origin_network => nil).skip(total - fixed)
           break if !rollsToFix
