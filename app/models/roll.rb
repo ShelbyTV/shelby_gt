@@ -135,6 +135,7 @@ class Roll
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
     
     return false if self.followed_by?(u)
+    return false if self.roll_type == TYPES[:special_watch_later] and self.creator_id != u.id
   
     self.push_uniq :following_users => FollowingUser.new(:user => u).to_mongo
     u.push_uniq :roll_followings => RollFollowing.new(:roll => self).to_mongo
