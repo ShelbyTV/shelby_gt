@@ -92,15 +92,8 @@ class AuthenticationsController < ApplicationController
       # if they have a GtInterest or CohortEntrance, they are allowed in
       gt_interest = GtInterest.find(cookies[:gt_access_token])
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
-      
-      # if they are invited by someone via an invitation to join a private roll, and the inviter is gt_enabled, let em in!
-      # gt_roll_invite consists of "inviter uid, invitee email address, roll id"
-      if private_invite = cookies[:gt_roll_invite] and invite_info = cookies[:gt_roll_invite].split(',')
-        inviter = User.find(invite_info[0])
-        roll = Roll.find(invite_info[2])
-      end
-      
-      if gt_interest or cohort_entrance or (private_invite and inviter and inviter.gt_enabled)
+            
+      if gt_interest or cohort_entrance
         user = GT::UserManager.create_new_user_from_omniauth(omniauth)
         
         if user.valid?
@@ -115,11 +108,6 @@ class AuthenticationsController < ApplicationController
           if cohort_entrance
             use_cohort_entrance(user, cohort_entrance)
             session[:cohort_entrance_id] = nil
-          end
-          if private_invite
-            GT::InvitationManager.private_roll_invite(user, private_invite)
-            GT::UserManager.copy_cohorts!(inviter, user, ["roll_invited"])
-            cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
           end
           
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
@@ -136,15 +124,9 @@ class AuthenticationsController < ApplicationController
         
 # ---- New User signing up w/ email & password
     elsif !params[:user].blank?
-      # if they are invited by someone via an invitation to join a private roll, let em in!
-      # gt_roll_invite consists of "inviter uid, invitee email address, roll id"
-      if private_invite = cookies[:gt_roll_invite] and invite_info = cookies[:gt_roll_invite].split(',')
-        inviter = User.find(invite_info[0])
-        roll = Roll.find(invite_info[2])
-      end
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
       
-      if private_invite or cohort_entrance
+      if cohort_entrance
       
         user = GT::UserManager.create_new_user_from_params(params[:user])
 
@@ -156,11 +138,6 @@ class AuthenticationsController < ApplicationController
           if cohort_entrance
             use_cohort_entrance(user, cohort_entrance)
             session[:cohort_entrance_id] = nil
-          end
-          if private_invite
-            GT::InvitationManager.private_roll_invite(user, private_invite)
-            GT::UserManager.copy_cohorts!(inviter, user, ["roll_invited"])
-            cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
           end
 
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['username'])
