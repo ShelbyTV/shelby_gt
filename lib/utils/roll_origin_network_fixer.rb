@@ -21,6 +21,7 @@ module Dev
             r.origin_network = u.authentications.first.provider
             r.save
             fixed += 1
+          end
         end
         if total % 10000 == 0
           puts "Total: #{total}, Fixed: #{fixed}"
