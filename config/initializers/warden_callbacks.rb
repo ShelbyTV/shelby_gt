@@ -3,7 +3,7 @@
 
 Warden::Manager.before_logout do |user, auth, opts|
   auth.cookies[:_shelby_gt_common] = {
-    :value => "authenticated_user_id=nil,csrf_token=nil",
+    :value => "authenticated_user_id=nil,csrf_token=nil,api_logout=true",
     :expires => 20.years.from_now,
     :domain => '.shelby.tv'
   }
