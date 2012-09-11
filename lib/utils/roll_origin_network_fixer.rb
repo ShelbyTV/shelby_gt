@@ -22,10 +22,14 @@ module Dev
             puts "r.origin_network = #{u.authentications.first.provider}"
             #r.save
             fixed += 1
+          else
+            puts "More authentications."
           end
+        else
+          puts "No creator."
         end
         if total % 10 == 0
-          puts "Total: #{total}, Fixed: #{fixed}\n"
+          puts "Total: #{total}, Fixed: #{fixed}"
         end
       end if rollsToFix
     end
