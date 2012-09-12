@@ -52,39 +52,39 @@ describe AuthenticationsController do
       it "should redirect back to the submitting page on error" do
         request.stub(:referer).and_return(referer="http://whatever.com/")
         post :login
-        assigns(:opener_location).should match /#{referer}.*/
+        response.redirect_url.should match /#{referer}.*/
       end
       
       it "should redirect to API root when referer is missing" do
         request.stub(:referer).and_return nil
         post :login
-        assigns(:opener_location).should match /#{Settings::ShelbyAPI.web_root}.*/
+        response.redirect_url.should match /#{Settings::ShelbyAPI.web_root}.*/
       end
       
       it "should return proper error when username is missing" do
         post :login, :password => @password
-        assigns(:opener_location).should match /.*auth_failure=1.*/
+        response.redirect_url.should match /.*auth_failure=1.*/
       end
       
       it "should return proper error when password is missing" do
         post :login, :username => @u.nickname
-        assigns(:opener_location).should match /.*auth_failure=1.*/
+        response.redirect_url.should match /.*auth_failure=1.*/
       end
       
       it "should return proper error on username/email has no match" do
         post :login, :username => "asdflio24523ln", :password => @password
-        assigns(:opener_location).should match /.*auth_failure=1.*/
+        response.redirect_url.should match /.*auth_failure=1.*/
       end
 
       it "should return proper error on password incorrect" do
         post :login, :username => @u.nickname, :password => @password+"X"
-        assigns(:opener_location).should match /.*auth_failure=1.*/
+        response.redirect_url.should match /.*auth_failure=1.*/
       end
       
       it "should preserve redirect on error" do
         post :login, :redir => "localhost"
-        assigns(:opener_location).should match /.*auth_failure=1.*/
-        assigns(:opener_location).should match /.*redir=localhost.*/
+        response.redirect_url.should match /.*auth_failure=1.*/
+        response.redirect_url.should match /.*redir=localhost.*/
       end
     end
   
@@ -155,7 +155,7 @@ describe AuthenticationsController do
         GT::UserMerger.should_receive(:merge_users).with(@other_user, @into_user).and_return(true)
         post :do_merge_accounts
         
-        response.should redirect_to(Settings::ShelbyAPI.web_root)
+        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
       end
       
       it "should sign the user out if there is no user to merge in in the session" do
@@ -163,7 +163,7 @@ describe AuthenticationsController do
         GT::UserMerger.should_receive(:merge_users).with(@other_user, @into_user).exactly(0).times
         post :do_merge_accounts
         
-        response.should redirect_to(sign_out_user_path)
+        assigns(:opener_location).should == sign_out_user_path
       end
     end
   
