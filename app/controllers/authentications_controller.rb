@@ -25,17 +25,13 @@ class AuthenticationsController < ApplicationController
     else
       query = {:auth_failure => 1, :auth_strategy => "that username/password"}
       query[:redir] = params[:redir] if params[:redir]
-      @opener_location = add_query_params(request.referer || Settings::ShelbyAPI.web_root, query)
-      #return render :action => 'redirector', :layout => 'simple'
-      redirect_to @opener_location and return
+      redirect_to add_query_params(request.referer || Settings::ShelbyAPI.web_root, query) and return
     end
     
     # any user with valid email/password is a valid Shelby user
     # this sets up redirect
     sign_in_current_user(user)
-    @opener_location = clean_query_params(@opener_location)
-    #render :action => 'redirector', :layout => 'simple'
-    redirect_to @opener_location and return
+    redirect_to clean_query_params(@opener_location) and return
   end
   
   # This method has grown into a fucking beast.  
@@ -92,15 +88,8 @@ class AuthenticationsController < ApplicationController
       # if they have a GtInterest or CohortEntrance, they are allowed in
       gt_interest = GtInterest.find(cookies[:gt_access_token])
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
-      
-      # if they are invited by someone via an invitation to join a private roll, and the inviter is gt_enabled, let em in!
-      # gt_roll_invite consists of "inviter uid, invitee email address, roll id"
-      if private_invite = cookies[:gt_roll_invite] and invite_info = cookies[:gt_roll_invite].split(',')
-        inviter = User.find(invite_info[0])
-        roll = Roll.find(invite_info[2])
-      end
-      
-      if gt_interest or cohort_entrance or (private_invite and inviter and inviter.gt_enabled)
+            
+      if gt_interest or cohort_entrance
         user = GT::UserManager.create_new_user_from_omniauth(omniauth)
         
         if user.valid?
@@ -115,11 +104,6 @@ class AuthenticationsController < ApplicationController
           if cohort_entrance
             use_cohort_entrance(user, cohort_entrance)
             session[:cohort_entrance_id] = nil
-          end
-          if private_invite
-            GT::InvitationManager.private_roll_invite(user, private_invite)
-            GT::UserManager.copy_cohorts!(inviter, user, ["roll_invited"])
-            cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
           end
           
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
@@ -136,15 +120,9 @@ class AuthenticationsController < ApplicationController
         
 # ---- New User signing up w/ email & password
     elsif !params[:user].blank?
-      # if they are invited by someone via an invitation to join a private roll, let em in!
-      # gt_roll_invite consists of "inviter uid, invitee email address, roll id"
-      if private_invite = cookies[:gt_roll_invite] and invite_info = cookies[:gt_roll_invite].split(',')
-        inviter = User.find(invite_info[0])
-        roll = Roll.find(invite_info[2])
-      end
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
       
-      if private_invite or cohort_entrance
+      if cohort_entrance
       
         user = GT::UserManager.create_new_user_from_params(params[:user])
 
@@ -156,11 +134,6 @@ class AuthenticationsController < ApplicationController
           if cohort_entrance
             use_cohort_entrance(user, cohort_entrance)
             session[:cohort_entrance_id] = nil
-          end
-          if private_invite
-            GT::InvitationManager.private_roll_invite(user, private_invite)
-            GT::UserManager.copy_cohorts!(inviter, user, ["roll_invited"])
-            cookies.delete(:gt_roll_invite, :domain => ".shelby.tv")
           end
 
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['username'])
@@ -187,8 +160,7 @@ class AuthenticationsController < ApplicationController
 
     @opener_location = clean_query_params(@opener_location)
 
-    #render :action => 'redirector', :layout => 'simple'
-    redirect_to @opener_location and return
+    render :action => 'redirector', :layout => 'simple'
   end
   
   # confirm that they want to merge, will post to do_merge_accounts
@@ -205,12 +177,14 @@ class AuthenticationsController < ApplicationController
     if @other_user and @into_user
       session[:user_to_merge_in_id] = nil
       if GT::UserMerger.merge_users(@other_user, @into_user)
-        redirect_to Settings::ShelbyAPI.web_root and return
+        @opener_location = Settings::ShelbyAPI.web_root
+        return render :action => 'redirector', :layout => 'simple'
       end
     end
     
     # if we fell through
-    redirect_to sign_out_user_path
+    @opener_location = sign_out_user_path
+    render :action => 'redirector', :layout => 'simple'
   end
   
   def fail

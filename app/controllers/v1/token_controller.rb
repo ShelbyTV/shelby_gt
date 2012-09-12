@@ -6,7 +6,7 @@ class V1::TokenController < ApplicationController
 
   ##
   # Ensures User matching the given credentials has a single sign on token and returns it.
-  # N.B. Until we allow for email/password authentication, must provide 3rd party credentials.
+  # Either supply 3rd party credentials or email/password.
   #
   # If given credentials are valid, but don't match any user, a new User will be created.
   #
@@ -15,35 +15,53 @@ class V1::TokenController < ApplicationController
   #
   # [POST] /v1/token
   #
-  # @param [Required, String] provider_name The name of the 3rd party provider the user is authorized with (ie. "twitter")
-  # @param [Required, String] uid The id of the User at the 3rd party
-  # @param [Required, String] token The oAuth token of this User at said provider
-  # @param [Optional, String] secret The oAuth secret of this User at said provider (if used by the provider)
+  # All following third party credentials are Optional if you're using email/password
+  #   @param [Required, String] provider_name The name of the 3rd party provider the user is authorized with (ie. "twitter")
+  #   @param [Required, String] uid The id of the User at the 3rd party
+  #   @param [Required, String] token The oAuth token of this User at said provider
+  #   @param [Optional, String] secret The oAuth secret of this User at said provider (if used by the provider)
+  #
+  # Email/password are both Optional if you're using third party credentials
+  #   @param [Required, String] email The email address associated with a user (used in conjuction with password)
+  #   @param [Required, String] password The plaintext password (use HTTPS) to verify [Required if using email]
+  #
   # @return [User] User w/ authentication token
+  #
   def create
+    # 3rd party access
     provider = params[:provider_name]
     uid = params[:uid]
     token = params[:token]
     secret = params[:secret]
+    # email/password access
+    email = params[:email]
+    password = params[:password]
     
-    @user = User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
+    @user = if provider and uid
+      User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
+    else
+      User.where(:primary_email => email).first
+    end
     
-    if @user and token
+    if @user
       
-      #----------------------------------Current User----------------------------------
-      if GT::UserManager.verify_user(@user, provider, uid, token, secret)
-        
+      if token and GT::UserManager.verify_user(@user, provider, uid, token, secret)
+        #----------------------------------Current User via 3rd party----------------------------------        
         if @user.faux == User::FAUX_STATUS[:true]
           GT::UserManager.convert_faux_user_to_real(@user, GT::ImposterOmniauth.get_user_info(provider, uid, token, secret))
         else
           GT::UserManager.start_user_sign_in(@user, :provider => provider, :uid => uid, :token => token, :secret => secret)
         end
         
+      elsif password and @user.valid_password? password
+        #----------------------------------Current User via email/pw----------------------------------
+        GT::UserManager.start_user_sign_in(@user)
+        
       else
         return render_error(404, "Failed to verify user.")
       end
-    elsif token
       
+    elsif token
       #----------------------------------New User----------------------------------
       omniauth = GT::ImposterOmniauth.get_user_info(provider, uid, token, secret)
       

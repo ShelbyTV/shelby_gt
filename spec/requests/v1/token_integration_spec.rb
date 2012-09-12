@@ -11,14 +11,23 @@ describe 'v1/token' do
       context "existing GT real user" do
         before(:each) do
           @user = Factory.create(:user, :authentication_token => nil) #adds a twitter authentication
+          @user.password = (@user_password = "password")
+          @user.save
           @twt_auth = @user.authentications[0]
           @fb_auth = Factory.create(:authentication, :provider => "facebook", :oauth_secret => nil)
           @user.authentications << @fb_auth
           @user.save
         end
         
-        it "should return user info w/ a new auth token on success" do
+        it "should return user info w/ a new auth token on success (with twitter creds)" do
           post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}"
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/authentication_token")
+          parse_json(response.body)['result']['authentication_token'].should == @user.reload.authentication_token
+        end
+        
+        it "should return user info w/ a new auth token on success (with email/password)" do
+          post "/v1/token?email=#{@user.primary_email}&password=#{@user_password}"
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/authentication_token")
           parse_json(response.body)['result']['authentication_token'].should == @user.reload.authentication_token

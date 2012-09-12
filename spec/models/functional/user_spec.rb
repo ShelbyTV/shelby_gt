@@ -200,4 +200,24 @@ describe User do
     end
   end
   
+  context "primary_email" do
+    before(:each) do
+      @u = Factory.create(:user) #sets a primary_email on user
+    end
+    
+    it "should set to nil on :create if primary_email is already taken" do
+      u2 = Factory.build(:user, :primary_email => @u.primary_email)
+      u2.save.should == true
+      u2.primary_email.blank?.should == true
+    end
+    
+    it "should fail to save on :update if primary_email is already taken" do
+      u2 = Factory.create(:user)
+      u2.primary_email = "somethingRandom235245lkj245o8@gmail.com"
+      u2.save.should == true
+      u2.primary_email = @u.primary_email
+      u2.save.should == false
+    end
+  end
+  
 end

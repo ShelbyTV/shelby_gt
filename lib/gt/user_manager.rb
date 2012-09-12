@@ -299,7 +299,7 @@ module GT
       orig_nick = user.nickname
       i = 2
       
-      while( User.where( :downcase_nickname => user.nickname.downcase ).count > 0 ) do
+      while( User.where( :_id.ne => user.id, :downcase_nickname => user.nickname.downcase ).count > 0 ) do
         user.nickname = "#{orig_nick}_#{i}"
         i = i*2
       end

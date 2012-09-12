@@ -73,5 +73,6 @@
 		$(this).attr('disabled', 'disabled');
 		$(this).attr('value', 'Merging!  This may take a few minutes...');
 		$("#cancel-merge").hide();
+		$(e.currentTarget).parents("form").submit();
 	});
 </script>

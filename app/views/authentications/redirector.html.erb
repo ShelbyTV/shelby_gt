@@ -1,11 +1,11 @@
 <%= javascript_tag do -%>
-	// If we were opened as a popup, redirect the opener (so the user is signed in) and close ourselves
-	// otherwise, just redirect ourselves
-	if(window.opener){
+	if(window.opener && window.close){
+		// We were opened as a popup, redirect the opener and close ourselves
 		window.opener.location = "<%= @opener_location %>";
 		window.close();
 	}
 	else {
+		// Just redirect ourselves (this happens with cohort links)
 		window.location = "<%= @opener_location %>";
 	}
 <% end -%>

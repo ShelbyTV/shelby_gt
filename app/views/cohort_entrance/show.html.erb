@@ -26,7 +26,7 @@
 	<h2>You can also sign up with email first and connect Twitter/Facebook/Tumblr later by going to your Preferences.</h2>
 
 	<div class="email-signup-wrapper">
-		<%= form_for(:user, :url => session_path(:user)) do |f| %>
+		<%= form_for(:user, :url => session_url(:user, :protocol => 'https')) do |f| %>
 		  <div><%= f.label :name %><br />
 		  <%= f.text_field :name %></div>
 

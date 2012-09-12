@@ -40,6 +40,7 @@ describe GT::UserFacebookManager do
     it "should follow public rolls of all friends" do
       @friend1.public_roll.should_receive(:add_follower).with(@user).exactly(1).times
       @friend2.public_roll.should_receive(:add_follower).with(@user).exactly(1).times
+      @user.stub("has_provider?").and_return(true)
       GT::UserFacebookManager.follow_all_friends_public_rolls(@user)
     end
     
@@ -50,6 +51,7 @@ describe GT::UserFacebookManager do
       
       @friend1.public_roll.should_receive(:add_follower).with(@user).exactly(0).times
       @friend2.public_roll.should_receive(:add_follower).with(@user).exactly(1).times
+      @user.stub("has_provider?").and_return(true)
       GT::UserFacebookManager.follow_all_friends_public_rolls(@user)
     end
     

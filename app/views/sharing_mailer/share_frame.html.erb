@@ -1,49 +1,73 @@
 <% standard_html_email_wrapper do %>
 	<!-- Wrapper/Container Table: Use a wrapper table to control the width and the background color consistently of your email. Use this approach instead of setting attributes on the body tag. -->
-	<table cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#f6f6f6; border:1px solid #b5b5b5; color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
+	<table align="center" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#E2E2E2; color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;width: 55%;">
 		<tr>
-			<td valign="top" class="shelby-email-lining" style="padding:20px;">
-				<h1 class="shelby-logo" style="margin-top:5px;">
+			<td valign="middle" class="shelby-email-lining" style="padding:0px;">
+				<!--  show message in email preview-->
+				<div style="font-size:0px;display:none;">
+					<%= @message %>
+				</div>
+				<!-- end show message-->
+				<h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313425;">
 					<a href="<%= Settings::Email.web_url_base %>">
-						<img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv logo" title="Shelby.tv" width="156" height="42" />
+						<img class="image_fix" src="<%= Settings::Email.shelby_logo_gt %>" alt="Shelby.tv logo" title="Shelby.tv" height="30" style="padding:8px 0px 5px;display:block;margin: 0px auto;display:block;"/>
 					</a>
 				</h1>
-				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:1px solid #b5b5b5; padding:20px; width:100%;">
-					<tr height="75">
-						<td width="75"  valign="top">
-							<a href="<%= @user_from.permalink %>"><img class="image_fix" src="<%= @user_from_avatar %>" alt="user_image" title="user_image" width="60" height="60" /></a>
-						</td>
-						<td  valign="top">
-							<div>
-								<a href="<%= @user_from.permalink %>"><%= @user_from.name %></a> found a video to share with you...
-							</div>
+				<hr style="margin-top:0px;background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #EFEFEF;"/>
+				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; padding:20px 20px 15px; max-width:400px;margin: 0px auto;">
+					<tr height="25">
+						<td colspan="2" valign="top" style="font-weight:bold;font-size: 14px; color:#333">
+							<a href="<%= @user_from.permalink %>"><%= @user_from.name %></a> shared a video with you:
 						</td>
 					</tr>
-				</table>
-				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#e6e6e6; border-top:0px; padding:0px 0px 15px 20px; width:100%;">
+					<% if @message %>
+						<tr height="10">
+							<td width="45" valign="top">
+								<a href="<%= @user_from.permalink %>" style="float:left;">
+									<img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="user_image" title="<%= @user_from.name %>" width="45" height="45" style="margin-right: 15px;display:block;"/>
+								</a>
+								<div style="float:left;max-width:218px;font-size:12px;color:#333;">
+									<%= @message %>									
+								</div>
+							</td>
+						</tr>
+					<% end %>
 					<tr>
-						<td width="185"  valign="top">
-							<a href="<%= @frame_permalink %>" style="float:left; padding-right:10px; padding-bottom: 10px;"><img class="image_fix" src="<%= @frame.video.thumbnail_url %>" alt="user_image" title="user_image" width="175" /></a>
-							<div style="float:left; width: 66%">
-								<p><%= @message %></p>	
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<td colspan="2" align="center">
-							<a href="<%= @frame_permalink %>" class="shelby-email-button" style="background:#69BD46; border:1px outset #ddd; color:white; display:inline-block; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-size:16px; font-weight:bold; margin:15px auto; padding:12px 33px; text-decoration:none; width: 165px">
-								Watch Now
+						<td align="center" valign="top">
+								<a href="<%= @frame_permalink %>" style="padding-bottom: 10px; text-decoration: none;color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
+									<table border="0" cellspacing="0" cellpadding="0">
+										<tr height="25">
+											<td style="font-weight:bold;text-align:left;">
+												<%= truncate(@frame.video.title, :length => 45, :separator => ' ') %>
+											</td>
+										</tr>
+										<tr height="80" style="overflow-y:hidden;">
+											<td valign="top">
+												<div style="height: 130px;overflow-y:hidden;">
+													<img class="image_fix" src="<%= @frame.video.thumbnail_url %>" alt="video thumbnail" title="video_thumbnail" width="280" style="margin-top:-30px; display:block;"/>
+												</div>
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<div style="width: 278px; height:27px; background-color: #0590c4; color: white;text-align: center;font-weight: bold;margin-top: 8px; border: 1px solid #056083;padding-top: 9px;">
+													watch now ▶
+												</div>												
+											</td>
+										</tr>
+									</table>
 							</a>
 						</td>
 					</tr>
-					<tr>
-						<td colspan="2" style="padding-top:10px;">
-							<small class="shelby-email-message-footer" style="font-size:11px; margin-top: 10px;">
-								Please remember you can always go into your <a href="<%= Settings::ShelbyAPI.web_root %>/preferences">Preferences</a> page and adjust your account and contact info, privacy controls and emails preferences.
-							</small>
-						</td>
-					</tr>
 				</table>
+			</td>	
+		</tr>
+		<tr height="43">
+			<td colspan="2">
+				<hr style="background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #EFEFEF;"/>
+				<div style="color:#555; margin-right:5px;float:right;font-size:11px;">
+          <%= Settings::Email.shelby_address %>
+				</div>
 			</td>
 		</tr>
 	</table>  

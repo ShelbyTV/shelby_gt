@@ -53,8 +53,9 @@ class V1::UserController < ApplicationController
         if params[:password] and (params[:password] != params[:password_confirmation])
           return render_error(409, "Passwords did not match.", {:user => {:password => "did not match confirmation"}})
         end
-        if params[:nickname] and params[:nickname] != @user.nickname
-          return render_error(409, "Nickname taken", {:user => {:nickname => "already taken"}}) if User.exists?(:nickname => params[:nickname])
+        params[:nickname] = clean_nickname(params[:nickname]) if params[:nickname]
+        if params[:nickname] and params[:nickname] != @user.downcase_nickname
+          return render_error(409, "Nickname taken", {:user => {:nickname => "already taken"}}) if User.exists?(:downcase_nickname => params[:nickname])
         end
         if params[:primary_email] and params[:primary_email] != @user.primary_email
           return render_error(409, "Email taken", {:user => {:primary_email => "already taken"}}) if User.exists?(:primary_email => params[:primary_email])
@@ -104,6 +105,13 @@ class V1::UserController < ApplicationController
         r = roll_array.slice!(rollIndex)
         roll_array.insert(pos, r)
       end
+    end
+    
+    def clean_nickname(nick)
+      nick = nick.downcase
+      nick = nick.strip
+      nick = nick.gsub(/[ ,:&~]/,'_')
+      return nick
     end
   
 end

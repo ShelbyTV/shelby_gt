@@ -10,6 +10,7 @@ module GT
     # If they're a real Shelby user, they will get an email about the following.
     # 
     def self.follow_all_friends_public_rolls(user)
+      return unless user.has_provider? "facebook"
       self.friends_ids(user).each do |uid|
         friend = User.first( :conditions => { 'authentications.provider' => 'facebook', 'authentications.uid' => uid.to_s } )
         friend.public_roll.add_follower(user) if friend and friend.public_roll and !user.unfollowed_roll?(friend.public_roll)

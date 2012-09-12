@@ -9,15 +9,12 @@
               <table border="0" cellpadding="10" cellspacing="0" width="100%" id="templateHeader" style="background-color: #FFFFFF;border-bottom: 0;position: relative;">
                 <tr>
                   <!-- // Begin Module: Standard Header Image \ -->
-                  <td align="center" valign="middle" class="shelby-header-logo" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;font-weight: 300;width: 100px;">
-                    <a href="<%= Settings::Email.web_url_base %>">
-                      <img src="<%= Settings::Email.shelby_logo_gt %>" id="headerImage" alt="Shelby.tv logo" title="Shelby.tv" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 97px;vertical-align: bottom;">
-                    </a>
-                  </td>
-                  <td align="right" valign="middle" class="shelby-header" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 11px;font-weight: 300;">
-                    <span id="headerSlogan" style="color: #aaa;line-height: 1.231;">
-                      <%= Settings::Email.shelby_tagline %>
-                    </span>
+                  <td valign="middle" class="shelby-email-lining" style="padding:0px;width:85%;min-width: 300px;">
+										<h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313425;">
+											<a href="<%= Settings::Email.web_url_base %>">
+												<img class="image_fix" src="<%= Settings::Email.shelby_logo_gt %>" alt="Shelby.tv logo" title="Shelby.tv" height="30" style="padding:8px 0px 5px;display:block;margin: 0px auto;display:block;"/>
+											</a>
+										</h1>
                   </td>
                   <!-- // End Module: Standard Header Image \ -->
                 </tr>
@@ -39,10 +36,15 @@
                               <h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 125%;font-weight: normal;line-height: 100%;margin-top: 0.5em;margin-right: 0;margin-bottom: 10px;margin-left: 0;">
                                 <div class="shelby-avatar" style="background: transparent;display: inline-block;height: 50px;margin-right: .5em;overflow: hidden;width: 50px;vertical-align: middle;color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
                                   <a href="#" style="color: #777;font-weight: normal;text-decoration: underline;">
-                                    <img src="<%= @user_from.user_image %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" style="border: 0;height: 100%;line-height: 100%;outline: none;text-decoration: none;display: inline;">
+                                    <img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="user_image" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;height: 45px;line-height: 100%;outline: none;text-decoration: none;display: block;"/>																		
                                   </a>
                                 </div>
-                                <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> is following your <a href="<%= @roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@roll) %></a>.
+                                <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> 
+																<% if @roll.subdomain_active %>
+																	is now following your roll at: <a href="http://<%= @roll.subdomain %>.shelby.tv" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @roll.subdomain %>.shelby.tv</a>.
+																<% else %>
+																	is now following your <a href="<%= @roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@roll) %></a>.
+															  <% end %>
                               </h4>
                           </div>
                         </td>
