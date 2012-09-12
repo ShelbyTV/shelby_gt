@@ -41,9 +41,9 @@
                                 </div>
                                 <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> 
 																<% if @roll.subdomain_active %>
-																	is following now following your roll at: <a href="http://<%= @roll.subdomain %>.shelby.tv" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @roll.subdomain %>.shelby.tv</a>.
+																	is now following your roll at: <a href="http://<%= @roll.subdomain %>.shelby.tv" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @roll.subdomain %>.shelby.tv</a>.
 																<% else %>
-																	is following now following your <a href="<%= @roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@roll) %></a>.
+																	is now following your <a href="<%= @roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@roll) %></a>.
 															  <% end %>
                               </h4>
                           </div>
