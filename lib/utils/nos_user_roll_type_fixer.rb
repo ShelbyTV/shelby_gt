@@ -14,7 +14,7 @@ module Dev
       fixed = 0
       while (true)
         begin
-          usersToFix = User.where(:faux => User::FAUX_STATUS[:false]).skip(total - fixed)
+          usersToFix = User.where(:faux => User::FAUX_STATUS[:false]).skip(64000)
           break if !usersToFix
 
           usersToFix.each do |u|
