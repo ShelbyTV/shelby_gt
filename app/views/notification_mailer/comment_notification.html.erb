@@ -1,102 +1,105 @@
 <% standard_html_email_wrapper do %>
-  <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable" style="margin: 0;padding: 0;background-color: #FAFAFA;height: 100%;width: 100%;">
-    <tr>
-      <td align="center" valign="top" style="border-collapse: collapse;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateContainer" style="background-color: #ececec;">
-          <tr>
-            <td align="center" valign="top" style="border-collapse: collapse;">
-              <!-- // Begin Template Header \ -->
-              <table border="0" cellpadding="10" cellspacing="0" width="100%" id="templateHeader" style="background-color: #FFFFFF;border-bottom: 0;position: relative;">
-                <tr>
-                  <!-- // Begin Module: Standard Header Image \ -->
-                  <td align="center" valign="middle" class="shelby-header-logo" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;font-weight: 300;width: 100px;">
-                    <a href="<%= Settings::Email.web_url_base %>">
-                      <img src="<%= Settings::Email.shelby_logo_gt %>" id="headerImage" alt="Shelby.tv logo" title="Shelby.tv" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 97px;vertical-align: bottom;">
-                    </a>
-                  </td>
-                  <td align="right" valign="middle" class="shelby-header" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 11px;font-weight: 300;">
-                    <span id="headerSlogan" style="color: #aaa;line-height: 1.231;">
-                      <%= Settings::Email.shelby_tagline %>
-                    </span>
-                  </td>
-                  <!-- // End Module: Standard Header Image \ -->
-                </tr>
-              </table>
-              <!-- // End Template Header \ -->
-            </td>
-          </tr>
-          <tr>
-            <td align="center" valign="top" style="border-collapse: collapse;">
-              <!-- // Begin Template Body \ -->
-              <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateBody">
-                <tr>
-                  <td valign="top" class="bodyContent" style="border-collapse: collapse;background-color: #ececec;">
-                    <!-- // Begin Module: Standard Content \ -->
-                    <table border="0" cellpadding="15" cellspacing="0" width="100%">
-                      <tr>
-                        <td align="center" valign="top" class="shelby-notification-body" style="border-collapse: collapse;border-bottom: 1px solid #ddd;">
-                          <div style="color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
-                              <h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 125%;font-weight: normal;line-height: 100%;margin-top: 0.5em;margin-right: 0;margin-bottom: 10px;margin-left: 0;">
-                                <div class="shelby-avatar" style="background: transparent;display: inline-block;height: 50px;margin-right: .5em;overflow: hidden;width: 50px;vertical-align: middle;color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
-                                  <a href="#" style="color: #777;font-weight: normal;text-decoration: underline;">
-                                    <img src="<%= @user_from.user_image %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" style="border: 0;height: 100%;line-height: 100%;outline: none;text-decoration: none;display: inline;">
-                                  </a>
-                                </div>
-                                <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> commented on  <a href="<%= @frame_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @frame_title %></a>.
-                              </h4>
-                          </div>
-                        </td>
-                      </tr>
-                      <% if @frame_conversation_messages %>
-                        <tr>
-                          <td align="center" valign="top" class="shelby-notification-body" style="border-collapse: collapse;border-bottom: 1px solid #ddd;">
-                            <table border="0" cellpadding="4" cellspacing="0" width="330">
-                              <% @frame_conversation_messages.each_with_index do |message, i| %>
-                                <% if i == @frame_conversation_messages.length - 1 %>
-                                  <tr style="background-color: #E2E2E2">
-                                    <td valign="top">
-                                <% else %>
-                                  <tr>
-                                    <td valign="top" style="border-collapse: collapse;border-bottom: 1px solid #BBB;">
-                                <% end %>
-                                  <img src="<%= message.user_image_url %>" alt="<%= message.nickname %>" title="<%= message.nickname %>" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 50px;vertical-align: bottom;" />
-                                </td>
-                                <% if i == @frame_conversation_messages.length - 1 %>
-                                  <td valign="top">
-                                <% else %>
-                                  <td valign="top" style="border-collapse: collapse;border-bottom: 1px solid #BBB;">
-                                <% end %>
-                                  <h5 style="margin-top: .25em;margin-right: 0;margin-bottom: 0;margin-left: 0;color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: bold;"><%= message.nickname %></h5>
-                                  <p style="margin-top: .5em;margin-right: 0;margin-bottom: .5em;margin-left: 0;color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: normal;"><%= message.text %></p>
-                                </td>
-                              </tr>
-                              <% end %>
-                            </table>
-                          </td>
-                        </tr>
-                      <% end %>
-                      <tr>
-                        <td align="right" valign="middle" class="shelby-notification-footer" style="border-collapse: collapse;border-top: 1px solid #fff;color: #888;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 11px;line-height: 100%;text-align: right;">
-                          <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
-                            <a href="<%= Settings::Email.preferences_link %>" style="color: #888;">Email settings</a>
-                          </p>
-                          <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">
-                            <%= Settings::Email.shelby_address %>
-                          </p>
-                        </td>
-                      </tr>
-                    </table>
-                    <!-- // End Module: Standard Content \ -->
-                  </td>
-                </tr>
-              </table>
-              <!-- // End Template Body \ -->
-            </td>
-          </tr>
+<!-- Wrapper/Container Table: Use a wrapper table to control the width and the background color consistently of your email. Use this approach instead of setting attributes on the body tag. -->
 
-        </table>
-        <br>
-      </td>
-    </tr>
-  </table>
+	<!--  show message in email preview-->
+	<div style="font-size:0px;display:none;">
+		<%= @message.text %>
+	</div>
+	<!-- end show message-->
+
+	<table align="center" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#E2E2E2; color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300; width: 45%;">
+		<tr>
+			<td valign="middle" class="shelby-email-lining" style="padding:0px;width:85%;min-width: 300px;">
+				<h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313425;">
+					<a href="<%= Settings::Email.web_url_base %>">
+						<img class="image_fix" src="<%= Settings::Email.shelby_logo_gt %>" alt="Shelby.tv logo" title="Shelby.tv" height="30" style="padding:8px 0px;display:block;margin: 0px auto;display:block;"/>
+					</a>
+				</h1>
+				<hr style="margin-top:0px;background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #EFEFEF;"/>
+				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; padding:20px 20px 15px; max-width:400px;margin: 0px auto;">
+					<tr height="25">
+						<td colspan="2" valign="top" style="font-weight:bold;font-size: 14px; color:#333">
+							<a href="<%= @user_from.permalink %>"><%= @user_from.nickname %></a> commented on:
+						</td>
+					</tr>
+					<!-- Video Info -->
+					<tr>
+						<td>
+							<table border="0" cellspacing="0" cellpadding="0">
+								<tr height="25">
+									<td style="font-weight:bold;text-align:left;">
+										<%= truncate(@frame.video.title, :length => 42, :separator => ' ') %>
+									</td>
+								</tr>
+								<tr height="80" style="overflow-y:hidden;">
+									<td valign="top">
+										<div style="height: 130px;overflow-y:hidden;">
+											<img class="image_fix" src="<%= @frame.video.thumbnail_url %>" alt="video thumbnail" title="video_thumbnail" width="280" style="margin-top:-30px; display:block;"/>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<!-- End Video Info -->
+					<!-- Conversation List -->
+					<% if @frame_conversation_messages %>
+            <tr>
+              <td align="left" valign="top" class="shelby-notification-body" style="border-collapse: collapse;border-bottom: 1px solid #ddd;">
+                <table border="0" cellpadding="0" cellspacing="0" width="280" style="margin-top: 5px;">
+                  <% @frame_conversation_messages.each_with_index do |message, i| %>
+                    <% if i == @frame_conversation_messages.length - 1 %>
+                      <tr style="background-color: #D1D1D1; ">
+                        <td valign="top" style="">
+                    <% else %>
+                      <tr>
+                        <td valign="top" style="border-collapse: collapse;border-bottom: 1px solid #BBB;">
+                    <% end %>
+                      <img src="<%= avatar_url_for_message(message, "small") %>" alt="<%= message.nickname %>" title="<%= message.nickname %>" style="display:block;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 5px 10px 5px 0px;width: 50px;vertical-align: bottom;" />
+                    </td>
+                     <td valign="top" style="border-collapse: collapse;border-bottom: 1px solid #BBB;">
+                      <h5 style="margin-top: 0.5em;margin-right: 0;margin-bottom: 0;margin-left: 0;color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: bold;"><%= message.nickname %></h5>
+                      <p style="margin-top: .15em;margin-right: 0;margin-bottom: .5em;margin-left: 0;color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: normal;"><%= message.text %></p>
+                    </td>
+                  </tr>
+                  <% end %>
+                </table>
+              </td>
+            </tr>
+          <% end %>
+					<!-- End Conversation List -->
+				</table>
+				<!-- Reply button -->
+				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; border-top:0px; padding:0px 20px; max-width:400px;margin: 0px auto;">
+					<tr>
+						<td align="center" valign="top">
+								<a href="<%= @frame_permalink %>" style="padding-bottom: 10px; text-decoration: none;color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
+									<div style="width: 278px; height:27px; background-color: #0590c4; color: white;text-align: center;font-weight: bold;margin-top: -8px; border: 1px solid #056083;padding-top: 9px;">
+										Reply to <%= @user_from.nickname %>
+									</div>												
+								</a>
+						</td>
+					</tr>
+					<!-- Footer -->
+					<tr height="55">
+						<td colspan="2">
+							<hr style="background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #EFEFEF;"/>
+							<div class="shelby-footer-block" style="float:right;margin-right:5px;line-height: 1.5;margin: 0;margin-top: -5px;">
+                <a href="<%= Settings::Email.preferences_link %>" style="color: #888;">Email settings</a>
+              </div>
+							<br/>
+							<div style="color:#555; margin-right:5px;float:right;font-size:11px;">
+                <%= Settings::Email.shelby_address %>
+							</div>
+						</td>
+					</tr>
+					<!-- End Footer -->
+				</table>
+			</td>
+		</tr>
+	</table>
 <% end %>

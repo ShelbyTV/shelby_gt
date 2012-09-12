@@ -13,16 +13,17 @@ defaults: &defaults
   notification_sender: "notifications@shelby.tv"
   comment_notification:
     category: "Comment Notifications"
-    subject: "%{commenters_name} commented on your video"
+    subject_a: "%{commenters_name} commented on a video you rolled"
+    subject_b: "%{commenters_name} commented on a video on Shelby.tv"
   upvote_notification:
-    category: "Comment Notifications"
+    category: "Heart Notifications"
     subject: "%{upvoters_name} liked your video"
   reroll_notification:
     category: "Reroll Notifications"
     subject: "%{re_rollers_name} rolled your video"
   join_roll_notification:
     category: "Join Roll Notifications"
-    subject: "%{users_name} is following your roll!"
+    subject: "%{users_name} is following your Roll!"
   # GtInterest
   gt_interest_autoresponse:
     category: "Submit GT Interest"

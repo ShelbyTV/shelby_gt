@@ -10,7 +10,7 @@ module RollHelper
     when Roll::TYPES[:special_upvoted]
       "Hearts Roll"
     else 
-      "roll '#{roll.title}"
+      "roll: #{roll.title}"
     end
 
   end

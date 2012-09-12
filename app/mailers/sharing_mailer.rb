@@ -5,7 +5,7 @@ class SharingMailer < ActionMailer::Base
   sendgrid_category Settings::Email.share_frame["category"]
   sendgrid_enable   :ganalytics, :opentrack, :clicktrack
 
-  helper :mail
+  helper :mail, :application
 
   def share_frame(user_from, email_from, email_to, message, frame)
     # user that is sharing
@@ -14,7 +14,8 @@ class SharingMailer < ActionMailer::Base
     
     @user_from = user_from
     @email_to = email_to
-    @message = message ? message : frame.video.description
+    
+    @message = message unless message == ""
     @frame = frame
     @frame_permalink = frame.permalink
     
