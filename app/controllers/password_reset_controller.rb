@@ -1,24 +1,17 @@
 class PasswordResetController < Devise::PasswordsController
   
+  # GET /user/password/new
   def new
     super
   end
   
-  ##
-  # Sends an email with a PW reset token to the specified user
-  #
-  # [POST] /user/password
-  # [GET] /POST/user/password
-  # 
-  # @param [Required, String] email The primary email address of the user
+  # POST /user/password
   def create
-    u = User.find_by_primary_email(params[:email])
-    if u and u.send_reset_password_instructions
-      @status = 200
-      @message = "Password reset email sent!"
-      render 'v1/blank'
-    else
-      return render_error(404, "Could not find a user with the email address #{params[:email]}")
+    self.resource = resource_class.send_reset_password_instructions(params[resource_name])
+
+    unless successfully_sent?(resource)
+      flash[:notice] = "Could not find a user with that email address."
+      redirect_to new_user_password_path
     end
   end
   

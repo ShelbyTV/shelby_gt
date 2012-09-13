@@ -10,15 +10,6 @@ describe "User" do
       :id => "33"
     )
   end
-  
-  #POST   /user/password(.:format)                                        password_reset#create {:format=>"json"}
-  it "routes for reset password" do
-    { :get => "/POST/user/password" }.should route_to(
-      :controller => "password_reset",
-      :action => "create",
-      :format => "json"
-    )
-  end
 end
 
 

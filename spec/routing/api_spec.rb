@@ -1,17 +1,5 @@
 require 'spec_helper'
 
-describe PasswordResetController do
-  describe "routing" do
-    it "routes for POST /user/password" do
-      { :post => "/user/password" }.should route_to(
-        :controller => "password_reset",
-        :action => "create",
-        :format => "json"
-      )
-    end
-  end
-end
-
 describe AdminController do
   describe "routing" do
     it "routes for user GET" do

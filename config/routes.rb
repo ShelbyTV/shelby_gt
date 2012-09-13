@@ -8,7 +8,6 @@ ShelbyGt::Application.routes.draw do
   ########################
   # Authentication and User Managment
 
-  post '/user/password' => 'password_reset#create', :defaults => {:format => 'json'}
   devise_for :user, :skip => [:sessions], :controllers => {:passwords => "password_reset"}
   as :user do  
     get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
@@ -133,9 +132,6 @@ ShelbyGt::Application.routes.draw do
     get 'POST/gt_interest/' => 'gt_interest#create'
 
   end
-  
-  #user pw reset for JSONP
-  get '/POST/user/password' => 'password_reset#create', :defaults => {:format => 'json'}
   
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user
   

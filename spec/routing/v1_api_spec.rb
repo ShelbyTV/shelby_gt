@@ -92,8 +92,6 @@ describe V1::UserController do
         :id => "1"
       )
     end 
-    
-    # Password resettings stuff in api_spec
   end
 end
 
