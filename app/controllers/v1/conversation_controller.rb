@@ -32,10 +32,7 @@ class V1::ConversationController < ApplicationController
       # put an upper limit on the number of entries returned
       @limit = 50 if @limit.to_i > 50
       
-      if @conversations = Conversation.sort(:id.desc).limit(@limit).where(
-        :video_id => BSON::ObjectId(params[:video_id]), 
-        :public => true, 
-        :from_deeplink => {:$ne => true} )
+      if @conversations = Conversation.sort(:id.desc).limit(@limit).where(:video_id => BSON::ObjectId(params[:video_id]))
         @status =  200
       else
         render_error(404, "could not find conversations for video with id #{params[:video_id]}")
