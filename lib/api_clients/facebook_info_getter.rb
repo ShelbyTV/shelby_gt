@@ -34,7 +34,7 @@ module APIClients
         friends_name_id_dict = {}
         friends_collection.each { |h| friends_name_id_dict[h["name"]] = h["id"] if h["name"] and h["id"] }
         
-        if friends_collection.next_page.empty?
+        if !friends_collection.next_page or friends_collection.next_page.empty?
           return friends_name_id_dict
         else
           return friends_name_id_dict.merge( self.all_pages_of_friends_name_id_dictionary(friends_collection.next_page) )

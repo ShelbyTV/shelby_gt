@@ -135,6 +135,7 @@ class User
   end
   
   if Settings::Performance.validate_uniqueness_primary_email
+    before_validation(:on => :create) { self.drop_primary_email_if_taken }
     validates_uniqueness_of :primary_email, :allow_blank => true, :allow_nil => true
   end
   
@@ -310,6 +311,13 @@ class User
   
   def ensure_valid_unique_nickname
     GT::UserManager.ensure_valid_unique_nickname!(self) if self.nickname_changed?
+  end
+  
+  def drop_primary_email_if_taken
+    # Only drop email when new user has authentication
+    if self.primary_email and !self.authentications.blank?
+      self.primary_email = nil if User.where( :_id.ne => self.id, :primary_email => self.primary_email ).exists?
+    end
   end
 
   private
