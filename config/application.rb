@@ -84,7 +84,10 @@ module ShelbyGt
       
     end
 
+    # Config stuff that relieson Settings object can go in here
     config.after_initialize do
+      
+      # OAuth Server
       settings = Settings::OauthServer
       
       if settings['db_hosts']
@@ -94,6 +97,9 @@ module ShelbyGt
         conn = Mongo::Connection.new(settings.db_host, settings.db_port, {}.merge(settings.db_options.merge(Settings::Mongo.db_options)) )
       end
       config.oauth.database = conn.db(settings.db_name)
+      
+      # Mailer
+      Rails.application.routes.default_url_options[:host] = Settings::Global.api_host
     end
   end
 end
