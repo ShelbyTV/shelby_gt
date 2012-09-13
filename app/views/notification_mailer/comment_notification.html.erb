@@ -54,12 +54,12 @@
                   <% @frame_conversation_messages.each_with_index do |message, i| %>
                     <% if i == @frame_conversation_messages.length - 1 %>
                       <tr style="background-color: #D1D1D1; ">
-                        <td valign="top" style="">
+                        <td valign="top" style="border-collapse: collapse;border-bottom: 1px solid #BBB;">
                     <% else %>
                       <tr>
                         <td valign="top" style="border-collapse: collapse;border-bottom: 1px solid #BBB;">
                     <% end %>
-                      <img src="<%= avatar_url_for_message(message, "small") %>" alt="<%= message.nickname %>" title="<%= message.nickname %>" style="display:block;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 5px 10px 5px 0px;width: 50px;vertical-align: bottom;" />
+                      <img src="<%= avatar_url_for_message(message, "small") %>" alt="<%= message.nickname %>" title="<%= message.nickname %>" style="display:block;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 5px 10px 5px 5px;width: 50px;vertical-align: bottom;" />
                     </td>
                      <td valign="top" style="border-collapse: collapse;border-bottom: 1px solid #BBB;">
                       <h5 style="margin-top: 0.5em;margin-right: 0;margin-bottom: 0;margin-left: 0;color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 100%;font-weight: bold;"><%= message.nickname %></h5>
