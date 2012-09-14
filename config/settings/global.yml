@@ -1,10 +1,12 @@
 defaults: &defaults
   title: "Shelby.tv"
   domain: "shelby.tv"
+  api_host: "api.shelby.tv"
   override_em_next_tick: false
 
 development:
   <<: *defaults
+  api_host: "localhost.shelby.tv:3000"
 
 test:
   <<: *defaults

@@ -8,8 +8,8 @@ ShelbyGt::Application.routes.draw do
   ########################
   # Authentication and User Managment
 
-  devise_for :user, :skip => [:sessions]
-  as :user do
+  devise_for :user, :skip => [:sessions], :controllers => {:passwords => "password_reset"}
+  as :user do  
     get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
     get 'login' => 'authentications#index', :as => :new_user_session
   end
@@ -106,6 +106,7 @@ ShelbyGt::Application.routes.draw do
     #----------------------------------------------------------------
     # user
     get 'PUT/user/:id' => 'user#update'
+      # user password reset is done outside of /v1
     # roll
     get 'POST/roll/:roll_id/share' => 'roll#share'
     get 'POST/roll/:roll_id/join' => 'roll#join'
