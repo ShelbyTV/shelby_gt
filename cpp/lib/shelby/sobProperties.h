@@ -30,12 +30,6 @@
    ROLL_FOLLOWING_PROPERTIES(apply)  \
    FOLLOWING_USER_PROPERTIES(apply)
 
-/*
- * Notable fields:
- *
- * :avatar_file_name abbreviated as :at -> :has_shelby_avatar calculated based on its existence
- *
- */
 #define USER_PROPERTIES(apply)                                                                 \
    apply(USER , id                   ,  ID                   ,  OID    , _id                 ) \
    apply(USER , rolls_unfollowed     ,  ROLLS_UNFOLLOWED     ,  ARRAY  , aa                  ) \
@@ -50,7 +44,7 @@
    apply(USER , clients              ,  CLIENTS              ,  ARRAY  , ai                  ) \
    apply(USER , cohorts              ,  COHORTS              ,  ARRAY  , aq                  ) \
    apply(USER , autocomplete         ,  AUTOCOMPLETE         ,  ARRAY  , as                  ) \
-   apply(USER , has_shelby_avatar    ,  HAS_SHELBY_AVATAR    ,  BOOL   , at                  ) \
+   apply(USER , avatar_file_name     ,  AVATAR_FILE_NAME     ,  STRING , at                  ) \
    apply(USER , name                 ,  NAME                 ,  STRING , name                ) \
    apply(USER , nickname             ,  NICKNAME             ,  STRING , nickname            ) \
    apply(USER , downcase_nickname    ,  DOWNCASE_NICKNAME    ,  STRING , downcase_nickname   ) \

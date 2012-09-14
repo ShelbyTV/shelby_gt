@@ -230,9 +230,10 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
       SOB_USER_GT_ENABLED,
    };
    
-   sobPrintStringToBoolAttribute(context,
-                                 user,
-                                 SOB_USER_HAS_SHELBY_AVATAR);
+   sobPrintStringToBoolAttributeWithKeyOverride(context,
+                                                user,
+                                                SOB_USER_AVATAR_FILE_NAME,
+                                                "has_shelby_avatar");
 
    sobPrintAttributes(context,
                       user,
