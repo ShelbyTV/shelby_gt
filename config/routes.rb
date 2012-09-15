@@ -81,7 +81,7 @@ ShelbyGt::Application.routes.draw do
     end
     resources :video, :only => [:show] do
       get 'find_or_create', :on => :collection
-      get 'conversations' => 'conversation#index'
+      get 'conversations' => 'conversation_metal#index'
       get 'viewed', :on => :collection
       get 'queued', :on => :collection
     end
