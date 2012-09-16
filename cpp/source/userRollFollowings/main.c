@@ -376,10 +376,6 @@ int main(int argc, char **argv)
 
    sobEnvironment env = sobEnvironmentFromString(options.environment); 
    sobContext sob = sobAllocContext(env);
-   if (!sob || !sobConnect(sob)) {
-      status = 1;
-      goto cleanup;
-   } 
 
    if (!loadData(sob)) {
       status = 2;
