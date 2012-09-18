@@ -45,7 +45,7 @@
 #define CONVERSATION_DATABASES(apply)                         \
    apply(DEVELOPMENT , dev-gt-conversation  , conversations , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(TEST        , test-gt-conversation , conversations , FALSE , , 127.0.0.1:27017 , , , ) \
-   apply(PRODUCTION  , gt-conversation      , conversations , TRUE , gtConversation , 10.176.69.208:27017 , 10.176.69.210:27017 , gt_user , GT/us3r!!! ) 
+   apply(PRODUCTION  , gt-conversation      , conversations , TRUE , gtConversation , 10.176.69.210:27017 , 10.176.69.208:27017 , gt_user , GT/us3r!!! ) 
 
 #define VIDEO_DATABASES(apply)                  \
    apply(DEVELOPMENT , dev-gt-video  , videos , FALSE , , 127.0.0.1:27017 , , , ) \

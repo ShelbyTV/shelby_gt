@@ -322,7 +322,7 @@ void sobLoadAllByOidField(sobContext context,
    bson query;
    bson_init(&query);
    bson_append_start_object(&query, "$query");
-      bson_append_oid(&query, "a", &oid);
+      bson_append_oid(&query, sobFieldDBName[field], &oid);
       if (strcmp("", sinceIdString) != 0) {
          bson_oid_from_string(&sinceId, sinceIdString);
          bson_append_start_object(&query, "_id");
