@@ -14,8 +14,9 @@ class V1::ConversationMetalController < ActionController::Metal
       limit = params[:limit] ? params[:limit].to_i : 50
       limit = 50 if limit.to_i > 50
 
-      fast_stdout = `cpp/bin/conversationIndex -v #{params[:video_id]} -l #{limit} -e #{Rails.env}`
-      fast_status = $?.to_i
+      # XXX Until Conversation DB is back online
+      # XXX fast_stdout = `cpp/bin/conversationIndex -v #{params[:video_id]} -l #{limit} -e #{Rails.env}`
+      fast_status = -33 # XXX $?.to_i
 
       if (fast_status == 0)
         self.status = 200
