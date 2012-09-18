@@ -20,13 +20,13 @@ require 'bundler/setup'
 require 'sitemap_generator'
 
 def hyphenateString(title)
-  title.downcase.gsub(/\W/,'-').squeeze('-').chomp('-')
+  title ? title.downcase.gsub(/\W/,'-').gsub(/"/,"'").squeeze('-').chomp('-') : ""
 end
 
 SitemapGenerator::Sitemap.default_host = 'http://shelby.tv'
 SitemapGenerator::Sitemap.create do
 
-  youtubeVideos = Video.where(:provider_name => "youtube")
+  youtubeVideos = Video.where(:provider_name => "youtube").limit(10000)
   
   youtubeVideos.each do |youtubeVideo|
    
