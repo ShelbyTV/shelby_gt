@@ -13,15 +13,15 @@ SitemapGenerator::Sitemap.create do
   youtubeVideos = Video.where(:provider_name => "youtube").limit(10000)
   
   youtubeVideos.each do |youtubeVideo|
-   
-    titleHyph = youtubeVideo.title ? youtubeVideo.title.downcase.gsub(/\W/,'-').gsub(/"/,"'").squeeze('-').chomp('-') : ""
-    add("video/youtube/#{youtubeVideo.provider_id}/#{titleHyph}", :video => {
-      :thumbnail_loc => youtubeVideo.thumbnail_url,
-      :title => youtubeVideo.title,
-      :description => youtubeVideo.description,
-      :player_loc => "http://www.youtube.com/v/#{youtubeVideo.provider_id}",
-    })
-    
+    if youtubeVideo.thumbnail_url   
+      titleHyph = youtubeVideo.title ? youtubeVideo.title.downcase.gsub(/\W/,'-').gsub(/"/,"'").squeeze('-').chomp('-') : ""
+      add("video/youtube/#{youtubeVideo.provider_id}/#{titleHyph}", :video => {
+        :thumbnail_loc => youtubeVideo.thumbnail_url,
+        :title => youtubeVideo.title,
+        :description => youtubeVideo.description,
+        :player_loc => "http://www.youtube.com/v/#{youtubeVideo.provider_id}",
+      })
+    end    
   end if youtubeVideos  
   
 end
