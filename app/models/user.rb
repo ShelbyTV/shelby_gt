@@ -166,6 +166,8 @@ class User
   
   validates_format_of :primary_email, :with => /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\Z/, :allow_blank => true
   
+  validates_attachment_content_type :avatar, :content_type => /image/
+
   #if email has changed/been set, update sailthru  &&
   # Be resilient if errors fuck up the create process
   after_save :check_to_send_email_address_to_sailthru
