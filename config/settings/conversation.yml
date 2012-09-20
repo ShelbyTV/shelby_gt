@@ -20,7 +20,9 @@ production: &production
   db_replSetName: 'gtConversation'
   db_username: "gt_user"
   db_password: "GT/us3r!!!"
-  
+  db_options:
+   :read: :secondary
+
 arnold:
   <<: *production
   mm_use_identity_map: false
