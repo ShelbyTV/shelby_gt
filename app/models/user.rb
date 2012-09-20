@@ -311,11 +311,8 @@ class User
 
   def update_public_roll_title
     if changed.include?('nickname') and self.public_roll
-      # only update the public roll title if the title matched the old nickname
-      if self.public_roll.title == changed_attributes['nickname']
-        self.public_roll.title = self.nickname
-        self.public_roll.save
-      end
+      self.public_roll.title = self.nickname
+      self.public_roll.save
     end
   end
   

@@ -317,17 +317,6 @@ describe 'v1/user' do
         @u1.reload
         @u1.public_roll.title.should == "pharoah"
       end
-
-      it "should NOT update the user's public_roll title when changing the user nickname if the roll does not have nickname as its title" do
-        roll = Factory.build(:roll, :title => 'not-the-users-nickname')
-        roll.creator = @u1
-        roll.save
-        @u1.public_roll = roll
-        @u1.save
-        put '/v1/user/'+@u1.id+'?nickname=ramses'
-        @u1.reload
-        @u1.public_roll.title.should == "not-the-users-nickname"
-      end
       
       it "should not change password if password isn't sent" do
         lambda {
