@@ -30,6 +30,7 @@ module GT
     # :action => DashboardEntry::ENTRY_TYPE[?] --- REQUIRED: what action created this frame? Distinguish between social, bookmark
     # :score => Float --- OPTIONAL initial score for ordering the frames in a roll
     # :order => Float --- OPTIONAL manual ordering for genius rolls
+    # :genius => Bool --- OPTIONAL indicates if the frame is a genius frame; genius frames don't create conversations
     #
     # --returns--
     #
@@ -42,6 +43,7 @@ module GT
       order = options.delete(:order)
       video = options.delete(:video)
       video_id = options.delete(:video_id)
+      genius = options.delete(:genius)
       raise ArgumentError, "must include a :video or :video_id" unless video.is_a?(Video) or video_id.is_a?(BSON::ObjectId)
       raise ArgumentError, "must not supply both :video and :video_id" if (video and video_id)
       raise ArgumentError, "must supply an :action" unless DashboardEntry::ENTRY_TYPE.values.include?(action = options.delete(:action))
@@ -52,21 +54,25 @@ module GT
       raise ArgumentError, ":message must be a Message" if message and !message.is_a?(Message)
       
       # Try to safely create conversation
-      convo = Conversation.new
-      convo.from_deeplink = true if options.delete(:deep)
-      convo.video = video if video
-      convo.video_id = video_id if video_id
-      if message
-        convo.messages << message
-        convo.public = message.public
-      end
-      begin
-        convo.save(:safe => true)
-      rescue Mongo::OperationFailure
-        # unique key failure due to duplicate
-        return false
-      end
-      
+      if genius
+        convo = nil
+      else
+        convo = Conversation.new
+        convo.from_deeplink = true if options.delete(:deep)
+        convo.video = video if video
+        convo.video_id = video_id if video_id
+        if message
+          convo.messages << message
+          convo.public = message.public
+        end
+        begin
+          convo.save(:safe => true)
+        rescue Mongo::OperationFailure
+          # unique key failure due to duplicate
+          return false
+        end
+      end     
+ 
       res = { :frame => nil, :dashboard_entries => [] }
       
       # Frame
@@ -83,7 +89,9 @@ module GT
       f.save
  
       #track the original frame in the convo
-      convo.update_attribute(:frame_id, f.id)
+      if convo
+        convo.update_attribute(:frame_id, f.id)
+      end
       
       res[:frame] = f
       

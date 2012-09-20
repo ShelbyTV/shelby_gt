@@ -63,6 +63,7 @@ class V1::Roll::GeniusController < ApplicationController
         frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_genius_frame]
         frame_options[:video_id] = videoId
         frame_options[:order] = (finalVidIds.size - count) * 100
+        frame_options[:genius] = true
         GT::Framer.create_frame(frame_options)
         count += 1
       end
