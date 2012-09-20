@@ -1,0 +1,18 @@
+<div class="password-reset-wrapper">
+	
+	<h1>Forgot  your password?</h1>
+	
+	<% if flash[:notice] %>
+		<h2 class="error"><%= flash[:notice] %></h2>
+	<% end %>
+	
+	<%= form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :post }) do |f| %>
+	  <%= devise_error_messages! %>
+
+	  <div><%= f.label :primary_email, "Email" %><br />
+	  <%= f.email_field :primary_email, :type => "email" %></div>
+
+	  <div><%= f.submit "Send me password reset instructions" %></div>
+	<% end %>
+
+</div>

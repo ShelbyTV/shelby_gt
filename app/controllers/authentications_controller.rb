@@ -214,15 +214,6 @@ class AuthenticationsController < ApplicationController
       clean_query_params(session[:return_url] || request.env['omniauth.origin'] || params[:redir])
     end
     
-    def set_common_cookie(user, form_authenticity_token)
-      # ensure csrf_token in cookie
-      cookies[:_shelby_gt_common] = {
-        :value => "authenticated_user_id=#{user.id.to_s},csrf_token=#{form_authenticity_token}",
-        :expires => 20.years.from_now,
-        :domain => '.shelby.tv'
-      }      
-    end
-    
     def use_cohort_entrance(user, cohort_entrance)
       cohort_entrance.used! user if cohort_entrance
     end

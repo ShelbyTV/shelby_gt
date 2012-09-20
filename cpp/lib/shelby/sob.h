@@ -55,7 +55,6 @@ sobEnvironment sobEnvironmentFromString(char *env);
 
 sobContext sobAllocContext(sobEnvironment env);
 void sobFreeContext(sobContext context);
-int sobConnect(sobContext context);
 sobEnvironment sobGetEnvironment(sobContext context);
 
 bson_oid_t sobGetUniqueOidByStringField(sobContext context,
@@ -113,9 +112,10 @@ void sobPrintAttributes(mrjsonContext context,
                         unsigned int numFields);
 
 // If the field exists and is a non-empty string, prints true, else false
-void sobPrintStringToBoolAttribute(mrjsonContext context,
-                                   bson *object,
-                                   sobField field);
+void sobPrintStringToBoolAttributeWithKeyOverride(mrjsonContext context,
+                                                  bson *object,
+                                                  sobField field,
+                                                  const char *key);
 
 void sobPrintAttributeWithKeyOverride(mrjsonContext context,
                                       bson *object,

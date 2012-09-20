@@ -162,4 +162,4 @@ end
 #
 # ---------- SEO
 #
-gem 'sitemap_generator'
+gem "sitemap_generator", "~> 3.2.1"

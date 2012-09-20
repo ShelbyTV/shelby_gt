@@ -23,6 +23,7 @@ else:
    SConscript('source/dashboardIndex/SConscript', variant_dir='build/dashboardIndex/', duplicate=0)
    SConscript('source/frameIndex/SConscript', variant_dir='build/frameIndex/', duplicate=0)
    SConscript('source/userRollFollowings/SConscript', variant_dir='build/userRollFollowings/', duplicate=0)
+   SConscript('source/conversationIndex/SConscript', variant_dir='build/conversationIndex/', duplicate=0)
 
    # libs 
    SConscript('lib/mrjson/SConscript', variant_dir='build/mrjson/', duplicate=0)

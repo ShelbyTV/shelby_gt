@@ -156,70 +156,65 @@ int sobTypesUseSameServer(sobType type1, sobType type2, sobEnvironment env)
           );
 }
 
-/*
- * For now, at initialization, we'll just connect to all databases;
- * later, we should lazily connect.
- */
-int sobConnect(sobContext context)
+int sobConnect(sobContext context, sobType type)
 {
-   for (sobType i = (sobType)0 ; i < SOB_NUMTYPES ; i = (sobType)((unsigned int)i + 1)) {
-      int previousConnectionExists = FALSE;
-      int isReplSet = sobIsReplSetConnection[sobArrayIndex(i, context->env)];
+   if (context->typeToConn[type]) {
+     return TRUE;
+   }
 
-      for (sobType j = (sobType)0 ; j < i; j = (sobType)((unsigned int)j + 1)) {
-         // if 2 types need the exact same conn, don't allocate a duplicate connection
-         if (sobTypesUseSameServer(i, j, context->env)) {
-            previousConnectionExists = TRUE;
-            context->typeToConn[i] = context->typeToConn[j];
-            break;
-         }
-      }
-
-      // don't need to set up any new connections if a previous connection existed
-      if (previousConnectionExists) {
+   for (sobType i = (sobType)0; i < SOB_NUMTYPES; i = (sobType)((unsigned int)i + 1)) {
+      // already handled above
+      if (i == type) {
          continue;
       }
 
-      context->allocatedConn[i] = (mongo *)malloc(sizeof(mongo));
-      context->typeToConn[i] = context->allocatedConn[i];
-
-      int status;
-
-      if (isReplSet) {
-         mongo_host_port primary;
-         mongo_host_port secondary;
-
-         mongo_replset_init(context->allocatedConn[i],
-                            sobReplSetName[sobArrayIndex(i, context->env)]);
-
-         mongo_parse_host(sobPrimaryServer[sobArrayIndex(i, context->env)], &primary);
-         mongo_parse_host(sobSecondaryServer[sobArrayIndex(i, context->env)] , &secondary);
-
-         mongo_replset_add_seed(context->allocatedConn[i], primary.host, primary.port);
-         mongo_replset_add_seed(context->allocatedConn[i], secondary.host, secondary.port);
-
-         status = mongo_replset_connect(context->allocatedConn[i]);
-
-      } else {
-         mongo_host_port primary;
-
-         mongo_init(context->allocatedConn[i]);
-         mongo_parse_host(sobPrimaryServer[sobArrayIndex(i, context->env)], &primary);
-
-         status = mongo_connect(context->allocatedConn[i], primary.host, primary.port);            
+      // if 2 types need the exact same conn, don't need to allocate another connection
+      if (context->typeToConn[i] && sobTypesUseSameServer(i, type, context->env)) {
+         context->typeToConn[type] = context->typeToConn[i];
+         return TRUE;
       }
+   }
 
-      if (MONGO_OK != status) {
-         switch (context->allocatedConn[i]->err) {
-            case MONGO_CONN_SUCCESS:    break;
-            case MONGO_CONN_NO_SOCKET:  printf("no socket\n"); return FALSE;
-            case MONGO_CONN_FAIL:       printf("connection failed\n"); return FALSE;
-            case MONGO_CONN_NOT_MASTER: printf("not master\n"); return FALSE;
-            default:                    printf("received unknown status\n"); return FALSE;
-         }
+   context->allocatedConn[type] = (mongo *)malloc(sizeof(mongo));
+   context->typeToConn[type] = context->allocatedConn[type];
+
+   int isReplSet = sobIsReplSetConnection[sobArrayIndex(type, context->env)];
+   int status;
+
+   if (isReplSet) {
+      mongo_host_port primary;
+      mongo_host_port secondary;
+
+      mongo_replset_init(context->allocatedConn[type],
+                         sobReplSetName[sobArrayIndex(type, context->env)]);
+
+      mongo_parse_host(sobPrimaryServer[sobArrayIndex(type, context->env)], &primary);
+      mongo_parse_host(sobSecondaryServer[sobArrayIndex(type, context->env)] , &secondary);
+
+      mongo_replset_add_seed(context->allocatedConn[type], primary.host, primary.port);
+      mongo_replset_add_seed(context->allocatedConn[type], secondary.host, secondary.port);
+
+      status = mongo_replset_connect(context->allocatedConn[type]);
+
+   } else {
+      mongo_host_port primary;
+
+      mongo_init(context->allocatedConn[type]);
+      mongo_parse_host(sobPrimaryServer[sobArrayIndex(type, context->env)], &primary);
+
+      status = mongo_connect(context->allocatedConn[type], primary.host, primary.port);            
+   }
+
+   if (MONGO_OK != status) {
+      switch (context->allocatedConn[type]->err) {
+         case MONGO_CONN_SUCCESS:    break;
+         case MONGO_CONN_NO_SOCKET:  printf("no socket\n"); return FALSE;
+         case MONGO_CONN_FAIL:       printf("connection failed\n"); return FALSE;
+         case MONGO_CONN_NOT_MASTER: printf("not master\n"); return FALSE;
+         default:                    printf("received unknown status\n"); return FALSE;
       }
-   }     
-     
+   }
+      
    return TRUE;
 }
 
@@ -249,6 +244,15 @@ int sobAuthenticate(sobContext context, sobType type)
    return TRUE;
 }
 
+int sobConnectAndAuthenticate(sobContext context, sobType type)
+{
+   if (!sobConnect(context, type)) {
+      return FALSE;
+   }
+   
+   return sobAuthenticate(context, type);
+}
+
 bson_oid_t sobGetUniqueOidByStringField(sobContext context,
                                    sobType type,
                                    sobField field,
@@ -270,7 +274,7 @@ bson_oid_t sobGetUniqueOidByStringField(sobContext context,
    bson_init(&out);
 
    // TODO: check return status
-   sobAuthenticate(context, type);
+   sobConnectAndAuthenticate(context, type);
 
    if (mongo_find_one(context->typeToConn[type], 
                       sobDBCollection[sobArrayIndex(type, context->env)],
@@ -318,7 +322,7 @@ void sobLoadAllByOidField(sobContext context,
    bson query;
    bson_init(&query);
    bson_append_start_object(&query, "$query");
-      bson_append_oid(&query, "a", &oid);
+      bson_append_oid(&query, sobFieldDBName[field], &oid);
       if (strcmp("", sinceIdString) != 0) {
          bson_oid_from_string(&sinceId, sinceIdString);
          bson_append_start_object(&query, "_id");
@@ -332,10 +336,10 @@ void sobLoadAllByOidField(sobContext context,
    bson_finish(&query);
 
    assert(context); 
-   assert(context->typeToConn[type]);
  
    // TODO: check return status
-   sobAuthenticate(context, type);
+   sobConnectAndAuthenticate(context, type);
+   assert(context->typeToConn[type]);
 
    mongo_cursor cursor;
    mongo_cursor_init(&cursor, 
@@ -381,7 +385,7 @@ void sobLoadAllById(sobContext context,
    bson_finish(&query);
  
    // TODO: check return status
-   sobAuthenticate(context, type);
+   sobConnectAndAuthenticate(context, type);
  
    mongo_cursor cursor;
    mongo_cursor_init(&cursor,
@@ -527,14 +531,15 @@ void sobPrintAttributes(mrjsonContext context,
    }
 }
 
-void sobPrintStringToBoolAttribute(mrjsonContext context,
-                                   bson *object,
-                                   sobField field)
+void sobPrintStringToBoolAttributeWithKeyOverride(mrjsonContext context,
+                                                  bson *object,
+                                                  sobField field,
+                                                  const char *key)
 {
   mrbsonStringAsBoolAttribute(context,
                               object,
                               sobFieldDBName[field],
-                              sobFieldLongName[field]);
+                              key);
 }
 
 void sobPrintAttributeWithKeyOverride(mrjsonContext context,

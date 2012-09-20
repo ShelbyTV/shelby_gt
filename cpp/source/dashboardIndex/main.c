@@ -230,9 +230,10 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
       SOB_USER_GT_ENABLED,
    };
    
-   sobPrintStringToBoolAttribute(context,
-                                 user,
-                                 SOB_USER_HAS_SHELBY_AVATAR);
+   sobPrintStringToBoolAttributeWithKeyOverride(context,
+                                                user,
+                                                SOB_USER_AVATAR_FILE_NAME,
+                                                "has_shelby_avatar");
 
    sobPrintAttributes(context,
                       user,
@@ -419,10 +420,6 @@ int main(int argc, char **argv)
 
    sobEnvironment env = sobEnvironmentFromString(options.environment); 
    sobContext sob = sobAllocContext(env);
-   if (!sob || !sobConnect(sob)) {
-      status = 1;
-      goto cleanup;
-   } 
 
    if (!loadData(sob)) {
       status = 2;

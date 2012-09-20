@@ -17,7 +17,7 @@ class User
   before_validation(:on => :update) { self.ensure_valid_unique_nickname }
   before_save :update_public_roll_title
 
-  devise  :rememberable, :trackable, :token_authenticatable, :database_authenticatable, :remember_for => 12.weeks
+  devise  :rememberable, :trackable, :token_authenticatable, :database_authenticatable, :recoverable, :remember_for => 12.weeks
   #devise includes root in json which fucked up backbone models, need to undo that...
   def self.include_root_in_json() nil; end
 
@@ -112,7 +112,10 @@ class User
   key :remember_me,           Boolean, :default => true
   key :remember_created_at,   Time
   key :remember_token,        String
-  ## Trackable
+  # Recoverable
+  key :reset_password_token,  String, :abbr => :ax
+  key :reset_password_sent_at,Time,   :abbr => :ay
+  # Trackable
   key :sign_in_count,         Integer, :default => 0
   key :current_sign_in_at,    Time
   key :last_sign_in_at,       Time
@@ -163,9 +166,16 @@ class User
   
   validates_format_of :primary_email, :with => /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\Z/, :allow_blank => true
   
+  validates_attachment_content_type :avatar, :content_type => /image/
+
   #if email has changed/been set, update sailthru  &&
   # Be resilient if errors fuck up the create process
   after_save :check_to_send_email_address_to_sailthru
+  
+  # -- Quasi Keys --
+  
+  # devise expects to be able to get email via user.email (not configurable)
+  alias_method :email, :primary_email
   
   # -- New Methods --
   
@@ -301,11 +311,8 @@ class User
 
   def update_public_roll_title
     if changed.include?('nickname') and self.public_roll
-      # only update the public roll title if the title matched the old nickname
-      if self.public_roll.title == changed_attributes['nickname']
-        self.public_roll.title = self.nickname
-        self.public_roll.save
-      end
+      self.public_roll.title = self.nickname
+      self.public_roll.save
     end
   end
   
