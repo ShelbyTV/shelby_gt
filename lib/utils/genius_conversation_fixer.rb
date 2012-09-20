@@ -31,7 +31,6 @@ module Dev
  
             if processed % 10 == 0
               puts "# Processed Genius Rolls: #{processed}"
-              return
             end
           end if rollsToFix
 
