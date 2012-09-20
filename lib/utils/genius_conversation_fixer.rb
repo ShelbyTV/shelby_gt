@@ -11,7 +11,6 @@ module Dev
   class GeniusConversationFixer
     
     def self.fix!
-      total = 0
       processed = 0
       while (true)
         begin
@@ -21,14 +20,16 @@ module Dev
             framesToFix = Frame.where(:roll_id => r.id)
 
             framesToFix.each do |f|
-              Conversation.destroy(f.conversation_id)
-              f.conversation_id = nil
-              f.save
+              if f.conversation_id
+                Conversation.destroy(f.conversation_id)
+                f.conversation_id = nil
+                f.save
+              end
             end if framesToFix
 
             processed += 1
  
-            if processed % 100 == 0
+            if processed % 10 == 0
               puts "# Processed Genius Rolls: #{processed}"
               return
             end
