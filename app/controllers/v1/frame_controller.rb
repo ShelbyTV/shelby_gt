@@ -5,7 +5,7 @@ require 'social_post_formatter'
 
 class V1::FrameController < ApplicationController
 
-  before_filter :user_authenticated?, :except => [:show, :watched]
+  before_filter :user_authenticated?, :except => [:show, :watched, :short_link]
   skip_before_filter :verify_authenticity_token, :only => [:create]
  
   ##
