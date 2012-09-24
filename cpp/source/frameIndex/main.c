@@ -362,8 +362,13 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
                                        rollCreator,
                                        SOB_USER_NICKNAME,
                                        "creator_nickname");
+
+      sobPrintStringToBoolAttributeWithKeyOverride(context,
+                                                   rollCreator,
+                                                   SOB_USER_AVATAR_FILE_NAME,
+                                                   "creator_has_shelby_avatar");
    }
-   
+
    sobPrintAttributeWithKeyOverride(context,
                                     roll,
                                     SOB_ROLL_CREATOR_THUMBNAIL_URL,
