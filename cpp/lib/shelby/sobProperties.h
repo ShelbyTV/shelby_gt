@@ -45,6 +45,7 @@
    apply(USER , cohorts              ,  COHORTS              ,  ARRAY  , aq                  ) \
    apply(USER , autocomplete         ,  AUTOCOMPLETE         ,  ARRAY  , as                  ) \
    apply(USER , avatar_file_name     ,  AVATAR_FILE_NAME     ,  STRING , at                  ) \
+   apply(USER , avatar_updated_at    ,  AVATAR_UPDATED_AT    ,  STRING , aw                  ) \
    apply(USER , name                 ,  NAME                 ,  STRING , name                ) \
    apply(USER , nickname             ,  NICKNAME             ,  STRING , nickname            ) \
    apply(USER , downcase_nickname    ,  DOWNCASE_NICKNAME    ,  STRING , downcase_nickname   ) \
