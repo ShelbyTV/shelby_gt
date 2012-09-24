@@ -33,9 +33,10 @@ GIT
 
 GIT
   remote: git://github.com/jamiew/omniauth-tumblr.git
-  revision: 0fafa6ba65940374439d46dfff7b117e8427fc30
+  revision: 414da1c2d0311bda500649e2108e23c8ed6d4b5f
   specs:
-    omniauth-tumblr (1.0)
+    omniauth-tumblr (1.1)
+      multi_json
       omniauth-oauth (~> 1.0)
 
 GIT
@@ -203,11 +204,11 @@ GEM
       net-ssh (>= 1.99.1)
     newrelic_rpm (3.3.5)
     nokogiri (1.5.0)
-    oauth (0.4.5)
+    oauth (0.4.7)
     oauth2 (0.5.2)
       faraday (~> 0.7)
       multi_json (~> 1.0)
-    omniauth (1.0.3)
+    omniauth (1.1.1)
       hashie (~> 1.2)
       rack
     omniauth-oauth (1.0.1)
@@ -357,7 +358,7 @@ DEPENDENCIES
   mongo (>= 1.6.4)
   mongo_mapper!
   newrelic_rpm
-  omniauth (~> 1.0.2)
+  omniauth (>= 1.0)
   omniauth-facebook!
   omniauth-tumblr!
   omniauth-twitter!

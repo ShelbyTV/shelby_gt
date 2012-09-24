@@ -41,7 +41,7 @@ end
 gem 'devise', '>= 2.0'
 gem 'mm-devise'
 
-gem 'omniauth', '~> 1.0.2'
+gem 'omniauth', '>= 1.0'
 gem 'omniauth-twitter', :git => 'git://github.com/arunagw/omniauth-twitter.git'
 gem 'omniauth-facebook', :git => 'git://github.com/mkdynamic/omniauth-facebook.git'
 gem 'omniauth-tumblr', :git => 'git://github.com/jamiew/omniauth-tumblr.git'
