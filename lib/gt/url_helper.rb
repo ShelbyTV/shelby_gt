@@ -28,6 +28,9 @@ module GT
       vim = parse_url_for_vimeo_provider_info(url)
       return vim if vim
       
+      shelby_seo = parse_url_for_shelby_seo_page_provider_info(url)
+      return shelby_seo if shelby_seo
+      
       # ESPN
       es = parse_url_for_espn_provider_info(url)
       return es if es
@@ -183,6 +186,14 @@ module GT
         match_data = url.match( /youtu\.be\/([\w-]*)(\?+.*\z|\z)/i )
         if match_data and match_data.size >= 1
           return {:provider_name => "youtube", :provider_id => match_data[1]}
+        end
+      end
+      
+      # Shelby SEO Pages
+      def self.parse_url_for_shelby_seo_page_provider_info(url)
+        match_data = url.match( /shelby\.tv\/video\/([\.\w-]*)\/([\w-]*)/i )
+        if match_data and match_data.size == 3
+          return { :provider_name => match_data[1].downcase, :provider_id => match_data[2] }
         end
       end
       

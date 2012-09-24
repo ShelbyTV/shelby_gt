@@ -42,6 +42,41 @@ describe GT::UrlHelper do
       GT::UrlHelper.parse_url_for_provider_info("https://danspinosa.com/v/Hl-zzrqQoSE").should == nil
     end
     
+    context "Shelby SEO pages" do
+      it "Should parse Shelby SEO pages for YouTube" do
+        GT::UrlHelper.parse_url_for_provider_info("http://shelby.tv/video/youtube/HDTwQGEeGZc").should == 
+          {:provider_name => "youtube", :provider_id => "HDTwQGEeGZc"}
+      end
+
+      it "Should generically parse Shelby SEO pages for all providers" do
+        #HTTP, provider name becomes all lowercase
+        GT::UrlHelper.parse_url_for_provider_info("http://shelby.tv/video/RandomProvider/HDTwQGEeGZc").should == 
+          {:provider_name => "randomprovider", :provider_id => "HDTwQGEeGZc"}
+        #HTTPS
+        GT::UrlHelper.parse_url_for_provider_info("https://shelby.tv/video/RandomProvider/HDTwQGEeGZc").should == 
+          {:provider_name => "randomprovider", :provider_id => "HDTwQGEeGZc"}
+          
+        GT::UrlHelper.parse_url_for_provider_info("https://shelby.tv/video/Random.Provider/HDTwQGEeGZc").should == 
+          {:provider_name => "random.provider", :provider_id => "HDTwQGEeGZc"}
+          
+        GT::UrlHelper.parse_url_for_provider_info("https://shelby.tv/video/Random-Provider/HDTwQGEeGZc").should == 
+          {:provider_name => "random-provider", :provider_id => "HDTwQGEeGZc"}
+          
+        GT::UrlHelper.parse_url_for_provider_info("https://shelby.tv/video/Rand0m_Provider/HDTwQGEeGZc").should == 
+          {:provider_name => "rand0m_provider", :provider_id => "HDTwQGEeGZc"}
+      end
+      
+      it "should not be triped up by shit at the end of the Shelby SEO url" do
+        GT::UrlHelper.parse_url_for_provider_info("https://shelby.tv/video/Rand0m_Provider/HDTwQGEeGZc?a=b").should == 
+          {:provider_name => "rand0m_provider", :provider_id => "HDTwQGEeGZc"}
+          
+        GT::UrlHelper.parse_url_for_provider_info("https://shelby.tv/video/Rand0m_Provider/HDTwQGEeGZc/whatever").should == 
+          {:provider_name => "rand0m_provider", :provider_id => "HDTwQGEeGZc"}
+        GT::UrlHelper.parse_url_for_provider_info("https://shelby.tv/video/Rand0m_Provider/HDTwQGEeGZc//").should == 
+          {:provider_name => "rand0m_provider", :provider_id => "HDTwQGEeGZc"}
+      end
+    end
+    
     context "youtube" do
       it "should parse long youtube urls" do
         GT::UrlHelper.parse_url_for_provider_info("https://www.youtube-nocookie.com/embed/Hl-zzrqQoSE").should == 
