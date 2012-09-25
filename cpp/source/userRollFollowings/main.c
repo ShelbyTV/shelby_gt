@@ -209,6 +209,16 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, unsigned i
                                        rollCreator,
                                        SOB_USER_NICKNAME,
                                        "creator_nickname");
+
+      sobPrintStringToBoolAttributeWithKeyOverride(context,
+                                                   rollCreator,
+                                                   SOB_USER_AVATAR_FILE_NAME,
+                                                   "creator_has_shelby_avatar");
+
+      sobPrintAttributeWithKeyOverride(context,
+                                       rollCreator,
+                                       SOB_USER_AVATAR_UPDATED_AT,
+                                       "creator_avatar_updated_at");
    }
    
    sobPrintAttributeWithKeyOverride(context,
