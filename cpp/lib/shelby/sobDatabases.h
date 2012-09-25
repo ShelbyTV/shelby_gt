@@ -35,26 +35,26 @@
 #define FRAME_DATABASES(apply)                       \
    apply(DEVELOPMENT , dev-gt-roll-frame  , frames , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(TEST        , test-gt-roll-frame , frames , FALSE , , 127.0.0.1:27017 , , , ) \
-   apply(PRODUCTION  , gt-roll-frame      , frames , TRUE , gtRollFrame , 10.176.69.215:27017 , 10.176.69.216:27017 , gt_user , GT/us3r!!! ) 
+   apply(PRODUCTION  , gt-roll-frame      , frames , FALSE , , 127.0.0.1:27222 , , gt_user , GT/us3r!!! ) 
 
 #define ROLL_DATABASES(apply)                       \
    apply(DEVELOPMENT , dev-gt-roll-frame  , rolls , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(TEST        , test-gt-roll-frame , rolls , FALSE , , 127.0.0.1:27017 , , , ) \
-   apply(PRODUCTION  , gt-roll-frame      , rolls , TRUE , gtRollFrame , 10.176.69.215:27017 , 10.176.69.216:27017 , gt_user , GT/us3r!!! ) 
+   apply(PRODUCTION  , gt-roll-frame      , rolls , FALSE , , 127.0.0.1:27222 , , gt_user , GT/us3r!!! ) 
 
 #define CONVERSATION_DATABASES(apply)                         \
    apply(DEVELOPMENT , dev-gt-conversation  , conversations , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(TEST        , test-gt-conversation , conversations , FALSE , , 127.0.0.1:27017 , , , ) \
-   apply(PRODUCTION  , gt-conversation      , conversations , TRUE , gtConversation , 10.176.69.210:27017 , 10.176.69.208:27017 , gt_user , GT/us3r!!! ) 
+   apply(PRODUCTION  , gt-conversation      , conversations , FALSE , , 127.0.0.1:27221 , , gt_user , GT/us3r!!! ) 
 
 #define VIDEO_DATABASES(apply)                  \
    apply(DEVELOPMENT , dev-gt-video  , videos , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(TEST        , test-gt-video , videos , FALSE , , 127.0.0.1:27017 , , , ) \
-   apply(PRODUCTION  , gt-video      , videos , TRUE , gtVideo , 10.176.69.184:27017 , 10.176.69.187:27017 , gt_user , GT/us3r!!! )
+   apply(PRODUCTION  , gt-video      , videos , FALSE , , 127.0.0.1:27220 , , gt_user , GT/us3r!!! )
 
 #define DASHBOARD_ENTRY_DATABASES(apply)                             \
    apply(DEVELOPMENT , dev-gt-dashboard-entry  , dashboard_entries , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(TEST        , test-gt-dashboard-entry , dashboard_entries , FALSE , , 127.0.0.1:27017 , , , ) \
-   apply(PRODUCTION  , gt-dashboard-entry      , dashboard_entries , TRUE , gtDashboard , 10.183.74.78:27017 , 10.176.64.171:27017 , gt_user , GT/us3r!!! )
+   apply(PRODUCTION  , gt-dashboard-entry      , dashboard_entries , FALSE , , 127.0.0.1:27219 , , gt_user , GT/us3r!!! )
 
 #endif // __SOB_DATABASES_H__
