@@ -83,19 +83,18 @@ describe GT::SocialPoster do
     end
     
     it "should send an email to 1 addess of a frame and return a Mail::Message" do
-      email_address = ["some_other@email.com"]
+      email_address = "some_other@email.com"
       email = GT::SocialPoster.email_frame(@from_user, email_address, @comment, @frame)
 
-      email.length.should eq(1)
-      email.first.class.should eq(Mail::Message)
-      email.first.from.should  eq([@from_user.primary_email])
-      email.first.to.should  eq(email_address)
+      email.class.should eq(Mail::Message)
+      email.from.should  eq([@from_user.primary_email])
+      email.to.size.should == 1
     end
     
-    it "should send more than one emails if asked to" do
-      email_address = "some_other@email.com;tit@tat.com,jack@sprat.edu"
+    it "should send one email to multiple people" do
+      email_address = "some_other@email.com;tit@tat.com, jack@sprat.edu; "
       email = GT::SocialPoster.email_frame(@from_user, email_address, @comment, @frame)
-      email.length.should eq(3)
+      email.to.size.should == 3
     end
     
     
