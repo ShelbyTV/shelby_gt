@@ -32,8 +32,8 @@ defaults: &defaults
       category_name: "Nature & Science"
       rolls: ["4fa057c388ba6b0f4200183c", "4fcce43988ba6b5b7400054a", "4f9f3fc19a725b5b9700329b", "4fa28e7388ba6b5a8c001c6e", "4f9b11f09a725b352f0020c4", "4f95929288ba6b17c10209a4"]
     cat100:
-      category_name: "News, Business and Politics"
-      rolls: ["4fa05c799a725b020a000a5e", "4f9577c488ba6b15ec0084c7", "4f95622b9a725b72e700106b", "4fa8542c88ba6b669b000bcd"]
+      category_name: "News, Business & Politics"
+      rolls: ["4fa05c799a725b020a000a5e", "4f9577c488ba6b15ec0084c7", "4f95622b9a725b72e700106b", "4fa8542c88ba6b669b000bcd", "50522466b415cc5b81002080"]
     cat110:
       category_name: "Offbeat & Pop Culture"
       rolls: ["4fc637879a725b755d001f77", "4fa28d849a725b79c9000228", "4fa28d8c9a725b7a2a0001e6", "4f901242b415cc466a00082d", "4faabca99a725b5cd50026a2", "4fbbc4211c1cf42b91002eac", "50072ee988ba6b796b00e4fd", "4f98d30a9a725b2dfb010cb6"]
