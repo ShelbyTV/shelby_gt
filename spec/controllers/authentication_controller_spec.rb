@@ -194,7 +194,7 @@ describe AuthenticationsController do
         end
       
         it "should add cohorts if they used a CohortEntrance link" do
-          cohorts = ["a", "b", "c", "pre_onboarding"]
+          cohorts = ["a", "b", "c", "post_onboarding"]
           expected_cohorts = @u.cohorts + cohorts
           cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
           session[:cohort_entrance_id] = cohort_entrance.id
@@ -207,7 +207,7 @@ describe AuthenticationsController do
         
         it "should gt_enable a user coming in via a cohort link" do
           @u.gt_enabled = false; @u.save
-          cohorts = ["pre_onboarding"]
+          cohorts = ["post_onboarding"]
           cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
           session[:cohort_entrance_id] = cohort_entrance.id
         
@@ -325,7 +325,7 @@ describe AuthenticationsController do
     
       context "via email / password" do
         it "should accept with CohortEntrance, set cohorts" do
-          cohorts = ["a", "b", "c", "pre_onboarding"]
+          cohorts = ["a", "b", "c", "post_onboarding"]
           cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
           session[:cohort_entrance_id] = cohort_entrance.id
         
@@ -429,8 +429,8 @@ describe AuthenticationsController do
         end
         
         it "should accept and convert with CohortEntrance, set cohorts on user" do
-          cohorts = ["a", "b", "c", "pre_onboarding"]
-          expected_cohorts = @u.cohorts + cohorts
+          cohorts = ["a", "b", "c"]
+          expected_cohorts = @u.cohorts + cohorts << "post_onboarding"
           cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
           session[:cohort_entrance_id] = cohort_entrance.id
           
