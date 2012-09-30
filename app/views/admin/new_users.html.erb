@@ -1,0 +1,37 @@
+<div id="admin-header">
+	<h1 id="recent_new_users">Recent New Users</h1>
+</div>
+
+<% @temp.each do |u| %>
+	<% roll_followings = u.roll_followings.map {|rf| rf.roll_id }.compact.uniq || [] %>
+	<% rolls = Roll.where({:id => { "$in" => roll_followings  }}).limit(roll_followings.length).all %>
+	<% faux_users_rolls = rolls.select {|k,v| k.roll_type == 11 } || 0 %>
+	<% watch_later_roll = rolls.select {|k,v| k.roll_type == 13 } || 0 %>
+	<% real_users_rolls = rolls.select {|k,v| k.roll_type == 10 } || 0 %>
+	<% public_rolls = rolls.select {|k,v| k.roll_type == 30 or k.roll_type == 31 } || 0 %>
+
+	<% links = {} %>
+	<% u.authentications.each { |a| links[:tw] = "http://twitter.com/#{a.nickname}" if a.provider == "twitter"; links[:fb] = "http://www.facebook.com/#{a.nickname}" if a.provider == "facebook"; links[:tu] = "http://#{a.nickname}.tumblr.com/" if a.provider == "tumblr"; } %>
+	
+	<div class="user" style="font-size: 17px; font-weight: 300; margin: 10px 20px; ">
+		<%= u.name %> | <%= u.nickname %> | 
+		<%= link_to "#{u.public_roll.subdomain}.shelby.tv", "http://#{u.public_roll.subdomain}.shelby.tv" %> | 
+		<%= link_to(u.primary_email || "", "mailto:#{u.primary_email}") %> | 
+		<span class="social-links" style="padding: 0 4px;">
+			<% if links[:tw] %>
+				<a href="<%= links[:tw] %>" style="color: #777;font-weight: normal;text-decoration: none;"><img src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" height="16" alt="" title="" style="height: 12px;outline: none;text-decoration: none;display: inline;"/></a>
+			<% end %>
+			<% if links[:fb] %>
+				<a href="<%= links[:fb] %>" style="color: #777;font-weight: normal;text-decoration: none;"><img src="http://forums.appsorama.com/fbb/facebook_logo_16x16.gif" alt="" title="" height="16" style="height: 12px;text-decoration: none;display: inline;"/></a>
+			<% end %>
+			<% if links[:tu] %>
+				<a href="<%= links[:tu] %>" style="color: #777;font-weight: normal;text-decoration:none;"><img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" height="16" alt="" title="" style="height: 12px;outline: none;text-decoration: none;display: inline;"></a>
+			<% end %>
+		</span> | 
+		<span class="roll-info">
+			faux user rolls: <%= faux_users_rolls.count %> | 
+			real user rolls: <%= real_users_rolls.count %> | 
+			queued videos: <%= watch_later_roll.first.frames.count %>
+		</span>
+	</div>
+<% end %>
