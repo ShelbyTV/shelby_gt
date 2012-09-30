@@ -30,10 +30,7 @@ class AdminController < ApplicationController
     # send email summary if there are new users
     if !@new_new_users.concat(@new_gt_enabled_users).concat(@converted_new_users).empty?
       @all_new_users = @new_new_users.concat(@converted_new_users).concat(@new_gt_enabled_users)
-      #temp
     end
-    
-    @temp = User.all[0..5]
   end
   
   # shows facts and tidbits about a user
