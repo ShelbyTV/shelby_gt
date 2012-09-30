@@ -45,7 +45,7 @@ module GT
       end
     end
     
-    # to_emails is an array of email addresses
+    # to_emails is a comma or semicolon deliniated string of email addresses
     def self.email_frame(from_user, to_emails, message, frame)
       return send_email(from_user, to_emails, message, frame)
     end
@@ -81,16 +81,12 @@ module GT
         end
       end
       
-      # to_emails is an array of email addresses
+      # to_emails is a comma or semicolon deliniated string of email addresses
       def self.send_email(user, to_emails, message, frame)
         from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
-        
         to_emails = to_emails.split(/[,;]/)
-        res = []
-        # send email to anyone in the array of emails provided
-        to_emails.each { |email| res << SharingMailer.share_frame(user, from_email, email, message, frame).deliver }
-
-        res
+        # Just send 1 email to all the recipients (mailer expects a comma deliniated string)
+        SharingMailer.share_frame(user, from_email, to_emails.join(','), message, frame).deliver
       end
     
   end
