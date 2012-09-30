@@ -142,6 +142,6 @@ ShelbyGt::Application.routes.draw do
   
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   
-  root :to => 'authentications#index'
+  root :to => redirect(Settings::ShelbyAPI.web_root)
 
 end
