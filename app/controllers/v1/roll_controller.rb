@@ -4,7 +4,7 @@ require "social_post_formatter"
 
 class V1::RollController < ApplicationController  
   
-  before_filter :user_authenticated?, :except => [:show, :explore]
+  before_filter :user_authenticated?, :except => [:show, :explore, :featured]
   ##
   # Returns one roll, with the given parameters.
   #
@@ -66,7 +66,8 @@ class V1::RollController < ApplicationController
     end
   end
   
-  ##
+  ## DEPRECATED, use roll#featured
+  #
   # Returns a hierarchy of rolls to explore.
   #
   # Returns an array of objects that define the hierarchy of Rolls for the Explore section.
@@ -77,7 +78,8 @@ class V1::RollController < ApplicationController
   # [GET] /v1/roll/explore
   #
   def explore
-    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
+    #DEPRECATED, use roll#featured
+    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['explore']) do
       
       # Get all the Documents from the DB so we don't hit N+1 problem later
       rolls = Roll.find( Settings::Roll.explore.map { |name, cat| cat['rolls'] }.flatten )
@@ -98,6 +100,35 @@ class V1::RollController < ApplicationController
           :rolls => rolls.flatten
         }
       end
+      
+      @status = 200
+    end
+  end
+  
+  ##
+  # Returns a categorical hierarchy of featured rolls (useful in Explore, Onboarding, and possibly more in the future)
+  #
+  # The Rolls themsleves are NOT returned, use the /v1/roll/:id route for that.
+  #
+  # By default, all featured categories are included.  If you only want featured categories specific to a particular 
+  # area of the app, use the params below.  These params are logically OR'd together.
+  #
+  # [GET] /v1/roll/featured
+  #
+  # @params [Optional, Boolean] onboarding Set to true if you want Onboarding rolls returned
+  # @params [Optional, Boolean] explore Set to true if you want Explore rolls returned
+  #
+  def featured
+    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['featured']) do
+
+      @categories = []
+      @categories += Settings::Roll.featured.select { |r| r["include_in"]["onboarding"] } if params[:onboarding]
+      @categories += Settings::Roll.featured.select { |r| r["include_in"]["explore"] } if params[:explore]
+      @categories += Settings::Roll.featured if @categories.empty?
+      @categories.uniq!
+      
+      #rabl caching
+      @cache_key = "featured#{params[:onboarding]}#{params[:explore]}"
       
       @status = 200
     end

@@ -92,6 +92,35 @@ describe 'v1/roll' do
         response.body.should be_json_eql(404).at_path("status")
       end      
     end
+    
+    describe "GET featured" do
+      it "should return an array of objects" do
+        get 'v1/roll/featured'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_size(Settings::Roll.featured.size).at_path("result")
+      end
+      
+      it "should return all the categories" do
+        get 'v1/roll/featured'
+        response.body.should have_json_path("result/0/category_title")
+        response.body.should have_json_path("result/0/rolls/0/display_title")
+        response.body.should have_json_path("result/0/rolls/0/id")
+      end
+      
+      it "should return just onboarding categories" do
+        get 'v1/roll/featured?onboarding=true'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_size(Settings::Roll.featured.select { |r| r["include_in"]["onboarding"] }.size).at_path("result")
+        #these should have thumbnail
+        response.body.should have_json_path("result/0/rolls/0/display_thumbnail_src")
+      end
+      
+      it "should return just explore categories" do
+        get 'v1/roll/featured?explore=true'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_size(Settings::Roll.featured.select { |r| r["include_in"]["explore"] }.size).at_path("result")
+      end
+    end
 
     describe "GET Explore" do
       before(:each) do

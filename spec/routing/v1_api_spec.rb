@@ -228,6 +228,14 @@ describe V1::RollController do
         :format => "json"
       )
     end
+    
+    it "routes to Featured" do
+      { :get => "/v1/roll/featured" }.should route_to(
+        :controller => "v1/roll",
+        :action => "featured",
+        :format => "json"
+      )
+    end
 
     it "routes for PUT" do
       { :put => "/v1/roll/1" }.should route_to(
