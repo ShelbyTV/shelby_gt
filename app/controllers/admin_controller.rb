@@ -22,7 +22,7 @@ class AdminController < ApplicationController
     rhombus_resp = JSON.parse(rhombus.get('/smembers', {:args => ['new_gt_enabled_users'], :limit=>24}))
     gt_enabled_ids = rhombus_resp["error"] ? [] : rhombus_resp["data"].values.flatten 
     @new_gt_enabled_users = User.find(gt_enabled_ids)
-    # so we can distinguish these in the html.erb
+    # so we can distinguish these in the html
     @new_gt_enabled_users.map! {|u| u.faux = 9; u }
     
     @new_gt_enabled_users.delete_if { |u| @new_new_users.include? u }
