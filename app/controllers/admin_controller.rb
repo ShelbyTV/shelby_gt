@@ -28,9 +28,7 @@ class AdminController < ApplicationController
     @new_gt_enabled_users.delete_if { |u| @new_new_users.include? u }
       
     # send email summary if there are new users
-    if !@new_new_users.concat(@new_gt_enabled_users).concat(@converted_new_users).empty?
-      @all_new_users = @new_new_users.concat(@converted_new_users).concat(@new_gt_enabled_users)
-    end
+    @all_new_users = @new_new_users.concat(@new_gt_enabled_users).concat(@converted_new_users)
   end
   
   # shows facts and tidbits about a user
