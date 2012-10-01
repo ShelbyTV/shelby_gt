@@ -140,6 +140,7 @@ ShelbyGt::Application.routes.draw do
   
   # constraints allows for nicknames that include dots, prevents changing format (we're json only, that's ok).
   get '/admin/user/:id' => 'admin#user', :constraints => { :id => /[^\/]+/ }
+  get '/admin/user' => 'admin#user', :constraints => { :id => /[^\/]+/ }
   get '/admin/new_users' => "admin#new_users"
   get '/admin/' => 'admin#index'
   

@@ -4,21 +4,12 @@
 		user info
 	</h1>	
 	<div id="user-info" style="position:fixed; top: 20px; right: 20px;">
-		<form id="js-email-form" class="user-search-form">
+		<form id="js-email-form" class="user-search-form" action="/admin/user/" method="get">
 			<input name="search" type="text" id="js-user-input" class="user-form-input" placeholder="knock knock?" /><!--
 
-		  --><input type="submit" value="whos there?" id="js-user-search-submit" class="user-form-submit" />
+		  --><input type="submit" value="find user" id="js-user-search-submit" class="user-form-submit" />
 		</form>
 
-		<script>
-			$(document).ready(function(){
-				$('form').submit(function(){
-			    $('#js-user-search-submit').prop('disabled', true);
-					var user = $('.user-search-form').find('input').val();
-					window.location = "http://api.shelby.tv/admin/user/"+ user;
-				});
-			});
-		</script>
 	</div>
 </div>
 	
