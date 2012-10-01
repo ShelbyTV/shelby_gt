@@ -1,4 +1,4 @@
-class V1::ConversationMetalController < ActionController::Metal
+class V1::ConversationMetalController < MetalController
   include AbstractController::Logger
   include AbstractController::Callbacks
   include AbstractController::Helpers
@@ -18,13 +18,9 @@ class V1::ConversationMetalController < ActionController::Metal
       fast_status = $?.to_i
 
       if (fast_status == 0)
-        self.status = 200
-        self.content_type = "application/json"
-        self.response_body = "#{fast_stdout}"
+        renderMetalResponse(200, fast_stdout)
       else 
-        self.status = 404
-        self.content_type = "application/json"
-        self.response_body = "{\"status\" : 404, \"message\" : \"fast index failed with status #{fast_status}\"}"
+        renderMetalResponse(404, "{\"status\" : 404, \"message\" : \"fast index failed with status #{fast_status}\"}")
       end
     end
   end

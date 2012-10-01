@@ -1,4 +1,4 @@
-class V1::UserMetalController < ActionController::Metal
+class V1::UserMetalController < MetalController
   include AbstractController::Logger
   include AbstractController::Callbacks
   include AbstractController::Helpers
@@ -11,9 +11,7 @@ class V1::UserMetalController < ActionController::Metal
   def user_authenticated?
     warden.authenticate(:oauth) unless user_signed_in?
     unless user_signed_in?
-      self.status = 401
-      self.content_type = "application/json"
-      self.response_body = "{\"status\" : 401, \"message\" : \"you must be authenticated\"}"
+      renderMetalResponse(401, "{\"status\" : 401, \"message\" : \"you must be authenticated\"}")
     end
   end
 
@@ -33,18 +31,12 @@ class V1::UserMetalController < ActionController::Metal
         fast_status = $?.to_i
 
         if (fast_status == 0)
-          self.status = 200
-          self.content_type = "application/json"
-          self.response_body = "#{fast_stdout}"
+          renderMetalResponse(200, fast_stdout)
         else 
-          self.status = 404
-          self.content_type = "application/json"
-          self.response_body = "{\"status\" : 404, \"message\" : \"fast roll_followings failed with status #{fast_status}\"}"
+          renderMetalResponse(404, "{\"status\" : 404, \"message\" : \"fast roll_followings failed with status #{fast_status}\"}")
         end
       else  
-        self.status = 403
-        self.content_type = "application/json"
-        self.response_body = "{\"status\" : 403, \"message\" : \"you are not authorized to view that users rolls.\"}"
+        renderMetalResponse(403, "{\"status\" : 403, \"message\" : \"you are not authorized to view that users rolls.\"}")
       end
     end
   end
