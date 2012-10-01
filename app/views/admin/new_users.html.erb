@@ -1,8 +1,25 @@
 <div id="admin-header">
-	<h1 id="shelby-logo" style="padding: 15px">
+	<h1 id="shelby-logo" style="padding: 15px; width:300px;">
 		<img src="<%= Settings::Email.shelby_logo_gt %>" id="headerImage" alt="Shelby.tv logo" title="Shelby.tv" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 150px;vertical-align: middle;">
 		user info
 	</h1>	
+	<div id="user-info" style="position:fixed; top: 20px; right: 20px;">
+		<form id="js-email-form" class="user-search-form">
+			<input name="search" type="text" id="js-user-input" class="user-form-input" placeholder="knock knock?" /><!--
+
+		  --><input type="submit" value="whos there?" id="js-user-search-submit" class="user-form-submit" />
+		</form>
+
+		<script>
+			$(document).ready(function(){
+				$('form').submit(function(){
+					$('#js-user-search-submit').prop('disabled', true);
+					var user = $('.user-search-form').find('input').val();
+					window.location.href = "http://api.shelby.tv/admin/user/"+ user;
+				});
+			});
+		</script>
+	</div>
 </div>
 	
 <hr/>
