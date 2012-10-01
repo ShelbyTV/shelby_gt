@@ -13,9 +13,9 @@
 		<script>
 			$(document).ready(function(){
 				$('form').submit(function(){
-					$('#js-user-search-submit').prop('disabled', true);
+			    $('#js-user-search-submit').prop('disabled', true);
 					var user = $('.user-search-form').find('input').val();
-					window.location.href = "http://api.shelby.tv/admin/user/"+ user;
+					window.location = "http://api.shelby.tv/admin/user/"+ user;
 				});
 			});
 		</script>
