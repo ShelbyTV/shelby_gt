@@ -111,24 +111,24 @@ class V1::RollController < ApplicationController
   # The Rolls themsleves are NOT returned, use the /v1/roll/:id route for that.
   #
   # By default, all featured categories are included.  If you only want featured categories specific to a particular 
-  # area of the app, use the params below.  These params are logically OR'd together.
+  # area of the app, use the segment parameter.
   #
   # [GET] /v1/roll/featured
   #
-  # @params [Optional, Boolean] onboarding Set to true if you want Onboarding rolls returned
-  # @params [Optional, Boolean] explore Set to true if you want Explore rolls returned
+  # @params [Optional, String] segment <onboarding | explore> Use when you only want a segment of the feature rolls
   #
   def featured
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['featured']) do
-
-      @categories = []
-      @categories += Settings::Roll.featured.select { |r| r["include_in"]["onboarding"] } if params[:onboarding]
-      @categories += Settings::Roll.featured.select { |r| r["include_in"]["explore"] } if params[:explore]
-      @categories += Settings::Roll.featured if @categories.empty?
-      @categories.uniq!
+      
+      @categories = Settings::Roll.featured
+      
+      if (@segment = params[:segment])
+        @categories = @categories.select { |f| f["include_in"][@segment] }
+        @categories.each { |c| c['rolls'] = c['rolls'].select { |r| r['include_in'][@segment] } }
+      end
       
       #rabl caching
-      @cache_key = "featured#{params[:onboarding]}#{params[:explore]}"
+      @cache_key = "featured#{params[:segment]}"
       
       @status = 200
     end

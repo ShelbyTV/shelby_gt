@@ -1,14 +1,14 @@
 collection @categories
 cache @cache_key
 
-code :category_title do |c|
+node :category_title do |c|
   c["category_title"]
 end
 
-code :include_in do |c|
+node(:include_in, :unless => @segment) do |c|
   c["include_in"]
 end
 
-code :rolls do |c|
+node :rolls do |c|
   c["rolls"]
 end
