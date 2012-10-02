@@ -121,6 +121,12 @@ describe 'v1/roll' do
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_size(Settings::Roll.featured.select { |r| r["include_in"]["explore"] }.size).at_path("result")
       end
+
+      it "should return just in_line_promos categories" do
+        get 'v1/roll/featured?segment=in_line_promos'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_size(Settings::Roll.featured.select { |r| r["include_in"]["in_line_promos"] }.size).at_path("result")
+      end
     end
 
     describe "GET Explore" do
