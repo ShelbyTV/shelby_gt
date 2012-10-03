@@ -1,7 +1,7 @@
 class V1::VideoController < ApplicationController  
   require 'user_manager'
   
-  before_filter :user_authenticated?, :only => [:viewed]
+  before_filter :user_authenticated?, :except => [:show, :find_or_create]
 
   ##
   # Returns one video, with the given parameters.
