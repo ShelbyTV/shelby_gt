@@ -35,4 +35,9 @@ if current_user == @user
 		u.app_progress ? u.app_progress.as_json : {}
 	end
 	
+	if @user.is_admin
+		node :admin do
+			@user.is_admin
+		end
+	end
 end
