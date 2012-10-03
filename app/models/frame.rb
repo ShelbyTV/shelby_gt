@@ -165,6 +165,12 @@ class Frame
     end
   end
   
+  def video_page_permalink()
+    if video = self.video
+      "#{Settings::ShelbyAPI.web_root}/video/#{video.provider_name}/#{video.provider_id}"
+    end
+  end
+  
   def permalink_to_frame_comments()
     permalink = self.permalink
     permalink += "/comments" if self.roll_id

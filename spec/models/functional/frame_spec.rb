@@ -287,6 +287,13 @@ describe Frame do
       frame.permalink.should == "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{frame.id}"
       frame.permalink_to_frame_comments.should == "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{frame.id}"
     end
+    
+    it "should generate permalink for frame with video" do
+      video = Factory.create(:video)
+      frame = Factory.create(:frame, :video => video)
+      frame.video_page_permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{frame.video.provider_name}/#{frame.video.provider_id}"
+    end
+    
   end
 
   context "viewed" do
