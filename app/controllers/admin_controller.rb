@@ -11,7 +11,7 @@ class AdminController < ApplicationController
     rhombus = Rhombus.new('shelby', '_rhombus_gt')
     
     # create a bson id object that represents the beginning of the day
-    start_at = Time.zone.now.beginning_of_day
+    start_at = Time.zone.now.yesterday
     time_as_id = BSON::ObjectId.from_time(start_at)
     
     # find all new users as of today that are real users
