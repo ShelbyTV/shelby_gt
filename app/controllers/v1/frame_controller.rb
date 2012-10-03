@@ -6,7 +6,9 @@ require 'social_post_formatter'
 class V1::FrameController < ApplicationController
 
   before_filter :user_authenticated?, :except => [:show, :watched, :short_link]
-  skip_before_filter :verify_authenticity_token, :only => [:create]
+  # Assuming we're skipping CSRF for extension... that code needs to be fixed (see https://github.com/ShelbyTV/shelby-gt-web/issues/645)
+  # Skipping on watched b/c it works for logged in and logged-out users
+  skip_before_filter :verify_authenticity_token, :only => [:create, :watched]
  
   ##
   # Returns one frame
@@ -274,7 +276,7 @@ class V1::FrameController < ApplicationController
   # gets a short link for the given frame
   #   AUTHENTICATION OPTIONAL
   #
-  # [POST] /v1/frame/:id/short_link
+  # [GET] /v1/frame/:id/short_link
   # 
   # @param [Required, String] id The id of the frame
   def short_link
