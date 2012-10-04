@@ -34,7 +34,7 @@ describe GT::TwitterNormalizer do
       res[:frame].conversation.messages[0].should == m
     
       res[:frame].conversation.messages[0].origin_network.should == "twitter"
-      res[:frame].conversation.messages[0].origin_id.should == "176051240076185600"
+      res[:frame].conversation.messages[0].origin_id.should == "10765432100123456789"
       res[:frame].conversation.messages[0].origin_user_id.should == "20096495"
 
       res[:frame].conversation.messages[0].nickname.should == "laurenwick"
