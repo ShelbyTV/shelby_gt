@@ -22,8 +22,8 @@ module GT
       raise ArgumentError, "must supply valid old frame" unless old_frame.is_a?(Frame) and !old_frame.blank?
             
       # don't email the creator if they are the upvoting user or they dont have an email address!
-      user_to = old_frame.creator
-      return if (new_frame.creator_id == old_frame.creator_id) or !user_to.primary_email or (user_to.primary_email == "")
+      return unless (user_to = old_frame.creator)
+      return if (new_frame.creator_id == old_frame.creator_id) or user_to.primary_email.blank?
       
       # Temp: for now only send emails to gt_enabled users
       return unless user_to.gt_enabled
