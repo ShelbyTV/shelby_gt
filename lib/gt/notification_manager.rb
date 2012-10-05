@@ -65,7 +65,7 @@ module GT
       raise ArgumentError, "must supply valid roll" unless roll.is_a?(Roll) and !roll.blank?
       
       # for now only send emails to gt_enabled users
-      return unless roll.creator.gt_enabled
+      return unless roll.creator and roll.creator.gt_enabled
             
       # don't email the creator if they are the user joining or they dont have an email address!
       user_to = roll.creator

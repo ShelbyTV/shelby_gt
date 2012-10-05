@@ -186,6 +186,13 @@ describe GT::NotificationManager do
       }.should change(ActionMailer::Base.deliveries,:size).by(0)      
     end
     
+    it "should not shit the bed if roll's owner DNE" do
+      r = Factory.create(:roll, :creator => nil)
+      lambda {
+        GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, r)
+      }.should change(ActionMailer::Base.deliveries,:size).by(0)
+    end
+    
     it "should should queue email to deliver" do
       lambda {
         GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll)
