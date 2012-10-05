@@ -84,7 +84,7 @@ class Roll
   has_attached_file :header_image, 
     :styles => { :guide_wide => "370x150#", :large_wide => "1110x450#" }, # temporary sizes while we test & iterate
     :bucket => Settings::Paperclip.roll_images_bucket, 
-    :path => "/header/:id/:style.:extension"
+    :path => "/header/:id/:style/:basename.:extension"
   key :header_image_file_name,      String, :abbr => :o
   key :header_image_file_size,      String, :abbr => :p
   key :header_image_content_type,   String, :abbr => :q
