@@ -58,7 +58,7 @@ class V1::UserController < ApplicationController
         if params[:nickname] and params[:nickname] != @user.downcase_nickname and (user_with_nickname = User.first(:downcase_nickname => params[:nickname]))
           if user_with_nickname.faux == User::FAUX_STATUS[:true]
             #we're stealing this faux user's nickname for the real user
-            clear_out_nickname!(user_with_nickname)
+            user_with_nickname.release_nickname!
           else
             return render_error(409, "Nickname taken", {:user => {:nickname => "already taken"}})
           end
@@ -119,13 +119,6 @@ class V1::UserController < ApplicationController
       nick = nick.strip
       nick = nick.gsub(/[ ,:&~]/,'_')
       return nick
-    end
-    
-    # Changes the nickname of u to something fairly random and saves them.
-    # (to allow real user may claim this nickname)
-    def clear_out_nickname!(u)
-      u.nickname = "shelby_#{u.nickname}"
-      u.save
     end
   
 end

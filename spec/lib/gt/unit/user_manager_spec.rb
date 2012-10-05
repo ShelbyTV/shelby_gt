@@ -756,14 +756,31 @@ describe GT::UserManager do
         }.should change { User.count } .by(1)
       end
       
-      it "should change nickname and still create user if it's taken" do
+      it "should change nickname and still create user if nickname is taken by a *real* user" do
         lambda {
+          #create real user with this nickname
           u1 = GT::UserManager.create_new_user_from_params(@params)
+          
           @params[:primary_email] = Factory.next(:primary_email)
           u2 = GT::UserManager.create_new_user_from_params(@params)
           u2.valid?.should == true
           u2.persisted?.should == true
           u2.nickname.should_not == @params[:nickname]
+          u1.reload.nickname.should == @params[:nickname]
+        }.should change { User.count } .by(2)
+      end
+      
+      it "should *steal* nickname and still create user if nickname is taken by a *faux* user" do
+        lambda {
+          # create FAUX user with the desired nickname
+          u1 = Factory.create(:user, :nickname => @params[:nickname], :faux => User::FAUX_STATUS[:true])
+          
+          @params[:primary_email] = Factory.next(:primary_email)
+          u2 = GT::UserManager.create_new_user_from_params(@params)
+          u2.valid?.should == true
+          u2.persisted?.should == true
+          u2.nickname.should == @params[:nickname]
+          u1.reload.nickname.should_not == @params[:nickname]
         }.should change { User.count } .by(2)
       end
       

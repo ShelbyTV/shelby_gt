@@ -326,6 +326,13 @@ class User
       self.primary_email = nil if User.where( :_id.ne => self.id, :primary_email => self.primary_email ).exists?
     end
   end
+  
+  # Changes this user's nickname to something fairly random and saves them.
+  # (to allow real user to claim this nickname)
+  def release_nickname!
+    self.nickname = "shelby_#{self.nickname}"
+    self.save
+  end
 
   private
         
