@@ -54,8 +54,6 @@ defaults: &defaults
           include_in: {explore: true, onboarding: true, in_line_promos: false}},
         {display_title: "Khan Academy",         id: "4fa39bd89a725b1f920008f3", display_thumbnail_src: "/images/onboarding/rolls/khan.png",
           include_in: {explore: true, onboarding: true, in_line_promos: false}},
-        {display_title: "TED Talks",            id: "4fa054ff88ba6b09c8000e93", display_thumbnail_src: "/images/onboarding/rolls/ted.png",
-          include_in: {explore: true, onboarding: true, in_line_promos: false}},
         {display_title: "Brain Picker",         id: "4fbad2c5d1041266bc000d4f", display_thumbnail_src: "/images/onboarding/rolls/brainpicker.png",
           include_in: {explore: true, onboarding: true, in_line_promos: false}},
         {display_title: "PBS Idea Channel",     id: "4faabca99a725b5cd50026a2",
