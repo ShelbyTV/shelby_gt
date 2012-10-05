@@ -3,10 +3,6 @@ require 'rhombus'
 class AdminController < ApplicationController    
   before_filter :is_admin?
   
-  def index
-    
-  end
-  
   def new_users 
     rhombus = Rhombus.new('shelby', '_rhombus_gt')
     

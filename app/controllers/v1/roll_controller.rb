@@ -284,7 +284,7 @@ class V1::RollController < ApplicationController
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['update']) do   
       @roll = Roll.find(params[:id])
-      return render_error(404, "could not find roll with id #{params[:roll_id]}") unless @roll
+      return render_error(404, "could not find roll with id #{params[:roll_id]}") unless @roll and @roll.postable_by?(current_user)
 
       begin
         @status = 200 if @roll.update_attributes!(params)

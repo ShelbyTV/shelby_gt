@@ -4,15 +4,18 @@ defaults: &defaults
 
 development:
   <<: *defaults
-  bucket: "dev-shelby-gt-user-avatars"
+  user_avatar_bucket: "dev-shelby-gt-user-avatars"
+  roll_images_bucket: "dev-shelby-gt-roll-images"
 
 test:
   <<: *defaults
-  bucket: "test-shelby-gt-user-avatars"
+  user_avatar_bucket: "test-shelby-gt-user-avatars"
+  roll_images_bucket: "test-shelby-gt-roll-images"
 
 production: &production
   <<: *defaults
-  bucket: "shelby-gt-user-avatars"
+  user_avatar_bucket: "shelby-gt-user-avatars"
+  roll_images_bucket: "shelby-gt-roll-images"
 
 arnold:
   <<: *production

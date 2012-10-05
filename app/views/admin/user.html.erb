@@ -20,6 +20,15 @@
 		<div id="special-rolls" class="text-block">
 			<a href="<%= @user.permalink %>">personal roll</a> :: <a href="<%= @watch_later_roll %>">watch later roll</a> :: <a href="<%= @upvoted_roll %>" >heart roll</a>	
 		</div>
+		
+		<div id="change-public-roll-header-image">
+			<%= form_tag "/v1/roll/#{@user.public_roll.id}", :multipart => true, :method => :put do |f| %>
+				<%= label_tag "public roll header image" %>
+			  <%= file_field_tag :header_image %>
+				<%= submit_tag "Update Roll" %>
+			<% end %>
+		</div>
+		
 		<div id="born-on-date" class="text-block">
 			(shelby) born on date: <%= distance_of_time_in_words_to_now @user.created_at %> ago
 		</div>
