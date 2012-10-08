@@ -18,16 +18,16 @@ module GT
         return false unless object.roll.public
         og_action = "video.watches"
         og_object[:roll] = object.roll.permalink
-        og_object[:video] = object.video_page_permalink
+        og_object[:video] = object.permalink
       when 'favorite'
         og_action = "shelbytv:favorite"
         og_object[:roll] = object.roll.permalink
-        og_object[:other] = object.video_page_permalink
+        og_object[:other] = object.permalink
       when 'roll'
         return false unless object.roll.public
         og_action = "shelbytv:roll"
         og_object[:roll] = object.roll.permalink
-        og_object[:other] = object.video_page_permalink
+        og_object[:other] = object.permalink
       when 'comment'
         conversation = object
         frame = conversation.frame
@@ -35,14 +35,14 @@ module GT
         og_action = "shelbytv:comment"
         og_object[:message] = message
         og_object[:roll] = frame.roll.permalink
-        og_object[:other] = frame.video_page_permalink
+        og_object[:other] = frame.permalink
       when 'share'
         og_action = "shelbytv:share"
         og_object[:message] = message
         if object.is_a?(Roll)
           og_object[:roll] = object.permalink
         elsif object.is_a?(Frame)
-          og_object[:other] = object.video_page_permalink
+          og_object[:other] = object.permalink
         end
       when 'save'
         og_action = "shelbytv:save"
