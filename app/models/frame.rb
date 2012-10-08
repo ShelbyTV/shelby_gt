@@ -65,7 +65,7 @@ class Frame
   
   #N.B. Destroy does not actually remove the record from the DB, #destroy below
   def destroyable_by?(user)
-    return !!(self.creator == nil or self.creator == user or (self.roll and self.roll.creator == user))
+    return !!(user.is_admin? or self.creator == nil or self.creator == user or (self.roll and self.roll.creator == user))
   end
   
   #------ ReRolling -------

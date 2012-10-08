@@ -8,6 +8,8 @@ class Roll
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Roll
   
+  include Paperclip::Glue
+  
   # A Roll has many Frames, first and foremost
   many :frames, :foreign_key => :a
   
@@ -78,7 +80,17 @@ class Roll
   # for private collaborative rolls, these are the participating users
   many :following_users
   
-  attr_accessible :title, :creator_thumbnail_url
+  # uploadable header image via paperclip (see config/initializers/paperclip.rb for defaults)
+  has_attached_file :header_image, 
+    :styles => { :guide_wide => "370x150#", :large_wide => "1110x450#" }, # temporary sizes while we test & iterate
+    :bucket => Settings::Paperclip.roll_images_bucket, 
+    :path => "/header/:id/:style/:basename.:extension"
+  key :header_image_file_name,      String, :abbr => :o
+  key :header_image_file_size,      String, :abbr => :p
+  key :header_image_content_type,   String, :abbr => :q
+  key :header_image_updated_at,     String, :abbr => :r
+  
+  attr_accessible :title, :creator_thumbnail_url, :header_image
 
   RESERVED_SUBDOMAINS = %w(gt anal admin qa vanity)
   validates_exclusion_of :subdomain, :in => RESERVED_SUBDOMAINS

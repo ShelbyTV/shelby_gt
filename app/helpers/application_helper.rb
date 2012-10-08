@@ -39,7 +39,7 @@ module ApplicationHelper
       size = "sq192x192" if avatar_size == "large"
       size = "original" if avatar_size == "original"
       
-      return "http://s3.amazonaws.com/#{Settings::Paperclip.bucket}/#{size}/#{message.user_id}"
+      return "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/#{size}/#{message.user_id}"
     else
       return message.user_image_url
     end

@@ -53,10 +53,17 @@ class V1::UserController < ApplicationController
         if params[:password] and (params[:password] != params[:password_confirmation])
           return render_error(409, "Passwords did not match.", {:user => {:password => "did not match confirmation"}})
         end
+        
         params[:nickname] = clean_nickname(params[:nickname]) if params[:nickname]
-        if params[:nickname] and params[:nickname] != @user.downcase_nickname
-          return render_error(409, "Nickname taken", {:user => {:nickname => "already taken"}}) if User.exists?(:downcase_nickname => params[:nickname])
+        if params[:nickname] and params[:nickname] != @user.downcase_nickname and (user_with_nickname = User.first(:downcase_nickname => params[:nickname]))
+          if user_with_nickname.faux == User::FAUX_STATUS[:true]
+            #we're stealing this faux user's nickname for the real user
+            user_with_nickname.release_nickname!
+          else
+            return render_error(409, "Nickname taken", {:user => {:nickname => "already taken"}})
+          end
         end
+        
         if params[:primary_email] and params[:primary_email] != @user.primary_email
           return render_error(409, "Email taken", {:user => {:primary_email => "already taken"}}) if User.exists?(:primary_email => params[:primary_email])
         end

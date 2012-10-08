@@ -158,6 +158,14 @@ describe GT::NotificationManager do
       }.should change(ActionMailer::Base.deliveries,:size).by(0)      
     end
     
+    it "should not shit the bed if frames creator is nil" do
+      @old_user.gt_enabled = false; @old_user.save
+      @old_frame = Factory.create(:frame, :creator => nil, :video => @video, :roll => @old_roll)
+      lambda {
+        GT::NotificationManager.check_and_send_reroll_notification(@old_frame, @new_frame)
+      }.should change(ActionMailer::Base.deliveries,:size).by(0)
+    end
+    
     it "should return nil if user is creator of the frame" do
       @old_frame.creator = @new_user; @old_frame.save
       r = GT::NotificationManager.check_and_send_reroll_notification(@old_frame, @new_frame)
@@ -184,6 +192,13 @@ describe GT::NotificationManager do
       lambda {
         GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, r)
       }.should change(ActionMailer::Base.deliveries,:size).by(0)      
+    end
+    
+    it "should not shit the bed if roll's owner DNE" do
+      r = Factory.create(:roll, :creator => nil)
+      lambda {
+        GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, r)
+      }.should change(ActionMailer::Base.deliveries,:size).by(0)
     end
     
     it "should should queue email to deliver" do

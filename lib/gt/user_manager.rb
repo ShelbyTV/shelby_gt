@@ -289,7 +289,7 @@ module GT
     end
     
     # Makes sure a nickname is valid and unique!
-    def self.ensure_valid_unique_nickname!(user)
+    def self.ensure_valid_unique_nickname!(user, steal_faux_nickname=false)
       #replace standard junk with underscore
       user.nickname = user.nickname.gsub(/[ ,:&~]/,'_');
       #remove anything not in the set of valid characters
@@ -298,6 +298,11 @@ module GT
       
       orig_nick = user.nickname
       i = 2
+      
+      if steal_faux_nickname
+        user_with_nickname = User.first(:downcase_nickname => user.nickname.downcase)
+        user_with_nickname.release_nickname! if user_with_nickname and user_with_nickname.faux == User::FAUX_STATUS[:true]
+      end
       
       while( User.where( :_id.ne => user.id, :downcase_nickname => user.nickname.downcase ).count > 0 ) do
         user.nickname = "#{orig_nick}_#{i}"
@@ -352,7 +357,7 @@ module GT
         
         u.server_created_on = "GT::UserManager#build_new_user_from_params/#{u.nickname}"
         
-        ensure_valid_unique_nickname!(u)
+        ensure_valid_unique_nickname!(u, true)
         
         u.preferences = Preferences.new()
         u.app_progress = AppProgress.new()

@@ -298,8 +298,21 @@ describe 'v1/user' do
         @u1.reload.downcase_nickname.should == new_nick.downcase
       end
       
-      it "should return 409 if another user has the proposed nickname" do
+      it "shuld allow you to take the nickname of a faux user" do
+        u2 = Factory.create(:user, :faux => User::FAUX_STATUS[:true])
+        new_nick = u2.nickname
+        lambda {
+          put "/v1/user/#{@u1.id}?nickname=#{new_nick}"
+        }.should change { @u1.reload.nickname }
+        response.body.should be_json_eql(200).at_path("status")
+        @u1.reload.downcase_nickname.should == new_nick.downcase
+        u2.reload.nickname.should_not == new_nick
+      end
+      
+      it "should return 409 if another *real* user has the proposed nickname" do
         u2 = Factory.create(:user)
+        u2.gt_enable!
+        u2.faux.should_not == User::FAUX_STATUS[:true]
         new_nick = u2.nickname
         lambda {
           put "/v1/user/#{@u1.id}?nickname=#{new_nick}"

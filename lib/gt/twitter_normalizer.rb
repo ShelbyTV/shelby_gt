@@ -14,8 +14,8 @@ module GT
       user_hash = tweet_hash['user'] || {}
       
       m = GT::MessageManager.build_message( :origin_network => Message::ORIGIN_NETWORKS[:twitter],
-                                            :origin_id => tweet_hash['id'] || tweet_hash['id_str'].to_i,
-                                            :origin_user_id => user_hash['id'] || user_hash['id_str'].to_i,
+                                            :origin_id => tweet_hash['id_str'].to_i,
+                                            :origin_user_id => user_hash['id_str'].to_i,
                                             :public => true,
                                             :nickname => user_hash["screen_name"],
                                             :realname => user_hash["name"],

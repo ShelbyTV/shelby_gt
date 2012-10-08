@@ -91,8 +91,24 @@ class User
   key :primary_email,         String
   key :encrypted_password,    String, :abbr => :ar
   
-  # uploadable avatar via paperclip (see config/initializers/paperclip.rb for more info, like how to display the avatar)
-  has_attached_file :avatar, :styles => { :sq192x192 => "192x192#", :sq48x48 => "48x48#" }
+  # uploadable avatar via paperclip (see config/initializers/paperclip.rb for defaults)
+  # To simplify things, a user's Shelby avatar S3 file name is deterministic based on the user's id.
+  #
+  # Using the format of :path below, here's how you construct an avatar URL:
+  #   http://s3.amazonaws.com/shelby-gt-user-avatars/<style>/<user.id>
+  # Where <style> is one of the pre-defined sizes is user.rb, currently:
+  # :styles => { :sq192x192 => "192x192#", :sq48x48 => "48x48#" }
+  #
+  # Example of a large thumbnail URL:
+  #   http://s3.amazonaws.com/dev-shelby-gt-user-avatars/sq192x192/4fa141009fb5ba2b2b000002
+  #
+  # You can also get at the originally uploaded image (with original aspect ratio) using the "original" style:
+  #   http://s3.amazonaws.com/dev-shelby-gt-user-avatars/original/4fa141009fb5ba2b2b000002
+  #
+  has_attached_file :avatar, 
+    :styles => { :sq192x192 => "192x192#", :sq48x48 => "48x48#" },
+    :bucket => Settings::Paperclip.user_avatar_bucket, 
+    :path => "/:style/:id"
   key :avatar_file_name,      String, :abbr => :at
   key :avatar_file_size,      String, :abbr => :au
   key :avatar_content_type,   String, :abbr => :av
@@ -194,7 +210,7 @@ class User
                     "original"
                   end
     
-    "http://s3.amazonaws.com/#{Settings::Paperclip.bucket}/#{avatar_size}/#{id.to_s}?#{avatar_updated_at}" if has_shelby_avatar
+    "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/#{avatar_size}/#{id.to_s}?#{avatar_updated_at}" if has_shelby_avatar
   end
   
   # only return true if a correct, symmetric following is in the DB (when given a proper Roll and not roll_id)
@@ -325,6 +341,13 @@ class User
     if self.primary_email and !self.authentications.blank?
       self.primary_email = nil if User.where( :_id.ne => self.id, :primary_email => self.primary_email ).exists?
     end
+  end
+  
+  # Changes this user's nickname to something fairly random and saves them.
+  # (to allow real user to claim this nickname)
+  def release_nickname!
+    self.nickname = "shelby_#{self.nickname}"
+    self.save
   end
 
   private
