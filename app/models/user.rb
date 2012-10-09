@@ -201,7 +201,7 @@ class User
   # When true, you should display this user's avatar via a deterministic S3 file location (see initializers/paperclip.rb)
   def has_shelby_avatar() !self.avatar_file_name.blank?; end
   
-  def shelby_avatar_url(size="small")
+  def shelby_avatar_url()
     avatar_size = case size
                   when "small"
                     "sq48x48"
@@ -322,7 +322,7 @@ class User
   def send_email_address_to_sailthru(list=Settings::Sailthru.user_list)
     if self.primary_email and self.primary_email_changed?
       ShelbyGT_EM.next_tick do
-        APIClients::SailthruClient.add_user_to_list(user, list)
+        APIClients::SailthruClient.add_user_to_list(self, list)
       end
     end
   end
