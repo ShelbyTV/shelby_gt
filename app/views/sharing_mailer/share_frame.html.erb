@@ -1,6 +1,6 @@
 <% standard_html_email_wrapper do %>
 	<!-- Wrapper/Container Table: Use a wrapper table to control the width and the background color consistently of your email. Use this approach instead of setting attributes on the body tag. -->
-	<table align="center" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#E2E2E2; color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;width: 55%;">
+	<table align="center" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#E2E2E2; color:#444; font-family: Arial,sans-serif; font-weight:300;width: 55%;">
 		<tr>
 			<td valign="middle" class="shelby-email-lining" style="padding:0px;">
 				<!--  show message in email preview-->
@@ -8,12 +8,12 @@
 					<%= @message %>
 				</div>
 				<!-- end show message-->
-				<h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313425;">
+				<h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313435;">
 					<a href="<%= Settings::Email.web_url_base %>">
 						<img class="image_fix" src="<%= Settings::Email.shelby_logo_gt %>" alt="Shelby.tv logo" title="Shelby.tv" height="30" style="padding:8px 0px 5px;display:block;margin: 0px auto;display:block;"/>
 					</a>
 				</h1>
-				<hr style="margin-top:0px;background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #EFEFEF;"/>
+				<hr style="margin-top:0px;background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #000000;"/>
 				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; padding:20px 20px 15px; max-width:400px;margin: 0px auto;">
 					<tr height="25">
 						<td colspan="2" valign="top" style="font-weight:bold;font-size: 14px; color:#333">
@@ -26,7 +26,7 @@
 								<a href="<%= @user_from.permalink %>" style="float:left;">
 									<img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="user_image" title="<%= @user_from.name %>" width="45" height="45" style="margin-right: 15px;display:block;"/>
 								</a>
-								<div style="float:left;max-width:218px;font-size:12px;color:#333;">
+								<div style="float:left;max-width:218px;font-size:11px;color:#333;">
 									<%= @message %>									
 								</div>
 							</td>
