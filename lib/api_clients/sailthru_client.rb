@@ -3,11 +3,26 @@ require 'sailthru'
 module APIClients
   class SailthruClient
         
-    def self.add_user_to_list(user, list)
+    def self.add_or_update_user_to_list(user, list)
       raise ArgumentError, 'Must provide a valid user' unless user.is_a? User
       raise ArgumentError, 'Must provide a list' unless list
       
       return unless Rails.env == 'production'
+      
+      #first check if user email was not nil
+      if user.primary_email_was != nil and check_sailthru_for_user(user.primary_email_was)
+        
+      else
+        add_user_to_list(user, list)
+      end
+
+    end
+    
+    def self.add_user_to_list(user, list)
+      raise ArgumentError, 'Must provide a valid user' unless user.is_a? User
+      raise ArgumentError, 'Must provide a list' unless list
+      
+      #return unless Rails.env == 'production'
       
       lists = { list => 1 }
 
@@ -18,7 +33,7 @@ module APIClients
               'name' => user.name
           }
       }
-      
+    
       sailthru_client.api_post('user', data)
     end
     
@@ -46,6 +61,10 @@ module APIClients
         @client ||= Sailthru::SailthruClient.new(Settings::Sailthru.api_key, Settings::Sailthru.api_secret, Settings::Sailthru.api_url) 
       end
       
+      def self.check_sailthru_for_user(email_address)
+        r = sailthru_client.api_get('user', {"id"=>email_address})
+        r["error"] ? nil : r
+      end
       
       ####################
       # HACK: This should just be called from ApplicationHelper, not sure how to so for now
