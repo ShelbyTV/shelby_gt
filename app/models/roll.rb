@@ -105,10 +105,12 @@ class Roll
       rescue Mongo::OperationFailure => e
         if e.error_code == 11000 or e.error_code == 11001
           # we violated the unique index constraint on subdomains, so we just won't give this roll a subdomain
+          Rails.logger.error "Roll saving error / Mongo::OperationFailure #{e.error_code} / self is #{self}"
           self.subdomain = nil
           self.subdomain_active = false
           super
         else
+          Rails.logger.error "Roll saving error, unexpected Mongo::OperationFailure #{e.error_code}, raising..."
           raise
         end
       end
