@@ -356,3 +356,16 @@ describe V1::ConversationController do
     end 
   end
 end
+
+describe V1::TwitterController do
+  describe "routing" do
+    it "routes for POST to /follow" do
+      { :post => "/v1/twitter/follow/twitter_user_name" }.should route_to(
+        :controller => "v1/twitter",
+        :action => "follow",
+        :format => "json",
+        :twitter_user_name => "twitter_user_name"
+      )
+    end
+  end
+end
