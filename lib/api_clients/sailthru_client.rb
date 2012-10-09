@@ -3,11 +3,7 @@ require 'sailthru'
 module APIClients
   class SailthruClient
     
-    def initialize
-      self.sailthru_client
-    end
-    
-    def add_user_to_list(user, list)
+    def self.add_user_to_list(user, list)
       raise ArgumentError, 'Must provide a valid user' unless user.is_a? User
       
       lists = { list => 1 }
@@ -29,7 +25,7 @@ module APIClients
           'vars' => vars
       }
       
-      response = @client.api_post('user', data)
+      response = sailthru_client.api_post('user', data)
     end
   
     private
