@@ -77,6 +77,10 @@ class V1::UserController < ApplicationController
           
           # When changing the password, need to re-sign in (and bypass validation)
           sign_in(@user, :bypass => true) if params[:password]
+
+          if current_user == @user
+            @user_personal_roll_subdomain = (@user.public_roll and @user.public_roll.subdomain)
+          end
         else
           render_error(409, "error updating user.")
         end
