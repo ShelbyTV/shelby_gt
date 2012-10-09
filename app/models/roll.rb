@@ -215,6 +215,9 @@ class Roll
     return true if self.public? and self.collaborative?
     return false unless u
     
+    # Admins may post to any roll
+    return true if u.is_a?(User) and u.is_admin?
+    
     user_id = (u.is_a?(User) ? u.id : u)
     
     return true if self.creator_id == user_id
