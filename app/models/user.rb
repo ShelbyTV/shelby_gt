@@ -201,7 +201,7 @@ class User
   # When true, you should display this user's avatar via a deterministic S3 file location (see initializers/paperclip.rb)
   def has_shelby_avatar() !self.avatar_file_name.blank?; end
   
-  def shelby_avatar_url()
+  def shelby_avatar_url(size)
     avatar_size = case size
                   when "small"
                     "sq48x48"
