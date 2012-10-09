@@ -261,10 +261,7 @@ class User
     
       ShelbyGT_EM.next_tick { 
         rhombus = Rhombus.new('shelby', '_rhombus_gt')
-        rhombus.post('/sadd', {:args => ['new_gt_enabled_users', self.id.to_s]})
-        
-        # Send Welcome to GT email
-        APIClients::SailthruClient.send_email(self, Settings::Sailthru.welcome_template, '+23 hours')
+        rhombus.post('/sadd', {:args => ['new_gt_enabled_users', self.id.to_s]})        
       }
     end
   end
@@ -323,11 +320,9 @@ class User
   end
 
   def send_email_address_to_sailthru(list=Settings::Sailthru.user_list)
-    if self.primary_email and self.primary_email_changed?
-      ShelbyGT_EM.next_tick do
-        APIClients::SailthruClient.add_user_to_list(self, list)
-      end
-    end
+    #ShelbyGT_EM.next_tick do
+    #  APIClients::SailthruClient.add_user_to_list(self, list)
+    #end
   end
 
   def update_public_roll_title
