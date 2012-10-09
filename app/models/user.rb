@@ -2,6 +2,7 @@
 require 'user_manager'
 require 'securerandom'
 require 'rhombus'
+require 'api_clients/sailthru_client'
 
 # We are using the User model form Shelby (before rolls)
 # New vs. old keys will be clearly listed
