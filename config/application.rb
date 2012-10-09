@@ -77,7 +77,7 @@ module ShelbyGt
     config.middleware.use Rack::Cors do
       allow do
         origins 'web.gt.shelby.tv', 'gt.shelby.tv', 'isoroll.shelby.tv', 'shelby.tv', 'https://fb.shelby.tv','fb.shelby.tv', 'm.shelby.tv', 'localhost.shelby.tv:3000', '192.168.2.206:3000', 'm.localhost.shelby.tv:3000'
-        resource %r{/v1/(roll|frame|user|dashboard|video|conversation|gt_interest)\w*},
+        resource %r{/v1/(conversation|dashboard|frame|gt_interest|roll|twitter|user|video)\w*},
           :headers => ['Origin', 'Accept', 'Content-Type', 'X-CSRF-Token', 'X-Shelby-User-Agent'],
           :methods => [:put, :post, :delete]
       end
