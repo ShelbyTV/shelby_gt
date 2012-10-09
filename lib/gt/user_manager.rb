@@ -6,6 +6,7 @@ require 'user_facebook_manager'
 require 'api_clients/twitter_client'
 require 'api_clients/twitter_info_getter'
 require 'api_clients/facebook_info_getter'
+require 'api_clients/sailthru_client'
 
 
 # This is the one and only place where Users are created.
@@ -39,6 +40,7 @@ module GT
         
         ShelbyGT_EM.next_tick {
           populate_autocomplete_info(user)
+          APIClients::SailthruClient.send_email(user, Settings::Sailthru.welcome_template, '+23 hours')
         }
 
         return user
@@ -62,6 +64,10 @@ module GT
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
         
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
+        
+        ShelbyGT_EM.next_tick {
+          APIClients::SailthruClient.send_email(user, Settings::Sailthru.welcome_template, '+23 hours')
+        }
         
         return user
       else
