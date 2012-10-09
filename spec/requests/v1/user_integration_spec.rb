@@ -37,6 +37,16 @@ describe 'v1/user' do
         response.body.should_not have_json_path("result/roll_followings")
       end
 
+      it "should have a personal_roll_subdomain attribute" do
+        r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user], :title => 'title')
+        @u1.public_roll = r1
+        @u1.save
+
+        get '/v1/user'
+        response.body.should have_json_path("result/personal_roll_subdomain")
+        parse_json(response.body)["result"]["personal_roll_subdomain"].should == "title"
+      end
+
       it "should wrap with callback when requesting via jsonp" do
         get '/v1/user/?callback=jQuery17108599677098863208_1335973680689&include_rolls=true&_=1335973682178'
         response.body.should =~ /^\W*jQuery17108599677098863208_1335973680689/
@@ -47,6 +57,17 @@ describe 'v1/user' do
         get '/v1/user/'+u2.id
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result/nickname")        
+      end
+
+      it "should not have a personal_roll_subdomain attribute for a user besides herself" do
+        u2 = Factory.create(:user)
+        r1 = Factory.create(:roll, :creator => u2, :roll_type => Roll::TYPES[:special_public_real_user], :title => 'title')
+        u2.public_roll = r1
+        u2.save
+
+        get '/v1/user/'+u2.id
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should_not have_json_path("result/personal_roll_subdomain")
       end
       
       it "should get a user by querying by nickname" do

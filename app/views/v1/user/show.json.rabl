@@ -8,8 +8,8 @@ node :personal_roll_id do |u|
 end
 
 if current_user == @user
-  
-  attributes :authentication_token, :autocomplete
+
+	attributes :authentication_token, :autocomplete
 
 	child :authentications do
 		attributes :uid, :provider, :nickname
@@ -19,6 +19,10 @@ if current_user == @user
 		attributes :email_updates, :like_notifications, :watched_notifications, :comment_notifications, :upvote_notifications, :reroll_notifications, :roll_activity_notifications, :open_graph_posting
 	end
 	
+	node "personal_roll_subdomain" do
+		@user_personal_roll_subdomain
+	end
+
 	node "watch_later_roll_id" do
 		@user.watch_later_roll_id
 	end
