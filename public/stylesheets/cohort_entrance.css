@@ -36,7 +36,11 @@
   background-color: white;
   color: black;
 }
-/* line 38, ../../app/assets/stylesheets/cohort_entrance.scss */
+/* line 37, ../../app/assets/stylesheets/cohort_entrance.scss */
+.cohort-entrance-wrapper .email-signup-wrapper {
+  display: none;
+}
+/* line 39, ../../app/assets/stylesheets/cohort_entrance.scss */
 .cohort-entrance-wrapper .email-signup-wrapper label, .cohort-entrance-wrapper .email-signup-wrapper input {
   font-size: 1.5em;
 }

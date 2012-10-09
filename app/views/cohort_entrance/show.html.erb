@@ -1,50 +1,54 @@
 <div class="cohort-entrance-wrapper">
 	<% if @cohort_entrance %>
-	<h1>Meet Shelby.</h1>
-	<h1>A simple new way to enjoy video.</h1>
+		<h1>Meet Shelby, a simple new way to enjoy video.</h1>
 	
-	<h2>
-		If you're here, it means you've been invited by someone very close to Shelby. 
-	</h2>
-	<h2>
-		We're in a private beta right now, so don't be alarmed if things are ugly, break, and change from time to time, but if you have feedback, send it our way. <a href="mailto:feedback@shelby.tv">feedback@shelby.tv</a>
-	</h2>
+		<h2>
+			We know... this landing page still needs a little love, but we promise that Shelby itself is much prettier. 
+		</h2>
+		<h2>
+			You’ll see for yourself in a second.  Just sign in below.
+		</h2>
+		<h2>
+			(If you already had a Shelby account from our first product, please sign in the same way you did before. ie. Sign in with Twitter again, if you used Twitter the first time. If you can’t remember which one you used, just take a guess.)
+		</h2>
 	
-	<hr/>
+		<hr/>
 	
-	<h2>
-		Signing up with Twitter or Facebook allows Shelby to find the great videos your friends have posted and share them with you. We never auto-share from your account and we hate spam, too.
-	</h2>
+		<div class="social-signup-wrapper">
+			<h2>Sign up with...</h2>
+			<%= link_to "email and password", "#", :onclick => "$(this).hide();$('.email-signup-wrapper').show();$('#user_name').focus();return false;" %>
+			<%= link_to "twitter", "/auth/twitter", :class => "social-signup", :target => "signup_twt" %>
+			<%= link_to "facebook", "/auth/facebook", :class => "social-signup", :target => "signup_fb" %>
+		</div>
 	
-	<div class="social-signup-wrapper">
-		<%= link_to "sign up with twitter", "/auth/twitter", :class => "social-signup", :target => "signup_twt" %>
-		<%= link_to "sign up with facebook", "/auth/facebook", :class => "social-signup", :target => "signup_fb" %>
-	</div>
-	
-	<hr />
-	
-	<h2>You can also sign up with email first and connect Twitter/Facebook/Tumblr later by going to your Preferences.</h2>
+		<div class="email-signup-wrapper">
+			<%= form_for(:user, :url => session_url(:user, :protocol => 'https')) do |f| %>
+			  <div><%= f.label :name %><br />
+			  <%= f.text_field :name %></div>
 
-	<div class="email-signup-wrapper">
-		<%= form_for(:user, :url => session_url(:user, :protocol => 'https')) do |f| %>
-		  <div><%= f.label :name %><br />
-		  <%= f.text_field :name %></div>
+				<div><%= f.label :nickname, "Username" %><br />
+			  <%= f.text_field :nickname %></div>
 
-			<div><%= f.label :nickname, "Username" %><br />
-		  <%= f.text_field :nickname %></div>
+				<div><%= f.label :primary_email, "Email" %><br />
+			  <%= f.email_field :primary_email %></div>
 
-			<div><%= f.label :primary_email, "Email" %><br />
-		  <%= f.email_field :primary_email %></div>
+			  <div><%= f.label :password %><br />
+			  <%= f.password_field :password %></div>
 
-		  <div><%= f.label :password %><br />
-		  <%= f.password_field :password %></div>
-
-		  <div><%= f.submit "Create Account" %></div>
-		<% end %>
-	</div>
+			  <div><%= f.submit "Create Account" %></div>
+			<% end %>
+		</div>
+		
+		<hr />
+		
+		<h2>
+			Need help?<br />
+			tweet <%= link_to "@shelby", "http://twitter.com/shelby", :target => "_twt" %><br />
+			or email <%= mail_to "support@shelby.tv" %>
+		</h2>
 
 	<% else %>
-	<h1>Make sure you typed that URL correctly</h1>
-	or <%= link_to "request an early invite to Shelby", Settings::ShelbyAPI.web_root %>
+		<h1>Make sure you typed that URL correctly</h1>
+		or <%= link_to "request an early invite to Shelby", Settings::ShelbyAPI.web_root %>
 	<% end %>
 </div>
