@@ -13,7 +13,7 @@
  * TODO:
  *
  *  - not sure what to do about ARRAY typecasts (what type is in the array)
- *  - not sure about frame short_links (created as a Ruby Hash) - what's the right BSON type?
+ *  - not sure about frame short_links (created as a Ruby Hash) - what's the right BSON type? -> it's an embedded (BSON) Document
  *  - not sure about roll short_links (created as a Ruby Hash) - what's the right BSON type?
  *  - not sure about user autocomplete (created as a Ruby Hash) - what's the right BSON type?
  *  - not sure which user old keys are necessary -- not everything added yet
@@ -89,6 +89,7 @@
    apply(ROLL , subdomain_active          , SUBDOMAIN_ACTIVE          , BOOL   , l               ) \
    apply(ROLL , first_frame_thumbnail_url , FIRST_FRAME_THUMBNAIL_URL , STRING , m               ) \
    apply(ROLL , roll_type                 , ROLL_TYPE                 , INT    , n               ) \
+   apply(ROLL , header_image_file_name    , HEADER_IMAGE_FILE_NAME    , STRING , o               ) \
    apply(ROLL , following_users           , FOLLOWING_USERS           , ARRAY  , following_users )
 
 #define CONVERSATION_PROPERTIES(apply)                                     \

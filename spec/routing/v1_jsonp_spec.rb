@@ -190,3 +190,16 @@ describe "GtInterest" do
   end
   
 end
+
+describe "Twitter" do
+  
+  # POST   /v1/twitter/follow/:twitter_user_name(.:format)                 v1/twitter/#follow {:format=>"json"}
+  it "routes for POST /follow" do
+    { :get => "/v1/POST/twitter/follow/some_user_name" }.should route_to(
+      :controller => "v1/twitter",
+      :action => "follow",
+      :twitter_user_name => "some_user_name",
+      :format => "json"
+    )
+  end
+end

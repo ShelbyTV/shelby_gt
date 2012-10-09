@@ -98,6 +98,11 @@ ShelbyGt::Application.routes.draw do
     
     resources :token, :only => [:create, :destroy]
     
+    # Twitter direct interaction
+    namespace :twitter do
+      post 'follow/:twitter_user_name', :action => "follow"
+    end
+    
     # User related
     get 'user' => 'user#show'
     get 'signed_in' => 'user#signed_in'
@@ -131,6 +136,8 @@ ShelbyGt::Application.routes.draw do
     get 'DELETE/conversation/:conversation_id/messages/:id' => 'messages#destroy'
     # gt_interest
     get 'POST/gt_interest/' => 'gt_interest#create'
+    # twitter
+    get 'POST/twitter/follow/:twitter_user_name' => 'twitter#follow'
 
   end
   
