@@ -113,7 +113,7 @@ describe 'v1/video' do
     end
   end
   
-  describe "POST unplayable" do
+  describe "PUT unplayable" do
     before(:each) do
       @u1 = Factory.create(:user)
       
@@ -123,7 +123,7 @@ describe 'v1/video' do
     end
     
     it "should return video info on success" do
-      post '/v1/video/'+@v.id+'/unplayable'
+      put '/v1/video/'+@v.id+'/unplayable'
       response.body.should be_json_eql(200).at_path("status")
       response.body.should have_json_path("result/title")
       response.body.should have_json_path("result/first_unplayable_at")
@@ -131,7 +131,7 @@ describe 'v1/video' do
     end
     
     it "should return 404 when video not found" do
-      post '/v1/video/'+@v.id+'33/unplayable'
+      put '/v1/video/'+@v.id+'33/unplayable'
       response.body.should be_json_eql(404).at_path("status")
     end
   end

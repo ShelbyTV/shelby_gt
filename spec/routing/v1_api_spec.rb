@@ -323,8 +323,8 @@ describe V1::VideoController do
       )
     end
     
-    it "routes for POST unplayable" do
-      { :post => "/v1/video/1/unplayable" }.should route_to(
+    it "routes for PUT unplayable" do
+      { :put => "/v1/video/1/unplayable" }.should route_to(
         :controller => "v1/video",
         :action => "unplayable",
         :video_id => "1",

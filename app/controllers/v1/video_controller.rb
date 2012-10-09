@@ -87,7 +87,7 @@ class V1::VideoController < ApplicationController
   # Marks the given video as unplayable as of now
   #   REQUIRES AUTHENTICATION
   #
-  # [POST] /v1/video/:video_id/unplayable
+  # [PUT] /v1/video/:video_id/unplayable
   #
   def unplayable
     @video = Video.find(params[:video_id])

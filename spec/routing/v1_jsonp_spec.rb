@@ -141,9 +141,9 @@ end
 
 describe "Videos" do
   
-  # POST   /v1/video/:video_id/unplayable(.:format)                        v1/video#unplayable {:format=>"json"}
-  it "routes for POST unplayable" do
-    { :get => "/v1/POST/video/33/unplayable" }.should route_to(
+  # PUT   /v1/video/:video_id/unplayable(.:format)                        v1/video#unplayable {:format=>"json"}
+  it "routes for PUT unplayable" do
+    { :get => "/v1/PUT/video/33/unplayable" }.should route_to(
       :controller => "v1/video",
       :action => "unplayable",
       :format => "json",
