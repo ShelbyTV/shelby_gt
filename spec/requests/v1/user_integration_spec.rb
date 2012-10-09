@@ -37,7 +37,7 @@ describe 'v1/user' do
         response.body.should_not have_json_path("result/roll_followings")
       end
 
-      it "should have a personal_roll_subdomain attribute" do
+      it "should return correct personal_roll_subdomain attribute" do
         r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user], :title => 'title')
         @u1.public_roll = r1
         @u1.save
@@ -289,6 +289,17 @@ describe 'v1/user' do
         parse_json(response.body)["result"]["name"].should eq("Barack Obama")
       end
       
+      it "should return correct personal_roll_subdomain attribute on success" do
+        r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user], :title => 'title1')
+        @u1.public_roll = r1
+        @u1.save
+
+        put '/v1/user/'+@u1.id+'?name=Barack%20Obama'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result/personal_roll_subdomain")
+        parse_json(response.body)["result"]["personal_roll_subdomain"].should == "title1"
+      end
+
       it "should return an error if nickname validation fails" do
         u2 = Factory.create(:user)
         put '/v1/user/'+@u1.id+'?nickname='+u2.nickname
