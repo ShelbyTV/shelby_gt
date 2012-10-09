@@ -112,5 +112,28 @@ describe 'v1/video' do
       parse_json(response.body)["result"][0]["id"].should == f1.video.id.to_s
     end
   end
+  
+  describe "POST unplayable" do
+    before(:each) do
+      @u1 = Factory.create(:user)
+      
+      #sign that user in
+      set_omniauth(:uuid => @u1.authentications.first.uid)
+      get '/auth/twitter/callback'
+    end
+    
+    it "should return video info on success" do
+      post '/v1/video/'+@v.id+'/unplayable'
+      response.body.should be_json_eql(200).at_path("status")
+      response.body.should have_json_path("result/title")
+      response.body.should have_json_path("result/first_unplayable_at")
+      response.body.should have_json_path("result/last_unplayable_at")
+    end
+    
+    it "should return 404 when video not found" do
+      post '/v1/video/'+@v.id+'33/unplayable'
+      response.body.should be_json_eql(404).at_path("status")
+    end
+  end
 
 end

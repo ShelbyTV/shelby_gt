@@ -139,9 +139,23 @@ describe "Frame" do
   
 end
 
+describe "Videos" do
+  
+  # POST   /v1/video/:video_id/unplayable(.:format)                        v1/video#unplayable {:format=>"json"}
+  it "routes for POST unplayable" do
+    { :get => "/v1/POST/video/33/unplayable" }.should route_to(
+      :controller => "v1/video",
+      :action => "unplayable",
+      :format => "json",
+      :video_id => "33"
+    )
+  end
+  
+end
+
 describe "DashboardEntries" do
   
-  # PUT    /v1/dashboard/:id(.:format)                              v1/dashboard_entries#update {:format=>"json"}
+  # PUT    /v1/dashboard/:video_id(.:format)                              v1/dashboard_entries#update {:format=>"json"}
   it "routes for PUT" do
     { :get => "/v1/PUT/dashboard/33" }.should route_to(
       :controller => "v1/dashboard_entries",

@@ -37,6 +37,10 @@ class Video
   key :recs, Array, :typecast => 'Recommendation', :abbr => :r
   many :recommendations, :in => :recs
   
+  # Maintain the first and the most recent time we noticed this video had playback errors
+  key :first_unplayable_at, Time, :abbr => :s
+  key :last_unplayable_at, Time, :abbr => :t
+  
   # Arnold does a *shit ton* of Video creation, which runs this validation, which turns out to be very expensive 
   # This validations is technically unnecessary because there is a unique index on [provider_id, provider_name] in the database.
   # Additionally: 1) Arnold performs manual validation on Video create. 2) This doesn't even gurantee uniqueness (timing issues)

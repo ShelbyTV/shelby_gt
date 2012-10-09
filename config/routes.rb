@@ -85,6 +85,7 @@ ShelbyGt::Application.routes.draw do
       get 'conversations' => 'conversation_metal#index'
       get 'viewed', :on => :collection
       get 'queued', :on => :collection
+      post 'unplayable'
     end
     resources :dashboard_entries, :path => "dashboard", :only => [:update] do
       get 'find_entries_with_video' => 'dashboard_entries#find_entries_with_video', :on => :collection
@@ -129,6 +130,8 @@ ShelbyGt::Application.routes.draw do
     get 'POST/frame/:frame_id/watched' => 'frame#watched'
     get 'POST/frame/:frame_id/share' => 'frame#share'
     get 'DELETE/frame/:id' => 'frame#destroy'
+    # video
+    get 'POST/video/:video_id/unplayable' => 'video#unplayable'
     # dashboard entry
     get 'PUT/dashboard/:id' => 'dashboard_entries#update'
     # messages

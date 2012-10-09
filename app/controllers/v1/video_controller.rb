@@ -83,6 +83,23 @@ class V1::VideoController < ApplicationController
     end
   end
   
+  ##
+  # Marks the given video as unplayable as of now
+  #   REQUIRES AUTHENTICATION
+  #
+  # [POST] /v1/video/:video_id/unplayable
+  #
+  def unplayable
+    @video = Video.find(params[:video_id])
+    return render_error(404, "could not find video with id #{params[:id]}") unless @video
+    @video.first_unplayable_at = Time.now unless @video.first_unplayable_at
+    @video.last_unplayable_at = Time.now
+    @video.save
+    
+    @status = 200
+    render 'show'
+  end
+  
   private
   
     def video_ids_on_roll(roll_id, limit=1000)

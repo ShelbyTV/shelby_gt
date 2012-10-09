@@ -18,5 +18,37 @@ describe V1::VideoController do
     end
     
   end
+  
+  describe "POST unplayable" do
+    before(:each) do
+      @u1 = Factory.create(:user)
+      sign_in @u1
+      @video = Factory.create(:video, :title=>"test title")
+      Video.stub(:find) { @video }
+    end
+    
+    it "updates first_unplayable_at when it's nil" do
+      @video.first_unplayable_at.should be_nil
+      @video.first_unplayable_at.should be_nil
+      
+      post :unplayable, {:video_id => @video.id, :format => :json}
+      
+      assigns(:video).should eq(@video)
+      @video.first_unplayable_at.should_not be_nil
+      @video.last_unplayable_at.should_not be_nil
+    end
+    
+    it "doesn't update first_unplayable_at when it's not nil" do
+      t = @video.first_unplayable_at = 1.hour.ago
+      @video.save
+      
+      post :unplayable, {:video_id => @video.id, :format => :json}
+      
+      assigns(:video).should eq(@video)
+      @video.first_unplayable_at.to_i.should == t.to_i
+      @video.last_unplayable_at.should_not be_nil
+    end
+    
+  end
 
 end

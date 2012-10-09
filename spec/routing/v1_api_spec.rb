@@ -322,6 +322,16 @@ describe V1::VideoController do
         :format => "json"
       )
     end
+    
+    it "routes for POST unplayable" do
+      { :post => "/v1/video/1/unplayable" }.should route_to(
+        :controller => "v1/video",
+        :action => "unplayable",
+        :video_id => "1",
+        :format => "json"
+      )
+    end
+    
   end
 end
 

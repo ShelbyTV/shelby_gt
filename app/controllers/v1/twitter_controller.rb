@@ -4,6 +4,13 @@ class V1::TwitterController < ApplicationController
   
   before_filter :user_authenticated?
   
+  ##
+  # Follow the given user on twitter (if the current_user has auth'd with twitter)
+  #   REQUIRES AUTHENTICATION
+  #
+  # [POST] /v1/twitter/follow/USERNAME
+  # @param [Required, String] USERNAME (must be part of the url) the twitter username you'd like the current user to follow
+  #
   def follow
     return render_error(400, "must provide a twitter user to follow") unless params[:twitter_user_name]
     auth = current_user.first_provider("twitter")
