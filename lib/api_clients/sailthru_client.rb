@@ -11,16 +11,12 @@ module APIClients
       
       lists = { list => 1 }
 
-      vars = {
-          'name' => user.name,
-          'nickname' => user.nickname,
-          'avatar' => get_shelby_avatar(user),
-          'subdomain' => user.public_roll.subdomain
-      }
       data = {
           'id' => user.primary_email,
           'lists' => lists,
-          'vars' => vars
+          'vars' => {
+              'name' => user.name
+          }
       }
       
       sailthru_client.api_post('user', data)
