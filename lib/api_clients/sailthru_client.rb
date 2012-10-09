@@ -50,6 +50,10 @@ module APIClients
         @client ||= Sailthru::SailthruClient.new(Settings::Sailthru.api_key, Settings::Sailthru.api_secret, Settings::Sailthru.api_url) 
       end
       
+      
+      ####################
+      # HACK: This should just be called from ApplicationHelper, not sure how to so for now
+      #  just created this helper method that is redundant.
       def self.get_shelby_avatar(user)
         if user.has_shelby_avatar
           avatar = user.shelby_avatar_url("small")
