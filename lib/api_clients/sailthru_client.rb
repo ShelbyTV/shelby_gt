@@ -28,7 +28,10 @@ module APIClients
 
       data = {
           'id' => user.primary_email,
-          'lists' => lists
+          'lists' => lists,
+          'vars' => {
+              'name' => user.name
+          }
       }
     
       sailthru_client.api_post('user', data)
