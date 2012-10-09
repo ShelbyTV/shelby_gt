@@ -52,7 +52,7 @@ module APIClients
       
       def self.get_shelby_avatar(user)
         if user.has_shelby_avatar
-          avatar = user.shelby_avatar_url
+          avatar = user.shelby_avatar_url("small")
         else
           avatar = user.user_image_original || user.user_image || "/images/assets/avatar.png"
         end
