@@ -7,6 +7,8 @@ module APIClients
       raise ArgumentError, 'Must provide a valid user' unless user.is_a? User
       raise ArgumentError, 'Must provide a list' unless list
       
+      return unless Rails.env == 'production'
+      
       lists = { list => 1 }
 
       vars = {
@@ -27,6 +29,8 @@ module APIClients
     def self.send_email(user_to, template, send_time=nil)
       raise ArgumentError, 'Must provide a valid user' unless user_to.is_a? User
       raise ArgumentError, 'Must provide an email template' unless template
+      
+      return unless Rails.env == 'production'
       
       vars = {
         'name' => user_to.name, 
