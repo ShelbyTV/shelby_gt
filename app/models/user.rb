@@ -2,6 +2,7 @@
 require 'user_manager'
 require 'securerandom'
 require 'rhombus'
+require 'api_clients/sailthru_client'
 
 # We are using the User model form Shelby (before rolls)
 # New vs. old keys will be clearly listed
@@ -200,7 +201,7 @@ class User
   # When true, you should display this user's avatar via a deterministic S3 file location (see initializers/paperclip.rb)
   def has_shelby_avatar() !self.avatar_file_name.blank?; end
   
-  def shelby_avatar_url(size)
+  def shelby_avatar_url(size="small")
     avatar_size = case size
                   when "small"
                     "sq48x48"
@@ -319,10 +320,11 @@ class User
   end
 
   def send_email_address_to_sailthru(list=Settings::Sailthru.user_list)
-    #ShelbyGT_EM.next_tick do
-      #client = Bacon::Email.new()
-      #client.add_email_address(self.primary_email, list)
-    #end
+    if self.primary_email and self.primary_email_changed?
+      ShelbyGT_EM.next_tick do
+        APIClients::SailthruClient.add_user_to_list(user, list)
+      end
+    end
   end
 
   def update_public_roll_title

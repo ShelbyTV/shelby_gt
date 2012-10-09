@@ -172,7 +172,7 @@ GEM
       rake
       rdoc
     journey (1.0.3)
-    json (1.7.3)
+    json (1.7.5)
     json_spec (1.0.0)
       multi_json (~> 1.0)
       rspec (~> 2.0)
@@ -282,7 +282,7 @@ GEM
       activesupport (>= 3.0)
       railties (>= 3.0)
       rspec (~> 2.8.0)
-    sailthru-client (1.14)
+    sailthru-client (1.15)
       json
       multipart-post
     sanitize (2.0.3)
