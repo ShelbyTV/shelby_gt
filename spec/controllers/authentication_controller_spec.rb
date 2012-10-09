@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'api_clients/sailthru_client'
 
 describe AuthenticationsController do
 

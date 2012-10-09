@@ -6,7 +6,6 @@ require 'user_facebook_manager'
 require 'api_clients/twitter_client'
 require 'api_clients/twitter_info_getter'
 require 'api_clients/facebook_info_getter'
-require 'api_clients/sailthru_client'
 
 
 # This is the one and only place where Users are created.

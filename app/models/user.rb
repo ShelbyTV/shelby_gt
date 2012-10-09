@@ -264,7 +264,7 @@ class User
         rhombus.post('/sadd', {:args => ['new_gt_enabled_users', self.id.to_s]})
         
         # Send Welcome to GT email
-        APIClients::SailthruClient.send_email(user, Settings::Sailthru.welcome_template, '+23 hours')
+        APIClients::SailthruClient.send_email(self, Settings::Sailthru.welcome_template, '+23 hours')
       }
     end
   end

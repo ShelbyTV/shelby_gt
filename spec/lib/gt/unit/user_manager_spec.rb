@@ -5,6 +5,7 @@ require 'spec_helper'
 require 'user_manager'
 require 'authentication_builder'
 require 'predator_manager'
+require 'api_clients/sailthru_client'
 
 # UNIT test
 describe GT::UserManager do
