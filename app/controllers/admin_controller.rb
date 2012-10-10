@@ -11,8 +11,7 @@ class AdminController < ApplicationController
     time_as_id = BSON::ObjectId.from_time(start_at)
     
     # find all new users as of today that are real users
-    @new_new_users = User.where('id' => {'$gte' => time_as_id}, :faux => 0 ).all
-    @converted_new_users = User.where('id' => {'$gte' => time_as_id}, :faux => 2 ).all
+    @new_new_users = User.where('id' => {'$gte' => time_as_id}, :faux => [0,2] ).all
 
     # get recent gt enabled users from rhombus
     rhombus_resp = JSON.parse(rhombus.get('/smembers', {:args => ['new_gt_enabled_users'], :limit=>24}))
@@ -21,11 +20,13 @@ class AdminController < ApplicationController
     # so we can distinguish these in the html
     @new_gt_enabled_users.map! {|u| u.faux = 9; u }
     
+    # remove dupes
     @new_gt_enabled_users.delete_if { |u| @new_new_users.include? u }
       
-    # send email summary if there are new users
-    @all_new_users = @new_new_users.concat(@new_gt_enabled_users).concat(@converted_new_users)
+    # combining the two sets of users 
+    @all_new_users = @new_new_users.concat(@new_gt_enabled_users)
     
+    # for development purposes to fake some users.
     @all_new_users = User.all[0..5] if Rails.env == "development"
   end
   
@@ -60,7 +61,7 @@ class AdminController < ApplicationController
       if current_user and current_user.is_admin?
         return true
       elsif current_user and !current_user.is_admin?
-        render :nothing => true
+        render :text => "not authorized."
       else
         redirect_to '/login'
       end

@@ -1,10 +1,7 @@
 ShelbyGt::Application.routes.draw do
   # The priority is based upon order of creation:
   # first created -> highest priority.
-
-  #for blitz.io
-  #get '/mu-4a3bea60-210d9ed2-38279c19-649e9064' => 'home#verification'
-
+  
   ########################
   # Authentication and User Managment
 
@@ -152,7 +149,6 @@ ShelbyGt::Application.routes.draw do
   get '/admin/user/:id' => 'admin#user', :constraints => { :id => /[^\/]+/ }
   get '/admin/user' => 'admin#user', :constraints => { :id => /[^\/]+/ }
   get '/admin/new_users' => "admin#new_users"
-  get '/admin/' => 'admin#index'
   
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   
