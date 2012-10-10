@@ -179,6 +179,24 @@ void mrbsonStringAttribute(mrjsonContext context,
    }
 }
 
+void mrbsonDateAttribute(mrjsonContext context,
+                         bson *data,
+                         const char *bsonField,
+                         const char *outputName)
+{
+  bson_iterator iterator;
+  bson_type type;
+
+  type = bson_find(&iterator, data, bsonField);
+  if (type == BSON_DATE) {
+    // bson_iterator_date(&iterator) returns a bson_date_t 
+    // which is typedef int64_t, a long int
+    mrjsonLongAttribute(context, outputName, bson_iterator_date(&iterator));
+  } else {
+    mrjsonNullAttribute(context, outputName); 
+  }
+}
+
 void mrbsonSimpleArrayAttribute(mrjsonContext context,
                                 bson *data,
                                 const char *bsonField,

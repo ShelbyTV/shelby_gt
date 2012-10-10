@@ -60,6 +60,11 @@ void mrbsonSimpleArrayAttribute(mrjsonContext context,
                                 const char *bsonField,
                                 const char *outputName);
 
+void mrbsonDateAttribute(mrjsonContext context,
+                         bson *data,
+                         const char *bsonField,
+                         const char *outputName);
+
 #ifdef __cplusplus
 }
 #endif

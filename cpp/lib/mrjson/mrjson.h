@@ -30,6 +30,7 @@ void mrjsonEndResponse(mrjsonContext context);
 
 // object attributes
 void mrjsonIntAttribute(mrjsonContext context, const char *name, int value);
+void mrjsonLongAttribute(mrjsonContext context, const char *name, long int value);
 void mrjsonBoolAttribute(mrjsonContext context, const char *name, int value);
 void mrjsonDoubleAttribute(mrjsonContext context, const char *name, double value);
 void mrjsonStringAttribute(mrjsonContext context, const char *name, const char *value);

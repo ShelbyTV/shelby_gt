@@ -101,25 +101,27 @@
    apply(CONVERSATION , messages      , MESSAGES      , ARRAY , messages )
  
 #define VIDEO_PROPERTIES(apply)                               \
-   apply(VIDEO , id               , ID               , OID    , _id ) \
-   apply(VIDEO , provider_name    , PROVIDER_NAME    , STRING , a   ) \
-   apply(VIDEO , provider_id      , PROVIDER_ID      , STRING , b   ) \
-   apply(VIDEO , title            , TITLE            , STRING , c   ) \
-   apply(VIDEO , name             , NAME             , STRING , d   ) \
-   apply(VIDEO , description      , DESCRIPTION      , STRING , e   ) \
-   apply(VIDEO , duration         , DURATION         , STRING , f   ) \
-   apply(VIDEO , author           , AUTHOR           , STRING , g   ) \
-   apply(VIDEO , video_height     , VIDEO_HEIGHT     , STRING , h   ) \
-   apply(VIDEO , video_width      , VIDEO_WIDTH      , STRING , i   ) \
-   apply(VIDEO , thumbnail_url    , THUMBNAIL_URL    , STRING , j   ) \
-   apply(VIDEO , thumbnail_height , THUMBNAIL_HEIGHT , STRING , k   ) \
-   apply(VIDEO , thumbnail_width  , THUMBNAIL_WIDTH  , STRING , l   ) \
-   apply(VIDEO , tags             , TAGS             , ARRAY  , m   ) \
-   apply(VIDEO , categories       , CATEGORIES       , ARRAY  , n   ) \
-   apply(VIDEO , source_url       , SOURCE_URL       , STRING , o   ) \
-   apply(VIDEO , embed_url        , EMBED_URL        , STRING , p   ) \
-   apply(VIDEO , view_count       , VIEW_COUNT       , INT    , q   ) \
-   apply(VIDEO , recs             , RECS             , ARRAY  , r   )
+   apply(VIDEO , id                  , ID                  , OID       , _id ) \
+   apply(VIDEO , provider_name       , PROVIDER_NAME       , STRING    , a   ) \
+   apply(VIDEO , provider_id         , PROVIDER_ID         , STRING    , b   ) \
+   apply(VIDEO , title               , TITLE               , STRING    , c   ) \
+   apply(VIDEO , name                , NAME                , STRING    , d   ) \
+   apply(VIDEO , description         , DESCRIPTION         , STRING    , e   ) \
+   apply(VIDEO , duration            , DURATION            , STRING    , f   ) \
+   apply(VIDEO , author              , AUTHOR              , STRING    , g   ) \
+   apply(VIDEO , video_height        , VIDEO_HEIGHT        , STRING    , h   ) \
+   apply(VIDEO , video_width         , VIDEO_WIDTH         , STRING    , i   ) \
+   apply(VIDEO , thumbnail_url       , THUMBNAIL_URL       , STRING    , j   ) \
+   apply(VIDEO , thumbnail_height    , THUMBNAIL_HEIGHT    , STRING    , k   ) \
+   apply(VIDEO , thumbnail_width     , THUMBNAIL_WIDTH     , STRING    , l   ) \
+   apply(VIDEO , tags                , TAGS                , ARRAY     , m   ) \
+   apply(VIDEO , categories          , CATEGORIES          , ARRAY     , n   ) \
+   apply(VIDEO , source_url          , SOURCE_URL          , STRING    , o   ) \
+   apply(VIDEO , embed_url           , EMBED_URL           , STRING    , p   ) \
+   apply(VIDEO , view_count          , VIEW_COUNT          , INT       , q   ) \
+   apply(VIDEO , recs                , RECS                , ARRAY     , r   ) \
+   apply(VIDEO , first_unplayable_at , FIRST_UNPLAYABLE_AT , DATE      , s   ) \
+   apply(VIDEO , last_unplayable_at  , LAST_UNPLAYABLE_AT  , DATE      , t   )
 
 #define DASHBOARD_ENTRY_PROPERTIES(apply)                     \
    apply(DASHBOARD_ENTRY , id       , ID       , OID  , _id ) \

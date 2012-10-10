@@ -579,13 +579,16 @@ void sobPrintAttributeWithKeyOverride(mrjsonContext context,
          mrbsonSimpleArrayAttribute(context, object, dbName, key);
          break;
 
-      case BSON_TIMESTAMP:
+      case BSON_DATE:
+         mrbsonDateAttribute(context, object, dbName, key);
+         break;
+           
       case BSON_LONG:
       case BSON_EOO:
       case BSON_OBJECT:
       case BSON_BINDATA:
       case BSON_UNDEFINED:
-      case BSON_DATE:
+      case BSON_TIMESTAMP:
       case BSON_REGEX:
       case BSON_DBREF:
       case BSON_CODE:

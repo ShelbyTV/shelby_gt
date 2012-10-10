@@ -111,6 +111,19 @@ void mrjsonIntAttribute(mrjsonContext context, const char *name, int value)
    yajl_gen_integer(context->yajl, value);
 }
 
+void mrjsonLongAttribute(mrjsonContext context, const char *name, long int value)
+{
+   assert(context);
+   assert(OPEN == context->status);
+   assert(context->levels[context->currentLevel].objectOpen ||
+          context->levels[context->currentLevel].arrayOpen);
+   assert(!(context->levels[context->currentLevel].objectOpen &&
+            context->levels[context->currentLevel].arrayOpen));
+
+   yajl_gen_string(context->yajl, (const unsigned char *)name, strlen(name));
+   yajl_gen_integer(context->yajl, value);
+}
+
 void mrjsonBoolAttribute(mrjsonContext context, const char *name, int value)
 {
    assert(context);
