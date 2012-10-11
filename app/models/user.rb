@@ -321,7 +321,7 @@ class User
 
   def send_email_address_to_sailthru(list=Settings::Sailthru.user_list)
     #ShelbyGT_EM.next_tick do
-    #  APIClients::SailthruClient.add_user_to_list(self, list)
+    #  APIClients::SailthruClient.add_or_update_user_to_list(self, list)
     #end
   end
 
@@ -353,7 +353,7 @@ class User
   private
         
     def check_to_send_email_address_to_sailthru
-      send_email_address_to_sailthru() if self.primary_email_changed? and self.primary_email and Rails.env == "production"
+      send_email_address_to_sailthru() if self.primary_email and self.primary_email_changed? and Rails.env == "production"
     end
     
 end

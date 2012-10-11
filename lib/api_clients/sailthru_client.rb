@@ -7,12 +7,21 @@ module APIClients
       raise ArgumentError, 'Must provide a valid user' unless user.is_a? User
       raise ArgumentError, 'Must provide a list' unless list
       
-      return unless Rails.env == 'production'
+      #return unless Rails.env == 'production'
       
-      #first check if user email was not nil
-      if user.primary_email_was != nil and check_sailthru_for_user(user.primary_email_was)
-        
+      # first check if user email was not nil then see if sailthru knows of this user
+      if user.primary_email_was != nil and su = check_sailthru_for_user(user.primary_email_was) and su['keys'] and su['keys']['sid']
+
+        # change the users email and add them to this list
+        options = { 
+          "keys" => {"email" => user.primary_email},
+          "lists" => { list => 1 }
+        }
+
+        # update the user
+        sailthru_client.save_user(su['keys']['sid'], options) 
       else
+        # or just add them to the list
         add_user_to_list(user, list)
       end
 
