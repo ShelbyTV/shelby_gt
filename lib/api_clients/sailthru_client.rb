@@ -59,8 +59,6 @@ module APIClients
         'subdomain' => user_to.public_roll.subdomain
       }
       
-      send_time ||= '+24 hours'
-      
       sailthru_client.send(template, user_to.primary_email, vars, {}, send_time)
     end
     
