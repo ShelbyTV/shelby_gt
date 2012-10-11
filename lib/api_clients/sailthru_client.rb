@@ -46,6 +46,7 @@ module APIClients
       sailthru_client.api_post('user', data)
     end
     
+    # send time is of the form: "+N hours"
     def self.send_email(user_to, template, send_time=nil)
       raise ArgumentError, 'Must provide a valid user' unless user_to.is_a? User
       raise ArgumentError, 'Must provide an email template' unless template
