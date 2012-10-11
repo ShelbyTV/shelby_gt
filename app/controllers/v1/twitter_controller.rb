@@ -20,7 +20,7 @@ class V1::TwitterController < ApplicationController
     ShelbyGT_EM.next_tick do
       c = APIClients::TwitterClient.build_for_token_and_secret(auth.oauth_token, auth.oauth_secret)
       begin
-        c.friendships.create! :screen_name => params[:twitter_user_name], :follow => true
+        c.friendships.create! :screen_name => params[:twitter_user_name]
       rescue => e
         Rails.logger.error "Twitter Follow Failed.  Shelby user: #{current_user.id}.  Trying to follow: #{params[:twitter_user_name]}.  Error: #{e}"
       end
