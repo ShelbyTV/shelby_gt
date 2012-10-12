@@ -320,9 +320,9 @@ class User
   end
 
   def send_email_address_to_sailthru(list=Settings::Sailthru.user_list)
-    #ShelbyGT_EM.next_tick do
-    #  APIClients::SailthruClient.add_or_update_user_to_list(self, list)
-    #end
+    ShelbyGT_EM.next_tick do
+      APIClients::SailthruClient.add_or_update_user_to_list(self, list)
+    end
   end
 
   def update_public_roll_title
