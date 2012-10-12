@@ -47,6 +47,12 @@ describe 'v1/user' do
         parse_json(response.body)["result"]["personal_roll_subdomain"].should == "title"
       end
 
+      it "should return twitter_uid attribute" do
+        get '/v1/user'
+        response.body.should have_json_path("result/twitter_uid")
+        parse_json(response.body)["result"]["twitter_uid"].should == @u1.authentications.first.uid
+      end
+
       it "should wrap with callback when requesting via jsonp" do
         get '/v1/user/?callback=jQuery17108599677098863208_1335973680689&include_rolls=true&_=1335973682178'
         response.body.should =~ /^\W*jQuery17108599677098863208_1335973680689/
