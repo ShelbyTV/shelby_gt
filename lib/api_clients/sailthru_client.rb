@@ -18,6 +18,7 @@ module APIClients
         # change the users email
         options = { 
           "keys" => {"email" => user.primary_email},
+          "lists" => {list => 1}
         }
 
         # update the sailthru user
