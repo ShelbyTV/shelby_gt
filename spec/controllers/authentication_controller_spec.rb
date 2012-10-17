@@ -499,5 +499,25 @@ describe AuthenticationsController do
 
   end
   
+  context "Signout" do
+    it "should redirect to web root when referer is missing" do
+      # request.stub(:referer).and_return nil
+      get :sign_out_user
+      response.redirect_url.should match /#{Settings::ShelbyAPI.web_root}.*/
+    end
+
+    it "should redirect to the referer if the referer has no path" do
+      request.stub(:referer).and_return("http://whatever.com/")
+      get :sign_out_user
+      response.redirect_url.should match /http:\/\/whatever\.com\/?/
+    end
+
+    it "should redirect to the root of the referer if the referer has a path or query" do
+      request.stub(:referer).and_return("http://whatever.com/path/page.html?param1=1")
+      get :sign_out_user
+      response.redirect_url.should match /http:\/\/whatever\.com\/?/
+    end
+  end
+
 end
 
