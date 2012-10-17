@@ -26,7 +26,11 @@ module GT
      links = {}
      if !d_copy.empty?
        # 3. create long url
-       long_url = linkable.permalink()
+       if destinations.include?("twitter") or destinations.include?("facebook")
+         long_url =  linkable.subdomain_permalink()
+       else
+         long_url = linkable.permalink()
+       end
        
        d_copy = d_copy.join(",")
        

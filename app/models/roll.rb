@@ -257,6 +257,11 @@ class Roll
 
   def permalink() "#{Settings::ShelbyAPI.web_root}/roll/#{self.id}"; end
   
+  def subdomain_permalink()
+    "http://#{subdomain}.#{Settings::ShelbyAPI.web_domain}" if subdomain = self.subdomain
+  end
+  
+  
   def display_thumbnail_url() self.upvoted_roll? ? "#{Settings::ShelbyAPI.web_root}/images/assets/favorite_roll_avatar.png" : self.creator_thumbnail_url; end
   
 end
