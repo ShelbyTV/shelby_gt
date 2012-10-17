@@ -16,6 +16,8 @@ defaults: &defaults
           include_in: {explore: true, onboarding: false, in_line_promos: false}},
         {display_title: "Laughing Squid",       id: "4fc637879a725b755d001f77",
           include_in: {explore: true, onboarding: false, in_line_promos: false}},
+        {display_title: "iVote Nation",       id: "5077955cb415cc60b2002871",
+          include_in: {explore: true, onboarding: false, in_line_promos: false}},
         {display_title: "MOVIECLIPS",           id: "4f958e049a725b0dba014577",
           include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
     {
