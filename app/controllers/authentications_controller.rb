@@ -205,8 +205,8 @@ class AuthenticationsController < ApplicationController
   def sign_out_user
     sign_out(:user)
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signout'])
-    
-    redirect_to Settings::ShelbyAPI.web_root
+
+    redirect_to request.env['HTTP_REFERER'] || Settings::ShelbyAPI.web_root
   end
 
   private
