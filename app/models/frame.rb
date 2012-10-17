@@ -158,7 +158,7 @@ class Frame
   end
   
   def permalink()
-    if self.roll_id and subdomain = self.creator.subdomain
+    if self.roll_id and subdomain = self.roll.subdomain
       "http://#{subdomain}.#{Settings::ShelbyAPI.web_domain}/#{self.id}"
     elsif self.roll_id
       "#{Settings::ShelbyAPI.web_root}/roll/#{self.roll_id}/frame/#{self.id}"
