@@ -187,7 +187,7 @@ class User
 
   #if email has changed/been set, update sailthru  &&
   # Be resilient if errors fuck up the create process
-  after_save :check_to_send_email_address_to_sailthru
+  after_update :check_to_send_email_address_to_sailthru
   
   # -- Quasi Keys --
   
@@ -323,7 +323,6 @@ class User
     ShelbyGT_EM.next_tick do
       APIClients::SailthruClient.add_or_update_user_to_list(self, list)
     end
-    return self.changes.inspect
   end
 
   def update_public_roll_title

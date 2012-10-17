@@ -218,15 +218,6 @@ describe User do
       @u.save
     end
     
-    it "should have access to what email was before save" do
-      old_email = @u.primary_email
-      new_email = "test@test.com"
-      @u.primary_email = new_email
-      puts  @u.changes.inspect
-      @u.save
-      puts  @u.changes.inspect
-      @u.send_email_address_to_sailthru.should eq(old_email)
-    end
   end
   
 end

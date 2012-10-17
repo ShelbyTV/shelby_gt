@@ -10,6 +10,7 @@ namespace :gt_new_user_emails do
     #
     # Note: i think this is the only way of getting all new gt_enabled users, 
     #       hence using this method.
+    rhombus = Rhombus.new('shelby', '_rhombus_gt')
     rhombus_resp = JSON.parse(rhombus.get('/smembers', {:args => ['new_gt_enabled_users'], :limit=>24}))
     gt_enabled_ids = rhombus_resp["error"] ? [] : rhombus_resp["data"].values.flatten 
     new_gt_enabled_users = User.find(gt_enabled_ids)
