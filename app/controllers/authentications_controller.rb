@@ -205,8 +205,8 @@ class AuthenticationsController < ApplicationController
   def sign_out_user
     sign_out(:user)
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signout'])
-    
-    redirect_to Settings::ShelbyAPI.web_root
+
+    redirect_to root_path(request.referer) || Settings::ShelbyAPI.web_root
   end
 
   private
@@ -262,4 +262,15 @@ class AuthenticationsController < ApplicationController
       redirect_uri.to_s
     end
   
+    def root_path(loc)
+      if loc
+        root_uri = URI(loc)
+        root_uri.path = "/"
+        root_uri.query = nil
+        root_uri.fragment = nil
+
+        root_uri.to_s
+      end
+    end
+
 end

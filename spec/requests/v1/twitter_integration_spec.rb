@@ -13,7 +13,7 @@ describe 'v1/twitter' do
   
   describe "POST" do
     it "should create twitter friendship on /follow route" do
-      APIClients::TwitterClient.stub_chain(:build_for_token_and_secret, :friendships, :create!).with(:screen_name => "shelby", :follow => true).and_return(true)
+      APIClients::TwitterClient.stub_chain(:build_for_token_and_secret, :friendships, :create!).with(:screen_name => "shelby").and_return(true)
       post '/v1/twitter/follow/shelby'
       response.body.should be_json_eql(200).at_path("status")
     end

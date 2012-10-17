@@ -7,6 +7,12 @@ node :personal_roll_id do |u|
 	u.public_roll_id
 end
 
+if user_twitter_auth = @user.authentications.detect {|auth| auth.provider == 'twitter'}
+  node :twitter_uid do
+    user_twitter_auth.uid
+  end
+end
+
 if current_user == @user
 
 	attributes :authentication_token, :autocomplete

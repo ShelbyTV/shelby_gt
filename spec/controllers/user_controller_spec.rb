@@ -53,7 +53,7 @@ describe V1::UserController do
       assigns(:user).should eq(@u1)
       assigns(:status).should eq(200)
     end
-    
+        
     it "updates a users preferences successfuly" do
       @u1.preferences.email_updates = true; @u1.save
       put :update, :id => @u1.id, :preferences => {:email_updates=>false}, :format => :json

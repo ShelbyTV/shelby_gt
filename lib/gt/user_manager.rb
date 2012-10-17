@@ -55,7 +55,7 @@ module GT
     def self.create_new_user_from_params(params)
       user = build_new_user_from_params(params)
       
-      if user.save
+      if user.valid? and user.save
         # Need to ensure special rolls after saving user b/c of the way add_follower works
         user.gt_enable!
         #additional meta-data for user's public roll
