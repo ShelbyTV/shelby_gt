@@ -367,6 +367,18 @@ describe V1::ConversationController do
   end
 end
 
+describe V1::BetaInviteController do
+  describe "routing" do
+    it "routes for POST" do
+      { :post => "/v1/beta_invite" }.should route_to(
+        :controller => "v1/beta_invite",
+        :action => "create",
+        :format => "json"
+      )
+    end
+  end
+end
+
 describe V1::TwitterController do
   describe "routing" do
     it "routes for POST to /follow" do

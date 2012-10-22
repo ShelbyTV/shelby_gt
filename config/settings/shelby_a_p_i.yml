@@ -1,6 +1,7 @@
 defaults: &defaults  
   web_domain: "shelby.tv"
   web_root: "http://shelby.tv"
+  web_root_secure: "https://shelby.tv"
   
 development:
   <<: *defaults

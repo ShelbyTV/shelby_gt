@@ -1,0 +1,13 @@
+<h1><img src="<%= avatar_url_for_user(@inviter) %>" /><%= @inviters_name %> invites you to join Shelby!</h1>
+<% if @inviter.public_roll.subdomain %>
+	<h2>
+		Check out the videos on their roll and follow them: 
+		<a href="http://<%= @inviter.public_roll.subdomain %>.shelby.tv"><%= @inviter.public_roll.subdomain %>.shelby.tv</a>
+	</h2>
+<% end %>
+
+<hr />
+<p><%= @invite.email_body %></p>
+<h2><a href="<%= Settings::ShelbyAPI.web_root_secure %>/beta_invite/<%= @invite.id %>">Join Shelby</a></h2>
+
+(TODO: put this into our standard email template from sailthru)

@@ -91,6 +91,7 @@ ShelbyGt::Application.routes.draw do
     resources :conversation, :only => [:show] do 
       resources :messages, :only => [:create, :destroy]
     end
+    resources :beta_invite, :only => [:create]
     
     resources :gt_interest, :only => [:create]
     
@@ -134,6 +135,8 @@ ShelbyGt::Application.routes.draw do
     # messages
     get 'POST/conversation/:conversation_id/messages' => 'messages#create'
     get 'DELETE/conversation/:conversation_id/messages/:id' => 'messages#destroy'
+    # beta_invites
+    get 'POST/beta_invite' => 'beta_invite#create'
     # gt_interest
     get 'POST/gt_interest/' => 'gt_interest#create'
     # twitter

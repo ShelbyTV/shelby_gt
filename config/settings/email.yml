@@ -29,6 +29,11 @@ defaults: &defaults
     category: "Submit GT Interest"
     subject: "Your request for Shelby has been received!"
     from: "Shelby GT <contact+gt@shelby.tv>"
+  beta_invite:
+    initial:
+      category: "Initial Beta Invite"
+      subject: "%{inviters_name} invites you to join Shelby"
+      from: "Shelby Invite <contact+invite@shelby.tv>"
   new_user_summary:
     category: "Admin"
     subject: "[%{date}] %{new_users} New Users Yesterday"

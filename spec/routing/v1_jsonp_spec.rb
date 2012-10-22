@@ -192,6 +192,19 @@ describe "Messages" do
   
 end
 
+describe "BetaInvite" do
+  
+  # POST   /v1/beta_invite(.:format)                                       v1/beta_invite#create {:format=>"json"}
+  it "routes for create" do
+    { :get => "/v1/POST/beta_invite" }.should route_to(
+      :controller => "v1/beta_invite",
+      :action => "create",
+      :format => "json"
+    )
+  end
+    
+end
+
 describe "GtInterest" do
   
   # POST   /v1/gt_interest(.:format)                                v1/gt_interest#create {:format=>"json"}

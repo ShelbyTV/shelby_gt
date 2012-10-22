@@ -12,6 +12,15 @@ class ApplicationController < ActionController::Base
     render 'v1/blank', :status => @status
   end
   
+  # Given an ActiveModel with errors, calls render_error with a proper message and errors object
+  # For example, a bad User might result in a call to
+  # render_error(409, "Nickname taken", {:user => {:nickname => ["already taken"]}})
+  def render_errors_of_model(active_model, code=409)
+    message = active_model.errors.full_messages.join(', ')
+    errors = {active_model.class.name.underscore.to_sym => active_model.errors.to_hash}
+    render_error(code, message, errors)
+  end
+  
   # === Unlike the default user_authenticated! helper that ships with devise,
   #  We want to render our json response as well as just the http 401 response
   def user_authenticated?
