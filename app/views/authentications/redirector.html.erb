@@ -1,5 +1,5 @@
 <%= javascript_tag do -%>
-	if(window.opener && window.close){
+	if(<%= !@no_redirect %> && window.opener && window.close){
 		// We were opened as a popup, redirect the opener and close ourselves
 		window.opener.location = "<%= @opener_location %>";
 		window.close();

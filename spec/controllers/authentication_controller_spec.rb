@@ -361,11 +361,27 @@ describe AuthenticationsController do
           assigns(:current_user).should == nil
           assigns(:opener_location).start_with?(cohort_entrance.url+"?").should == true
         end
+        
+        it "should accept with BetaInvite" do
+          i = Factory.create(:beta_invite)
+          BetaInvite.should_receive(:find).and_return i
+        
+          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [], :authentications => [])
+          GT::UserManager.should_receive(:create_new_user_from_params).and_return u
+          get :create, :beta_invite_id => :some_id, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
+      
+          assigns(:current_user).should == u
+          assigns(:current_user).gt_enabled.should == true
+          cookies[:_shelby_gt_common].should_not == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        
+          assigns(:current_user).cohorts.should == ["beta_invited"]
+          u.reload.cohorts.should == ["beta_invited"]
+        end
                 
       end
     
     end
-
 
     context "faux user" do
       context "no permissions" do

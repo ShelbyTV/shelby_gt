@@ -21,9 +21,14 @@ class BetaInvite
   
   attr_accessible :to_email_address, :email_body, :email_subject
   
-  def used?() self.invitee_id != nil; end
+  def unused?() self.invitee_id == nil; end
   
   def used_by!(user)
+    return false unless self.unused?
+    
+    user.cohorts << "beta_invited"
+    user.save
+    
     self.invitee = user
     self.save
   end

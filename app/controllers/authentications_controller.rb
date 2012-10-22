@@ -60,10 +60,16 @@ class AuthenticationsController < ApplicationController
         gt_interest.used!(user)
         cookies.delete(:gt_access_token, :domain => ".shelby.tv")
         sign_in_current_user(user, omniauth)
+        user.gt_enable!
         
       elsif cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
         use_cohort_entrance(user, cohort_entrance)
         session[:cohort_entrance_id] = nil        
+        sign_in_current_user(user, omniauth)
+        user.gt_enable!
+        
+      elsif beta_invite = BetaInvite.find(params[:beta_invite_id])
+        use_beta_invite(user, beta_invite)
         sign_in_current_user(user, omniauth)
         user.gt_enable!
         
@@ -88,8 +94,9 @@ class AuthenticationsController < ApplicationController
       # if they have a GtInterest or CohortEntrance, they are allowed in
       gt_interest = GtInterest.find(cookies[:gt_access_token])
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
+      beta_invite = BetaInvite.find(params[:beta_invite_id])
             
-      if gt_interest or cohort_entrance
+      if gt_interest or cohort_entrance or (beta_invite and beta_invite.unused?)
         user = GT::UserManager.create_new_user_from_omniauth(omniauth)
         
         if user.valid?
@@ -104,6 +111,9 @@ class AuthenticationsController < ApplicationController
           if cohort_entrance
             use_cohort_entrance(user, cohort_entrance)
             session[:cohort_entrance_id] = nil
+          end
+          if beta_invite
+            use_beta_invite(user, beta_invite)
           end
           
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
@@ -120,9 +130,14 @@ class AuthenticationsController < ApplicationController
         
 # ---- New User signing up w/ email & password
     elsif !params[:user].blank?
-      cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
+      # email/password is never done with a popup, so we never close ourselves and redirect the opener
+      # (the opener may be gmail or something if the user got an invite)
+      @no_redirect = true
       
-      if cohort_entrance
+      cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
+      beta_invite = BetaInvite.find(params[:beta_invite_id])
+      
+      if cohort_entrance or (beta_invite and beta_invite.unused?)
       
         user = GT::UserManager.create_new_user_from_params(params[:user])
 
@@ -134,6 +149,9 @@ class AuthenticationsController < ApplicationController
           if cohort_entrance
             use_cohort_entrance(user, cohort_entrance)
             session[:cohort_entrance_id] = nil
+          end
+          if beta_invite
+            use_beta_invite(user, beta_invite)
           end
 
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['username'])
@@ -216,6 +234,10 @@ class AuthenticationsController < ApplicationController
     
     def use_cohort_entrance(user, cohort_entrance)
       cohort_entrance.used! user if cohort_entrance
+    end
+    
+    def use_beta_invite(user, beta_invite)
+      beta_invite.used_by!(user) if beta_invite
     end
     
     def sign_in_current_user(user, omniauth=nil)
