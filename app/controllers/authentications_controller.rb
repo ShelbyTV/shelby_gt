@@ -68,7 +68,7 @@ class AuthenticationsController < ApplicationController
         sign_in_current_user(user, omniauth)
         user.gt_enable!
         
-      elsif beta_invite = BetaInvite.find(params[:beta_invite_id])
+      elsif beta_invite = BetaInvite.find(request.env['omniauth.params']['invite_id'])
         use_beta_invite(user, beta_invite)
         sign_in_current_user(user, omniauth)
         user.gt_enable!
