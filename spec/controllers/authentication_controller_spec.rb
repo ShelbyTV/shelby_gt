@@ -368,7 +368,7 @@ describe AuthenticationsController do
         
           u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [], :authentications => [])
           GT::UserManager.should_receive(:create_new_user_from_params).and_return u
-          get :create, :beta_invite_id => :some_id, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
+          get :create, :invite_id => :some_id, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
       
           assigns(:current_user).should == u
           assigns(:current_user).gt_enabled.should == true

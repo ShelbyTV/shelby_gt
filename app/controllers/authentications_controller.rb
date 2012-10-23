@@ -40,6 +40,15 @@ class AuthenticationsController < ApplicationController
     if omniauth = request.env["omniauth.auth"]
       user = User.first( :conditions => { 'authentications.provider' => omniauth['provider'], 'authentications.uid' => omniauth['uid'] } )
     end
+    
+    #look into beta_invite for all code paths
+    if params[:invite_id] or (request.env['omniauth.params'] && request.env['omniauth.params']['invite_id'])
+      beta_invite = BetaInvite.find(params[:invite_id]) || BetaInvite.find(request.env['omniauth.params']['invite_id'])
+      unless beta_invite and beta_invite.unused?
+        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:invite => "invalid"})
+        render :action => 'redirector', :layout => 'simple' and return
+      end
+    end
 
 
 # ---- Current user with two seperate accounts
@@ -68,7 +77,7 @@ class AuthenticationsController < ApplicationController
         sign_in_current_user(user, omniauth)
         user.gt_enable!
         
-      elsif beta_invite = BetaInvite.find(request.env['omniauth.params'] && request.env['omniauth.params']['invite_id'])
+      elsif beta_invite
         use_beta_invite(user, beta_invite)
         sign_in_current_user(user, omniauth)
         user.gt_enable!
@@ -94,9 +103,8 @@ class AuthenticationsController < ApplicationController
       # if they have a GtInterest or CohortEntrance, they are allowed in
       gt_interest = GtInterest.find(cookies[:gt_access_token])
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
-      beta_invite = BetaInvite.find(params[:beta_invite_id])
             
-      if gt_interest or cohort_entrance or (beta_invite and beta_invite.unused?)
+      if gt_interest or cohort_entrance or beta_invite
         user = GT::UserManager.create_new_user_from_omniauth(omniauth)
         
         if user.valid?
@@ -135,9 +143,8 @@ class AuthenticationsController < ApplicationController
       @no_redirect = true
       
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
-      beta_invite = BetaInvite.find(params[:beta_invite_id])
       
-      if cohort_entrance or (beta_invite and beta_invite.unused?)
+      if cohort_entrance or beta_invite
       
         user = GT::UserManager.create_new_user_from_params(params[:user])
 
