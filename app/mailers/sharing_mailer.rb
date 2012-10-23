@@ -17,7 +17,7 @@ class SharingMailer < ActionMailer::Base
     
     @message = message unless message == ""
     @frame = frame
-    @frame_permalink = frame.permalink
+    @frame_permalink = frame.video_page_permalink()
     
     subj = Settings::Email.share_frame['subject'] % {:sharers_name => user_from.name || user_from.nickname}
     
