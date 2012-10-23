@@ -21,6 +21,8 @@ class BetaInvite
   
   attr_accessible :to_email_address, :email_body, :email_subject
   
+  validates_format_of :to_email_address, :with => /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\Z/
+  
   def unused?() self.invitee_id == nil; end
   
   def used_by!(user)

@@ -32,7 +32,7 @@ defaults: &defaults
   beta_invite:
     initial:
       category: "Initial Beta Invite"
-      subject: "%{inviters_name} invites you to join Shelby"
+      subject: "%{inviters_name} invites you to join Shelby.tv"
       from: "Shelby Invite <contact+invite@shelby.tv>"
   new_user_summary:
     category: "Admin"
