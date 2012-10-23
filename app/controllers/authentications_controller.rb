@@ -167,11 +167,10 @@ class AuthenticationsController < ApplicationController
         else
           Rails.logger.error "AuthenticationsController#create_with_email - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name} -- primary_email #{user.primary_email}"
 
-          # TEMPORARILY returning user to cohort entrance as applicalbe
-          #@opener_location = add_query_params(clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), {
-          @opener_location = add_query_params(cohort_entrance ? cohort_entrance.url : (redirect_path || Settings::ShelbyAPI.web_root), {
-            :error => "new_user_invalid"
-            })
+          # return to beta invite url, origin, or web root with errors
+          @opener_location = add_query_params(
+            beta_invite ? beta_invite.path : clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), 
+            model_errors_as_simple_hash(user))
         end
         
       else
