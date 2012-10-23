@@ -55,7 +55,17 @@ module GT
     def self.create_new_user_from_params(params)
       user = build_new_user_from_params(params)
       
-      if user.valid? and user.save
+      if user.valid?
+        begin
+          user.save(:safe => true)
+        rescue Mongo::OperationFailure
+          # unique key failure due to duplicate
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
+
+          Rails.logger.error "[GT::UserManager#create_new_user_from_params] Failed to create user: #{user.errors.full_messages.join(',')} due to MongoOperationFailure / user looks like: #{user.inspect}"
+          return user
+        end
+        
         # Need to ensure special rolls after saving user b/c of the way add_follower works
         user.gt_enable!
         #additional meta-data for user's public roll
