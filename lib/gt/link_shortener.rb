@@ -29,7 +29,7 @@ module GT
        if destinations.include?("twitter") or destinations.include?("facebook")
          long_url =  linkable.subdomain_permalink()
        elsif destinations.include?("manual") and linkable.is_a?(Frame)
-         long_url = linkable.permalink() + "?frame_id=#{linkable.id}"
+         long_url = linkable.video_page_permalink()
        elsif destinations.include?("manual") and linkable.is_a?(Roll)
          long_url = linkable.permalink() + "?roll_id=#{linkable.id}"
        else

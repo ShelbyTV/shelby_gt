@@ -43,8 +43,9 @@ describe GT::LinkShortener do
     end
     
     it "should get a link for a manually created frame shortlink and have correct url params" do
+      video_permalink = @frame.video_page_permalink()
       resp = {
-        "awesm_urls" => [{"service"=>"manual", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?frame_id=#{@frame.id}&awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"manual", "domain"=>"shl.by"}]}
+        "awesm_urls" => [{"service"=>"manual", "parent"=>nil, "original_url"=>video_permalink, "redirect_url"=>"#{video_permalink}&awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"manual", "domain"=>"shl.by"}]}
       Awesm::Url.stub(:batch).and_return([200, resp])
       r = GT::LinkShortener.get_or_create_shortlinks(@frame, "manual")
       r["manual"].should eq(resp["awesm_urls"][0]["awesm_url"])

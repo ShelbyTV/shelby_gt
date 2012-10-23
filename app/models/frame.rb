@@ -173,7 +173,7 @@ class Frame
   
   def video_page_permalink()
     if video = self.video 
-      "#{Settings::ShelbyAPI.web_root}/video/#{video.provider_name}/#{video.provider_id}"
+      "#{Settings::ShelbyAPI.web_root}/video/#{video.provider_name}/#{video.provider_id}/?frame_id=#{self.id}"
     # just in case there is no video we want to link to something ... 
     elsif self.roll_id and subdomain = self.creator.subdomain 
       "#{Settings::ShelbyAPI.web_root}/roll/#{self.roll_id}/frame/#{self.id}"

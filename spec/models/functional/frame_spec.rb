@@ -291,7 +291,7 @@ describe Frame do
     it "should generate permalink for frame with video" do
       video = Factory.create(:video)
       frame = Factory.create(:frame, :video => video)
-      frame.video_page_permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{frame.video.provider_name}/#{frame.video.provider_id}"
+      frame.video_page_permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{frame.video.provider_name}/#{frame.video.provider_id}/?frame_id=#{frame.id}"
     end
     
   end
