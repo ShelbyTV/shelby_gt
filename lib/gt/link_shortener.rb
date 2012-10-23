@@ -28,12 +28,15 @@ module GT
        # 3. create long url
        if destinations.include?("twitter") or destinations.include?("facebook")
          long_url =  linkable.subdomain_permalink()
+       elsif destinations.include?("manual") and linkable.is_a?(Frame)
+         long_url = linkable.permalink() + "?frame_id=#{linkable.id}"
+       elsif destinations.include?("manual") and linkable.is_a?(Roll)
+         long_url = linkable.permalink() + "?roll_id=#{linkable.id}"
        else
          long_url = linkable.permalink()
        end
        
        d_copy = d_copy.join(",")
-       
        params = {  :url => long_url,
                    :channel => d_copy,
                    :key=> Settings::Awesm.api_key,
@@ -57,6 +60,8 @@ module GT
              linkable.short_links[:tumblr] = awesm_url
            when "email"
              linkable.short_links[:email] = awesm_url
+           when "manual"
+             linkable.short_links[:manual] = awesm_url
            end
          end
          linkable.save

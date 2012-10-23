@@ -286,7 +286,7 @@ class V1::FrameController < ApplicationController
         return render_error(404, "no valid frame to share") unless frameToShare
 
         @status = 200
-        @short_link = GT::LinkShortener.get_or_create_shortlinks(frameToShare, 'email', current_user)
+        @short_link = GT::LinkShortener.get_or_create_shortlinks(frameToShare, 'manual', current_user)
       else
         render_error(404, "could not find frame")
       end

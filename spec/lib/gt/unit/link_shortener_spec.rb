@@ -42,6 +42,14 @@ describe GT::LinkShortener do
       r["twitter"].should eq(resp["awesm_urls"][1]["awesm_url"])
     end
     
+    it "should get a link for a manually created frame shortlink and have correct url params" do
+      resp = {
+        "awesm_urls" => [{"service"=>"manual", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?frame_id=#{@frame.id}&awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"manual", "domain"=>"shl.by"}]}
+      Awesm::Url.stub(:batch).and_return([200, resp])
+      r = GT::LinkShortener.get_or_create_shortlinks(@frame, "manual")
+      r["manual"].should eq(resp["awesm_urls"][0]["awesm_url"])
+    end
+    
     it "should return error if we dont pass an array" do
       lambda { GT::LinkShortener.get_or_create_shortlinks("test") }.should raise_error(ArgumentError)
     end
