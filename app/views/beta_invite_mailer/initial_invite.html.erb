@@ -37,13 +37,15 @@
 						</tr>
 					<% end %>          
 
-           <tr>
-               <td width="45" valign="top">
-                   <div style="padding: 10px 5px; max-width:450px; margin-top:5px; background-color: #d2d2d2; border: 1px solid #aaa;">
-											<%= @invite.email_body %>
-                   </div>
-               </td>
-           </tr>
+					<% unless @invite.email_body.blank? %>
+	           <tr>
+	               <td width="45" valign="top">
+	                   <div style="padding: 10px 5px; max-width:450px; margin-top:5px; background-color: #d2d2d2; border: 1px solid #aaa;">
+												<%= @invite.email_body %>
+	                   </div>
+	               </td>
+	           </tr>
+					<% end %>
 
                     
                     <tr>
