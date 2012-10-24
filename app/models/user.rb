@@ -179,8 +179,8 @@ class User
   validates_format_of :nickname, :with => NICKNAME_ACCEPTABLE_REGEX
   
   
-  RESERVED_NICNAMES = %w(admin system anonymous shelby)
-  ROUTE_PREFIXES = %w(signout login users user authentication authentications auth setup bookmarklet pages images javascripts robots stylesheets favicon)
+  RESERVED_NICNAMES = %w(admin system anonymous)
+  ROUTE_PREFIXES = %w(signout login users user authentication authentications auth setup bookmarklet pages images javascripts robots stylesheets staging favicon)
   validates_exclusion_of :nickname, :in => RESERVED_NICNAMES + ROUTE_PREFIXES
   
   validates_format_of :primary_email, :with => /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\Z/, :allow_blank => true
