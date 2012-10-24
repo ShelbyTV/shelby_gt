@@ -293,7 +293,7 @@ describe GT::UserManager do
     context "nickname fixing" do
       it "should change space to underscore" do
         nick, provider, uid = "whatever 6", "fb", "123uid6"
-        GT::UserManager.get_or_create_faux_user(nick, provider, uid).nickname.should == "whatever_6"
+        GT::UserManager.get_or_create_faux_user(nick, provider, uid).nickname.should == "whatever-6"
       end
       
       it "should remove quote marks" do
@@ -303,28 +303,28 @@ describe GT::UserManager do
       
       it "should make the nickname unique" do
         nick, provider, uid = "whatever 6", "fb", "123uid8"
-        GT::UserManager.get_or_create_faux_user(nick, provider, uid).nickname.should_not == "whatever_6"
+        GT::UserManager.get_or_create_faux_user(nick, provider, uid).nickname.should_not == "whatever-6"
         
         nick, provider, uid = "whatever 6", "fb", "123uid82"
-        GT::UserManager.get_or_create_faux_user(nick, provider, uid).nickname.should_not == "whatever_6"
+        GT::UserManager.get_or_create_faux_user(nick, provider, uid).nickname.should_not == "whatever-6"
       end
       
       it "should convert all sorts of funky nicknames to something acceptable" do
         #commas
         nick, provider, uid = "Nature, Love and Art", "fb", 123
-        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "Nature__Love_and_Art"
+        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "Nature--Love-and-Art"
 
         #tildes
         nick = "~weird"
-        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "_weird"
+        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "-weird"
 
         #only junk
         nick = "~,':&"
-        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "____"
+        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "----"
 
         #unnaceptable characters
         nick = "ヅللمسلمين فقط ! بالله عليك إذا كنت مسلم و رأيت هذه الصفحة أدخل إليها๑۞๑"
-        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "ヅللمسلمين_فقط__بالله_عليك_إذا_كنت_مسلم_و_رأيت_هذه_الصفحة_أدخل_إليها๑۞๑"
+        GT::UserManager.get_or_create_faux_user(nick, provider, (uid+=1).to_s).nickname.should == "ヅللمسلمين-فقط--بالله-عليك-إذا-كنت-مسلم-و-رأيت-هذه-الصفحة-أدخل-إليها๑۞๑"
         
         #only unnaceptable characters
         nick = "Անվանագիրք"
@@ -485,19 +485,19 @@ describe GT::UserManager do
         @omniauth_hash["info"]["nickname"] = "dan spinosa"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should eql(true)
-        u.nickname.should eql("dan_spinosa")
+        u.nickname.should eql("dan-spinosa")
 
         @omniauth_hash['uid'] += "2"
         @omniauth_hash["info"]["nickname"] = " spinosa"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should eql(true)
-        u.nickname.should eql("_spinosa")
+        u.nickname.should eql("-spinosa")
 
         @omniauth_hash['uid'] += "2"
         @omniauth_hash["info"]["nickname"] = "spinosa "
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should eql(true)
-        u.nickname.should eql("spinosa_")
+        u.nickname.should eql("spinosa-")
 
         @omniauth_hash['uid'] += "2"
         @omniauth_hash["info"]["nickname"] = "spinDr"
@@ -515,7 +515,7 @@ describe GT::UserManager do
         @omniauth_hash["info"]["nickname"] = "'Astrid_Carolina_Valdez"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should == true
-        u.nickname.should == "Astrid_Carolina_Valdez"
+        u.nickname.should == "Astrid-Carolina-Valdez"
       end
       
       it "should validate nickname w/ utf8 support, dot, underscore and/or hyphen" do
@@ -630,7 +630,7 @@ describe GT::UserManager do
         u = GT::UserManager.create_new_user_from_omniauth(omniauth_hash)
 
         u.valid?.should eql(true)
-        u.nickname.start_with?("the_name").should == true
+        u.nickname.start_with?("the-name").should == true
       end
 
       it "should copy nickname downcased" do
@@ -651,7 +651,7 @@ describe GT::UserManager do
         @omniauth_hash['uid'] += "2"
         @omniauth_hash["info"]["nickname"] = "Frank_Lazio_JR"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
-        User.find_by_nickname("frank_lazio_jr").should be_a(User)
+        User.find_by_nickname("frank-lazio-jr").should be_a(User)
       end
       
       it "should make sure it's finding user by entire nickname only" do
@@ -757,18 +757,17 @@ describe GT::UserManager do
         }.should change { User.count } .by(1)
       end
       
-      it "should change nickname and still create user if nickname is taken by a *real* user" do
+      it "should return invalid user if nickname is taken by a *real* user" do
         lambda {
           #create real user with this nickname
           u1 = GT::UserManager.create_new_user_from_params(@params)
+          u1.reload.faux.should == User::FAUX_STATUS[:false]
           
           @params[:primary_email] = Factory.next(:primary_email)
           u2 = GT::UserManager.create_new_user_from_params(@params)
-          u2.valid?.should == true
-          u2.persisted?.should == true
-          u2.nickname.should_not == @params[:nickname]
-          u1.reload.nickname.should == @params[:nickname]
-        }.should change { User.count } .by(2)
+          u2.valid?.should == false
+          u2.persisted?.should == false
+        }.should change { User.count } .by(1)
       end
       
       it "should *steal* nickname and still create user if nickname is taken by a *faux* user" do
