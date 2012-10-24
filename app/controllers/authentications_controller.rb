@@ -149,7 +149,7 @@ class AuthenticationsController < ApplicationController
       
         user = GT::UserManager.create_new_user_from_params(params[:user])
 
-        if user.valid?
+        if user.valid? and user.errors.empty?
           sign_in(:user, user)
           user.remember_me!(true)
           set_common_cookie(user, session[:_csrf_token])

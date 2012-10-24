@@ -63,6 +63,7 @@ module GT
           StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
 
           Rails.logger.error "[GT::UserManager#create_new_user_from_params] Failed to create user: #{user.errors.full_messages.join(',')} due to MongoOperationFailure / user looks like: #{user.inspect}"
+          user.errors.add(:duplicate_key, "uncaught duplicate key")
           return user
         end
         

@@ -158,7 +158,7 @@ class User
   
   if Settings::Performance.validate_uniqueness_primary_email
     before_validation(:on => :create) { self.drop_primary_email_if_taken }
-    validates_uniqueness_of :primary_email, :allow_blank => true, :allow_nil => true
+    validates_uniqueness_of :primary_email, :allow_blank => false, :allow_nil => false
   end
   
   # Latin-1 and other extensions:   \u00c0 - \u02ae
