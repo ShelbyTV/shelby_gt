@@ -42,8 +42,9 @@ class AuthenticationsController < ApplicationController
     end
     
     #look into beta_invite for all code paths
-    if params[:invite_id] or (request.env['omniauth.params'] && request.env['omniauth.params']['invite_id'])
-      beta_invite = BetaInvite.find(params[:invite_id]) || BetaInvite.find(request.env['omniauth.params']['invite_id'])
+    invite_id = params[:invite_id] or (request.env['omniauth.params'] && request.env['omniauth.params']['invite_id'])
+    if invite_id
+      beta_invite = BetaInvite.find(invite_id)
       unless beta_invite and beta_invite.unused?
         @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:invite => "invalid"})
         render :action => 'redirector', :layout => 'simple' and return
