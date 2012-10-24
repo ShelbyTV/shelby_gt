@@ -46,7 +46,7 @@ class AuthenticationsController < ApplicationController
     if invite_id
       beta_invite = BetaInvite.find(invite_id)
       unless beta_invite and beta_invite.unused?
-        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:invite => "invalid"})
+        @opener_location = add_query_params(Settings::ShelbyAPI.web_root, {:invite => "invalid"})
         render :action => 'redirector', :layout => 'simple' and return
       end
     end
