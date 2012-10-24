@@ -170,7 +170,7 @@ class AuthenticationsController < ApplicationController
 
           # return to beta invite url, origin, or web root with errors
           @opener_location = add_query_params(
-            beta_invite ? beta_invite.path : clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), 
+            beta_invite ? beta_invite.url : clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), 
             model_errors_as_simple_hash(user))
         end
         
