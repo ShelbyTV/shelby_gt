@@ -10,6 +10,7 @@ class BetaInviteMailer < ActionMailer::Base
     @invite = invite
     @inviter = invite.sender
     @inviters_name = invite.sender.name || invite.sender.nickname
+    @inviters_nickname = invite.sender.nickname
     
     from = "\"#{@inviters_name}\" <#{invite.sender.primary_email}>" || Settings::Email.beta_invite["initial"]['from']
     subj = invite.email_subject || Settings::Email.beta_invite['initial']['subject'] % {:inviters_name => @inviters_name}
