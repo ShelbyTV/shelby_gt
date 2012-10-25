@@ -27,8 +27,8 @@ defaults: &defaults
   # GtInterest
   gt_interest_autoresponse:
     category: "Submit GT Interest"
-    subject: "Your request for Shelby has been received!"
-    from: "Shelby GT <contact+gt@shelby.tv>"
+    subject: "your invite request"
+    from: "reece <reece@shelby.tv>"
   beta_invite:
     initial:
       category: "Initial Beta Invite"
