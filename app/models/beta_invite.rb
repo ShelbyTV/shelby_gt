@@ -35,4 +35,12 @@ class BetaInvite
     self.save
   end
   
+  def path
+    "/invite/#{self.id}"
+  end
+  
+  def url
+    "#{Settings::ShelbyAPI.web_root_secure}#{self.path}"
+  end
+  
 end

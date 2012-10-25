@@ -345,30 +345,13 @@ describe AuthenticationsController do
           u.reload.cohorts.should == cohorts
         end
         
-        it "should redirect to cohort entrance, with errors, when user creation fails" do
-          cohorts = ["a", "b", "c"]
-          cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
-          session[:cohort_entrance_id] = cohort_entrance.id
-        
-          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [])
-          u2 = User.new(:nickname => u.nickname)
-          u2.save
-          u2.valid?.should == false
-          GT::UserManager.should_receive(:create_new_user_from_params).and_return u2
-          APIClients::TwitterInfoGetter.should_not_receive(:new)
-          get :create, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
-          
-          assigns(:current_user).should == nil
-          assigns(:opener_location).start_with?(cohort_entrance.url+"?").should == true
-        end
-        
         it "should accept with BetaInvite" do
           i = Factory.create(:beta_invite)
           BetaInvite.should_receive(:find).and_return i
         
           u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [], :authentications => [])
           GT::UserManager.should_receive(:create_new_user_from_params).and_return u
-          get :create, :beta_invite_id => :some_id, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
+          get :create, :invite_id => :some_id, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
       
           assigns(:current_user).should == u
           assigns(:current_user).gt_enabled.should == true

@@ -143,7 +143,7 @@ class User
   # [twitter, facebook, email, tumblr]
   key :social_tracker,        Array, :default => [0, 0, 0, 0]
   
-  key :beta_invites_available,  Integer, :default => 10, :abbr => :az
+  key :beta_invites_available,  Integer, :default => 3, :abbr => :az
 
   attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original, :avatar
   
@@ -158,7 +158,7 @@ class User
   
   if Settings::Performance.validate_uniqueness_primary_email
     before_validation(:on => :create) { self.drop_primary_email_if_taken }
-    validates_uniqueness_of :primary_email, :allow_blank => true, :allow_nil => true
+    validates_uniqueness_of :primary_email, :allow_blank => false, :allow_nil => false
   end
   
   # Latin-1 and other extensions:   \u00c0 - \u02ae
@@ -179,8 +179,8 @@ class User
   validates_format_of :nickname, :with => NICKNAME_ACCEPTABLE_REGEX
   
   
-  RESERVED_NICNAMES = %w(admin system anonymous shelby)
-  ROUTE_PREFIXES = %w(signout login users user authentication authentications auth setup bookmarklet pages images javascripts robots stylesheets favicon)
+  RESERVED_NICNAMES = %w(admin system anonymous)
+  ROUTE_PREFIXES = %w(signout login users user authentication authentications auth setup bookmarklet pages images javascripts robots stylesheets staging favicon)
   validates_exclusion_of :nickname, :in => RESERVED_NICNAMES + ROUTE_PREFIXES
   
   validates_format_of :primary_email, :with => /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\Z/, :allow_blank => true

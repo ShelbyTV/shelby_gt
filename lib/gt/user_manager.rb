@@ -55,7 +55,18 @@ module GT
     def self.create_new_user_from_params(params)
       user = build_new_user_from_params(params)
       
-      if user.valid? and user.save
+      if user.valid?
+        begin
+          user.save(:safe => true)
+        rescue Mongo::OperationFailure
+          # unique key failure due to duplicate
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
+
+          Rails.logger.error "[GT::UserManager#create_new_user_from_params] Failed to create user: #{user.errors.full_messages.join(',')} due to MongoOperationFailure / user looks like: #{user.inspect}"
+          user.errors.add(:duplicate_key, "uncaught duplicate key")
+          return user
+        end
+        
         # Need to ensure special rolls after saving user b/c of the way add_follower works
         user.gt_enable!
         #additional meta-data for user's public roll
@@ -289,27 +300,34 @@ module GT
     end
     
     # Makes sure a nickname is valid and unique!
-    def self.ensure_valid_unique_nickname!(user, steal_faux_nickname=false)
-      #replace standard junk with underscore
-      user.nickname = user.nickname.gsub(/[ ,:&~]/,'_');
-      #remove anything not in the set of valid characters
-      user.nickname = user.nickname.gsub(User::NICKNAME_UNACCEPTABLE_CHAR_REGEX, '')
+    def self.ensure_valid_unique_nickname!(user, should_steal_faux_nickname=false)
+      clean_nickname!(user)
       user.nickname = "cobra" if user.nickname.blank?
+      
+      steal_faux_nickname(user) if should_steal_faux_nickname
       
       orig_nick = user.nickname
       i = 2
       
-      if steal_faux_nickname
-        user_with_nickname = User.first(:downcase_nickname => user.nickname.downcase)
-        user_with_nickname.release_nickname! if user_with_nickname and user_with_nickname.faux == User::FAUX_STATUS[:true]
-      end
-      
       while( User.where( :_id.ne => user.id, :downcase_nickname => user.nickname.downcase ).count > 0 ) do
-        user.nickname = "#{orig_nick}_#{i}"
+        user.nickname = "#{orig_nick}-#{i}"
         i = i*2
       end
-      #this happens in a before_save, but doesn't hurt to do it here
+
       user.downcase_nickname = user.nickname.downcase
+    end
+    
+    def self.clean_nickname!(user)
+      #replace standard junk with hyphen
+      user.nickname = user.nickname.gsub(/[ ,:&~]/,'-');
+      #remove anything not in the set of valid characters
+      user.nickname = user.nickname.gsub(User::NICKNAME_UNACCEPTABLE_CHAR_REGEX, '')
+      user.downcase_nickname = user.nickname.downcase
+    end
+    
+    def self.steal_faux_nickname(user)
+      user_with_nickname = User.first(:downcase_nickname => user.nickname.downcase)
+      user_with_nickname.release_nickname! if user_with_nickname and user_with_nickname.faux == User::FAUX_STATUS[:true]
     end
     
     def self.copy_cohorts!(from, to, additional_cohorts = [])
@@ -351,13 +369,15 @@ module GT
         u = User.new
         
         u.nickname = params[:nickname]
+        clean_nickname!(u)
         u.primary_email = params[:primary_email]
         u.password = params[:password]
         u.name = params[:name]
         
         u.server_created_on = "GT::UserManager#build_new_user_from_params/#{u.nickname}"
         
-        ensure_valid_unique_nickname!(u, true)
+        #not going to force unique, but will steal from faux users here
+        steal_faux_nickname(u)
         
         u.preferences = Preferences.new()
         u.app_progress = AppProgress.new()

@@ -21,6 +21,14 @@ class ApplicationController < ActionController::Base
     render_error(code, message, errors)
   end
   
+  # Given an ActiveModel with errors, returns a simple hash of the bad field(s) and their error description(s)
+  # ex: {:field_1 => "errror description", :field_2 => "error description, concat, if there are multiple"}
+  def model_errors_as_simple_hash(active_model)
+    err_hash = active_model.errors.to_hash
+    err_hash.each { |a,b| err_hash[a] = b.join(", ") }
+    return err_hash
+  end
+  
   # === Unlike the default user_authenticated! helper that ships with devise,
   #  We want to render our json response as well as just the http 401 response
   def user_authenticated?

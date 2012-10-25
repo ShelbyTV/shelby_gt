@@ -3,7 +3,7 @@ class V1::BetaInviteController < ApplicationController
   before_filter :user_authenticated?
   
   def create
-    return render_error(409, "No invites left", {:user => {:beta_invites_available => "none available"}}) unless current_user.beta_invites_available > 0
+    return render_error(409, "No invites left", {:user => {:beta_invites_available => ["none available"]}}) unless current_user.beta_invites_available > 0
     
     @invite = BetaInvite.new(:to_email_address => params[:to], :email_body => params[:body], :email_subject => params[:subject])
     @invite.sender = current_user

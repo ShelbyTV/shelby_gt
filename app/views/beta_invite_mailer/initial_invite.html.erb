@@ -4,87 +4,79 @@
 </head>
 <body style="-webkit-text-size-adjust: none;margin: 0;padding: 0;background-color: #FAFAFA;width: 100%;">
 
-        <table align="center" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#E2E2E2; color:#444; font-family: Arial,sans-serif; font-weight:300;width: 55%;">
-		<tr>
-			<td valign="middle" class="shelby-email-lining" style="padding:0px;">
-				<!--  show message in email preview-->
-				<div style="font-size:0px;display:none;">
-    			    shelby makes watching video more like TV.  It's simple and easy.  Join for free and check it out.
-				</div>
-				<!-- /show message in email preview-->
-				<h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313435;">
-					<a href="http://shelby.tv">
-						<img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv logo" title="Shelby.tv" height="30" style="padding:8px 0px 5px;display:block;margin: 0px auto;display:block;"/>
-					</a>
-				</h1>
-				<hr style="margin-top:0px;background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #EFEFEF;"/>
-                <table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; padding:10px 50px 15px; width:450px;margin: 0px auto;">
-					<tr height="25">
-						<td colspan="2" valign="top" style="margin:0px 0 10px; font-size: 12px; color:#333; font-weight: bold;">
-              <img src="<%= avatar_url_for_user(@inviter) %>" style="padding-right: 5px;" />
-							<%= @inviters_name %> invites you to join Shelby!
-						</td>
-					</tr>
-					
-					<% if @inviter.public_roll.subdomain %>
-	          <tr height="10">
-	            <td width="50" valign="top">
-								<div style="max-width:450px;font-size:12px;color:#333;margin-top:5px;">
-									Check out the videos <%= @inviters_name %> is sharing:
-									<a href="http://<%= @inviter.public_roll.subdomain %>.shelby.tv">http://<%= @inviter.public_roll.subdomain %>.shelby.tv</a>
-								</div>
-							</td>
-						</tr>
-					<% end %>          
+  <table align="center" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#E2E2E2; color:#444; font-family: Arial,sans-serif; font-weight:300;width: 55%;">
+    <tr>
+      <td valign="middle" class="shelby-email-lining" style="padding:0px;">
+        <!--  show message in email preview-->
+        <div style="font-size:0px;display:none;">
+          shelby makes watching video more like TV.  It's simple and easy.  Join for free and check it out.
+        </div>
+        <!-- /show message in email preview-->
+        <h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313435;">
+          <a href="http://shelby.tv">
+            <img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv logo" title="Shelby.tv" height="30" style="padding:8px 0px 5px;display:block;margin: 0px auto;display:block;"/>
+          </a>
+        </h1>
+        <hr style="margin-top:0px;background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #EFEFEF;"/>
+        <table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; padding:10px 50px 5px; width:450px;margin: 0px auto;">
+          <tr>
+            <td width="45">
+              <div style="font-size: 14px; color:#111; font-weight: bold;">
+                <%= @inviters_name %> invites you to join Shelby.tv
+              </div>
+              <div style="margin-top: 10px; font-size: 11px; color:#111; font-weight: bold;">
+                It's invite only, so this is kind of a big deal.
+              </div>
+            </td>
+          </tr>
 
-           <tr>
-               <td width="45" valign="top">
-                   <div style="padding: 10px 5px; max-width:450px; margin-top:5px; background-color: #d2d2d2; border: 1px solid #aaa;">
-											<%= @invite.email_body %>
-                   </div>
-               </td>
-           </tr>
+          <% unless @invite.email_body.blank? %>
+            <tr>
+              <td width="45" valign="top">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:10px">
+                <tr>
+                  <td width="55px" valign="top" style="background-color:#EFEFEF;text-align:center;padding:10px 0;">
+                    <img src="<%= avatar_url_for_user(@inviter) %>" style="width:33px" />
+                  </td>
+                  <td valign="top" style="background-color:#EFEFEF;padding:10px 0;">
+                    <div style="font-size:11px;font-weight:bold;color:#333333">
+                      <%= "#{@inviters_nickname} says:" %>
+                    </div>
+                    <div style="font-size:11px;color:#333333;margin-top:10px;">
+                      "<%= @invite.email_body %>"
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              </td>
+            </tr>
+          <% end %>
 
-                    
-                    <tr>
-        				<td width="45" align="center" valign="top" style="max-width:400px;">
-                            <a href="<%= Settings::ShelbyAPI.web_root_secure %>/beta_invite/<%= @invite.id %>">
-                            <table style="width:400px;float:left">
-                                <tr>
-				                <td>
-                                    <div style="height:27px; background-color: #0590c4; color: white;text-align: center;font-weight: bold;margin-top: 8px; border: 1px solid #056083;padding-top: 9px;">
-							        Join Shelby (it's free)
-						        </div>
-                                </td>
-                                </tr>
-                            </table>
-                            </a>
-						</td>
-					</tr>
-                     <tr>
-                        <td width="45" style="font-size: 10px;padding-top: 8px;">
-                            <div style="max-width:425px;">
-                                Your feedback is super valuable. Send your ideas to <a href="mailto:feedback@shelby.tv?subject=Private Beta Feedback">feedback@shelby.tv</a>                             
-</div>
-                        </td>
-                    </tr>
-                    
-                    <tr height="43">
-			            <td colspan="2">
-				            <hr style="background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #EFEFEF;"/>
-                            <div style="color:#555; text-decoration:none;float:left;font-size:11px;font-weight:bold;">
-                                Shelby.tv, a simple new way to enjoy video.
-                            </div>
-				            <div style="color:#555; margin-right:5px;float:right;font-size:11px;">
-                                110 E 23rd St NY NY 10010
-				            </div>
-                            <br/>
-			            </td>
-		            </tr>
-                </table>
-             </td>
-             
-        </tr>
+
+          <tr>
+            <td width="45" align="center" valign="top">
+              <a href="<%= @invite.url %>" style="text-decoration:none;">
+                <div style="height:27px; background-color: #0590c4; color: white;text-align: center;font-weight: bold;margin-top: 15px; border: 1px solid #056083;padding-top: 9px">
+                  Join Shelby
+                </div>
+              </a>
+            </td>
+          </tr>
+
         </table>
+
+        <hr style="background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #EFEFEF;"/>
+
+        <div style="color:#555; margin:0 10px 10px 10px;text-decoration:none;float:left;font-size:11px;font-weight:bold;">
+          Shelby.tv, a simple new way to enjoy video.
+        </div>
+        <div style="color:#555; margin:0 10px 10px 10px;float:right;font-size:11px;">
+          110 E 23rd St NY NY 10010
+        </div>
+        <br/>
+
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
