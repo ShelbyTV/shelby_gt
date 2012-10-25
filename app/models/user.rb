@@ -143,7 +143,7 @@ class User
   # [twitter, facebook, email, tumblr]
   key :social_tracker,        Array, :default => [0, 0, 0, 0]
   
-  key :beta_invites_available,  Integer, :default => 10, :abbr => :az
+  key :beta_invites_available,  Integer, :default => 3, :abbr => :az
 
   attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original, :avatar
   

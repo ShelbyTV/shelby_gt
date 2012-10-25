@@ -319,7 +319,7 @@ module GT
     
     def self.clean_nickname!(user)
       #replace standard junk with hyphen
-      user.nickname = user.nickname.gsub(/[ ,:&~_]/,'-');
+      user.nickname = user.nickname.gsub(/[ ,:&~]/,'-');
       #remove anything not in the set of valid characters
       user.nickname = user.nickname.gsub(User::NICKNAME_UNACCEPTABLE_CHAR_REGEX, '')
       user.downcase_nickname = user.nickname.downcase
