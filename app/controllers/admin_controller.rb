@@ -55,6 +55,20 @@ class AdminController < ApplicationController
     end
   end
   
+  def active_users
+    rhombus = Rhombus.new('shelby', '_rhombus_gt')
+    
+    # default time is 3 days, but more can be specified with params[:limit] (in days)
+    limit = params[:limit] ? params[:limit].to_i*24 : 72
+    rhombus_resp = JSON.parse(rhombus.get('/smembers', {:args => ['active_web'], :limit=>limit}))
+    uids = rhombus_resp["error"] ? [] : rhombus_resp["data"].values.flatten
+    
+    @active_users = User.find(uids)
+    
+    # for development purposes to fake some users.
+    @active_users = User.all[0..5] if Rails.env == "development"
+  end
+  
   private
   
     def is_admin?

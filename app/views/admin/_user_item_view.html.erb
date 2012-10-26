@@ -1,0 +1,30 @@
+<% links = {} %>
+<% user.authentications.each { |a| links[:tw] = "http://twitter.com/#{a.nickname}" if a.provider == "twitter"; links[:fb] = "http://www.facebook.com/#{a.nickname}" if a.provider == "facebook"; links[:tu] = "http://#{a.nickname}.tumblr.com/" if a.provider == "tumblr"; } %>
+
+<div class="user" style="font-size: 17px; font-weight: 300; margin: 10px 20px; padding-bottom: 4px;border-bottom: 1px solid #222;">
+	<%= image_tag avatar_url_for_user(user), :size=>"43x43", :style=>"vertical-align: middle;float: left;margin-right: 15px;" %>
+	<div class="who">
+		<%= link_to user.name, "http://api.shelby.tv/admin/user/#{user.id}" %> (<%= user.nickname %>)
+	</div>
+	<div class="more-info" style="margin-left: 25px;">
+		<%= link_to "#{user.public_roll.subdomain}.shelby.tv", "http://#{user.public_roll.subdomain}.shelby.tv" %>
+		<span class="social-links" style="padding: 0 4px;">
+			<% if links[:tw] %>
+				<a href="<%= links[:tw] %>" style="color: #777;font-weight: normal;text-decoration: none;"><img src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" height="16" alt="" title="" style="height: 12px;outline: none;text-decoration: none;display: inline;"/></a>
+			<% end %>
+			<% if links[:fb] %>
+				<a href="<%= links[:fb] %>" style="color: #777;font-weight: normal;text-decoration: none;"><img src="http://forums.appsorama.com/fbb/facebook_logo_16x16.gif" alt="" title="" height="16" style="height: 12px;text-decoration: none;display: inline;"/></a>
+			<% end %>
+			<% if links[:tu] %>
+				<a href="<%= links[:tu] %>" style="color: #777;font-weight: normal;text-decoration:none;"><img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" height="16" alt="" title="" style="height: 12px;outline: none;text-decoration: none;display: inline;"></a>
+			<% end %>
+		</span> ::
+		<span class="roll-info">
+			videos in roll: <%= user.public_roll.frames.count %> :: 
+			videos queued: <%= user.watch_later_roll.frames.count %>
+		</span>
+	</div>
+	<div class="email-address" style="margin-left: 25px;">
+		email: <%= link_to(user.primary_email || "", "mailto:#{user.primary_email}") %>
+	</div>
+</div>

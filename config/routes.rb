@@ -152,6 +152,7 @@ ShelbyGt::Application.routes.draw do
   get '/admin/user/:id' => 'admin#user', :constraints => { :id => /[^\/]+/ }
   get '/admin/user' => 'admin#user', :constraints => { :id => /[^\/]+/ }
   get '/admin/new_users' => "admin#new_users"
+  get '/admin/active_users' => "admin#active_users"
   
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   
