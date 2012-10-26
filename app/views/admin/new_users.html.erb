@@ -2,6 +2,8 @@
 	
 <hr/>
 
-<% @all_new_users.each do |u| %>
-	<%= render :partial => "user_item_view", :locals => { :user => u } %>
-<% end %>
+<div id="users">
+	<% @all_new_users.each do |u| %>
+		<%= render :partial => "user_item_view", :locals => { :user => u } %>
+	<% end %>	
+</div>

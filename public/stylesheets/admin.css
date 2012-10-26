@@ -102,3 +102,9 @@
   top: 19px;
   font-size: 20px;
 }
+
+/* line 100, ../../app/assets/stylesheets/admin.scss */
+#users {
+  width: 50%;
+  margin: 0 auto;
+}

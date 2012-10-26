@@ -11,6 +11,8 @@
 </div>
 <hr/>
 
-<% @active_users.each do |u| %>
-	<%= render :partial => "user_item_view", :locals => { :user => u } %>
-<% end %>
+<div id="users">
+	<% @active_users.each do |u| %>
+		<%= render :partial => "user_item_view", :locals => { :user => u } %>
+	<% end %>
+</div>
