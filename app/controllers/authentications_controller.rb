@@ -111,7 +111,7 @@ class AuthenticationsController < ApplicationController
         if user.valid?
           sign_in(:user, user)
           user.remember_me!(true)
-          set_common_cookie(user, session[:_csrf_token])
+          set_common_cookie(user, form_authenticity_token)
           
           if gt_interest
             gt_interest.used!(user) 
@@ -152,7 +152,7 @@ class AuthenticationsController < ApplicationController
         if user.valid? and user.errors.empty?
           sign_in(:user, user)
           user.remember_me!(true)
-          set_common_cookie(user, session[:_csrf_token])
+          set_common_cookie(user, form_authenticity_token)
 
           if cohort_entrance
             use_cohort_entrance(user, cohort_entrance)
