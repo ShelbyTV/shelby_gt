@@ -9,7 +9,7 @@
       <td valign="middle" class="shelby-email-lining" style="padding:0px;">
         <!--  show message in email preview-->
         <div style="font-size:0px;display:none;">
-          shelby makes watching video more like TV.  It's simple and easy.  Join for free and check it out.
+          Shelby makes watching video more like TV.  It's simple and easy.  Join for free and check it out.
         </div>
         <!-- /show message in email preview-->
         <h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313435;">
@@ -24,7 +24,7 @@
               <div style="font-size: 14px; color:#111; font-weight: bold;">
                 <%= @inviters_name %> invites you to join Shelby.tv
               </div>
-              <div style="margin-top: 10px; font-size: 11px; color:#111; font-weight: bold;">
+              <div style="margin-bottom: 10px; margin-top: 5px; font-size: 11px; color:#111;">
                 It's invite only, so this is kind of a big deal.
               </div>
             </td>
@@ -33,12 +33,12 @@
           <% unless @invite.email_body.blank? %>
             <tr>
               <td width="45" valign="top">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:10px">
+                <table cellpadding="0" cellspacing="0" width="100%" style="margin-top:10px">
                 <tr>
-                  <td width="55px" valign="top" style="background-color:#EFEFEF;text-align:center;padding:10px 0;">
+                  <td valign="top" style="background-color:#EFEFEF;text-align:right;padding:10px 0;width:43px;">
                     <img src="<%= avatar_url_for_user(@inviter) %>" style="width:33px" />
                   </td>
-                  <td valign="top" style="background-color:#EFEFEF;padding:10px 0;">
+                  <td valign="top" style="background-color:#EFEFEF;padding:10px;">
                     <div style="font-size:11px;font-weight:bold;color:#333333">
                       <%= "#{@inviters_nickname} says:" %>
                     </div>
@@ -56,7 +56,7 @@
           <tr>
             <td width="45" align="center" valign="top">
               <a href="<%= @invite.url %>" style="text-decoration:none;">
-                <div style="height:27px; background-color: #0590c4; color: white;text-align: center;font-weight: bold;margin-top: 15px; border: 1px solid #056083;padding-top: 9px">
+                <div style="height:24px; background-color: #0590c4; color: white;text-align: center;font-weight: bold;margin-bottom: 15px; margin-top: 20px; border: 1px solid #056083;padding-top: 10px">
                   Join Shelby
                 </div>
               </a>

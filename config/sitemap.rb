@@ -10,7 +10,7 @@ SitemapGenerator::Sitemap.sitemaps_path = 'system/'
 
 SitemapGenerator::Sitemap.create do
 
-  youtubeVideos = Video.where(:provider_name => "youtube").limit(10000)
+  youtubeVideos = Video.where(:provider_name => "youtube").limit(10000000)
   
   youtubeVideos.each do |youtubeVideo|
     if youtubeVideo.thumbnail_url   
@@ -21,7 +21,9 @@ SitemapGenerator::Sitemap.create do
         :description => youtubeVideo.description,
         :player_loc => "http://www.youtube.com/v/#{youtubeVideo.provider_id}",
       })
-    end    
+    end
+    # this keeps memory usage and object lookup speed down 
+    MongoMapper::Plugins::IdentityMap.clear
   end if youtubeVideos  
   
 end
