@@ -1,6 +1,8 @@
 defaults: &defaults
   api_key: '9b8c2d291a85a66412fc8c0085125194646fd7a6'
-
+  metric:
+    send_invite: 'Send Shelby invitation'
+    accept_invite: 'Accept Shelby invitation'
 development:
   <<: *defaults
 
