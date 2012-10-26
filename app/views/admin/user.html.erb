@@ -1,10 +1,6 @@
+<%= render :partial => "/admin/header", :locals => {:title => "user info"} %>
+
 <div id="admin">
-	<h1 id="shelby-logo">
-		<img src="<%= Settings::Email.shelby_logo_gt %>" id="headerImage" alt="Shelby.tv logo" title="Shelby.tv" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 150px;vertical-align: bottom;">
-		user info
-	</h1>
-	
-	<hr/>	
 	<% if @user %>
 	<div id="user-info-area">
 		<div id="shelby-user">
@@ -18,7 +14,7 @@
 			</span>			
 		</div>
 		<div id="special-rolls" class="text-block">
-			<a href="<%= @user.permalink %>">personal roll</a> :: <a href="<%= @watch_later_roll %>">watch later roll</a> :: <a href="<%= @upvoted_roll %>" >heart roll</a>	
+			<a href="<%= @user.permalink %>">personal roll</a> :: <a href="<%= @watch_later_roll %>">queue </a>	
 		</div>
 		
 		<% if @user.public_roll %>
