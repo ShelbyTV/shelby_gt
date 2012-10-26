@@ -515,7 +515,7 @@ describe GT::UserManager do
         @omniauth_hash["info"]["nickname"] = "'Astrid_Carolina_Valdez"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
         u.valid?.should == true
-        u.nickname.should == "Astrid-Carolina-Valdez"
+        u.nickname.should == "Astrid_Carolina_Valdez"
       end
       
       it "should validate nickname w/ utf8 support, dot, underscore and/or hyphen" do
@@ -651,7 +651,7 @@ describe GT::UserManager do
         @omniauth_hash['uid'] += "2"
         @omniauth_hash["info"]["nickname"] = "Frank_Lazio_JR"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
-        User.find_by_nickname("frank-lazio-jr").should be_a(User)
+        User.find_by_nickname("frank_lazio_jr").should be_a(User)
       end
       
       it "should make sure it's finding user by entire nickname only" do
