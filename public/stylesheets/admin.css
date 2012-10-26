@@ -88,3 +88,17 @@
 #admin #roll-info-area #user-created-private-rolls {
   float: left;
 }
+
+/* line 90, ../../app/assets/stylesheets/admin.scss */
+#time-choices {
+  text-align: center;
+  font-size: 16px;
+}
+
+/* line 94, ../../app/assets/stylesheets/admin.scss */
+#admin-choices {
+  position: fixed;
+  right: 224px;
+  top: 19px;
+  font-size: 20px;
+}

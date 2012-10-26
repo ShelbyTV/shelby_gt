@@ -1,5 +1,14 @@
-<%= render :partial => "/admin/header" %>
+<%= render :partial => "/admin/header", :locals => {:title => "active users in the last #{@limit} hrs"} %>
 
+<hr/>
+<div id="time-choices">
+	<a href="http://api.shelby.tv/admin/active_users?limit=1"><span>1 day</span></a> |
+	<a href="http://api.shelby.tv/admin/active_users?limit=2"><span>2 days</span></a> |
+	<a href="http://api.shelby.tv/admin/active_users?limit=3"><span>3 days</span></a> |
+	<a href="http://api.shelby.tv/admin/active_users?limit=4"><span>4 days</span></a> |
+	<a href="http://api.shelby.tv/admin/active_users?limit=5"><span>5 days</span></a> |
+	<a href="http://api.shelby.tv/admin/active_users?limit=6"><span>6 days</span></a>
+</div>
 <hr/>
 
 <% @active_users.each do |u| %>

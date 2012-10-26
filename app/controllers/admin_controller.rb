@@ -59,8 +59,8 @@ class AdminController < ApplicationController
     rhombus = Rhombus.new('shelby', '_rhombus_gt')
     
     # default time is 3 days, but more can be specified with params[:limit] (in days)
-    limit = params[:limit] ? params[:limit].to_i*24 : 72
-    rhombus_resp = JSON.parse(rhombus.get('/smembers', {:args => ['active_web'], :limit=>limit}))
+    @limit = params[:limit] ? params[:limit].to_i*24 : 72
+    rhombus_resp = JSON.parse(rhombus.get('/smembers', {:args => ['active_web'], :limit=>@limit}))
     uids = rhombus_resp["error"] ? [] : rhombus_resp["data"].values.flatten
     
     @active_users = User.find(uids)
