@@ -1,0 +1,14 @@
+defaults: &defaults
+  api_key: '9b8c2d291a85a66412fc8c0085125194646fd7a6'
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+  
+arnold:
+  <<: *production

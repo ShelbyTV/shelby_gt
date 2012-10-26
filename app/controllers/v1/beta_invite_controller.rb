@@ -10,7 +10,10 @@ class V1::BetaInviteController < ApplicationController
     if @invite.save
       current_user.update_attribute(:beta_invites_available, current_user.beta_invites_available - 1)
       @status = 200
-      ShelbyGT_EM.next_tick { BetaInviteMailer.initial_invite(@invite).deliver }
+      ShelbyGT_EM.next_tick { 
+        BetaInviteMailer.initial_invite(@invite).deliver
+        # XXX send event to KM
+      }
     else
       render_errors_of_model(@invite)
     end
