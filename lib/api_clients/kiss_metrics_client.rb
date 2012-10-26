@@ -21,7 +21,7 @@ module APIClients
    
     def self.init_km()
       @client ||= KM.init( Settings::KissMetrics.api_key,
-                          :log_dir => 'log' ,:force => true)
+                          :log_dir => 'log')
     end
     
   end

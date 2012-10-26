@@ -31,7 +31,7 @@ class BetaInvite
     user.cohorts << "beta_invited"
     user.save
     
-    # XXX send event to KM
+    # XXX send event to KM w/ EM
     
     self.invitee = user
     self.save
