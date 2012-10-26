@@ -1,3 +1,5 @@
+require 'api_clients/kiss_metrics_client'
+
 class BetaInvite
   include MongoMapper::Document
 
@@ -31,10 +33,12 @@ class BetaInvite
     user.cohorts << "beta_invited"
     user.save
     
-    # XXX send event to KM w/ EM
-    
     self.invitee = user
     self.save
+    
+    ShelbyGT_EM.next_tick do 
+      #APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['accept_invite'], {:invited_by => self.invitee})
+    end
   end
   
   def path

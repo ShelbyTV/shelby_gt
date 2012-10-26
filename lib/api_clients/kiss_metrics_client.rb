@@ -19,9 +19,10 @@ module APIClients
    
    private
    
+    @client_init = false
     def self.init_km()
-      @client ||= KM.init( Settings::KissMetrics.api_key,
-                          :log_dir => 'log')
+      KM.init( Settings::KissMetrics.api_key) unless @client_init
+      @client_init = true
     end
     
   end
