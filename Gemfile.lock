@@ -283,6 +283,8 @@ GEM
       activesupport (>= 3.0)
       railties (>= 3.0)
       rspec (~> 2.8.0)
+    rvm-capistrano (1.2.7)
+      capistrano (>= 2.0.0)
     sailthru-client (1.15)
       json
       multipart-post
@@ -371,6 +373,7 @@ DEPENDENCIES
   rails (= 3.2.2)
   rpm_contrib
   rspec-rails
+  rvm-capistrano
   sailthru-client
   sanitize
   sendgrid!
