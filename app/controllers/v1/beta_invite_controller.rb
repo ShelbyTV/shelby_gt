@@ -14,7 +14,7 @@ class V1::BetaInviteController < ApplicationController
       @status = 200
       ShelbyGT_EM.next_tick do 
         BetaInviteMailer.initial_invite(@invite).deliver
-        #APIClients::KissMetrics.identify_and_record(current_user, Settings::KissMetrics.metric['send_invite'], {:invite_sent_to => params[:to]})
+        APIClients::KissMetrics.identify_and_record(current_user, Settings::KissMetrics.metric['send_invite'], {:invite_sent_to => params[:to]})
       end
     else
       render_errors_of_model(@invite)

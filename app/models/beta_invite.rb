@@ -37,7 +37,7 @@ class BetaInvite
     self.save
     
     ShelbyGT_EM.next_tick do 
-      #APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['accept_invite'], {:invited_by => self.invitee})
+      APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['accept_invite'], {:invited_by => self.invitee})
     end
   end
   
