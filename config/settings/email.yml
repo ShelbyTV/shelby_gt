@@ -29,6 +29,7 @@ defaults: &defaults
     category: "Submit GT Interest"
     subject: "your invite request"
     from: "reece <reece@shelby.tv>"
+    reply_to: "contact@shelby.tv"
   beta_invite:
     initial:
       category: "Initial Beta Invite"
