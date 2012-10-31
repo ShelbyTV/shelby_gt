@@ -27,4 +27,11 @@
 	<div class="email-address" style="margin-left: 25px;">
 		email: <%= link_to(user.primary_email || "", "mailto:#{user.primary_email}") %>
 	</div>
+	<% if user.public_roll.roll_type >= Roll::TYPES[:special_public_real_user] %>
+		<div class="follow-form" style="margin-left: 25px;">
+			<%= form_tag "/v1/roll/#{user.public_roll.id}/join", :multipart => true, :method => :post do |f| %>
+				<%= submit_tag "Follow" %>
+			<% end %>
+		</div>
+	<% end %>
 </div>
