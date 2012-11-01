@@ -380,5 +380,109 @@ describe V1::FrameController do
       assigns(:status).should eq(404)
     end
   end
+
+  describe "GET short_link" do
+    before(:each) do
+      sign_in @u1
+      resp = {"awesm_urls" => [
+        {"service"=>"email", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"email", "domain"=>"shl.by"}
+      ]}
+      Awesm::Url.stub(:batch).and_return([200, resp])
+    end
+
+    context "normal frame" do
+
+      before(:each) do
+        @frame = Factory.create(:frame, :roll => Factory.create(:roll, :creator => @u1), :conversation => Factory.create(:conversation))
+        Frame.stub!(:find).and_return(@frame)
+      end
+
+      it "should return 200" do
+        get :short_link, :frame_id => @frame.id.to_s, :format => :json
+        assigns(:status).should eq(200)
+      end
+
+      it "should assign correct shortlink" do
+        get :short_link, :frame_id => @frame.id.to_s, :format => :json
+        assigns(:short_link).should eq({'email' => @frame.short_links[:email]})
+      end
+
+    end
+
+    context "watch later roll frame" do
+
+      context "with ancestors" do
+
+        before(:each) do
+          @roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_watch_later], :creator => @u1)
+          @frame_ancestor = Factory.create(:frame)
+          @frame = Factory.create(:frame, :roll => @roll, :conversation => Factory.create(:conversation))
+          @frame.stub!(:frame_ancestors).and_return [@frame_ancestor._id]
+          Frame.stub!(:find).and_return(@frame, @frame_ancestor)
+        end
+
+        it "should return 200" do
+          get :short_link, :frame_id => @frame.id.to_s, :format => :json
+          assigns(:status).should eq(200)
+        end
+
+        it "should assign frame's last ancestor's shortlink" do
+          get :short_link, :frame_id => @frame.id.to_s, :format => :json
+          assigns(:short_link).should eq({'email' => @frame_ancestor.short_links[:email]})
+        end
+
+      end
+
+      context "with no ancestors" do
+
+        before(:each) do
+          @roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_watch_later], :creator => @u1)
+          @video = Factory.create(:video)
+          @frame = Factory.create(:frame, :roll => @roll, :video => @video, :conversation => Factory.create(:conversation))
+          @frame.stub!(:frame_ancestors).and_return []
+          Frame.stub!(:find).and_return(@frame)
+        end
+
+        it "should return 200" do
+          get :short_link, :frame_id => @frame.id.to_s, :format => :json
+          assigns(:status).should eq(200)
+        end
+
+        it "should assign frame's video's shortlink" do
+          get :short_link, :frame_id => @frame.id.to_s, :format => :json
+          assigns(:short_link).should eq({'email' => @video.short_links[:email]})
+        end
+
+      end
+
+    end
+
+    # it "should assign correct shortlink for a normal frame" do
+    #   get :short_link, :frame_id => @frame.id.to_s, :format => :json
+    #   assigns(:short_link).should eq(@frame.short_links['email'])
+    # end
+
+    # it "should assign video shortlink for a frame on the queue" do
+    #   get :short_link, :frame_id => @frame.id.to_s, :format => :json
+    #   assigns(:short_link).should eq(@frame.short_links['email'])
+    # end
+
+    it "returns 404 when cant find frame" do
+      Frame.stub(:find) { nil }
+      get :short_link, :frame_id => @frame.id.to_s, :format => :json
+      assigns(:status).should eq(404)
+      assigns(:message).should eq("could not find frame")
+    end
+
+    it "returns 404 when no valid entity to shortlink" do
+      @frame = Factory.create(:frame)
+      Frame.stub!(:find).and_return(@frame)
+      controller.stub!(:get_linkable_entity).and_return(nil)
+      get :short_link, :frame_id => @frame.id.to_s, :format => :json
+      assigns(:status).should eq(404)
+      assigns(:message).should eq("no valid entity to shortlink")
+    end
+
+  end
   
 end

@@ -169,7 +169,7 @@ class V1::FrameController < ApplicationController
         return render_error(404, "could not find frame with id #{params[:frame_id]}") unless frame
         return render_error(404, "invalid destinations #{params[:destination]}") unless can_share_frame_to_destinations(params[:destination], current_user)
 
-        frameToShare = get_frame_to_share(frame)
+        frameToShare = get_linkable_entity(frame)
         return render_error(404, "no valid frame to share") unless frameToShare
 
         #Do the sharing in the background, hope it works (we don't want to wait for slow external API calls, like awe.sm)
@@ -282,11 +282,11 @@ class V1::FrameController < ApplicationController
   def short_link
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['short_link']) do
       if frame = Frame.find(params[:frame_id])
-        frameToShare = get_frame_to_share(frame)
-        return render_error(404, "no valid frame to share") unless frameToShare
+        entityToShortlink = get_linkable_entity(frame, true)
+        return render_error(404, "no valid entity to shortlink") unless entityToShortlink
 
         @status = 200
-        @short_link = GT::LinkShortener.get_or_create_shortlinks(frameToShare, 'email', current_user)
+        @short_link = GT::LinkShortener.get_or_create_shortlinks(entityToShortlink, 'email', current_user)
       else
         render_error(404, "could not find frame")
       end
@@ -317,14 +317,17 @@ class V1::FrameController < ApplicationController
   
   private
  
-    def get_frame_to_share(frame)
+    def get_linkable_entity(frame, fallback_to_video=false)
       # watch later roll is truly private -- we don't want anyone trying to view frames on a watch later (queue) roll
       if (frame.roll.roll_type == Roll::TYPES[:special_watch_later]) 
         # frame should have been queued from a better roll -- TODO: revisit if/when we have more private rolls
         if frame.frame_ancestors and frame.frame_ancestors.last
           return Frame.find(frame.frame_ancestors.last)
         else
-          return nil
+          # if there are no ancestors (probably came from bookmarklet),
+          # we can optionally fall back to giving a short link to the video page
+          # TODO: integrate with new overall link strategy
+          return fallback_to_video ? frame.video : nil
         end
       else
         return frame
