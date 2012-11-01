@@ -63,5 +63,23 @@ describe Video do
     end
     
   end
+
+  context "permalinks" do
+    before(:each) do
+      @video = Factory.create(:video)
+    end
   
+    it "should generate a permalink" do
+      @video.permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{@video.provider_name}/#{@video.provider_id}/#{@video.title}"
+    end
+
+    it "should generate a video page permalink (identical to its regular permalink)" do
+      @video.video_page_permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{@video.provider_name}/#{@video.provider_id}/#{@video.title}"
+    end
+
+    it "should generate a subdomain permalink (identical to its regular permalink)" do
+      @video.subdomain_permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{@video.provider_name}/#{@video.provider_id}/#{@video.title}"
+    end
+
+  end
 end

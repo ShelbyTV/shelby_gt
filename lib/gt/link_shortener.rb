@@ -8,7 +8,7 @@ module GT
    # destinations is a comma seperated string eg "email,twitter"
    def self.get_or_create_shortlinks(linkable, destinations, user=nil)
      raise ArgumentError, "must supply at least one destination" unless destinations and destinations.is_a?(String)
-     raise ArgumentError, "must supply a roll or frame" unless linkable and (linkable.is_a?(Roll) or linkable.is_a?(Frame))
+     raise ArgumentError, "must supply a roll, frame, or video" unless linkable and (linkable.is_a?(Roll) or linkable.is_a?(Frame) or linkable.is_a?(Video))
      
      destinations = destinations.split(',')
      

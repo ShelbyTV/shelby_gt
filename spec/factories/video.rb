@@ -4,5 +4,6 @@ end
 
 Factory.define :video do |v|
   v.provider_name     "youtube"
-  v.provider_id       { Factory.next :provider_id }  
+  v.provider_id       { Factory.next :provider_id }
+  v.title             { Factory.next :title }
 end
