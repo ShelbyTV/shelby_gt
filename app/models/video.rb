@@ -58,7 +58,8 @@ class Video
   def created_at() self.id.generation_time; end
 
   def permalink
-    "#{Settings::ShelbyAPI.web_root}/video/#{self.provider_name}/#{self.provider_id}/#{self.title}"
+    title_segment = self.title.downcase.gsub(/\W/,'-').gsub(/"/,"'").squeeze('-').chomp('-')
+    "#{Settings::ShelbyAPI.web_root}/video/#{self.provider_name}/#{self.provider_id}/#{title_segment}"
   end
 
   def video_page_permalink

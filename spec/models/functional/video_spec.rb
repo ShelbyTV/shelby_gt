@@ -66,19 +66,19 @@ describe Video do
 
   context "permalinks" do
     before(:each) do
-      @video = Factory.create(:video)
+      @video = Factory.create(:video, :title => 'Title with spaces')
     end
   
     it "should generate a permalink" do
-      @video.permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{@video.provider_name}/#{@video.provider_id}/#{@video.title}"
+      @video.permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{@video.provider_name}/#{@video.provider_id}/title-with-spaces"
     end
 
     it "should generate a video page permalink (identical to its regular permalink)" do
-      @video.video_page_permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{@video.provider_name}/#{@video.provider_id}/#{@video.title}"
+      @video.video_page_permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{@video.provider_name}/#{@video.provider_id}/title-with-spaces"
     end
 
     it "should generate a subdomain permalink (identical to its regular permalink)" do
-      @video.subdomain_permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{@video.provider_name}/#{@video.provider_id}/#{@video.title}"
+      @video.subdomain_permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{@video.provider_name}/#{@video.provider_id}/title-with-spaces"
     end
 
   end
