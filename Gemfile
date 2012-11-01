@@ -32,7 +32,7 @@ gem "haml"
 gem "compass", "0.11.7"
 
 group :production do
-  gem "uglifier"
+	gem "uglifier"
 end
 
 #
@@ -106,14 +106,14 @@ gem 'exception_notification', :require => "exception_notifier"
 #
 gem "eventmachine"
 group :arnold, :test do
-  # Need these in a seperate group b/c em-resolv-replace fucks w/ DNS resolution and will only work inside EventMachine
-  # these gems aren't in default group or :production group, so they won't be require'd by default. -> arnold.rb requires them manually.
-  # they will, however, be installed via capistrano.  See deploy, it only removes :test, everything else will get installed.
-  # Also including these in :test group so we can test the EventMachine code paths (and since test shouldn't resolve DNS, it's no problem)
-  gem "em-jack"
-  gem "em-synchrony"
-  gem "em-http-request", :git => "git://github.com/igrigorik/em-http-request.git", :ref => "1a4123d36a298e8043482ad7b20cb18dfbc2616b"
-  gem "em-resolv-replace"
+	# Need these in a seperate group b/c em-resolv-replace fucks w/ DNS resolution and will only work inside EventMachine
+	# these gems aren't in default group or :production group, so they won't be require'd by default. -> arnold.rb requires them manually.
+	# they will, however, be installed via capistrano.  See deploy, it only removes :test, everything else will get installed.
+	# Also including these in :test group so we can test the EventMachine code paths (and since test shouldn't resolve DNS, it's no problem)
+	gem "em-jack"
+	gem "em-synchrony"
+	gem "em-http-request", :git => "git://github.com/igrigorik/em-http-request.git", :ref => "1a4123d36a298e8043482ad7b20cb18dfbc2616b"
+	gem "em-resolv-replace"
 end
 
 #
@@ -123,8 +123,8 @@ end
 # sudo aptitude install libmemcached-dev libsasl2-dev libmemcached-dbg
 #
 group :arnold, :development, :production do
-  #don't want this in tests since it's not required and it's slow as shit
-  gem 'memcached', '~>1.4.1'
+	#don't want this in tests since it's not required and it's slow as shit
+	gem 'memcached', '~>1.4.1'
 end
 
 #
@@ -144,6 +144,7 @@ gem 'rvm-capistrano'
 #
 group :test, :development do
 	gem 'rspec-rails'
+	gem 'rspec-html-matchers'
 end
 
 group :test do
