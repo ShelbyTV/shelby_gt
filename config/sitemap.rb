@@ -10,13 +10,13 @@ SitemapGenerator::Sitemap.sitemaps_path = 'system/'
 
 SitemapGenerator::Sitemap.create do
 
-  Video.find_each.fields(:provider_name, :provider_id, :title) do |video|
+  Video.find_each { |video|
     titleHyph = video.title ? video.title.downcase.gsub(/\W/,'-').gsub(/"/,"'").squeeze('-').chomp('-') : ""
     add("video/#{video.provider_name}/#{video.provider_id}/#{titleHyph}")
  
     # this keeps memory usage and object lookup speed at reasonable levels 
     MongoMapper::Plugins::IdentityMap.clear
-  end
+  } 
 
 end
 
