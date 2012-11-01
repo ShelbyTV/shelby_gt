@@ -169,7 +169,7 @@ class V1::FrameController < ApplicationController
         return render_error(404, "could not find frame with id #{params[:frame_id]}") unless frame
         return render_error(404, "invalid destinations #{params[:destination]}") unless can_share_frame_to_destinations(params[:destination], current_user)
 
-        frameToShare = get_linkable_entity(frame)
+        frameToShare = get_linkable_entity(frame, params[:destination] == ['email'])
         return render_error(404, "no valid frame to share") unless frameToShare
 
         #Do the sharing in the background, hope it works (we don't want to wait for slow external API calls, like awe.sm)
