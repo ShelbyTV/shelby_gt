@@ -41,6 +41,9 @@ class Video
   key :first_unplayable_at, Time, :abbr => :s
   key :last_unplayable_at, Time, :abbr => :t
   
+  # The shortlinks created for each type of share, eg twitter, tumblr, email, facebook
+  key :short_links, Hash, :abbr => :u, :default => {}
+
   # Arnold does a *shit ton* of Video creation, which runs this validation, which turns out to be very expensive 
   # This validations is technically unnecessary because there is a unique index on [provider_id, provider_name] in the database.
   # Additionally: 1) Arnold performs manual validation on Video create. 2) This doesn't even gurantee uniqueness (timing issues)

@@ -82,5 +82,34 @@ describe GT::LinkShortener do
       lambda { GT::LinkShortener.get_or_create_shortlinks(Factory.create(:user), ["test"]) }.should raise_error(ArgumentError)
     end
   end
+
+  context "get or create short links for videos" do
+    before(:each) do
+      @video = Factory.create(:video)
+    end
+
+    it "should not return error for video as linkable argument" do
+      lambda { GT::LinkShortener.get_or_create_shortlinks(@video, "twitter") }.should_not raise_error(ArgumentError)
+    end
+
+    it "should return a short link that we have already" do
+      @video.short_links[:twitter] = "http://i.ro.ck"; @video.save
+      Awesm::Url.should_receive(:batch).exactly(0).times
+      r = GT::LinkShortener.get_or_create_shortlinks(@video, "twitter")
+      r.should eq(@video.short_links)
+    end
+
+    it "should get a new short link if it doesnt exist" do
+      resp = {"awesm_urls" => [{"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"}]}
+      Awesm::Url.stub(:batch).and_return([200, resp])
+      r = GT::LinkShortener.get_or_create_shortlinks(@video, "twitter")
+      r["twitter"].should eq(resp["awesm_urls"].first["awesm_url"])
+    end
+
+    it "should return error if we dont pass an array" do
+      lambda { GT::LinkShortener.get_or_create_shortlinks(@video, ["test"]) }.should raise_error(ArgumentError)
+      lambda { GT::LinkShortener.get_or_create_shortlinks(@video) }.should raise_error(ArgumentError)
+    end
+  end
     
 end
