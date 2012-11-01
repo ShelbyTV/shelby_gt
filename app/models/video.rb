@@ -53,4 +53,18 @@ class Video
   attr_accessible
   
   def created_at() self.id.generation_time; end
+
+  def permalink
+    "#{Settings::ShelbyAPI.web_root}/video/#{self.provider_name}/#{self.provider_id}/#{self.title}"
+  end
+
+  def video_page_permalink
+    # since this is a video, same as regular permalink
+    self.permalink
+  end
+
+  def subdomain_permalink
+    # since the video doesn't belong to any particular shelby subdomain, same as regular permalink
+    self.permalink
+  end
 end
