@@ -38,6 +38,48 @@ describe 'v1/roll' do
         parse_json(response.body)["result"][0]["id"].should eq(@r.id.to_s)
       end
 
+      context "authorization" do
+        before(:each) do
+          Roll.stub_chain(:where, :all).and_return([@r])
+          @r.roll_type = Roll::TYPES[:special_public_real_user]
+        end
+
+        it "should not return private rolls where user has no special viewing priviledges" do
+          @r.public = false
+          @r.save
+
+          @r.stub(:viewable_by?).and_return(false)
+          get "/v1/roll?subdomain=#{@r.subdomain}"
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(0).at_path("result")
+        end
+
+        it "should return private rolls where user has special viewing priviledges" do
+          @r.public = false
+          @r.save
+
+          @r.stub(:viewable_by?).and_return(true)
+          get "/v1/roll?subdomain=#{@r.subdomain}"
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(1).at_path("result")
+          parse_json(response.body)["result"][0]["id"].should eq(@r.id.to_s)
+        end
+
+        it "should return public rolls even if user has no special viewing priviledges" do
+          @r.public = true
+          @r.save
+
+          @r.stub(:viewable_by?).and_return(false)
+          get "/v1/roll?subdomain=#{@r.subdomain}"
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(1).at_path("result")
+          parse_json(response.body)["result"][0]["id"].should eq(@r.id.to_s)
+        end
+      end
+
       it "should return an empty array if the desired subdomain is not found" do
         @r.roll_type = Roll::TYPES[:special_public_real_user]
         @r.save
@@ -383,7 +425,7 @@ describe 'v1/roll' do
   
   context "not logged in" do
 
-    describe "GET" do
+    describe "GET show" do
       it "should return roll info on success" do
         r = Factory.create(:roll, :creator_id => @u1.id)
         get '/v1/roll/'+r.id
@@ -395,6 +437,35 @@ describe 'v1/roll' do
       it "should return error message if roll doesnt exist" do
         get '/v1/roll/'+@r.id+'xxx'
         response.body.should be_json_eql(404).at_path("status")
+      end
+    end
+
+    describe "GET index" do
+      before (:each) do
+        @r.roll_type = Roll::TYPES[:special_public_real_user]
+        Roll.stub_chain(:where, :all).and_return([@r])
+      end
+
+      it "should return array containing the one desired roll for a public roll" do
+        @r.public = true
+        @r.save
+
+        get "/v1/roll?subdomain=#{@r.subdomain}"
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        response.body.should have_json_size(1).at_path("result")
+        parse_json(response.body)["result"][0]["id"].should eq(@r.id.to_s)
+      end
+
+      it "should not return private rolls" do
+          @r.public = false
+          @r.save
+
+          @r.stub(:viewable_by?).and_return(false)
+          get "/v1/roll?subdomain=#{@r.subdomain}"
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(0).at_path("result")
       end
     end
 

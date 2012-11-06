@@ -15,6 +15,11 @@ class V1::RollController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['index']) do
       if params[:subdomain]
         @rolls = ::Roll.where(:subdomain => params[:subdomain], :subdomain_active => true).all
+        if user_signed_in?
+          @rolls = @rolls.select {|roll| roll.viewable_by?(current_user) or roll.public}
+        else
+          @rolls = @rolls.select {|roll| roll.public}
+        end
         @status = 200
       else
         render_error(400, "required parameter subdomain not specified")
