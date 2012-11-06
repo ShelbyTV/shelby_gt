@@ -89,14 +89,6 @@ describe 'v1/roll' do
         response.body.should have_json_size(0).at_path("result")
       end
 
-      it "should return an empty array if the desired subdomain is not active" do
-        @r.save
-        get "/v1/roll?subdomain=#{@r.subdomain}"
-        response.body.should be_json_eql(200).at_path("status")
-        response.body.should have_json_path("result")
-        response.body.should have_json_size(0).at_path("result")
-      end
-
       it "should return 400 if subdomain param not included" do
         get '/v1/roll'
         response.body.should be_json_eql(400).at_path("status")
