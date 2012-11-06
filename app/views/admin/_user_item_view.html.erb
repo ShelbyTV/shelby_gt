@@ -1,37 +1,63 @@
 <% links = {} %>
 <% user.authentications.each { |a| links[:tw] = "http://twitter.com/#{a.nickname}" if a.provider == "twitter"; links[:fb] = "http://www.facebook.com/#{a.nickname}" if a.provider == "facebook"; links[:tu] = "http://#{a.nickname}.tumblr.com/" if a.provider == "tumblr"; } %>
 
-<div class="user" style="font-size: 17px; font-weight: 300; margin: 10px 20px; padding-bottom: 4px;border-bottom: 1px solid #222;">
-	<%= image_tag avatar_url_for_user(user), :size=>"43x43", :style=>"vertical-align: middle;float: left;margin-right: 15px;" %>
-	<div class="who">
-		<%= link_to user.name, "http://api.shelby.tv/admin/user/#{user.id}" %> (<%= user.nickname %>)
-	</div>
-	<div class="more-info" style="margin-left: 25px;">
-		<%= link_to "#{user.public_roll.subdomain}.shelby.tv", "http://#{user.public_roll.subdomain}.shelby.tv" %>
-		<span class="social-links" style="padding: 0 4px;">
-			<% if links[:tw] %>
-				<a href="<%= links[:tw] %>" style="color: #777;font-weight: normal;text-decoration: none;"><img src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" height="16" alt="" title="" style="height: 12px;outline: none;text-decoration: none;display: inline;"/></a>
-			<% end %>
-			<% if links[:fb] %>
-				<a href="<%= links[:fb] %>" style="color: #777;font-weight: normal;text-decoration: none;"><img src="http://forums.appsorama.com/fbb/facebook_logo_16x16.gif" alt="" title="" height="16" style="height: 12px;text-decoration: none;display: inline;"/></a>
-			<% end %>
-			<% if links[:tu] %>
-				<a href="<%= links[:tu] %>" style="color: #777;font-weight: normal;text-decoration:none;"><img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" height="16" alt="" title="" style="height: 12px;outline: none;text-decoration: none;display: inline;"></a>
-			<% end %>
-		</span> ::
-		<span class="roll-info">
-			videos in roll: <%= user.public_roll.frames.count %> :: 
-			videos queued: <%= user.watch_later_roll.frames.count %>
-		</span>
-	</div>
-	<div class="email-address" style="margin-left: 25px;">
-		email: <%= link_to(user.primary_email || "", "mailto:#{user.primary_email}") %>
-	</div>
-	<% if user.public_roll.roll_type >= Roll::TYPES[:special_public_real_user] %>
-		<div class="follow-form" style="margin-left: 25px;">
-			<%= form_tag "/v1/roll/#{user.public_roll.id}/join", :multipart => true, :method => :post do |f| %>
-				<%= submit_tag "Follow" %>
-			<% end %>
-		</div>
-	<% end %>
-</div>
+<article class="user clearfix">
+  <div class="user__image">
+    <%= image_tag avatar_url_for_user(user), :size=>"50x50" %>
+
+    <% if user.public_roll.roll_type >= Roll::TYPES[:special_public_real_user] %>
+      <div class="user__form">
+        <%= form_tag "/v1/roll/#{user.public_roll.id}/join", :class =>"form form--follow" :multipart => true, :method => :post do |f| %>
+          <%= submit_tag "Follow" %>
+        <% end %>
+      </div><!-- eo user__form -->
+    <% end %>
+  </div><!-- eo user__image -->
+
+  <div class="user__body">
+    <div class="user__contact">
+      <%= link_to(user.primary_email || "", "mailto:#{user.primary_email}") %>
+
+      <ul class="list list--social-links clearfix">
+        <% if links[:tw] %>
+          <li>
+            <a href="http://twitter.com/gardnersmitha">
+              <img src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" height="16" alt="" title="" />
+            </a>
+          </li>
+        <% end %>
+        <% if links[:fb] %>
+          <li>
+            <a href="http://www.facebook.com/austingardnersmith">
+              <img src="http://forums.appsorama.com/fbb/facebook_logo_16x16.gif" alt="" title="" height="16" />
+            </a>
+          </li>
+        <% end %>
+        <% if links[:tu] %>
+          <li>
+            <a href="http://ags.tumblr.com/">
+              <img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" height="16" alt="" title=""/>
+            </a>
+          </li>
+        <% end %>
+
+      </ul><!-- eo user__social-links -->
+    </div><!-- eo user__contact -->
+
+    <h1 class="user__h1">
+      <%= link_to user.name, "http://api.shelby.tv/admin/user/#{user.id}", :class=>"user__username" %></a> <span>(<%= user.nickname %>)</span>
+    </h1>
+    <div class="user__info">
+      <%= link_to "#{user.public_roll.subdomain}.shelby.tv", "http://#{user.public_roll.subdomain}.shelby.tv" %>
+      <ul class="list user__stats">
+        <li>
+          videos in roll: <%= user.public_roll.frames.count %>
+        </li>
+        <li>
+          videos queued: <%= user.watch_later_roll.frames.count %>
+        </li>
+      </ul>
+    </div><!-- eo user__info -->
+  </div><!-- eo user__body -->
+</article>
+​
