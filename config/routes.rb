@@ -58,7 +58,7 @@ ShelbyGt::Application.routes.draw do
       get 'rolls/personal' => 'roll#show_users_public_roll'
       get 'rolls/personal/frames' => 'frame_metal#index_for_users_public_roll'
     end
-    resources :roll, :only => [:show, :create, :update, :destroy] do
+    resources :roll, :only => [:index, :show, :create, :update, :destroy] do
       get 'frames' => 'frame_metal#index'
       post 'frames' => 'frame#create'
       post 'share' => 'roll#share'

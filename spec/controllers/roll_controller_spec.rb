@@ -10,6 +10,21 @@ describe V1::RollController do
     Roll.stub!(:find).and_return(@roll)
   end
   
+  describe "GET index" do
+    it "assigns a collection containing the roll to @rolls" do
+      @roll.subdomain = 'subdomain'
+      Roll.stub_chain(:where, :all).and_return([@roll])
+      get :index, :subdomain => @roll.subdomain, :format => :json
+      assigns(:rolls).should eq([@roll])
+      assigns(:status).should eq(200)
+    end
+
+    it "assigns status 400 if no subdomain specified" do
+      get :index, :format => :json
+      assigns(:status).should eq(400)
+    end
+  end
+
   describe "GET show" do
     it "assigns one roll to @roll" do
       get :show, :id => @roll.id, :format => :json

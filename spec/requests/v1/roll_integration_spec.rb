@@ -27,7 +27,43 @@ describe 'v1/roll' do
       get '/auth/twitter/callback'
     end
 
-    describe "GET" do
+    describe "GET index" do
+      it "should return array containing the one desired roll on success" do
+        @r.roll_type = Roll::TYPES[:special_public_real_user]
+        @r.save
+        get "/v1/roll?subdomain=#{@r.subdomain}"
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        response.body.should have_json_size(1).at_path("result")
+        parse_json(response.body)["result"][0]["id"].should eq(@r.id.to_s)
+      end
+
+      it "should return an empty array if the desired subdomain is not found" do
+        @r.roll_type = Roll::TYPES[:special_public_real_user]
+        @r.save
+        get "/v1/roll?subdomain=someothersubdomain"
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        response.body.should have_json_size(0).at_path("result")
+      end
+
+      it "should return an empty array if the desired subdomain is not active" do
+        @r.save
+        get "/v1/roll?subdomain=#{@r.subdomain}"
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        response.body.should have_json_size(0).at_path("result")
+      end
+
+      it "should return 400 if subdomain param not included" do
+        get '/v1/roll'
+        response.body.should be_json_eql(400).at_path("status")
+        response.body.should have_json_path("message")
+        parse_json(response.body)["message"].should eq("required parameter subdomain not specified")
+      end
+    end
+
+    describe "GET show" do
       it "should return roll info on success" do
         get '/v1/roll/'+@r.id
         response.body.should be_json_eql(200).at_path("status")

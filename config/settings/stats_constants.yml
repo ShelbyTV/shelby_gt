@@ -10,6 +10,7 @@ defaults: &defaults
       rolls: 'user.rolls'
       valid_token: 'user.valid_token'
     roll:
+      index: 'roll.index'
       show: 'roll.show'
       show_users_public_roll: "roll.show_public"
       show_users_heart_roll: "roll.show_hearted"

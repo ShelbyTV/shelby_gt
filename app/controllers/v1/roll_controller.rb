@@ -4,7 +4,24 @@ require "social_post_formatter"
 
 class V1::RollController < ApplicationController  
   
-  before_filter :user_authenticated?, :except => [:show, :explore, :featured]
+  before_filter :user_authenticated?, :except => [:index, :show, :explore, :featured]
+  ##
+  # Returns a collection of rolls according to search criteria.
+  #
+  # [GET] /v1/roll
+  #
+  # @param [Required, String] subdomain The shelby.tv subdomain of the roll
+  def index
+    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['index']) do
+      if params[:subdomain]
+        @rolls = ::Roll.where(:subdomain => params[:subdomain], :subdomain_active => true).all
+        @status = 200
+      else
+        render_error(400, "required parameter subdomain not specified")
+      end
+    end
+  end
+
   ##
   # Returns one roll, with the given parameters.
   #
