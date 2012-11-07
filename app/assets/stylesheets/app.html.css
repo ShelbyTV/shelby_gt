@@ -1,19 +1,10 @@
-/* Welcome to Compass.
- * In this file you should write your main styles. (or centralize your imports)
- * Import this file using the following HTML or equivalent:
- * <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" /> */
-/* Commenting out the Reset style sheet in favor of the normalize style sheet that comes with h5bp.
- * Need to integrate the h5bp normalizer into this compass fanciness.
- * @import "compass/reset";
- */
-/* line 3, ../../../app/stylesheets/partials/app.html.scss */
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 500;
   line-height: 1.231;
+  font-family: 'Ubuntu', Arial, sans-serif;
+  font-weight: 500;
   margin: 0;
 }
 
-/* line 9, ../../../app/stylesheets/partials/app.html.scss */
 html, body {
   height: 100%;
   margin: 0;
@@ -21,28 +12,11 @@ html, body {
   width: 100%;
 }
 
-/* line 17, ../../../app/stylesheets/partials/app.html.scss */
 body {
+  background: url("assets/noise.png") #47274e;
   color: #dcddde;
-  font: 100 normal 62.5%/1.231 "Ubuntu", Trebuchet MS, sans-serif;
-  bottom: 0;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
- background: url("assets/noise.png") #47274e;
 }
 
-/* line 33, ../../../app/stylesheets/partials/app.html.scss */
-a {
-  color: #a4a4a4;
-}
-/* line 38, ../../../app/stylesheets/partials/app.html.scss */
-a:hover, a:visited, a:active {
-  color: #a4a4a4;
-}
-
-/* line 44, ../../../app/stylesheets/partials/app.html.scss */
 .wrapper {
   bottom: 0;
   left: 0;
@@ -51,7 +25,6 @@ a:hover, a:visited, a:active {
   top: 0;
 }
 
-/* line 52, ../../../app/stylesheets/partials/app.html.scss */
 .lining {
   float: left;
   margin-right: -330px;
@@ -59,13 +32,11 @@ a:hover, a:visited, a:active {
   width: 100%;
 }
 
-/* line 60, ../../../app/stylesheets/partials/app.html.scss */
 .content, .main {
   float: right;
   width: 330px;
 }
 
-/* line 65, ../../../app/stylesheets/partials/app.html.scss */
 .main {
   background: #494949;
   font-size: 1.2em;
@@ -93,17 +64,14 @@ a:hover, a:visited, a:active {
   transition-delay: 0s;
 }
 
-/* line 83, ../../../app/stylesheets/partials/app.html.scss */
 .main.hide-guide {
   margin-right: -330px;
 }
 
-/* line 87, ../../../app/stylesheets/partials/app.html.scss */
 .user-inactive .main {
   opacity: .5;
 }
 
-/* line 91, ../../../app/stylesheets/partials/app.html.scss */
 .content-body {
   bottom: 0;
   overflow-x: hidden;
@@ -114,19 +82,16 @@ a:hover, a:visited, a:active {
   z-index: -1;
 }
 
-/* line 101, ../../../app/stylesheets/partials/app.html.scss */
 .touch .content-body {
   overflow: hidden;
 }
 
-/* line 115, ../../../app/stylesheets/partials/app.html.scss */
 .menu {
   border-bottom: 1px solid #222;
   position: relative;
   overflow: hidden;
 }
 
-/* line 121, ../../../app/stylesheets/partials/app.html.scss */
 .spinner {
   left: 50%;
   margin-left: -24px;

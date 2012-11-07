@@ -5,7 +5,7 @@
     text-align: center;
     padding: 15px;
   }
-  
+
   hr {
     color: #333;
     background-color: #333;
@@ -13,11 +13,11 @@
     border: 0;
     margin-bottom: 35px;
   }
-  
+
   .text-block {
     margin: 5px;
   }
-  
+
   #user-info-area{
     color: #505050;
     font-family: 'Ubuntu',Trebuchet MS,sans-serif;
@@ -45,10 +45,10 @@
         color: #777;
         font-weight: normal;
       }
-      
+
     }
     #special-rolls {
-      
+
     }
     #social-medias {
       text-decoration: none;
@@ -60,31 +60,31 @@
       }
     }
   }
-  
+
   #roll-info-area {
     font-size: 16px;
     line-height: 150%;
     position: absolute;
     left: 50%;
     margin-left: -330px;
-    
+
     .roll-list {
       margin-right: 25px;
     }
-    
+
     #friends-rolls {
       float:left;
     }
-    
+
     #user-created-public-rolls {
       float:left;
     }
-    
+
     #user-created-private-rolls {
       float:left;
     }
   }
-  
+
 }
 
 #time-choices{
@@ -101,3 +101,183 @@
   width: 620px;
   margin: 0 auto;
 }
+//------------------------------------------------------------------------------
+//  utilities
+//------------------------------------------------------------------------------
+.ir { border:0; font: 0/0 a; text-shadow: none; color: transparent; background-color: transparent; }
+.hidden { display: none !important; visibility: hidden; }
+.visuallyhidden { border: 0; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
+.visuallyhidden.focusable:active, .visuallyhidden.focusable:focus { clip: auto; height: auto; margin: 0; overflow: visible; position: static; width: auto; }
+.invisible { visibility: hidden; }
+.clearfix:before, .clearfix:after { content: ""; display: table; }
+.clearfix:after { clear: both; }
+.clearfix { *zoom: 1; }
+//non-h5bp:
+.error{background:#fdd;border:1px solid red !important;}
+
+//------------------------------------------------------------------------------
+//  VARS
+//------------------------------------------------------------------------------
+$color: #47274E;
+
+//------------------------------------------------------------------------------
+//  FORM
+//------------------------------------------------------------------------------
+.form {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+//------------------------------------------------------------------------------
+//  LIST
+//------------------------------------------------------------------------------
+.list {
+  margin: 0;
+  padding: 0;
+
+  & > li {
+    display: inline;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  a {
+    display: inline-block;
+  }
+}
+
+.list--stacked {
+  & > li {
+    display: block;
+  }
+}
+
+
+//------------------------------------------------------------------------------
+//  BASE
+//------------------------------------------------------------------------------
+body {
+    font-family: Arial, sans-serif;
+    font-size: 75%;
+}
+a {
+    color: $color;
+
+    &:visited,
+    &:link {
+        color: lighten($color,10%);
+        text-decoration: none;
+    }
+
+    &:active,
+    &:hover {
+        text-decoration: underline;
+    }
+}
+//------------------------------------------------------------------------------
+//  User Block
+//------------------------------------------------------------------------------
+.user {
+  background-color: lighten($color, 45%);
+  border-top:1px solid $color;
+  font-size: 1.1em;
+  opacity: .9999; /* CRAZY */
+  padding: 1em;
+  margin: 1em;
+
+  .user__image {
+    float: left;
+    margin-right: 1em;
+  }
+
+  .user__body {
+    overflow: hidden;
+  }
+
+  .user__contact {
+    float: right;
+    font-size: .9em;
+    line-height: 2;
+
+    a {
+      display: inline-block;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .user__h1 {
+    display: block;
+    font-size: 1.4em;
+    max-width: 63%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    span {
+        color: lighten($color, 25%);
+    }
+
+  }
+
+  .user__username {
+    color: $color;
+  }
+
+  .user__info {
+    margin: .25em 0 .5em;
+  }
+
+  .user__stats {
+    color: lighten($color, 10%);
+    margin-top: 1.5em;
+
+    li:not(:last-child) {
+      border-right: 1px solid $color;
+      margin-right: .75em;
+      padding-right: .5em;
+    }
+  }
+
+  .list--social-links {
+    margin: 0;
+    text-align: right;
+
+    a {
+      width: 16px;
+      height: 16px;
+    }
+
+    img {
+      display:inline-block;
+      width: 100%;
+    }
+  }
+
+  .user__form {
+
+  }
+
+  .form--follow {
+    input[type="submit"] {
+      background-color: lighten($color,20%);
+      border: 1px solid $color;
+      border-radius: 3px;
+      color: #efefef;
+      padding: .5em 0;
+      width: 100%;
+
+      &:hover {
+        background-color: lighten($color, 30%);
+      }
+
+      &:active {
+        background-color: $color;
+      }
+    }
+  }
+} //eo .user​
