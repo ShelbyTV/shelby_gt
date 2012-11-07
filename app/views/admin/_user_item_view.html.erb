@@ -7,7 +7,7 @@
 
     <% if user.public_roll.roll_type >= Roll::TYPES[:special_public_real_user] %>
       <div class="user__form">
-        <%= form_tag "/v1/roll/#{user.public_roll.id}/join", :class =>"form form--follow" :multipart => true, :method => :post do |f| %>
+        <%= form_tag "/v1/roll/#{user.public_roll.id}/join", :class =>"form form--follow", :multipart => true, :method => :post do |f| %>
           <%= submit_tag "Follow" %>
         <% end %>
       </div><!-- eo user__form -->
@@ -21,21 +21,21 @@
       <ul class="list list--social-links clearfix">
         <% if links[:tw] %>
           <li>
-            <a href="http://twitter.com/gardnersmitha">
+            <a href="<%= links[:tw] %>">
               <img src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" height="16" alt="" title="" />
             </a>
           </li>
         <% end %>
         <% if links[:fb] %>
           <li>
-            <a href="http://www.facebook.com/austingardnersmith">
+            <a href="<%= links[:fb] %>">
               <img src="http://forums.appsorama.com/fbb/facebook_logo_16x16.gif" alt="" title="" height="16" />
             </a>
           </li>
         <% end %>
         <% if links[:tu] %>
           <li>
-            <a href="http://ags.tumblr.com/">
+            <a href="<%= links[:tu] %>">
               <img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" height="16" alt="" title=""/>
             </a>
           </li>
@@ -60,4 +60,3 @@
     </div><!-- eo user__info -->
   </div><!-- eo user__body -->
 </article>
-​
