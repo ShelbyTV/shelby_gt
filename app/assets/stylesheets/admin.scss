@@ -200,10 +200,23 @@ a {
     float: right;
     font-size: .9em;
     line-height: 2;
+
+    a {
+      display: inline-block;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   .user__h1 {
+    display: block;
     font-size: 1.4em;
+    max-width: 63%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
     span {
         color: lighten($color, 25%);
