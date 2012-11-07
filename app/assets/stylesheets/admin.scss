@@ -220,6 +220,7 @@ a {
   }
 
   .user__stats {
+    color: lighten($color, 10%);
     margin-top: 1.5em;
 
     li:not(:last-child) {
