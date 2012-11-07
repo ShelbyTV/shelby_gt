@@ -183,6 +183,7 @@ a {
   background-color: lighten($color, 45%);
   border-top:1px solid $color;
   font-size: 1.1em;
+  opacity: .9999; /* CRAZY */
   padding: 1em;
   margin: 1em;
 
