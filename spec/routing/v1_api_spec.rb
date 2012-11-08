@@ -367,6 +367,36 @@ describe V1::ConversationController do
   end
 end
 
+describe V1::DiscussionRollController do
+  describe "routing" do
+    it "routes for GET" do
+      { :get => "/v1/discussion_roll/1" }.should route_to(
+        :controller => "v1/discussion_roll",
+        :action => "show",
+        :format => "json",
+        :id => "1"
+      )
+    end 
+
+    it "routes for POST" do
+      { :post => "/v1/discussion_roll" }.should route_to(
+        :controller => "v1/discussion_roll",
+        :action => "create",
+        :format => "json"
+      )
+    end
+    
+    it "routes for POST message" do
+      { :post => "/v1/discussion_roll/1/messages" }.should route_to(
+        :controller => "v1/discussion_roll",
+        :action => "create_message",
+        :format => "json",
+        :discussion_roll_id => "1"
+      )
+    end
+  end
+end
+
 describe V1::BetaInviteController do
   describe "routing" do
     it "routes for POST" do

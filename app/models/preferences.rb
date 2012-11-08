@@ -4,14 +4,15 @@ class Preferences
   embedded_in :user 
   
   # User Preferences (eg emails, notifications, etc)
-  key :email_updates,               Boolean, :default => true
-  key :like_notifications,          Boolean, :default => true
-  key :watched_notifications,       Boolean, :default => true
-  key :upvote_notifications,        Boolean, :default => true
-  key :comment_notifications,       Boolean, :default => true
-  key :reroll_notifications,        Boolean, :default => true  
-  key :roll_activity_notifications, Boolean, :default => true
-  key :open_graph_posting,          Boolean
+  key :email_updates,                 Boolean, :default => true
+  key :like_notifications,            Boolean, :default => true
+  key :watched_notifications,         Boolean, :default => true
+  key :upvote_notifications,          Boolean, :default => true
+  key :comment_notifications,         Boolean, :default => true
+  key :reroll_notifications,          Boolean, :default => true  
+  key :roll_activity_notifications,   Boolean, :default => true
+  key :open_graph_posting,            Boolean
+  key :discussion_roll_notifications, Boolean, :default => true
   
   
   def can_post_to_open_graph?

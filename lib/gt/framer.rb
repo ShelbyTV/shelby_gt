@@ -27,10 +27,11 @@ module GT
     # :roll => Roll --- OPTIONAL: when given, add this new Frame to the given Roll and add DashboardEntries for each follower of the Roll
     # :dashboard_user_id => id --- OPTIONAL: if no roll is given, will add the new Frame to a DashboardEntry for this user_id
     #                            - N.B. does *not* check that the given id is for a valid User
-    # :action => DashboardEntry::ENTRY_TYPE[?] --- REQUIRED: what action created this frame? Distinguish between social, bookmark
+    # :action => DashboardEntry::ENTRY_TYPE[?] --- OPTIONAL: what action created this frame? Distinguish between social, bookmark
     # :score => Float --- OPTIONAL initial score for ordering the frames in a roll
     # :order => Float --- OPTIONAL manual ordering for genius rolls
     # :genius => Bool --- OPTIONAL indicates if the frame is a genius frame; genius frames don't create conversations
+    # :skip_dashboard_entries => Bool -- OPTIONAL set to true if you don't want any dashboard entries created
     #
     # --returns--
     #
@@ -44,9 +45,10 @@ module GT
       video = options.delete(:video)
       video_id = options.delete(:video_id)
       genius = options.delete(:genius)
+      skip_dashboard_entries = options.delete(:skip_dashboard_entries)
       raise ArgumentError, "must include a :video or :video_id" unless video.is_a?(Video) or video_id.is_a?(BSON::ObjectId)
       raise ArgumentError, "must not supply both :video and :video_id" if (video and video_id)
-      raise ArgumentError, "must supply an :action" unless DashboardEntry::ENTRY_TYPE.values.include?(action = options.delete(:action))
+      raise ArgumentError, "must supply an :action" unless DashboardEntry::ENTRY_TYPE.values.include?(action = options.delete(:action)) or skip_dashboard_entries
       roll = options.delete(:roll)
       dashboard_user_id = options.delete(:dashboard_user_id)
       raise ArgumentError, "must include a :roll or :dashboard_user_id" unless roll.is_a?(Roll) or dashboard_user_id.is_a?(BSON::ObjectId)
@@ -95,13 +97,15 @@ module GT
       
       res[:frame] = f
       
-      # DashboardEntry
-      # We need dashboard entries for the roll's followers or the given dashboard_user_id
-      user_ids = []
-      user_ids << dashboard_user_id if dashboard_user_id
-      user_ids += roll.following_users_ids if roll
+      unless skip_dashboard_entries
+        # DashboardEntry
+        # We need dashboard entries for the roll's followers or the given dashboard_user_id
+        user_ids = []
+        user_ids << dashboard_user_id if dashboard_user_id
+        user_ids += roll.following_users_ids if roll
       
-      res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids)
+        res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids)
+      end
       
       # Roll - set its thumbnail if missing
       ensure_roll_metadata!(roll, f) if roll
@@ -120,7 +124,7 @@ module GT
     #
     # { :frame => newly_created_frame, :dashboard_entries => [1 or more DashboardEntry, ...] }
     #
-    def self.re_roll(orig_frame, for_user, to_roll)
+    def self.re_roll(orig_frame, for_user, to_roll, skip_dashboard_entries=false)
       raise ArgumentError, "must supply user or user_id" unless for_user
       user_id = (for_user.is_a?(User) ? for_user.id : for_user)
 
@@ -131,8 +135,10 @@ module GT
 
       res[:frame] = basic_re_roll(orig_frame, user_id, roll_id)
       
-      #create dashboard entries for all roll followers *except* the user who just re-rolled
-      res[:dashboard_entries] = create_dashboard_entries(res[:frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
+      unless skip_dashboard_entries
+        #create dashboard entries for all roll followers *except* the user who just re-rolled
+        res[:dashboard_entries] = create_dashboard_entries(res[:frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
+      end
       
       # Roll - set its thumbnail if missing
       ensure_roll_metadata!(Roll.find(roll_id), res[:frame])

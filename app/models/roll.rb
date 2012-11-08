@@ -71,6 +71,8 @@ class Roll
     :global_public => 31,
     # User-created collaborative private rolls
     :user_private => 50,
+    # User-created private conversations (aka Discussion Rolls)
+    :user_discussion_roll => 51,
     
     :genius => 70
   }
@@ -89,6 +91,12 @@ class Roll
   key :header_image_file_size,      String, :abbr => :p
   key :header_image_content_type,   String, :abbr => :q
   key :header_image_updated_at,     String, :abbr => :r
+  
+  # Track participants involved in Discussion Rolls
+  # Array elements are user's BSON ids or email address of non-user
+  # ex: [BSON::ObjectId('509bc4cd929d2446ea000001'), "spinosa@gmail.com", BSON::ObjectId("4fa39bd89a725b1f920008f3")]
+  # Field is not indexed, roll can be found by id or via user.roll_followings
+  key :discussion_roll_participants,  Array, :abbr => :s
   
   attr_accessible :title, :creator_thumbnail_url, :header_image
 
