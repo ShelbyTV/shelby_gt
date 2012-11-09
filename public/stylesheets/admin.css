@@ -105,6 +105,217 @@
 
 /* line 100, ../../app/assets/stylesheets/admin.scss */
 #users {
-  width: 50%;
+  width: 620px;
   margin: 0 auto;
+}
+
+/* line 107, ../../app/assets/stylesheets/admin.scss */
+.ir {
+  border: 0;
+  font: 0/0 a;
+  text-shadow: none;
+  color: transparent;
+  background-color: transparent;
+}
+
+/* line 108, ../../app/assets/stylesheets/admin.scss */
+.hidden {
+  display: none !important;
+  visibility: hidden;
+}
+
+/* line 109, ../../app/assets/stylesheets/admin.scss */
+.visuallyhidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+/* line 110, ../../app/assets/stylesheets/admin.scss */
+.visuallyhidden.focusable:active, .visuallyhidden.focusable:focus {
+  clip: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  position: static;
+  width: auto;
+}
+
+/* line 111, ../../app/assets/stylesheets/admin.scss */
+.invisible {
+  visibility: hidden;
+}
+
+/* line 112, ../../app/assets/stylesheets/admin.scss */
+.clearfix:before, .clearfix:after {
+  content: "";
+  display: table;
+}
+
+/* line 113, ../../app/assets/stylesheets/admin.scss */
+.clearfix:after {
+  clear: both;
+}
+
+/* line 114, ../../app/assets/stylesheets/admin.scss */
+.clearfix {
+  *zoom: 1;
+}
+
+/* line 116, ../../app/assets/stylesheets/admin.scss */
+.error {
+  background: #fdd;
+  border: 1px solid red !important;
+}
+
+/* line 126, ../../app/assets/stylesheets/admin.scss */
+.form {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+/* line 135, ../../app/assets/stylesheets/admin.scss */
+.list {
+  margin: 0;
+  padding: 0;
+}
+/* line 139, ../../app/assets/stylesheets/admin.scss */
+.list > li {
+  display: inline;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+/* line 146, ../../app/assets/stylesheets/admin.scss */
+.list a {
+  display: inline-block;
+}
+
+/* line 152, ../../app/assets/stylesheets/admin.scss */
+.list--stacked > li {
+  display: block;
+}
+
+/* line 161, ../../app/assets/stylesheets/admin.scss */
+body {
+  font-family: Arial, sans-serif;
+  font-size: 75%;
+}
+
+/* line 165, ../../app/assets/stylesheets/admin.scss */
+a {
+  color: #47274e;
+}
+/* line 169, ../../app/assets/stylesheets/admin.scss */
+a:visited, a:link {
+  color: #663870;
+  text-decoration: none;
+}
+/* line 175, ../../app/assets/stylesheets/admin.scss */
+a:active, a:hover {
+  text-decoration: underline;
+}
+
+/* line 182, ../../app/assets/stylesheets/admin.scss */
+.user {
+  background-color: #bf92c9;
+  border-top: 1px solid #47274e;
+  font-size: 1.1em;
+  opacity: .9999;
+  /* CRAZY */
+  padding: 1em;
+  margin: 1em;
+}
+/* line 190, ../../app/assets/stylesheets/admin.scss */
+.user .user__image {
+  float: left;
+  margin-right: 1em;
+}
+/* line 195, ../../app/assets/stylesheets/admin.scss */
+.user .user__body {
+  overflow: hidden;
+}
+/* line 199, ../../app/assets/stylesheets/admin.scss */
+.user .user__contact {
+  float: right;
+  font-size: .9em;
+  line-height: 2;
+}
+/* line 204, ../../app/assets/stylesheets/admin.scss */
+.user .user__contact a {
+  display: inline-block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* line 213, ../../app/assets/stylesheets/admin.scss */
+.user .user__h1 {
+  display: block;
+  font-size: 1.4em;
+  max-width: 63%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* line 221, ../../app/assets/stylesheets/admin.scss */
+.user .user__h1 span {
+  color: #9452a3;
+}
+/* line 227, ../../app/assets/stylesheets/admin.scss */
+.user .user__username {
+  color: #47274e;
+}
+/* line 231, ../../app/assets/stylesheets/admin.scss */
+.user .user__info {
+  margin: .25em 0 .5em;
+}
+/* line 235, ../../app/assets/stylesheets/admin.scss */
+.user .user__stats {
+  color: #663870;
+  margin-top: 1.5em;
+}
+/* line 239, ../../app/assets/stylesheets/admin.scss */
+.user .user__stats li:not(:last-child) {
+  border-right: 1px solid #47274e;
+  margin-right: .75em;
+  padding-right: .5em;
+}
+/* line 246, ../../app/assets/stylesheets/admin.scss */
+.user .list--social-links {
+  margin: 0;
+  text-align: right;
+}
+/* line 250, ../../app/assets/stylesheets/admin.scss */
+.user .list--social-links a {
+  width: 16px;
+  height: 16px;
+}
+/* line 255, ../../app/assets/stylesheets/admin.scss */
+.user .list--social-links img {
+  display: inline-block;
+  width: 100%;
+}
+/* line 266, ../../app/assets/stylesheets/admin.scss */
+.user .form--follow input[type="submit"] {
+  background-color: #854992;
+  border: 1px solid #47274e;
+  border-radius: 3px;
+  color: #efefef;
+  padding: .5em 0;
+  width: 100%;
+}
+/* line 274, ../../app/assets/stylesheets/admin.scss */
+.user .form--follow input[type="submit"]:hover {
+  background-color: #a15faf;
+}
+/* line 278, ../../app/assets/stylesheets/admin.scss */
+.user .form--follow input[type="submit"]:active {
+  background-color: #47274e;
 }

@@ -1,0 +1,17 @@
+<div class="email-signup-wrapper">
+	<%= form_for(:user, :url => session_url(:user, :protocol => 'https'), :class=>"email-signup-form") do |f| %>
+	  <div><%= f.label :name %><br />
+	  <%= f.text_field :name %></div>
+
+		<div><%= f.label :nickname, "Username" %><br />
+	  <%= f.text_field :nickname %></div>
+
+		<div><%= f.label :primary_email, "Email" %><br />
+	  <%= f.email_field :primary_email %></div>
+
+	  <div><%= f.label :password %><br />
+	  <%= f.password_field :password %></div>
+
+	  <div><%= f.submit "Create Account" %></div>
+	<% end %>
+</div>

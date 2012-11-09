@@ -146,7 +146,9 @@ ShelbyGt::Application.routes.draw do
   
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user
   
-  resources :cohort_entrance, :only => [:show]
+  resources :cohort_entrance, :only => [:show] do
+    get '/popup' => "cohort_entrance#show_popup"
+  end
   
   # constraints allows for nicknames that include dots, prevents changing format (we're json only, that's ok).
   get '/admin/user/:id' => 'admin#user', :constraints => { :id => /[^\/]+/ }
