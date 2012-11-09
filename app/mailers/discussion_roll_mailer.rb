@@ -11,6 +11,7 @@ class DiscussionRollMailer < ActionMailer::Base
     sendgrid_category Settings::Email.discussion_roll["category"]
     sendgrid_ganalytics_options(:utm_source => 'discussion_roll', :utm_medium => 'notification', :utm_campaign => "roll_#{roll.id}")
     
+    @roll = roll
     @token = token
     
     mail :from => Settings::Email.discussion_roll['from'], 

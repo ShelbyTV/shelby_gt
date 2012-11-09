@@ -1,7 +1,7 @@
 <% standard_html_email_wrapper do %>
 	
-	TODO!
+	...Video Conversation Email...
 	
-	token: <%= CGI.escape Base64.encode64 @token %>
+	http://shelby.tv/discussionRoll/<%= @roll.id %>?t=<%= CGI.escape @token %>
 	
 <% end %>

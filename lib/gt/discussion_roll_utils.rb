@@ -107,6 +107,7 @@ module GT
 
     # WARNING: Changing this method will make inacessible the discussion rolls for non-shelby users
     # user_identifier is the email address for non-shelby users, the bson id for shelby users
+    # returns a Base64 (strictly) encoded token
     def self.encrypt_roll_user_identification(roll, user_identifier)
       data = "#{roll.id}::#{user_identifier}"
 
@@ -115,17 +116,17 @@ module GT
       cipher.key = CIPHER_KEY
       cipher.iv = CIPHER_IV
 
-      return cipher.update(data) + cipher.final
+      return Base64.strict_encode64(cipher.update(data) + cipher.final)
     end
 
     # WARNING: Changing this method will make inacessible the discussion rolls for non-shelby users
-    def decrypt_roll_user_identification(encrypted)
+    def decrypt_roll_user_identification(base64_strict_encrypted)
       decipher = OpenSSL::Cipher::AES.new(128, :CBC)
       decipher.decrypt
       decipher.key = CIPHER_KEY
       decipher.iv = CIPHER_IV
 
-      return decipher.update(encrypted) + decipher.final
+      return decipher.update(Base64.strict_decode64(base64_strict_encrypted)) + decipher.final
     end
   
   end

@@ -48,7 +48,7 @@ class V1::DiscussionRollController < ApplicationController
       :user => current_user, 
       :public => false, 
       :origin_network => Message::ORIGIN_NETWORKS[:shelby],
-      :text => CGI::unescape(params[:message]))
+      :text => CGI.unescape(params[:message]))
     frame.conversation.save
 
   	#sends emails to all but the poster
@@ -66,7 +66,7 @@ class V1::DiscussionRollController < ApplicationController
   #
   # @param [Optional, token] The encrypted token authorized and identifying this user, if they're not logged in
   def show
-    token = params[:token] && Base64.decode64(params[:token])
+    token = params[:token]
     
     if @roll = Roll.find(params[:id])
       
@@ -90,7 +90,7 @@ class V1::DiscussionRollController < ApplicationController
   # @param [Optional, token] The security token authenticating and authorizing this post
   # @param [Required, message] The message being appended to this discussion
   def create_message
-    token = params[:token] && Base64.decode64(params[:token])
+    token = params[:token]
     @roll = Roll.find(params[:discussion_roll_id])
     return render_error(404, "could not find roll #{params[:discussion_roll_id]}") unless @roll
     unless (user_signed_in? and @roll.viewable_by?(current_user)) or token_valid_for_discussion_roll?(token, @roll)
@@ -114,7 +114,7 @@ class V1::DiscussionRollController < ApplicationController
         :user => shelby_user, 
         :public => false, 
         :origin_network => Message::ORIGIN_NETWORKS[:shelby],
-        :text => CGI::unescape(params[:message]))
+        :text => CGI.unescape(params[:message]))
       poster = shelby_user
     else
       frame.conversation.messages << GT::MessageManager.build_message(
@@ -123,7 +123,7 @@ class V1::DiscussionRollController < ApplicationController
         :user_image_url => nil,
         :public => false, 
         :origin_network => Message::ORIGIN_NETWORKS[:shelby],
-        :text => CGI::unescape(params[:message]))
+        :text => CGI.unescape(params[:message]))
       poster = email_from_token(token).address
     end
 
