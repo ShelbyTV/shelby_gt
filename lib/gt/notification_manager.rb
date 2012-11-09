@@ -83,11 +83,11 @@ module GT
     # new discussion roll alltogether, or just a new message in an ongoing discussion roll.
     def self.check_and_send_discussion_roll_notification(discussion_roll, poster)
       raise ArgumentError, "must supply discussion roll" unless discussion_roll.is_a?(Roll)
-      raise ArgumentError, "must supply poster as User or email address" unless poster.is_a?(User) or post.is_a?(String)
+      raise ArgumentError, "must supply poster as User or email address" unless poster.is_a?(User) or poster.is_a?(String)
       
       # Full array of everybody in the conversation, ex: [User1, "email1@gmail.com", User2, User3, "email2@gmail.com", ...]
       convo_with = discussion_roll.discussion_roll_participants.map { |p| p.is_a?(BSON::ObjectId) ? User.find(p) : p } .compact
-      
+
       # Email all participants except for the poster
       convo_with.each do |p|
         next if p == poster

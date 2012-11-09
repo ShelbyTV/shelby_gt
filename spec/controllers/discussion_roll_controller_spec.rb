@@ -46,26 +46,26 @@ describe V1::DiscussionRollController do
     
     it "should return 200 if token is valid for non-shelby user" do
       token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@roll, "dan@shelby.tv")
-      get :show, :id => @roll.id, :token => token, :format => :json
+      get :show, :id => @roll.id, :token => Base64.encode64(token), :format => :json
       assigns(:status).should == 200
     end
     
     it "should return 200 if token is valid for logged in user" do
       sign_in @u1
       token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@roll, "dan@shelby.tv")
-      get :show, :id => @roll.id, :token => token, :format => :json
+      get :show, :id => @roll.id, :token => Base64.encode64(token), :format => :json
       assigns(:status).should == 200
     end
     
     it "should return 404 if token is invalid" do
       token = "bad token"
-      get :show, :id => @roll.id, :token => token, :format => :json
+      get :show, :id => @roll.id, :token => Base64.encode64(token), :format => :json
       assigns(:status).should == 404
     end
     
     it "should return 404 if roll DNE" do
       token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@roll, "dan@shelby.tv")
-      get :show, :id => Factory.create(:user).id, :token => token, :format => :json
+      get :show, :id => Factory.create(:user).id, :token => Base64.encode64(token), :format => :json
       assigns(:status).should == 404
     end
   end
@@ -97,26 +97,26 @@ describe V1::DiscussionRollController do
     
     it "should return 200 if token is valid for non-shelby user" do
       token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@roll, "dan@shelby.tv")
-      post :create_message, :discussion_roll_id => @roll.id, :token => token, :message => "msg", :format => :json
+      post :create_message, :discussion_roll_id => @roll.id, :token => Base64.encode64(token), :message => "msg", :format => :json
       assigns(:status).should == 200
     end
     
     it "should return 200 if token is valid for logged in user" do
       sign_in @u1
       token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@roll, "dan@shelby.tv")
-      post :create_message, :discussion_roll_id => @roll.id, :token => token, :message => "msg", :format => :json
+      post :create_message, :discussion_roll_id => @roll.id, :token => Base64.encode64(token), :message => "msg", :format => :json
       assigns(:status).should == 200
     end
     
     it "should return 404 if token is invalid" do
       token = "bad token"
-      post :create_message, :discussion_roll_id => @roll.id, :token => token, :message => "msg", :format => :json
+      post :create_message, :discussion_roll_id => @roll.id, :token => Base64.encode64(token), :message => "msg", :format => :json
       assigns(:status).should == 404
     end
     
     it "should return 404 if roll DNE" do
       token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@roll, "dan@shelby.tv")
-      post :create_message, :discussion_roll_id => "badid", :token => token, :message => "msg", :format => :json
+      post :create_message, :discussion_roll_id => "badid", :token => Base64.encode64(token), :message => "msg", :format => :json
       assigns(:status).should == 404
     end
   end

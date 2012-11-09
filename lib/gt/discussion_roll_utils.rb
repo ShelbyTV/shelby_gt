@@ -33,6 +33,8 @@ module GT
     end
   
     def create_discussion_roll_for(user, participants)
+      return nil unless user.is_a?(User)
+      
       r = Roll.new
       r.creator = user
       r.roll_type = Roll::TYPES[:user_discussion_roll]

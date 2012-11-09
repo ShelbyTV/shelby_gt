@@ -38,6 +38,10 @@ describe GT::DiscussionRollUtils do
       token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@roll, "dan spinosa <dan@shelby.tv>")
       @tester.email_from_token(token).name.should == "dan spinosa"
       @tester.email_from_token(token).address.should == "dan@shelby.tv"
+      
+      token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@roll, "dan@shelby.tv")
+      @tester.email_from_token(token).name.should == nil
+      @tester.email_from_token(token).address.should == "dan@shelby.tv"
     end
     
     it "should return user_from_token" do

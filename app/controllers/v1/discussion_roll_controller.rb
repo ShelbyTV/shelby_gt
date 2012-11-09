@@ -66,9 +66,11 @@ class V1::DiscussionRollController < ApplicationController
   #
   # @param [Optional, token] The encrypted token authorized and identifying this user, if they're not logged in
   def show
+    token = params[:token] && Base64.decode64(params[:token])
+    
     if @roll = Roll.find(params[:id])
       
-      if (user_signed_in? and @roll.viewable_by?(current_user)) or token_valid_for_discussion_roll?(params[:token], @roll)
+      if (user_signed_in? and @roll.viewable_by?(current_user)) or token_valid_for_discussion_roll?(token, @roll)
         @status =  200
         render "/v1/roll/show"
       else
@@ -88,9 +90,10 @@ class V1::DiscussionRollController < ApplicationController
   # @param [Optional, token] The security token authenticating and authorizing this post
   # @param [Required, message] The message being appended to this discussion
   def create_message
+    token = params[:token] && Base64.decode64(params[:token])
     @roll = Roll.find(params[:discussion_roll_id])
     return render_error(404, "could not find roll #{params[:discussion_roll_id]}") unless @roll
-    unless (user_signed_in? and @roll.viewable_by?(current_user)) or token_valid_for_discussion_roll?(params[:token], @roll)
+    unless (user_signed_in? and @roll.viewable_by?(current_user)) or token_valid_for_discussion_roll?(token, @roll)
       return render_error(404, "you are not authorized to post to that roll")
     end
     
@@ -105,24 +108,29 @@ class V1::DiscussionRollController < ApplicationController
     end
     
     #Post a message to last frame
-    shelby_user = current_user || user_from_token(params[:token])
+    shelby_user = current_user || user_from_token(token)
     if shelby_user
       frame.conversation.messages << GT::MessageManager.build_message(
         :user => shelby_user, 
         :public => false, 
         :origin_network => Message::ORIGIN_NETWORKS[:shelby],
         :text => CGI::unescape(params[:message]))
+      poster = shelby_user
     else
       frame.conversation.messages << GT::MessageManager.build_message(
-        :nickname => email_from_token(params[:token]).address,
-        :realname => email_from_token(params[:token]).name,
+        :nickname => email_from_token(token).address,
+        :realname => email_from_token(token).name,
         :user_image_url => nil,
         :public => false, 
         :origin_network => Message::ORIGIN_NETWORKS[:shelby],
         :text => CGI::unescape(params[:message]))
+      poster = email_from_token(token).address
     end
 
     if frame.conversation.save
+      #sends emails to all but the poster
+    	ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_discussion_roll_notification(@roll, poster) }
+    	
       @status =  200
       render "/v1/roll/show"
     else
