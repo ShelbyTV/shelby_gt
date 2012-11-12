@@ -70,10 +70,12 @@ module GT
     end
     
     def token_valid_for_discussion_roll?(token, roll)
-      return false unless token.is_a?(String) and roll.is_a?(Roll)
+      return false unless token.is_a?(String)
+      roll_id = (roll.is_a?(Roll) ? roll.id.to_s : roll)
+      return false unless roll_id.is_a?(String)
       
       begin
-        return roll_identifier_from_token(token) == roll.id.to_s
+        return roll_identifier_from_token(token) == roll_id
       rescue
         return false
       end
