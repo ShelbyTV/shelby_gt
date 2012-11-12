@@ -140,7 +140,7 @@ class AuthenticationsController < ApplicationController
 # ---- New User signing up w/ email & password
     elsif !params[:user].blank?
       # can now signup in a popup so no_redirect should not be set!
-      #@no_redirect = true
+      @no_redirect = true unless session[:popup]
       
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
       

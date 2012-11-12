@@ -13,14 +13,19 @@ class CohortEntranceController < ApplicationController
   # difference: this sends back to a different place + has different view
   # in the future, this might diverge from #show action even further ?
   def show_popup
-    if @cohort_entrance = CohortEntrance.find_by_code(params[:id])
+    if @cohort_entrance = CohortEntrance.find_by_code(params[:cohort_entrance_id])
       session[:cohort_entrance_id] = @cohort_entrance.id.to_s
       # send to back to whence they came.
       if params[:return_url]
+        session[:popup] = true
         session[:return_url] = params[:return_url]
       else
         session[:return_url] = Settings::ShelbyAPI.web_root
       end
+    # *** BELOW CLAUSE IS FOR MIKE TESTING IN DEVELOPMENT
+    elsif params[:cohort_entrance_id] == "test"
+      session[:popup] = true
+      session[:return_url] = params[:return_url]
     else
       redirect_to "#{Settings::ShelbyAPI.web_root}/?access=nos"
     end
