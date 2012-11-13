@@ -4,6 +4,8 @@ require 'discussion_roll_utils'
 
 class V1::DiscussionRollController < ApplicationController
   include GT::DiscussionRollUtils
+
+  protect_from_forgery :except => [:create_message]
   
   before_filter :user_authenticated?, :except => [:show, :create_message]
   
