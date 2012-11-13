@@ -70,7 +70,7 @@ describe GT::DiscussionRollUtils do
     end
     
     it "should find users for email addresses" do
-      @tester.convert_participants(@user.primary_email).should == [@user.id]
+      @tester.convert_participants(@user.primary_email).should == [@user.id.to_s]
     end
     
     it "should return an array of unique users for non-user" do
@@ -78,15 +78,15 @@ describe GT::DiscussionRollUtils do
     end
     
     it "should return an array of unique users for real user bson id" do
-      @tester.convert_participants("#{@user.primary_email},#{@user.primary_email}").should == [@user.id]
+      @tester.convert_participants("#{@user.primary_email},#{@user.primary_email}").should == [@user.id.to_s]
     end
     
     it "should find user based on nickname" do
-      @tester.convert_participants("#{@user.nickname}").should == [@user.id]
+      @tester.convert_participants("#{@user.nickname}").should == [@user.id.to_s]
     end
     
     it "should remove nil entries" do
-      @tester.convert_participants("#{@user.nickname};; ;;, ,,dan@Shelby.tv;; ; ,,,").should == [@user.id, "dan@shelby.tv"]
+      @tester.convert_participants("#{@user.nickname};; ;;, ,,dan@Shelby.tv;; ; ,,,").should == [@user.id.to_s, "dan@shelby.tv"]
     end
   end
   
@@ -105,7 +105,7 @@ describe GT::DiscussionRollUtils do
       r = @tester.create_discussion_roll_for(@user, @tester.convert_participants("dan@shelby.tv"))
       r.persisted?.should == true
       r = r.reload
-      r.discussion_roll_participants.should == [@user.id, "dan@shelby.tv"]
+      r.discussion_roll_participants.should == [@user.id.to_s, "dan@shelby.tv"]
     end
     
     it "should be followed by creator" do

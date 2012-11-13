@@ -85,8 +85,8 @@ module GT
       raise ArgumentError, "must supply discussion roll" unless discussion_roll.is_a?(Roll)
       raise ArgumentError, "must supply poster as User or email address" unless poster.is_a?(User) or poster.is_a?(String)
       
-      # Full array of everybody in the conversation, ex: [User1, "email1@gmail.com", User2, User3, "email2@gmail.com", ...]
-      convo_with = discussion_roll.discussion_roll_participants.map { |p| p.is_a?(BSON::ObjectId) ? User.find(p) : p } .compact
+      # Full array of everybody in the conversation, ex: ["User1IdString", "email1@gmail.com", "User2IdString", "email2@gmail.com", ...]
+      convo_with = discussion_roll.discussion_roll_participants.map { |p| BSON::ObjectId.legal?(p) ? User.find(p) : p } .compact
 
       # Email all participants except for the poster
       convo_with.each do |p|

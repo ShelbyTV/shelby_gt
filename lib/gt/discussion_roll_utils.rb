@@ -22,7 +22,7 @@ module GT
     	# Look for a roll where the participants list matches exactly
     	matching_rolls = discussion_rolls.select do |dr|
     	  if dr.discussion_roll_participants.size == participants.size + 1
-    	    dr.discussion_roll_participants - (participants + [user.id]) == []
+    	    dr.discussion_roll_participants - (participants + [user.id.to_s]) == []
   	    else
   	      false
 	      end
@@ -40,12 +40,12 @@ module GT
       r.roll_type = Roll::TYPES[:user_discussion_roll]
       r.public = false
       r.collaborative = true
-      r.discussion_roll_participants = ([user.id] + participants).compact.uniq
+      r.discussion_roll_participants = ([user.id.to_s] + participants).compact.uniq
       r.title = "Video Conversation"
       return nil unless r.save
     
       # add all real users as roll followers
-      participant_shelby_ids = participants.select { |p| p.is_a?(BSON::ObjectId) }
+      participant_shelby_ids = participants.select { |p| BSON::ObjectId.legal?(p) }
       followers = [user] + User.find(participant_shelby_ids)
       followers.each { |u| r.add_follower(u, false) }
     
@@ -54,7 +54,7 @@ module GT
   
     # given a potentially sloppy comma and/or semicolon delineated string of email addresses and user names;
     # return a cleaned-up, compact, unique array of all lower case email addresses and/or user ids as strings
-    # ex: [BSON::ObjectId('509bc4cd929d2446ea000001'), "spinosa@gmail.com", BSON::ObjectId("4fa39bd89a725b1f920008f3")]
+    # ex: ['509bc4cd929d2446ea000001', "spinosa@gmail.com", "4fa39bd89a725b1f920008f3"]
     def convert_participants(participants_string)
       return nil unless participants_string.is_a?(String)
     
@@ -63,7 +63,7 @@ module GT
       participants = participants_raw_array.map do |p|
         p = p.downcase.strip
         user = (p.include?("@") ? User.find_by_primary_email(p) : User.find_by_downcase_nickname(p))
-        user ? user.id : p.blank? ? nil : p
+        user ? user.id.to_s : p.blank? ? nil : p
       end
     
       return participants.compact.uniq

@@ -73,24 +73,25 @@
    apply(FRAME , short_links     , SHORT_LINKS     , ARRAY  , j   ) \
    apply(FRAME , order           , ORDER           , DOUBLE , k   )
 
-#define ROLL_PROPERTIES(apply)                                                                     \
-   apply(ROLL , id                        , ID                        , OID    , _id             ) \
-   apply(ROLL , creator_id                , CREATOR_ID                , OID    , a               ) \
-   apply(ROLL , title                     , TITLE                     , STRING , b               ) \
-   apply(ROLL , creator_thumbnail_url     , CREATOR_THUMBNAIL_URL     , STRING , c               ) \
-   apply(ROLL , public                    , PUBLIC                    , BOOL   , d               ) \
-   apply(ROLL , collaborative             , COLLABORATIVE             , BOOL   , e               ) \
-   apply(ROLL , origin_network            , ORIGIN_NETWORK            , STRING , f               ) \
-   apply(ROLL , short_links               , SHORT_LINKS               , ARRAY  , g               ) \
-   apply(ROLL , genius                    , GENIUS                    , BOOL   , h               ) \
-   apply(ROLL , upvoted_roll              , UPVOTED_ROLL              , BOOL   , i               ) \
-   apply(ROLL , frame_count               , FRAME_COUNT               , INT    , j               ) \
-   apply(ROLL , subdomain                 , SUBDOMAIN                 , STRING , k               ) \
-   apply(ROLL , subdomain_active          , SUBDOMAIN_ACTIVE          , BOOL   , l               ) \
-   apply(ROLL , first_frame_thumbnail_url , FIRST_FRAME_THUMBNAIL_URL , STRING , m               ) \
-   apply(ROLL , roll_type                 , ROLL_TYPE                 , INT    , n               ) \
-   apply(ROLL , header_image_file_name    , HEADER_IMAGE_FILE_NAME    , STRING , o               ) \
-   apply(ROLL , following_users           , FOLLOWING_USERS           , ARRAY  , following_users )
+#define ROLL_PROPERTIES(apply)                                                                           \
+   apply(ROLL , id                           , ID                           , OID    , _id             ) \
+   apply(ROLL , creator_id                   , CREATOR_ID                   , OID    , a               ) \
+   apply(ROLL , title                        , TITLE                        , STRING , b               ) \
+   apply(ROLL , creator_thumbnail_url        , CREATOR_THUMBNAIL_URL        , STRING , c               ) \
+   apply(ROLL , public                       , PUBLIC                       , BOOL   , d               ) \
+   apply(ROLL , collaborative                , COLLABORATIVE                , BOOL   , e               ) \
+   apply(ROLL , origin_network               , ORIGIN_NETWORK               , STRING , f               ) \
+   apply(ROLL , short_links                  , SHORT_LINKS                  , ARRAY  , g               ) \
+   apply(ROLL , genius                       , GENIUS                       , BOOL   , h               ) \
+   apply(ROLL , upvoted_roll                 , UPVOTED_ROLL                 , BOOL   , i               ) \
+   apply(ROLL , frame_count                  , FRAME_COUNT                  , INT    , j               ) \
+   apply(ROLL , subdomain                    , SUBDOMAIN                    , STRING , k               ) \
+   apply(ROLL , subdomain_active             , SUBDOMAIN_ACTIVE             , BOOL   , l               ) \
+   apply(ROLL , first_frame_thumbnail_url    , FIRST_FRAME_THUMBNAIL_URL    , STRING , m               ) \
+   apply(ROLL , roll_type                    , ROLL_TYPE                    , INT    , n               ) \
+   apply(ROLL , header_image_file_name       , HEADER_IMAGE_FILE_NAME       , STRING , o               ) \
+   apply(ROLL , discussion_roll_participants , DISCUSSION_ROLL_PARTICIPANTS , ARRAY  , s               ) \
+   apply(ROLL , following_users              , FOLLOWING_USERS              , ARRAY  , following_users )
 
 #define CONVERSATION_PROPERTIES(apply)                                     \
    apply(CONVERSATION , id            , ID            , OID   , _id      ) \

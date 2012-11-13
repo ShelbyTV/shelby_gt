@@ -93,10 +93,10 @@ class Roll
   key :header_image_updated_at,     String, :abbr => :r
   
   # Track participants involved in Discussion Rolls
-  # Array elements are user's BSON ids or email address of non-user
-  # ex: [BSON::ObjectId('509bc4cd929d2446ea000001'), "spinosa@gmail.com", BSON::ObjectId("4fa39bd89a725b1f920008f3")]
+  # Array elements are user's BSON ids (as strings) or email address of non-user
+  # ex: ["509bc4cd929d2446ea000001", "spinosa@gmail.com", "4fa39bd89a725b1f920008f3"]
   # Field is not indexed, roll can be found by id or via user.roll_followings
-  key :discussion_roll_participants,  Array, :abbr => :s
+  key :discussion_roll_participants,  Array, :typecast => 'String', :abbr => :s
   
   attr_accessible :title, :creator_thumbnail_url, :header_image
 

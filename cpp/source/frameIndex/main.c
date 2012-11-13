@@ -231,6 +231,7 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
       SOB_ROLL_HEADER_IMAGE_FILE_NAME,
       SOB_ROLL_TITLE,
       SOB_ROLL_ROLL_TYPE,
+      SOB_ROLL_DISCUSSION_ROLL_PARTICIPANTS
    };
 
    sobPrintAttributes(context,
@@ -352,6 +353,7 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
       SOB_ROLL_HEADER_IMAGE_FILE_NAME,
       SOB_ROLL_TITLE,
       SOB_ROLL_ROLL_TYPE,
+      SOB_ROLL_DISCUSSION_ROLL_PARTICIPANTS
    };
 
    sobPrintAttributes(context,
