@@ -94,8 +94,9 @@ module GT
         next if p.is_a?(User) and !p.preferences.discussion_roll_notifications?
         
         email_to = p.is_a?(User) ? p.primary_email : p
+        recipient = p.is_a?(User) ? p.id.to_s : p
         token = GT::DiscussionRollUtils.encrypt_roll_user_identification(discussion_roll, p.is_a?(User) ? p.id : p)
-        DiscussionRollMailer.state_of_discussion_roll(discussion_roll, email_to, convo_with - [p], token).deliver
+        DiscussionRollMailer.state_of_discussion_roll(discussion_roll, email_to, recipient, convo_with - [p], token).deliver
       end
             
     end

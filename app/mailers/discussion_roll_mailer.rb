@@ -7,11 +7,13 @@ class DiscussionRollMailer < ActionMailer::Base
   # conversation_with is the array of Users and/or email addresses not including recipient.
   #   ie. [User1, "email1@gmail.com", User2, User3, "email2@gmail.com", ...]
   # token is used to authenticate and authorize users when viewing and posting messages to this discussion roll
-  def state_of_discussion_roll(roll, email_to, conversation_with, token)
+  # recipient is the user id (as string) or email address of the recipient, as stored in Roll.discussion_roll_participants
+  def state_of_discussion_roll(roll, email_to, recipient, conversation_with, token)
     sendgrid_category Settings::Email.discussion_roll["category"]
     sendgrid_ganalytics_options(:utm_source => 'discussion_roll', :utm_medium => 'notification', :utm_campaign => "roll_#{roll.id}")
     
     @roll = roll
+    @recipient = recipient
     @token = token
     
     mail :from => Settings::Email.discussion_roll['from'], 
