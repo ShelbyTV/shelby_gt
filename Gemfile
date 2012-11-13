@@ -29,7 +29,15 @@ gem 'rack-oauth2-server'
 # ---------- Assets
 #
 gem "haml"
-gem "compass", "0.11.7"
+
+#
+# Gems used only for assets and not required
+# in production environments by default.
+group :assets do
+  gem 'sass-rails', '~> 3.2.5'
+  gem 'compass-rails', '~> 1.0.3'
+  gem 'yui-compressor'
+end
 
 group :production do
 	gem "uglifier"
