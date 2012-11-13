@@ -13,10 +13,10 @@ class V1::DiscussionRollController < ApplicationController
   #
   # [POST] /v1/discussion_roll
   # 
-  # @param [Optional, frame_id] The id of the parent frame to post into this discussion (optional if you include video_id instead)
-  # @param [Optional, video_id] The video to post into this discussion (when there is no parent frame, above)
-  # @param [Required, participants] comma-delineated list of email address or shelby usernames (not including the current_user) participating
-  # @param [Required, message] The message current_user is sending with this video
+  # @param [Optional, String] frame_id The id of the parent frame to post into this discussion (optional if you include video_id instead)
+  # @param [Optional, String] video_id The video to post into this discussion (when there is no parent frame, above)
+  # @param [Required, String] participants comma-delineated list of email address or shelby usernames (not including the current_user) participating
+  # @param [Required, String] message The message current_user is sending with this video
   def create
   	#find or create a discussion roll for this group
   	@roll = find_or_create_discussion_roll_for(current_user, params[:participants])
@@ -64,13 +64,11 @@ class V1::DiscussionRollController < ApplicationController
   #
   # [GET] /v1/discussion_roll/:id
   #
-  # @param [Optional, token] The encrypted token authorized and identifying this user, if they're not logged in
+  # @param [Optional, String] token The encrypted token authorizing and identifying this user, if they're not logged in
   def show
-    token = params[:token]
-    
     if @roll = Roll.find(params[:id])
       
-      if (user_signed_in? and @roll.viewable_by?(current_user)) or token_valid_for_discussion_roll?(token, @roll)
+      if (user_signed_in? and @roll.viewable_by?(current_user)) or token_valid_for_discussion_roll?(params[:token], @roll)
         @status =  200
         render "/v1/roll/show"
       else
@@ -87,13 +85,12 @@ class V1::DiscussionRollController < ApplicationController
   #
   # [POST] /v1/discussion_roll/:discussion_roll_id/messages
   # 
-  # @param [Optional, token] The security token authenticating and authorizing this post
-  # @param [Required, message] The message being appended to this discussion
+  # @param [Optional, String] token The security token authenticating and authorizing this post
+  # @param [Required, String] message The message being appended to this discussion
   def create_message
-    token = params[:token]
     @roll = Roll.find(params[:discussion_roll_id])
     return render_error(404, "could not find roll #{params[:discussion_roll_id]}") unless @roll
-    unless (user_signed_in? and @roll.viewable_by?(current_user)) or token_valid_for_discussion_roll?(token, @roll)
+    unless (user_signed_in? and @roll.viewable_by?(current_user)) or token_valid_for_discussion_roll?(params[:token], @roll)
       return render_error(404, "you are not authorized to post to that roll")
     end
     
@@ -108,7 +105,7 @@ class V1::DiscussionRollController < ApplicationController
     end
     
     #Post a message to last frame
-    shelby_user = current_user || user_from_token(token)
+    shelby_user = current_user || user_from_token(params[:token])
     if shelby_user
       frame.conversation.messages << GT::MessageManager.build_message(
         :user => shelby_user, 
@@ -118,13 +115,13 @@ class V1::DiscussionRollController < ApplicationController
       poster = shelby_user
     else
       frame.conversation.messages << GT::MessageManager.build_message(
-        :nickname => email_from_token(token).address,
-        :realname => email_from_token(token).name,
+        :nickname => email_from_token(params[:token]).address,
+        :realname => email_from_token(params[:token]).name,
         :user_image_url => nil,
         :public => false, 
         :origin_network => Message::ORIGIN_NETWORKS[:shelby],
         :text => CGI.unescape(params[:message]))
-      poster = email_from_token(token).address
+      poster = email_from_token(params[:token]).address
     end
 
     if frame.conversation.save

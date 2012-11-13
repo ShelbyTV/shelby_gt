@@ -128,7 +128,7 @@ module GT
       decipher.key = CIPHER_KEY
       decipher.iv = CIPHER_IV
 
-      return decipher.update(Base64.strict_decode64(base64_strict_encrypted)) + decipher.final
+      return decipher.update(Base64.decode64(base64_strict_encrypted.gsub(' ','+'))) + decipher.final
     end
   
   end
