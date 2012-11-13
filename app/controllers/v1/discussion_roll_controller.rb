@@ -83,14 +83,18 @@ class V1::DiscussionRollController < ApplicationController
   # Appends a new message to the ongoing discussion in the given roll
   #   AUTHENTICATION OPTIONAL
   #
+  # TODO: Return a newly created Frame if the message included a video URL,
+  # otherwise just returns the updated Conversation.
+  # (currently always returns an updated Conversation)
+  #
   # [POST] /v1/discussion_roll/:discussion_roll_id/messages
   # 
   # @param [Optional, String] token The security token authenticating and authorizing this post
   # @param [Required, String] message The message being appended to this discussion
   def create_message
-    @roll = Roll.find(params[:discussion_roll_id])
-    return render_error(404, "could not find roll #{params[:discussion_roll_id]}") unless @roll
-    unless (user_signed_in? and @roll.viewable_by?(current_user)) or token_valid_for_discussion_roll?(params[:token], @roll)
+    roll = Roll.find(params[:discussion_roll_id])
+    return render_error(404, "could not find roll #{params[:discussion_roll_id]}") unless roll
+    unless (user_signed_in? and roll.viewable_by?(current_user)) or token_valid_for_discussion_roll?(params[:token], roll)
       return render_error(404, "you are not authorized to post to that roll")
     end
     
@@ -100,21 +104,23 @@ class V1::DiscussionRollController < ApplicationController
     #TOOD: if we have a video, post new frame instead of just appending message
     
     #Get the most recent frame
-    unless frame = Frame.where(:roll_id => @roll.id).order(:score.desc).first
+    unless frame = Frame.where(:roll_id => roll.id).order(:score.desc).first
       return render_error(404, "could not find conversation")
     end
+    
+    @conversation = frame.conversation
     
     #Post a message to last frame
     shelby_user = current_user || user_from_token(params[:token])
     if shelby_user
-      frame.conversation.messages << GT::MessageManager.build_message(
+      @conversation.messages << GT::MessageManager.build_message(
         :user => shelby_user, 
         :public => false, 
         :origin_network => Message::ORIGIN_NETWORKS[:shelby],
         :text => CGI.unescape(params[:message]))
       poster = shelby_user
     else
-      frame.conversation.messages << GT::MessageManager.build_message(
+      @conversation.messages << GT::MessageManager.build_message(
         :nickname => email_from_token(params[:token]).address,
         :realname => email_from_token(params[:token]).name,
         :user_image_url => nil,
@@ -124,12 +130,12 @@ class V1::DiscussionRollController < ApplicationController
       poster = email_from_token(params[:token]).address
     end
 
-    if frame.conversation.save
+    if @conversation.save
       #sends emails to all but the poster
-    	ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_discussion_roll_notification(@roll, poster) }
+    	ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_discussion_roll_notification(roll, poster) }
     	
       @status =  200
-      render "/v1/roll/show"
+      render "/v1/conversation/show"
     else
       Rails.logger.error "[DiscussionRollController#create_message] unable to save convo.  Params: #{params}"
       return render_error(404, "you are not authorized to post to that roll")
