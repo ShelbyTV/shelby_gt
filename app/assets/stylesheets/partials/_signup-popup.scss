@@ -1,0 +1,49 @@
+//------------------------------------------------------------------------------
+//  Signup Popup
+//
+//  When a user clicks "Sign up" from an Iso Roll 
+//------------------------------------------------------------------------------
+.signup-popup {
+  background-image: url('/images/backgrounds/invite_landing.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  -webkit-background-size: cover;
+}
+
+.signup-popup__head {
+  position: relative;
+
+  .shelby-title {
+    display: block;
+    width: auto;
+    background-position-x: center;
+  }
+}
+
+.signup-popup__body {
+
+}
+
+.signup-popup__lining {
+  margin: 0 auto;
+  max-width: 350px;
+  padding: 2em;
+  
+}
+
+.signup-popup__h1,
+.signup-popup__h2 {
+  font-size: 1em;
+}
+
+//------------------------------------------------------------------------------
+//  Popup Form
+//------------------------------------------------------------------------------
+
+.form_module--signup-popup {
+  margin-bottom: 2em;
+
+  .form_submit {
+    width: 100%;
+  }
+}

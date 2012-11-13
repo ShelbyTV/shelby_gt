@@ -1,12 +1,47 @@
-@import
-  "admin",
-  "app.html",
-  "clientpage",
-  "cohort_entrance",
-  "grant",
-  "index",
-  "login",
-  "password_reset",
-  "registration",
-  "stylesheet",
-  "user_merge";
+//------------------------------------------------------------------------------
+//  base: color variables, height & width constants
+//------------------------------------------------------------------------------
+@import "base";
+//------------------------------------------------------------------------------
+//  base-mixin: mixins library
+//------------------------------------------------------------------------------
+@import "base-mixin";
+
+//------------------------------------------------------------------------------
+//  boilerplate + normalization
+//------------------------------------------------------------------------------
+@import "boilerplate/fonts";
+@import "boilerplate/h5bp";
+
+//------------------------------------------------------------------------------
+//  MODULES, Object oriented, framework-like
+//------------------------------------------------------------------------------
+@import "modules";
+
+//------------------------------------------------------------------------------
+//  App wide ABSTRACTS (if MODULES are object, ABSTRACTS are subjective)
+//------------------------------------------------------------------------------
+@import "abstracts";
+
+
+//------------------------------------------------------------------------------
+//  API Styles
+//------------------------------------------------------------------------------
+@import "admin";
+@import "app.html";
+@import "clientpage";
+@import "cohort_entrance";
+@import "grant";
+@import "index";
+@import "login";
+@import "password_reset";
+@import "registration";
+@import "stylesheet";
+@import "user_merge";
+////////////////////////////////////////////////////////////////////////////
+//  deliberately moving above API styles in partials/* below
+////////////////////////////////////////////////////////////////////////////
+@import "partials/app-header";
+@import "partials/signup-popup";
+
+@import "boilerplate/h5bp-utilities";

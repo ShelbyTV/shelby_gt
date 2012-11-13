@@ -1,18 +1,48 @@
-<div class="email-signup-wrapper">
-	Style me up better!
-	<%= form_for(:user, :url => session_url(:user, :protocol => 'https'), :class=>"email-signup-form") do |f| %>
-	  <div><%= f.label :name %><br />
-	  <%= f.text_field :name %></div>
+<header class="shelby-header signup-popup__head clearfix" role="banner">
+  <h1 class="shelby-title ir">
+    Shelby.tv
+  </h1>
+</header>
+<div class="signup-popup__body">
+  <div class="signup-popup__lining">
+    <div class="form_module form_module--signup-popup">
+    <%= form_for(:user, :url => session_url(:user, :protocol => 'https')) do |f| %>
+      <h1 class="signup-popup__h1">  
+        Sign up to comment on nerdfitness.shelby.tv
+      </h1>
 
-		<div><%= f.label :nickname, "Username" %><br />
-	  <%= f.text_field :nickname %></div>
+      <fieldset class="form_fieldset">
+        <%= f.label :name, :class => "form_label" %>
+        <%= f.text_field :name, :class => "form_input" %>
+      </fieldset>
 
-		<div><%= f.label :primary_email, "Email" %><br />
-	  <%= f.email_field :primary_email %></div>
+      <fieldset class="form_fieldset">
+        <%= f.label :nickname, "Username", :class => "form_label" %>
+        <%= f.text_field :nickname, :class => "form_input" %>
+      </fieldset>
 
-	  <div><%= f.label :password %><br />
-	  <%= f.password_field :password %></div>
+      <fieldset class="form_fieldset">
+        <%= f.label :primary_email, "Email", :class=>"foo bar", :class => "form_label" %>
+        <%= f.email_field :primary_email, :class => "form_input" %>
+      </fieldset>
 
-	  <div><%= f.submit "Create Account" %></div>
-	<% end %>
-</div>
+      <fieldset class="form_fieldset">
+        <%= f.label :password, :class => "form_label" %>
+        <%= f.password_field :password, :class => "form_input" %>
+      </fieldset>
+
+      <fieldset class="form_fieldset">
+        <%= f.submit "Sign me up!", :class => "button_primer button_blue form_submit" %>
+      </fieldset>
+    <% end %>
+    </div><!-- eo form_module--popup-signup -->
+
+    <h2 class="signup-popup__h2">
+      What's Shelby?
+    </h2>
+
+    <p>
+      Shelby is a new way to discover video. Here is some more copy that makes the form look more legit.
+    </p>
+  </div><!-- eo signup-popup__lining -->
+</div><!-- eo signup-popup__body -->
