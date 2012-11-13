@@ -1,3 +1,5 @@
+require "yui/compressor"
+
 ShelbyGt::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb
 
@@ -15,6 +17,8 @@ ShelbyGt::Application.configure do
 
   # Compress JavaScripts and CSS
   config.assets.compress = true
+  config.assets.js_compressor = YUI::JavaScriptCompressor.new( :jar_file => "lib/yui-compressor/yuicompressor-2.4.7.jar" )
+  config.assets.css_compressor = YUI::CssCompressor.new( :jar_file => "lib/yui-compressor/yuicompressor-2.4.7.jar" )
 
   # Don't fallback to assets pipeline if a precompiled asset is missed
   config.assets.compile = false
