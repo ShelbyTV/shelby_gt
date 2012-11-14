@@ -39,9 +39,28 @@
 //------------------------------------------------------------------------------
 //  Popup Form
 //------------------------------------------------------------------------------
-
 .form_module--signup-popup {
   margin-bottom: 2em;
+  position: relative;
+
+  .form_error {
+    color: $shelby-red;
+    display: none;
+    font-size: 0.9em;
+    line-height: 2;
+    position: absolute;
+    right: .5em;
+  }
+
+  .form_fieldset {
+
+  }
+  
+  .form_fieldset--error {
+    .form_error {
+      display: inline-block;
+    }
+  }
 
   .form_submit {
     width: 100%;
