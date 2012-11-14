@@ -19,7 +19,8 @@ class CohortEntranceController < ApplicationController
       if params[:return_url]
         session[:popup] = true
         @signup_popup = true
-        @domain = clean_return_url(params[:return_url])
+        @roll_title = params[:roll]
+        @source = params[:source]
         session[:return_url] = params[:return_url]
       else
         session[:return_url] = Settings::ShelbyAPI.web_root
@@ -28,20 +29,12 @@ class CohortEntranceController < ApplicationController
     elsif params[:cohort_entrance_id] == "test"
       session[:popup] = true
       @signup_popup = true
-      @domain = clean_return_url(params[:return_url])
+      @roll_title = params[:roll]
+      @source = params[:source]
       session[:return_url] = params[:return_url]
     else
       redirect_to "#{Settings::ShelbyAPI.web_root}/?access=nos"
     end
   end
-  
-  private
-    def clean_return_url(url)
-      u = root_path(url)
-      s = u.split('//')
-      if s.length == 2
-        s[1].include?('/') ? s[1].delete!('/') : s[1]
-      end
-    end
   
 end

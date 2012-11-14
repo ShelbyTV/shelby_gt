@@ -8,7 +8,7 @@
     <div class="form_module form_module--signup-popup">
     <%= form_for(:user, :url => session_url(:user, :protocol => 'https')) do |f| %>
       <h1 class="signup-popup__h1">  
-        Sign up to comment on <%= @domain %>
+        Sign up to <%= @source %> on <%= @roll_title %>
       </h1>
 
       <fieldset class="form_fieldset">
