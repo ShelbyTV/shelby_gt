@@ -54,8 +54,26 @@
     </p>
   </div><!-- eo signup-popup__lining -->
 </div><!-- eo signup-popup__body -->
+<script>
+  //carried over form configs
+  if (typeof(shelby) == 'undefined') {
+    shelby = {};
+  }
+  if (typeof(shelby.config) == 'undefined') {
+    shelby.config = {};
+  }
+  shelby.config.user = {
+    email : {
+      validationRegex : /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i
+    },
+    password : {
+      minLength : 5
+    }
+  };
+</script>
 
 <script>
+  //business
   $(document).ready(function(){
     console.log('ready');
 
