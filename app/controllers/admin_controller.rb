@@ -68,6 +68,15 @@ class AdminController < ApplicationController
     # for development purposes to fake some users.
     @active_users = User.all[0..5] if Rails.env == "development"
   end
+
+  def invited_users
+    # all the invitations the (current) user has sent
+    invites = BetaInvite.where(:sender_id => current_user.id).all
+
+    # get all the users who got into shelby via the (current) user's invitations
+    invited_uids = invites.map {|invite| invite.invitee_id}.compact
+    @invited_users = User.find(invited_uids)
+  end
   
   private
   
