@@ -13,6 +13,42 @@ describe GT::DiscussionRollUtils do
     @tester = DiscussionRollTester.new
   end
   
+  context "find_videos_linked_in_text" do
+    it "should return empty array when there are no urls" do
+      vids = @tester.find_videos_linked_in_text("no urls in here")
+      vids.should == []
+    end
+    
+    it "should return empty array when there are no video urls" do
+      vids = @tester.find_videos_linked_in_text("not a video url http://google.com")
+      vids.should == []
+    end
+    
+    it "should return a single video" do
+      v1 = Factory.create(:video)
+      v1_url = "http://site.com/video1"
+      GT::VideoManager.should_receive(:get_or_create_videos_for_url).with(v1_url).and_return({:videos => [v1]})
+      
+      vids = @tester.find_videos_linked_in_text("#{v1_url} and thats all")
+      vids.size.should == 1
+      vids.should == [v1]
+    end
+    
+    it "should return multiple videos" do
+      v1 = Factory.create(:video)
+      v1_url = "http://site.com/video1"
+      v2 = Factory.create(:video)
+      v2_url = "https://site.com/video2"
+      #make sure v1, v2 are returned
+      GT::VideoManager.should_receive(:get_or_create_videos_for_url).with(v1_url).and_return({:videos => [v1]})
+      GT::VideoManager.should_receive(:get_or_create_videos_for_url).with(v2_url).and_return({:videos => [v2]})
+      
+      vids = @tester.find_videos_linked_in_text("first video is #{v1_url} second video is #{v2_url}")
+      vids.size.should == 2
+      vids.should == [v1, v2]
+    end
+  end
+  
   context "token" do
     it "should produce a valid token" do
       token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@roll, "dan@shelby.tv")

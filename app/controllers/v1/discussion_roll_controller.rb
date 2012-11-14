@@ -102,18 +102,29 @@ class V1::DiscussionRollController < ApplicationController
     
     return render_error(400, "you must include a message") unless params[:message]
     
-    #TODO: parse message for known video URLs
-    #TOOD: if we have a video, post new frame instead of just appending message
+    # 1) See if we have a Shelby user...
+    shelby_user = current_user || user_from_token(params[:token])
     
-    #Get the most recent frame
-    unless frame = Frame.where(:roll_id => roll.id).order(:score.desc).first
-      return render_error(404, "could not find conversation")
+    # 2) Create new Frame(s) or grab the last one in the Roll...
+    if !(videos_in_text = find_videos_linked_in_text(params[:message])).empty?
+      @new_frames = []
+      videos_in_text.each do |video|
+        res = GT::Framer.create_frame(
+  	      :creator => shelby_user, #which may be nil
+  	      :video => video,
+  	      :roll => roll,
+  	      :skip_dashboard_entries => true)
+  	    @new_frames << res[:frame]
+      end
+      frame = @new_frames.last
+    else    
+      frame = Frame.where(:roll_id => roll.id).order(:score.desc).first
     end
     
+    return render_error(404, "could not find conversation") unless frame
     @conversation = frame.conversation
     
-    #Post a message to last frame
-    shelby_user = current_user || user_from_token(params[:token])
+    # 3) Post the message to the conversation (created/found above)
     if shelby_user
       @conversation.messages << GT::MessageManager.build_message(
         :user => shelby_user, 
@@ -137,7 +148,13 @@ class V1::DiscussionRollController < ApplicationController
     	ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_discussion_roll_notification(roll, poster) }
     	
       @status =  200
-      render "/v1/conversation/show"
+      # Render an array of Frames if new ones were created, or the single updated Conversation
+      if @new_frames
+        @include_frame_children = true
+        render "/v1/frame/show_array"
+      else
+        render "/v1/conversation/show"
+      end
     else
       Rails.logger.error "[DiscussionRollController#create_message] unable to save convo.  Params: #{params}"
       return render_error(404, "you are not authorized to post to that roll")

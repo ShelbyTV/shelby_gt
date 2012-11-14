@@ -1,6 +1,22 @@
+require 'video_manager'
+
 module GT
   module DiscussionRollUtils
     extend ActiveSupport::Concern
+    
+    URL_REGEX = /http[s]?:\/\/\w/
+    
+    # Given a string of text, search for URLs to known videos and return the array of Videos
+    def find_videos_linked_in_text(text)
+      raise ArgumentError "must provide a text string" unless text.is_a?(String)
+      
+      videos = []
+      
+      raw_urls = text.split.grep(URL_REGEX)
+      raw_urls.each { |url| videos << GT::VideoManager.get_or_create_videos_for_url(url)[:videos][0] }
+      
+      return videos.compact
+    end
     
     def find_or_create_discussion_roll_for(user, participants_string)
       return nil unless user.is_a?(User) and participants_string.is_a?(String)

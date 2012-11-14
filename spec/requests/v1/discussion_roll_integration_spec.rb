@@ -80,6 +80,22 @@ describe 'v1/discussion_roll' do
         @frame = Factory.create(:frame)
       end
       
+      it "should create a new message and return the conversation" do
+        emails = [Factory.next(:primary_email)]
+        roll = @tester.create_discussion_roll_for(@u1, emails)
+        GT::Framer.re_roll(@frame, @u1, roll, true)
+
+        lambda {
+          post "/v1/discussion_roll/#{roll.id}/messages?message=msg"
+        }.should change { roll.frames[0].conversation.reload.messages.count } .by(1)
+        
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        #make sure a Conversation is returned
+        response.body.should have_json_path("result/messages")
+        response.body.should have_json_path("result/messages/0/text")
+      end
+      
       it "should send emails to everybody but message creator" do
         emails = [Factory.next(:primary_email), Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
@@ -105,6 +121,29 @@ describe 'v1/discussion_roll' do
         roll.frames.first.conversation.messages[0].user.should == @u1
         roll.frames.first.conversation.messages[0].text.should == "themsg"
         roll.frames.first.conversation.messages[0].origin_network.should == Message::ORIGIN_NETWORKS[:shelby]
+      end
+      
+      it "should create and return a new Frame when message includes a video url" do
+        msg = "themessage"
+        emails = [Factory.next(:primary_email)]
+        roll = @tester.create_discussion_roll_for(@u1, emails)
+        GT::Framer.re_roll(@frame, @u1, roll, true)
+        
+        #make sure a video is found
+        v1 = Factory.create(:video)
+        V1::DiscussionRollController.any_instance.should_receive(:find_videos_linked_in_text).and_return([v1])
+
+        lambda {
+          post "/v1/discussion_roll/#{roll.id}/messages?message=#{msg}"
+        }.should change { roll.reload.frames.count } .by(1)
+        
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        #make sure an array of Frames is returned
+        response.body.should have_json_path("result/frames/0/conversation")
+        response.body.should have_json_path("result/frames/0/conversation/messages/0/text")
+        response.body.should have_json_type(String).at_path("result/frames/0/conversation/messages/0/text")
+        parse_json(response.body)["result"]["frames"][0]["conversation"]["messages"][0]["text"].should == msg
       end
     end
   end
@@ -137,6 +176,24 @@ describe 'v1/discussion_roll' do
     end
     
     describe "POST create_message" do
+      it "should create a new message and return the conversation" do
+        msg_poster_email = Factory.next(:primary_email)
+        emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
+        roll = @tester.create_discussion_roll_for(@u1, emails)
+        GT::Framer.re_roll(@frame, @u1, roll, true)
+
+        lambda {
+          token = GT::DiscussionRollUtils.encrypt_roll_user_identification(roll, msg_poster_email)
+          post "/v1/discussion_roll/#{roll.id}/messages?message=msg&token=#{CGI.escape token}"
+        }.should change { ActionMailer::Base.deliveries.count } .by(emails.size)
+        
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        #make sure a Conversation is returned
+        response.body.should have_json_path("result/messages")
+        response.body.should have_json_path("result/messages/0/text")
+      end
+      
       it "should send emails to everybody but message creator" do
         msg_poster_email = Factory.next(:primary_email)
         emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
@@ -167,6 +224,32 @@ describe 'v1/discussion_roll' do
         roll.frames.first.conversation.messages[0].text.should == "itsamsg"
         roll.frames.first.conversation.messages[0].origin_network.should == Message::ORIGIN_NETWORKS[:shelby]
         roll.frames.first.conversation.messages[0].nickname.should == msg_poster_email
+      end
+      
+      it "should create and return two new Frames when message includes a video url" do
+        msg = "heyspinner"
+        msg_poster_email = Factory.next(:primary_email)
+        emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
+        roll = @tester.create_discussion_roll_for(@u1, emails)
+        GT::Framer.re_roll(@frame, @u1, roll, true)
+        
+        #make sure a video is found
+        v1 = Factory.create(:video)
+        v2 = Factory.create(:video)
+        V1::DiscussionRollController.any_instance.should_receive(:find_videos_linked_in_text).and_return([v1, v2])
+
+        lambda {
+          token = GT::DiscussionRollUtils.encrypt_roll_user_identification(roll, msg_poster_email)
+          post "/v1/discussion_roll/#{roll.id}/messages?message=#{msg}&token=#{CGI.escape token}"
+        }.should change { roll.reload.frames.count } .by(2)
+        
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        #make sure an array of Frames is returned (and message is on the last one)
+        response.body.should have_json_path("result/frames/0/conversation")
+        response.body.should have_json_path("result/frames/1/conversation/messages/0/text")
+        response.body.should have_json_type(String).at_path("result/frames/1/conversation/messages/0/text")
+        parse_json(response.body)["result"]["frames"][1]["conversation"]["messages"][0]["text"].should == msg
       end
     end
   end
