@@ -88,14 +88,14 @@
       var signupName = $('#user_name');
       var signupUsername = $('#user_nickname');
       var signupEmail = $('#user_primary_email');
-      var signupPassword = $('#user_password')
+      var signupPassword = $('#user_password');
       // validate user full name
       if(!signupName.val().length) {
         signupName.parent(formFieldset).addClass(formFieldsetError)
                   .find('.form_error').text('Please enter your name');
         hasErrors = true;
       } else {
-        $('.js-invite-name').removeClass('form_fieldset--error');
+        signupName.parent(formFieldset).removeClass(formFieldsetError);
       }
 
       // validate username
@@ -104,7 +104,7 @@
                       .find('.form_error').text('Please enter a username');
         hasErrors = true;
       } else {
-        $('.js-invite-username').removeClass('form_fieldset--error');
+        signupUsername.parent(formFieldset).removeClass(formFieldsetError);
       }
 
       // validate password
@@ -114,16 +114,16 @@
                       .find('.form_error').text('Password must be at least ' + shelby.config.user.password.minLength + ' characters long');
         hasErrors = true;
       } else {
-        $('.js-invite-password').removeClass('form_fieldset--error');
+        signupPassword.parent(formFieldset).removeClass(formFieldsetError);
       }
 
       // validate email
       if(!signupEmail.val().length || signupEmail.val().search(shelby.config.user.email.validationRegex) == -1) {
-        $('.js-invite-email').addClass('form_fieldset--error')
-                             .find('.form_error').text('Please enter a valid email.');
+        signupEmail.parent(formFieldset).addClass(formFieldsetError)
+                   .find('.form_error').text('Please enter a valid email.');
         hasErrors = true;
       } else {
-        $('.js-invite-email').removeClass('form_fieldset--error');
+        signupEmail.parent(formFieldset).removeClass(formFieldsetError);
       }
 
       if (hasErrors) {
@@ -134,14 +134,6 @@
         cookies.set('_shelby_signup_name', signupName.val());
         cookies.set('_shelby_signup_username', signupUsername.val());
         cookies.set('_shelby_signup_email', signupEmail.val());
-      }
-    }).find('.form_input').on('blur', function(){
-      $this = $(this);
-
-      if(!$this.val().length) {
-        $this.removeClass('filled');
-      } else {
-        $this.addClass('filled');
       }
     });
   });
