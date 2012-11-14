@@ -7,7 +7,7 @@
   <div class="signup-popup__lining">
     <%= form_for :user, :html => {:class => "js-form--signup-popup form_module form_module--signup-popup"}, :url => session_url(:user, :protocol => 'https') do |f| %>
       <h1 class="signup-popup__h1">  
-        Sign up to comment on nerdfitness.shelby.tv
+        Sign up to comment on <%= @domain %>
       </h1>
 
       <fieldset class="form_fieldset">
