@@ -8,7 +8,7 @@ class BetaInvite
   
   # It must reference the User who created it
   belongs_to :sender, :class_name => 'User', :required => true
-  key :sender_user_id, ObjectId, :abbr => :a
+  key :sender_id, ObjectId, :abbr => :a
   
   # When used, track the new User
   # Considered unused if invitee_id==nil
