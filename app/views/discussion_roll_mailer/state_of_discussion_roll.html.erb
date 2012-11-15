@@ -4,6 +4,6 @@
 	
 	The only thing working is this link:
 	
-	http://shelby.tv/chat/<%= @roll.id %>?u=<%= CGI.escape @recipient %>&t=<%= CGI.escape @token %>
+	http://shelby.tv/chat/<%= @roll.id %>?u=<%= CGI.escape @recipient %>&t=<%= CGI.escape CGI.escape @token %>
 	
 <% end %>
