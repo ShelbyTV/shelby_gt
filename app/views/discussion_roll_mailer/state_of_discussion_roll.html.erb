@@ -1,7 +1,9 @@
 <% standard_html_email_wrapper do %>
 	
-	...Video Conversation Email...
+	...Video Chat Email...
 	
-	http://shelby.tv/chat/<%= @roll.id %>?u=&<%= CGI.escape @recipient %>t=<%= CGI.escape @token %>
+	The only thing working is this link:
+	
+	http://shelby.tv/chat/<%= @roll.id %>?u=<%= CGI.escape @recipient %>&t=<%= CGI.escape @token %>
 	
 <% end %>

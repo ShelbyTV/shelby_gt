@@ -42,7 +42,7 @@ defaults: &defaults
   # Disucssion Rolls
   discussion_roll:
     category: "Discussion Roll Notifications"
-    from: "Video Conversation <contact+dr@shelby.tv>"
+    from_email: "contact+chat@shelby.tv"
       
 
 development:
