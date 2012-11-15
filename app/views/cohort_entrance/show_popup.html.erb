@@ -12,31 +12,41 @@
 
       <fieldset class="form_fieldset">
         <%= f.label :name, :class => "form_label" %>
+        <span class="form_error">
+          <% if @name_error %>
+            Please enter a valid name
+          <% end %>
+        </span>
         <%= f.text_field :name, :class => "form_input" %>
       </fieldset>
 
       <fieldset class="form_fieldset">
         <%= f.label :nickname, "Username", :class => "form_label" %>
-        <% if @nickname_error %>
-          <span class="form_error js-invite-username-error" style="display: block;">Sorry, that username is already taken.</span>
-        <% else %>
-          <span class="form_error js-invite-username-error"></span>
-        <% end %>
+        <span class="form_error">
+          <% if @email_error %>
+            Please enter a valid username
+          <% end %>
+        </span>
         <%= f.text_field :nickname, :class => "form_input" %>
       </fieldset>
 
       <fieldset class="form_fieldset">
         <%= f.label :primary_email, "Email", :class=>"foo bar", :class => "form_label" %>
-        <% if @email_error %>
-          <span class="form_error js-invite-email-error" style="display: block;">Sorry, that email is already taken.</span>
-        <% else %>
-          <span class="form_error js-invite-email-error"></span>
-        <% end %>
+        <span class="form_error">
+          <% if @email_error %>
+            Please enter a valid email address
+          <% end %>
+        </span>
         <%= f.email_field :primary_email, :class => "form_input" %>
       </fieldset>
 
       <fieldset class="form_fieldset">
         <%= f.label :password, :class => "form_label" %>
+        <span class="form_error">
+          <% if @password_error %>
+            Please enter a valid password
+          <% end %>
+        </span>
         <%= f.password_field :password, :class => "form_input" %>
       </fieldset>
 
@@ -73,15 +83,15 @@
 </script>
 
 <script>
+  //class names used more-than-once
+  var formFieldset = '.form_fieldset',
+      formFieldsetError = 'form_fieldset--error';
+
   //business
   $(document).ready(function(){
     $('.js-form--signup-popup').on('submit', function(e){
       //XXX for devving:
       e.preventDefault();
-
-      //class names used more-than-once
-      var formFieldset = '.form_fieldset',
-          formFieldsetError = 'form_fieldset--error';
 
       var hasErrors = false;
       var signupName = $('#user_name');
@@ -134,6 +144,10 @@
         cookies.set('_shelby_signup_username', signupUsername.val());
         cookies.set('_shelby_signup_email', signupEmail.val());
       }
+    }).on('keydown','input', function(){
+      //remove class that displays error message, when user starts typing.
+      $(this).siblings('.form_error').text('')
+             .parent(formFieldset).removeClass(formFieldsetError);
     });
   });
 </script>
