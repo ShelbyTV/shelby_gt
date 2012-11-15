@@ -134,17 +134,17 @@ module GT
       cipher.key = CIPHER_KEY
       cipher.iv = CIPHER_IV
 
-      return Base64.strict_encode64(cipher.update(data) + cipher.final)
+      return Base64.urlsafe_encode64(cipher.update(data) + cipher.final)
     end
 
     # WARNING: Changing this method will make inacessible the discussion rolls for non-shelby users
-    def decrypt_roll_user_identification(base64_strict_encrypted)
+    def decrypt_roll_user_identification(urlsafe_base64_encrypted)
       decipher = OpenSSL::Cipher::AES.new(128, :CBC)
       decipher.decrypt
       decipher.key = CIPHER_KEY
       decipher.iv = CIPHER_IV
 
-      return decipher.update(Base64.decode64(base64_strict_encrypted.gsub(' ','+'))) + decipher.final
+      return decipher.update(Base64.urlsafe_decode64(urlsafe_base64_encrypted)) + decipher.final
     end
   
   end
