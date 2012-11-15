@@ -207,41 +207,46 @@ void mrbsonSimpleArrayAttribute(mrjsonContext context,
    bson_type type;
 
    type = bson_find(&iterator, data, bsonField);
-   assert(type == BSON_ARRAY);
+   if(type == BSON_ARRAY){
+     bson_iterator_subobject(&iterator, &array);
+     bson_iterator_from_buffer(&iterator, array.data);
 
-   bson_iterator_subobject(&iterator, &array);
-   bson_iterator_from_buffer(&iterator, array.data);
+     mrjsonStartArray(context, outputName);
+     while ((type = bson_iterator_next(&iterator))) {
+        switch (type) {
+           case BSON_STRING:
+              mrjsonStringArrayEntry(context, bson_iterator_string(&iterator));
+              break;
 
-   mrjsonStartArray(context, outputName);
-   while ((type = bson_iterator_next(&iterator))) {
-      switch (type) {
-         case BSON_STRING:
-            mrjsonStringArrayEntry(context, bson_iterator_string(&iterator));
-            break;
-
-         case BSON_EOO:
-         case BSON_DOUBLE:
-         case BSON_OBJECT:
-         case BSON_ARRAY:
-         case BSON_BINDATA:
-         case BSON_UNDEFINED:
-         case BSON_OID:
-         case BSON_BOOL:
-         case BSON_DATE:
-         case BSON_NULL:
-         case BSON_REGEX:
-         case BSON_DBREF:
-         case BSON_CODE:
-         case BSON_SYMBOL:
-         case BSON_CODEWSCOPE:
-         case BSON_INT:
-         case BSON_TIMESTAMP:
-         case BSON_LONG:
-            assert(FALSE); // not implemented yet or not simple type
-            break;
-      }
+           case BSON_EOO:
+           case BSON_DOUBLE:
+           case BSON_OBJECT:
+           case BSON_ARRAY:
+           case BSON_BINDATA:
+           case BSON_UNDEFINED:
+           case BSON_OID:
+           case BSON_BOOL:
+           case BSON_DATE:
+           case BSON_NULL:
+           case BSON_REGEX:
+           case BSON_DBREF:
+           case BSON_CODE:
+           case BSON_SYMBOL:
+           case BSON_CODEWSCOPE:
+           case BSON_INT:
+           case BSON_TIMESTAMP:
+           case BSON_LONG:
+              assert(FALSE); // not implemented yet or not simple type
+              break;
+        }
+     }
+     mrjsonEndArray(context); 
+   } else {
+     mrjsonNullAttribute(context, outputName); 
+     // if we needed an empty array instead, could do this:
+     // mrjsonStartArray(context, outputName);
+     // mrjsonEndArray(context);
    }
-   mrjsonEndArray(context); 
 }
 
 
