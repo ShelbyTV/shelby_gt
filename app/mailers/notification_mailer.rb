@@ -91,4 +91,21 @@ class NotificationMailer < ActionMailer::Base
       :subject => Settings::Email.upvote_notification['subject'] % { :upvoters_name => @user_from_name, :video_title => @frame_title }
   end
 
+  def invite_accepted_notification(user_to, user_from, roll)
+    sendgrid_category Settings::Email.invite_accepted_notification["category"]
+
+    sendgrid_ganalytics_options(:utm_source => 'invite-accepted', :utm_medium => 'notification', :utm_campaign => "roll_#{roll.id.to_s}")
+
+    @user_to = user_to
+    @user_from = user_from
+    @user_from_name = (@user_from.name || @user_from.nickname)
+    @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
+
+    @roll = roll
+
+    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
+      :to => @user_to.primary_email,
+      :subject => (Settings::Email.invite_accepted_notification['subject'] % { :users_name => @user_from_name })
+  end
+
 end

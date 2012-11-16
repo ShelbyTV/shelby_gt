@@ -122,4 +122,27 @@ describe NotificationMailer do
     #end
   end
 
+describe 'invite accepted notifications' do
+    before(:all) do
+      @inviter = Factory.create(:user)
+      @invitee = Factory.create(:user, :name => "bill")
+      @invitee_personal_roll = Factory.create(:roll, :creator => @invitee, :public => false, :title => "tit")
+      # @video = Factory.create(:video)
+      @email = NotificationMailer.invite_accepted_notification(@inviter, @invitee, @invitee_personal_roll)
+    end
+
+    it 'renders the subject' do
+      subj = Settings::Email.invite_accepted_notification['subject'] % {:users_name =>"bill"}
+      @email.subject.should eq(subj)
+    end
+
+    it 'renders the receiver email' do
+      @email.to.should eq([@inviter.primary_email])
+    end
+
+    it 'renders the sender email' do
+      @email.from.should eq([Settings::Email.notification_sender])
+    end
+  end
+
 end

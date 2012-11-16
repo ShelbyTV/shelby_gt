@@ -24,6 +24,9 @@ defaults: &defaults
   join_roll_notification:
     category: "Join Roll Notifications"
     subject: "%{users_name} is following your Roll!"
+  invite_accepted_notification:
+    category: "Invite Accepted Notifications"
+    subject: "%{users_name} accepted your invitation to join Shelby.tv"
   # GtInterest
   gt_interest_autoresponse:
     category: "Submit GT Interest"
