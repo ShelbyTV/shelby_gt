@@ -346,11 +346,14 @@ describe AuthenticationsController do
         end
         
         it "should accept with BetaInvite" do
-          i = Factory.create(:beta_invite)
-          BetaInvite.should_receive(:find).and_return i
-        
-          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [], :authentications => [])
+          user_roll = Factory.create(:roll)
+          u = Factory.create(:user, :password => (password="pass"), :gt_enabled => true, :faux => User::FAUX_STATUS[:false], :cohorts => [], :authentications => [], :public_roll => user_roll)
           GT::UserManager.should_receive(:create_new_user_from_params).and_return u
+
+          sender = Factory.create(:user)
+          i = Factory.create(:beta_invite, :sender => sender)
+          BetaInvite.should_receive(:find).and_return i
+
           get :create, :invite_id => :some_id, :user => {:some_params => :needed, :but_its => :stubbed_anyway}
       
           assigns(:current_user).should == u

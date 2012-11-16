@@ -80,7 +80,7 @@ module GT
     
     def self.check_and_send_invite_accepted_notification(inviter, invitee)
       raise ArgumentError, "must supply valid inviter" unless inviter.is_a?(User) and !inviter.blank?
-      raise ArgumentError, "must supply valid inviter" unless invitee.is_a?(User) and !invitee.blank?
+      raise ArgumentError, "must supply valid invitee" unless invitee.is_a?(User) and !invitee.blank?
 
       return if !inviter.primary_email or inviter.primary_email == "" or !inviter.preferences.invite_accepted_notifications
 
