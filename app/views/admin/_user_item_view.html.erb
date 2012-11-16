@@ -45,7 +45,7 @@
     </div><!-- eo user__contact -->
 
     <h1 class="user__h1">
-      <%= link_to user.name, "http://api.shelby.tv/admin/user/#{user.id}", :class=>"user__username" %></a> <span>(<%= user.nickname %>)</span>
+      <%= link_to user.name, "/admin/user/#{user.id}", :class=>"user__username" %> <span>(<%= user.nickname %>)</span>
     </h1>
     <div class="user__info">
       <%= link_to "#{user.public_roll.subdomain}.shelby.tv", "http://#{user.public_roll.subdomain}.shelby.tv" %>

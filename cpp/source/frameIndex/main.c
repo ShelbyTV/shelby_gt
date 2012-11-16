@@ -24,6 +24,8 @@ static struct options {
    char *environment;
 
    char *sinceIdString;
+   
+   int permissionGranted;
 } options;
 
 struct timeval beginTime;
@@ -31,13 +33,14 @@ struct timeval beginTime;
 void printHelpText()
 {
    printf("frameIndex usage:\n"); 
-   printf("   -h --help           Print this help message\n");
-   printf("   -u --user           String representation of user OID\n");
-   printf("   -r --roll           String representation of roll OID\n");
-   printf("   -l --limit          Limit to this number of frames\n");
-   printf("   -s --skip           Skip this number of frames\n");
-   printf("   -i --sinceid        Frames since this one (inclusive)\n");
-   printf("   -e --environment    Specify environment: production, test, or development\n");
+   printf("   -h --help                 Print this help message\n");
+   printf("   -u --user                 String representation of user OID\n");
+   printf("   -r --roll                 String representation of roll OID\n");
+   printf("   -l --limit                Limit to this number of frames\n");
+   printf("   -s --skip                 Skip this number of frames\n");
+   printf("   -i --sinceid              Frames since this one (inclusive)\n");
+   printf("   -p --permissionGranted    Return the frames without checking Roll permission (takes no argument)\n");
+   printf("   -e --environment          Specify environment: production, test, or development\n");
 }
 
 void parseUserOptions(int argc, char **argv)
@@ -47,18 +50,19 @@ void parseUserOptions(int argc, char **argv)
    while (1) {
       static struct option long_options[] =
       {
-         {"help",        no_argument,       0, 'h'},
-         {"user",        required_argument, 0, 'u'},
-         {"roll",        required_argument, 0, 'r'},
-         {"limit",       required_argument, 0, 'l'},
-         {"skip",        required_argument, 0, 's'},
-         {"sinceid",     required_argument, 0, 'i'},
-         {"environment", required_argument, 0, 'e'},
+         {"help",               no_argument,       0, 'h'},
+         {"user",               required_argument, 0, 'u'},
+         {"roll",               required_argument, 0, 'r'},
+         {"limit",              required_argument, 0, 'l'},
+         {"skip",               required_argument, 0, 's'},
+         {"sinceid",            required_argument, 0, 'i'},
+         {"permissionGranted",  no_argument,       0, 'p'},
+         {"environment",        required_argument, 0, 'e'},
          {0, 0, 0, 0}
       };
       
       int option_index = 0;
-      c = getopt_long(argc, argv, "hr:l:s:e:u:i:", long_options, &option_index);
+      c = getopt_long(argc, argv, "hr:l:s:e:u:i:p", long_options, &option_index);
    
       /* Detect the end of the options. */
       if (c == -1) {
@@ -92,6 +96,10 @@ void parseUserOptions(int argc, char **argv)
          case 'i':
             options.sinceIdString = optarg;
             break;
+            
+         case 'p':
+            options.permissionGranted = TRUE;
+            break;
 
          case 'h': 
          case '?':
@@ -123,6 +131,7 @@ void setDefaultOptions()
    options.skip = 0;
    options.environment = "";
    options.sinceIdString = "";
+   options.permissionGranted = FALSE;
 }
 
 unsigned int timeSinceMS(struct timeval begin)
@@ -222,6 +231,7 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
       SOB_ROLL_HEADER_IMAGE_FILE_NAME,
       SOB_ROLL_TITLE,
       SOB_ROLL_ROLL_TYPE,
+      SOB_ROLL_DISCUSSION_ROLL_PARTICIPANTS
    };
 
    sobPrintAttributes(context,
@@ -343,6 +353,7 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
       SOB_ROLL_HEADER_IMAGE_FILE_NAME,
       SOB_ROLL_TITLE,
       SOB_ROLL_ROLL_TYPE,
+      SOB_ROLL_DISCUSSION_ROLL_PARTICIPANTS
    };
 
    sobPrintAttributes(context,
@@ -473,7 +484,8 @@ int loadData(sobContext sob)
    sobLoadAllById(sob, SOB_CONVERSATION, conversationOids);
 
    // need to fail if non-public roll has a different user as its creator
-   if (!sobBsonBoolField(sob, SOB_ROLL, SOB_ROLL_PUBLIC, options.roll) &&
+   if (!options.permissionGranted &&
+       !sobBsonBoolField(sob, SOB_ROLL, SOB_ROLL_PUBLIC, options.roll) &&
        !sobBsonOidFieldEqual(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, options.roll, options.user))
    {
       return FALSE;

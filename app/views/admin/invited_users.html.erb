@@ -1,0 +1,9 @@
+<%= render :partial => "/admin/header", :locals => {:title => "users I invited"} %>
+
+<hr/>
+
+<div id="users">
+  <% @invited_users.each do |u| %>
+    <%= render :partial => "user_item_view", :locals => { :user => u } %>
+  <% end %>
+</div>

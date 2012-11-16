@@ -5,13 +5,14 @@
 	</h1>	
 	<div id="user-info" style="position:fixed; top: 20px; right: 20px;">
 		<div id="admin-choices">
-				<a href="http://api.shelby.tv/admin/active_users"><span>active users</span></a> | 
-				<a href="http://api.shelby.tv/admin/new_users"><span>new users</span></a> |
+				<a href="/admin/active_users"><span>active users</span></a> |
+				<a href="/admin/new_users"><span>new users</span></a> |
+				<a href="/admin/invited_users"><span>invited users</span></a>
 		</div>
 		<form id="js-email-form" class="user-search-form" action="/admin/user/" method="get">
 			<input name="search" type="text" id="js-user-input" class="user-form-input" placeholder="find someone" /><!--
 
-		  --><input type="submit" value="find user" id="js-user-search-submit" class="user-form-submit" />
+			--><input type="submit" value="find user" id="js-user-search-submit" class="user-form-submit" />
 		</form>
 
 	</div>

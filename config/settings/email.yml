@@ -38,7 +38,12 @@ defaults: &defaults
   new_user_summary:
     category: "Admin"
     subject: "[%{date}] %{new_users} New Users Yesterday"
-    from: "Shelby GT <contact+gt@shelby.tv>"    
+    from: "Shelby GT <contact+gt@shelby.tv>"  
+  # Disucssion Rolls
+  discussion_roll:
+    category: "Discussion Roll Notifications"
+    from_email: "contact+chat@shelby.tv"
+      
 
 development:
   <<: *defaults

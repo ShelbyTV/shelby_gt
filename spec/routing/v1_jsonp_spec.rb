@@ -192,6 +192,30 @@ describe "Messages" do
   
 end
 
+describe "DiscussionRolls" do
+  
+  #POST   /v1/discussion_roll(.:format)                                   v1/discussion_roll#create {:format=>"json"}
+  it "routes for create" do
+    { :get => "/v1/POST/discussion_roll" }.should route_to(
+      :controller => "v1/discussion_roll",
+      :action => "create",
+      :format => "json"
+    )
+  end
+  
+  #POST   /v1/discussion_roll/:discussion_roll_id/messages(.:format)      v1/discussion_roll#create_message {:format=>"json"}
+  it "routes for create message" do
+    { :get => "/v1/POST/discussion_roll/33/messages" }.should route_to(
+      :controller => "v1/discussion_roll",
+      :action => "create_message",
+      :format => "json",
+      :discussion_roll_id => "33"
+    )
+  end
+  
+  
+end
+
 describe "BetaInvite" do
   
   # POST   /v1/beta_invite(.:format)                                       v1/beta_invite#create {:format=>"json"}

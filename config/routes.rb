@@ -91,6 +91,9 @@ ShelbyGt::Application.routes.draw do
     resources :conversation, :only => [:show] do 
       resources :messages, :only => [:create, :destroy]
     end
+    resources :discussion_roll, :only => [:create, :show] do
+      post 'messages' => 'discussion_roll#create_message'
+    end
     resources :beta_invite, :only => [:create]
     
     resources :gt_interest, :only => [:create]
@@ -135,6 +138,9 @@ ShelbyGt::Application.routes.draw do
     # messages
     get 'POST/conversation/:conversation_id/messages' => 'messages#create'
     get 'DELETE/conversation/:conversation_id/messages/:id' => 'messages#destroy'
+    # discussion roll
+    get 'POST/discussion_roll/:discussion_roll_id/messages' => 'discussion_roll#create_message'
+    get 'POST/discussion_roll' => 'discussion_roll#create'
     # beta_invites
     get 'POST/beta_invite' => 'beta_invite#create'
     # gt_interest
@@ -155,6 +161,7 @@ ShelbyGt::Application.routes.draw do
   get '/admin/user' => 'admin#user', :constraints => { :id => /[^\/]+/ }
   get '/admin/new_users' => "admin#new_users"
   get '/admin/active_users' => "admin#active_users"
+  get '/admin/invited_users' => "admin#invited_users"
   
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
   
