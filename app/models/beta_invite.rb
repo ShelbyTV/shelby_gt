@@ -1,4 +1,5 @@
 require 'api_clients/kiss_metrics_client'
+require 'notification_manager'
 
 class BetaInvite
   include MongoMapper::Document
@@ -38,6 +39,7 @@ class BetaInvite
     
     ShelbyGT_EM.next_tick do 
       APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['accept_invite'], {:invited_by => self.invitee})
+      GT::NotificationManager.check_and_send_invite_accepted_notification(self.sender, self.invitee)
     end
   end
   
