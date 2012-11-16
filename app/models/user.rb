@@ -289,10 +289,9 @@ class User
     !self.encrypted_password.blank? and self.encrypted_password.length > 10
   end
   
-  #default implementation hits the DB, and that sucks b/c we don't index on remember_token
-  def self.remember_token
-    SecureRandom.uuid
-  end
+  #default implementations hit the DB, and that sucks b/c we don't index on these attributes
+  def self.remember_token() SecureRandom.uuid; end
+  def self.reset_password_token() SecureRandom.uuid; end
     
   # -- Old Methods --   
   def self.find_by_nickname(n)
