@@ -13,6 +13,7 @@ class Preferences
   key :roll_activity_notifications,   Boolean, :default => true
   key :open_graph_posting,            Boolean
   key :discussion_roll_notifications, Boolean, :default => true
+  key :invite_accepted_notifications, Boolean, :default => true
   
   
   def can_post_to_open_graph?

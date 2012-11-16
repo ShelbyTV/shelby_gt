@@ -78,6 +78,15 @@ module GT
       NotificationMailer.join_roll_notification(user_to, user_from, roll).deliver
     end
     
+    def self.check_and_send_invite_accepted_notification(inviter, invitee)
+      raise ArgumentError, "must supply valid inviter" unless inviter.is_a?(User) and !inviter.blank?
+      raise ArgumentError, "must supply valid inviter" unless invitee.is_a?(User) and !invitee.blank?
+
+      return if !inviter.primary_email or inviter.primary_email == "" or !inviter.preferences.invite_accepted_notifications
+
+      NotificationMailer.invite_accepted_notification(inviter, invitee, invitee.public_roll).deliver
+    end
+
     # Email the current state of the discussion roll to all participants except for posting_user
     # We don't know, and it doesn't matter, if this email is being sent b/c of a new frame, 
     # new discussion roll alltogether, or just a new message in an ongoing discussion roll.

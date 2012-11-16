@@ -224,5 +224,42 @@ describe GT::NotificationManager do
     end
   end
 
+  describe "invite accepted notifications" do
+    before(:each) do
+      @invitee_roll = Factory.create(:roll, :creator => @invitee)
+      @invitee = Factory.create(:user, :public_roll => @invitee_roll)
+      @inviter = Factory.create(:user)
+    end
+
+    it "should queue email to deliver" do
+      lambda {
+        GT::NotificationManager.check_and_send_invite_accepted_notification(@inviter, @invitee)
+      }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+
+    it "should not queue email to deliver if the inviter has disabled it via preferences" do
+      @inviter.preferences.invite_accepted_notifications = false
+      lambda {
+        GT::NotificationManager.check_and_send_invite_accepted_notification(@inviter, @invitee)
+      }.should change(ActionMailer::Base.deliveries,:size).by(0)
+    end
+
+    it "should not queue email to deliver if the inviter has no email address" do
+      @inviter.primary_email = nil
+      lambda {
+        GT::NotificationManager.check_and_send_invite_accepted_notification(@inviter, @invitee)
+      }.should change(ActionMailer::Base.deliveries,:size).by(0)
+    end
+
+    it "should raise error with bad inviter or invitee" do
+      lambda {
+        GT::NotificationManager.check_and_send_join_roll_notification(@inviter, nil) 
+      }.should raise_error(ArgumentError)
+
+      lambda {
+        GT::NotificationManager.check_and_send_join_roll_notification(nil, @invitee) 
+      }.should raise_error(ArgumentError)
+    end
+  end
 
 end
