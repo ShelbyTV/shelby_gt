@@ -103,7 +103,7 @@ class V1::DiscussionRollController < ApplicationController
     return render_error(400, "you must include a message") unless params[:message]
     
     # 1) See if we have a Shelby user...
-    shelby_user = current_user || user_from_token(params[:token])
+    shelby_user = params[:token] ? user_from_token(params[:token]) : current_user
     
     # 2) Create new Frame(s) or grab the last one in the Roll...
     if !(videos_in_text = find_videos_linked_in_text(params[:message])).empty?

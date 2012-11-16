@@ -109,7 +109,7 @@ describe 'v1/discussion_roll' do
         response.body.should have_json_path("result")
       end
       
-      it "should post the message with correct info for actual user" do
+      it "should post the message with correct info for actual shelby user" do
         emails = [Factory.next(:primary_email), Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
         GT::Framer.re_roll(@frame, @u1, roll, true)
@@ -121,6 +121,24 @@ describe 'v1/discussion_roll' do
         roll.frames.first.conversation.messages[0].user.should == @u1
         roll.frames.first.conversation.messages[0].text.should == "themsg"
         roll.frames.first.conversation.messages[0].origin_network.should == Message::ORIGIN_NETWORKS[:shelby]
+      end
+      
+      it "should post the message for the user in the token, even if logged in as another user" do
+        msg_poster_email = Factory.next(:primary_email)
+        emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
+        roll = @tester.create_discussion_roll_for(@u1, emails)
+        GT::Framer.re_roll(@frame, @u1, roll, true)
+
+        token = GT::DiscussionRollUtils.encrypt_roll_user_identification(roll, msg_poster_email)
+        post "/v1/discussion_roll/#{roll.id}/messages?message=msg&token=#{CGI.escape token}"
+        
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        #make sure a Conversation is returned
+        response.body.should have_json_path("result/messages")
+        response.body.should have_json_path("result/messages/0/text")
+        #make sure it came from msg_poster_email and not logged in shelby user @u1
+        parse_json(response.body)["result"]["messages"][0]["nickname"].should == msg_poster_email
       end
       
       it "should create and return a new Frame when message includes a video url" do
