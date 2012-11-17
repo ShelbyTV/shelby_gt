@@ -25,13 +25,6 @@ class CohortEntranceController < ApplicationController
       else
         session[:return_url] = Settings::ShelbyAPI.web_root
       end
-    # *** BELOW CLAUSE IS FOR MIKE TESTING IN DEVELOPMENT
-    elsif params[:cohort_entrance_id] == "test"
-      session[:popup] = true
-      @signup_popup = true
-      @roll_title = params[:roll]
-      @source = params[:source]
-      session[:return_url] = params[:return_url]
     else
       redirect_to "#{Settings::ShelbyAPI.web_root}/?access=nos"
     end

@@ -5,7 +5,7 @@
 </header>
 <div class="signup-popup__body">
   <div class="signup-popup__lining">
-    <%= form_for :user, :html => {:class => "js-form--signup-popup form_module form_module--signup-popup"}, :url => session_url(:user, :protocol => 'https') do |f| %>
+    <%= form_for :user, :remote => true, format: :json , :html => {:class => "js-form--signup-popup form_module form_module--signup-popup"}, :url => session_url(:user, :protocol => 'http') do |f| %>
       <h1 class="signup-popup__h1">  
         Sign up to <%= @source %> on <%= @roll_title %>
       </h1>
@@ -137,14 +137,26 @@
       } else {
         // save the user's input in a session cookie so we can re-render it if API redirects us back
         // here with errors the user needs to fix
-        cookies.set('_shelby_signup_name', signupName.val());
+/*         cookies.set('_shelby_signup_name', signupName.val());
         cookies.set('_shelby_signup_username', signupUsername.val());
         cookies.set('_shelby_signup_email', signupEmail.val());
-      }
+ */
+			}
     }).on('keydown','input', function(){
       //remove class that displays error message, when user starts typing.
       $(this).siblings('.form_error').text('')
              .parent(formFieldset).removeClass(formFieldsetError);
     });
+
+		function receiveMessage(event) {
+			console.log('message received:  ' + event.data, event);
+			if (event.data == "close") { window.close(); }
+			if (event.data == "opened") { 
+				window.authPopup = event.source;
+				console.log("created window.authPopup", window.authPopup);
+			}
+		}
+		window.addEventListener("message", receiveMessage, false);
+		
   });
 </script>
