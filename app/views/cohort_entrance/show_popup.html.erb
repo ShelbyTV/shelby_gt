@@ -5,7 +5,8 @@
 </header>
 <div class="signup-popup__body">
   <div class="signup-popup__lining">
-    <%= form_for :user, :remote => true, format: :json , :html => {:class => "js-form--signup-popup form_module form_module--signup-popup"}, :url => session_url(:user, :protocol => 'http') do |f| %>
+		<% proto = Rails.env == "production" ? "https" : "http" %>
+    <%= form_for :user, :remote => true, format: :json , :html => {:class => "js-form--signup-popup form_module form_module--signup-popup"}, :url => session_url(:user, :protocol => proto) do |f| %>
       <h1 class="signup-popup__h1">  
         Sign up to <%= @source %> on <%= @roll_title %>
       </h1>
