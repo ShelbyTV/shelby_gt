@@ -14,6 +14,8 @@ describe GT::DiscussionRollUtils do
   end
   
   context "find_videos_linked_in_text" do
+    #this fully tests videos_from_url_array
+    
     it "should return empty array when there are no urls" do
       vids = @tester.find_videos_linked_in_text("no urls in here")
       vids.should == []

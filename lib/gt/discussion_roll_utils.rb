@@ -10,10 +10,16 @@ module GT
     def find_videos_linked_in_text(text)
       raise ArgumentError "must provide a text string" unless text.is_a?(String)
       
-      videos = []
-      
       raw_urls = text.split.grep(URL_REGEX)
-      raw_urls.each { |url| videos << GT::VideoManager.get_or_create_videos_for_url(url)[:videos][0] }
+      return videos_from_url_array(raw_urls)
+    end
+    
+    # Given an array of URLs, return the array of Videos
+    def videos_from_url_array(url_array)
+      return [] unless url_array.is_a?(Array) and !url_array.empty?
+      
+      videos = []
+      url_array.each { |url| videos << GT::VideoManager.get_or_create_videos_for_url(url)[:videos][0] }
       
       return videos.compact
     end

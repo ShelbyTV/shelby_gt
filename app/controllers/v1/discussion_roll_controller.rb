@@ -85,14 +85,17 @@ class V1::DiscussionRollController < ApplicationController
   # Appends a new message to the ongoing discussion in the given roll
   #   AUTHENTICATION OPTIONAL
   #
-  # TODO: Return a newly created Frame if the message included a video URL,
-  # otherwise just returns the updated Conversation.
-  # (currently always returns an updated Conversation)
+  # If the message includes a video URL, or videos[] is included, will return
+  # an array of new Frames, one for each video, with the message appended to the
+  # conversation of the last Frame.  
+  # Otherwise just returns the updated Conversation.
   #
   # [POST] /v1/discussion_roll/:discussion_roll_id/messages
   # 
-  # @param [Optional, String] token The security token authenticating and authorizing this post
   # @param [Required, String] message The message being appended to this discussion
+  # @param [Optional, String] token The security token authenticating and authorizing this post
+  # @param [Optional, String] videos[] An array of URL strings to map to Shelby Videos and append to this discusison roll
+  #
   def create_message
     roll = Roll.find(params[:discussion_roll_id])
     return render_error(404, "could not find roll #{params[:discussion_roll_id]}") unless roll
@@ -106,9 +109,12 @@ class V1::DiscussionRollController < ApplicationController
     shelby_user = params[:token] ? user_from_token(params[:token]) : current_user
     
     # 2) Create new Frame(s) or grab the last one in the Roll...
-    if !(videos_in_text = find_videos_linked_in_text(params[:message])).empty?
+    videos_to_append = []
+    videos_to_append += find_videos_linked_in_text(params[:message])
+    videos_to_append += videos_from_url_array(params[:videos])
+    if !videos_to_append.empty?
       @new_frames = []
-      videos_in_text.each do |video|
+      videos_to_append.each do |video|
         res = GT::Framer.create_frame(
   	      :creator => shelby_user, #which may be nil
   	      :video => video,
