@@ -51,16 +51,18 @@
     <h1 class="user__h1">
       <%= link_to user.name, "/admin/user/#{user.id}", :class=>"user__username" %> <span>(<%= user.nickname %>)</span>
     </h1>
-    <div class="user__info">
-      <%= link_to "#{user.public_roll.subdomain}.shelby.tv", "http://#{user.public_roll.subdomain}.shelby.tv" %>
-      <ul class="list user__stats">
-        <li>
-          videos in roll: <%= user.public_roll.frames.count %>
-        </li>
-        <li>
-          videos queued: <%= user.watch_later_roll.frames.count %>
-        </li>
-      </ul>
-    </div><!-- eo user__info -->
+		<% if user.public_roll %>
+	    <div class="user__info">	
+	      <%= link_to "#{user.public_roll.subdomain}.shelby.tv", "http://#{user.public_roll.subdomain}.shelby.tv" %>
+	      <ul class="list user__stats">
+	        <li>
+	          videos in roll: <%= user.public_roll.frames.count %>
+	        </li>
+	        <li>
+	          videos queued: <%= user.watch_later_roll.frames.count %>
+	        </li>
+	      </ul>
+	    </div><!-- eo user__info -->
+		<% end %>
   </div><!-- eo user__body -->
 </article>
