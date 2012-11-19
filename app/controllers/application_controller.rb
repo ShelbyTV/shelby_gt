@@ -61,6 +61,43 @@ class ApplicationController < ActionController::Base
     }      
   end
 
+  ######################
+  # Helper methods to manipulate URL and query params
+  #
+  def clean_query_params(loc, params=["auth_failure", "auth_strategy"])
+    if loc
+      # remove parameters describing a previous auth failure from the redirect url as they are no longer relevant
+      redirect_uri = URI(loc)
+      query = Rack::Utils.parse_query redirect_uri.query
+      params.each { |p| query.delete(p) }
+      redirect_uri.query = query.empty? ? nil : query.to_query
+
+      redirect_uri.to_s
+    end
+  end
+  
+  def add_query_params(loc, params)
+    # add parameters describing the auth failure to the redirect url
+    redirect_uri = URI(loc)
+    query = Rack::Utils.parse_query redirect_uri.query
+    params.each { |param, val| query[param.to_s] = val unless val.blank? }
+    redirect_uri.query = query.to_query
+
+    redirect_uri.to_s
+  end
+
+  def root_path(loc)
+    if loc
+      root_uri = URI(loc)
+      root_uri.path = "/"
+      root_uri.query = nil
+      root_uri.fragment = nil
+
+      root_uri.to_s
+    end
+  end
+  ##################################
+
   private
   
     def debug_cookies_and_session

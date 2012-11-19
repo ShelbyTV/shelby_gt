@@ -5,7 +5,8 @@ defaults: &defaults
   
 development:
   <<: *defaults
-
+  web_root: "http://localhost.shelby.tv:3000"
+    
 test:
   <<: *defaults
 

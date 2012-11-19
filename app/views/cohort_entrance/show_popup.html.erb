@@ -1,0 +1,157 @@
+<header class="shelby-header signup-popup__head clearfix" role="banner">
+  <h1 class="shelby-title ir">
+    Shelby.tv
+  </h1>
+</header>
+<div class="signup-popup__body">
+  <div class="signup-popup__lining">
+		<% proto = Rails.env == "production" ? "https" : "http" %>
+    <%= form_for :user, :remote => true, format: :json , :html => {:class => "js-form--signup-popup form_module form_module--signup-popup"}, :url => session_url(:user, :protocol => proto) do |f| %>
+      <h1 class="signup-popup__h1">  
+        Sign up to <%= @source %> on <%= @roll_title %>
+      </h1>
+
+      <fieldset class="form_fieldset">
+        <%= f.label :name, :class => "form_label" %>
+        <span class="form_error">
+          <% if @name_error %>
+            Please enter a valid name
+          <% end %>
+        </span>
+        <%= f.text_field :name, :class => "form_input" %>
+      </fieldset>
+
+      <fieldset class="form_fieldset">
+        <%= f.label :nickname, "Username", :class => "form_label" %>
+        <span class="form_error">
+          <% if @email_error %>
+            Please enter a valid username
+          <% end %>
+        </span>
+        <%= f.text_field :nickname, :class => "form_input" %>
+      </fieldset>
+
+      <fieldset class="form_fieldset">
+        <%= f.label :primary_email, "Email", :class=>"foo bar", :class => "form_label" %>
+        <span class="form_error">
+          <% if @email_error %>
+            Please enter a valid email address
+          <% end %>
+        </span>
+        <%= f.email_field :primary_email, :class => "form_input" %>
+      </fieldset>
+
+      <fieldset class="form_fieldset">
+        <%= f.label :password, :class => "form_label" %>
+        <span class="form_error">
+          <% if @password_error %>
+            Please enter a valid password
+          <% end %>
+        </span>
+        <%= f.password_field :password, :class => "form_input" %>
+      </fieldset>
+
+      <fieldset class="form_fieldset">
+        <%= f.submit "Sign me up!", :class => "button_primer button_blue form_submit" %>
+      </fieldset>
+    <% end %>
+
+    <h2 class="signup-popup__h2">
+      What's Shelby?
+    </h2>
+
+    <p>
+      Shelby is a smart new way to watch video. It’s free and available on the web, soon on your iPad, and eventually, your TV.
+    </p>
+  </div><!-- eo signup-popup__lining -->
+</div><!-- eo signup-popup__body -->
+<script>
+  //carried over form configs
+  if (typeof(shelby) == 'undefined') {
+    shelby = {};
+  }
+  if (typeof(shelby.config) == 'undefined') {
+    shelby.config = {};
+  }
+  shelby.config.user = {
+    email : {
+      validationRegex : /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i
+    },
+    password : {
+      minLength : 5
+    }
+  };
+</script>
+
+<script>
+  //class names used more-than-once
+  var formFieldset = '.form_fieldset',
+      formFieldsetError = 'form_fieldset--error';
+
+  //business
+  $(document).ready(function(){
+    $('.js-form--signup-popup').on('submit', function(e){
+      var hasErrors = false;
+      var signupName = $('#user_name');
+      var signupUsername = $('#user_nickname');
+      var signupEmail = $('#user_primary_email');
+      var signupPassword = $('#user_password');
+      // validate user full name
+      if(!signupName.val().length) {
+        signupName.parent(formFieldset).addClass(formFieldsetError)
+                  .find('.form_error').text('Please enter your name');
+        hasErrors = true;
+      } else {
+        signupName.parent(formFieldset).removeClass(formFieldsetError);
+      }
+
+      // validate username
+      if(!signupUsername.val().length) {
+        signupUsername.parent(formFieldset).addClass(formFieldsetError)
+                      .find('.form_error').text('Please enter a username');
+        hasErrors = true;
+      } else {
+        signupUsername.parent(formFieldset).removeClass(formFieldsetError);
+      }
+
+      // validate password
+      // var password
+      if(signupPassword.val().length < shelby.config.user.password.minLength) {
+        signupPassword.parent(formFieldset).addClass(formFieldsetError)
+                      .find('.form_error').text('Password must be at least ' + shelby.config.user.password.minLength + ' characters long');
+        hasErrors = true;
+      } else {
+        signupPassword.parent(formFieldset).removeClass(formFieldsetError);
+      }
+
+      // validate email
+      if(!signupEmail.val().length || signupEmail.val().search(shelby.config.user.email.validationRegex) == -1) {
+        signupEmail.parent(formFieldset).addClass(formFieldsetError)
+                   .find('.form_error').text('Please enter a valid email.');
+        hasErrors = true;
+      } else {
+        signupEmail.parent(formFieldset).removeClass(formFieldsetError);
+      }
+
+      if (hasErrors) {
+        e.preventDefault();
+      } else {
+        // save the user's input in a session cookie so we can re-render it if API redirects us back
+        // here with errors the user needs to fix
+			}
+    }).on('keydown','input', function(){
+      //remove class that displays error message, when user starts typing.
+      $(this).siblings('.form_error').text('')
+             .parent(formFieldset).removeClass(formFieldsetError);
+    });
+
+		// *****************************************************************
+		// Event listeners to handle the popup closing itself and the opener reloading
+		function receiveMessage(event) {
+			if (event.data == "close") { window.close(); }
+			if (event.data == "opened") {  window.authPopup = event.source; }
+		}
+		window.addEventListener("message", receiveMessage, false);
+		// *****************************************************************
+  });
+</script>

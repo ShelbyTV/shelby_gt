@@ -18,6 +18,7 @@
 .yardoc/*
 /*/*/.DS_Store
 
+# Ignore sass-cache files.
 .sass-cache
 
 /public/assets

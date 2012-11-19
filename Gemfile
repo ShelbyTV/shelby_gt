@@ -29,6 +29,7 @@ gem 'rack-oauth2-server'
 # ---------- Assets
 #
 gem "haml"
+gem 'jquery-rails'
 
 #
 # -- Quiet Logging

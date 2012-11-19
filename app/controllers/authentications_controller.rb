@@ -139,9 +139,8 @@ class AuthenticationsController < ApplicationController
         
 # ---- New User signing up w/ email & password
     elsif !params[:user].blank?
-      # email/password is never done with a popup, so we never close ourselves and redirect the opener
-      # (the opener may be gmail or something if the user got an invite)
-      @no_redirect = true
+      # can now signup in a popup so no_redirect should not be set!
+      @no_redirect = true unless session[:popup]
       
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
       
@@ -184,8 +183,20 @@ class AuthenticationsController < ApplicationController
     end
 
     @opener_location = clean_query_params(@opener_location)
+        
+    respond_to do |format|
+      format.html { render :action => 'redirector', :layout => 'simple' }
 
-    render :action => 'redirector', :layout => 'simple'
+      # allow AJAX use for signup via popup window
+      format.js   { 
+        if cohort_entrance
+          render :action => 'popup_communicator', :format => :js
+        else
+          render :text => "sorry, something went wrong"
+        end
+      }
+    end
+    
   end
   
   # confirm that they want to merge, will post to do_merge_accounts
@@ -269,37 +280,4 @@ class AuthenticationsController < ApplicationController
       @opener_location = redirect_path || Settings::ShelbyAPI.web_root
     end
     
-    def clean_query_params(loc, params=["auth_failure", "auth_strategy"])
-      if loc
-        # remove parameters describing a previous auth failure from the redirect url as they are no longer relevant
-        redirect_uri = URI(loc)
-        query = Rack::Utils.parse_query redirect_uri.query
-        params.each { |p| query.delete(p) }
-        redirect_uri.query = query.empty? ? nil : query.to_query
-
-        redirect_uri.to_s
-      end
-    end
-    
-    def add_query_params(loc, params)
-      # add parameters describing the auth failure to the redirect url
-      redirect_uri = URI(loc)
-      query = Rack::Utils.parse_query redirect_uri.query
-      params.each { |param, val| query[param.to_s] = val unless val.blank? }
-      redirect_uri.query = query.to_query
-
-      redirect_uri.to_s
-    end
-  
-    def root_path(loc)
-      if loc
-        root_uri = URI(loc)
-        root_uri.path = "/"
-        root_uri.query = nil
-        root_uri.fragment = nil
-
-        root_uri.to_s
-      end
-    end
-
 end
