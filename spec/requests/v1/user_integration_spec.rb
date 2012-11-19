@@ -396,6 +396,46 @@ describe 'v1/user' do
         @u1.reload.valid_password?(pass).should == true
       end
 
+      context "invite accepted notification" do
+
+        context "user was invited by someone" do
+          before(:each) do
+            @inviter = Factory.create(:user) #sets a primary_email on user
+            @inviter.save
+            beta_invite = BetaInvite.new(:to_email_address => @u1.primary_email)
+            beta_invite.invitee = @u1
+            beta_invite.sender = @inviter
+            beta_invite.save
+          end
+
+          it "should send an invite accepted notification if user completes onboarding" do
+            ShelbyGT_EM.should_receive(:next_tick).and_return(nil)
+            put "/v1/user/#{@u1.id}", :app_progress => { :onboarding => 4 }
+          end
+
+          it "should NOT send an invite accepted notification if user did not complete onboarding" do
+            ShelbyGT_EM.should_not_receive(:next_tick)
+            put "/v1/user/#{@u1.id}", :name => 'Some New Name'
+          end
+
+          it "should NOT send an invite accepted notification if user completed onboarding for 2nd+ time" do
+            @u1.app_progress = AppProgress.new(:onboarding => 4)
+            @u1.save
+            ShelbyGT_EM.should_not_receive(:next_tick)
+            put "/v1/user/#{@u1.id}", :app_progress => { :onboarding => 4 }
+          end
+
+        end
+
+        context "user was not invited by someone" do
+          it "should NOT send an invite accepted notification" do
+            ShelbyGT_EM.should_not_receive(:next_tick)
+            put "/v1/user/#{@u1.id}", :app_progress => { :onboarding => 4 }
+          end
+        end
+
+      end
+
     end
   end
   
