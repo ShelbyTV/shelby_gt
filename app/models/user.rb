@@ -351,6 +351,11 @@ class User
     self.save
   end
 
+  # Returns who invited this user, if anyone
+  def invited_by
+    BetaInvite.where(:invitee_id => self.id).first
+  end
+
   private
         
     def check_to_send_email_address_to_sailthru

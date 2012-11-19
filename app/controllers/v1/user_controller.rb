@@ -1,5 +1,6 @@
 class V1::UserController < ApplicationController  
   require 'user_manager'
+  require 'notification_manager'
 
   extend NewRelic::Agent::MethodTracer
   
@@ -72,11 +73,22 @@ class V1::UserController < ApplicationController
           return render_error(409, "Email taken", {:user => {:primary_email => "already taken"}}) if User.exists?(:primary_email => params[:primary_email])
         end
         
+        had_completed_onboarding = @user.app_progress? and @user.app_progress.onboarding? and @user.app_progress.onboarding.to_i == 4
+
         if @user.update_attributes(params)
           @status = 200
           
           # When changing the password, need to re-sign in (and bypass validation)
           sign_in(@user, :bypass => true) if params[:password]
+
+          # If the user just completed onboarding, send a notification to their inviter if they had one
+          if params[:app_progress] and params[:app_progress][:onboarding] and params[:app_progress][:onboarding].to_i == 4 and !had_completed_onboarding
+            if inviter = @user.invited_by
+              ShelbyGT_EM.next_tick do
+                GT::NotificationManager.check_and_send_invite_accepted_notification(inviter, user)
+              end
+            end
+          end
 
           if current_user == @user
             @user_personal_roll_subdomain = (@user.public_roll and @user.public_roll.subdomain)
