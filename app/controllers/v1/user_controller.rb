@@ -72,7 +72,7 @@ class V1::UserController < ApplicationController
         if params[:primary_email] and params[:primary_email] != @user.primary_email
           return render_error(409, "Email taken", {:user => {:primary_email => "already taken"}}) if User.exists?(:primary_email => params[:primary_email])
         end
-        
+
         had_completed_onboarding = @user.app_progress? and @user.app_progress.onboarding? and @user.app_progress.onboarding.to_s == '4'
 
         if @user.update_attributes(params)
