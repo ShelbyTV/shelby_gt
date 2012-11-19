@@ -219,5 +219,27 @@ describe User do
     end
     
   end
+
+  context "invited_by" do
+    before(:each) do
+      @u = Factory.create(:user) #sets a primary_email on user
+      @u.save
+    end
+
+    it "should return who invited the user, if someone did" do
+      inviter = Factory.create(:user)
+      inviter.save
+      beta_invite = BetaInvite.new(:to_email_address => @u.primary_email)
+      beta_invite.invitee = @u
+      beta_invite.sender = inviter
+      beta_invite.save
+
+      @u.invited_by.sender_id.should == inviter.id
+    end
+
+    it "should return nil if no one invited the user" do
+      @u.invited_by.should == nil
+    end
+  end
   
 end

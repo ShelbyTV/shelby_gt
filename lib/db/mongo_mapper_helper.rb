@@ -10,6 +10,8 @@ module MongoMapper
     def self.ensure_all_indexes
       # Get all invites sent by a given user (a == sender_user_id)
       BetaInvite.ensure_index(:a, :background => true)
+      # Get the invite through which a given user entered shelby (b == invitee_id)
+      BetaInvite.ensure_index(:b, :background => true, :sparse => true)
 
       #Get all the conversations related to a given video (a == video_id)
       Conversation.ensure_index(:a, :background => true)
