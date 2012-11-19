@@ -1,6 +1,4 @@
 class V1::UserController < ApplicationController  
-  require 'user_manager'
-  require 'notification_manager'
 
   extend NewRelic::Agent::MethodTracer
   
@@ -85,7 +83,7 @@ class V1::UserController < ApplicationController
           if params[:app_progress] and params[:app_progress][:onboarding] and params[:app_progress][:onboarding].to_s == '4' and !had_completed_onboarding
             if inviter = @user.invited_by
               ShelbyGT_EM.next_tick do
-                GT::NotificationManager.check_and_send_invite_accepted_notification(inviter, user)
+                GT::NotificationManager.check_and_send_invite_accepted_notification(inviter, @user)
               end
             end
           end
