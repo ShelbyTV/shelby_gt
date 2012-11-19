@@ -3,6 +3,6 @@ class AppProgress
   
   embedded_in :user 
 
-  key :onboarding, Integer
+  key :onboarding
   
 end
