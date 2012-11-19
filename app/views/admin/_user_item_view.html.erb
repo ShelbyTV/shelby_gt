@@ -5,12 +5,16 @@
   <div class="user__image">
     <%= image_tag avatar_url_for_user(user), :size=>"50x50" %>
 
-    <% if user.public_roll.roll_type >= Roll::TYPES[:special_public_real_user] %>
+    <% if user.public_roll and user.public_roll.roll_type >= Roll::TYPES[:special_public_real_user] %>
       <div class="user__form">
         <%= form_tag "/v1/roll/#{user.public_roll.id}/join", :class =>"form form--follow", :multipart => true, :method => :post do |f| %>
           <%= submit_tag "Follow" %>
         <% end %>
       </div><!-- eo user__form -->
+		<% elsif user.public_roll == nil %>
+			<div class="user__form">
+				<%= submit_tag "BAD" %>
+			</div>
     <% end %>
   </div><!-- eo user__image -->
 
