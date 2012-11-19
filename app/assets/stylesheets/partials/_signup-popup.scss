@@ -46,7 +46,7 @@
   .form_error {
     color: $shelby-red;
     font-size: 0.9em;
-    line-height: 2;
+    line-height: 3;
     position: absolute;
     right: .5em;
   }
@@ -56,6 +56,7 @@
   }
   
   .form_fieldset--error {
+    background-color: $shelby-red;
     .form_error {
       display: inline-block;
     }

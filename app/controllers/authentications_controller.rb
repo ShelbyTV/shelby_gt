@@ -167,10 +167,13 @@ class AuthenticationsController < ApplicationController
         else
           Rails.logger.error "AuthenticationsController#create_with_email - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name} -- primary_email #{user.primary_email}"
 
-          # return to beta invite url, origin, or web root with errors
+          # keep list of errors handy to pass to a client if necessary.
+          @user_errors = model_errors_as_simple_hash(user)
+
+          # return to beta invite url, origin, or web root with errors          
           @opener_location = add_query_params(
             beta_invite ? beta_invite.url : clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), 
-            model_errors_as_simple_hash(user))
+            @user_errors)
         end
         
       else
@@ -187,9 +190,10 @@ class AuthenticationsController < ApplicationController
     respond_to do |format|
       format.html { render :action => 'redirector', :layout => 'simple' }
 
-      # allow AJAX use for signup via popup window
+      # allow AJAX use for signup via popup window and send errors back if there are any
       format.js   { 
         if cohort_entrance
+          session[:user_errors] = @user_errors.to_json
           render :action => 'popup_communicator', :format => :js
         else
           render :text => "sorry, something went wrong"
@@ -278,6 +282,39 @@ class AuthenticationsController < ApplicationController
       end
       
       @opener_location = redirect_path || Settings::ShelbyAPI.web_root
+    end
+    
+    def clean_query_params(loc, params=["auth_failure", "auth_strategy"])
+      if loc
+        # remove parameters describing a previous auth failure from the redirect url as they are no longer relevant
+        redirect_uri = URI(loc)
+        query = Rack::Utils.parse_query redirect_uri.query
+        params.each { |p| query.delete(p) }
+        redirect_uri.query = query.empty? ? nil : query.to_query
+
+        redirect_uri.to_s
+      end
+    end
+
+    def add_query_params(loc, params)
+      # add parameters describing the auth failure to the redirect url
+      redirect_uri = URI(loc)
+      query = Rack::Utils.parse_query redirect_uri.query
+      params.each { |param, val| query[param.to_s] = val unless val.blank? }
+      redirect_uri.query = query.to_query
+
+      redirect_uri.to_s
+    end
+
+    def root_path(loc)
+      if loc
+        root_uri = URI(loc)
+        root_uri.path = "/"
+        root_uri.query = nil
+        root_uri.fragment = nil
+
+        root_uri.to_s
+      end
     end
     
 end
