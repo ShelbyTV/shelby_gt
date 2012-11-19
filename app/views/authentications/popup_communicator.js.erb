@@ -1,0 +1,6 @@
+// **************************************************
+// This is part of the flow for new user signup via popup window.
+
+// - this message gets sent back to the window opener. it tells the opener
+//   that everything is complete. the opener closes the popup and reloads itself.
+window.authPopup.postMessage("complete", "<%= Settings::ShelbyAPI.web_root %>" );

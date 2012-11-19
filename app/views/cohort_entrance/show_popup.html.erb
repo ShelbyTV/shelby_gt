@@ -138,10 +138,6 @@
       } else {
         // save the user's input in a session cookie so we can re-render it if API redirects us back
         // here with errors the user needs to fix
-/*         cookies.set('_shelby_signup_name', signupName.val());
-        cookies.set('_shelby_signup_username', signupUsername.val());
-        cookies.set('_shelby_signup_email', signupEmail.val());
- */
 			}
     }).on('keydown','input', function(){
       //remove class that displays error message, when user starts typing.
@@ -149,15 +145,13 @@
              .parent(formFieldset).removeClass(formFieldsetError);
     });
 
+		// *****************************************************************
+		// Event listeners to handle the popup closing itself and the opener reloading
 		function receiveMessage(event) {
-			console.log('message received:  ' + event.data, event);
 			if (event.data == "close") { window.close(); }
-			if (event.data == "opened") { 
-				window.authPopup = event.source;
-				console.log("created window.authPopup", window.authPopup);
-			}
+			if (event.data == "opened") {  window.authPopup = event.source; }
 		}
 		window.addEventListener("message", receiveMessage, false);
-		
+		// *****************************************************************
   });
 </script>
