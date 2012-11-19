@@ -123,6 +123,8 @@ class V1::DiscussionRollController < ApplicationController
   	    @new_frames << res[:frame]
       end
       frame = @new_frames.last
+      #Frames may all have same created_at; make sure the one we comment on is newest via :score
+      frame.update_attribute(:score, frame.score + 0.00000001)
     else    
       frame = Frame.where(:roll_id => roll.id).order(:score.desc).first
     end

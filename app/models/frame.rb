@@ -55,7 +55,7 @@ class Frame
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
  
-  before_validation :update_score
+  before_validation(:on => :create) { self.update_score if self.new? }
   
   after_create :increment_rolls_frame_count
   
@@ -211,24 +211,24 @@ class Frame
   
   def virtually_destroyed?() self.deleted_from_roll_id != nil; end
 
-  private
+  # Score increases linearly with time, logarithmically with votes
+  # 10 votes = 1/2 day worth of points
+  # 100 votes = 1 day worth of points
+  def update_score
+    #each second = .00002
+    #each hour = .08
+    #each day = 2
+    time_score =(self.created_at.to_f - SHELBY_EPOCH.to_f) / TIME_DIVISOR
     
-    # Score increases linearly with time, logarithmically with votes
-    # 10 votes = 1/2 day worth of points
-    # 100 votes = 1 day worth of points
-    def update_score
-      #each second = .00002
-      #each hour = .08
-      #each day = 2
-      time_score =(self.created_at.to_f - SHELBY_EPOCH.to_f) / TIME_DIVISOR
-      
-      #+ log10 each upvote
-      # 10 votes = 1 point
-      # 100 votes = 10 points
-      vote_score = Math.log10([1, self.upvoters.size].max)
-      
-      self.score = time_score + vote_score
-    end
+    #+ log10 each upvote
+    # 10 votes = 1 point
+    # 100 votes = 10 points
+    vote_score = Math.log10([1, self.upvoters.size].max)
+    
+    self.score = time_score + vote_score
+  end
+
+  private
     
     SHELBY_EPOCH = Time.utc(2012,2,22)
     TIME_DIVISOR = 45_000.0
