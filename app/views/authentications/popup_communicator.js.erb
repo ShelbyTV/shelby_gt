@@ -3,4 +3,19 @@
 
 // - this message gets sent back to the window opener. it tells the opener
 //   that everything is complete. the opener closes the popup and reloads itself.
-window.authPopup.postMessage("complete", 'http://staging.shelby.tv');//"<%= Settings::ShelbyAPI.web_root %>" );
+// - if an error is returned we let the user know about it.
+<% if session[:user_errors] %>
+  var signupUsername = $('#user_nickname');
+  var signupEmail = $('#user_primary_email');
+  var errors = <%= session[:user_errors].to_s.html_safe %>;
+  if (errors["primary_email"]){
+    signupEmail.parent(formFieldset).addClass(formFieldsetError)
+               .find('.form_error').text(errors["primary_email"]);
+  }
+  else if (errors["nickname"]){
+    signupUsername.parent(formFieldset).addClass(formFieldsetError)
+               .find('.form_error').text(errors["nickname"]);
+  }
+<% else %>
+  window.authPopup.postMessage("complete", 'http://staging.shelby.tv');//"<%= Settings::ShelbyAPI.web_root %>" );
+<% end %>
