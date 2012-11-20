@@ -81,14 +81,10 @@ class V1::UserController < ApplicationController
 
           # If the user just completed onboarding, send a notification to their inviter if they had one
           if params[:app_progress] and params[:app_progress][:onboarding] and params[:app_progress][:onboarding].to_s == '4' and !had_completed_onboarding
-            Rails.logger.debug "user just completed onboarding"
             if inviter = @user.invited_by
-              Rails.logger.debug "user was invited by someone"
               ShelbyGT_EM.next_tick do
                 GT::NotificationManager.check_and_send_invite_accepted_notification(inviter, @user)
-                Rails.logger.debug "made it past invite accepted notification sending"
               end
-              Rails.logger.debug "got past the next_tick block"
             end
           end
 
@@ -99,8 +95,6 @@ class V1::UserController < ApplicationController
           render_error(409, "error updating user.")
         end
       rescue => e
-        Rails.logger.debug "user update hit the rescue block"
-        Rails.logger.debug e.inspect
         render_error(404, "error while updating user: #{e}")
       end
     end
