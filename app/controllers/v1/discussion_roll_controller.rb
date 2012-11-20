@@ -54,7 +54,7 @@ class V1::DiscussionRollController < ApplicationController
     frame.conversation.save
 
   	#sends emails to all but the poster
-  	ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_discussion_roll_notification(@roll, current_user) }
+  	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(@roll, current_user) }
     
     @status =  200
     render "/v1/roll/show"
@@ -153,7 +153,7 @@ class V1::DiscussionRollController < ApplicationController
 
     if @conversation.save
       #sends emails to all but the poster
-    	ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_discussion_roll_notification(roll, poster) }
+    	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(roll, poster) }
     	
       @status =  200
       # Render an array of Frames if new ones were created, or the single updated Conversation
