@@ -53,8 +53,8 @@ class V1::DiscussionRollController < ApplicationController
       :text => CGI.unescape(params[:message]))
     frame.conversation.save
 
-  	#sends emails to all but the poster
-  	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(@roll, current_user) }
+  	#sends emails to all (including the poster)
+  	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(@roll, current_user, true) }
     
     @status =  200
     render "/v1/roll/show"
