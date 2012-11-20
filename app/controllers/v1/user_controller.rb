@@ -72,6 +72,7 @@ class V1::UserController < ApplicationController
         end
 
         had_completed_onboarding = @user.app_progress? and @user.app_progress.onboarding? and @user.app_progress.onboarding.to_s == '4'
+        Rails.logger.debug "user's app progress #{@user.app_progress.inspect}"
         Rails.logger.debug "had completed onboarding? #{had_completed_onboarding}"
 
         if @user.update_attributes(params)
