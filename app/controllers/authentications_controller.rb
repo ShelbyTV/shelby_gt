@@ -162,7 +162,7 @@ class AuthenticationsController < ApplicationController
           end
 
           StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['username'])
-
+          @user_errors = false
           @opener_location = redirect_path || Settings::ShelbyAPI.web_root
         else
           Rails.logger.error "AuthenticationsController#create_with_email - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name} -- primary_email #{user.primary_email}"
@@ -193,7 +193,7 @@ class AuthenticationsController < ApplicationController
       # allow AJAX use for signup via popup window and send errors back if there are any
       format.js   { 
         if cohort_entrance
-          session[:user_errors] = @user_errors.to_json
+          session[:user_errors] = @user_errors == false ? false : @user_errors.to_json 
           render :action => 'popup_communicator', :format => :js
         else
           render :text => "sorry, something went wrong"
