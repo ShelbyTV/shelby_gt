@@ -71,7 +71,8 @@ gem 'aws-sdk', '~> 1.3.4'
 #
 # ---------- External Services
 #
-gem "youtube_it" #youtube api
+gem "youtube_it"  #youtube api
+gem "vimeo"       # vimeo api
 gem "grackle" 		# twitter
 gem "koala"				# facebook
 gem "sendgrid", :git => "git://github.com/PracticallyGreen/sendgrid.git" 	# email, with g.analytics customization

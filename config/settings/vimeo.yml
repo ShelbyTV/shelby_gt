@@ -1,0 +1,13 @@
+defaults: &defaults
+  consumer_key: f1e5ee114969649de9150b8b33169f0de70744c0
+  consumer_secret: 36311692a7e42ce181ba826cc5297c6fb5fae3a5
+  access_token:	c4cc676449285d296979aaa2ba18765b
+  access_token_secret:	7e08d610df728e051dfb770f588405367f4da14b
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults

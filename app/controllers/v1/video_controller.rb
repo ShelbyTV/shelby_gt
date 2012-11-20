@@ -100,8 +100,25 @@ class V1::VideoController < ApplicationController
     render 'show'
   end
   
+  ##
+  # Returns videos video a search query param and a search provider
+  #
+  # [GET] /v1/video/search
+  # 
+  # @param [Required, String] q search query term
+  # @param [Required, String] provider where to perform the search, eg vimeo
+  # @param [Optional, String] limit number of videos to return, 10 default
   def search
+    @provider = params.delete(:provider)
+    @query = params.delete(:q)
+
+    return render_error(404, "need to specify both provider and query search term") unless @provider and @query
     
+    if @result = Video.where(:provider_name => @provider_name, :provider_id => @provider_id).first
+      @status = 200
+    else
+      render_error(404, "could not find any video")
+    end
   end
   
   private
