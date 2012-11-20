@@ -353,7 +353,8 @@ class User
 
   # Returns who invited this user, if anyone
   def invited_by
-    BetaInvite.where(:invitee_id => self.id).first
+    invite = BetaInvite.where(:invitee_id => self.id).first
+    invite ? invite.sender : nil
   end
 
   private

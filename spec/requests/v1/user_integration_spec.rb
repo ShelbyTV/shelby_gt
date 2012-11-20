@@ -409,28 +409,32 @@ describe 'v1/user' do
           end
 
           it "should send an invite accepted notification if user completes onboarding" do
-            ShelbyGT_EM.should_receive(:next_tick).and_return(nil)
+            GT::NotificationManager.should_receive(:check_and_send_invite_accepted_notification).with(@inviter, @u1).and_return(nil)
             put "/v1/user/#{@u1.id}", :app_progress => { :onboarding => 4 }
+            response.body.should be_json_eql(200).at_path("status")
           end
 
           it "should NOT send an invite accepted notification if user did not complete onboarding" do
-            ShelbyGT_EM.should_not_receive(:next_tick)
+            GT::NotificationManager.should_not_receive(:check_and_send_invite_accepted_notification)
             put "/v1/user/#{@u1.id}", :name => 'Some New Name'
+            response.body.should be_json_eql(200).at_path("status")
           end
 
           it "should NOT send an invite accepted notification if user completed onboarding for 2nd+ time" do
             @u1.app_progress = AppProgress.new(:onboarding => 4)
             @u1.save
-            ShelbyGT_EM.should_not_receive(:next_tick)
+            GT::NotificationManager.should_not_receive(:check_and_send_invite_accepted_notification)
             put "/v1/user/#{@u1.id}", :app_progress => { :onboarding => 4 }
+            response.body.should be_json_eql(200).at_path("status")
           end
 
         end
 
         context "user was not invited by someone" do
           it "should NOT send an invite accepted notification" do
-            ShelbyGT_EM.should_not_receive(:next_tick)
+            GT::NotificationManager.should_not_receive(:check_and_send_invite_accepted_notification)
             put "/v1/user/#{@u1.id}", :app_progress => { :onboarding => 4 }
+            response.body.should be_json_eql(200).at_path("status")
           end
         end
 
