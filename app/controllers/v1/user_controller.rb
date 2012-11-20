@@ -71,10 +71,12 @@ class V1::UserController < ApplicationController
           return render_error(409, "Email taken", {:user => {:primary_email => "already taken"}}) if User.exists?(:primary_email => params[:primary_email])
         end
 
-        had_completed_onboarding = @user.app_progress? and @user.app_progress.onboarding? and @user.app_progress.onboarding.to_s == '4'
-        Rails.logger.debug "the user's app progress #{@user.app_progress.inspect}\nhad completed onboarding? #{had_completed_onboarding}"
+        Rails.logger.debug "!!!app_progress_1 #{@user.app_progress.inspect}!!!"
+        had_completed_onboarding = @user.app_progress? and @user.app_progress.onboarding? and @user.app_progress.onboarding == 4
+        Rails.logger.debug "!!!app_progress_2 #{@user.app_progress.inspect}!!!"
 
         if @user.update_attributes(params)
+          Rails.logger.debug "!!!app_progress_3 #{@user.app_progress.inspect}!!!"
           @status = 200
           
           # When changing the password, need to re-sign in (and bypass validation)
@@ -85,9 +87,11 @@ class V1::UserController < ApplicationController
             Rails.logger.debug "user just completed onboarding"
             if inviter = @user.invited_by
               Rails.logger.debug "user was invited by someone"
-              # temporarily removed next tick to help me debug this
-              GT::NotificationManager.check_and_send_invite_accepted_notification(inviter, @user)
-              Rails.logger.debug "made it past invite accepted notification sending"
+              ShelbyGT_EM.next_tick do
+                GT::NotificationManager.check_and_send_invite_accepted_notification(inviter, @user)
+                Rails.logger.debug "made it past invite accepted notification sending"
+              end
+              Rails.logger.debug "got past the next_tick block"
             end
           end
 
