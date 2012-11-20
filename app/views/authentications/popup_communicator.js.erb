@@ -17,5 +17,5 @@
                .find('.form_error').text(errors["nickname"]);
   }
 <% else %>
-  window.authPopup.postMessage("complete", 'http://staging.shelby.tv');//"<%= Settings::ShelbyAPI.web_root %>" );
+  window.authPopup.postMessage("complete", "<%= Settings::ShelbyAPI.web_root %>" );
 <% end %>
