@@ -123,6 +123,9 @@ class User
   
   # define admin users who can access special areas
   key :is_admin,              Boolean, :default => false
+  
+  # giving some user special abilities (ie ["multi_roll_roller"])
+  key :additional_abilities,  Array, :typecast => 'String', :abbr => :ba, :default => []
     
   ## For Devise
   # Rememberable

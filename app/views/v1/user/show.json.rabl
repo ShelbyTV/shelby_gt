@@ -1,6 +1,6 @@
 object @user
 
-attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :cohorts, :has_shelby_avatar, :avatar_updated_at, :beta_invites_available
+attributes :id, :name, :nickname, :primary_email, :user_image_original, :user_image, :faux, :cohorts, :has_shelby_avatar, :avatar_updated_at, :beta_invites_available, :additional_abilities
 attributes :has_password? => :has_password
 
 node :personal_roll_id do |u|
