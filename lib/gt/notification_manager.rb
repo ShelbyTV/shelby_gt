@@ -87,10 +87,10 @@ module GT
       NotificationMailer.invite_accepted_notification(inviter, invitee, invitee.public_roll).deliver
     end
 
-    # Email the current state of the discussion roll to all participants except for posting_user
+    # Email the current state of the discussion roll to all participants except for poster (an email address String or User)
     # We don't know, and it doesn't matter, if this email is being sent b/c of a new frame, 
     # new discussion roll alltogether, or just a new message in an ongoing discussion roll.
-    def self.check_and_send_discussion_roll_notification(discussion_roll, poster)
+    def self.send_discussion_roll_notifications(discussion_roll, poster, email_poster=false)
       raise ArgumentError, "must supply discussion roll" unless discussion_roll.is_a?(Roll)
       raise ArgumentError, "must supply poster as User or email address" unless poster.is_a?(User) or poster.is_a?(String)
       
@@ -99,13 +99,13 @@ module GT
 
       # Email all participants except for the poster
       convo_with.each do |p|
-        next if p == poster
+        next if p == poster and !email_poster
         next if p.is_a?(User) and !p.preferences.discussion_roll_notifications?
         
         email_to = p.is_a?(User) ? p.primary_email : p
         recipient = p.is_a?(User) ? p.id.to_s : p
         token = GT::DiscussionRollUtils.encrypt_roll_user_identification(discussion_roll, p.is_a?(User) ? p.id : p)
-        DiscussionRollMailer.state_of_discussion_roll(discussion_roll, email_to, recipient, convo_with - [p], token).deliver
+        DiscussionRollMailer.state_of_discussion_roll(discussion_roll, email_to, recipient, poster, convo_with - [p], token).deliver
       end
             
     end

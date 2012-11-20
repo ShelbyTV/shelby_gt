@@ -53,8 +53,8 @@ class V1::DiscussionRollController < ApplicationController
       :text => CGI.unescape(params[:message]))
     frame.conversation.save
 
-  	#sends emails to all but the poster
-  	ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_discussion_roll_notification(@roll, current_user) }
+  	#sends emails to all (including the poster)
+  	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(@roll, current_user, true) }
     
     @status =  200
     render "/v1/roll/show"
@@ -123,6 +123,8 @@ class V1::DiscussionRollController < ApplicationController
   	    @new_frames << res[:frame]
       end
       frame = @new_frames.last
+      #Frames may all have same created_at; make sure the one we comment on is newest via :score
+      frame.update_attribute(:score, frame.score + 0.00000001)
     else    
       frame = Frame.where(:roll_id => roll.id).order(:score.desc).first
     end
@@ -151,7 +153,7 @@ class V1::DiscussionRollController < ApplicationController
 
     if @conversation.save
       #sends emails to all but the poster
-    	ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_discussion_roll_notification(roll, poster) }
+    	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(roll, poster) }
     	
       @status =  200
       # Render an array of Frames if new ones were created, or the single updated Conversation

@@ -4,7 +4,7 @@ describe V1::DiscussionRollController do
   describe "POST create" do
     before(:each) do
       @video = Factory.create(:video)
-      @frame = Factory.create(:frame)
+      @frame = Factory.create(:frame, :video => Factory.create(:video))
       
       @u1, @u2 = Factory.create(:user), Factory.create(:user)
       @u1.save

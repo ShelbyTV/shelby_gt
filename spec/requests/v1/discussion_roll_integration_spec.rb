@@ -9,7 +9,7 @@ describe 'v1/discussion_roll' do
     before(:each) do
       @tester = DiscussionRollTester.new
       
-      @frame = Factory.create(:frame)
+      @frame = Factory.create(:frame, :video => Factory.create(:video))
       @u1, @u2 = Factory.create(:user), Factory.create(:user)
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'      
@@ -43,11 +43,11 @@ describe 'v1/discussion_roll' do
         parse_json(response.body)["result"]["id"].should == roll.id.to_s
       end
       
-      it "should send emails to everybody but roll creator" do
+      it "should send emails to everybody (including roll creator on roll creation)" do
         emails = [Factory.next(:primary_email), Factory.next(:primary_email), Factory.next(:primary_email)]
         lambda {
           post "/v1/discussion_roll?frame_id=#{@frame.id}&message=msg&participants=#{CGI.escape emails.join(';')}"
-        }.should change { ActionMailer::Base.deliveries.count } .by(emails.size)
+        }.should change { ActionMailer::Base.deliveries.count } .by(emails.size + 1)
         
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result")
@@ -77,7 +77,7 @@ describe 'v1/discussion_roll' do
     
     describe "POST create_message" do
       before(:each) do
-        @frame = Factory.create(:frame)
+        @frame = Factory.create(:frame, :video => Factory.create(:video))
       end
       
       it "should create a new message and return the conversation" do
@@ -198,7 +198,7 @@ describe 'v1/discussion_roll' do
 
       @u1, @u2 = Factory.create(:user), Factory.create(:user)
 
-      @frame = Factory.create(:frame)
+      @frame = Factory.create(:frame, :video => Factory.create(:video))
       @roll = @tester.create_discussion_roll_for(@u2, @tester.convert_participants(@u1.primary_email))
     end
     
