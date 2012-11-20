@@ -212,6 +212,15 @@ describe V1::RollController do
       )
     end 
     
+    it "routes for GET associated" do
+      { :get => "/v1/roll/1/associated" }.should route_to(
+        :controller => "v1/roll",
+        :action => "show_associated",
+        :format => "json",
+        :roll_id => "1"
+      )
+    end
+    
     it "GET personal_roll" do
       { :get => "/v1/user/1/rolls/personal" }.should route_to(
         :controller => "v1/roll",

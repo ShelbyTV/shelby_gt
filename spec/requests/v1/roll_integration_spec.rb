@@ -431,6 +431,22 @@ describe 'v1/roll' do
         response.body.should be_json_eql(404).at_path("status")
       end
     end
+    
+    describe "GET show_associated" do
+      it "should return roll info on success" do
+        u = Factory.create(:user)
+        r1 = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => 33)
+        r2 = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => 33)
+        r3 = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => 33)
+        r_private = Factory.create(:roll, :creator_id => u.id, :public => false, :roll_type => 33)
+        r_hearted = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => Roll::TYPES[:special_upvoted])
+        get '/v1/roll/'+r1.id+'/associated'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result/rolls")
+        response.body.should have_json_size(3).at_path("result/rolls")
+        parse_json(response.body)["result"]["rolls"][0]["title"].should eq(r1.title)
+      end
+    end
 
     describe "GET index" do
       before (:each) do

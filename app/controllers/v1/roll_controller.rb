@@ -4,7 +4,7 @@ require "social_post_formatter"
 
 class V1::RollController < ApplicationController  
   
-  before_filter :user_authenticated?, :except => [:index, :show, :explore, :featured]
+  before_filter :user_authenticated?, :except => [:index, :show, :show_associated, :explore, :featured]
   ##
   # Returns a collection of rolls according to search criteria.
   #
@@ -47,6 +47,38 @@ class V1::RollController < ApplicationController
         
         if @roll
           if (user_signed_in? and @roll.viewable_by?(current_user)) or @roll.public
+            @status =  200
+          else
+            render_error(404, "you are not authorized to see that roll")
+          end
+        else
+          render_error(404, "that roll does not exist")
+        end
+      end
+    end
+  end
+  
+  ##
+  # Returns all rolls "associated" with the given roll (inclusive of the given roll).
+  # "associated" is currently defined as: public rolls created by the same user (less the "hearted" roll).
+  # This is used for navigation between multiple iso-rolls
+  #
+  # [GET] /v1/roll/:roll_id/associated
+  #   AUTHENTICATON OPTIONAL
+  # 
+  # @param [Required, String] roll_id The id or shelby.tv subdomain of the roll
+  def show_associated
+    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
+      if params[:roll_id]        
+        if BSON::ObjectId.legal? params[:roll_id]
+          seed_roll = Roll.find(params[:roll_id])
+        else
+          seed_roll = Roll.where(:subdomain => params[:id], :subdomain_active => true).find_one
+        end
+        
+        if seed_roll
+          if (user_signed_in? and seed_roll.viewable_by?(current_user)) or seed_roll.public
+            @rolls = Roll.where(:creator_id => seed_roll.creator_id, :public => true, :roll_type.gt => Roll::TYPES[:special_viewed]).all
             @status =  200
           else
             render_error(404, "you are not authorized to see that roll")

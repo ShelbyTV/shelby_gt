@@ -66,6 +66,7 @@ ShelbyGt::Application.routes.draw do
       post 'leave' => 'roll#leave'
       get 'explore' => 'roll#explore', :on => :collection
       get 'featured' => 'roll#featured', :on => :collection
+      get 'associated' => 'roll#show_associated'
     end
     namespace :roll do
        resources :genius, :only => [:create]
