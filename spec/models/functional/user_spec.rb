@@ -234,7 +234,7 @@ describe User do
       beta_invite.sender = inviter
       beta_invite.save
 
-      @u.invited_by.sender_id.should == inviter.id
+      @u.invited_by.id.should == inviter.id
     end
 
     it "should return nil if no one invited the user" do
