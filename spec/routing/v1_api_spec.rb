@@ -332,6 +332,14 @@ describe V1::VideoController do
       )
     end
     
+    it "routes for GET search" do
+      { :get => "/v1/video/search" }.should route_to(
+        :controller => "v1/video",
+        :action => "search",
+        :format => "json"
+      )
+    end
+    
   end
 end
 

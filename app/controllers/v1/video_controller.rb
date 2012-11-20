@@ -100,6 +100,10 @@ class V1::VideoController < ApplicationController
     render 'show'
   end
   
+  def search
+    
+  end
+  
   private
   
     def video_ids_on_roll(roll_id, limit=1000)
