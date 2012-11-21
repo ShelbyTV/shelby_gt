@@ -6,7 +6,7 @@ module APIClients
       
       return {:status => "ok", :limit => limit, :page => page, :videos => [] } if Rails.env == "test"
       
-      response = client.search("query", { :query => query, :page => page, :per_page => limit.to_s, :full_response => "1", :sort => "relevant" })
+      response = client.search(query, { :page => page, :per_page => limit.to_s, :full_response => "1", :sort => "relevant" })
       if response["stat"] == "ok"
         if converted
           videos = vimeo_to_shelby_video_conversion(response["videos"]["video"])
