@@ -79,6 +79,7 @@ class V1::RollController < ApplicationController
         if seed_roll
           if (user_signed_in? and seed_roll.viewable_by?(current_user)) or seed_roll.public
             @rolls = Roll.where(:creator_id => seed_roll.creator_id, :public => true, :roll_type.gt => Roll::TYPES[:special_viewed]).all
+            @rolls = [seed_roll] + (@rolls - [seed_roll])
             @status =  200
           else
             render_error(404, "you are not authorized to see that roll")
