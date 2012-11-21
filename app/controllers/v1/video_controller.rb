@@ -114,6 +114,7 @@ class V1::VideoController < ApplicationController
     @query = params.delete(:q)
     
     limit = params[:limit] ? params[:limit] : 10
+    page = params[:page] ? params[:page] : 1
 
     return render_error(404, "need to specify both provider and query search term") unless @provider and @query
     
@@ -121,7 +122,8 @@ class V1::VideoController < ApplicationController
     return render_error(404, "need to specify a supported provider") unless valid_providers.include? @provider
     
     if @provider == "vimeo"
-      @response = APIClients::Vimeo.search(@query, limit)
+      converted = (params[:converted] and params[:converted] == "false") ? false : true
+      @response = APIClients::Vimeo.search(@query, limit, page, converted)
     end
     
     if (@response and @response[:status] == "ok")
