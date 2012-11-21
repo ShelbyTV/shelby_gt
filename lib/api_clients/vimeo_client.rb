@@ -4,12 +4,12 @@ module APIClients
     def self.search(query, opts)
       raise ArgumentError, "must supply valid query" unless query.is_a?(String)
       
+      limit = opts[:limit] ? opts[:limit] : 10
+      page = opts[:page] ? opts[:page] : 1
+      converted = opts[:converted] ? opts[:converted] : true
+      
       return {:status => "ok", :limit => limit, :page => page, :videos => [] } if Rails.env == "test"
       
-      limit = 10 unless opts[:limit]
-      page = 1 unless opts[:page]
-      converted = true unless opts[:converted]
-
       response = client.search(query, { :page => page, :per_page => limit.to_s, :full_response => "1", :sort => "relevant" })
       if response["stat"] == "ok"
         if converted
