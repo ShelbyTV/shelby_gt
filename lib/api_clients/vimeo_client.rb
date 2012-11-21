@@ -4,13 +4,14 @@ module APIClients
     def self.search(query, limit=10, page=1)
       raise ArgumentError, "must supply valid query" unless query.is_a?(String)
       
+      return {:limit => limit, :page => page, :videos => [] } if Rails.env == "test"
+      
       response = client.search("query", { :query => "timelapse", :page => page, :per_page => limit.to_s, :full_response => "1", :sort => "relevant" })
       if response["stat"] == "ok"
-        { 
-          :limit => limit,
-          :age => page,
-          :videos => response["videos"]["video"]
-        }
+        return {  :limit => limit,
+                  :page => page,
+                  :videos => response["videos"]["video"]
+                }
       end
     end
     

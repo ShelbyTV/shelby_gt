@@ -1,7 +1,8 @@
 class V1::VideoController < ApplicationController  
   require 'user_manager'
+  require 'api_clients/vimeo_client'
   
-  before_filter :user_authenticated?, :except => [:show, :find_or_create]
+  before_filter :user_authenticated?, :except => [:show, :find_or_create, :search]
 
   ##
   # Returns one video, with the given parameters.
@@ -111,10 +112,19 @@ class V1::VideoController < ApplicationController
   def search
     @provider = params.delete(:provider)
     @query = params.delete(:q)
+    
+    limit = params[:limit] ? params[:limit] : 10
 
     return render_error(404, "need to specify both provider and query search term") unless @provider and @query
     
-    if @result = Video.where(:provider_name => @provider_name, :provider_id => @provider_id).first
+    valid_providers = ["vimeo"]
+    return render_error(404, "need to specify a supported provider") unless valid_providers.include? @provider
+    
+    if @provider == "vimeo"
+      @response = APIClients::Vimeo.search(@query, limit)
+    end
+    
+    if @response
       @status = 200
     else
       render_error(404, "could not find any video")
