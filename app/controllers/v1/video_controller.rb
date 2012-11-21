@@ -124,10 +124,10 @@ class V1::VideoController < ApplicationController
       @response = APIClients::Vimeo.search(@query, limit)
     end
     
-    if @response
+    if (@response and @response[:status] == "ok")
       @status = 200
     else
-      render_error(404, "could not find any video")
+      render_error(404, "could not find any video or an error occured")
     end
   end
   
