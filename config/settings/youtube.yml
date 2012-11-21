@@ -1,0 +1,11 @@
+defaults: &defaults
+  developer_key: AI39si4SiShk608JZcIeKefEmkFWmYKYTIXNiTWkjRcV_FO50czzJKXM5NEMVIa3CqrMfuSj6akAh2Gia96t9i3QhonfaC0P9A
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults
