@@ -121,16 +121,22 @@ class V1::VideoController < ApplicationController
 
     return render_error(404, "need to specify both provider and query search term") unless @provider and @query
     
-    valid_providers = ["vimeo","youtube"]
+    valid_providers = ["vimeo","youtube","dailymotion"]
     return render_error(404, "need to specify a supported provider") unless valid_providers.include? @provider
     
     converted = (params[:converted] and params[:converted] == "false") ? false : true
     opts = {:limit => limit, :page => page, :converted => converted}
-    if @provider == "vimeo"
-      @response = APIClients::Vimeo.search(@query, opts)
-    elsif @provider == "youtube"
-      @response = APIClients::Youtube.search(@query, opts)
-    end
+    
+    # use different client depending on the provider
+    @response = case @provider
+      when "vimeo"
+        APIClients::Vimeo.search(@query, opts)
+      when "youtube"
+        APIClients::Youtube.search(@query, opts)
+      when "dailymotion"
+        APIClients::Dailymotion.search(@query, opts)
+      end
+      
     
     if (@response and @response[:status] == "ok")
       @status = 200
