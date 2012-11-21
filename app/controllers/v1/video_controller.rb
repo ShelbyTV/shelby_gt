@@ -109,6 +109,8 @@ class V1::VideoController < ApplicationController
   # @param [Required, String] q search query term
   # @param [Required, String] provider where to perform the search, eg vimeo
   # @param [Optional, String] limit number of videos to return, 10 default
+  # @param [Optional, String] page page number to return, 1 default
+  # @param [Optional, String] converted return result in shelby form if true, default true
   def search
     @provider = params.delete(:provider)
     @query = params.delete(:q)
