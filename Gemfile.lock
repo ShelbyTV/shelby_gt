@@ -171,6 +171,7 @@ GEM
     httparty (0.8.3)
       multi_json (~> 1.0)
       multi_xml
+    httpclient (2.2.5)
     i18n (0.6.0)
     jeweler (1.8.3)
       bundler (~> 1.0)
@@ -338,6 +339,12 @@ GEM
       execjs (>= 0.3.0)
       multi_json (>= 1.0.2)
     uuidtools (2.1.3)
+    vimeo (1.5.3)
+      httparty (>= 0.4.5)
+      httpclient (>= 2.1.5.2)
+      json (>= 1.1.9)
+      multipart-post (>= 1.0.1)
+      oauth (>= 0.4.3)
     warden (1.1.1)
       rack (>= 1.0)
     whenever (0.7.3)
@@ -407,6 +414,7 @@ DEPENDENCIES
   sitemap_generator (~> 3.2.1)
   statsd-ruby
   uglifier
+  vimeo
   whenever
   yajl-ruby
   youtube_it

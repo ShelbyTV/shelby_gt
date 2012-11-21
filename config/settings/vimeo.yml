@@ -1,0 +1,12 @@
+defaults: &defaults
+  consumer_key: f1e5ee114969649de9150b8b33169f0de70744c0
+  consumer_secret: 36311692a7e42ce181ba826cc5297c6fb5fae3a5
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults

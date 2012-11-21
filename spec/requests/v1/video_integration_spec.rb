@@ -113,6 +113,30 @@ describe 'v1/video' do
     end
   end
   
+  describe "GET search" do
+    it "should return 404 if provider or query not given" do
+      get '/v1/video/search'
+      response.body.should be_json_eql(404).at_path("status")
+      
+      get '/v1/video/search?provider=vimeo'
+      response.body.should be_json_eql(404).at_path("status")            
+
+      get '/v1/video/search?query=blah'
+      response.body.should be_json_eql(404).at_path("status")            
+    end
+    
+    it "should not accept an invalid provider" do
+      get '/v1/video/search?provider=blah&q=test'
+      response.body.should be_json_eql(404).at_path("status")
+    end
+    
+    it "should return 200 if alls well that ends well" do
+      get '/v1/video/search?provider=vimeo&q=test'
+      response.body.should be_json_eql(200).at_path("status")
+    end
+
+  end
+  
   describe "PUT unplayable" do
     before(:each) do
       @u1 = Factory.create(:user)

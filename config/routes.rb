@@ -83,6 +83,7 @@ ShelbyGt::Application.routes.draw do
       get 'conversations' => 'conversation_metal#index'
       get 'viewed', :on => :collection
       get 'queued', :on => :collection
+      get 'search' => 'video#search', :on => :collection
       put 'unplayable'
     end
     resources :dashboard_entries, :path => "dashboard", :only => [:update] do

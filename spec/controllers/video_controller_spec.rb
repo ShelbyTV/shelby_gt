@@ -19,6 +19,34 @@ describe V1::VideoController do
     
   end
   
+  describe "GET search" do
+    it "should return 404 if a provider not given" do
+      get :search, :q => "test", :format => :json
+      assigns(:status).should eq(404)      
+    end
+    
+    it "should return 404 if a query not given" do
+      get :search, :provider => "vimeo", :format => :json
+      assigns(:status).should eq(404)      
+    end
+    
+    it "should accept a valid provider" do
+      get :search, :q => "test", :provider => "vimeo", :format => :json
+      assigns(:status).should eq(200)
+    end
+    
+    it "should not accept an invalid provider" do
+      get :search, :q => "test", :provider => "blah", :format => :json
+      assigns(:status).should eq(404)
+    end
+    
+    it "should return successfully if alls well that ends well" do
+      get :search, :q => "test", :provider => "vimeo", :format => :json
+      assigns(:status).should eq(200)      
+    end
+    
+  end
+  
   describe "POST unplayable" do
     before(:each) do
       @u1 = Factory.create(:user)
