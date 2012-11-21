@@ -1,6 +1,7 @@
 class V1::VideoController < ApplicationController  
   require 'user_manager'
   require 'api_clients/vimeo_client'
+  require 'api_clients/youtube_client'
   
   before_filter :user_authenticated?, :except => [:show, :find_or_create, :search]
 
@@ -123,9 +124,12 @@ class V1::VideoController < ApplicationController
     valid_providers = ["vimeo"]
     return render_error(404, "need to specify a supported provider") unless valid_providers.include? @provider
     
+    converted = (params[:converted] and params[:converted] == "false") ? false : true
+    opts = {:limit => limit, :page => page, :converted => converted}
     if @provider == "vimeo"
-      converted = (params[:converted] and params[:converted] == "false") ? false : true
-      @response = APIClients::Vimeo.search(@query, limit, page, converted)
+      @response = APIClients::Vimeo.search(@query, opts)
+    elsif @provider == "youtube"
+      @response = APIClients::Youtube.search(@query, opts)
     end
     
     if (@response and @response[:status] == "ok")
