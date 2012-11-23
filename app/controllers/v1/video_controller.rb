@@ -120,7 +120,7 @@ class V1::VideoController < ApplicationController
     limit = params[:limit] ? params[:limit] : 10
     page = params[:page] ? params[:page] : 1
 
-    return render_error(404, "need to specify both provider and query search term") unless @provider and @query
+    return render_error(404, "need to specify both provider and query search term") unless @provider and @query and @query != ""
     
     valid_providers = ["vimeo","youtube","dailymotion",""]
     return render_error(404, "need to specify a supported provider") unless valid_providers.include? @provider
