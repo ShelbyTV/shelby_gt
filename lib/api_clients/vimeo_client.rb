@@ -24,7 +24,7 @@ module APIClients
                   :videos => videos
                 }
       else
-        return { :status => response["stat"] }
+        return { :status => response["stat"], :videos => [] }
       end
     end
     

@@ -26,7 +26,7 @@ module APIClients
                   :videos => videos
                 }
       else
-        return { :status => "error" }
+        return { :status => "no videos", :videos => [] }
       end
     end
     
