@@ -1,5 +1,6 @@
 class V1::VideoController < ApplicationController  
   require 'user_manager'
+  require 'utils/search_combiner'
   require 'api_clients/vimeo_client'
   require 'api_clients/youtube_client'
   require 'api_clients/dailymotion_client'
@@ -114,7 +115,7 @@ class V1::VideoController < ApplicationController
   # @param [Optional, String] page page number to return, 1 default
   # @param [Optional, String] converted return result in shelby form if true, default true
   def search
-    @provider = params.delete(:provider)
+    @provider = params.delete(:provider) || ""
     @query = params.delete(:q)
     
     limit = params[:limit] ? params[:limit] : 10

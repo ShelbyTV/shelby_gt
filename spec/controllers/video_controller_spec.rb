@@ -19,12 +19,7 @@ describe V1::VideoController do
     
   end
   
-  describe "GET search" do
-    it "should return 404 if a provider not given" do
-      get :search, :q => "test", :format => :json
-      assigns(:status).should eq(404)      
-    end
-    
+  describe "GET search" do    
     it "should return 404 if a query not given" do
       get :search, :provider => "vimeo", :format => :json
       assigns(:status).should eq(404)      

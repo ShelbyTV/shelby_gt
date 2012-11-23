@@ -7,7 +7,7 @@ module Search
     
     def self.get_videos_and_combine(query, opts)
       videos = get_videos(query, opts)
-      return combine(videos)
+      {:status => "ok", :limit => opts[:limit], :page => opts[:page], :videos => combine(videos) }
     end
     
     def self.get_videos(query, opts)
@@ -35,6 +35,7 @@ module Search
       videos.each do |vid|
         vid[:score] = (videos.index(vid)/videos.length.to_f)*weight[vid[:"provider_name"]]
       end
+      return videos
     end
   end
 end
