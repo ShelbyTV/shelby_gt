@@ -140,7 +140,7 @@ module GT
       cipher.key = CIPHER_KEY
       cipher.iv = CIPHER_IV
 
-      return Base64.urlsafe_encode64(cipher.update(data) + cipher.final)
+      return Base64.urlsafe_encode64(cipher.update(data) + cipher.final).gsub('=', '.')
     end
 
     # WARNING: Changing this method will make inacessible the discussion rolls for non-shelby users
@@ -150,7 +150,7 @@ module GT
       decipher.key = CIPHER_KEY
       decipher.iv = CIPHER_IV
 
-      return decipher.update(Base64.urlsafe_decode64(urlsafe_base64_encrypted)) + decipher.final
+      return decipher.update(Base64.urlsafe_decode64(urlsafe_base64_encrypted.gsub('.', '='))) + decipher.final
     end
   
   end
