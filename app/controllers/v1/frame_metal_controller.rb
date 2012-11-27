@@ -23,17 +23,17 @@ class V1::FrameMetalController < MetalController
       limit = 500 if limit.to_i > 500
       sinceId = params[:since_id]
 
-      if (current_user)
-        if (sinceId) 
-          fast_stdout = `cpp/bin/frameIndex -u #{current_user.id} -r #{params[:roll_id]} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
-        else
-          fast_stdout = `cpp/bin/frameIndex -u #{current_user.id} -r #{params[:roll_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
-        end
-      elsif params[:token] and token_valid_for_discussion_roll?(params[:token], params[:roll_id])
+      if params[:token] and token_valid_for_discussion_roll?(params[:token], params[:roll_id])
         if (sinceId) 
           fast_stdout = `cpp/bin/frameIndex --permissionGranted -r #{params[:roll_id]} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
         else
           fast_stdout = `cpp/bin/frameIndex --permissionGranted -r #{params[:roll_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
+        end
+      elsif (current_user)
+        if (sinceId) 
+          fast_stdout = `cpp/bin/frameIndex -u #{current_user.id} -r #{params[:roll_id]} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
+        else
+          fast_stdout = `cpp/bin/frameIndex -u #{current_user.id} -r #{params[:roll_id]} -l #{limit} -s #{skip} -e #{Rails.env}`
         end
       else
         if (sinceId) 
