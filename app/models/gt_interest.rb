@@ -12,6 +12,7 @@ class GtInterest
   
   key :email, String, :requried => true, :abbr => :a
   validates_presence_of :email
+  validates_format_of :email, :with => /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\Z/
   
   key :priority_code, String, :abbr => :b
   
