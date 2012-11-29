@@ -4,7 +4,7 @@ module GT
    include Awesm
    
    
-   # linkable is an entitly link a roll or frame that has a permalink
+   # linkable - object (roll or frame) that supports permalink()
    # destinations is a comma seperated string eg "email,twitter"
    def self.get_or_create_shortlinks(linkable, destinations, user=nil)
      raise ArgumentError, "must supply at least one destination" unless destinations and destinations.is_a?(String)
@@ -29,7 +29,8 @@ module GT
        if destinations.include?("twitter") or destinations.include?("facebook")
          long_url =  linkable.subdomain_permalink()
        elsif destinations.include?("manual") and linkable.is_a?(Frame)
-         long_url = linkable.video_page_permalink()
+         # for legit shelby rolls, link to roll instead of SEO page
+         long_url = linkable.subdomain_permalink(:require_legit_roll => true) || linkable.video_page_permalink()
        elsif destinations.include?("manual") and linkable.is_a?(Roll)
          long_url = linkable.permalink() + "?roll_id=#{linkable.id}"
        else

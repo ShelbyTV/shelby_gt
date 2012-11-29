@@ -165,10 +165,20 @@ class Frame
     end
   end
   
-  def subdomain_permalink()
-    if self.roll_id and subdomain = self.roll.subdomain
-      "http://#{subdomain}.#{Settings::ShelbyAPI.web_domain}/#{self.id}"      
+  # set {:require_legit_roll => true} 
+  def subdomain_permalink(options={})
+    return nil unless self.roll_id and subdomain = self.roll.subdomain
+    
+    if options[:require_legit_roll]
+      #make sure the roll meets our criteria for actual roll
+      return nil unless [ Roll::TYPES[:special_public_real_user],
+                          Roll::TYPES[:special_public_upgraded],
+                          Roll::TYPES[:user_public],
+                          Roll::TYPES[:global_public] 
+                        ].include? self.roll.roll_type
     end
+    
+    return "http://#{subdomain}.#{Settings::ShelbyAPI.web_domain}/#{self.id}"
   end
   
   def video_page_permalink()
