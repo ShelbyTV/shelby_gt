@@ -435,10 +435,10 @@ describe 'v1/roll' do
     describe "GET show_associated" do
       it "should return roll info on success (and put requested roll at start of array)" do
         u = Factory.create(:user)
-        r1 = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => 33)
-        r2 = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => 33)
-        r3 = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => 33)
-        r_private = Factory.create(:roll, :creator_id => u.id, :public => false, :roll_type => 33)
+        r1 = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => Roll::TYPES[:user_public])
+        r2 = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => Roll::TYPES[:user_public])
+        r3 = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => Roll::TYPES[:user_public])
+        r_private = Factory.create(:roll, :creator_id => u.id, :public => false, :roll_type => Roll::TYPES[:user_private])
         r_hearted = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => Roll::TYPES[:special_upvoted])
         get '/v1/roll/'+r2.id+'/associated'
         response.body.should be_json_eql(200).at_path("status")
