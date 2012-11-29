@@ -157,15 +157,13 @@ class Frame
     return self.upvoters.any? { |uid| uid == user_id }
   end
   
-  def permalink()
-    if self.roll_id
-      "#{Settings::ShelbyAPI.web_root}/roll/#{self.roll_id}/frame/#{self.id}"
-    else
-      "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{self.id}"
-    end
+  # Returns a link to the subdomain when it's a legit roll
+  # Otherwise links to the SEO page
+  def permalink() 
+    return self.subdomain_permalink(:require_legit_roll => true) || self.video_page_permalink
   end
   
-  # set {:require_legit_roll => true} 
+  # set {:require_legit_roll => true} to get a subdomain link only for a legit roll, otherwise nil
   def subdomain_permalink(options={})
     return nil unless self.roll_id and subdomain = self.roll.subdomain
     
@@ -181,21 +179,25 @@ class Frame
     return "http://#{subdomain}.#{Settings::ShelbyAPI.web_domain}/#{self.id}"
   end
   
+  # Return a link to video SEO page
+  # Falls back to direct frame/roll link when video can't be found
   def video_page_permalink()
     if video = self.video 
       "#{Settings::ShelbyAPI.web_root}/video/#{video.provider_name}/#{video.provider_id}/?frame_id=#{self.id}"
-    # just in case there is no video we want to link to something ... 
-    elsif self.roll_id and subdomain = self.creator.subdomain 
+    elsif self.roll_id
       "#{Settings::ShelbyAPI.web_root}/roll/#{self.roll_id}/frame/#{self.id}"
     else
       "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{self.id}"
     end
   end
   
+  # this is for logged-in users, so we link to roll/:id/frame/:id/comments
   def permalink_to_frame_comments()
-    permalink = self.permalink
-    permalink += "/comments" if self.roll_id
-    return permalink
+    if self.roll_id
+      "#{Settings::ShelbyAPI.web_root}/roll/#{self.roll_id}/frame/#{self.id}/comments"
+    else
+      "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{self.id}/comments"
+    end
   end
   
   #------ Lifecycle -------

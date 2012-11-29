@@ -285,7 +285,7 @@ describe Frame do
     it "should generate permalinks for frame without a roll" do
       frame = Factory.create(:frame)
       frame.permalink.should == "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{frame.id}"
-      frame.permalink_to_frame_comments.should == "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{frame.id}"
+      frame.permalink_to_frame_comments.should == "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{frame.id}/comments"
     end
     
     it "should generate permalink for frame with video" do
