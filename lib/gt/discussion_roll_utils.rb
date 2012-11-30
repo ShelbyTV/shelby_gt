@@ -133,9 +133,10 @@ module GT
 
     # WARNING: Changing this method will make inacessible the discussion rolls for non-shelby users
     # user_identifier is the email address for non-shelby users, the bson id for shelby users
-    # returns a Base64 (strictly) encoded token
+    # returns a Base64 (urlsafe) encoded token
     def self.encrypt_roll_user_identification(roll, user_identifier)
-      data = "#{roll.id}::#{user_identifier}"
+      salt = BCrypt::Engine.generate_salt
+      data = "#{roll.id}::#{user_identifier}::#{salt}"
 
       cipher = OpenSSL::Cipher::AES.new(128, :CBC)
       cipher.encrypt
