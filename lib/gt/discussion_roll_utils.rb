@@ -136,7 +136,7 @@ module GT
     # returns a Base64 (urlsafe) encoded token
     def self.encrypt_roll_user_identification(roll, user_identifier)
       salt = BCrypt::Engine.generate_salt
-      data = "#{roll.id}::#{user_identifier}::#{salt}"
+      data = "#{salt}::::#{roll.id}::#{user_identifier}"
 
       cipher = OpenSSL::Cipher::AES.new(128, :CBC)
       cipher.encrypt
@@ -154,10 +154,16 @@ module GT
       decipher.iv = CIPHER_IV
 
       begin
-        return decipher.update(Base64.urlsafe_decode64(urlsafe_base64_encrypted.gsub('.', '='))) + decipher.final
+        possibly_salted = decipher.update(Base64.urlsafe_decode64(urlsafe_base64_encrypted.gsub('.', '='))) + decipher.final
+        return remove_salt(possibly_salted)
       rescue
         return nil
       end
+    end
+    
+    # Old tokens weren't salted
+    def remove_salt(possibly_salted)
+      possibly_salted.include?("::::") ? possibly_salted.split("::::")[1] : possibly_salted
     end
   
   end
