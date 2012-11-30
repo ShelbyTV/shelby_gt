@@ -95,7 +95,8 @@ class Roll
   # Track participants involved in Discussion Rolls
   # Array elements are user's BSON ids (as strings) or email address of non-user
   # ex: ["509bc4cd929d2446ea000001", "spinosa@gmail.com", "4fa39bd89a725b1f920008f3"]
-  # Field is not indexed, roll can be found by id or via user.roll_followings
+  # Field IS indexed (see DiscussionRollController#idnex for example),
+  # but roll can also be found by id or via user.roll_followings
   key :discussion_roll_participants,  Array, :typecast => 'String', :abbr => :s
   
   attr_accessible :title, :creator_thumbnail_url, :header_image
