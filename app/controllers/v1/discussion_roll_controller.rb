@@ -11,13 +11,13 @@ class V1::DiscussionRollController < ApplicationController
   
   ##
   # Returns all discussion rolls accessible to the viewer
-  # Accessibility is based on the user id (bson or email) from the token
+  # Accessibility is based on the user id (bson id or email) from the token
   #
-  # [GET] /v1/discussion_rolls
+  # [GET] /v1/discussion_roll
   #   AUTHENTICATON IGNORED
   #   TOKEN REQUIRED
   # 
-  # @param [Required, String] token The access token for any discussion roll
+  # @param [Required, String] token The access token for any discussion roll, roll identifier will be ignored
   def index
     if params[:token] and user_identifier = user_identifier_from_token(params[:token])
       @rolls = Roll.where(:discussion_roll_participants => user_identifier).all
