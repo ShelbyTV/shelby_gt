@@ -432,7 +432,7 @@ describe 'v1/roll' do
       end
     end
     
-    describe "GET show_associated" do
+    describe "GET index_associated" do
       it "should return roll info on success (and put requested roll at start of array)" do
         u = Factory.create(:user)
         r1 = Factory.create(:roll, :creator_id => u.id, :public => true, :roll_type => Roll::TYPES[:user_public])

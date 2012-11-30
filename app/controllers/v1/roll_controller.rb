@@ -2,9 +2,9 @@ require "social_poster"
 require "link_shortener"
 require "social_post_formatter"
 
-class V1::RollController < ApplicationController  
+class V1::RollController < ApplicationController
   
-  before_filter :user_authenticated?, :except => [:index, :show, :show_associated, :explore, :featured]
+  before_filter :user_authenticated?, :except => [:index, :show, :index_associated, :explore, :featured]
   ##
   # Returns a collection of rolls according to search criteria.
   #
@@ -67,7 +67,7 @@ class V1::RollController < ApplicationController
   #   AUTHENTICATON OPTIONAL
   # 
   # @param [Required, String] roll_id The id or shelby.tv subdomain of the roll
-  def show_associated
+  def index_associated
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['show']) do
       if params[:roll_id]        
         if BSON::ObjectId.legal? params[:roll_id]
@@ -87,6 +87,7 @@ class V1::RollController < ApplicationController
                               Roll::TYPES[:global_public] ]).all
             @rolls = [seed_roll] + (@rolls - [seed_roll])
             @status =  200
+            render 'index_array'
           else
             render_error(404, "you are not authorized to see that roll")
           end

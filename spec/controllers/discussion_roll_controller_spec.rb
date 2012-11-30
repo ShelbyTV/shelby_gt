@@ -27,6 +27,50 @@ describe V1::DiscussionRollController do
     end
   end
   
+  describe "GET index" do
+    before(:each) do
+      @em = Factory.next :primary_email
+      @u1 = Factory.create(:user)
+      @u_r_1 = Factory.create(:roll, :creator_id => @u1.id, :public => true, :roll_type => Roll::TYPES[:user_public],
+                              :discussion_roll_participants => [@u1.id.to_s, @em])
+      @u_r_2 = Factory.create(:roll, :creator_id => @u1.id, :public => true, :roll_type => Roll::TYPES[:user_public],
+                              :discussion_roll_participants => [@u1.id.to_s])
+                              
+      @u2 = Factory.create(:user)
+      @u2_r_1 = Factory.create(:roll, :creator_id => @u2.id, :public => true, :roll_type => Roll::TYPES[:user_public],
+                               :discussion_roll_participants => [@u2.id.to_s, @em])
+      @u2_r_2 = Factory.create(:roll, :creator_id => @u2.id, :public => true, :roll_type => Roll::TYPES[:user_public],
+                               :discussion_roll_participants => [@u2.id.to_s])
+    end
+    
+    it "should return rolls where shelby id is a participant" do
+      token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@u_r_1, @u1.id.to_s)
+      get :index, :token => token, :format => :json
+      assigns(:status).should == 200
+      assigns(:rolls).should == [@u_r_1, @u_r_2]
+    end
+    
+    it "should return rolls where email is a participant" do
+      token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@u_r_1, @em)
+      get :index, :token => token, :format => :json
+      assigns(:status).should == 200
+      assigns(:rolls).should == [@u_r_1, @u2_r_1]
+    end
+    
+    it "should return no rolls" do
+      token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@u_r_1, Factory.next(:primary_email))
+      get :index, :token => token, :format => :json
+      assigns(:status).should == 200
+      assigns(:rolls).should == []
+    end
+    
+    it "should return 401 on invalid token" do
+      token = "thisis::invalid"
+      get :index, :token => token, :format => :json
+      assigns(:status).should == 401
+    end
+  end
+  
   describe "GET show" do
     before(:each) do
       @video = Factory.create(:video)

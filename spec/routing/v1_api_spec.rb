@@ -215,7 +215,7 @@ describe V1::RollController do
     it "routes for GET associated" do
       { :get => "/v1/roll/1/associated" }.should route_to(
         :controller => "v1/roll",
-        :action => "show_associated",
+        :action => "index_associated",
         :format => "json",
         :roll_id => "1"
       )
@@ -386,6 +386,14 @@ end
 
 describe V1::DiscussionRollController do
   describe "routing" do
+    it "routes for INDEX" do
+      { :get => '/v1/discussion_roll' }.should route_to(
+        :controller => "v1/discussion_roll",
+        :action => "index",
+        :format => "json"
+      )
+    end
+    
     it "routes for GET" do
       { :get => "/v1/discussion_roll/1" }.should route_to(
         :controller => "v1/discussion_roll",

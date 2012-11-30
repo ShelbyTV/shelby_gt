@@ -66,7 +66,7 @@ ShelbyGt::Application.routes.draw do
       post 'leave' => 'roll#leave'
       get 'explore' => 'roll#explore', :on => :collection
       get 'featured' => 'roll#featured', :on => :collection
-      get 'associated' => 'roll#show_associated'
+      get 'associated' => 'roll#index_associated'
     end
     namespace :roll do
        resources :genius, :only => [:create]
@@ -93,7 +93,7 @@ ShelbyGt::Application.routes.draw do
     resources :conversation, :only => [:show] do 
       resources :messages, :only => [:create, :destroy]
     end
-    resources :discussion_roll, :only => [:create, :show] do
+    resources :discussion_roll, :only => [:index, :create, :show] do
       post 'messages' => 'discussion_roll#create_message'
     end
     resources :beta_invite, :only => [:create]

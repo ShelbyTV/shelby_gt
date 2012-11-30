@@ -122,7 +122,9 @@ module GT
     end
     
     def valid_token?(token)
-      token.is_a?(String) and decrypt_roll_user_identification(token).include?("::")
+      return false unless token.is_a?(String)
+      return false unless decrypted = decrypt_roll_user_identification(token)
+      return decrypted.include?("::")
     end
 
     # WARNING: Changing these contants will make inacessible the discussion rolls for non-shelby users
@@ -150,7 +152,11 @@ module GT
       decipher.key = CIPHER_KEY
       decipher.iv = CIPHER_IV
 
-      return decipher.update(Base64.urlsafe_decode64(urlsafe_base64_encrypted.gsub('.', '='))) + decipher.final
+      begin
+        return decipher.update(Base64.urlsafe_decode64(urlsafe_base64_encrypted.gsub('.', '='))) + decipher.final
+      rescue
+        return nil
+      end
     end
   
   end

@@ -31,6 +31,8 @@ module MongoMapper
       Roll.ensure_index(:a, :background => true)
       # Get the rolls for a given subdomain (k == subdomain)
       Roll.ensure_index(:k, :background => true, :unique => true, :sparse => true)
+      # Get rolls based on any element in array :discussion_roll_participants
+      Roll.ensure_index(:s, :background => true, :sparse => true)
           
       # Get a user by their nickname, ensure it's unique
       User.ensure_index(:nickname, :background => true, :unique => true)

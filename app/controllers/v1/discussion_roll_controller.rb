@@ -7,7 +7,26 @@ class V1::DiscussionRollController < ApplicationController
 
   protect_from_forgery :except => [:create_message]
   
-  before_filter :user_authenticated?, :except => [:show, :create_message]
+  before_filter :user_authenticated?, :except => [:index, :show, :create_message]
+  
+  ##
+  # Returns all discussion rolls accessible to the viewer
+  # Accessibility is based on the user id (bson or email) from the token
+  #
+  # [GET] /v1/discussion_rolls
+  #   AUTHENTICATON IGNORED
+  #   TOKEN REQUIRED
+  # 
+  # @param [Required, String] token The access token for any discussion roll
+  def index
+    if params[:token] and user_identifier = user_identifier_from_token(params[:token])
+      @rolls = Roll.where(:discussion_roll_participants => user_identifier).all
+      @status =  200
+      render '/v1/roll/index_array'
+    else
+      render_error(401, "Please provide a valid token")
+    end
+  end
   
   ##
   # Finds or creates a new Roll for a discussion between the given participants.
