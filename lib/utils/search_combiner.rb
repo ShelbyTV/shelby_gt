@@ -33,7 +33,7 @@ module Search
       }
       
       videos.each do |vid|
-        vid[:score] = (videos.index(vid)/videos.length.to_f)*weight[vid[:"provider_name"]]
+        vid[:score] = (videos.index(vid)/(videos.length.to_f-1))*weight[vid[:"provider_name"]]
       end
       return videos
     end
