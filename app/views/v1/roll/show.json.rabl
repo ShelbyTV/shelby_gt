@@ -29,3 +29,9 @@ if @include_following_users == true
 		attributes :id, :nickname, :name, :user_image, :has_shelby_avatar
 	end
 end
+
+if @insert_discussion_roll_access_token == true
+  node(:token) do |r|
+    GT::DiscussionRollUtils.encrypt_roll_user_identification(r, @user_identifier)
+  end
+end

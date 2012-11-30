@@ -10,8 +10,10 @@ class V1::DiscussionRollController < ApplicationController
   before_filter :user_authenticated?, :except => [:index, :show, :create_message]
   
   ##
-  # Returns all discussion rolls accessible to the viewer
-  # Accessibility is based on the user id (bson id or email) from the token
+  # Returns all discussion rolls accessible to the viewer.  
+  # Accessibility is based on the user id (bson id or email) from the request token.
+  #
+  # Inserts a token with each roll returned for simple front-end access.
   #
   # [GET] /v1/discussion_roll
   #   AUTHENTICATON IGNORED
@@ -19,9 +21,10 @@ class V1::DiscussionRollController < ApplicationController
   # 
   # @param [Required, String] token The access token for any discussion roll, roll identifier will be ignored
   def index
-    if params[:token] and user_identifier = user_identifier_from_token(params[:token])
-      @rolls = Roll.where(:discussion_roll_participants => user_identifier).all
+    if params[:token] and @user_identifier = user_identifier_from_token(params[:token])
+      @rolls = Roll.where(:discussion_roll_participants => @user_identifier).all
       @status =  200
+      @insert_discussion_roll_access_token = true
       render '/v1/roll/index_array'
     else
       render_error(401, "Please provide a valid token")

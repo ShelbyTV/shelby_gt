@@ -202,6 +202,19 @@ describe 'v1/discussion_roll' do
       @roll = @tester.create_discussion_roll_for(@u2, @tester.convert_participants(@u1.primary_email))
     end
     
+    describe "GET index" do
+      it "should show the rolls user can see with valid token" do 
+        token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@roll, @u1.id.to_s)
+        get "/v1/discussion_roll?token=#{CGI.escape token}"
+        
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        response.body.should have_json_path("result/rolls")
+        # token should have been inserted
+        response.body.should have_json_path("result/rolls/0/token")
+      end
+    end
+    
     describe "GET show" do
       it "should show the roll if user has a valid token" do
         token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@roll, Factory.next(:primary_email))
