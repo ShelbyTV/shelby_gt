@@ -45,7 +45,7 @@ defaults: &defaults
   # Disucssion Rolls
   discussion_roll:
     category: "Discussion Roll Notifications"
-    from_email: "chat@shelby.tv"
+    from_email: "Shelby Chat <noreply@shelby.tv>"
       
 
 development:
