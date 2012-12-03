@@ -212,6 +212,7 @@ describe 'v1/discussion_roll' do
         response.body.should have_json_path("result/rolls")
         # token should have been inserted
         response.body.should have_json_path("result/rolls/0/token")
+        response.body.should have_json_path("result/rolls/0/discussion_roll_participants")
       end
     end
     
