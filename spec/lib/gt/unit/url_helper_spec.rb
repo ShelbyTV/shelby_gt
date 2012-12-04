@@ -230,6 +230,14 @@ describe GT::UrlHelper do
           {:provider_name => "espn", :provider_id => "7940079"}
       end      
     end
+    
+    context "bloomberg" do
+      it "should parse from url" do
+        GT::UrlHelper.parse_url_for_provider_info('http://www.bloomberg.com/video/zoom-how-google-fiber-could-change-everything-gf5dlnyCTPGwmNQrL7DS9w.html?bloomberg_ooyala_id=prd2RlNzqmhRZJrn6J7LxdPqig0SaFgO').should == 
+          {:provider_name => "ooyala", :provider_id => "prd2RlNzqmhRZJrn6J7LxdPqig0SaFgO"}
+      end      
+    end
+    
   end
   
   context "resolve_url" do

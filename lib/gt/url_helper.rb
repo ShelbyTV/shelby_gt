@@ -57,6 +57,10 @@ module GT
       # Blip
       bp = parse_url_for_blip_provider_info(url)
       return bp if bp
+
+      # Bloomberg
+      bb = parse_url_for_bloomberg_provider_info(url)
+      return bb if bb
       
       return nil
     end
@@ -262,6 +266,16 @@ module GT
         match_data = url.match( /espn.go.com\/video\/clip.+id=([\w-]*)(&+.*\z|\z)/i )
         if match_data and match_data.size == 3
           return {:provider_name => "espn", :provider_id => match_data[1]}
+        end
+      end
+
+      # Bloomberg
+      # NOTE: this is a hack. ooyala video id is not in urls, so we are using an additional parameter
+      #   passed here via the Shelby Video Radar.
+      def self.parse_url_for_bloomberg_provider_info(url)
+        match_data = url.match( /bloomberg_ooyala_id=([\w-]*)/i )
+        if match_data and match_data.size == 2
+          return {:provider_name => "ooyala", :provider_id => match_data[1]}
         end
       end
     
