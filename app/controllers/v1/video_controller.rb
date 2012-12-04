@@ -42,10 +42,11 @@ class V1::VideoController < ApplicationController
         @status = 200
       else
         @url = params.delete(:url)
-        if @url and @video = GT::VideoManager.get_or_create_videos_for_url(@url)[:videos][0]
+        if @url and @video = GT::VideoManager.get_or_create_videos_for_url(@url)[:videos]
+          @video = @video.first
           @status = 200
         else
-          render_error(404, "could not find video")
+          render_error(404, "could not find video we support")
         end
       end 
     end
