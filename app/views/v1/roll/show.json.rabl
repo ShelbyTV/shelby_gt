@@ -11,6 +11,10 @@ node(:creator_nickname, :if => lambda { |r| r.creator != nil }) do |r|
   r.creator.nickname
 end
 
+node(:discussion_roll_participants, :if =>  lambda { |r| r.roll_type == Roll::TYPES[:user_discussion_roll]}) do |r|
+  r.discussion_roll_participants
+end
+
 code :following_user_count do |r|
 	r.following_users.count
 end

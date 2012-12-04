@@ -23,7 +23,7 @@ class DiscussionRollMailer < ActionMailer::Base
     @message = @most_recent_frame.conversation.messages[-1]
     @permalink = "http://shelby.tv/chat/#{@roll.id}?u=#{CGI.escape(@recipient)}&t=#{CGI.escape(CGI.escape(@token))}"
     
-    mail :from => "#{@from_name} <#{Settings::Email.discussion_roll['from_email']}>", 
+    mail :from => Settings::Email.discussion_roll['from_email'], 
       :to => email_to, 
       :subject => subject_for(conversation_with)
   end
