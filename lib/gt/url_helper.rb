@@ -259,6 +259,12 @@ module GT
         if match_data and match_data.size == 3
           return {:provider_name => "bliptv", :provider_id => match_data[2]}
         end
+        
+        match_data = url.match( /blip.tv.+(play\/)([\w-]*)/i )
+        if match_data and match_data.size == 3
+          return {:provider_name => "bliptv", :provider_id => match_data[2]}
+        end
+        
       end
       
       # ESPN
