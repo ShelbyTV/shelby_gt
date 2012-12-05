@@ -170,7 +170,7 @@ describe GT::UrlHelper do
     
     context "blip.tv" do      
       it "should parse from embed" do
-        GT::UrlHelper.parse_url_for_provider_info('<iframe src="http://blip.tv/play/AYLu4BYC.html?p=1" width="550" height="443" frameborder="0" allowfullscreen></iframe><embed type="application/x-shockwave-flash" src="http://a.blip.tv/api.swf#AYLu4BYC" style="display:none"></embed>').should == 
+        GT::UrlHelper.parse_url_for_provider_info('<iframe src="http://blip.tv/episode/AYLu4BYC.html?p=1" width="550" height="443" frameborder="0" allowfullscreen></iframe><embed type="application/x-shockwave-flash" src="http://a.blip.tv/api.swf#AYLu4BYC" style="display:none"></embed>').should == 
           {:provider_name => "bliptv", :provider_id => "AYLu4BYC"}
       end
     end

@@ -255,7 +255,7 @@ module GT
     
       # Blip
       def self.parse_url_for_blip_provider_info(url)
-        match_data = url.match( /blip.tv.+(play\/)([\w-]*)/i )
+        match_data = url.match( /blip.tv.+(episode\/)([\w-]*)/i )
         if match_data and match_data.size == 3
           return {:provider_name => "bliptv", :provider_id => match_data[2]}
         end
