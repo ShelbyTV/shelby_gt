@@ -74,6 +74,8 @@ class Roll
     # User-created private conversations (aka Discussion Rolls)
     :user_discussion_roll => 51,
     
+    :hashtag => 69,
+    
     :genius => 70
   }
   key :roll_type,       Integer, :abbr => :n, :default => TYPES[:special_roll]

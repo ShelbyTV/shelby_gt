@@ -84,7 +84,8 @@ class V1::RollController < ApplicationController
               :roll_type => [ Roll::TYPES[:special_public_real_user],
                               Roll::TYPES[:special_public_upgraded],
                               Roll::TYPES[:user_public],
-                              Roll::TYPES[:global_public] ]).all
+                              Roll::TYPES[:global_public],
+                              Roll::TYPES[:hashtag] ]).all
             @rolls = [seed_roll] + (@rolls - [seed_roll])
             @status =  200
             render 'index_array'
