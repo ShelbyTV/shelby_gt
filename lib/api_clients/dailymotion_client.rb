@@ -12,12 +12,17 @@ module APIClients
       
       return {:status => "ok", :limit => limit, :page => page, :videos => [] } if Rails.env == "test"
       
-      response = get('/videos', 
+      begin
+        response = get('/videos', 
                       :query => { :search => query, 
                                   :sort => "relevance",
                                   :limit => limit.to_s,
                                   :page => page.to_s,
                                   :fields => "id,title,description,duration,embed_url,embed_html,thumbnail_url,url,views_total,tags"})
+
+      rescue => e
+        return { :status => 'error', :videos => [], :msg => e }
+      end
 
       if response["total"] > 0
         
