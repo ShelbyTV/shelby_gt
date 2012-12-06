@@ -15,7 +15,7 @@ module GT
       
       case action
       when 'watch'
-        return false unless object.roll.public
+        return false unless object.roll and object.roll.public
         og_action = "video.watches"
         og_object[:roll] = object.roll.permalink
         og_object[:video] = object.permalink
@@ -24,14 +24,14 @@ module GT
         og_object[:roll] = object.roll.permalink
         og_object[:other] = object.permalink
       when 'roll'
-        return false unless object.roll.public
+        return false unless object.roll and object.roll.public
         og_action = "shelbytv:roll"
         og_object[:roll] = object.roll.permalink
         og_object[:other] = object.permalink
       when 'comment'
         conversation = object
         frame = conversation.frame
-        return false unless frame.roll.public
+        return false unless frame.roll and frame.roll.public
         og_action = "shelbytv:comment"
         og_object[:message] = message
         og_object[:roll] = frame.roll.permalink
