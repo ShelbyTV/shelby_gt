@@ -60,7 +60,7 @@ class V1::DiscussionRollController < ApplicationController
 	      :video => video,
 	      :roll => @roll,
 	      :skip_dashboard_entries => true)
-    elsif praams[:video_source_url] and videos_hash = GT::VideoManager.get_or_create_videos_for_url(params[:video_source_url])
+    elsif params[:video_source_url] and videos_hash = GT::VideoManager.get_or_create_videos_for_url(params[:video_source_url])
       if video = videos_hash[:videos][0]
         res = GT::Framer.create_frame(
   	      :creator => current_user,
