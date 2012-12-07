@@ -1,7 +1,8 @@
 <%= javascript_tag do -%>
   	if(<%= !@no_redirect %> && window.opener && window.close){
 		// We were opened as a popup, redirect the opener and close ourselves
-		window.opener.parent.location.href = "<%= @opener_location %>";
+		window.opener.location.href = "<%= @opener_location %>";
+		window.opener.location.reload(true);
 		window.close();
 	}
 	else {
