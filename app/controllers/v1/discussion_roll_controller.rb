@@ -39,6 +39,7 @@ class V1::DiscussionRollController < ApplicationController
   # 
   # @param [Optional, String] frame_id The id of the parent frame to post into this discussion (optional if you include video_id instead)
   # @param [Optional, String] video_id The video to post into this discussion (when there is no parent frame, above)
+  # @param [Optional, String] video_source_url When we don't have a proper Frame or Video, we will find_or_create the video based on this
   # @param [Required, String] participants comma-delineated list of email address or shelby usernames (not including the current_user) participating
   # @param [Required, String] message The message current_user is sending with this video
   def create
@@ -51,14 +52,22 @@ class V1::DiscussionRollController < ApplicationController
     end
   	  	
 	  #creates new frame (ancestor of one when given)
-  	if frame = Frame.find(params[:frame_id])
+  	if params[:frame_id] and frame = Frame.find(params[:frame_id])
   	  res = GT::Framer.re_roll(frame, current_user, @roll, true)
-	  elsif video = Video.find(params[:video_id])
+	  elsif params[:video_id] and video = Video.find(params[:video_id])
 	    res = GT::Framer.create_frame(
 	      :creator => current_user,
 	      :video => video,
 	      :roll => @roll,
 	      :skip_dashboard_entries => true)
+    elsif praams[:video_source_url] and videos_hash = GT::VideoManager.get_or_create_videos_for_url(params[:video_source_url])
+      if video = videos_hash[:videos][0]
+        res = GT::Framer.create_frame(
+  	      :creator => current_user,
+  	      :video => video,
+  	      :roll => @roll,
+  	      :skip_dashboard_entries => true)
+      end
     end
     
     unless res and res[:frame]
