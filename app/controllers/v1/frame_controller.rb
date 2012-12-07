@@ -319,7 +319,7 @@ class V1::FrameController < ApplicationController
  
     def get_linkable_entity(frame, fallback_to_video=false)
       # watch later roll is truly private -- we don't want anyone trying to view frames on a watch later (queue) roll
-      if (frame.roll.roll_type == Roll::TYPES[:special_watch_later]) 
+      if (!frame.roll and fallback_to_video) or (frame.roll.roll_type == Roll::TYPES[:special_watch_later]) 
         # frame should have been queued from a better roll -- TODO: revisit if/when we have more private rolls
         if frame.frame_ancestors and frame.frame_ancestors.last
           return Frame.find(frame.frame_ancestors.last)
