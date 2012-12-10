@@ -11,7 +11,7 @@ module APIClients
       return {:status => "ok", :limit => limit, :page => page, :videos => [] } if Rails.env == "test"
       
       begin
-        response = client.videos_by(:query => query, :page => page, :per_page => limit, :order_by => "relevance")
+        response = client.videos_by(:query => query, :page => page, :per_page => limit, :order_by => "relevance", :format => 5)
       rescue => e
         return { :status => 'error', :videos => [], :msg => e }
       end
