@@ -87,6 +87,7 @@ class V1::DiscussionRollController < ApplicationController
   	#sends emails to all (including the poster)
   	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(@roll, current_user, true) }
     
+    @insert_discussion_roll_access_token = true
     @status =  200
     render "/v1/roll/show"
   end
