@@ -146,6 +146,14 @@ describe GT::DiscussionRollUtils do
       r.discussion_roll_participants.should == [@user.id.to_s, "dan@shelby.tv"]
     end
     
+    it "should set roll title based on participants" do
+      new_user = Factory.create(:user)
+      r = @tester.create_discussion_roll_for(@user, @tester.convert_participants("dan@shelby.tv,dan+1@shelby.tv,#{new_user.primary_email}"))
+      r.persisted?.should == true
+      r = r.reload
+      r.title.should == "#{@user.nickname}, dan@shelby.tv, dan+1@shelby.tv, #{new_user.nickname}"
+    end
+    
     it "should be followed by creator" do
       r = @tester.create_discussion_roll_for(@user, @tester.convert_participants("dan@shelby.tv"))
       r.persisted?.should == true

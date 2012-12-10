@@ -63,7 +63,7 @@ module GT
       r.public = false
       r.collaborative = true
       r.discussion_roll_participants = ([user.id.to_s] + participants).compact.uniq
-      r.title = "Video Conversation"
+      r.title = roll_title_for_participants(r.discussion_roll_participants)
       return nil unless r.save
     
       # add all real users as roll followers
@@ -72,6 +72,12 @@ module GT
       followers.each { |u| r.add_follower(u, false) }
     
       return r
+    end
+    
+    def roll_title_for_participants(participants)
+      participants.map do |p|
+        BSON::ObjectId.legal?(p) ? User.find(p).nickname : p
+      end .join(", ")
     end
   
     # given a potentially sloppy comma and/or semicolon delineated string of email addresses and user names;
