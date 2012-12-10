@@ -1,5 +1,6 @@
 <%= javascript_tag do -%>
  	if(<%= !@no_redirect %> && window.opener && window.close){
+		alert("reloading please wait.");
 		// We were opened as a popup, redirect the opener and close ourselves
 		window.opener.location.href = "<%= @opener_location %>";
 		window.opener.location.reload(true);
@@ -7,7 +8,7 @@
 	}
 	else {
 		// Just redirect ourselves (this happens with cohort links)
-		alert("reloading please wait.");
+		alert("reloading please wait...");
 		window.location = "<%= @opener_location %>";
 	}
 <% end -%>
