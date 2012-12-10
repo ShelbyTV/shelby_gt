@@ -186,10 +186,12 @@ class AuthenticationsController < ApplicationController
     end
 
     @opener_location = clean_query_params(@opener_location)
-        
+    
+    render :action => 'redirector', :layout => 'simple'
+
+=begin
     respond_to do |format|
       format.html { render :action => 'redirector', :layout => 'simple' }
-
       # allow AJAX use for signup via popup window and send errors back if there are any
       format.js   { 
         if cohort_entrance
@@ -200,7 +202,7 @@ class AuthenticationsController < ApplicationController
         end
       }
     end
-    
+=end    
   end
   
   # confirm that they want to merge, will post to do_merge_accounts
