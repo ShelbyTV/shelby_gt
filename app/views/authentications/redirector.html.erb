@@ -1,8 +1,4 @@
 <%= javascript_tag do -%>
-		if (window.opener.getElementById('shelby-roll')){
-			alert("opener has an iframe");
-			window.opener.getElementById('shelby-roll').src = window.opener.getElementById('shelby-roll').src;
-		}
   	if(<%= !@no_redirect %> && window.opener && window.close){
 		// We were opened as a popup, redirect the opener and close ourselves
 		window.opener.location.href = "<%= @opener_location %>";
