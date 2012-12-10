@@ -10,24 +10,27 @@ class V1::DiscussionRollController < ApplicationController
   before_filter :user_authenticated?, :except => [:index, :show, :create_message]
   
   ##
-  # Returns all discussion rolls accessible to the viewer.  
-  # Accessibility is based on the user id (bson id or email) from the request token.
+  # Returns all discussion rolls accessible to the viewer.
+  # If user is signed in, returns rolls based on signed in user, otherwise accessibility
+  # is based on the user id (bson id or email) from the request token.
   #
   # Inserts a token with each roll returned for simple front-end access.
   #
   # [GET] /v1/discussion_roll
-  #   AUTHENTICATON IGNORED
-  #   TOKEN REQUIRED
+  #   AUTHENTICATON OR TOKEN REQUIRED
   # 
-  # @param [Required, String] token The access token for any discussion roll, roll identifier will be ignored
+  # @param [Optional, String] token The access token for any discussion roll, roll identifier will be ignored
   def index
-    if params[:token] and @user_identifier = user_identifier_from_token(params[:token])
+    @user_identifier = current_user.id.to_s if user_signed_in?
+    @user_identifier = user_identifier_from_token(params[:token]) if params[:token]
+    
+    if @user_identifier
       @rolls = Roll.where(:discussion_roll_participants => @user_identifier).all
       @status =  200
       @insert_discussion_roll_access_token = true
       render '/v1/roll/index_array'
     else
-      render_error(401, "Please provide a valid token")
+      render_error(401, "Please sign in or provide a valid token")
     end
   end
   
@@ -128,6 +131,7 @@ class V1::DiscussionRollController < ApplicationController
   # @param [Required, String] message The message being appended to this discussion
   # @param [Optional, String] token The security token authenticating and authorizing this post
   # @param [Optional, String] videos[] An array of URL strings to map to Shelby Videos and append to this discusison roll
+  # @param [Optional, String] video_id The id of a Video document to be appended
   #
   def create_message
     roll = Roll.find(params[:discussion_roll_id])
@@ -143,6 +147,7 @@ class V1::DiscussionRollController < ApplicationController
     
     # 2) Create new Frame(s) or grab the last one in the Roll...
     videos_to_append = []
+    videos_to_append += [Video.find(params[:video_id])].compact
     videos_to_append += find_videos_linked_in_text(params[:message])
     videos_to_append += videos_from_url_array(params[:videos])
     if !videos_to_append.empty?
