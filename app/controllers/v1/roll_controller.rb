@@ -191,7 +191,7 @@ class V1::RollController < ApplicationController
       end
       
       #rabl caching
-      @cache_key = "featured#{params[:segment]}"
+      #@cache_key = "featured#{params[:segment]}"
       
       @status = 200
     end
