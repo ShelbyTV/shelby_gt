@@ -132,6 +132,7 @@ class V1::DiscussionRollController < ApplicationController
   # @param [Optional, String] token The security token authenticating and authorizing this post
   # @param [Optional, String] videos[] An array of URL strings to map to Shelby Videos and append to this discusison roll
   # @param [Optional, String] video_id The id of a Video document to be appended
+  # @param [Optional, String] farme_id The id of a Frame document who's Video should be appended
   #
   def create_message
     roll = Roll.find(params[:discussion_roll_id])
@@ -147,7 +148,8 @@ class V1::DiscussionRollController < ApplicationController
     
     # 2) Create new Frame(s) or grab the last one in the Roll...
     videos_to_append = []
-    videos_to_append += [Video.find(params[:video_id])].compact
+    videos_to_append += [frame.video].compact if frame = Frame.find(params[:frame_id])
+    videos_to_append += [Video.find(params[:video_id])].compact if params[:video_id]
     videos_to_append += find_videos_linked_in_text(params[:message])
     videos_to_append += videos_from_url_array(params[:videos])
     if !videos_to_append.empty?
