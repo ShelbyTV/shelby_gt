@@ -148,7 +148,8 @@ class V1::DiscussionRollController < ApplicationController
     
     # 2) Create new Frame(s) or grab the last one in the Roll...
     videos_to_append = []
-    videos_to_append += [frame.video].compact if frame = Frame.find(params[:frame_id])
+    frame = Frame.find(params[:frame_id])
+    videos_to_append += [frame.video].compact if frame and frame.video
     videos_to_append += [Video.find(params[:video_id])].compact if params[:video_id]
     videos_to_append += find_videos_linked_in_text(params[:message])
     videos_to_append += videos_from_url_array(params[:videos])
