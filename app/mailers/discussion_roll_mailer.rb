@@ -33,7 +33,7 @@ class DiscussionRollMailer < ActionMailer::Base
     # Subject must be unique and identical every time an email is sent for a given discussion roll
     # This way email clients can nicely group the emails into a conversation
     def subject_for(conversation_with)
-      "Shelby Chat: " + (conversation_with.map { |p| p.is_a?(User) ? p.nickname : p } .join(", "))
+      conversation_with.map { |p| p.is_a?(User) ? p.nickname : p } .join(", ")
     end
   
 end

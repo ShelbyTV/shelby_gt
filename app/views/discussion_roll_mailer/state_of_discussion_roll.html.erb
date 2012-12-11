@@ -5,21 +5,16 @@
 			<td valign="middle" class="shelby-email-lining" style="padding:0px;">
 				<!--  show message in email preview-->
 				<div style="font-size:0px;display:none;">
-					<%= @message.text %>
+					<%= @from_name %>: <%= @message.text %>
 				</div>
-				<!-- end show message-->
+				<!-- end email preview message -->
 				<h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313435;">
 					<a href="<%= Settings::Email.web_url_base %>">
-						<img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv logo" title="Shelby.tv" height="30" style="padding:8px 0px 5px;display:block;margin: 0px auto;display:block;"/>
+						<img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby Chat" title="Shelby Chat" height="30" style="padding:8px 0px 5px;display:block;margin: 0px auto;display:block;"/>
 					</a>
 				</h1>
 				<hr style="margin-top:0px;background:none;border:none;border-top:1px solid #CACACA;"/>
 				<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; padding:20px 20px 15px; max-width:400px;margin: 0px auto;">
-					<tr height="25">
-						<td colspan="2" valign="top" style="font-weight:bold;font-size: 14px; color:#333">
-							<%= @from_name %> says...
-						</td>
-					</tr>
 					<% if @message %>
 						<tr height="10">
 							<td width="45" valign="top">
@@ -29,6 +24,7 @@
 									</a>
 								<% end %>
 								<div style="float:left;max-width:218px;font-size:11px;color:#333;">
+									<div style="font-weight:bold;font-size: 14px; color:#333"><%= @from_name %></div>
 									<%= @message.text %>									
 								</div>
 							</td>
@@ -53,7 +49,7 @@
 										<tr>
 											<td>
 												<div style="width: 278px; height:27px; background-color: #0590c4; color: white;text-align: center;font-weight: bold;margin-top: 8px; border: 1px solid #056083;padding-top: 9px;">
-													watch now ▶
+													Chat & Watch ▶
 												</div>												
 											</td>
 										</tr>
