@@ -36,7 +36,7 @@ class V1::RemoteControlController < ApplicationController
   private
     def pusher_client
       unless @pusher_client
-        @pusher_client |= Pusher::Client.new({
+        @pusher_client = Pusher::Client.new({
           app_id: Settings::Pusher.id,
           key: Settings::Pusher.key,
           secret: Settings::Pusher.secret
