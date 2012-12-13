@@ -8,6 +8,9 @@ module MongoMapper
     end
     
     def self.ensure_all_indexes
+      # Find a remote control "session" base of code in url
+      RemoteControl.ensure_index(:a, :background=>true)
+      
       # Get all invites sent by a given user (a == sender_user_id)
       BetaInvite.ensure_index(:a, :background => true)
       # Get the invite through which a given user entered shelby (b == invitee_id)
