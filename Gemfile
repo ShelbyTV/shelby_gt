@@ -84,6 +84,8 @@ gem "statsd-ruby" # for communicating with graphite server
 
 gem "km" # for sending events to KissMetrics
 
+gem "pusher" # pub sub service
+
 #
 # ---------- Performance Monitoring
 #
