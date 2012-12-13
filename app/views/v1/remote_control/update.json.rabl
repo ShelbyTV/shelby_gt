@@ -1,6 +1,6 @@
 object @remote_control
 
-attributes :id, :code
+attributes :code
 
 node(:command) { |m| @command }
 
