@@ -1,0 +1,18 @@
+defaults: &defaults
+  id: '33565'
+  key: '40e125deaf258e5429d5'
+  secret: '385c438852713ade69b9'
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+  
+
+arnold:
+  <<: *production
+  

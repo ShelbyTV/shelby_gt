@@ -102,6 +102,8 @@ ShelbyGt::Application.routes.draw do
     
     resources :token, :only => [:create, :destroy]
     
+    resources :remote_control, :only => [:create, :update, :show]
+    
     # Twitter direct interaction
     namespace :twitter do
       post 'follow/:twitter_user_name', :action => "follow"
