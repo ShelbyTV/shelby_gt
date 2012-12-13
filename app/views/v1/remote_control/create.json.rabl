@@ -1,6 +1,6 @@
 object @remote_control
 
-attributes :id, :code
+attributes :code
 
 code :url do |r|
   r.url
