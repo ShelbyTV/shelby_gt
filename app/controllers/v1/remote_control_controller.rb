@@ -17,7 +17,7 @@ class V1::RemoteControlController < ApplicationController
       @command = params[:command]
       @data = params[:data]
       ShelbyGT_EM.next_tick do 
-        pusher_client.trigger(@remote_control.code, @command, {data: @data})
+        pusher_client.trigger('remote-'+@remote_control.code, @command, {data: @data})
       end
       @status = 200
     else
