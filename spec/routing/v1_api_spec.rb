@@ -446,3 +446,35 @@ describe V1::TwitterController do
     end
   end
 end
+
+
+describe V1::RemoteControlController do
+  describe "routing" do
+      it "routes for GET" do
+        { :get => "/v1/remote_control/1" }.should route_to(
+          :controller => "v1/remote_control",
+          :action => "show",
+          :format => "json",
+          :id => "1"
+        )
+      end
+      
+      it "routes for PUT" do
+        { :put => "/v1/remote_control/1" }.should route_to(
+          :controller => "v1/remote_control",
+          :action => "update",
+          :id => "1",
+          :format => "json"
+        )
+      end
+      
+      it "routes for POST" do
+        { :post => "/v1/remote_control" }.should route_to(
+          :controller => "v1/remote_control",
+          :action => "create",
+          :format => "json"
+        )
+      end
+      
+    end
+end
