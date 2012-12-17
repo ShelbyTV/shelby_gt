@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   
-  before_filter :debug_cookies_and_session
+  #before_filter :debug_cookies_and_session
   after_filter :set_access_control_headers
   
   respond_to :json

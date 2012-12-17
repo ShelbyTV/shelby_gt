@@ -242,6 +242,13 @@ module GT
       end
     end
     
+    def self.user_has_all_special_roll_ids?(u)
+      return (u.public_roll_id != nil and
+             u.upvoted_roll_id != nil and
+             u.watch_later_roll_id != nil and
+             u.viewed_roll_id != nil)
+    end
+    
     # Make sure a user has public, watch_later, upvoted, and viewed _rolls
     # should follow just the public roll
     def self.ensure_users_special_rolls(u, save=false)

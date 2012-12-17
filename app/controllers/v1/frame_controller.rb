@@ -2,6 +2,7 @@ require 'message_manager'
 require 'video_manager'
 require 'link_shortener'
 require 'social_post_formatter'
+require 'user_manager'
 
 class V1::FrameController < ApplicationController
 
@@ -258,6 +259,8 @@ class V1::FrameController < ApplicationController
         
         #conditionally count this as a view (once per 24 hours per user)
         if current_user
+          # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
+          GT::UserManager.ensure_users_special_rolls(current_user, true) unless GT::UserManager.user_has_all_special_roll_ids?(current_user)
           @new_frame = @frame.view!(current_user)
           @frame.reload # to update view_count
         end
