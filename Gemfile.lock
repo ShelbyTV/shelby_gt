@@ -13,6 +13,15 @@ GIT
     beanstalk-client (1.2.0)
 
 GIT
+  remote: git://github.com/ShelbyTV/rabl.git
+  revision: 49939a5ccc4f623ab617eef991103fffdd6e70ef
+  branch: caching-debug
+  specs:
+    rabl (0.7.9)
+      activesupport (>= 2.3.14)
+      multi_json (~> 1.0)
+
+GIT
   remote: git://github.com/arunagw/omniauth-twitter.git
   revision: 3d0ee54a7bfc843602ad195e47695b1e22f8cbec
   specs:
@@ -241,9 +250,6 @@ GEM
     polyglot (0.3.3)
     quiet_assets (1.0.1)
       railties (~> 3.1)
-    rabl (0.6.13)
-      activesupport (>= 2.3.14)
-      multi_json (~> 1.0)
     rack (1.4.1)
     rack-cache (1.2)
       rack (>= 0.4)
@@ -397,7 +403,7 @@ DEPENDENCIES
   omniauth-twitter!
   paperclip
   quiet_assets
-  rabl (~> 0.6.0)
+  rabl!
   rack-cors
   rack-oauth2-server
   rails (= 3.2.2)
