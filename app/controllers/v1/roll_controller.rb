@@ -183,17 +183,21 @@ class V1::RollController < ApplicationController
   def featured
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['featured']) do
 
-      @categories = Settings::Roll.featured
-      Rails.logger.info "IPF: Rolls Count: #{@categories[6]['rolls'].length}"
+      # Using the famous Marshal dump/Marshal load trick to make a deep copy of the settings contents so
+      # we don't accidentally overwrite them
+      @categories = Marshal.load(Marshal.dump(Settings::Roll.featured))
+      Rails.logger.info "IPF: Rolls Count: #{@categories[0]['rolls'].length}" if @categories.length > 0
 
       if (@segment = params[:segment])
         Rails.logger.info "IPF: Processing a segment param"
-        @categories = @categories.select { |f| f["include_in"][@segment] }
+        @categories.select! { |f| f["include_in"][@segment] }
         @categories.each { |c| c['rolls'] = c['rolls'].select { |r| r['include_in'][@segment] } }
       end
 
+      Rails.logger.info "IPF: Rolls Count: #{@categories[0]['rolls'].length}" if @categories.length > 0
+
       #rabl caching
-      #@cache_key = "featured#{params[:segment]}"
+      @cache_key = "featured#{params[:segment]}"
 
       @status = 200
     end
