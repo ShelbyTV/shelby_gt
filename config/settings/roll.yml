@@ -104,7 +104,7 @@ defaults: &defaults
           include_in: {explore: true, onboarding: false, in_line_promos: false}},
         {display_title: "omgal",                id: "4f8f81beb415cc4762002daa", display_thumbnail_src: "/images/onboarding/rolls/omggal.png",
           include_in: {explore: true, onboarding: true, in_line_promos: false}},
-        {display_title: "sandy",                id: "5096790db415cc05a2006f5c", display_thumbnail_src: "/images/onboarding/rolls/red_cross.jpg", in_line_avatar_src: "/images/promo/sandy_avatar.jpg", in_line_thumbnail_src: "/images/promo/sandy_thumbnail.jpg",
+        {display_title: "sandy",                id: "5096790db415cc05a2006f5c", display_thumbnail_src: "/images/onboarding/rolls/red_cross.jpg", in_line_avatar_src: "/images/promo/sandy_avatar.jpg", in_line_thumbnail_src: "/images/promo/sandy_thumbnail.jpg", in_line_promo_title: "#HurricaneSandy", in_line_promo_message: "See video of the storm and donate to the Red Cross",
           include_in: {explore: false, onboarding: false, in_line_promos: true}}]},
     {
       category_title: "Music",
