@@ -192,8 +192,6 @@ class V1::RollController < ApplicationController
         @categories.each { |c| c['rolls'] = c['rolls'].select { |r| r['include_in'][@segment] } }
       end
 
-      Rails.logger.info "IPF: Rolls Count: #{@categories[0]['rolls'].length}" if @categories.length > 0
-
       #rabl caching
       @cache_key = "featured#{params[:segment]}"
 
