@@ -64,32 +64,32 @@ module ShelbyGt
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
-    
+
     #default to mongomapper as orm
     config.generators do |g|
       g.orm :mongo_mapper
     end
-    
+
     # Setup cors preflight request headers
     # N.B. Although configed for only put/post/delete, Access-Control-Allow-Origin will be set to the requests origin if it matches here
     #      and the request is with credentials (even if it's not a pre-flight).  As such, the '*' set in application_controller is fine
     #      b/c it always gets overridden for credentialed requests
     config.middleware.use Rack::Cors do
       allow do
-        origins 'web.gt.shelby.tv', 'gt.shelby.tv', 'isoroll.shelby.tv', 'https://shelby.tv', 'shelby.tv', 'https://fb.shelby.tv','fb.shelby.tv', 'm.shelby.tv', 'staging.shelby.tv', 'localhost.shelby.tv:3000', '192.168.2.53:3000', '192.168.2.190:3000', 'm.localhost.shelby.tv:3000'
+        origins 'web.gt.shelby.tv', 'gt.shelby.tv', 'isoroll.shelby.tv', 'https://shelby.tv', 'shelby.tv', 'https://fb.shelby.tv','fb.shelby.tv', 'm.shelby.tv', 'staging.shelby.tv', 'localhost.shelby.tv:3000', '192.168.2.22:3000', '192.168.2.190:3000', 'm.localhost.shelby.tv:3000'
         resource %r{/v1/(beta_invite|conversation|dashboard|discussion_roll|frame|gt_interest|js_err|remote_control|roll|twitter|user|video)\w*},
           :headers => ['Origin', 'Accept', 'Content-Type', 'X-CSRF-Token', 'X-Shelby-User-Agent'],
           :methods => [:put, :post, :delete]
       end
-      
+
     end
 
     # Config stuff that relieson Settings object can go in here
     config.after_initialize do
-      
+
       # OAuth Server
       settings = Settings::OauthServer
-      
+
       if settings['db_hosts']
         # Starting with a proper Hash and merging into it b/c Mongo::Connection checks if the class is Hash, which it isn't when using Settings
         conn = Mongo::ReplSetConnection.new( settings.db_hosts, {}.merge(settings.db_options.merge(Settings::Mongo.db_options)) )
@@ -97,7 +97,7 @@ module ShelbyGt
         conn = Mongo::Connection.new(settings.db_host, settings.db_port, {}.merge(settings.db_options.merge(Settings::Mongo.db_options)) )
       end
       config.oauth.database = conn.db(settings.db_name)
-      
+
       # Mailer
       Rails.application.routes.default_url_options[:host] = Settings::Global.api_host
     end
