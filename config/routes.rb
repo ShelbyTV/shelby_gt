@@ -113,6 +113,10 @@ ShelbyGt::Application.routes.draw do
     get 'user' => 'user#show'
     get 'signed_in' => 'user#signed_in'
     
+    ########################
+    # Javascript Error Reporting
+    post 'js_err' => 'javascript_errors#create'
+    
     #----------------------------------------------------------------
     # POST, PUT, DELETE aliases for JSONP :-[  b/c we support IE 8, 9
     #----------------------------------------------------------------
@@ -151,6 +155,8 @@ ShelbyGt::Application.routes.draw do
     get 'POST/gt_interest/' => 'gt_interest#create'
     # twitter
     get 'POST/twitter/follow/:twitter_user_name' => 'twitter#follow'
+    # js_error
+    get 'POST/js_err' => 'javascript_errors#create'
 
   end
   

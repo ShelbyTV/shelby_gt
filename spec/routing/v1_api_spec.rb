@@ -478,3 +478,14 @@ describe V1::RemoteControlController do
       
     end
 end
+
+describe V1::JavascriptErrorsController do
+  describe "routing" do
+    it "routes for create" do
+      { :post => "/v1/js_err" }.should route_to(
+        :controller => "v1/javascript_errors",
+        :action => "create",
+        :format => "json")
+    end
+  end
+end

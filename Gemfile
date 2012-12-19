@@ -20,7 +20,7 @@ gem "settingslogic"
 #
 # ---------- API
 #
-gem 'rabl','~> 0.6.0'
+gem 'rabl', '~> 0.6.0'
 gem 'yajl-ruby', :require => "yajl"
 gem "statsd-ruby" # for communicating with graphite server
 gem 'rack-cors', :require => 'rack/cors' # for cors preflight requests
@@ -84,8 +84,6 @@ gem "statsd-ruby" # for communicating with graphite server
 
 gem "km" # for sending events to KissMetrics
 
-gem "pusher" # pub sub service
-
 #
 # ---------- Performance Monitoring
 #
@@ -134,7 +132,7 @@ group :arnold, :test do
 end
 
 #
-# ---------- Memcached 
+# ---------- Memcached
 #
 # If install fails, it may be because you're missing some important libs:
 # sudo aptitude install libmemcached-dev libsasl2-dev libmemcached-dbg
@@ -166,16 +164,16 @@ end
 
 group :test do
 	gem 'shoulda'
-	
+
 	# rspec has nice mocking, but we could also use
 	# gem 'mocha'
 	# and then change the config in spec/spec_helper.rb
-	
+
 	gem 'factory_girl_rails'
-	
+
 	# for rspec requests testing (json responses)
-	gem 'json_spec' 
-	
+	gem 'json_spec'
+
 	# if we have to fuck with time, this looks nice:
 	# gem 'timecop'
 end

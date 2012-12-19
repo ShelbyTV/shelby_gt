@@ -254,3 +254,14 @@ describe "Twitter" do
     )
   end
 end
+
+describe "JavascriptErrors" do
+  # POST   /v1/js_err(.:format)                                            v1/javascript_errors#create {:format=>"json"}
+  it "routes for POST /follow" do
+    { :get => "/v1/POST/js_err" }.should route_to(
+      :controller => "v1/javascript_errors",
+      :action => "create",
+      :format => "json"
+    )
+  end
+end

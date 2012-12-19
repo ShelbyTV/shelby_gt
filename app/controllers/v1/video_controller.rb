@@ -1,3 +1,5 @@
+require 'user_manager'
+
 class V1::VideoController < ApplicationController  
   require 'user_manager'
   require 'utils/search_combiner'
@@ -61,6 +63,8 @@ class V1::VideoController < ApplicationController
   def viewed
     StatsManager::StatsD.time(Settings::StatsConstants.api['video']['viewed']) do
       if user = current_user
+        # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
+        GT::UserManager.ensure_users_special_rolls(user, true) unless GT::UserManager.user_has_all_special_roll_ids?(user)
         @video_ids = video_ids_on_roll(user.viewed_roll.id)
       else
         @video_ids = []
@@ -79,6 +83,8 @@ class V1::VideoController < ApplicationController
   def queued
     StatsManager::StatsD.time(Settings::StatsConstants.api['video']['queued']) do
       if user = current_user
+        # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
+        GT::UserManager.ensure_users_special_rolls(user, true) unless GT::UserManager.user_has_all_special_roll_ids?(user)
         @video_ids = video_ids_on_roll(user.watch_later_roll.id)
       else
         @video_ids = []
