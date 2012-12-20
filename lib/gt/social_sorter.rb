@@ -42,7 +42,7 @@ module GT
     
     private
       
-      # This is a public message: put it on the public roll of the posting user
+      # This is a public message: put it on the public roll of the posting user (unless they're a real user, in which case they must post via Shelby)
       # Make sure observing user sees it by first following that roll (unless they've specifically unfollowed it)
       # Everyone else following that public roll will see it as well.
       def self.sort_public_message(message, video_hash, observing_user, posting_user)
@@ -57,25 +57,30 @@ module GT
           new_following = true
         end
         
-        # If the posting user posted the same video within the last 24 hours, don't create a new frame, just add to the convo
-        if old_frame = recent_posting_of_video_on_roll(posting_user.public_roll_id, video_hash[:video].id, 24.hours.ago)
-          unless old_frame.conversation and old_frame.conversation.messages.any? { |m| m.origin_id == message.origin_id }
-            # This message hasn't been appended to the conversation yet
-            # Do so atomically (w/ set semantics so timing doesn't result in multiple posts)
-            Conversation.add_to_set(old_frame.conversation.id, :messages => message.to_mongo)
+        # Only posting to public roll of faux-users; real users must post via Shelby
+        # NB: special-upgraded rolls which we show still belong to faux users, so that works out fine
+        if posting_user.faux == User::FAUX_STATUS[:true]
+        
+          # If the posting (faux) user posted the same video within the last 24 hours, don't create a new frame, just add to the convo
+          if old_frame = recent_posting_of_video_on_roll(posting_user.public_roll_id, video_hash[:video].id, 24.hours.ago)
+            unless old_frame.conversation and old_frame.conversation.messages.any? { |m| m.origin_id == message.origin_id }
+              # This message hasn't been appended to the conversation yet
+              # Do so atomically (w/ set semantics so timing doesn't result in multiple posts)
+              Conversation.add_to_set(old_frame.conversation.id, :messages => message.to_mongo)
+            end
+          else
+          
+            # Hasn't been recently posted, add Frame to (faux) posting_user's public roll
+            res = GT::Framer.create_frame(
+              :creator => posting_user,
+              :video => video_hash[:video],
+              :message => message,
+              :roll => posting_user.public_roll,
+              :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+              :deep => video_hash[:from_deep]
+              )
           end
-        else
 
-          # Hasn't been recently posted, add Frame to posting_user's public roll
-          # would return
-          res = GT::Framer.create_frame(
-            :creator => posting_user,
-            :video => video_hash[:video],
-            :message => message,
-            :roll => posting_user.public_roll,
-            :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-            :deep => video_hash[:from_deep]
-            )
         end
 
         if !res

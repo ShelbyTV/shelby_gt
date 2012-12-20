@@ -10,7 +10,7 @@ describe GT::SocialSorter do
     
     @observer = Factory.create(:user)
     
-    @existing_user = Factory.create(:user)
+    @existing_user = Factory.create(:user, :faux => User::FAUX_STATUS[:true])
     @existing_user_nick, @existing_user_provider, @existing_user_uid = "nick1", "ss_1#{rand.to_s}", "uid001#{rand.to_s}"
     auth = Authentication.new
     auth.provider = @existing_user_provider
@@ -35,7 +35,7 @@ describe GT::SocialSorter do
       @existing_user_random_msg.public = true
     end
     
-    it "should add to public Roll of existing User" do      
+    it "should add to public Roll of existing faux User" do
       lambda {
         res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res.should_not == false
