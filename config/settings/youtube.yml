@@ -11,4 +11,4 @@ production:
   <<: *defaults
 
 arnold:
-  <<: *production
+  <<: *defaults
