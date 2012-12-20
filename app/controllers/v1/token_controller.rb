@@ -22,7 +22,7 @@ class V1::TokenController < ApplicationController
   #   @param [Optional, String] secret The oAuth secret of this User at said provider (if used by the provider)
   #
   # Email/password are both Optional if you're using third party credentials
-  #   @param [Required, String] email The email address associated with a user (used in conjuction with password)
+  #   @param [Required, String] email The email address (or username) associated with a user (used in conjuction with password)
   #   @param [Required, String] password The plaintext password (use HTTPS) to verify [Required if using email]
   #
   # @return [User] User w/ authentication token
@@ -39,8 +39,9 @@ class V1::TokenController < ApplicationController
     
     @user = if provider and uid
       User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
-    else
-      User.where(:primary_email => email).first
+    elsif email
+      User.where(:primary_email => email.downcase).first
+      User.find_by_primary_email(email.downcase) || User.find_by_nickname(email.downcase)
     end
     
     if @user

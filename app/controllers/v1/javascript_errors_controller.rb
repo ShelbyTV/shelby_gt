@@ -16,6 +16,9 @@ class V1::JavascriptErrorsController < ApplicationController
     uri = params.delete(:uri) || "(client needs to send 'uri' parameter)"
     client = params.delete(:client) || "WebFrontEnd"
     
+    # add some params
+    params[:ua] = request.env["HTTP_USER_AGENT"] unless params.include?(:ua)
+    
     NewRelic::Agent.notice_error("Javascript error: #{error_msg}", {
       :metric => "Custom/Javascript/#{client}",
       :uri => uri, 

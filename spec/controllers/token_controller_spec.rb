@@ -2,7 +2,10 @@ require 'spec_helper'
 
 describe V1::TokenController do
   before(:each) do
+    @pw = "somepassword"
     @user = Factory.create(:user) #adds a twitter authentication
+    @user.password = @pw
+    @user.save
     @twt_auth = @user.authentications[0]
     
     #no need to hit the net here
@@ -12,6 +15,18 @@ describe V1::TokenController do
   describe "POST token" do
     it "assigns a User to @user if credentials are okay" do
       post :create, :provider_name => "twitter", :uid => @twt_auth.uid, :token => @twt_auth.oauth_token, :secret => @twt_auth.oauth_secret, :format => :json
+      assigns(:user).should eq(@user)
+      assigns(:status).should eq(200)
+    end
+    
+    it "accepts email login" do
+      post :create, :email => @user.primary_email, :password => @pw, :format => :json
+      assigns(:user).should eq(@user)
+      assigns(:status).should eq(200)
+    end
+    
+    it "accepts username login" do
+      post :create, :email => @user.nickname, :password => @pw, :format => :json
       assigns(:user).should eq(@user)
       assigns(:status).should eq(200)
     end
