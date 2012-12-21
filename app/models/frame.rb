@@ -14,20 +14,20 @@ class Frame
   key :roll_id, ObjectId, :abbr => :a
   # When "destroyed" we actually just nil out the roll_id so the Frame stops getting returned
   key :deleted_from_roll_id, ObjectId, :abbr => :l
-  
+
   # It must reference a video, post, and creator
   belongs_to :video, :required => true
   key :video_id, ObjectId, :abbr => :b
-  
+
   belongs_to :conversation, :required => true
   key :conversation_id, ObjectId, :abbr => :c
-  
+
   belongs_to :creator,  :class_name => 'User'
   key :creator_id,      ObjectId,   :abbr => :d
-  
+
   # Frames will be ordered in normal Rolls based on their score by default
   key :score,  Float, :required => true, :abbr => :e
-  
+
   # The users who have upvoted, increasing the score
   key :upvoters, Array, :typecast => 'ObjectId', :abbr => :f, :default => []
 
@@ -42,46 +42,46 @@ class Frame
   key :frame_ancestors, Array, :typecast => 'ObjectId', :abbr => :g, :default => []
   # Track *immediate* children (but not grandchilren, &c.)
   key :frame_children, Array, :typecast => 'ObjectId', :abbr => :h, :default => []
-  
+
   # Each time a new view is counted (see #view!) we increment this and video.view_count
   key :view_count, Integer, :abbr => :i, :default => 0
-  
+
   # The shortlinks created for each type of share, eg twitter, tumvlr, email, facebook
   key :short_links, Hash, :abbr => :j, :default => {}
 
   # Manual ordering value. Used as the default ordering for genius roll frames. May be used in the future for user-initiated ordering.
   key :order, Float, :default => 0, :abbr => :k
- 
+
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
- 
+
   before_validation(:on => :create) { self.update_score if self.new? }
-  
+
   after_create :increment_rolls_frame_count
-  
+
   def created_at() self.id.generation_time; end
-  
+
   #------ Permissions -------
-  
+
   #N.B. Destroy does not actually remove the record from the DB, #destroy below
   def destroyable_by?(user)
     return !!(user.is_admin? or self.creator == nil or self.creator == user or (self.roll and self.roll.creator == user))
   end
-  
+
   #------ ReRolling -------
 
   #re roll this frame into the given roll, for the given user
   def re_roll(user, roll)
     return GT::Framer.re_roll(self, user, roll)
   end
-  
+
   #------ Viewing
-  
+
   # Will add this Frame to the User's viewed_roll if they haven't "viewed" this in the last 24 hours.
   # Also updates the view_count on this frame and it's video
   def view!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
-    
+
     # If this Frame hasn't been added to the user's viewed_roll in the last X hours, dupe it now
     if Frame.roll_includes_ancestor_of_frame?(u.viewed_roll_id, self.id, 24.hours.ago)
       return false
@@ -101,12 +101,15 @@ class Frame
       return GT::Framer.dupe_frame!(self, u.id, u.viewed_roll_id)
     end
   end
-  
+
   #------ Watch Later ------
-  
+
   def add_to_watch_later!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
-    
+
+    Frame.collection.update({:_id => self.id}, {:$addToSet => {:f => u.id}})
+    self.reload
+
     #if it's already in this user's watch later, just return that
     if prev_dupe = Frame.get_ancestor_of_frame(u.watch_later_roll_id, self.id)
       return prev_dupe
@@ -114,75 +117,75 @@ class Frame
       return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
     end
   end
-  
+
   # To remove from watch later, destroy the Frame! (don't forget to add a UserAction)
-  
+
   #------ Voting -------
-  
+
   def upvote!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
-    
+
     return true if self.has_voted?(u.id)
-    
+
     self.upvoters << u.id
-    
+
     GT::Framer.dupe_frame!(self, u.id, u.upvoted_roll_id)
-    
+
     update_score
-    
+
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_upvote_notification(u, self) }
-        
+
     self.save
   end
-  
+
   def upvote_undo!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
-    
+
     return true unless self.has_voted?(u.id)
-    
+
     self.upvoters.delete_if { |id| id == u.id }
-    
+
     GT::Framer.remove_dupe_of_frame_from_roll!(self, u.upvoted_roll_id)
-    
+
     update_score
-    
+
     self.save
   end
-  
+
   def has_voted?(u)
     raise ArgumentError, "must supply user or user_id" unless u
     user_id = (u.is_a?(User) ? u.id : u)
-    
+
     return self.upvoters.any? { |uid| uid == user_id }
   end
-  
+
   # Returns a link to the subdomain when it's a legit roll
   # Otherwise links to the SEO page
-  def permalink() 
+  def permalink()
     return self.subdomain_permalink(:require_legit_roll => true) || self.video_page_permalink
   end
-  
+
   # set {:require_legit_roll => true} to get a subdomain link only for a legit roll, otherwise nil
   def subdomain_permalink(options={})
     return nil unless self.roll_id and subdomain = self.roll.subdomain
-    
+
     if options[:require_legit_roll]
       #make sure the roll meets our criteria for actual roll
       return nil unless [ Roll::TYPES[:special_public_real_user],
                           Roll::TYPES[:special_public_upgraded],
                           Roll::TYPES[:user_public],
-                          Roll::TYPES[:global_public] 
+                          Roll::TYPES[:global_public]
                         ].include? self.roll.roll_type
     end
-    
+
     return "http://#{subdomain}.#{Settings::ShelbyAPI.web_domain}/#{self.id}"
   end
-  
+
   # Return a link to video SEO page
   # Falls back to direct frame/roll link when video can't be found
   def video_page_permalink()
-    if video = self.video 
+    if video = self.video
       "#{Settings::ShelbyAPI.web_root}/video/#{video.provider_name}/#{video.provider_id}/?frame_id=#{self.id}"
     elsif self.roll_id
       "#{Settings::ShelbyAPI.web_root}/roll/#{self.roll_id}/frame/#{self.id}"
@@ -190,7 +193,7 @@ class Frame
       "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{self.id}"
     end
   end
-  
+
   # this is for logged-in users, so we link to roll/:id/frame/:id/comments
   def permalink_to_frame_comments()
     if self.roll_id
@@ -199,28 +202,28 @@ class Frame
       "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{self.id}/comments"
     end
   end
-  
+
   #------ Lifecycle -------
-  
+
   # Generally not great to destroy actual data, things get messy and broken.
   # By moving roll_id into deleted_from_roll_id, we prevent this Frame from being returned with the Roll,
   # but we allow other API calls that reference the frame by ID to continue working.
   # (ie. Commenting, DashboardEntries, upvoting, watched, etc.)
   def destroy
     roll = self.roll
-    
+
     # move roll_id into deleted_from_roll_id and save
     self.deleted_from_roll_id = self.roll_id
     self.roll_id = nil
     self.save(:validate => false)
-    
+
     #update the roll (on DB and in memory if loaded)
     Roll.decrement(self.deleted_from_roll_id, :j => -1) if self.deleted_from_roll_id
     roll.frame_count -= 1 if roll
-    
+
     true
   end
-  
+
   def virtually_destroyed?() self.deleted_from_roll_id != nil; end
 
   # Score increases linearly with time, logarithmically with votes
@@ -231,20 +234,20 @@ class Frame
     #each hour = .08
     #each day = 2
     time_score =(self.created_at.to_f - SHELBY_EPOCH.to_f) / TIME_DIVISOR
-    
+
     #+ log10 each upvote
     # 10 votes = 1 point
     # 100 votes = 10 points
     vote_score = Math.log10([1, self.upvoters.size].max)
-    
+
     self.score = time_score + vote_score
   end
 
   private
-    
+
     SHELBY_EPOCH = Time.utc(2012,2,22)
     TIME_DIVISOR = 45_000.0
-    
+
     # Checks for a Frame, with the given roll_id, where frame_ancestors contains frame_id
     #
     # DANGEROUS - This has to walk the DB!  It will use the index on Frame.roll_id, but that's it.
@@ -255,13 +258,13 @@ class Frame
       raise ArgumentError, "must supply frame_id" unless frame_id and (frame_id.is_a?(String) or frame_id.is_a?(BSON::ObjectId))
       raise AagumentError, "must supply valid time" unless created_after.is_a? Time
 
-      Frame.where( 
-        :roll_id => roll_id, 
+      Frame.where(
+        :roll_id => roll_id,
         :_id.gt => BSON::ObjectId.from_time(created_after),
         :frame_ancestors => frame_id
         ).exists?
     end
-    
+
     # Gets a Frame, with the given roll_id, where frame_ancestors contains frame_id
     #
     # DANGEROUS - This has to walk the DB!  It will use the index on Frame.roll_id, but that's it.
@@ -270,7 +273,7 @@ class Frame
       raise ArgumentError, "must supply roll_id" unless roll_id and (roll_id.is_a?(String) or roll_id.is_a?(BSON::ObjectId))
       raise ArgumentError, "must supply frame_id" unless frame_id and (frame_id.is_a?(String) or frame_id.is_a?(BSON::ObjectId))
 
-      Frame.where( 
+      Frame.where(
         :roll_id => roll_id,
         :frame_ancestors => frame_id
         ).first
