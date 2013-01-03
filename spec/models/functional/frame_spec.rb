@@ -384,6 +384,7 @@ describe Frame do
       @frame = Factory.create(:frame, :creator => @creator)
       @frame_id = @frame.id
       @stranger = Factory.create(:user)
+      @stranger2 = Factory.create(:user)
     end
 
     it "should allow destroy if destroyer is creator" do
@@ -441,6 +442,29 @@ describe Frame do
 
       Frame.find(@frame_id).deleted_from_roll_id.should == roll.id
       Frame.find(@frame_id).virtually_destroyed?.should == true
+    end
+
+    context "frame on watch later roll" do
+      it "should remove the user as an upvoter of the frame's ancestor (original upvoted frame)" do
+        stranger_watch_later_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_watch_later])
+        @stranger.watch_later_roll = stranger_watch_later_roll
+
+        stranger2_watch_later_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_watch_later])
+        @stranger2.watch_later_roll = stranger2_watch_later_roll
+
+        @frame.add_to_watch_later!(@stranger)
+        @frame.upvoters.should include(@stranger.id)
+        @frame.upvoters.length.should == 1
+
+        @frame.add_to_watch_later!(@stranger2)
+        @frame.upvoters.should include(@stranger2.id)
+        @frame.upvoters.length.should == 2
+
+        stranger_watch_later_roll.frames.first.destroy
+        @frame.reload
+        @frame.upvoters.should_not include(@stranger.id)
+        @frame.upvoters.length.should == 1
+      end
     end
 
   end
