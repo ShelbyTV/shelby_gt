@@ -107,13 +107,12 @@ class Frame
   def add_to_watch_later!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
 
-    Frame.collection.update({:_id => self.id}, {:$addToSet => {:f => u.id}})
-    self.reload
-
     #if it's already in this user's watch later, just return that
     if prev_dupe = Frame.get_ancestor_of_frame(u.watch_later_roll_id, self.id)
       return prev_dupe
     else
+      Frame.collection.update({:_id => self.id}, {:$addToSet => {:f => u.id}})
+      self.reload
       return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
     end
   end
