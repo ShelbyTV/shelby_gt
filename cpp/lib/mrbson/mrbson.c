@@ -49,7 +49,7 @@ int mrbsonFindOid(bson *data,
 {
    bson_iterator iterator;
    bson_type type;
- 
+
    type = bson_find(&iterator, data, bsonField);
    if (type != BSON_OID) {
       return FALSE;
@@ -61,27 +61,27 @@ int mrbsonFindOid(bson *data,
 }
 
 void mrbsonOidConciseTimeAgoAttribute(mrjsonContext context,
-                                      bson *data, 
-                                      const char *bsonField, 
+                                      bson *data,
+                                      const char *bsonField,
                                       const char *outputName)
 {
    bson_iterator iterator;
    bson_type type;
- 
+
    type = bson_find(&iterator, data, bsonField);
-   if (type == BSON_OID) {   
+   if (type == BSON_OID) {
      char buffer[100];
      oidConciseTimeAgoInWordsString(bson_iterator_oid(&iterator), buffer);
      mrjsonStringAttribute(context, outputName, buffer);
    } else {
-     mrjsonStringAttribute(context, outputName, ""); 
+     mrjsonStringAttribute(context, outputName, "");
    }
 }
 
 
 void mrbsonOidAttribute(mrjsonContext context,
-                        bson *data, 
-                        const char *bsonField, 
+                        bson *data,
+                        const char *bsonField,
                         const char *outputName)
 {
    bson_iterator iterator;
@@ -93,39 +93,39 @@ void mrbsonOidAttribute(mrjsonContext context,
      bson_oid_to_string(bson_iterator_oid(&iterator), buffer);
      mrjsonStringAttribute(context, outputName, buffer);
    } else {
-     mrjsonNullAttribute(context, outputName); 
+     mrjsonNullAttribute(context, outputName);
    }
 }
 
 void mrbsonIntAttribute(mrjsonContext context,
-                        bson *data, 
-                        const char *bsonField, 
+                        bson *data,
+                        const char *bsonField,
                         const char *outputName)
 {
    bson_iterator iterator;
    bson_type type;
- 
+
    type = bson_find(&iterator, data, bsonField);
    if (type == BSON_INT) {
      mrjsonIntAttribute(context, outputName, bson_iterator_int(&iterator));
    } else {
-     mrjsonIntAttribute(context, outputName, 0); 
+     mrjsonIntAttribute(context, outputName, 0);
    }
 }
 
 void mrbsonBoolAttribute(mrjsonContext context,
                          bson *data,
-                         const char *bsonField, 
+                         const char *bsonField,
                          const char *outputName)
 {
    bson_iterator iterator;
    bson_type type;
- 
+
    type = bson_find(&iterator, data, bsonField);
    if (type == BSON_BOOL) {
      mrjsonBoolAttribute(context, outputName, bson_iterator_bool(&iterator));
    } else {
-     mrjsonNullAttribute(context, outputName); 
+     mrjsonNullAttribute(context, outputName);
    }
 }
 
@@ -154,12 +154,12 @@ void mrbsonDoubleAttribute(mrjsonContext context,
 {
    bson_iterator iterator;
    bson_type type;
- 
+
    type = bson_find(&iterator, data, bsonField);
    if (type == BSON_DOUBLE) {
      mrjsonDoubleAttribute(context, outputName, bson_iterator_double(&iterator));
    } else {
-     mrjsonDoubleAttribute(context, outputName, 0); 
+     mrjsonDoubleAttribute(context, outputName, 0);
    }
 }
 
@@ -170,12 +170,12 @@ void mrbsonStringAttribute(mrjsonContext context,
 {
    bson_iterator iterator;
    bson_type type;
- 
+
    type = bson_find(&iterator, data, bsonField);
    if (type == BSON_STRING) {
      mrjsonStringAttribute(context, outputName, bson_iterator_string(&iterator));
    } else {
-     mrjsonNullAttribute(context, outputName); 
+     mrjsonNullAttribute(context, outputName);
    }
 }
 
@@ -189,11 +189,11 @@ void mrbsonDateAttribute(mrjsonContext context,
 
   type = bson_find(&iterator, data, bsonField);
   if (type == BSON_DATE) {
-    // bson_iterator_date(&iterator) returns a bson_date_t 
+    // bson_iterator_date(&iterator) returns a bson_date_t
     // which is typedef int64_t, a long int
     mrjsonLongAttribute(context, outputName, bson_iterator_date(&iterator));
   } else {
-    mrjsonNullAttribute(context, outputName); 
+    mrjsonNullAttribute(context, outputName);
   }
 }
 
@@ -213,9 +213,15 @@ void mrbsonSimpleArrayAttribute(mrjsonContext context,
 
      mrjsonStartArray(context, outputName);
      while ((type = bson_iterator_next(&iterator))) {
+        char buffer[100];
         switch (type) {
            case BSON_STRING:
               mrjsonStringArrayEntry(context, bson_iterator_string(&iterator));
+              break;
+
+           case BSON_OID:
+              bson_oid_to_string(bson_iterator_oid(&iterator), buffer);
+              mrjsonStringArrayEntry(context, buffer);
               break;
 
            case BSON_EOO:
@@ -224,7 +230,6 @@ void mrbsonSimpleArrayAttribute(mrjsonContext context,
            case BSON_ARRAY:
            case BSON_BINDATA:
            case BSON_UNDEFINED:
-           case BSON_OID:
            case BSON_BOOL:
            case BSON_DATE:
            case BSON_NULL:
@@ -240,9 +245,9 @@ void mrbsonSimpleArrayAttribute(mrjsonContext context,
               break;
         }
      }
-     mrjsonEndArray(context); 
+     mrjsonEndArray(context);
    } else {
-     mrjsonNullAttribute(context, outputName); 
+     mrjsonNullAttribute(context, outputName);
      // if we needed an empty array instead, could do this:
      // mrjsonStartArray(context, outputName);
      // mrjsonEndArray(context);

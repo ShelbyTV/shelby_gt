@@ -15,16 +15,16 @@
 static struct options {
    char* rollString;
    bson_oid_t roll;
-   
+
    char* userString;
    bson_oid_t user;
-   
+
    int limit;
    int skip;
    char *environment;
 
    char *sinceIdString;
-   
+
    int permissionGranted;
 } options;
 
@@ -32,7 +32,7 @@ struct timeval beginTime;
 
 void printHelpText()
 {
-   printf("frameIndex usage:\n"); 
+   printf("frameIndex usage:\n");
    printf("   -h --help                 Print this help message\n");
    printf("   -u --user                 String representation of user OID\n");
    printf("   -r --roll                 String representation of roll OID\n");
@@ -46,7 +46,7 @@ void printHelpText()
 void parseUserOptions(int argc, char **argv)
 {
    int c;
-     
+
    while (1) {
       static struct option long_options[] =
       {
@@ -60,25 +60,25 @@ void parseUserOptions(int argc, char **argv)
          {"environment",        required_argument, 0, 'e'},
          {0, 0, 0, 0}
       };
-      
+
       int option_index = 0;
       c = getopt_long(argc, argv, "hr:l:s:e:u:i:p", long_options, &option_index);
-   
+
       /* Detect the end of the options. */
       if (c == -1) {
          break;
       }
-   
+
       switch (c)
       {
          case 'u':
             options.userString = optarg;
-            bson_oid_from_string(&options.user, optarg); 
+            bson_oid_from_string(&options.user, optarg);
             break;
 
          case 'r':
             options.rollString = optarg;
-            bson_oid_from_string(&options.roll, optarg); 
+            bson_oid_from_string(&options.roll, optarg);
             break;
 
          case 'l':
@@ -96,12 +96,12 @@ void parseUserOptions(int argc, char **argv)
          case 'i':
             options.sinceIdString = optarg;
             break;
-            
+
          case 'p':
             options.permissionGranted = TRUE;
             break;
 
-         case 'h': 
+         case 'h':
          case '?':
          default:
             printHelpText();
@@ -114,7 +114,7 @@ void parseUserOptions(int argc, char **argv)
       printHelpText();
       exit(1);
    }
-   
+
    if (strcmp(options.rollString, "") == 0 &&
        strcmp(options.userString, "") == 0) {
       printf("Must specify either -u/--user or -r/--roll.\n");
@@ -142,7 +142,7 @@ unsigned int timeSinceMS(struct timeval begin)
    struct timeval difference;
    timersub(&currentTime, &begin, &difference);
 
-   return difference.tv_sec * 1000 + (difference.tv_usec / 1000); 
+   return difference.tv_sec * 1000 + (difference.tv_usec / 1000);
 }
 
 void printJsonMessage(sobContext sob, mrjsonContext context, bson *message)
@@ -261,7 +261,7 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
       SOB_USER_USER_IMAGE,
       SOB_USER_PUBLIC_ROLL_ID,
    };
-   
+
    sobPrintStringToBoolAttributeWithKeyOverride(context,
                                                 user,
                                                 SOB_USER_AVATAR_FILE_NAME,
@@ -274,10 +274,9 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
 }
 
 /*
- * There are some attributes in the Ruby API that this C API is not printing 
+ * There are some attributes in the Ruby API that this C API is not printing
  * (because they seem outdated / unused):
  *
- *  - upvoters
  *  - frame_ancestors
  *  - frame_children
  *  - timestamp
@@ -294,6 +293,7 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
       SOB_FRAME_CONVERSATION_ID,
       SOB_FRAME_ROLL_ID,
       SOB_FRAME_VIDEO_ID,
+      SOB_FRAME_UPVOTERS
    };
 
    sobPrintAttributes(context,
@@ -367,7 +367,7 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
                             SOB_ROLL_SUBDOMAIN_ACTIVE);
 
    bson *rollCreator;
-   int status = sobGetBsonByOidField(sob, 
+   int status = sobGetBsonByOidField(sob,
                                      SOB_USER,
                                      roll,
                                      SOB_ROLL_CREATOR_ID,
@@ -397,13 +397,13 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
    // all frames that we loaded are this roll's frames.
    cvector frames = cvectorAlloc(sizeof(bson *));
    sobGetBsonVector(sob, SOB_FRAME, frames);
-   
+
    mrjsonStartArray(context, "frames");
    for (unsigned int i = 0; i < cvectorCount(frames); i++) {
       mrjsonStartNamelessObject(context);
       printJsonFrame(sob, context, *(bson **)cvectorGetElement(frames, i));
       mrjsonEndObject(context);
-   } 
+   }
    mrjsonEndArray(context);
 }
 
@@ -416,7 +416,7 @@ void printJsonOutput(sobContext sob)
 
    // allocate context; match Ruby API "status" and "result" response syntax
    mrjsonContext context = mrjsonAllocContext(sobGetEnvironment(sob) != SOB_PRODUCTION);
-   mrjsonStartResponse(context); 
+   mrjsonStartResponse(context);
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartObject(context, "result");
 
@@ -458,7 +458,7 @@ int loadData(sobContext sob)
       // TODO: this is a hack, we should probably be storing this to a better name...
       options.roll = *(bson_oid_t *)cvectorGetElement(rollOids, 0);
    } else {
-      assert(strcmp(options.rollString, "") != 0); 
+      assert(strcmp(options.rollString, "") != 0);
 
       // add this particular roll ID to our vector of rolls to fetch
       cvectorAddElement(rollOids, &options.roll);
@@ -466,7 +466,7 @@ int loadData(sobContext sob)
 
    // load all frames with roll oid
    sobLoadAllByOidField(sob,
-                        SOB_FRAME, 
+                        SOB_FRAME,
                         SOB_FRAME_ROLL_ID,
                         options.roll,
                         options.limit,
@@ -503,7 +503,7 @@ int main(int argc, char **argv)
    setDefaultOptions();
    parseUserOptions(argc, argv);
 
-   sobEnvironment env = sobEnvironmentFromString(options.environment); 
+   sobEnvironment env = sobEnvironmentFromString(options.environment);
    sobContext sob = sobAllocContext(env);
 
    if (!loadData(sob)) {

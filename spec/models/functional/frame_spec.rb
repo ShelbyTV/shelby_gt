@@ -387,84 +387,87 @@ describe Frame do
       @stranger2 = Factory.create(:user)
     end
 
-    it "should allow destroy if destroyer is creator" do
-      @frame.destroyable_by?(@creator).should == true
-      @frame.destroyable_by?(@stranger).should == false
-    end
+    context "check destroyable_by?" do
 
-    it "should allow destory if creator is nil" do
-      @frame.creator = nil
-      @frame.save
-      @frame.destroyable_by?(@creator).should == true
-      @frame.destroyable_by?(@stranger).should == true
-    end
-
-    it "should allow destroy if destroyer is roll creator" do
-      roll = Factory.create(:roll, :creator => @stranger)
-      @frame.roll = roll
-      @frame.save
-      @frame.destroyable_by?(@stranger).should == true
-    end
-
-    it "should decrement it's roll's frame_count on destroy" do
-      roll = Factory.create(:roll, :creator => @stranger)
-      @frame.roll = roll
-      @frame.save
-
-      lambda {
-        @frame.destroy
-      }.should change { roll.reload.frame_count }.by -1
-    end
-
-    it "should still be in the DB" do
-      @frame.destroy.should == true
-
-      Frame.find(@frame_id).should_not == nil
-    end
-
-    it "should have a nil roll_id" do
-      roll = Factory.create(:roll, :creator => @stranger)
-      @frame.roll = roll
-      @frame.save
-
-      @frame.destroy
-
-      Frame.find(@frame_id).roll_id.should == nil
-    end
-
-
-    it "should have the original roll_id in deleted_from_froll_id" do
-      roll = Factory.create(:roll, :creator => @stranger)
-      @frame.roll = roll
-      @frame.save
-
-      @frame.destroy
-
-      Frame.find(@frame_id).deleted_from_roll_id.should == roll.id
-      Frame.find(@frame_id).virtually_destroyed?.should == true
-    end
-
-    context "frame on watch later roll" do
-      it "should remove the user as an upvoter of the frame's ancestor (original upvoted frame)" do
-        stranger_watch_later_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_watch_later])
-        @stranger.watch_later_roll = stranger_watch_later_roll
-
-        stranger2_watch_later_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_watch_later])
-        @stranger2.watch_later_roll = stranger2_watch_later_roll
-
-        @frame.add_to_watch_later!(@stranger)
-        @frame.upvoters.should include(@stranger.id)
-        @frame.upvoters.length.should == 1
-
-        @frame.add_to_watch_later!(@stranger2)
-        @frame.upvoters.should include(@stranger2.id)
-        @frame.upvoters.length.should == 2
-
-        stranger_watch_later_roll.frames.first.destroy
-        @frame.reload
-        @frame.upvoters.should_not include(@stranger.id)
-        @frame.upvoters.length.should == 1
+      it "should allow destroy if destroyer is creator" do
+        @frame.destroyable_by?(@creator).should == true
+        @frame.destroyable_by?(@stranger).should == false
       end
+
+      it "should allow destory if creator is nil" do
+        @frame.creator = nil
+        @frame.save
+        @frame.destroyable_by?(@creator).should == true
+        @frame.destroyable_by?(@stranger).should == true
+      end
+
+      it "should allow destroy if destroyer is roll creator" do
+        roll = Factory.create(:roll, :creator => @stranger)
+        @frame.roll = roll
+        @frame.save
+        @frame.destroyable_by?(@stranger).should == true
+      end
+
+    end
+
+    context "call destroy method" do
+
+      before(:each) do
+        @roll = Factory.create(:roll, :creator => @stranger)
+        @frame.roll = @roll
+        @frame.save
+      end
+
+      it "should decrement it's roll's frame_count on destroy" do
+        lambda {
+          @frame.destroy
+        }.should change { @roll.reload.frame_count }.by -1
+      end
+
+      it "should still be in the DB" do
+        @frame.destroy.should == true
+
+        Frame.find(@frame_id).should_not == nil
+      end
+
+      it "should have a nil roll_id" do
+        @frame.destroy
+
+        Frame.find(@frame_id).roll_id.should == nil
+      end
+
+
+      it "should have the original roll_id in deleted_from_froll_id" do
+        @frame.destroy
+
+        Frame.find(@frame_id).deleted_from_roll_id.should == @roll.id
+        Frame.find(@frame_id).virtually_destroyed?.should == true
+      end
+
+      context "frame on watch later roll" do
+        it "should remove the user as an upvoter of the frame's ancestor (original upvoted frame)" do
+          stranger_watch_later_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_watch_later])
+          @stranger.watch_later_roll = stranger_watch_later_roll
+
+          stranger2_watch_later_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_watch_later])
+          @stranger2.watch_later_roll = stranger2_watch_later_roll
+
+          @frame.add_to_watch_later!(@stranger)
+          @frame.upvoters.should include(@stranger.id)
+          @frame.upvoters.length.should == 1
+
+          @frame.add_to_watch_later!(@stranger2)
+          @frame.upvoters.should include(@stranger2.id)
+          @frame.upvoters.length.should == 2
+
+          stranger_watch_later_roll.frames.first.destroy
+          @frame.reload
+          @frame.upvoters.should_not include(@stranger.id)
+          @frame.upvoters.length.should == 1
+        end
+
+      end
+
     end
 
   end

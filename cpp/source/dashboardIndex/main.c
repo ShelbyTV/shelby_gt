@@ -25,7 +25,7 @@ struct timeval beginTime;
 
 void printHelpText()
 {
-   printf("dashboardIndex usage:\n"); 
+   printf("dashboardIndex usage:\n");
    printf("   -h --help           Print this help message\n");
    printf("   -u --user           Lowercase nickname of user\n");
    printf("   -l --limit          Limit to this number of dashboard entries\n");
@@ -37,7 +37,7 @@ void printHelpText()
 void parseUserOptions(int argc, char **argv)
 {
    int c;
-     
+
    while (1) {
       static struct option long_options[] =
       {
@@ -49,15 +49,15 @@ void parseUserOptions(int argc, char **argv)
          {"environment", required_argument, 0, 'e'},
          {0, 0, 0, 0}
       };
-      
+
       int option_index = 0;
       c = getopt_long(argc, argv, "hu:l:s:e:i:", long_options, &option_index);
-   
+
       /* Detect the end of the options. */
       if (c == -1) {
          break;
       }
-   
+
       switch (c)
       {
          case 'u':
@@ -80,7 +80,7 @@ void parseUserOptions(int argc, char **argv)
             options.sinceIdString = optarg;
             break;
 
-         case 'h': 
+         case 'h':
          case '?':
          default:
             printHelpText();
@@ -93,7 +93,7 @@ void parseUserOptions(int argc, char **argv)
       printHelpText();
       exit(1);
    }
-   
+
    if (strcmp(options.user, "") == 0) {
       printf("Specifying -u or --user is required.\n");
       printHelpText();
@@ -118,7 +118,7 @@ unsigned int timeSinceMS(struct timeval begin)
    struct timeval difference;
    timersub(&currentTime, &begin, &difference);
 
-   return difference.tv_sec * 1000 + (difference.tv_usec / 1000); 
+   return difference.tv_sec * 1000 + (difference.tv_usec / 1000);
 }
 
 void printJsonMessage(sobContext sob, mrjsonContext context, bson *message)
@@ -231,7 +231,7 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
       SOB_USER_PUBLIC_ROLL_ID,
       SOB_USER_GT_ENABLED,
    };
-   
+
    sobPrintStringToBoolAttributeWithKeyOverride(context,
                                                 user,
                                                 SOB_USER_AVATAR_FILE_NAME,
@@ -244,10 +244,9 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
 }
 
 /*
- * There are some attributes in the Ruby API that this C API is not printing 
+ * There are some attributes in the Ruby API that this C API is not printing
  * (because they seem outdated / unused):
  *
- *  - upvoters
  *  - frame_ancestors
  *  - frame_children
  *  - timestamp
@@ -264,6 +263,7 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
       SOB_FRAME_CONVERSATION_ID,
       SOB_FRAME_ROLL_ID,
       SOB_FRAME_VIDEO_ID,
+      SOB_FRAME_UPVOTERS
    };
 
    sobPrintAttributes(context,
@@ -341,7 +341,7 @@ void printJsonOutput(sobContext sob)
 
    // allocate context; match Ruby API "status" and "result" response syntax
    mrjsonContext context = mrjsonAllocContext(sobGetEnvironment(sob) != SOB_PRODUCTION);
-   mrjsonStartResponse(context); 
+   mrjsonStartResponse(context);
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartArray(context, "result");
 
@@ -349,7 +349,7 @@ void printJsonOutput(sobContext sob)
       mrjsonStartNamelessObject(context);
       printJsonDashboardEntry(sob, context, *(bson **)cvectorGetElement(dashboardEntries, i));
       mrjsonEndObject(context);
-   } 
+   }
 
    // finish dashboard entries; we also tack on a field to track execution time of the API
    mrjsonEndArray(context);
@@ -383,14 +383,14 @@ int loadData(sobContext sob)
 
    // then we load all the requested dashboard entries for the user
    sobLoadAllByOidField(sob,
-                        SOB_DASHBOARD_ENTRY, 
+                        SOB_DASHBOARD_ENTRY,
                         SOB_DASHBOARD_ENTRY_USER_ID,
                         userOid,
                         options.limit,
                         options.skip,
                         options.sinceIdString);
 
-   // then we get all frames referenced by the dashboard entries   
+   // then we get all frames referenced by the dashboard entries
    sobGetOidVectorFromObjectField(sob,
                                   SOB_DASHBOARD_ENTRY,
                                   SOB_DASHBOARD_ENTRY_FRAME_ID,
@@ -420,7 +420,7 @@ int main(int argc, char **argv)
    setDefaultOptions();
    parseUserOptions(argc, argv);
 
-   sobEnvironment env = sobEnvironmentFromString(options.environment); 
+   sobEnvironment env = sobEnvironmentFromString(options.environment);
    sobContext sob = sobAllocContext(env);
 
    if (!loadData(sob)) {
