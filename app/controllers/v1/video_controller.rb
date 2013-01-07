@@ -1,19 +1,19 @@
 require 'user_manager'
 
-class V1::VideoController < ApplicationController  
+class V1::VideoController < ApplicationController
   require 'user_manager'
   require 'utils/search_combiner'
   require 'api_clients/vimeo_client'
   require 'api_clients/youtube_client'
   require 'api_clients/dailymotion_client'
-  
+
   before_filter :user_authenticated?, :except => [:show, :find_or_create, :search]
 
   ##
   # Returns one video, with the given parameters.
   #
   # [GET] /v1/video/:id
-  # 
+  #
   # @param [Required, String] id The id of the video
   # @todo return error if id not present w/ params.has_key?(:id)
   def show
@@ -30,7 +30,7 @@ class V1::VideoController < ApplicationController
   # Returns one video, with the given parameters.
   #
   # [GET] /v1/video/find_or_create
-  # 
+  #
   # @param [Optional, String] url the url of the video
   # @param [Required, String] provider_name The provider of the video
   # @param [Required, String] provider_id The id of the video
@@ -50,16 +50,16 @@ class V1::VideoController < ApplicationController
         else
           render_error(404, "could not find video we support")
         end
-      end 
+      end
     end
-  end  
+  end
 
   ##
   # Returns an index of all viewed videos (with only IDs)
   #   REQUIRES AUTHENTICATION
   #
   # [GET] /v1/video/viewed
-  # 
+  #
   def viewed
     StatsManager::StatsD.time(Settings::StatsConstants.api['video']['viewed']) do
       if user = current_user
@@ -72,14 +72,14 @@ class V1::VideoController < ApplicationController
 
       @status = 200
     end
-  end  
-  
+  end
+
   ##
   # Returns an index of all viewed queued (with only IDs)
   #   REQUIRES AUTHENTICATION
   #
   # [GET] /v1/video/queued
-  # 
+  #
   def queued
     StatsManager::StatsD.time(Settings::StatsConstants.api['video']['queued']) do
       if user = current_user
@@ -93,7 +93,7 @@ class V1::VideoController < ApplicationController
       @status = 200
     end
   end
-  
+
   ##
   # Marks the given video as unplayable as of now
   #   REQUIRES AUTHENTICATION
@@ -106,16 +106,16 @@ class V1::VideoController < ApplicationController
     @video.first_unplayable_at = Time.now unless @video.first_unplayable_at
     @video.last_unplayable_at = Time.now
     @video.save
-    
+
     @status = 200
     render 'show'
   end
-  
+
   ##
   # Returns videos video a search query param and a search provider
   #
   # [GET] /v1/video/search
-  # 
+  #
   # @param [Required, String] q search query term
   # @param [Required, String] provider where to perform the search, eg vimeo
   # @param [Optional, String] limit number of videos to return, 10 default
@@ -124,46 +124,50 @@ class V1::VideoController < ApplicationController
   def search
     @provider = params.delete(:provider) || ""
     @query = params.delete(:q)
-    
+
     limit = params[:limit] ? params[:limit] : 10
     page = params[:page] ? params[:page] : 1
 
     return render_error(404, "need to specify both provider and query search term") unless @provider and @query and @query != ""
-    
+
     valid_providers = ["vimeo","youtube","dailymotion",""]
     return render_error(404, "need to specify a supported provider") unless valid_providers.include? @provider
-    
+
     converted = (params[:converted] and params[:converted] == "false") ? false : true
     opts = {:limit => limit, :page => page, :converted => converted}
-    
-    # use different client depending on the provider
-    @response = case @provider
-      when ""
-        Search::Combiner.get_videos_and_combine(@query, opts)
-      when "vimeo"
-        APIClients::Vimeo.search(@query, opts)
-      when "youtube"
-        APIClients::Youtube.search(@query, opts)
-      when "dailymotion"
-        APIClients::Dailymotion.search(@query, opts)
-      end
-      
-    
+
+    begin
+      # use different client depending on the provider
+      @response = case @provider
+        when ""
+          Search::Combiner.get_videos_and_combine(@query, opts)
+        when "vimeo"
+          APIClients::Vimeo.search(@query, opts)
+        when "youtube"
+          APIClients::Youtube.search(@query, opts)
+        when "dailymotion"
+          APIClients::Dailymotion.search(@query, opts)
+        end
+    rescue => e
+      render_error(404, "Error while searching: #{e}")
+    end
+
+
     if (@response and @response[:status] == "ok")
       @status = 200
     else
       render_error(404, "could not find any video or an error occured")
     end
   end
-  
+
   private
-  
+
     def video_ids_on_roll(roll_id, limit=1000)
       # This stuff works, but it's slower than using distinct
       #Only return the video_id (abbreviated as :b) for the first 1,000 frames
       #frames = Frame.where(:roll_id => roll_id).limit(1000).fields(:b).all
       #return frames.collect { |f| f.video_id }.compact.uniq
-      
+
       # Since distinct doesn't support limit, we impose some artificial limit via time to keep the query reasonable
       video_ids = Frame.where(:roll_id => roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}).distinct(:b)
       # and then limit the results array
