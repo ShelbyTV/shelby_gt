@@ -267,7 +267,7 @@ class V1::FrameController < ApplicationController
         end
 
         if params[:start_time] and params[:end_time]
-          Rails.logger.info "[FRAME VIEWED] 3a. user: #{current_user ? current_user.nickname : NONE}, frame: #{@frame.id}"
+          Rails.logger.info "[FRAME VIEWED] 3a. user: #{current_user ? current_user.nickname : "NONE"}, frame: #{@frame.id}"
           GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
           StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch"])
         else
