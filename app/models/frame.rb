@@ -80,11 +80,21 @@ class Frame
   # Will add this Frame to the User's viewed_roll if they haven't "viewed" this in the last 24 hours.
   # Also updates the view_count on this frame and it's video regardless if user is passed in
   def view!(u)
-    raise ArgumentError, "must supply User" unless u.is_a?(User) or u.nil?
+    raise ArgumentError, "must supply valid User Object or nil" unless u.is_a?(User) or u.nil?
 
     # If this Frame hasn't been added to the user's viewed_roll in the last X hours, dupe it now
     if u and Frame.roll_includes_ancestor_of_frame?(u.viewed_roll_id, self.id, 24.hours.ago)
       return false
+    # If this an anonymous watch increment appropriatly
+    elsif u.nil?
+      #update view counts
+      Frame.increment(self.id, :i => 1)        # :view_count is :i in Frame
+      Video.increment(self.video_id, :q => 1)  # :view_count is :q in Video
+
+      # when a frame.video.reload happens we want to get the real doc that is reloaded, not the cached one.
+      MongoMapper::Plugins::IdentityMap.clear if Settings::Frame.mm_use_identity_map
+
+      return self
     else
       #update view counts and add dupe for this 'viewing'
       Frame.increment(self.id, :i => 1)        # :view_count is :i in Frame
@@ -96,7 +106,7 @@ class Frame
       # when a frame.video.reload happens we want to get the real doc that is reloaded, not the cached one.
       MongoMapper::Plugins::IdentityMap.clear if Settings::Frame.mm_use_identity_map
 
-      return u ? GT::Framer.dupe_frame!(self, u.id, u.viewed_roll_id) : self
+      return GT::Framer.dupe_frame!(self, u.id, u.viewed_roll_id)
     end
   end
 

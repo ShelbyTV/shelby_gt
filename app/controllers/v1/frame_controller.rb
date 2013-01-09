@@ -256,14 +256,15 @@ class V1::FrameController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['watched']) do
       if @frame = Frame.find(params[:frame_id])
         @status = 200
-        #conditionally count this as a view (once per 24 hours per user)
-        if user_signed_in?
+        # conditionally count this as a view (once per 24 hours per user)
+        #  OR
+        # if this is the beginning of a video mark it as viewed
+        if user_signed_in? or (params[:start_time] and params[:start_time].to_i <= 1)
           # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
-          GT::UserManager.ensure_users_special_rolls(current_user, true) unless GT::UserManager.user_has_all_special_roll_ids?(current_user)
+          GT::UserManager.ensure_users_special_rolls(current_user, true) unless GT::UserManager.user_has_all_special_roll_ids?(current_user) if user_signed_in?
+          @new_frame = @frame.view!(current_user)
+          @frame.reload # to update view_count
         end
-
-        @new_frame = @frame.view!(user_signed_in? ? current_user : nil)
-        @frame.reload # to update view_count
 
         if params[:start_time] and params[:end_time]
           GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
