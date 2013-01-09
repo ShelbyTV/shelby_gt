@@ -256,25 +256,20 @@ class V1::FrameController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['watched']) do
       if @frame = Frame.find(params[:frame_id])
         @status = 200
-        Rails.logger.info "[FRAME VIEWED] 1a. FRAME EXISTS"
         #conditionally count this as a view (once per 24 hours per user)
-        if current_user
-          Rails.logger.info "[FRAME VIEWED] 2. USER LOGGED IN"
+        if user_signed_in?
           # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
           GT::UserManager.ensure_users_special_rolls(current_user, true) unless GT::UserManager.user_has_all_special_roll_ids?(current_user)
-          @new_frame = @frame.view!(current_user)
-          @frame.reload # to update view_count
         end
 
+        @new_frame = @frame.view!(user_signed_in? ? current_user : nil)
+        @frame.reload # to update view_count
+
         if params[:start_time] and params[:end_time]
-          Rails.logger.info "[FRAME VIEWED] 3a. user: #{current_user ? current_user.nickname : "NONE"}, frame: #{@frame.id}"
           GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
           StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch"])
-        else
-          Rails.logger.info "[FRAME VIEWED] 3b. NO START AND END END TIME"
         end
       else
-        Rails.logger.info "[FRAME VIEWED] 1b. ERROR"
         render_error(404, "could not find frame")
       end
     end

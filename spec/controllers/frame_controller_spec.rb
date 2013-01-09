@@ -119,8 +119,6 @@ describe V1::FrameController do
 
     it "shouldn't need a logged in user" do
       GT::UserActionManager.should_receive(:view!)
-      Frame.should_not_receive(:view!)
-      @frame.should_not_receive(:reload)
 
       sign_out @u1
 
