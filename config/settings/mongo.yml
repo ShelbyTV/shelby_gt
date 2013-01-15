@@ -1,6 +1,7 @@
 defaults: &defaults
   db_options:
    :pool_size: 1
+   :w: 0
 
 development:
   <<: *defaults
