@@ -20,6 +20,11 @@ class Conversation
   
   # The individual messages of the conversation
   many :messages
+  # The way Rails/MongoMapper implements callbacks (validations or otherwise) causes a very deep stack to be created
+  # when using EmbeddedDocuments (even if you don't define any callbacks).  This gets exascerbated in EventMachine b/c of it's stack.
+  # If we see SystemStackError due to "stack level too deep" when saving a Conversation, we may need to disable embedded doc callbacks 
+  # Uncomment the following line to disable callbacks:
+  # embedded_callbacks_off
   
   # A Conversation references it's original Frame, and each Frame has only one Conversation
   # If a tweet (or other *external* social post) comes in that references more than one video: multiple Conversations will be created, referencing different Frames, Videos

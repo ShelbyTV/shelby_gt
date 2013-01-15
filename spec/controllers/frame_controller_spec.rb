@@ -15,6 +15,7 @@ describe V1::FrameController do
     @roll = Factory.create(:roll, :creator => @u1)
     @frame = Factory.create(:frame)
     @frame.roll = @roll
+    @frame.save
     Roll.stub(:find) { @roll }
     @roll.stub_chain(:frames, :sort) { [@frame] }
   end
@@ -53,9 +54,8 @@ describe V1::FrameController do
 
     it "returns 404 when cant find frame" do
       Frame.stub(:find) { nil }
-      get :show, :format => :json
+      get :show, :id => "whatever", :format => :json
       assigns(:status).should eq(404)
-      assigns(:message).should eq("could not find frame with id ")
     end
   end
 
@@ -206,11 +206,10 @@ describe V1::FrameController do
         assigns(:message).should eq("a destination and text is required to post")
       end
 
-      it "should return 404 if roll not found" do
+      it "should return 404 if frame/roll not found" do
         Frame.stub!(:find).and_return(nil)
-        post :share, :destination => ["twitter"], :text => "testing", :format => :json
+        post :share, :frame_id => "whatever", :destination => ["twitter"], :text => "testing", :format => :json
         assigns(:status).should eq(404)
-        assigns(:message).should eq("could not find that frame")
       end
 
     end

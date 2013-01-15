@@ -14,7 +14,7 @@ class V1::TwitterController < ApplicationController
   def follow
     return render_error(400, "must provide a twitter user to follow") unless params[:twitter_user_name]
     auth = current_user.first_provider("twitter")
-    return render_error(404, "user #{current_user.id} does not have a valid twitter authentication") unless auth and auth.oauth_token and auth.oauth_secret
+    return render_error(404, "user #{current_user.id} does not have a valid twitter authentication") unless auth and !auth.blank? and auth.oauth_token and auth.oauth_secret
     
     # Do the follow asynchronously
     ShelbyGT_EM.next_tick do

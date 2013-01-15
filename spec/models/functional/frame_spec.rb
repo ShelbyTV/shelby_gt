@@ -4,12 +4,6 @@ require 'spec_helper'
 describe Frame do
 
   context "database" do
-    it "should have an identity map" do
-      f = Frame.new
-      f.save
-      Frame.identity_map.size.should > 0
-    end
-
     it "should have an index on [roll_id, score]" do
       indexes = Frame.collection.index_information.values.map { |v| v["key"] }
       indexes.should include({"a"=>1, "e"=>-1})

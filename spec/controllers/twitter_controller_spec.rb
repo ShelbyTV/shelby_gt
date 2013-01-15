@@ -11,12 +11,7 @@ describe V1::TwitterController do
     it "errors if user doesn't have twitter auth" do
       @user.authentications = []
       @user.save
-      post :follow, :format => :json
-      response.should_not be_success
-    end
-    
-    it "errors if twitter screen name isn't provided" do
-      post :follow, :format => :json
+      post :follow, :twitter_user_name => "whatever", :format => :json
       response.should_not be_success
     end
     

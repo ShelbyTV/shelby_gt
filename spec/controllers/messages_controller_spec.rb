@@ -25,26 +25,12 @@ describe V1::MessagesController do
       assigns(:status).should eq(200)
       assigns(:new_message).should eq(@message)
     end
-    
-    it "returns 400 without message text" do
-      post :create, :format => :json
-      assigns(:status).should eq(400)
-      assigns(:message).should eq("text of message required")
-    end
 
     it "returns 401 without a user authenticated" do
       sign_out @user
-      post :create, :text => "SOS", :format => :json
+      post :create, :conversation_id => @conversation.id.to_s, :text => "SOS", :format => :json
       response.should_not be_success
     end
-    
-    it "returns 404 if it cant find the conversation" do
-      Conversation.stub(:find) { nil }
-      post :create, :text => "SOS", :format => :json
-      assigns(:status).should eq(404)
-      assigns(:message).should eq("could not find conversation with id ")
-    end
-    
   end
   
   describe "DELETE destroy" do

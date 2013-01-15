@@ -1,15 +1,13 @@
 source 'https://rubygems.org'
 
-gem 'rails', '3.2.2'
+gem 'rails', '3.2.11'
 
 #
 # ---------- Database
 #
 #if/when my key abbreviation gets pulled into the official gem, should move back to that
-# N.B. embed_doc_no_callbacks is a branch off of key_abbreviation which includes both:
-#   key_abbreviation - allowing us to use short keys in mongo but longer attributes in ruby, and
-#   embed_doc_no_callbacks - allowing us to disable callbacks on embedde documents so we don't hit the stack level too deep issue
-gem "mongo_mapper", :git => 'git://github.com/spinosa/mongomapper.git', :branch => 'embed_doc_no_callbacks'
+# key_abbreviation - allowing us to use short keys in mongo but longer attributes in ruby
+gem "mongo_mapper", :git => 'git://github.com/spinosa/mongomapper.git', :branch => 'key_abbreviation'
 gem "mongo", '>=1.6.4'
 
 #
