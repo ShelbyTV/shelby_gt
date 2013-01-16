@@ -43,11 +43,11 @@ describe 'v1/discussion_roll' do
         parse_json(response.body)["result"]["id"].should == roll.id.to_s
       end
       
-      it "should send emails to everybody (including roll creator on roll creation)" do
+      it "should send emails to everybody (except for roll creator, even on roll creation)" do
         emails = [Factory.next(:primary_email), Factory.next(:primary_email), Factory.next(:primary_email)]
         lambda {
           post "/v1/discussion_roll?frame_id=#{@frame.id}&message=msg&participants=#{CGI.escape emails.join(';')}"
-        }.should change { ActionMailer::Base.deliveries.count } .by(emails.size + 1)
+        }.should change { ActionMailer::Base.deliveries.count } .by(emails.size)
         
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result")
