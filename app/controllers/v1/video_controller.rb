@@ -149,7 +149,7 @@ class V1::VideoController < ApplicationController
           APIClients::Dailymotion.search(@query, opts)
         end
     rescue => e
-      render_error(404, "Error while searching: #{e}")
+      return render_error(404, "Error while searching: #{e}")
     end
 
 
