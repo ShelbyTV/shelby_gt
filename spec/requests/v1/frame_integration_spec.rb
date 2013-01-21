@@ -3,21 +3,22 @@ require 'video_manager'
 require 'link_shortener'
 
 describe 'v1/frame' do
+  before(:each) do
+    @u1 = Factory.create(:user)
+    @u1.upvoted_roll = Factory.create(:roll, :creator => @u1)
+    @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
+    @u1.viewed_roll = Factory.create(:roll, :creator => @u1)
+    @u1.save
+    
+    @r = Factory.create(:roll, :creator => @u1, :public => false, :roll_type => Roll::TYPES[:user_private])
+    @f = Factory.create(:frame, :creator => @u1, :roll => @r, :conversation => Factory.create(:conversation))
+    @f2 = Factory.create(:frame, :creator => @u1, :roll => @r)
+    @f3 = Factory.create(:frame, :creator => @u1, :roll => @r)
+    @f4 = Factory.create(:frame, :creator => @u1, :roll => @r)
+  end
   
   context 'logged in' do
-    before(:each) do
-      @u1 = Factory.create(:user)
-      @u1.upvoted_roll = Factory.create(:roll, :creator => @u1)
-      @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
-      @u1.viewed_roll = Factory.create(:roll, :creator => @u1)
-      @u1.save
-      
-      @r = Factory.create(:roll, :creator => @u1, :public => false, :roll_type => Roll::TYPES[:user_private])
-      @f = Factory.create(:frame, :creator => @u1, :roll => @r, :conversation => Factory.create(:conversation))
-      @f2 = Factory.create(:frame, :creator => @u1, :roll => @r)
-      @f3 = Factory.create(:frame, :creator => @u1, :roll => @r)
-      @f4 = Factory.create(:frame, :creator => @u1, :roll => @r)
-      
+    before(:each) do      
       set_omniauth(:uuid => @u1.authentications.first.uid)
       get '/auth/twitter/callback'
     end
@@ -235,18 +236,6 @@ describe 'v1/frame' do
           response.body.should be_json_eql(1).at_path("result/view_count")
         end
         
-        it "should return success and updated frame on watched w/o logged in user"  do
-          set_omniauth(:uuid => nil)
-          get '/auth/twitter/callback'
-          
-          @f.should_not_receive(:view!)
-          post '/v1/frame/'+@f.id+'/watched?start_time=4&end_time=44'
-          
-          response.body.should be_json_eql(200).at_path("status")
-          response.body.should have_json_path("result/view_count")
-          response.body.should be_json_eql(1).at_path("result/view_count")
-        end
-        
         it "should return success and updated frame on watched w/o start/end times" do
           post '/v1/frame/'+@f.id+'/watched'
           
@@ -342,6 +331,18 @@ describe 'v1/frame' do
       f = Factory.create(:frame, :roll => Factory.create(:roll, :public=>false, :creator=>Factory.create(:user)))
       get '/v1/frame/'+f.id
       response.status.should eq(404)
+    end
+    
+    describe "POST" do 
+      context "watched frame" do
+        it "should return success and updated frame on watched w/o logged in user"  do
+          post '/v1/frame/'+@f.id+'/watched?start_time=1&end_time=44'
+          
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/view_count")
+          response.body.should be_json_eql(1).at_path("result/view_count")
+        end
+      end
     end
     
   end

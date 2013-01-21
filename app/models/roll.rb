@@ -84,6 +84,10 @@ class Roll
   # for private collaborative rolls, these are the participating users
   many :following_users
   
+  # We may embed lots of following_users which results in a stack level too deep issue (b/c of the way MM/Rails does validation chaining)
+  # But since we don't use validations or callbacks, we can hack around this issue:
+  embedded_callbacks_off
+  
   # uploadable header image via paperclip (see config/initializers/paperclip.rb for defaults)
   has_attached_file :header_image, 
     :styles => { :guide_wide => "370x50#", :large_wide => "1110x150#" }, # temporary sizes while we test & iterate

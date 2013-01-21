@@ -7,12 +7,6 @@ describe DashboardEntry do
   end
   
   context "database" do
-
-    it "should have an identity map" do
-      d = DashboardEntry.new
-      d.save
-      d.identity_map.size.should > 0
-    end
     
     it "should have an index on [user_id, id]" do
       indexes = DashboardEntry.collection.index_information.values.map { |v| v["key"] }

@@ -83,10 +83,11 @@ describe V1::UserController do
       @auth = Authentication.new
       @u1.stub(:first_provider).and_return @auth
     end
+    
     it "returns 200 with token_valid => true when FB token is valid" do
       GT::UserFacebookManager.stub(:verify_auth).and_return(true)
       sign_in @u1
-      get :valid_token, :provider => "facebook", :format => :json
+      get :valid_token, :id => @u1.id.to_s, :provider => "facebook", :format => :json
       assigns(:status).should == 200
       assigns(:token_valid).should == true
     end
@@ -94,7 +95,7 @@ describe V1::UserController do
     it "returns 200 with taken_valid => false when FB token is invalid" do
       GT::UserFacebookManager.stub(:verify_auth).and_return(false)
       sign_in @u1
-      get :valid_token, :provider => "facebook", :format => :json
+      get :valid_token, :id => @u1.id.to_s, :provider => "facebook", :format => :json
       assigns(:status).should == 200
       assigns(:token_valid).should == false
     end
