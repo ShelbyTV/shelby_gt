@@ -197,6 +197,13 @@ describe 'v1/roll' do
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_size(Settings::Roll.featured.select { |r| r["include_in"]["in_line_promos"] }.size).at_path("result")
       end
+      
+      it "should return just ipad_standard categories (which isn't set to false all over the fucking place)" do
+        get 'v1/roll/featured?segment=ipad_standard'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_size(Settings::Roll.featured.select { |r| r["include_in"]["ipad_standard"] }.size).at_path("result")
+        puts response.body
+      end
     end
 
     describe "GET Explore" do
