@@ -6,6 +6,7 @@ class V1::VideoController < ApplicationController
   require 'api_clients/vimeo_client'
   require 'api_clients/youtube_client'
   require 'api_clients/dailymotion_client'
+  require 'api_clients/webscraper_client'
 
   before_filter :user_authenticated?, :except => [:show, :find_or_create, :search]
 
