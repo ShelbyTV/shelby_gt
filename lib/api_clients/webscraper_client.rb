@@ -66,7 +66,7 @@ module APIClients
             provider_name = provider_info[:provider_name]
             provider_id = provider_info[:provider_id]
           else
-            return nil
+            next
           end
 
           v = {}
