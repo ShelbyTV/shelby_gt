@@ -399,6 +399,7 @@ DEPENDENCIES
   mongo (>= 1.6.4)
   mongo_mapper!
   newrelic_rpm
+  nokogiri
   omniauth (>= 1.0)
   omniauth-facebook!
   omniauth-tumblr!

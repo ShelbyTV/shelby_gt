@@ -147,6 +147,8 @@ class V1::VideoController < ApplicationController
           APIClients::Youtube.search(@query, opts)
         when "dailymotion"
           APIClients::Dailymotion.search(@query, opts)
+        when "web"
+          APIClients::WebScraper.get(@query, opts)
         end
     rescue => e
       return render_error(404, "Error while searching: #{e}")

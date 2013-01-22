@@ -80,6 +80,8 @@ gem "awesm", :git => 'git@github.com:ShelbyTV/awesm.git'
 gem "sanitize" # for sanitizing html in models
 gem "statsd-ruby" # for communicating with graphite server
 
+gem "nokogiri"
+
 gem "km" # for sending events to KissMetrics
 
 gem "pusher" # for remote control
