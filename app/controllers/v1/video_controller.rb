@@ -130,7 +130,7 @@ class V1::VideoController < ApplicationController
 
     return render_error(404, "need to specify both provider and query search term") unless @provider and @query and @query != ""
 
-    valid_providers = ["vimeo","youtube","dailymotion",""]
+    valid_providers = ["vimeo","youtube","dailymotion","web",""]
     return render_error(404, "need to specify a supported provider") unless valid_providers.include? @provider
 
     converted = (params[:converted] and params[:converted] == "false") ? false : true
