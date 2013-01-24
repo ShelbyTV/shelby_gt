@@ -29,17 +29,20 @@ describe V1::DiscussionRollController do
   
   describe "GET index" do
     before(:each) do
+      now = Time.now
       @em = Factory.next :primary_email
       @u1 = Factory.create(:user)
-      @u_r_1 = Factory.create(:roll, :creator_id => @u1.id, :public => true, :roll_type => Roll::TYPES[:user_public],
+      @u_r_1 = Factory.create(:roll, :creator_id => @u1.id, :public => true, :roll_type => Roll::TYPES[:user_public], :last_frame_created_at => now - 1.seconds,
                               :discussion_roll_participants => [@u1.id.to_s, @em])
-      @u_r_2 = Factory.create(:roll, :creator_id => @u1.id, :public => true, :roll_type => Roll::TYPES[:user_public],
+      sleep(0.1)
+      @u_r_2 = Factory.create(:roll, :creator_id => @u1.id, :public => true, :roll_type => Roll::TYPES[:user_public], :last_frame_created_at => now - 2.seconds,
                               :discussion_roll_participants => [@u1.id.to_s])
       sleep(0.1)                        
       @u2 = Factory.create(:user)
-      @u2_r_1 = Factory.create(:roll, :creator_id => @u2.id, :public => true, :roll_type => Roll::TYPES[:user_public],
+      @u2_r_1 = Factory.create(:roll, :creator_id => @u2.id, :public => true, :roll_type => Roll::TYPES[:user_public], :last_frame_created_at => now - 10.seconds,
                                :discussion_roll_participants => [@u2.id.to_s, @em])
-      @u2_r_2 = Factory.create(:roll, :creator_id => @u2.id, :public => true, :roll_type => Roll::TYPES[:user_public],
+      sleep(0.1)
+      @u2_r_2 = Factory.create(:roll, :creator_id => @u2.id, :public => true, :roll_type => Roll::TYPES[:user_public], :last_frame_created_at => now - 20.seconds,
                                :discussion_roll_participants => [@u2.id.to_s])
     end
     
@@ -47,14 +50,16 @@ describe V1::DiscussionRollController do
       token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@u_r_1, @u1.id.to_s)
       get :index, :token => token, :format => :json
       assigns(:status).should == 200
-      assigns(:rolls).should == [@u_r_1, @u_r_2]
+      #order is based on roll.last_frame_created_at
+      assigns(:rolls).should == [@u_r_2, @u_r_1]
     end
     
     it "should return rolls where email is a participant" do
       token = GT::DiscussionRollUtils.encrypt_roll_user_identification(@u_r_1, @em)
       get :index, :token => token, :format => :json
       assigns(:status).should == 200
-      assigns(:rolls).should == [@u_r_1, @u2_r_1]
+      #order is based on roll.last_frame_created_at
+      assigns(:rolls).should == [@u2_r_1, @u_r_1]
     end
     
     it "should return no rolls" do

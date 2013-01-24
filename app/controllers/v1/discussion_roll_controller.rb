@@ -25,7 +25,7 @@ class V1::DiscussionRollController < ApplicationController
     @user_identifier = user_identifier_from_token(params[:token]) if params[:token]
     
     if @user_identifier
-      @rolls = Roll.where(:discussion_roll_participants => @user_identifier).all
+      @rolls = Roll.where(:discussion_roll_participants => @user_identifier).sort(:last_frame_created_at).all
       @status =  200
       @insert_discussion_roll_access_token = true
       render '/v1/roll/index_array'
