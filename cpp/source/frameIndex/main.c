@@ -291,6 +291,7 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
       SOB_FRAME_SCORE,
       SOB_FRAME_VIEW_COUNT,
       SOB_FRAME_CREATOR_ID,
+      SOB_FRAME_ANONYMOUS_CREATOR_NICKNAME,
       SOB_FRAME_CONVERSATION_ID,
       SOB_FRAME_ROLL_ID,
       SOB_FRAME_VIDEO_ID,

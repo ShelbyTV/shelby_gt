@@ -60,18 +60,19 @@
    apply(USER , roll_followings      ,  ROLL_FOLLOWINGS      ,  ARRAY  , roll_followings     )
 
 #define FRAME_PROPERTIES(apply)                                     \
-   apply(FRAME , id              , ID              , OID    , _id ) \
-   apply(FRAME , roll_id         , ROLL_ID         , OID    , a   ) \
-   apply(FRAME , video_id        , VIDEO_ID        , OID    , b   ) \
-   apply(FRAME , conversation_id , CONVERSATION_ID , OID    , c   ) \
-   apply(FRAME , creator_id      , CREATOR_ID      , OID    , d   ) \
-   apply(FRAME , score           , SCORE           , DOUBLE , e   ) \
-   apply(FRAME , upvoters        , UPVOTERS        , ARRAY  , f   ) \
-   apply(FRAME , frame_ancestors , FRAME_ANCESTORS , ARRAY  , g   ) \
-   apply(FRAME , frame_children  , FRAME_CHILDREN  , ARRAY  , h   ) \
-   apply(FRAME , view_count      , VIEW_COUNT      , INT    , i   ) \
-   apply(FRAME , short_links     , SHORT_LINKS     , ARRAY  , j   ) \
-   apply(FRAME , order           , ORDER           , DOUBLE , k   )
+   apply(FRAME , id                         , ID                         , OID    , _id ) \
+   apply(FRAME , roll_id                    , ROLL_ID                    , OID    , a   ) \
+   apply(FRAME , video_id                   , VIDEO_ID                   , OID    , b   ) \
+   apply(FRAME , conversation_id            , CONVERSATION_ID            , OID    , c   ) \
+   apply(FRAME , creator_id                 , CREATOR_ID                 , OID    , d   ) \
+   apply(FRAME , score                      , SCORE                      , DOUBLE , e   ) \
+   apply(FRAME , upvoters                   , UPVOTERS                   , ARRAY  , f   ) \
+   apply(FRAME , frame_ancestors            , FRAME_ANCESTORS            , ARRAY  , g   ) \
+   apply(FRAME , frame_children             , FRAME_CHILDREN             , ARRAY  , h   ) \
+   apply(FRAME , view_count                 , VIEW_COUNT                 , INT    , i   ) \
+   apply(FRAME , short_links                , SHORT_LINKS                , ARRAY  , j   ) \
+   apply(FRAME , order                      , ORDER                      , DOUBLE , k   ) \
+   apply(FRAME , anonymous_creator_nickname , ANONYMOUS_CREATOR_NICKNAME , STRING , m   )
 
 #define ROLL_PROPERTIES(apply)                                                                           \
    apply(ROLL , id                           , ID                           , OID    , _id             ) \
