@@ -25,7 +25,7 @@ class V1::DiscussionRollController < ApplicationController
     @user_identifier = user_identifier_from_token(params[:token]) if params[:token]
     
     if @user_identifier
-      @rolls = Roll.where(:discussion_roll_participants => @user_identifier).sort(:last_frame_created_at).all
+      @rolls = Roll.where(:discussion_roll_participants => @user_identifier).sort(:content_updated_at).all
       @status =  200
       @insert_discussion_roll_access_token = true
       render '/v1/roll/index_array'
@@ -200,6 +200,8 @@ class V1::DiscussionRollController < ApplicationController
     end
 
     if @conversation.save
+      roll.update_attribute(:content_updated_at, Time.now)
+      
       #sends emails to all but the poster
     	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(roll, poster) }
     	

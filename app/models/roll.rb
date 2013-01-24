@@ -106,7 +106,7 @@ class Roll
   key :discussion_roll_participants,  Array, :typecast => 'String', :abbr => :s
   
   # Denormalize a bit of frequently used information (added for discussion rolls)
-  key :last_frame_created_at, Time, :abbr => :t
+  key :content_updated_at, Time, :abbr => :t
   
   attr_accessible :title, :creator_thumbnail_url, :header_image
 

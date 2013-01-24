@@ -107,7 +107,7 @@ module GT
         res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids)
       end
       
-      # Roll - set its thumbnail if missing, update last_frame_created_at
+      # Roll - set its thumbnail if missing, update content_updated_at
       ensure_roll_metadata!(roll, f) if roll
       
       return res
@@ -261,7 +261,7 @@ module GT
       def self.ensure_roll_metadata!(roll, frame)
         if roll and frame
             # some useful denormalized metadata
-            roll.update_attribute(:last_frame_created_at, frame.created_at)
+            roll.update_attribute(:content_updated_at, Time.now)
           
             if vid = frame.video
             # rolls need thumbnails (user.public_roll thumbnail is already set as their avatar)

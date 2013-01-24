@@ -157,8 +157,8 @@ describe 'v1/discussion_roll' do
         
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result")
-        #roll should have updated last_frame_created_at
-        roll.last_frame_created_at.should == roll.frames[0].created_at
+        #roll should have updated content_updated_at
+        roll.content_updated_at.to_i.should == roll.frames[0].created_at.to_i
         #make sure an array of Frames is returned
         response.body.should have_json_path("result/frames/0/conversation")
         response.body.should have_json_path("result/frames/0/conversation/messages/0/text")
@@ -236,7 +236,7 @@ describe 'v1/discussion_roll' do
         response.body.should have_json_path("result/rolls")
         # token should have been inserted
         response.body.should have_json_path("result/rolls/0/token")
-        response.body.should have_json_path("result/rolls/0/last_frame_created_at")
+        response.body.should have_json_path("result/rolls/0/content_updated_at")
         response.body.should have_json_path("result/rolls/0/discussion_roll_participants")
       end
     end
@@ -263,7 +263,12 @@ describe 'v1/discussion_roll' do
         msg_poster_email = Factory.next(:primary_email)
         emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        res = GT::Framer.re_roll(@frame, @u1, roll, true)
+        roll.reload.content_updated_at.to_i.should == res[:frame].created_at.to_i
+
+        #change it to make sure we update later
+        roll.content_updated_at = 1.day.ago
+        roll.save
 
         lambda {
           token = GT::DiscussionRollUtils.encrypt_roll_user_identification(roll, msg_poster_email)
@@ -272,6 +277,8 @@ describe 'v1/discussion_roll' do
         
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result")
+        #roll should be updated
+        roll.reload.content_updated_at.to_i.should == roll.reload.frames.first.conversation.messages[0].created_at.to_i
         #make sure a Conversation is returned
         response.body.should have_json_path("result/messages")
         response.body.should have_json_path("result/messages/0/text")
