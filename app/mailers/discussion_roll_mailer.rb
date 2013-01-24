@@ -5,7 +5,7 @@ class DiscussionRollMailer < ActionMailer::Base
   include ActionView::Helpers::TextHelper
   helper :mail, :application
 
-  # conversation_with is the array of Users and/or email addresses not including recipient.
+  # conversation_with is the array of Users and/or email addresses not including recipient (NB: does include the poster).
   #   ie. [User1, "email1@gmail.com", User2, User3, "email2@gmail.com", ...]
   # email_to is the actual email address to send to (it will match recipient when they're not a shelby user)
   # token is used to authenticate and authorize users when viewing and posting messages to this discussion roll
@@ -25,9 +25,9 @@ class DiscussionRollMailer < ActionMailer::Base
     @message = @most_recent_frame.conversation.messages[-1]
     @permalink = "http://shelby.tv/chat/#{@roll.id}?u=#{CGI.escape(@recipient)}&t=#{CGI.escape(CGI.escape(@token))}"
     
-    mail :from => Settings::Email.discussion_roll['from_email'], 
+    mail :from => "\"#{@from_name}\" <#{Settings::Email.discussion_roll['from_email']}>", 
       :to => email_to, 
-      :subject => subject_for(@from_name, conversation_with)
+      :subject => subject_for(@from_name, conversation_with - [poster])
   end
   
   private
@@ -36,14 +36,15 @@ class DiscussionRollMailer < ActionMailer::Base
     # This way email clients can nicely group the emails into a conversation
     def subject_for(from_name, conversation_with)
       others = conversation_with[0..1].map { |p| p.is_a?(User) ? p.nickname : p } .join(", ")
+      suffix = "video with Shelby Mail"
       
       case conversation_with.count
       when 0 
-        "#{from_name} sent you a Shelby Chat video"
+        "#{from_name} sent you #{suffix}"
       when 1..2
-        "#{from_name} sent you, #{others} a Shelby Chat video"
+        "#{from_name} sent you, #{others} #{suffix}"
       else
-        "#{from_name} sent you, #{others} and #{pluralize(conversation_with.count-2, 'other')} a Shelby Chat video"
+        "#{from_name} sent you, #{others} and #{pluralize(conversation_with.count-2, 'other')} #{suffix}"
       end
     end
   
