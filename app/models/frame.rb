@@ -24,6 +24,9 @@ class Frame
 
   belongs_to :creator,  :class_name => 'User'
   key :creator_id,      ObjectId,   :abbr => :d
+  
+  # When we don't have a creator (ie. email-only discussion roll user) store some identifying name
+  key :anonymous_creator_nickname, String, :abbr => :m
 
   # Frames will be ordered in normal Rolls based on their score by default
   key :score,  Float, :required => true, :abbr => :e

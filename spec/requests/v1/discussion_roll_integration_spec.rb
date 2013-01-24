@@ -325,6 +325,9 @@ describe 'v1/discussion_roll' do
         
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result")
+        #email should be stored in frame
+        response.body.should have_json_path("result/frames/0/anonymous_creator_nickname")
+        parse_json(response.body)["result"]["frames"][0]["anonymous_creator_nickname"].should == msg_poster_email
         #make sure an array of Frames is returned (and message is on the last one)
         response.body.should have_json_path("result/frames/0/conversation")
         response.body.should have_json_path("result/frames/1/conversation/messages/0/text")

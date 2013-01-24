@@ -159,6 +159,12 @@ class V1::DiscussionRollController < ApplicationController
   	      :video => video,
   	      :roll => roll,
   	      :skip_dashboard_entries => true)
+  	      
+  	    # store some identifier with frame if non-shelby-user
+  	    unless shelby_user
+  	      res[:frame].anonymous_creator_nickname = email_from_token(params[:token]).name || email_from_token(params[:token]).address
+  	      res[:frame].save
+	      end
   	    @new_frames << res[:frame]
       end
       frame = @new_frames.last

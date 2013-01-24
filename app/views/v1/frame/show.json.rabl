@@ -8,6 +8,10 @@ if @include_frame_children == true
 		concise_time_ago_in_words(f.created_at) if f.created_at
 	end
 	
+	code :anonymous_creator_nickname do |f|
+	  f.anonymous_creator_nickname if f.anonymous_creator_nickname
+  end
+	
 	child :roll => "roll" do
 		attributes :id, :collaborative, :public, :creator_id, :origin_network, :genius, :frame_count, :first_frame_thumbnail_url, :title, :roll_type, :creator_thumbnail_url => :thumbnail_url
 		attributes :display_thumbnail_url => :thumbnail_url
