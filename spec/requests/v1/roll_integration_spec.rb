@@ -202,7 +202,6 @@ describe 'v1/roll' do
         get 'v1/roll/featured?segment=ipad_standard'
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_size(Settings::Roll.featured.select { |r| r["include_in"]["ipad_standard"] }.size).at_path("result")
-        puts response.body
       end
     end
 
