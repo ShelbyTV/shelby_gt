@@ -8,7 +8,7 @@ module GT
     
     # Given a string of text, search for URLs to known videos and return the array of Videos
     def find_videos_linked_in_text(text)
-      raise ArgumentError "must provide a text string" unless text.is_a?(String)
+      raise ArgumentError, "must provide a text string" unless text.is_a?(String)
       
       raw_urls = text.split.grep(URL_REGEX)
       return videos_from_url_array(raw_urls)

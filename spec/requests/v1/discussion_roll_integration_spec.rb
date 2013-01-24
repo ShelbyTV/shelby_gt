@@ -189,6 +189,28 @@ describe 'v1/discussion_roll' do
         parse_json(response.body)["result"]["frames"][1]["conversation"]["messages"][0]["text"].should == msg
       end
       
+      it "should create and return a new Frame when videos[] param has valid URL and there is no message" do
+        emails = [Factory.next(:primary_email)]
+        roll = @tester.create_discussion_roll_for(@u1, emails)
+        GT::Framer.re_roll(@frame, @u1, roll, true)
+        
+        #make sure a video is found via videos[]
+        v1 = Factory.create(:video)
+        V1::DiscussionRollController.any_instance.should_receive(:videos_from_url_array).with(["v1"]).and_return([v1])
+
+        lambda {
+          post "/v1/discussion_roll/#{roll.id}/messages?videos[]=v1"
+        }.should change { roll.reload.frames.count } .by(1)
+        
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        #make sure an array of Frames is returned
+        response.body.should have_json_path("result/frames/0/conversation")
+        response.body.should have_json_path("result/frames/0/conversation/messages/0/text")
+        response.body.should have_json_type(NilClass).at_path("result/frames/0/conversation/messages/0/text")
+        parse_json(response.body)["result"]["frames"][0]["conversation"]["messages"][0]["text"].should == nil
+      end
+      
     end
   end
   

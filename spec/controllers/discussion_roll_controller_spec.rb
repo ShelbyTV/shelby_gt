@@ -35,7 +35,7 @@ describe V1::DiscussionRollController do
                               :discussion_roll_participants => [@u1.id.to_s, @em])
       @u_r_2 = Factory.create(:roll, :creator_id => @u1.id, :public => true, :roll_type => Roll::TYPES[:user_public],
                               :discussion_roll_participants => [@u1.id.to_s])
-                              
+      sleep(0.1)                        
       @u2 = Factory.create(:user)
       @u2_r_1 = Factory.create(:roll, :creator_id => @u2.id, :public => true, :roll_type => Roll::TYPES[:user_public],
                                :discussion_roll_participants => [@u2.id.to_s, @em])
