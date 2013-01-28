@@ -55,6 +55,9 @@ class Frame
   # Manual ordering value. Used as the default ordering for genius roll frames. May be used in the future for user-initiated ordering.
   key :order, Float, :default => 0, :abbr => :k
 
+  # Total number of likes - both by upvoters (logged in likers) and logged out likers
+  key :like_count, Integer, :abbr => :n, :default => 0
+
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
 
@@ -122,7 +125,10 @@ class Frame
     if prev_dupe = Frame.get_ancestor_of_frame(u.watch_later_roll_id, self.id)
       return prev_dupe
     else
-      Frame.collection.update({:_id => self.id}, {:$addToSet => {:f => u.id}})
+      Frame.collection.update({:_id => self.id}, {
+        :$addToSet => {:f => u.id},
+        :$inc => {:n => 1}
+      })
       self.reload
       return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
     end
@@ -236,8 +242,13 @@ class Frame
       # the original frame that was upvoted when this frame was created on the watch later roll is this frame's
       # direct (last) ancestor
       if upvoted_frame_id = self.frame_ancestors.last
-        # the person whose watch later roll this is was the upvoter, so remove him/her from the upvoters array
-        Frame.collection.update({:_id => upvoted_frame_id}, {:$pull => {:f => roll.creator.id}})
+        # the person whose watch later roll this is was the upvoter, so
+        # 1) remove him/her from the ancestor frame's upvoters array
+        # 2) update (decrement) the ancestor frame's like_count accordingly
+        Frame.collection.update({:_id => upvoted_frame_id}, {
+          :$pull => {:f => roll.creator.id},
+          :$inc => {:n => -1}
+        })
       end
     end
 

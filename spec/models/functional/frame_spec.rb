@@ -252,6 +252,29 @@ describe Frame do
       @frame.upvoters.length.should == 1
     end
 
+    it "should increment the number of likes" do
+      lambda {
+        @frame.add_to_watch_later!(@u1)
+      }.should change { @frame.like_count } .by 1
+
+      u2 = Factory.create(:user)
+      u2.watch_later_roll = Factory.create(:roll, :creator => u2)
+      u3 = Factory.create(:user)
+      u3.watch_later_roll = Factory.create(:roll, :creator => u3)
+
+      lambda {
+        @frame.add_to_watch_later!(u2)
+        @frame.add_to_watch_later!(u3)
+      }.should change { @frame.like_count } .by 2
+    end
+
+    it "should increment the number of likes once for each user" do
+      lambda {
+        @frame.add_to_watch_later!(@u1)
+        @frame.add_to_watch_later!(@u1)
+      }.should change { @frame.like_count } .by 1
+    end
+
     it "should set metadata correctly" do
       f = nil
       lambda {
@@ -451,25 +474,30 @@ describe Frame do
     end
 
     context "frame on watch later roll" do
-        it "should remove the user as an upvoter of the frame's ancestor (original upvoted frame)" do
-          stranger_watch_later_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_watch_later])
-          @stranger.watch_later_roll = stranger_watch_later_roll
+        before(:each) do
+          @stranger_watch_later_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_watch_later])
+          @stranger.watch_later_roll = @stranger_watch_later_roll
 
-          stranger2_watch_later_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_watch_later])
-          @stranger2.watch_later_roll = stranger2_watch_later_roll
+          @stranger2_watch_later_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_watch_later])
+          @stranger2.watch_later_roll = @stranger2_watch_later_roll
 
           @frame.add_to_watch_later!(@stranger)
-          @frame.upvoters.should include(@stranger.id)
-          @frame.upvoters.length.should == 1
-
           @frame.add_to_watch_later!(@stranger2)
-          @frame.upvoters.should include(@stranger2.id)
-          @frame.upvoters.length.should == 2
+        end
 
-          stranger_watch_later_roll.frames.first.destroy
+        it "should remove the user as an upvoter of the frame's ancestor (original upvoted frame)" do
+          @stranger_watch_later_roll.frames.first.destroy
           @frame.reload
           @frame.upvoters.should_not include(@stranger.id)
+          @frame.upvoters.should include(@stranger2.id)
           @frame.upvoters.length.should == 1
+        end
+
+        it "should decrement the number of likes of the frame's ancestor (original upvoted frame)" do
+          lambda {
+            @stranger_watch_later_roll.frames.first.destroy
+            @frame.reload
+          }.should change { @frame.like_count } .by(-1)
         end
     end
 
