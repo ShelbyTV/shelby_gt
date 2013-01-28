@@ -43,11 +43,11 @@ describe 'v1/discussion_roll' do
         parse_json(response.body)["result"]["id"].should == roll.id.to_s
       end
       
-      it "should send emails to everybody (including roll creator on roll creation)" do
+      it "should send emails to everybody (except for roll creator, even on roll creation)" do
         emails = [Factory.next(:primary_email), Factory.next(:primary_email), Factory.next(:primary_email)]
         lambda {
           post "/v1/discussion_roll?frame_id=#{@frame.id}&message=msg&participants=#{CGI.escape emails.join(';')}"
-        }.should change { ActionMailer::Base.deliveries.count } .by(emails.size + 1)
+        }.should change { ActionMailer::Base.deliveries.count } .by(emails.size)
         
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result")
@@ -157,6 +157,8 @@ describe 'v1/discussion_roll' do
         
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result")
+        #roll should have updated content_updated_at
+        roll.content_updated_at.to_i.should == roll.frames[0].created_at.to_i
         #make sure an array of Frames is returned
         response.body.should have_json_path("result/frames/0/conversation")
         response.body.should have_json_path("result/frames/0/conversation/messages/0/text")
@@ -189,6 +191,28 @@ describe 'v1/discussion_roll' do
         parse_json(response.body)["result"]["frames"][1]["conversation"]["messages"][0]["text"].should == msg
       end
       
+      it "should create and return a new Frame when videos[] param has valid URL and there is no message" do
+        emails = [Factory.next(:primary_email)]
+        roll = @tester.create_discussion_roll_for(@u1, emails)
+        GT::Framer.re_roll(@frame, @u1, roll, true)
+        
+        #make sure a video is found via videos[]
+        v1 = Factory.create(:video)
+        V1::DiscussionRollController.any_instance.should_receive(:videos_from_url_array).with(["v1"]).and_return([v1])
+
+        lambda {
+          post "/v1/discussion_roll/#{roll.id}/messages?videos[]=v1"
+        }.should change { roll.reload.frames.count } .by(1)
+        
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        #make sure an array of Frames is returned
+        response.body.should have_json_path("result/frames/0/conversation")
+        response.body.should have_json_path("result/frames/0/conversation/messages/0/text")
+        response.body.should have_json_type(NilClass).at_path("result/frames/0/conversation/messages/0/text")
+        parse_json(response.body)["result"]["frames"][0]["conversation"]["messages"][0]["text"].should == nil
+      end
+      
     end
   end
   
@@ -212,6 +236,7 @@ describe 'v1/discussion_roll' do
         response.body.should have_json_path("result/rolls")
         # token should have been inserted
         response.body.should have_json_path("result/rolls/0/token")
+        response.body.should have_json_path("result/rolls/0/content_updated_at")
         response.body.should have_json_path("result/rolls/0/discussion_roll_participants")
       end
     end
@@ -238,7 +263,12 @@ describe 'v1/discussion_roll' do
         msg_poster_email = Factory.next(:primary_email)
         emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        res = GT::Framer.re_roll(@frame, @u1, roll, true)
+        roll.reload.content_updated_at.to_i.should == res[:frame].created_at.to_i
+
+        #change it to make sure we update later
+        roll.content_updated_at = 1.day.ago
+        roll.save
 
         lambda {
           token = GT::DiscussionRollUtils.encrypt_roll_user_identification(roll, msg_poster_email)
@@ -247,6 +277,8 @@ describe 'v1/discussion_roll' do
         
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result")
+        #roll should be updated
+        roll.reload.content_updated_at.to_i.should == roll.reload.frames.first.conversation.messages[0].created_at.to_i
         #make sure a Conversation is returned
         response.body.should have_json_path("result/messages")
         response.body.should have_json_path("result/messages/0/text")
@@ -303,6 +335,9 @@ describe 'v1/discussion_roll' do
         
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result")
+        #email should be stored in frame
+        response.body.should have_json_path("result/frames/0/anonymous_creator_nickname")
+        parse_json(response.body)["result"]["frames"][0]["anonymous_creator_nickname"].should == msg_poster_email
         #make sure an array of Frames is returned (and message is on the last one)
         response.body.should have_json_path("result/frames/0/conversation")
         response.body.should have_json_path("result/frames/1/conversation/messages/0/text")

@@ -26,6 +26,10 @@ class User
 
   # the Rolls this user is following and when they started following
   many :roll_followings
+  
+  # We may embed lots of roll_followings which results in a stack level too deep issue (b/c of the way MM/Rails does validation chaining)
+  # But since we don't use validations or callbacks, we can hack around this issue:
+  embedded_callbacks_off
 
   # Rolls this user has unfollowed
   # these rolls should not be auto-followed by our system
@@ -78,6 +82,7 @@ class User
   key :autocomplete, Hash, :abbr => :as
 
   #--old keys--
+  # NB: embedded callbacks are disabled on User
   many :authentications
 
   one :preferences

@@ -18,10 +18,10 @@ RSpec.configure do |config|
   # config.mock_with :mocha
   # config.mock_with :flexmock
   # config.mock_with :rr
-  
+
   # to user helpers included with json_spec gem:
   config.include JsonSpec::Helpers
-  
+
   config.before(:each) do
     #never hit Rhombus (stats)
     Rhombus.stub(:post)
@@ -31,13 +31,13 @@ RSpec.configure do |config|
     StatsManager::StatsD.stub(:decrement)
     StatsManager::StatsD.stub(:timing)
     StatsManager::StatsD.stub(:count)
-    
+
     # don't want TwitterInfoGetter trying to make real requests to API
     @twt_info_getter = double("twt_info_getter")
     @twt_info_getter.stub(:get_following_screen_names).and_return(['a','b'])
     @twt_info_getter.stub(:get_following_ids).and_return([0, 1])
     APIClients::TwitterInfoGetter.stub(:new).and_return(@twt_info_getter)
-    
+
     # don't want FacebookInfoGetter trying to make real requests to API
     @fb_info_getter = double("fb_info_getter")
     @fb_info_getter.stub(:get_friends_ids).and_return([0, 1])
@@ -45,7 +45,7 @@ RSpec.configure do |config|
     @fb_info_getter.stub(:get_friends_names_ids_dictionary).and_return({"dan" => 33, "frank" => 22})
     APIClients::FacebookInfoGetter.stub(:new).and_return(@fb_info_getter)
   end
-  
+
   config.before(:type => :request) do
     GT::UserManager.stub(:start_user_sign_in)
   end
@@ -54,3 +54,5 @@ end
 # Before running tests, drop all the collections across the DBs and re-create the indexes
 MongoMapper::Helper.drop_all_dbs
 MongoMapper::Helper.ensure_all_indexes
+# enable identity map for tests, as it's enabled via middleware in production
+MongoMapper::Plugins::IdentityMap.enabled = true

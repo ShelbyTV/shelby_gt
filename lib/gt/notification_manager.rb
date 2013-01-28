@@ -90,7 +90,7 @@ module GT
     # Email the current state of the discussion roll to all participants except for poster (an email address String or User)
     # We don't know, and it doesn't matter, if this email is being sent b/c of a new frame, 
     # new discussion roll alltogether, or just a new message in an ongoing discussion roll.
-    def self.send_discussion_roll_notifications(discussion_roll, poster, email_poster=false)
+    def self.send_discussion_roll_notifications(discussion_roll, poster)
       raise ArgumentError, "must supply discussion roll" unless discussion_roll.is_a?(Roll)
       raise ArgumentError, "must supply poster as User or email address" unless poster.is_a?(User) or poster.is_a?(String)
       
@@ -99,7 +99,7 @@ module GT
 
       # Email all participants except for the poster
       convo_with.each do |p|
-        next if p == poster and !email_poster
+        next if p == poster
         next if p.is_a?(User) and !p.preferences.discussion_roll_notifications?
         
         email_to = p.is_a?(User) ? p.primary_email : p

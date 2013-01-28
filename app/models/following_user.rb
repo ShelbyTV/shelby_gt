@@ -16,9 +16,5 @@ class FollowingUser
   # People invited to private collaborative rolls
   key :invited_email_address, String, :abbr => :b
   key :invite_token,  String, :abbr => :c
-
-  # We may embed lots of these which results in a stack level too deep issue (b/c of the way MM/Rails does validation chaining)
-  # But since we don't use validations or callbacks, we can hack around this issue:
-  def self.__hack__no_callbacks() true; end
   
 end

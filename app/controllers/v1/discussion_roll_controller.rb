@@ -25,7 +25,7 @@ class V1::DiscussionRollController < ApplicationController
     @user_identifier = user_identifier_from_token(params[:token]) if params[:token]
     
     if @user_identifier
-      @rolls = Roll.where(:discussion_roll_participants => @user_identifier).all
+      @rolls = Roll.where(:discussion_roll_participants => @user_identifier).sort(:content_updated_at).all
       @status =  200
       @insert_discussion_roll_access_token = true
       render '/v1/roll/index_array'
@@ -88,7 +88,7 @@ class V1::DiscussionRollController < ApplicationController
     frame.conversation.save
 
   	#sends emails to all (including the poster)
-  	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(@roll, current_user, true) }
+  	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(@roll, current_user) }
     
     @user_identifier = current_user.id.to_s
     @insert_discussion_roll_access_token = true
@@ -128,7 +128,7 @@ class V1::DiscussionRollController < ApplicationController
   #
   # [POST] /v1/discussion_roll/:discussion_roll_id/messages
   # 
-  # @param [Required, String] message The message being appended to this discussion
+  # @param [Optional, String] message The message being appended to this discussion (may be nil when new video is being posted)
   # @param [Optional, String] token The security token authenticating and authorizing this post
   # @param [Optional, String] videos[] An array of URL strings to map to Shelby Videos and append to this discusison roll
   # @param [Optional, String] video_id The id of a Video document to be appended
@@ -141,8 +141,6 @@ class V1::DiscussionRollController < ApplicationController
       return render_error(404, "you are not authorized to post to that roll")
     end
     
-    return render_error(400, "you must include a message") unless params[:message]
-    
     # 1) See if we have a Shelby user...
     shelby_user = params[:token] ? user_from_token(params[:token]) : current_user
     
@@ -151,8 +149,8 @@ class V1::DiscussionRollController < ApplicationController
     frame = Frame.find(params[:frame_id])
     videos_to_append += [frame.video].compact if frame and frame.video
     videos_to_append += [Video.find(params[:video_id])].compact if params[:video_id]
-    videos_to_append += find_videos_linked_in_text(params[:message])
-    videos_to_append += videos_from_url_array(params[:videos])
+    videos_to_append += find_videos_linked_in_text(params[:message]) if params[:message]
+    videos_to_append += videos_from_url_array(params[:videos]) if params[:videos]
     if !videos_to_append.empty?
       @new_frames = []
       videos_to_append.each do |video|
@@ -161,6 +159,12 @@ class V1::DiscussionRollController < ApplicationController
   	      :video => video,
   	      :roll => roll,
   	      :skip_dashboard_entries => true)
+  	      
+  	    # store some identifier with frame if non-shelby-user
+  	    unless shelby_user
+  	      res[:frame].anonymous_creator_nickname = email_from_token(params[:token]).name || email_from_token(params[:token]).address
+  	      res[:frame].save
+	      end
   	    @new_frames << res[:frame]
       end
       frame = @new_frames.last
@@ -170,16 +174,19 @@ class V1::DiscussionRollController < ApplicationController
       frame = Frame.where(:roll_id => roll.id).order(:score.desc).first
     end
     
+    # Make sure something new is getting posted (either mesasge or video)
+    return render_error(400, "you must include a message or video") unless params[:message] or @new_frames
+    
     return render_error(404, "could not find conversation") unless frame
     @conversation = frame.conversation
     
-    # 3) Post the message to the conversation (created/found above)
+    # 3) Post the message (if one exists) to the conversation (created/found above)
     if shelby_user
       @conversation.messages << GT::MessageManager.build_message(
         :user => shelby_user, 
         :public => false, 
         :origin_network => Message::ORIGIN_NETWORKS[:shelby],
-        :text => CGI.unescape(params[:message]))
+        :text => (params[:message] ? CGI.unescape(params[:message]) : nil))
       poster = shelby_user
     else
       @conversation.messages << GT::MessageManager.build_message(
@@ -188,11 +195,13 @@ class V1::DiscussionRollController < ApplicationController
         :user_image_url => nil,
         :public => false, 
         :origin_network => Message::ORIGIN_NETWORKS[:shelby],
-        :text => CGI.unescape(params[:message]))
+        :text => (params[:message] ? CGI.unescape(params[:message]) : nil))
       poster = email_from_token(params[:token]).address
     end
 
     if @conversation.save
+      roll.update_attribute(:content_updated_at, Time.now)
+      
       #sends emails to all but the poster
     	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(roll, poster) }
     	

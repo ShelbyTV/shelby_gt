@@ -109,6 +109,8 @@ describe GT::SocialSorter do
         res2 = GT::SocialSorter.sort(msg2, {:video => @video, :from_deep => false}, @observer)
       }.should_not change { Frame.count }
       res2.should == false
+      
+      MongoMapper::Plugins::IdentityMap.clear #Need to load this up fresh
       orig_post.conversation.reload.messages.count.should == 2
       orig_post.conversation.messages[0].text.should == txt
       orig_post.conversation.messages[1].text.should == txt2
