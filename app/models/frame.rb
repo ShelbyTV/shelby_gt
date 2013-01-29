@@ -252,7 +252,12 @@ class Frame
           :$pull => {:f => roll.creator.id},
           :$inc => {:n => -1}
         })
-        # 3) TODO: recalculate the ancestor frame's score
+        # 3) recalculate the ancestor frame's score
+        MongoMapper::Plugins::IdentityMap.clear if Settings::Frame.mm_use_identity_map
+        if upvoted_frame = Frame.find(upvoted_frame_id)
+          upvoted_frame.update_score
+          upvoted_frame.save
+        end
       end
     end
 
