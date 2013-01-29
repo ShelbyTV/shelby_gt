@@ -137,6 +137,16 @@ class Frame
     end
   end
 
+  #------ Like ------
+
+  # for now just increment the like_count
+  # NB: add_to_watch_later! does this too, but not through this method
+  #   because it performs other updates at the same time in one atomic DB operation
+  def like!()
+    Frame.collection.update({:_id => self.id}, {:$inc => {:n => 1}})
+    self.reload
+  end
+
   # To remove from watch later, destroy the Frame! (don't forget to add a UserAction)
 
   #------ Voting -------

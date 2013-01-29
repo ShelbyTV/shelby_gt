@@ -325,6 +325,18 @@ describe Frame do
     end
   end
 
+  context "like" do
+    before(:each) do
+      @frame = Factory.create(:frame)
+    end
+
+    it "should increment the like count" do
+      lambda {
+        @frame.like!
+      }.should change { @frame.like_count } .by 1
+    end
+  end
+
   context "permalinks" do
 
     it "should generate permalinks for frame with a roll" do

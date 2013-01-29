@@ -33,6 +33,11 @@ describe 'v1/frame' do
           parse_json(response.body)["result"]["roll"]["roll_type"].should eq(@f.roll.roll_type)
         end
 
+        it "should contain like_count attribute" do
+          get '/v1/frame/'+@f.id
+          response.body.should have_json_path("result/like_count")
+        end
+
         it "should return error message if frame doesnt exist" do
           get '/v1/frame/'+@f.id+'xxx'
           response.body.should be_json_eql(404).at_path("status")
@@ -270,7 +275,56 @@ describe 'v1/frame' do
           post '/v1/frame/'+@f.id+'/add_to_watch_later'
 
           response.body.should be_json_eql(200).at_path("status")
-          response.body.should have_json_path("result/upvoters")
+          parse_json(response.body)["result"]["id"].should_not eq(@f.id.to_s)
+        end
+
+        it "should call add_to_watch_later! on the frame" do
+          dupe_frame = Factory.create(:frame)
+          @f.stub(:add_to_watch_later!).and_return(dupe_frame)
+          @f.should_receive(:add_to_watch_later!)
+
+          post '/v1/frame/'+@f.id+'/add_to_watch_later'
+          parse_json(response.body)["result"]["id"].should eq(dupe_frame.id.to_s)
+        end
+
+        it "should return error message if frame doesnt exist" do
+          post '/v1/frame/'+@f.id+'xxx/like'
+          response.body.should be_json_eql(404).at_path("status")
+        end
+      end
+
+      context 'like frame' do
+        it "should return success" do
+          post '/v1/frame/'+@f.id+'/like'
+
+          response.body.should be_json_eql(200).at_path("status")
+        end
+
+        it "should return same frame with like_count incremented" do
+          post '/v1/frame/'+@f.id+'/like'
+
+          parse_json(response.body)["result"]["id"].should eq(@f.id.to_s)
+          response.body.should be_json_eql(1).at_path("result/like_count")
+        end
+
+        it "should return same frame with current user added to upvoters" do
+          post '/v1/frame/'+@f.id+'/like'
+
+          response.body.should have_json_size(1).at_path("result/upvoters")
+        end
+
+        it "should call add_to_watch_later! on the frame but return the original frame" do
+          dupe_frame = Factory.create(:frame)
+          @f.stub(:add_to_watch_later!).and_return(dupe_frame)
+          @f.should_receive(:add_to_watch_later!)
+
+          post '/v1/frame/'+@f.id+'/like'
+          parse_json(response.body)["result"]["id"].should eq(@f.id.to_s)
+        end
+
+        it "should return error message if frame doesnt exist" do
+          post '/v1/frame/'+@f.id+'xxx/like'
+          response.body.should be_json_eql(404).at_path("status")
         end
       end
 
@@ -362,6 +416,38 @@ describe 'v1/frame' do
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/view_count")
           response.body.should be_json_eql(1).at_path("result/view_count")
+        end
+      end
+
+      context 'like frame' do
+        it "should return success" do
+          post '/v1/frame/'+@f.id+'/like'
+
+          response.body.should be_json_eql(200).at_path("status")
+        end
+
+        it "should return same frame with like_count incremented" do
+          post '/v1/frame/'+@f.id+'/like'
+
+          parse_json(response.body)["result"]["id"].should eq(@f.id.to_s)
+          response.body.should be_json_eql(1).at_path("result/like_count")
+        end
+
+        it "should return same frame without any upvoters added to array" do
+          post '/v1/frame/'+@f.id+'/like'
+
+          response.body.should have_json_size(0).at_path("result/upvoters")
+        end
+
+        it "should not call add_to_watch_later! on the frame" do
+          @f.stub(:add_to_watch_later!).and_return(Factory.create(:frame))
+          @f.should_not_receive(:add_to_watch_later!)
+          post '/v1/frame/'+@f.id+'/like'
+        end
+
+        it "should return error message if frame doesnt exist" do
+          post '/v1/frame/'+@f.id+'xxx/like'
+          response.body.should be_json_eql(404).at_path("status")
         end
       end
     end

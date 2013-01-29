@@ -6,7 +6,7 @@ require 'user_manager'
 
 class V1::FrameController < ApplicationController
 
-  before_filter :user_authenticated?, :except => [:show, :watched, :short_link]
+  before_filter :user_authenticated?, :except => [:show, :watched, :short_link, :like]
   # Assuming we're skipping CSRF for extension... that code needs to be fixed (see https://github.com/ShelbyTV/shelby-gt-web/issues/645)
   # Skipping on watched b/c it works for logged in and logged-out users
   skip_before_filter :verify_authenticity_token, :only => [:create, :watched]
@@ -234,10 +234,32 @@ class V1::FrameController < ApplicationController
         @frame = Frame.find(params[:frame_id])
         return render_error(404, "could not find frame with id #{params[:frame_id]}") unless @frame
 
-        if @new_frame = @frame.add_to_watch_later!(current_user)
+        if @new_frame = dupe_to_watch_later(@frame)
           @status = 200
-          GT::UserActionManager.watch_later!(current_user.id, @frame.id)
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch_later"])
+        end
+    end
+  end
+
+  ##
+  # Add 1 to the frame's like_count
+  # If there is a user logged in, add the frame to the user's watch later roll,
+  #   which internally adds to the like_count
+  #
+  # [POST] /v1/frame/:id/like
+  #
+  # @param [Required, String] id The id of the frame
+  def like
+    StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['like']) do
+        @frame = Frame.find(params[:frame_id])
+        return render_error(404, "could not find frame with id #{params[:frame_id]}") unless @frame
+
+        if current_user
+          if @new_frame = dupe_to_watch_later(@frame)
+            @status = 200
+          end
+        else
+          @frame.like!
+          @status = 200
         end
     end
   end
@@ -320,6 +342,14 @@ class V1::FrameController < ApplicationController
   end
 
   private
+
+    def dupe_to_watch_later(frame)
+      if new_frame = @frame.add_to_watch_later!(current_user)
+        GT::UserActionManager.watch_later!(current_user.id, @frame.id)
+        StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch_later"])
+      end
+      return new_frame
+    end
 
     def get_linkable_entity(frame, fallback_to_video=false)
       # watch later roll is truly private -- we don't want anyone trying to view frames on a watch later (queue) roll
