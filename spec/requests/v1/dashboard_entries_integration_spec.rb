@@ -43,6 +43,21 @@ describe 'v1/dashboard' do
           parse_json(response.body)["result"][0]["frame"]["upvoters"][0].should eq(upvoter1.id.to_s)
         end
 
+        it "should contain frame like_count" do
+          get '/v1/dashboard'
+          response.body.should have_json_path("result/0/frame/like_count")
+          response.body.should have_json_type(Integer).at_path("result/0/frame/like_count")
+          parse_json(response.body)["result"][0]["frame"]["like_count"].should eq(0)
+        end
+
+        it "should populate frame like_count with correct data" do
+          @f.like_count = 2
+          @f.save
+
+          get '/v1/dashboard'
+          parse_json(response.body)["result"][0]["frame"]["like_count"].should eq(2)
+        end
+
       end
 
       it "should return 200 if no entries exist" do

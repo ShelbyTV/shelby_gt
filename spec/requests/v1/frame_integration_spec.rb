@@ -97,6 +97,22 @@ describe 'v1/frame' do
           parse_json(response.body)["result"]["frames"][0]["upvoters"][0].should eq(upvoter1.id.to_s)
         end
 
+        it "should contain frame like_count" do
+          get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
+
+          response.body.should have_json_path("result/frames/0/like_count")
+          response.body.should have_json_type(Integer).at_path("result/frames/0/like_count")
+          parse_json(response.body)["result"]["frames"][0]["like_count"].should eq(0)
+        end
+
+        it "should populate frame like_count with correct data" do
+          @f.like_count = 2
+          @f.save
+
+          get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
+          parse_json(response.body)["result"]["frames"][0]["like_count"].should eq(2)
+        end
+
         it "should return frames of personal roll of user when given a user id" do
           u2 = Factory.create(:user)
           u2.downcase_nickname = u2.nickname.downcase

@@ -17,7 +17,7 @@
  *  - not sure about roll short_links (created as a Ruby Hash) - what's the right BSON type?
  *  - not sure about user autocomplete (created as a Ruby Hash) - what's the right BSON type?
  *  - not sure which user old keys are necessary -- not everything added yet
- */ 
+ */
 
 #define ALL_PROPERTIES(apply)        \
    USER_PROPERTIES(apply)            \
@@ -72,7 +72,8 @@
    apply(FRAME , view_count                 , VIEW_COUNT                 , INT    , i   ) \
    apply(FRAME , short_links                , SHORT_LINKS                , ARRAY  , j   ) \
    apply(FRAME , order                      , ORDER                      , DOUBLE , k   ) \
-   apply(FRAME , anonymous_creator_nickname , ANONYMOUS_CREATOR_NICKNAME , STRING , m   )
+   apply(FRAME , anonymous_creator_nickname , ANONYMOUS_CREATOR_NICKNAME , STRING , m   ) \
+   apply(FRAME , like_count                 , LIKE_COUNT                 , INT    , n   )
 
 #define ROLL_PROPERTIES(apply)                                                                           \
    apply(ROLL , id                           , ID                           , OID    , _id             ) \
@@ -101,7 +102,7 @@
    apply(CONVERSATION , frame_id      , FRAME_ID      , OID   , c        ) \
    apply(CONVERSATION , from_deeplink , FROM_DEEPLINK , BOOL  , d        ) \
    apply(CONVERSATION , messages      , MESSAGES      , ARRAY , messages )
- 
+
 #define VIDEO_PROPERTIES(apply)                               \
    apply(VIDEO , id                  , ID                  , OID       , _id ) \
    apply(VIDEO , provider_name       , PROVIDER_NAME       , STRING    , a   ) \
