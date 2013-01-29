@@ -264,7 +264,7 @@ test:
 production: &production
   <<: *defaults
   db_name: 'gt-roll-frame'
-  db_hosts: ["10.176.69.215:27017", "10.176.69.216:27017"]
+  db_hosts: ["10.176.69.215:27017", "10.176.69.216:27017", "10.181.57.64:27017"]
   db_replSetName: 'gtRollFrame'
   db_username: "gt_user"
   db_password: "GT/us3r!!!"
