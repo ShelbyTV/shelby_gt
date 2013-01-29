@@ -56,17 +56,22 @@ class V1::DashboardEntriesMetalController < MetalController
       skip = params[:skip] ? params[:skip] : 0
       sinceId = params[:since_id]
 
-      if (sinceId)
-        fast_stdout = `cpp/bin/dashboardIndex -u #{current_user.downcase_nickname} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
-      else
-        fast_stdout = `cpp/bin/dashboardIndex -u #{current_user.downcase_nickname} -l #{limit} -s #{skip} -e #{Rails.env}`
-      end
-      fast_status = $?.to_i
+      # lookup user
+      if user = params[:user_id]
+        if (sinceId)
+          fast_stdout = `cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
+        else
+          fast_stdout = `cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -e #{Rails.env}`
+        end
+        fast_status = $?.to_i
 
-      if (fast_status == 0)
-        renderMetalResponse(200, fast_stdout)
+        if (fast_status == 0)
+          renderMetalResponse(200, fast_stdout)
+        else
+          renderMetalResponse(404, "{\"status\" : 404, \"message\" : \"fast index failed with status #{fast_status}\"}")
+        end
       else
-        renderMetalResponse(404, "{\"status\" : 404, \"message\" : \"fast index failed with status #{fast_status}\"}")
+        render_error(404, "could not find the user you are referencing")
       end
     end
   end
