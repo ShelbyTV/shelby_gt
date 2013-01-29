@@ -1,16 +1,16 @@
 ShelbyGt::Application.routes.draw do
   # The priority is based upon order of creation:
   # first created -> highest priority.
-  
+
   ########################
   # Authentication and User Managment
 
   devise_for :user, :skip => [:sessions], :controllers => {:passwords => "password_reset"}
-  as :user do  
+  as :user do
     get 'signout' => 'devise/sessions#destroy', :as => :destroy_user_session
     get 'login' => 'authentications#index', :as => :new_user_session
   end
-  
+
   resources :authentications do
     post 'login' => 'authentications#login', :on => :collection
     get 'should_merge' => 'authentications#should_merge_accounts', :on => :collection, :as => :should_merge_accounts
@@ -19,7 +19,7 @@ ShelbyGt::Application.routes.draw do
   get '/auth/:provider/callback' => 'authentications#create'
   get '/auth/failure' => 'authentications#fail'
   post '/user/sign_in' => 'authentications#create', :as => :user_session
-  
+
 
   ########################
   # OAuth Provider
@@ -35,20 +35,20 @@ ShelbyGt::Application.routes.draw do
   get 'oauth/gate' => 'oauth#gate'
   get 'oauth/index' => 'oauth#index'
   get 'oauth/clientpage' => 'oauth#clientpage'
-  
+
   ########################
   # Namespace allows for versioning of API
   # NOTE: Must use V1::ControllerName in controllers
   namespace :v1, :defaults => { :format => 'json' } do
-    
+
     #
     # WHEN ADDING NEW NON-GET ROUTES
     #
     # Be sure to add a /v1/VERB/your-route-here route down below
-    # 
+    #
     # WHY? We support some browsers that don't suppot CORS, and they use jsonp which only does GETs.
     # Sometimes we have the same route do different things depending on the verb, and that doens't play nice w/ jsonp.
-    
+
     resources :user, :only => [:update] do
       # constraints allows for nicknames that include dots, prevents changing format (we're json only, that's ok).
       get ':id' => 'user#show', :as => :show, :on => :collection, :constraints => { :id => /[^\/]+/ }
@@ -57,6 +57,7 @@ ShelbyGt::Application.routes.draw do
       get 'rolls/postable' => 'user_metal#roll_followings', :on => :member, :defaults => { :postable => true }
       get 'rolls/personal' => 'roll#show_users_public_roll'
       get 'rolls/personal/frames' => 'frame_metal#index_for_users_public_roll'
+      get 'dashboard' => 'dashboard_entries_metal#index_for_user'
     end
     resources :roll, :only => [:index, :show, :create, :update, :destroy] do
       get 'frames' => 'frame_metal#index'
@@ -90,33 +91,33 @@ ShelbyGt::Application.routes.draw do
       get 'find_entries_with_video' => 'dashboard_entries#find_entries_with_video', :on => :collection
     end
     resources :dashboard_entries_metal, :path => "dashboard", :only => [:index]
-    resources :conversation, :only => [:show] do 
+    resources :conversation, :only => [:show] do
       resources :messages, :only => [:create, :destroy]
     end
     resources :discussion_roll, :only => [:index, :create, :show] do
       post 'messages' => 'discussion_roll#create_message'
     end
     resources :beta_invite, :only => [:create]
-    
+
     resources :gt_interest, :only => [:create]
-    
+
     resources :token, :only => [:create, :destroy]
-    
+
     resources :remote_control, :only => [:create, :update, :show]
-    
+
     # Twitter direct interaction
     namespace :twitter do
       post 'follow/:twitter_user_name', :action => "follow"
     end
-    
+
     # User related
     get 'user' => 'user#show'
     get 'signed_in' => 'user#signed_in'
-    
+
     ########################
     # Javascript Error Reporting
     post 'js_err' => 'javascript_errors#create'
-    
+
     #----------------------------------------------------------------
     # POST, PUT, DELETE aliases for JSONP :-[  b/c we support IE 8, 9
     #----------------------------------------------------------------
@@ -159,22 +160,22 @@ ShelbyGt::Application.routes.draw do
     get 'POST/js_err' => 'javascript_errors#create'
 
   end
-  
+
   get '/sign_out_user' => 'authentications#sign_out_user', :as => :sign_out_user
-  
+
   resources :cohort_entrance, :only => [:show] do
     get '/popup' => "cohort_entrance#show_popup"
   end
-  
+
   # constraints allows for nicknames that include dots, prevents changing format (we're json only, that's ok).
   get '/admin/user/:id' => 'admin#user', :constraints => { :id => /[^\/]+/ }
   get '/admin/user' => 'admin#user', :constraints => { :id => /[^\/]+/ }
   get '/admin/new_users' => "admin#new_users"
   get '/admin/active_users' => "admin#active_users"
   get '/admin/invited_users' => "admin#invited_users"
-  
+
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
-  
+
   root :to => redirect(Settings::ShelbyAPI.web_root)
 
 end
