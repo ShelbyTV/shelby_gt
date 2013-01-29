@@ -1,0 +1,10 @@
+<% message = el %>
+<% msg_from_recipient = (message.user_id.to_s == @recipient_string_id || message.nickname == @recipient_string_id) %>
+
+<div style="text-align:<%= msg_from_recipient ? 'right' : 'left' %>">
+  <p><%= message.nickname %></p>
+  <p><img src="<%= message.user ? avatar_url_for_message(message) : "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png" %>" /></p>
+  <p><%= message.text %></p>
+</div>
+
+<hr />

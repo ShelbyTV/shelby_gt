@@ -28,8 +28,11 @@ module GT
       return nil unless user.is_a?(User) and participants_string.is_a?(String)
       participants_array = convert_participants(participants_string)
     
-      r = find_discussion_roll_for(user, participants_array)
-      r ? r : create_discussion_roll_for(user, participants_array)
+      if r = find_discussion_roll_for(user, participants_array)
+        return {:did_create => false, :roll => r}
+      else
+        return {:did_create => true, :roll => create_discussion_roll_for(user, participants_array)}
+      end
     end
   
     # returns a single user_discussion_roll exactly mathing user and participants, or nil if none matched

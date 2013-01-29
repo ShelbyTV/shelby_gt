@@ -1,0 +1,10 @@
+<% frame = el %>
+
+<div>
+  <a href="<%= @permalink %>"><img class="image_fix" src="<%= frame.video.thumbnail_url %>"/></a>
+  <p style="text-align:right"><a href="<%= @permalink %>">Watch Now</a></p>
+  <p><%= truncate(frame.video.title, :length => 45, :separator => ' ') %></p>
+  <p><%= frame.anonymous_creator_nickname or (frame.creator ? frame.creator.nickname : nil) %></p>
+  <p><%= frame.created_at.strftime("%A, %b %d, %l:%M %p") %></p>
+</div>
+<hr />

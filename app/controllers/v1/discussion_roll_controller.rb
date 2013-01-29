@@ -47,7 +47,9 @@ class V1::DiscussionRollController < ApplicationController
   # @param [Required, String] message The message current_user is sending with this video
   def create
   	#find or create a discussion roll for this group
-  	@roll = find_or_create_discussion_roll_for(current_user, params[:participants])
+  	res = find_or_create_discussion_roll_for(current_user, params[:participants])
+  	did_create = res[:did_create]
+  	@roll = res[:roll]
   	
   	unless @roll
       Rails.logger.error "[DiscussionRollController#create] unable to find or create roll.  Params: #{params}"
@@ -87,8 +89,8 @@ class V1::DiscussionRollController < ApplicationController
       :text => CGI.unescape(params[:message]))
     frame.conversation.save
 
-  	#sends emails to all (including the poster)
-  	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(@roll, current_user) }
+  	#sends discussion roll notification (handling new-convo vs. reply-to-existing) to all but the poster
+  	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(@roll, current_user, did_create) }
     
     @user_identifier = current_user.id.to_s
     @insert_discussion_roll_access_token = true
@@ -202,8 +204,8 @@ class V1::DiscussionRollController < ApplicationController
     if @conversation.save
       roll.update_attribute(:content_updated_at, Time.now)
       
-      #sends emails to all but the poster
-    	ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(roll, poster) }
+      #sends discussion roll notification (only reply-to-existing flavor) to all but the poster
+      ShelbyGT_EM.next_tick { GT::NotificationManager.send_discussion_roll_notifications(roll, poster, false) }
     	
       @status =  200
       # Render an array of Frames if new ones were created, or the single updated Conversation

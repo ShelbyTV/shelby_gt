@@ -87,28 +87,56 @@ module GT
       NotificationMailer.invite_accepted_notification(inviter, invitee, invitee.public_roll).deliver
     end
 
-    # Email the current state of the discussion roll to all participants except for poster (an email address String or User)
-    # We don't know, and it doesn't matter, if this email is being sent b/c of a new frame, 
-    # new discussion roll alltogether, or just a new message in an ongoing discussion roll.
-    def self.send_discussion_roll_notifications(discussion_roll, poster)
+    # Email all of the participants, except for the posting_participant.
+    # Emails are slightly different if this is the initial_email or not, but otherwise similar:
+    #   subject identifies who sent the video (or reply) and who they sent it to (you + others)
+    #   meat of the body is a summary of the current state of the conversation, similar to web view of convo
+    #   body also contains additional explanatory copy
+    #
+    # discussion_roll: a Roll
+    # posting_participant: a User or an email address (as String)
+    # initial_email: is this notificaiton being sent as the direct result of creating a new (dicussion) Roll?
+    #                if so, the email is altered to put focus on explaining what Shelby Mail is
+    def self.send_discussion_roll_notifications(discussion_roll, posting_participant, initial_email=false)
       raise ArgumentError, "must supply discussion roll" unless discussion_roll.is_a?(Roll)
-      raise ArgumentError, "must supply poster as User or email address" unless poster.is_a?(User) or poster.is_a?(String)
+      raise ArgumentError, "must supply poster as User or email address" unless posting_participant.is_a?(User) or posting_participant.is_a?(String)
       
-      # Full array of everybody in the conversation, ex: ["User1IdString", "email1@gmail.com", "User2IdString", "email2@gmail.com", ...]
-      convo_with = discussion_roll.discussion_roll_participants.map { |p| BSON::ObjectId.legal?(p) ? User.find(p) : p } .compact
-
-      # Email all participants except for the poster
-      convo_with.each do |p|
-        next if p == poster
-        next if p.is_a?(User) and !p.preferences.discussion_roll_notifications?
+      # Full array of everybody in the conversation, ex: [UserObject1, "email1@gmail.com", UserObject2, "email2@gmail.com", ...]
+      # NB: This does include posting_participant
+      all_participants = discussion_roll.discussion_roll_participants.map { |p| BSON::ObjectId.legal?(p) ? User.find(p) : p } .compact
+      
+      (all_participants - [posting_participant]).each do |receiving_participant|
+        next if receiving_participant.is_a?(User) and !receiving_participant.preferences.discussion_roll_notifications?
         
-        email_to = p.is_a?(User) ? p.primary_email : p
-        recipient = p.is_a?(User) ? p.id.to_s : p
-        token = GT::DiscussionRollUtils.encrypt_roll_user_identification(discussion_roll, p.is_a?(User) ? p.id : p)
-        DiscussionRollMailer.state_of_discussion_roll(discussion_roll, email_to, recipient, poster, convo_with - [p], token).deliver
+        receiving_participant_email_address = email_address_for_participant(receiving_participant)
+        token = GT::DiscussionRollUtils.encrypt_roll_user_identification(discussion_roll, identifier_for_participant(receiving_participant))
+        
+        opts = {
+          :discussion_roll => discussion_roll,
+          :posting_participant => posting_participant,
+          :receiving_participant => receiving_participant,
+          :receiving_participant_email_address => receiving_participant_email_address,
+          :all_participants => all_participants,
+          :token => token
+        }
+        
+        if initial_email
+          DiscussionRollMailer.on_discussion_roll_creation(opts).deliver
+        else
+          DiscussionRollMailer.on_discussion_roll_reply(opts).deliver
+        end
       end
-            
     end
+    
+    private
+    
+      def self.email_address_for_participant(participant)
+        participant.is_a?(User) ? participant.primary_email : participant
+      end
+    
+      def self.identifier_for_participant(participant)
+        participant.is_a?(User) ? participant.id : participant
+      end
     
   end
 end

@@ -1,0 +1,40 @@
+<% standard_html_email_wrapper do %>
+
+  <div class="conversation_header">
+    <h1><%= @subject %></h1>
+    <h2>
+      Click through to watch the video and reply.
+      You can even reply with another video from YouTube or Vimeo
+      Sharing video with a group of friends has never been easier.
+    </h2>
+    <h2><a href="<%= @permalink %>">view conversation</a></h2>
+  </div>
+  
+  <hr />
+  
+  <div class="conversation">
+    <% @conversation_elements.each do |convo_piece| %>
+      <%= render :partial => "#{convo_piece[:el_type].to_s}", :locals => convo_piece %>
+    <% end %>
+  </div>
+  
+  <div class="conversation_footer">
+    <a href="<%= @permalink %>">Reply & Watch ▶</a>
+  </div>
+  
+  <hr />
+  
+  <div class="outter_footer">
+    <p>
+      There are so many terrific videos online.
+      Shelby Mail is a great, private way to share and talk about them with friends.
+    </p>
+    <p>
+      All of your conversations, all of those videos, always right there.
+    </p>
+    <p style="text-align:center; text-transform:uppercase;">
+      designed for mobile
+    </p>
+  </div>
+  
+<% end %>
