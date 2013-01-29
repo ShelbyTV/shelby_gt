@@ -121,6 +121,27 @@ describe Frame do
     end
   end
 
+  context "calculate like score" do
+    before(:each) do
+      @frame = Factory.create(:frame)
+    end
+
+    it "should give a like score of 0 when there are no likers" do
+      @frame.like_count = 0
+      @frame.calculate_like_score.should == 0
+    end
+
+    it "should give a like score of 1 when there is one liker" do
+      @frame.like_count = 1
+      @frame.calculate_like_score.should == 1.0
+    end
+
+    it "should give a like score of 2 when there are 10 likers" do
+      @frame.like_count = 10
+      @frame.calculate_like_score.should == 2.0
+    end
+  end
+
   context "upvoting" do
     before(:each) do
       @frame = Factory.create(:frame)
@@ -144,7 +165,7 @@ describe Frame do
       }.should raise_error(ArgumentError)
     end
 
-    it "should update score with each new upvote" do
+    xit "should update score with each new upvote" do
       @frame.upvote!(@voter1)
       score = @frame.score
       @frame.upvote!(@voter2)
@@ -188,7 +209,7 @@ describe Frame do
       @frame.upvote!(@voter2)
     end
 
-    it "should decrease score with each new upvote_undo" do
+    xit "should decrease score with each new upvote_undo" do
         score_before = @frame.score
         @frame.upvote_undo!(@voter1)
         @frame.score.should < score_before
@@ -273,6 +294,12 @@ describe Frame do
         @frame.add_to_watch_later!(@u1)
         @frame.add_to_watch_later!(@u1)
       }.should change { @frame.like_count } .by 1
+    end
+
+    it "should increase the score" do
+      score_before = @frame.score
+      @frame.add_to_watch_later!(@u1)
+      @frame.score.should > score_before
     end
 
     it "should set metadata correctly" do
@@ -498,6 +525,13 @@ describe Frame do
             @stranger_watch_later_roll.frames.first.destroy
             @frame.reload
           }.should change { @frame.like_count } .by(-1)
+        end
+
+        it "should decrease score of the frame's ancestor (original upvoted frame)" do
+          score_before = @frame.score
+          @stranger_watch_later_roll.frames.first.destroy
+          @frame.reload
+          @frame.score.should < score_before
         end
     end
 

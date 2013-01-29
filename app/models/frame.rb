@@ -130,6 +130,9 @@ class Frame
         :$inc => {:n => 1}
       })
       self.reload
+      self.update_score
+      self.save
+
       return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
     end
   end
@@ -249,6 +252,7 @@ class Frame
           :$pull => {:f => roll.creator.id},
           :$inc => {:n => -1}
         })
+        # 3) TODO: recalculate the ancestor frame's score
       end
     end
 
@@ -265,13 +269,18 @@ class Frame
     #each hour = .08
     #each day = 2
     time_score =(self.created_at.to_f - SHELBY_EPOCH.to_f) / TIME_DIVISOR
+    like_score = self.calculate_like_score
+    self.score = time_score + like_score
+  end
 
-    #+ log10 each upvote
-    # 10 votes = 1 point
-    # 100 votes = 10 points
-    vote_score = Math.log10([1, self.upvoters.size].max)
-
-    self.score = time_score + vote_score
+  def calculate_like_score
+    #+ log10 each like
+    # add 1 so that zero likes is zero points and 1 like makes a measurable difference
+    # 0 likes = 0 points
+    # 1 like = 1 point
+    # 10 likes = 2 points
+    # 100 likes = 3 points
+    [Math.log10(self.like_count), -1.0].max + 1.0
   end
 
   private
