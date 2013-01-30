@@ -1,10 +1,11 @@
 defaults: &defaults
-  # api.VER.gt.web prefix added in StatsManager  
+  # api.VER.gt.web prefix added in StatsManager
   api:
     dashboard:
       index: 'dashboard.index'
       update: 'dashboard.update'
     user:
+      index: 'user.index'
       show: 'user.show'
       update: 'user.update'
       rolls: 'user.rolls'
@@ -32,6 +33,7 @@ defaults: &defaults
       create: 'frame.create'
       upvote: 'frame.upvote'
       add_to_watch_later: 'frame.add_to_wl'
+      like: 'frame.like'
       watched: 'frame.watched'
       destroy: 'frame.destroy'
       share: 'frame.share'
@@ -47,7 +49,7 @@ defaults: &defaults
       find: 'video.find'
       viewed: 'video.viewed'
       queued: 'video.queued'
-  
+
   user:
     new:
       faux: "user.new.faux"
@@ -76,7 +78,7 @@ defaults: &defaults
       failure:
         twitter: "user.verify_service.failure.twitter"
         facebook: "user.verify_service.failure.facebook"
-  
+
   frame:
     watch: "frame.watch"
     share:
@@ -91,7 +93,7 @@ defaults: &defaults
       bookmarklet: "frame.create.bookmarklet"
       extension: "frame.create.extension"
       webapp: "frame.create.webapp"
-  
+
   roll:
     create:
       public: "roll.create.public"
@@ -103,28 +105,28 @@ defaults: &defaults
       email: "roll.share.email"
     join: "roll.join"
     leave: "roll.leave"
-  
+
   message:
     create: "message.create"
     delete: "message.delete"
-  
+
   facebook:
     opengraph:
       watch: "facebook.opengraph.watch"
       roll: "facebook.opengraph.roll"
       favorite: "facebook.opengraph.favorite"
       share: "facebook.opengraph.share"
-      comment: "facebook.opengraph.comment"      
+      comment: "facebook.opengraph.comment"
       error: "facebook.opengraph.error"
-  
+
   oauth:
     authorize: "oauth.authorize"
     grant: "oauth.grant"
     deny: "oauth.deny"
     delete: "oauth.delete"
     create: "oauth.create"
-  
-  
+
+
 development:
   <<: *defaults
 

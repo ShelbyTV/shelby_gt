@@ -24,7 +24,7 @@ class Frame
 
   belongs_to :creator,  :class_name => 'User'
   key :creator_id,      ObjectId,   :abbr => :d
-  
+
   # When we don't have a creator (ie. email-only discussion roll user) store some identifying name
   key :anonymous_creator_nickname, String, :abbr => :m
 
@@ -54,6 +54,9 @@ class Frame
 
   # Manual ordering value. Used as the default ordering for genius roll frames. May be used in the future for user-initiated ordering.
   key :order, Float, :default => 0, :abbr => :k
+
+  # Total number of likes - both by upvoters (logged in likers) and logged out likers
+  key :like_count, Integer, :abbr => :n, :default => 0
 
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
@@ -122,8 +125,26 @@ class Frame
     if prev_dupe = Frame.get_ancestor_of_frame(u.watch_later_roll_id, self.id)
       return prev_dupe
     else
+      Frame.collection.update({:_id => self.id}, {
+        :$addToSet => {:f => u.id},
+        :$inc => {:n => 1}
+      })
+      self.reload
+      self.update_score
+      self.save
+
       return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
     end
+  end
+
+  #------ Like ------
+
+  # for now just increment the like_count
+  # NB: add_to_watch_later! does this too, but not through this method
+  #   because it performs other updates at the same time in one atomic DB operation
+  def like!()
+    Frame.collection.update({:_id => self.id}, {:$inc => {:n => 1}})
+    self.reload
   end
 
   # To remove from watch later, destroy the Frame! (don't forget to add a UserAction)
@@ -229,6 +250,27 @@ class Frame
     Roll.decrement(self.deleted_from_roll_id, :j => -1) if self.deleted_from_roll_id
     roll.frame_count -= 1 if roll
 
+    #if this frame is on a watch later roll, undo the upvote that resulted from its addition to the roll
+    if roll.roll_type == Roll::TYPES[:special_watch_later]
+      # the original frame that was upvoted when this frame was created on the watch later roll is this frame's
+      # direct (last) ancestor
+      if upvoted_frame_id = self.frame_ancestors.last
+        # the person whose watch later roll this is was the upvoter, so
+        # 1) remove him/her from the ancestor frame's upvoters array
+        # 2) update (decrement) the ancestor frame's like_count accordingly
+        Frame.collection.update({:_id => upvoted_frame_id}, {
+          :$pull => {:f => roll.creator.id},
+          :$inc => {:n => -1}
+        })
+        # 3) recalculate the ancestor frame's score
+        MongoMapper::Plugins::IdentityMap.clear if Settings::Frame.mm_use_identity_map
+        if upvoted_frame = Frame.find(upvoted_frame_id)
+          upvoted_frame.update_score
+          upvoted_frame.save
+        end
+      end
+    end
+
     true
   end
 
@@ -242,13 +284,18 @@ class Frame
     #each hour = .08
     #each day = 2
     time_score =(self.created_at.to_f - SHELBY_EPOCH.to_f) / TIME_DIVISOR
+    like_score = self.calculate_like_score
+    self.score = time_score + like_score
+  end
 
-    #+ log10 each upvote
-    # 10 votes = 1 point
-    # 100 votes = 10 points
-    vote_score = Math.log10([1, self.upvoters.size].max)
-
-    self.score = time_score + vote_score
+  def calculate_like_score
+    #+ log10 each like
+    # add 1 so that zero likes is zero points and 1 like makes a measurable difference
+    # 0 likes = 0 points
+    # 1 like = 1 point
+    # 10 likes = 2 points
+    # 100 likes = 3 points
+    [Math.log10(self.like_count), -1.0].max + 1.0
   end
 
   private
