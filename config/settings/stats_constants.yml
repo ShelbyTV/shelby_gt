@@ -5,6 +5,7 @@ defaults: &defaults
       index: 'dashboard.index'
       update: 'dashboard.update'
     user:
+      index: 'user.index'
       show: 'user.show'
       update: 'user.update'
       rolls: 'user.rolls'
