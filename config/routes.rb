@@ -74,7 +74,7 @@ ShelbyGt::Application.routes.draw do
     resources :frame, :only => [:show, :destroy] do
       post 'upvote' => 'frame#upvote'
       post 'add_to_watch_later' => 'frame#add_to_watch_later'
-      post 'like' => 'frame#like'
+      put 'like' => 'frame#like'
       post 'watched' => 'frame#watched'
       post 'share' => 'frame#share'
       get 'short_link' => 'frame#short_link'
@@ -137,7 +137,7 @@ ShelbyGt::Application.routes.draw do
     get 'POST/roll/:roll_id/frames' => "frame#create"
     get 'POST/frame/:frame_id/upvote' => 'frame#upvote'
     get 'POST/frame/:frame_id/add_to_watch_later' => 'frame#add_to_watch_later'
-    get 'POST/frame/:frame_id/like' => 'frame#like'
+    get 'PUT/frame/:frame_id/like' => 'frame#like'
     get 'POST/frame/:frame_id/watched' => 'frame#watched'
     get 'POST/frame/:frame_id/share' => 'frame#share'
     get 'DELETE/frame/:id' => 'frame#destroy'

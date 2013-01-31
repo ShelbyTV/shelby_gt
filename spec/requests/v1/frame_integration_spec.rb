@@ -304,27 +304,27 @@ describe 'v1/frame' do
         end
 
         it "should return error message if frame doesnt exist" do
-          post '/v1/frame/'+@f.id+'xxx/like'
+          post '/v1/frame/'+@f.id+'xxx/add_to_watch_later'
           response.body.should be_json_eql(404).at_path("status")
         end
       end
 
       context 'like frame' do
         it "should return success" do
-          post '/v1/frame/'+@f.id+'/like'
+          put '/v1/frame/'+@f.id+'/like'
 
           response.body.should be_json_eql(200).at_path("status")
         end
 
         it "should return same frame with like_count incremented" do
-          post '/v1/frame/'+@f.id+'/like'
+          put '/v1/frame/'+@f.id+'/like'
 
           parse_json(response.body)["result"]["id"].should eq(@f.id.to_s)
           response.body.should be_json_eql(1).at_path("result/like_count")
         end
 
         it "should return same frame with current user added to upvoters" do
-          post '/v1/frame/'+@f.id+'/like'
+          put '/v1/frame/'+@f.id+'/like'
 
           response.body.should have_json_size(1).at_path("result/upvoters")
         end
@@ -334,12 +334,12 @@ describe 'v1/frame' do
           @f.stub(:add_to_watch_later!).and_return(dupe_frame)
           @f.should_receive(:add_to_watch_later!)
 
-          post '/v1/frame/'+@f.id+'/like'
+          put '/v1/frame/'+@f.id+'/like'
           parse_json(response.body)["result"]["id"].should eq(@f.id.to_s)
         end
 
         it "should return error message if frame doesnt exist" do
-          post '/v1/frame/'+@f.id+'xxx/like'
+          put '/v1/frame/'+@f.id+'xxx/like'
           response.body.should be_json_eql(404).at_path("status")
         end
       end
@@ -437,20 +437,20 @@ describe 'v1/frame' do
 
       context 'like frame' do
         it "should return success" do
-          post '/v1/frame/'+@f.id+'/like'
+          put '/v1/frame/'+@f.id+'/like'
 
           response.body.should be_json_eql(200).at_path("status")
         end
 
         it "should return same frame with like_count incremented" do
-          post '/v1/frame/'+@f.id+'/like'
+          put '/v1/frame/'+@f.id+'/like'
 
           parse_json(response.body)["result"]["id"].should eq(@f.id.to_s)
           response.body.should be_json_eql(1).at_path("result/like_count")
         end
 
         it "should return same frame without any upvoters added to array" do
-          post '/v1/frame/'+@f.id+'/like'
+          put '/v1/frame/'+@f.id+'/like'
 
           response.body.should have_json_size(0).at_path("result/upvoters")
         end
@@ -458,11 +458,11 @@ describe 'v1/frame' do
         it "should not call add_to_watch_later! on the frame" do
           @f.stub(:add_to_watch_later!).and_return(Factory.create(:frame))
           @f.should_not_receive(:add_to_watch_later!)
-          post '/v1/frame/'+@f.id+'/like'
+          put '/v1/frame/'+@f.id+'/like'
         end
 
         it "should return error message if frame doesnt exist" do
-          post '/v1/frame/'+@f.id+'xxx/like'
+          put '/v1/frame/'+@f.id+'xxx/like'
           response.body.should be_json_eql(404).at_path("status")
         end
       end
