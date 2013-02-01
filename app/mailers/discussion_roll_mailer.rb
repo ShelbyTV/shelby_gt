@@ -75,7 +75,7 @@ class DiscussionRollMailer < ActionMailer::Base
       @recipient_string_id = opts[:receiving_participant].is_a?(User) ? opts[:receiving_participant].id.to_s : opts[:receiving_participant]
       @poster_string_name = opts[:posting_participant].is_a?(User) ? opts[:posting_participant].nickname : opts[:posting_participant]
       @token = opts[:token]
-      @permalink = "http://shelby.tv/chat/#{@roll.id}?u=#{CGI.escape(@recipient_string_id)}&t=#{CGI.escape(CGI.escape(@token))}"
+      @permalink = "http://shelby.tv/mail/#{@roll.id}?u=#{CGI.escape(@recipient_string_id)}&t=#{CGI.escape(CGI.escape(@token))}"
 
       sendgrid_category Settings::Email.discussion_roll["category"]
       sendgrid_ganalytics_options(:utm_source => 'discussion_roll', :utm_medium => 'notification', :utm_campaign => "roll_#{@roll.id}")
