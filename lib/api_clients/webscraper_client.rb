@@ -51,7 +51,7 @@ module APIClients
         video_hashes = []
         urls.each do |url|
           vid_info = GT::UrlVideoDetector.examine_url_for_video(url)
-          video_hashes << vid_info.first[:embedly_hash]
+          video_hashes << vid_info.first[:embedly_hash] if vid_info
         end
         return video_hashes
       end
