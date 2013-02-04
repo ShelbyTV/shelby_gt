@@ -50,10 +50,11 @@
             </td>
           </tr>
 
+          <tr><td>&nbsp;</td></tr>
 
           <tr class="conversation-elements">
             <td>
-              <table class="conversation-elements-table" cellpadding="0" border="0" style="background-color:#f2f0f0;">
+              <table class="conversation-elements-table" cellpadding="0" border="0" style="background-color:#e2e2e2; width: 100%;">
                 <tr><td></td><td style="padding: 20px;"></td><td></td></tr>
                 <% @conversation_elements.each do |convo_piece| %>
                   <%= render :partial => "#{convo_piece[:el_type].to_s}", :locals => convo_piece %>
@@ -80,6 +81,8 @@
               <!-- /button -->
             </td>
           </tr>
+
+          <tr><td>&nbsp;</td></tr>
 
           <tr class="conversation-footer">
             <td style="color: #777; padding-top:20px; border-top:1px solid #aaa; font-size:14px;">
