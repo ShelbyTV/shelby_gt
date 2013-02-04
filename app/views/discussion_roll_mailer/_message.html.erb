@@ -2,28 +2,48 @@
 <% msg_from_recipient = (message.user_id.to_s == @recipient_string_id || message.nickname == @recipient_string_id) %>
 
 <% if msg_from_recipient %>
-  <!-- RIGHT message -->
-  <tr style="text-align:right">
-    <td></td>
-    <td>
-      <p style="font-weight:bold; font-size:12px; color:#556; margin-bottom:0px;"><%= message.nickname %></p>
-      <p style="font-size:14px; margin-top:5px;"><%= message.text %></p>
-    </td>
-    <td valign="top">
-      <img src="<%= message.user ? avatar_url_for_message(message) : "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png" %>" style="width:48px;" />
-    </td>
-    <td>
+  <tr>
+    <table border="0" style="border:1px solid #ccc; border-radius: 5px; background-color: #FFFFFF;">
+      <tr>
+        <td valign="middle" style="text-align: left; width: 48px;">
+          <img src="<%= message.user ? avatar_url_for_message(message) : "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png" %>" style="width:100%;height: 48px;" />
+        </td>
+
+        <td valign="middle" style="font-weight:bold; font-size:12px; color:#556; line-height: 1;text-align: left;">
+          <%= message.anonymous_creator_nickname or (message.creator ? message.creator.nickname : nil) %>
+        </td>
+
+        <td valign="middle" style="font-weight:normal; font-size:12px; color:#999; line-height: 1;text-align: right;">
+          <%= message.created_at.strftime("%A, %b %d, %l:%M %p") %>
+        </td>
+      </tr>
+    </table>
   </tr>
 <% else %>
-  <!-- LEFT message -->
-  <tr style="text-align:left;">
-    <td valign="top">
-      <img src="<%= message.user ? avatar_url_for_message(message) : "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png" %>" style="width:48px;" />
-    </td>
-    <td>
-      <p style="font-weight:bold; font-size:12px; color:#556; margin-bottom:0px;"><%= message.nickname %></p>
-      <p style="font-size:14px; margin-top:5px;"><%= message.text %></p>
-    </td>
-    <td></td>
+  <tr>
+    <table border="0" style="border:1px solid #ccc; border-radius: 5px; background-color: #F2F0F0;">
+      <tr>
+        <td valign="middle" style="text-align: left; width: 48px;">
+          <img src="<%= message.user ? avatar_url_for_message(message) : "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png" %>" style="width:100%;height: 48px;" />
+        </td>
+
+        <td valign="middle" style="font-weight:bold; font-size:12px; color:#556; line-height: 1;text-align: left;">
+          <%= message.nickname %>
+        </td>
+
+        <td valign="middle" style="font-weight:normal; font-size:12px; color:#999; line-height: 1;text-align: right;">
+          <%= message.created_at.strftime("%A, %b %d, %l:%M %p") %>
+        </td>
+      </tr>
+
+      <tr colspan="3">
+        <td style="font-size: 14px; line-height: 1.4; color: #333;">
+          <%= message.text %>
+        </td>
+      </tr>
+    </table>
   </tr>
 <% end %>
+
+<tr><td style="font-size: 10px;line-height:1;">&nbsp;</td></tr>
+
