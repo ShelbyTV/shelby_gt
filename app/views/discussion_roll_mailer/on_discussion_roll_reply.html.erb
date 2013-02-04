@@ -19,15 +19,26 @@
   			<hr style="margin-top:0px;background:none;border:none;border-top:1px solid #CACACA;"/>
 
   			<table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; padding:20px 20px 15px; width:500px;margin: 0px auto;">
-
   			  <tr class="conversation_header">
   			    <td>
               <h1 style="font-size: 22px; font-weight:100;">
                 <%= @subject %>
               </h1>
-              <h2 style="font-size: 16px; font-weight:600;">
-                <a href="<%= @permalink %>">View Full Conversation in Shelby Mail</a>
-              </h2>
+
+              <!-- button -->
+              <table cellpadding="0" cellspacing="0" style="border-radius: 2px;border-collapse: collapse;border-color: #4AA041;border-width: 1px;border-style: solid;background-color: #4AA041;width: 75%;margin: 0 auto;">
+                <tr>
+                  <td align="center" valign="center" style="border-radius: 1px;border-width: 1px; border-style: solid; border-color: #74C36B #4AA041 #4AA041 #4AA041;">
+                    <a href="<%= @permalink %>" style="display: inline-block;font-size: 16px;font-weight: bold;font-family: sans-serif;">
+                      <font color="#fff">
+                        View Full Conversation
+                      </font>
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <!-- /button -->
+
             </td>
           </tr>
 
@@ -44,13 +55,23 @@
             </td>
           </tr>
 
-
           <tr class="conversation-reply">
-            <td style="text-align:center; padding: 10px 0 15px;">
-              <a href="<%= @permalink %>" style="text-decoration:none;"><div style="width:278px; height:27px; background-color:#0590c4; color:white; text-align:center; font-weight: bold;margin:8px auto; border:1px solid #056083; padding-top:9px;">Reply & Watch ▶</div></a>
+            <td align="center">
+              <!-- button -->
+              <table cellpadding="0" cellspacing="0" style="border-radius: 2px;border-collapse: collapse;border-color: #4AA041;border-width: 1px;border-style: solid;background-color: #4AA041;width: 75%;margin: 0 auto;">
+                <tr>
+                  <td align="center" valign="center" style="border-radius: 1px;border-width: 1px; border-style: solid; border-color: #74C36B #4AA041 #4AA041 #4AA041;">
+                    <a href="<%= @permalink %>" style="display: inline-block;font-size: 16px;font-weight: bold;font-family: sans-serif;">
+                      <font color="#fff">
+                        View Full Conversation
+                      </font>
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <!-- /button -->
             </td>
           </tr>
-          
 
           <tr class="conversation-footer">
             <td style="color: #777; padding-top:20px; border-top:1px solid #aaa; font-size:14px;">
@@ -66,10 +87,7 @@
               </p>
             </td>
           </tr>
-          
-
   			</table><!-- /shelby-email-message -->
-
 
   		</td>
   	</tr><!-- /main-body-row -->
@@ -83,7 +101,7 @@
           <%= Settings::Email.shelby_address %>
   			</div>
   		</td>
-  	</tr> 
+  	</tr>
   </table>
-  
+
 <% end %>
