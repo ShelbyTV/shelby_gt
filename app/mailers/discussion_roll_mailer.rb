@@ -80,33 +80,33 @@ class DiscussionRollMailer < ActionMailer::Base
       sendgrid_category Settings::Email.discussion_roll["category"]
       sendgrid_ganalytics_options(:utm_source => 'discussion_roll', :utm_medium => 'notification', :utm_campaign => "roll_#{@roll.id}")
       
-      # Make sure we have N messages/videos for our email
-      recent_frames = Frame.where(:roll_id => @roll.id).order(:score.desc).limit(Settings::Email.discussion_roll['element_count']).all
-      @conversation_elements = conversation_elements_for(recent_frames, Settings::Email.discussion_roll['element_count'])
+      # Displaying context for the most recent frame only
+      most_recent_frame = Frame.where(:roll_id => @roll.id).order(:score.desc).first
+      @conversation_elements = conversation_elements_for([most_recent_frame], Settings::Email.discussion_roll['max_element_count'])
       
       # get the latest message from the latest frame, use that to determine if last posting was video-only
-      most_recent_message = recent_frames.first.conversation.messages[-1]
+      most_recent_message = most_recent_frame.conversation.messages[-1]
       @last_post_video_only = !most_recent_message or most_recent_message.text.blank?
     end
     
     # Our email is going to display a summary bit of the conversation.
     # Create an array of frames and/or messages that our email template may use directly.
     #
-    # expects frames to be ordered newest to oldest
+    # expects frames array to be ordered newest to oldest
     #
     # return an array of hashes like:  [{:el_type => :frame, :el => Frame}, {:el_type => :message, :el => Message}, ...]
     # with the oldest (ie. top of email) conversation element at the top
-    def conversation_elements_for(frames, desired_element_count)
+    def conversation_elements_for(frames, max_element_count)
       els = []
       frames.each do |frame|
         # remember: messages in frame.conversation go from oldest to newest
         frame.conversation.messages.reverse.each do |msg|
           els << {:el_type => :message, :el => msg} unless msg.text.blank?
-          break if els.size == desired_element_count
+          break if els.size == max_element_count
         end
-        break if els.size == desired_element_count
+        break if els.size == max_element_count
         els << {:el_type => :frame, :el => frame}
-        break if els.size == desired_element_count
+        break if els.size == max_element_count
       end
       return els.reverse
     end

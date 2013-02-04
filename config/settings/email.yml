@@ -46,7 +46,7 @@ defaults: &defaults
   discussion_roll:
     category: "Discussion Roll Notifications"
     from_email: "noreply@shelby.tv"
-    element_count: 3
+    max_element_count: 9
 
 
 development:
