@@ -90,15 +90,15 @@ describe 'v1/user' do
         response.body.should have_json_path("result/nickname")
       end
 
-      it "should not have a personal_roll_subdomain attribute for a user besides herself" do
+      it "should return correct personal_roll_subdomain attribute for another user" do
         u2 = Factory.create(:user)
-        r1 = Factory.create(:roll, :creator => u2, :roll_type => Roll::TYPES[:special_public_real_user], :title => 'title')
+        r1 = Factory.create(:roll, :creator => u2, :roll_type => Roll::TYPES[:special_public_real_user], :title => 'user_name')
         u2.public_roll = r1
         u2.save
 
         get '/v1/user/'+u2.id
-        response.body.should be_json_eql(200).at_path("status")
-        response.body.should_not have_json_path("result/personal_roll_subdomain")
+        response.body.should have_json_path("result/personal_roll_subdomain")
+        parse_json(response.body)["result"]["personal_roll_subdomain"].should == "user-name"
       end
 
       it "should get a user by querying by nickname" do

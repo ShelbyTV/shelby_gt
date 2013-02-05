@@ -7,6 +7,10 @@ node :personal_roll_id do |u|
 	u.public_roll_id
 end
 
+node "personal_roll_subdomain" do
+  @user_personal_roll_subdomain
+end
+
 if user_twitter_auth = @user.authentications.detect {|auth| auth.provider == 'twitter'}
   node :twitter_uid do
     user_twitter_auth.uid
@@ -23,10 +27,6 @@ if current_user == @user
 
 	child :preferences => "preferences" do
 		attributes :email_updates, :like_notifications, :watched_notifications, :comment_notifications, :upvote_notifications, :reroll_notifications, :roll_activity_notifications, :open_graph_posting
-	end
-
-	node "personal_roll_subdomain" do
-		@user_personal_roll_subdomain
 	end
 
 	node "watch_later_roll_id" do
