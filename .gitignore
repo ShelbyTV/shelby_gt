@@ -29,3 +29,5 @@
 /cpp/.sconsign.dblite
 /cpp/.sconf_temp
 /cpp/config.log
+
+.DS_Store

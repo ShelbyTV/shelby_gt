@@ -1,6 +1,6 @@
 defaults: &defaults
   shelby_address: "110 E 23rd, 10th Floor, New York NY 10010"
-  shelby_logo: "http://api.shelby.tv/assets/email_logo.png"
+  shelby_logo: "http://api.shelby.tv/assets/email_logo_new.png"
   shelby_logo_gt: "http://shelby.tv/images/assets/shelby_logo.png"
   shelby_tagline: "An amazing way to discover and enjoy videos."
   preferences_link: "http://shelby.tv/preferences"
@@ -41,13 +41,13 @@ defaults: &defaults
   new_user_summary:
     category: "Admin"
     subject: "[%{date}] %{new_users} New Users Yesterday"
-    from: "Shelby GT <contact+gt@shelby.tv>"  
+    from: "Shelby GT <contact+gt@shelby.tv>"
   # Disucssion Rolls
   discussion_roll:
     category: "Discussion Roll Notifications"
     from_email: "noreply@shelby.tv"
-    element_count: 3
-      
+    max_element_count: 9
+
 
 development:
   <<: *defaults
@@ -57,6 +57,6 @@ test:
 
 production: &production
   <<: *defaults
-  
+
 arnold:
   <<: *production

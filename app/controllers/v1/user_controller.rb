@@ -57,6 +57,7 @@ class V1::UserController < ApplicationController
         return render_error(401, "current user not authenticated")
       end
 
+      @user_personal_roll_subdomain = (@user.public_roll and @user.public_roll.subdomain)
       @status = 200
     end
   end
