@@ -82,5 +82,4 @@ class V1::DashboardEntriesMetalController < MetalController
 
 
   include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
-  add_transaction_tracer :index
 end
