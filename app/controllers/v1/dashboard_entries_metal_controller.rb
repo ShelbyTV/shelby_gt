@@ -48,6 +48,10 @@ class V1::DashboardEntriesMetalController < MetalController
   # @param [Optional, String]  since_id the id of the dashboard entry to start from (inclusive)
   def index_for_user
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['index_for_user']) do
+
+      #TODO: only allow certain allowed dasboards to be returned
+      #return render_error() unless ["id1", "id2"].include? params[:user_id]
+
       # default params
       limit = params[:limit] ? params[:limit].to_i : 20
       # put an upper limit on the number of entries returned
