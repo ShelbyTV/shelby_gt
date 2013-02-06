@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'spec_helper' 
+require 'spec_helper'
 
 describe 'v1/roll' do
   before(:each) do
@@ -9,8 +9,8 @@ describe 'v1/roll' do
     @u1.public_roll = @pub_roll1
     @u1.upvoted_roll = @uv_roll1
     @u1.save
-    
-    
+
+
     @u2 = Factory.create(:user)
     @uv_roll2 = Factory.build(:roll, :creator => @u2, :upvoted_roll => true)
     @pub_roll2 = Factory.build(:roll, :creator => @u2)
@@ -20,7 +20,7 @@ describe 'v1/roll' do
     @u2.save
     @r = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:global_public])
   end
-  
+
   context 'logged in' do
     before(:each) do
       set_omniauth(:uuid => @u1.authentications.first.uid)
@@ -106,30 +106,30 @@ describe 'v1/roll' do
         parse_json(response.body)["result"]["roll_type"].should eq(@r.roll_type)
         parse_json(response.body)["result"]["followed_at"].should == 0 #b/c user is not following
       end
-      
+
       it "should return followed at if use is following roll" do
         r = Factory.create(:roll, :creator => @u1)
         r.add_follower(@u1)
-        
+
         get '/v1/roll/'+r.id
         response.body.should be_json_eql(200).at_path("status")
-        
+
         parse_json(response.body)["result"]["followed_at"].should == @u1.reload.roll_following_for(r).id.generation_time.to_f
       end
-      
+
       it "should not return subdomain unless subdomain_active" do
         get '/v1/roll/'+@r.id
         response.body.should be_json_eql(200).at_path("status")
         parse_json(response.body)["result"]["subdomain"].should == nil
       end
-      
+
       it "shoud return subdomain when subdomain_active" do
         r = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:global_public], :subdomain => "thesubd", :subdomain_active => true, :collaborative => false)
         get '/v1/roll/'+r.id
         response.body.should be_json_eql(200).at_path("status")
         parse_json(response.body)["result"]["subdomain"].should == r.subdomain
       end
-      
+
       it "should return roll info on success when looking up by subdomain if the subdomain is active" do
         @r.roll_type = Roll::TYPES[:special_public_real_user]
         @r.collaborative = false
@@ -160,16 +160,16 @@ describe 'v1/roll' do
       it "should return error message if roll doesnt exist" do
         get '/v1/roll/'+ BSON::ObjectId.new.to_s
         response.body.should be_json_eql(404).at_path("status")
-      end      
+      end
     end
-    
+
     describe "GET featured" do
       it "should return an array of objects" do
         get 'v1/roll/featured'
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_size(Settings::Roll.featured.size).at_path("result")
       end
-      
+
       it "should return all the categories" do
         get 'v1/roll/featured'
         response.body.should have_json_path("result/0/category_title")
@@ -177,7 +177,7 @@ describe 'v1/roll' do
         response.body.should have_json_path("result/0/rolls/0/display_title")
         response.body.should have_json_path("result/0/rolls/0/id")
       end
-      
+
       it "should return just onboarding categories" do
         get 'v1/roll/featured?segment=onboarding'
         response.body.should be_json_eql(200).at_path("status")
@@ -185,7 +185,7 @@ describe 'v1/roll' do
         response.body.should_not have_json_path("result/0/include_in")
         response.body.should have_json_path("result/0/rolls/0/display_thumbnail_src")
       end
-      
+
       it "should return just explore categories" do
         get 'v1/roll/featured?segment=explore'
         response.body.should be_json_eql(200).at_path("status")
@@ -197,7 +197,7 @@ describe 'v1/roll' do
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_size(Settings::Roll.featured.select { |r| r["include_in"]["in_line_promos"] }.size).at_path("result")
       end
-      
+
       it "should return just ipad_standard categories (which isn't set to false all over the fucking place)" do
         get 'v1/roll/featured?segment=ipad_standard'
         response.body.should be_json_eql(200).at_path("status")
@@ -214,30 +214,30 @@ describe 'v1/roll' do
         @f1_1, @f1_2, @f1_3 = Factory.create(:frame, :roll => @r1, :video => @v1, :creator => @u1), Factory.create(:frame, :roll => @r1, :video => @v2, :creator => @u1), Factory.create(:frame, :roll => @r1, :video => @v2, :creator => @u1)
         @f2_1, @f2_2, @f2_3 = Factory.create(:frame, :roll => @r2, :video => @v1, :creator => @u1), Factory.create(:frame, :roll => @r2, :video => @v2, :creator => @u1), Factory.create(:frame, :roll => @r2, :video => @v2, :creator => @u1)
       end
-      
+
       it "should return an array of objects" do
         get 'v1/roll/explore'
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_size(Settings::Roll.explore.size).at_path("result")
       end
-      
+
       it "should include the category name for each object" do
         get 'v1/roll/explore'
         response.body.should have_json_path("result/0/category")
       end
-      
+
       it "should include a rolls array for each object" do
         get 'v1/roll/explore'
         response.body.should have_json_path("result/0/rolls")
       end
-      
+
       it "should include three frames for each Roll in the rolls array" do
         get 'v1/roll/explore'
         response.body.should have_json_size(3).at_path("result/0/rolls/0/frames")
         response.body.should have_json_size(3).at_path("result/1/rolls/0/frames")
         response.body.should have_json_size(3).at_path("result/1/rolls/1/frames")
       end
-      
+
       it "should include each frame's creator's id and nickname" do
         get 'v1/roll/explore'
         response.body.should have_json_path("result/0/rolls/0/frames/0/creator")
@@ -252,9 +252,9 @@ describe 'v1/roll' do
         Video.should_receive(:find).exactly(1).times
         get 'v1/roll/explore'
       end
-      
+
     end
-    
+
     describe "POST" do
       context "roll creation" do
         it "should create and return a private roll on success" do
@@ -268,7 +268,7 @@ describe 'v1/roll' do
           parse_json(response.body)["result"]["roll_type"].should eq(Roll::TYPES[:user_private])
           parse_json(response.body)["result"]["followed_at"].should == @u1.reload.roll_following_for(Roll.sort(:_id=>-1).first).id.generation_time.to_f
         end
-        
+
         it "should create and return a public on success" do
           post '/v1/roll?title=Roll%20me%20baby&thumbnail_url=http://bar.com&public=1&collaborative=0'
 
@@ -280,67 +280,67 @@ describe 'v1/roll' do
         end
 
         it "should return 400 if there is no thumbnail_url" do
-          post '/v1/roll?title=Roll%20me%20baby'      
+          post '/v1/roll?title=Roll%20me%20baby'
           response.body.should be_json_eql(400).at_path("status")
         end
 
         it "should return 400 if there is no title or thumbnail_url" do
-          post '/v1/roll'      
+          post '/v1/roll'
           response.body.should be_json_eql(400).at_path("status")
         end
 
         it "should return 409 if trying to set a reserved subdomain" do
           Roll.any_instance.stub(:has_subdomain_access?).and_return(true)
-          
+
           post '/v1/roll?title=anal&thumbnail_url=http://bar.com&public=1&collaborative=0'
           response.body.should be_json_eql(409).at_path("status")
         end
       end
-      
+
       context "roll sharing" do
         before(:each) do
           resp = {"awesm_urls" => [{"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"}]}
           Awesm::Url.stub(:batch).and_return([200, resp])
         end
-        
+
         context "social share" do
           it "should return 200 if post is successful" do
             post '/v1/roll/'+@r.id+'/share?destination[]=twitter&text=testing'
             response.body.should be_json_eql(200).at_path("status")
           end
-        
+
           it "should return 404 if roll not found" do
             post '/v1/roll/'+@r.id+'xxx/share?destination[]=facebook&text=testing'
-          
+
             response.body.should be_json_eql(404).at_path("status")
             response.body.should have_json_path("message")
             parse_json(response.body)["message"].should eq("could not find roll with id #{@r.id}xxx")
           end
-        
+
           it "should return 404 if user cant post to that destination" do
             post '/v1/roll/'+@r.id+'/share?destination[]=facebook&text=testing'
-          
+
             response.body.should be_json_eql(404).at_path("status")
             response.body.should have_json_path("message")
             parse_json(response.body)["message"].should eq("that user cant post to that destination")
           end
-        
+
           it "should return 404 if destination not supported" do
             post '/v1/roll/'+@r.id+'/share?destination[]=fake&text=testing'
-          
+
             response.body.should be_json_eql(404).at_path("status")
             response.body.should have_json_path("message")
             parse_json(response.body)["message"].should eq("we dont support that destination yet :(")
           end
-        
+
           it "should return 404 if roll is private" do
             @r = Factory.create(:roll, :creator=>@u1, :public => false)
             post '/v1/roll/'+@r.id+'/share?destination[]=twitter&text=testing'
-          
+
             response.body.should be_json_eql(404).at_path("status")
             response.body.should have_json_path("message")
           end
-        
+
           it "should return 404 if destination and/or text not incld" do
             post '/v1/roll/'+@r.id+'/share'
             response.body.should be_json_eql(404).at_path("status")
@@ -348,7 +348,7 @@ describe 'v1/roll' do
             parse_json(response.body)["message"].should eq("a destination and a text is required to post")
           end
         end
-          
+
       end
 
       context "join roll" do
@@ -357,13 +357,13 @@ describe 'v1/roll' do
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/title")
         end
-        
+
         it "should return 404 if roll cant be found" do
           post '/v1/roll/'+@r.id+'123/join'
-          response.body.should be_json_eql(404).at_path("status")                  
+          response.body.should be_json_eql(404).at_path("status")
         end
       end
-      
+
       context "leave roll" do
         it "should return the roll if it was left" do
           r = Factory.create(:roll, :creator => @u2, :following_users=>[{:user_id=>@u1.id}])
@@ -374,24 +374,24 @@ describe 'v1/roll' do
 
         it "should return 404 if roll can't be left" do
           post '/v1/roll/'+@r.id+'/leave'
-          response.body.should be_json_eql(404).at_path("status")                  
-        end        
-        
+          response.body.should be_json_eql(404).at_path("status")
+        end
+
         it "should return 404 if roll cant be found" do
           post '/v1/roll/'+@r.id+'123/leave'
-          response.body.should be_json_eql(404).at_path("status")                  
-        end        
+          response.body.should be_json_eql(404).at_path("status")
+        end
       end
     end
-    
+
     describe "PUT" do
       it "should update and return a roll on success" do
         put '/v1/roll/'+@r.id+'?title=Better%20Title'
-      
+
         response.body.should be_json_eql(200).at_path("status")
         parse_json(response.body)["result"]["title"].should eq("Better Title")
       end
-      
+
       it "should return an error if a roll cant be found" do
         get '/v1/roll/'+@r.id+'xxx'
         response.body.should be_json_eql(404).at_path("status")
@@ -399,28 +399,28 @@ describe 'v1/roll' do
 
       it "should return 409 if trying to set a reserved subdomain" do
         Roll.any_instance.stub(:has_subdomain_access?).and_return(true)
-        
+
         @r.collaborative = false
         @r.save
         put '/v1/roll/'+@r.id+'?title=anal'
         response.body.should be_json_eql(409).at_path("status")
       end
     end
-    
+
     describe "DELETE" do
       it "should delete the frame and return success" do
         delete '/v1/roll/'+@r.id
         response.body.should be_json_eql(200).at_path("status")
       end
-      
+
       it "should return an error if a deletion fails" do
         get '/v1/roll/'+@r.id+'xxx'
         response.body.should be_json_eql(404).at_path("status")
       end
-      
+
     end
   end
-  
+
   context "not logged in" do
 
     describe "GET show" do
@@ -431,13 +431,13 @@ describe 'v1/roll' do
         response.body.should have_json_path("result/title")
         parse_json(response.body)["result"]["title"].should eq(r.title)
       end
-    
+
       it "should return error message if roll doesnt exist" do
         get '/v1/roll/'+@r.id+'xxx'
         response.body.should be_json_eql(404).at_path("status")
       end
     end
-    
+
     describe "GET index_associated" do
       it "should return roll info on success (and put requested roll at start of array)" do
         u = Factory.create(:user)
@@ -490,7 +490,7 @@ describe 'v1/roll' do
         response.status.should eq(401)
       end
     end
-    
+
   end
-  
+
 end
