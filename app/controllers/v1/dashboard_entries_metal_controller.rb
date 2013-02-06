@@ -81,5 +81,5 @@ class V1::DashboardEntriesMetalController < MetalController
   end
 
 
-  include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
+  #include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
 end

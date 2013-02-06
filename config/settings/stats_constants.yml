@@ -3,6 +3,7 @@ defaults: &defaults
   api:
     dashboard:
       index: 'dashboard.index'
+      index_for_user: 'dashboard.index_for_user'
       update: 'dashboard.update'
     user:
       index: 'user.index'
