@@ -75,11 +75,12 @@ class V1::DashboardEntriesMetalController < MetalController
           renderMetalResponse(404, "{\"status\" : 404, \"message\" : \"fast index failed with status #{fast_status}\"}")
         end
       else
-        render_error(404, "could not find the user you are looking for")
+        renderMetalResponse(404, "could not find the user you are looking for")
       end
     end
   end
 
 
   include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
+  add_transaction_tracer :index, :index_for_user
 end
