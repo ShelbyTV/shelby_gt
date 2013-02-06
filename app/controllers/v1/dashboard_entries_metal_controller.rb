@@ -57,7 +57,7 @@ class V1::DashboardEntriesMetalController < MetalController
       sinceId = params[:since_id]
 
       # lookup user
-      if user = params[:user_id]
+      if user = User.find(params[:user_id])
         if (sinceId)
           fast_stdout = `cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
         else
@@ -71,7 +71,7 @@ class V1::DashboardEntriesMetalController < MetalController
           renderMetalResponse(404, "{\"status\" : 404, \"message\" : \"fast index failed with status #{fast_status}\"}")
         end
       else
-        render_error(404, "could not find the user you are referencing")
+        render_error(404, "could not find the user you are looking for")
       end
     end
   end
