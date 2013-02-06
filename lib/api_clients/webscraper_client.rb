@@ -1,6 +1,7 @@
 require 'embedly_regexes'
 require 'url_helper'
-require "url_video_detector"
+require 'memcached_manager'
+require 'url_video_detector'
 
 module APIClients
   class WebScraper
@@ -50,7 +51,7 @@ module APIClients
       def self.get_meta_info_for_videos(urls)
         video_hashes = []
         urls.each do |url|
-          vid_info = GT::UrlVideoDetector.examine_url_for_video(url)
+          vid_info = GT::UrlVideoDetector.examine_url_for_video(url, false, GT::Arnold::MemcachedManager.get_client)
           video_hashes << vid_info.first[:embedly_hash] if vid_info
         end
         return video_hashes
