@@ -6,6 +6,11 @@
       <td valign="middle" class="shelby-email-lining" style="padding:0px;">
         <!--  show message in email preview-->
         <div style="font-size:0px;display:none;">
+          <% if @conversation_elements[-1][:el_type] == :message %>
+            "<%= @conversation_elements[-1][:el].text %>" //
+          <% elsif @conversation_elements[-1][:el_type] == :frame %>
+            "<%= @conversation_elements[-1][:el].video.title %>" //
+          <% end %>
           <%= @poster_string_name %> is using Shelby Mail to have private conversations about great video.
         </div>
         <!-- end email preview message -->
@@ -19,10 +24,6 @@
         <table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; padding:20px 20px 15px; width:500px;margin: 0px auto;text-align: center;">
           <tr class="conversation_header">
             <td>
-              <h1 style="font-size: 22px; font-weight:100;margin-top: 0;margin-bottom: 20px;">
-                <%= @subject %>
-              </h1>
-
               <h2 style="font-size: 12px; font-weight:400;">
                 Click through to see the entire conversation.<br>
                 You can even reply with another video from YouTube or Vimeo!

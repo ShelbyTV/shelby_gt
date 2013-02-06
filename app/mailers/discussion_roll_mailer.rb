@@ -18,7 +18,7 @@ class DiscussionRollMailer < ActionMailer::Base
     verb, suffix = "sent", "video"
     @subject = subject_for(@poster_string_name, opts[:all_participants] - [opts[:posting_participant], opts[:receiving_participant]], verb, suffix)
     
-    mail :from => "\"#{@poster_string_name}\" <#{Settings::Email.discussion_roll['from_email']}>",
+    mail :from => "\"Shelby Mail\" <#{Settings::Email.discussion_roll['from_email']}>",
       :reply_to => "\"No Reply\" <#{Settings::Email.discussion_roll['from_email']}>",
       :to => opts[:receiving_participant_email_address], 
       :subject => @subject
@@ -37,7 +37,7 @@ class DiscussionRollMailer < ActionMailer::Base
     end
     @subject = subject_for(@poster_string_name, opts[:all_participants] - [opts[:posting_participant], opts[:receiving_participant]], verb, suffix)
     
-    mail :from => "\"#{@poster_string_name}\" <#{Settings::Email.discussion_roll['from_email']}>",
+    mail :from => "\"Shelby Mail\" <#{Settings::Email.discussion_roll['from_email']}>",
       :reply_to => "\"No Reply\" <#{Settings::Email.discussion_roll['from_email']}>",
       :to => opts[:receiving_participant_email_address], 
       :subject => @subject
@@ -48,14 +48,16 @@ class DiscussionRollMailer < ActionMailer::Base
     # Subject must be unique and identical every time an email is sent for a given discussion roll
     # This way email clients can nicely group the emails into a conversation
     def subject_for(from_name, conversation_with, verb="sent", suffix="video")
-      others = conversation_with[0..1].map { |p| p.is_a?(User) ? p.nickname : p } .join(", ")
       
       case conversation_with.count
       when 0 
         "#{from_name} #{verb} you #{suffix}"
-      when 1..2
-        "#{from_name} #{verb} you, #{others} #{suffix}"
+      when 1
+        "#{from_name} #{verb} you and #{conversation_with[0]} #{suffix}"
+      when 2
+        "#{from_name} #{verb} you, #{conversation_with[0]} and #{conversation_with[1]} #{suffix}"
       else
+        others = conversation_with[0..1].map { |p| p.is_a?(User) ? p.nickname : p } .join(", ")
         "#{from_name} #{verb} you, #{others} and #{pluralize(conversation_with.count-2, 'other')} #{suffix}"
       end
     end

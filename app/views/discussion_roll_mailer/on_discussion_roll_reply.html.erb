@@ -6,7 +6,11 @@
       <td valign="middle" class="shelby-email-lining" style="padding:0px;">
         <!--  show message in email preview-->
         <div style="font-size:0px;display:none;">
-          <%= @poster_string_name %> is using Shelby Mail to have private conversations about great video.
+          <% if @conversation_elements[-1][:el_type] == :message %>
+            "<%= @conversation_elements[-1][:el].text %>" //
+          <% elsif @conversation_elements[-1][:el_type] == :frame %>
+            "<%= @conversation_elements[-1][:el].video.title %>" //
+          <% end %>
         </div>
         <!-- end email preview message -->
 
@@ -17,33 +21,10 @@
         </h1>
 
         <table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; padding:20px 20px 15px; width:500px;margin: 0px auto;">
-          <tr class="conversation_header">
-            <td>
-              <h1 style="font-size: 22px; font-weight:100;margin-top: 0; margin-bottom: 20px;">
-                <%= @subject %>
-              </h1>
-
-              <!-- button -->
-              <table cellpadding="10" cellspacing="0" style="border-radius: 5px;border-color: #4AA041;border-width: 1px;border-style: solid;background-color: #4AA041;width: 75%;margin: 0 auto;">
-                <tr>
-                  <td align="center" valign="center" style="border-radius: 5px;border-width: 1px; border-style: solid; border-color: #74C36B #4AA041 #4AA041 #4AA041; height: 38px;">
-                    <a href="<%= @permalink %>" style="display: block;font-size: 16px;font-weight: bold;font-family: sans-serif;text-decoration: none;">
-                      <font color="#fff">
-                        View Full Conversation
-                      </font>
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              <!-- /button -->
-
-            </td>
-          </tr>
-
+          
           <tr class="conversation-elements">
             <td>
               <table class="conversation-elements-table" cellpadding="0" border="0" style="background-color:#e2e2e2; width: 100%">
-                <tr><td></td><td style="padding: 20px;"></td><td></td></tr>
                 <% @conversation_elements.each do |convo_piece| %>
                   <%= render :partial => "#{convo_piece[:el_type].to_s}", :locals => convo_piece %>
                   <tr><td></td><td style="padding: 5px;"></td><td></td></tr>
