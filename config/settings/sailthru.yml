@@ -3,7 +3,7 @@ defaults: &defaults
   api_secret : "4ca74b2aa97c0739f85b6fe9848eed5c"
   api_url : "http://api.sailthru.com"
   user_list: 'gt-beta-users'
-  welcome_template: "GT Welcome Message Modified"
+  welcome_template: "New Users - Welcome Message"
 
 development:
   <<: *defaults
@@ -13,6 +13,6 @@ test:
 
 production: &production
   <<: *defaults
-  
+
 arnold:
   <<: *production
