@@ -200,7 +200,6 @@ class Frame
     return nil unless self.roll_id and subdomain = self.roll.subdomain
 
     if options[:require_legit_roll]
-      #make sure the roll meets our criteria for actual roll
       return nil unless [ Roll::TYPES[:special_public_real_user],
                           Roll::TYPES[:special_public_upgraded],
                           Roll::TYPES[:user_public],
@@ -209,6 +208,21 @@ class Frame
     end
 
     return "http://#{subdomain}.#{Settings::ShelbyAPI.web_domain}/#{self.id}"
+  end
+
+  # set {:require_legit_roll => true} to get an isolated-roll link only for a legit roll, otherwise nil
+  def isolated_roll_permalink(options={})
+    return nil unless self.roll_id and self.roll.id
+
+    if options[:require_legit_roll]
+      return nil unless [ Roll::TYPES[:special_public_real_user],
+                          Roll::TYPES[:special_public_upgraded],
+                          Roll::TYPES[:user_public],
+                          Roll::TYPES[:global_public]
+                        ].include? self.roll.roll_type
+    end
+
+    return "http://#{Settings::ShelbyAPI.web_domain}/isolated-roll/#{self.roll.id}/#{self.id}"
   end
 
   # Return a link to video SEO page

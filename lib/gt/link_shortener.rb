@@ -26,15 +26,16 @@ module GT
      links = {}
      if !d_copy.empty?
        # 3. create long url
-       if destinations.include?("twitter") or destinations.include?("facebook")
-         long_url =  linkable.subdomain_permalink()
-       elsif destinations.include?("manual") and linkable.is_a?(Frame)
-         # for legit shelby rolls, link to roll instead of SEO page
-         long_url = linkable.subdomain_permalink(:require_legit_roll => true) || linkable.video_page_permalink()
-       elsif destinations.include?("manual") and linkable.is_a?(Roll)
-         long_url = linkable.permalink() + "?roll_id=#{linkable.id}"
+       if linkable.is_a?(Frame)
+         frame = linkable
+         # for frames on legit shelby rolls, link there instead of SEO page
+         long_url = frame.subdomain_permalink(:require_legit_roll => true) || 
+                    frame.isolated_roll_permalink(:require_legit_roll => true) || 
+                    frame.video_page_permalink
        else
-         long_url = linkable.permalink()
+         roll = linkable
+         long_url = roll.subdomain_permalink || 
+                    roll.permalink
        end
        
        d_copy = d_copy.join(",")
