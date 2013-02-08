@@ -222,7 +222,7 @@ class Frame
                         ].include? self.roll.roll_type
     end
 
-    return "http://#{Settings::ShelbyAPI.web_domain}/isolated-roll/#{self.roll.id}/#{self.id}"
+    return "http://#{Settings::ShelbyAPI.web_domain}/isolated-roll/#{self.roll.id}/frame/#{self.id}"
   end
 
   # Return a link to video SEO page
