@@ -134,7 +134,9 @@ class User
 
   ## For Devise
   # Rememberable
-  key :remember_me,           Boolean, :default => true
+  # key :remember_me getting set to false by Devise, which we never want, so...
+  def remember_me() return true; end
+  def remember_me?() return true; end
   key :remember_created_at,   Time
   key :remember_token,        String
   # Recoverable
