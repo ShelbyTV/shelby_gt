@@ -15,14 +15,23 @@
 		<hr/>
 
 		<div class="social-signup-wrapper">
-			<h2>Sign up with...</h2>
+		  <% if params[:nickname] %>
+			  <h2 style="color:red;">That username has already been taken.</h2>
+			<% elsif params[:primary_email] %>
+			  <h2 style="color:red;">That email address is already in use.</h2>
+			<% elsif params[:duplicate_key] %>
+			  <h2 style="color:red;">That username and password has already been taken.</h2>
+			<% end %>
+			
+			<h2>Sign up with...</h2>			
 			<%= link_to "email and password", "#", :onclick => "$(this).hide();$('.email-signup-wrapper').show();$('#user_name').focus();return false;" %>
 			<%= link_to "twitter", "/auth/twitter", :class => "social-signup twitter js-authorize", :target => "signup_twt", "data-popup_width" => "600", "data-popup_height" => "700" %>
 			<%= link_to "facebook", "/auth/facebook", :class => "social-signup facebook js-authorize", :target => "signup_fb", "data-popup_width" => "1000", "data-popup_height" => "650" %>
 		</div>
 
 		<div class="email-signup-wrapper">
-			<%= form_for(:user, :url => session_url(:user, :protocol => 'https'), :class=>"email-signup-form") do |f| %>
+		  <% proto = Rails.env == "production" ? "https" : "http" %>
+			<%= form_for(:user, :url => session_url(:user, :protocol => proto), :class=>"email-signup-form") do |f| %>
 			  <div><%= f.label :name %><br />
 			  <%= f.text_field :name %></div>
 

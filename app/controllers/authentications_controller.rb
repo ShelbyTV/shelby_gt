@@ -141,11 +141,11 @@ class AuthenticationsController < ApplicationController
     elsif !params[:user].blank?
       # can now signup in a popup so no_redirect should not be set!
       @no_redirect = true unless session[:popup]
-      
+
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
       
       if cohort_entrance or beta_invite
-      
+
         user = GT::UserManager.create_new_user_from_params(params[:user])
 
         if user.valid? and user.errors.empty?
@@ -165,15 +165,17 @@ class AuthenticationsController < ApplicationController
           @user_errors = false
           @opener_location = redirect_path || Settings::ShelbyAPI.web_root
         else
-          Rails.logger.error "AuthenticationsController#create_with_email - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name} -- primary_email #{user.primary_email}"
+          Rails.logger.info "AuthenticationsController#create_with_email - FAIL: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name} -- primary_email #{user.primary_email}"
 
           # keep list of errors handy to pass to a client if necessary.
           @user_errors = model_errors_as_simple_hash(user)
 
-          # return to beta invite url, origin, or web root with errors          
-          @opener_location = add_query_params(
-            beta_invite ? beta_invite.url : clean_query_params(redirect_path || Settings::ShelbyAPI.web_root), 
-            @user_errors)
+          # return to beta invite url, origin, or web root with errors
+          loc = nil
+          loc = beta_invite.url if beta_invite
+          loc = cohort_entrance.url if cohort_entrance
+          loc = clean_query_params(redirect_path || Settings::ShelbyAPI.web_root) unless loc
+          @opener_location = add_query_params(loc, @user_errors)
         end
         
       else
