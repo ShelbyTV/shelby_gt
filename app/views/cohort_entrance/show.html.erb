@@ -1,9 +1,9 @@
 <div class="cohort-entrance-wrapper">
 	<% if @cohort_entrance %>
 		<h1>Meet Shelby, a simple new way to enjoy video.</h1>
-	
+
 		<h2>
-			We know... this landing page still needs a little love, but we promise that Shelby itself is much prettier. 
+			We know... this landing page still needs a little love, but we promise that Shelby itself is much prettier.
 		</h2>
 		<h2>
 			You’ll see for yourself in a second.  Just sign in below.
@@ -11,16 +11,16 @@
 		<h2>
 			(If you already had a Shelby account from our first product, please sign in the same way you did before. ie. Sign in with Twitter again, if you used Twitter the first time. If you can’t remember which one you used, just take a guess.)
 		</h2>
-	
+
 		<hr/>
-	
+
 		<div class="social-signup-wrapper">
 			<h2>Sign up with...</h2>
 			<%= link_to "email and password", "#", :onclick => "$(this).hide();$('.email-signup-wrapper').show();$('#user_name').focus();return false;" %>
-			<%= link_to "twitter", "/auth/twitter", :class => "social-signup twitter", :target => "signup_twt" %>
-			<%= link_to "facebook", "/auth/facebook", :class => "social-signup facebook", :target => "signup_fb" %>
+			<%= link_to "twitter", "/auth/twitter", :class => "social-signup twitter js-authorize", :target => "signup_twt", "data-popup_width" => "600", "data-popup_height" => "700" %>
+			<%= link_to "facebook", "/auth/facebook", :class => "social-signup facebook js-authorize", :target => "signup_fb", "data-popup_width" => "1000", "data-popup_height" => "650" %>
 		</div>
-	
+
 		<div class="email-signup-wrapper">
 			<%= form_for(:user, :url => session_url(:user, :protocol => 'https'), :class=>"email-signup-form") do |f| %>
 			  <div><%= f.label :name %><br />
@@ -38,9 +38,9 @@
 			  <div><%= f.submit "Create Account" %></div>
 			<% end %>
 		</div>
-		
+
 		<hr />
-		
+
 		<h2>
 			Need help?<br />
 			tweet <%= link_to "@shelby", "http://twitter.com/shelby", :target => "_twt" %><br />
@@ -53,6 +53,24 @@
 	<% end %>
 </div>
 
+<script>
+/**
+  oAuth via popup window
+**/
+$(function(){
+  $('body').on('click','.js-authorize',function(e){
+
+    var width = $(this).data('popup_width'),
+        height = $(this).data('popup_height'),
+        left = (screen.width/2)-(width/2),
+        top = (screen.height/2)-(height/2);
+
+    window.open($(this).attr("href"), "authPopup", "menubar=no,toolbar=no,status=no,width="+width+",height="+height+",toolbar=no,left="+left+",top="+top);
+
+    return false;
+  });
+});
+</script>
 
 <script>
   var _kmq = _kmq || [];
