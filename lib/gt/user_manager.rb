@@ -78,7 +78,7 @@ module GT
       else
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
         
-        Rails.logger.info "[GT::UserManager#create_new_user_from_params B] Failed to create user: #{user.errors.full_messages.join(',')} / user looks like: #{user.inspect}"
+        Rails.logger.info "[GT::UserManager#create_new_user_from_params] Failed to create user: #{user.errors.full_messages.join(',')} / user looks like: #{user.inspect}"
         return user
       end
     end
