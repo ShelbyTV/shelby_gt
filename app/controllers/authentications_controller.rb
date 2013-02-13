@@ -148,7 +148,9 @@ class AuthenticationsController < ApplicationController
 
         user = GT::UserManager.create_new_user_from_params(params[:user])
 
-        if user.valid? and user.errors.empty?
+        # order matters here: user.valid? will potentially clear user.errors 
+        # (especially if errors were added manually instead of part of a model validation)
+        if user.errors.empty? and user.valid?
           sign_in(:user, user)
           user.remember_me!(true)
           set_common_cookie(user, form_authenticity_token)
