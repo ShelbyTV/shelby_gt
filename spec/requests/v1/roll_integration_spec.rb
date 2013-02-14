@@ -203,6 +203,15 @@ describe 'v1/roll' do
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_size(Settings::Roll.featured.select { |r| r["include_in"]["ipad_standard"] }.size).at_path("result")
       end
+      
+      it "should return user_channels" do
+        get 'v1/roll/featured?segment=ipad_standard'
+        puts response.body
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result/0/user_channels")
+        response.body.should have_json_path("result/0/user_channels/0")
+        response.body.should have_json_path("result/0/user_channels/0/user_id")
+      end
     end
 
     describe "GET Explore" do

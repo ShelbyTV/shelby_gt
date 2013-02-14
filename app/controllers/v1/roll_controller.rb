@@ -189,7 +189,10 @@ class V1::RollController < ApplicationController
 
       if (@segment = params[:segment])
         @categories.select! { |f| f["include_in"][@segment] }
-        @categories.each { |c| c['rolls'] = c['rolls'].select { |r| r['include_in'][@segment] } }
+        @categories.each do |c|
+          c['rolls'] = c['rolls'].select { |r| r['include_in'][@segment] }
+          c['user_channels'] = c['user_channels'].select { |r| r['include_in'][@segment] }  if c['user_channels']
+        end
       end
 
       #rabl caching

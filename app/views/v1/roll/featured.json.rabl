@@ -12,3 +12,7 @@ end
 node :rolls do |c|
   c["rolls"]
 end
+
+node(:user_channels, :if => lambda { |c| !c["user_channels"].blank? }) do |c|
+  c["user_channels"]
+end
