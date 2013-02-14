@@ -17,20 +17,27 @@ module GT
       return false unless self.ensure_valid_user(into_user)
       
       return false unless self.move_authentications(other_user, into_user)
+
+      # Array of special roll ids so we don't try to double-convert
+      special_roll_ids = []
+      special_roll_ids << other_user.public_roll.id if other_user.public_roll
+      special_roll_ids << other_user.watch_later_roll.id if other_user.watch_later_roll
+      special_roll_ids << other_user.upvoted_roll.id if other_user.upvoted_roll
+      special_roll_ids << other_user.viewed_roll.id if other_user.viewed_roll
       
-      # Merge the special rolls (and destroy the old ones)
-      self.merge_rolls(other_user.public_roll, other_user, into_user.public_roll, into_user) if other_user.public_roll
-      self.merge_rolls(other_user.watch_later_roll, other_user, into_user.watch_later_roll, into_user) if other_user.watch_later_roll
-      self.merge_rolls(other_user.upvoted_roll, other_user, into_user.upvoted_roll, into_user) if other_user.upvoted_roll
-      self.merge_rolls(other_user.viewed_roll, other_user, into_user.viewed_roll, into_user) if other_user.viewed_roll
+      # Merge the special rolls (and destroy the old ones) 
+      self.merge_rolls_in_background(other_user.public_roll, other_user, into_user.public_roll, into_user) if other_user.public_roll
+      self.merge_rolls_in_background(other_user.watch_later_roll, other_user, into_user.watch_later_roll, into_user) if other_user.watch_later_roll
+      self.merge_rolls_in_background(other_user.upvoted_roll, other_user, into_user.upvoted_roll, into_user) if other_user.upvoted_roll
+      self.merge_rolls_in_background(other_user.viewed_roll, other_user, into_user.viewed_roll, into_user) if other_user.viewed_roll
       
-      # Change ownership of rolls created by other_user (also takes care Frames)
-      Roll.where(:creator_id => other_user.id).each do |other_roll|
-        self.change_roll_ownership(other_roll, other_user, into_user)
+      # Change ownership of non-special rolls created by other_user (also takes care Frames)
+      Roll.where(:creator_id => other_user.id, :_id.ne => special_roll_ids ).each do |other_roll|
+        self.change_roll_ownership_in_background(other_roll, other_user, into_user)
       end
       
       # Change ownership of DashboardEntries
-      self.move_dashboard_entries(other_user, into_user)
+      self.move_dashboard_entries_in_background(other_user, into_user)
       
       other_user.destroy
     end
@@ -63,34 +70,37 @@ module GT
       end
       
       # *Will destroy other_roll*
-      def self.merge_rolls(other_roll, other_user, into_roll, into_user)
+      def self.merge_rolls_in_background(other_roll, other_user, into_roll, into_user)
+        #These two are effectively performed in background by DB b/c they're fire-and-forget with write concern 0
         #change the roll_id (abbreviated as :a) for all frames in other_roll
-        Frame.collection.update({:a => other_roll.id}, {:$set => {:a => into_roll.id}}, {:multi => true})
-        
+        Frame.collection.update({:a => other_roll.id}, {:$set => {:a => into_roll.id}}, {:multi => true, :w => 0})
         #if the creator_id (abbreviated as :d) of those frames (now on their new roll) is other_roll.creator_id, change it to the creator of into_roll
-        Frame.collection.update({:a => into_roll.id, :d => other_user.id}, {:$set => {:d => into_user.id}}, {:multi => true})
+        Frame.collection.update({:a => into_roll.id, :d => other_user.id}, {:$set => {:d => into_user.id}}, {:multi => true, :w => 0})
         
-        #move the followers of other_roll to into_roll
-        #(not using roll_following.user relationship directly inside of a loop b/c MM identity map then screws with us and state of that User)
-        users_to_follower_into_roll = other_roll.following_users.map { |fu| User.find_by_id(fu.user_id) } .compact.uniq
-        users_to_follower_into_roll.each { |u| into_roll.add_follower(u, false) }
+        #These are slow and can be run in the background by EM
+        ShelbyGT_EM.next_tick do 
+          #move the followers of other_roll to into_roll
+          #(not using roll_following.user relationship directly inside of a loop b/c MM identity map then screws with us and state of that User)
+          users_to_follower_into_roll = other_roll.following_users.map { |fu| User.find_by_id(fu.user_id) } .compact.uniq
+          users_to_follower_into_roll.each { |u| into_roll.add_follower(u, false) }
         
-        other_roll.remove_all_followers!
-        other_roll.destroy
+          other_roll.remove_all_followers!
+          other_roll.destroy
+        end
       end
       
-      def self.change_roll_ownership(other_roll, other_user, into_user)
+      def self.change_roll_ownership_in_background(other_roll, other_user, into_user)
         #Frames on other roll (roll_id :abbr => :a) created by other_user (frame.creator_id :abbr => :d) should now be created by into_user
-        Frame.collection.update({:a => other_roll.id, :d => other_user.id}, {:$set => {:d => into_user.id}}, {:multi => true})
+        Frame.collection.update({:a => other_roll.id, :d => other_user.id}, {:$set => {:d => into_user.id}}, {:multi => true, :w => 0})
         
         #into_user should now own other_roll
         other_roll.creator = into_user
         other_roll.save
       end
       
-      def self.move_dashboard_entries(other_user, into_user)
+      def self.move_dashboard_entries_in_background(other_user, into_user)
         #All DBEs for other_user.id (:abbr => :a) need a new user_id, that of into_user
-        DashboardEntry.collection.update({:a => other_user.id}, {:$set => {:a => into_user.id}}, {:multi => true})
+        DashboardEntry.collection.update({:a => other_user.id}, {:$set => {:a => into_user.id}}, {:multi => true, :w => 0})
       end
   end
 end

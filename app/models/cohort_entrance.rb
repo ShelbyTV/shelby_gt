@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# This allows folks to hit a URL like http://shelby.tv/cohort_entrance/WHATEVER
+# This allows folks to hit a URL like http://api.shelby.tv/cohort_entrance/WHATEVER
 # which will allow them to sign up for GT and set their initial cohort
 #
 # Designed for pre-launch testing of GT
@@ -19,7 +19,7 @@ class CohortEntrance
   
   key :used_by, Array, :typecase => "ObjectId", :abbr => :c
   
-  def url() "#{Settings::ShelbyAPI.web_root}/cohort_entrance/#{self.code}"; end
+  def url() "http://#{Settings::Global.api_host}/cohort_entrance/#{self.code}"; end
   
   def created_at() self.id.generation_time; end
   

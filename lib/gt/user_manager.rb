@@ -58,11 +58,15 @@ module GT
       if user.valid?
         begin
           user.save(:safe => true)
-        rescue Mongo::OperationFailure
+        rescue Mongo::OperationFailure => mongo_err
           # unique key failure due to duplicate
           StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
 
-          Rails.logger.error "[GT::UserManager#create_new_user_from_params] Failed to create user: #{user.errors.full_messages.join(',')} due to MongoOperationFailure / user looks like: #{user.inspect}"
+          Rails.logger.info "[GT::UserManager#create_new_user_from_params] Failed to create user: #{user.errors.full_messages.join(',')} due to MongoOperationFailure (#{mongo_err} -- #{mongo_err.error_code} -- #{mongo_err.result}) / user looks like: #{user.inspect}"
+
+          # paranoid and unnecessary (but doing it anyway): make sure that user doesn't hang around
+          user.destroy
+          user = User.new
           user.errors.add(:duplicate_key, "uncaught duplicate key")
           return user
         end
@@ -78,7 +82,7 @@ module GT
       else
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
         
-        Rails.logger.error "[GT::UserManager#create_new_user_from_params] Failed to create user: #{user.errors.full_messages.join(',')} / user looks like: #{user.inspect}"
+        Rails.logger.info "[GT::UserManager#create_new_user_from_params] Failed to create user: #{user.errors.full_messages.join(',')} / user looks like: #{user.inspect}"
         return user
       end
     end

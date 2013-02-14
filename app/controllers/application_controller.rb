@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
 
   def render_error(code, message, errors=nil)
     @status, @message, @errors = code, message, errors
-    Rails.logger.error "render_error(#{code}, '#{message}')"
+    Rails.logger.info "render_error(#{code}, '#{message}')"
     render 'v1/blank', :status => @status
   end
 
