@@ -155,6 +155,12 @@ class User
 
   key :beta_invites_available,  Integer, :default => 3, :abbr => :az
 
+  # Concept "User Channels" :
+  # A publicly accessible channel (presented like any Roll) backed by the DashboardEntries of a User, instead of the Frame's of a Roll.
+  # Manually created users follow a few rolls which creates the channel.
+  # Make the dashboard publicly accessible with this attribute:
+  key :public_dashboard,      Boolean, :default => false, :abbr => :bb
+
   attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original, :avatar
 
   # Arnold does a *shit ton* of user saving, which runs this validation, which turns out to be very expensive

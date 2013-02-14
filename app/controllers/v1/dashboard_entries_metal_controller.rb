@@ -38,8 +38,9 @@ class V1::DashboardEntriesMetalController < MetalController
     end
   end
 
-    ##
-  # Returns dashboad entries for another user, with the given parameters.
+  ##
+  # Returns DashboadEntries for a "user channel" 
+  # Enforces security via user.public_dashboard
   #
   # [GET] v1/user/:user_id/dashboard
   #
@@ -48,10 +49,6 @@ class V1::DashboardEntriesMetalController < MetalController
   # @param [Optional, String]  since_id the id of the dashboard entry to start from (inclusive)
   def index_for_user
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['index_for_user']) do
-
-      #TODO: only allow certain allowed dasboards to be returned
-      #return render_error() unless ["id1", "id2"].include? params[:user_id]
-
       # default params
       limit = params[:limit] ? params[:limit].to_i : 20
       # put an upper limit on the number of entries returned
@@ -60,8 +57,7 @@ class V1::DashboardEntriesMetalController < MetalController
       skip = params[:skip] ? params[:skip] : 0
       sinceId = params[:since_id]
 
-      # lookup user
-      if user = User.find(params[:user_id])
+      if user = User.where(:id => params[:user_id], :public_dashboard => true).first
         if (sinceId)
           fast_stdout = `cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
         else
