@@ -27,6 +27,7 @@ module Dev
         roll.save!
         # user should follow roll
         roll.add_follower(user, false)
+        puts "Huge Success! Created roll with the title '#{roll.title}' and its' id is: #{roll.id}"
       rescue => e
         puts "[RollCreatorWizard Error] error creating new roll: #{e}"
       end
