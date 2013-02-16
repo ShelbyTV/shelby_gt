@@ -1,6 +1,6 @@
 <% standard_html_email_wrapper do %>
 	<!-- display frame title in email client snippets -->
-	<div style="font-size:0px;"><%= @new_frame_title %> on ... </div>
+	<div style="font-size:0px;"><%= @frame_title %> on ... </div>
 	<!-- end snippet -->
   <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable" style="margin: 0;padding: 0;background-color: #FAFAFA;height: 100%;width: 100%;font-family:Arial,sans-serif;">
     <tr>
@@ -37,16 +37,27 @@
                         <td align="center" valign="top" class="shelby-notification-body" style="border-collapse: collapse;border-bottom: 1px solid #ddd;">
                           <div style="color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
                               <h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 125%;font-weight: normal;line-height: 100%;margin-top: 0.5em;margin-right: 0;margin-bottom: 10px;margin-left: 0;">
-                                <div class="shelby-avatar" style="background: transparent;display: inline-block;height: 50px;margin-right: .5em;overflow: hidden;width: 50px;vertical-align: middle;color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
-                                  <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">
-                                    <img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="user_image" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;line-height: 100%;outline: none;text-decoration: none;display: block;"/>
-                                  </a>
-                                </div>
-                                <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> rolled "<%= @new_frame_title %>" onto <% if @new_frame.roll.subdomain_active %>
-																<a href="http://<%= @new_frame.roll.subdomain %>.shelby.tv" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @new_frame.roll.subdomain %>.shelby.tv</a>
-																<% else %>
-																	your <a href="<%= @new_frame.roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@new_frame.roll) %></a>
-															  <% end %>
+                                <% if @user_from %>
+                                  <div class="shelby-avatar" style="background: transparent;display: inline-block;height: 50px;margin-right: .5em;overflow: hidden;width: 50px;vertical-align: middle;color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
+                                    <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;">
+                                      <img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="user_image" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;line-height: 100%;outline: none;text-decoration: none;display: block;"/>
+                                    </a>
+                                  </div>
+                                  <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> liked "<%= @frame_title %>" on <% if @frame.roll.subdomain_active %>
+  																<a href="http://<%= @frame.roll.subdomain %>.shelby.tv" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @frame.roll.subdomain %>.shelby.tv</a>
+  																<% else %>
+  																	your <a href="<%= @frame.roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@frame.roll) %></a>
+  															  <% end %>
+                                <% else %>
+                                  Someone anonymously liked "<%= @frame_title %>" on <% if @frame.roll.subdomain_active %>
+                                  <a href="http://<%= @frame.roll.subdomain %>.shelby.tv" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @frame.roll.subdomain %>.shelby.tv</a>
+                                  <% else %>
+                                    your <a href="<%= @frame.roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@frame.roll) %></a>
+                                  <% end %>
+                                <% end %>
+                              </h4>
+                              <h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 125%;font-weight: normal;line-height: 100%;margin-top: 0.5em;margin-right: 0;margin-bottom: 10px;margin-left: 0;">
+                                <%= @second_line %>
                               </h4>
                           </div>
                         </td>

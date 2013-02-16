@@ -21,6 +21,15 @@ defaults: &defaults
   reroll_notification:
     category: "Reroll Notifications"
     subject: "%{re_rollers_name} rolled your video"
+  like_notification:
+    category: "Like Notification"
+    subject: "%{likers_name} liked your video"
+    second_lines:
+      any_liker: [ "Is this the beginning of a great relationship?",
+                   "You were always the popular one, weren't you?",
+                   "Pat yourself on the back. You've got good taste."
+                 ]
+      anonymous: [ "How's it feel to have a secret admirer?" ]
   join_roll_notification:
     category: "Join Roll Notifications"
     subject: "%{users_name} is following your Roll!"
