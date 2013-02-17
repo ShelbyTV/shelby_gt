@@ -104,7 +104,6 @@ describe 'v1/dashboard' do
     describe "All other API Routes besides GET" do
       it "should return 401 Unauthorized" do
         get '/v1/dashboard'
-        puts response.status
         response.status.should eq(401)
       end
     end
