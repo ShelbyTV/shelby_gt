@@ -64,11 +64,14 @@ class NotificationMailer < ActionMailer::Base
     second_lines = [] << Settings::Email.like_notification['second_lines']['any_liker']
 
     if user_from
+      # liked by a logged in user
       @user_from = user_from
       @user_from_name = (@user_from.name || @user_from.nickname)
       @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
     else
+      # liked anonymously by a logged out user
       @user_from_name = "Someone"
+      # we have some special clever quips to add if the liking user was anonymous
       second_lines << Settings::Email.like_notification['second_lines']['anonymous']
     end
 
