@@ -61,7 +61,6 @@ class NotificationMailer < ActionMailer::Base
 
 
     @user_to = user_to
-    second_lines = [] << Settings::Email.like_notification['second_lines']['any_liker']
 
     if user_from
       # liked by a logged in user
@@ -71,13 +70,7 @@ class NotificationMailer < ActionMailer::Base
     else
       # liked anonymously by a logged out user
       @user_from_name = "Someone"
-      # we have some special clever quips to add if the liking user was anonymous
-      second_lines << Settings::Email.like_notification['second_lines']['anonymous']
     end
-
-    second_lines.flatten!
-    #choose a random second line for the email from a collection of clever choices
-    @second_line = second_lines.sample
 
     @frame = frame
     @frame_title = @frame.video.title

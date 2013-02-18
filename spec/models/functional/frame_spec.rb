@@ -466,7 +466,8 @@ describe Frame do
       @stranger = Factory.create(:user)
       @stranger2 = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @stranger)
-      @frame = Factory.create(:frame, :roll => @roll, :creator => @creator)
+      @video = Factory.create(:video, :title => 'title')
+      @frame = Factory.create(:frame, :roll => @roll, :creator => @creator, :video => @video)
       @frame_id = @frame.id
     end
 

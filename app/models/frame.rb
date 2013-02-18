@@ -133,6 +133,9 @@ class Frame
       self.update_score
       self.save
 
+      # send email notification in a non-blocking manor
+      ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self, u) }
+
       return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
     end
   end
@@ -145,6 +148,8 @@ class Frame
   def like!()
     Frame.collection.update({:_id => self.id}, {:$inc => {:n => 1}})
     self.reload
+    # send email notification in a non-blocking manor
+    ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self) }
   end
 
   # To remove from watch later, destroy the Frame! (don't forget to add a UserAction)

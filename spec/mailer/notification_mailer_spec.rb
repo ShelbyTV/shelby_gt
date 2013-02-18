@@ -118,7 +118,7 @@ describe NotificationMailer do
       end
 
       it 'should contain the like message' do
-        @email.body.encoded.should match("Someone anonymously liked \"#{@frame.video.title}\"")
+        @email.body.encoded.should match("Someone liked \"#{@frame.video.title}\"")
       end
     end
   end
