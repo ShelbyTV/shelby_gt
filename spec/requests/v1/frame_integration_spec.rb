@@ -12,7 +12,8 @@ describe 'v1/frame' do
     @u1.save
 
     @r = Factory.create(:roll, :creator => @u1, :public => false, :roll_type => Roll::TYPES[:user_private])
-    @f = Factory.create(:frame, :creator => @u1, :roll => @r, :conversation => Factory.create(:conversation))
+    @v = Factory.create(:video, :title => 'title')
+    @f = Factory.create(:frame, :creator => @u1, :roll => @r, :conversation => Factory.create(:conversation), :video => @v)
     @f2 = Factory.create(:frame, :creator => @u1, :roll => @r)
     @f3 = Factory.create(:frame, :creator => @u1, :roll => @r)
     @f4 = Factory.create(:frame, :creator => @u1, :roll => @r)
