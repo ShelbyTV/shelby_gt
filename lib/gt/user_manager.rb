@@ -162,7 +162,7 @@ module GT
           u.reload
         end
         
-        ensure_users_special_rolls(u, true)
+        ensure_users_special_rolls(u, true, provider)
         u.update_attributes(:user_image => options[:user_thumbnail_url], :user_image_original => options[:user_thumbnail_url]) if u.user_image == nil
         return u
       end
@@ -184,9 +184,7 @@ module GT
       
         if u.save
           # Need to ensure special rolls after saving user b/c of the way add_follower works
-          ensure_users_special_rolls(u, true)
-          #additional meta-data for faux user public roll
-          u.public_roll.update_attribute(:origin_network, provider)
+          ensure_users_special_rolls(u, true, provider)
           
           StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['faux'])
           return u
@@ -255,8 +253,8 @@ module GT
     
     # Make sure a user has public, watch_later, upvoted, and viewed _rolls
     # should follow just the public roll
-    def self.ensure_users_special_rolls(u, save=false)
-      build_public_roll_for_user(u) unless u.public_roll
+    def self.ensure_users_special_rolls(u, save=false, origin_network=nil)
+      build_public_roll_for_user(u, origin_network) unless u.public_roll
       # Must save the user (which will persist the public roll, set that id in user, then persist the user)
       # b/c add_follower does an atomic push and reloads the roll and user
       u.save if save
@@ -417,7 +415,7 @@ module GT
         end
       end
       
-      def self.build_public_roll_for_user(u)
+      def self.build_public_roll_for_user(u, origin_network=nil)
         r = Roll.new
         r.creator = u
         r.public = true
@@ -425,6 +423,7 @@ module GT
         r.roll_type = (u.faux == User::FAUX_STATUS[:true] ? Roll::TYPES[:special_public] : Roll::TYPES[:special_public_real_user])
         r.title = u.nickname
         r.creator_thumbnail_url = u.user_image || u.user_image_original
+        r.origin_network = origin_network if origin_network
         u.public_roll = r
       end
       
