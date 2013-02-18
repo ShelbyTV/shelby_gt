@@ -21,6 +21,7 @@ module Dev
       roll.title = title
       roll.creator = user
       roll.roll_type = roll_type
+      roll.collaborative = false
       roll.creator_thumbnail_url = user.user_image || user.user_image_original
 
       begin
