@@ -5,7 +5,7 @@
 #
 module GT
   class UserActionManager
-    
+
     def self.view!(user_id, frame_id, start_s=nil, end_s=nil)
       raise ArgumentError, "user_id must be nil or a valid ObjectId" unless !user_id or BSON::ObjectId.legal? user_id.to_s
       raise ArgumentError, "frame_id must reference valid Frame" unless frame_id and frame = Frame.find(frame_id)
@@ -28,26 +28,35 @@ module GT
     def self.watch_later!(user_id, orig_frame_id) create_watch_later_action(user_id, orig_frame_id, UserAction::TYPES[:watch_later]); end
     def self.unwatch_later!(user_id, frame_id) create_watch_later_action(user_id, frame_id, UserAction::TYPES[:unwatch_later]); end
 
+    def self.like!(user_id, frame_id) create_like_action(user_id, frame_id, UserAction::TYPES[:like]); end
+
     private
 
       def self.create_vote_action(user_id, frame_id, type)
         raise ArgumentError, "user_id must be valid BSON id" unless user_id and BSON::ObjectId.legal? user_id.to_s
         raise ArgumentError, "frame_id must be valid BSON id" unless frame_id and BSON::ObjectId.legal? frame_id.to_s
-        
+
         UserAction.create(:type => type, :user_id => user_id, :frame_id => frame_id)
       end
 
       def self.create_follow_action(user_id, roll_id, type)
         raise ArgumentError, "user_id must be valid BSON id" unless user_id and BSON::ObjectId.legal? user_id.to_s
         raise ArgumentError, "roll_id must be valid BSON id" unless roll_id and BSON::ObjectId.legal? roll_id.to_s
-        
+
         UserAction.create(:type => type, :user_id => user_id, :roll_id => roll_id)
       end
-      
+
       def self.create_watch_later_action(user_id, frame_id, type)
         raise ArgumentError, "user_id must be valid BSON id" unless user_id and BSON::ObjectId.legal? user_id.to_s
         raise ArgumentError, "frame_id must be valid BSON id" unless frame_id and BSON::ObjectId.legal? frame_id.to_s
-        
+
+        UserAction.create(:type => type, :user_id => user_id, :frame_id => frame_id)
+      end
+
+      def self.create_like_action(user_id, frame_id, type)
+        raise ArgumentError, "user_id must be valid BSON id" unless user_id and BSON::ObjectId.legal? user_id.to_s
+        raise ArgumentError, "frame_id must be valid BSON id" unless frame_id and BSON::ObjectId.legal? frame_id.to_s
+
         UserAction.create(:type => type, :user_id => user_id, :frame_id => frame_id)
       end
 

@@ -344,8 +344,9 @@ class V1::FrameController < ApplicationController
   private
 
     def dupe_to_watch_later(frame)
-      if new_frame = @frame.add_to_watch_later!(current_user)
-        GT::UserActionManager.watch_later!(current_user.id, @frame.id)
+      if new_frame = frame.add_to_watch_later!(current_user)
+        GT::UserActionManager.watch_later!(current_user.id, frame.id)
+        GT::UserActionManager.like!(current_user.id, frame.id)
         StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch_later"])
       end
       return new_frame

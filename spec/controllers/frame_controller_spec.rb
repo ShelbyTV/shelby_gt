@@ -280,9 +280,15 @@ describe V1::FrameController do
       @f2 = Factory.create(:frame)
     end
 
-    it "creates a UserAction" do
+    it "creates a watch later UserAction" do
       GT::UserActionManager.should_receive(:watch_later!)
       Frame.should_receive(:get_ancestor_of_frame).and_return(nil)
+
+      post :add_to_watch_later, :frame_id => @f2.id, :format => :json
+    end
+
+    it "creates a like UserAction" do
+      GT::UserActionManager.should_receive(:like!).with(@u1.id, @f2.id)
 
       post :add_to_watch_later, :frame_id => @f2.id, :format => :json
     end
@@ -301,6 +307,19 @@ describe V1::FrameController do
       assigns(:new_frame).frame_ancestors.include?(@frame.id).should == true
       assigns(:status).should eq(200)
     end
+  end
+
+  describe "POST like" do
+    before(:each) do
+      @f2 = Factory.create(:frame)
+    end
+
+    it "creates a like UserAction" do
+      GT::UserActionManager.should_receive(:like!).with(@u1.id, @f2.id)
+
+      post :like, :frame_id => @f2.id, :format => :json
+    end
+
   end
 
   describe "POST create" do
