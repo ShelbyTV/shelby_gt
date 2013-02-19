@@ -1,3 +1,97 @@
+<% standard_html_email_wrapper do %>
+  <table align="center" cellpadding="0" cellspacing="0" border="0" id="backgroundTable" class="shelby-email" style="background:#E2E2E2; color:#444; font-family: Arial,sans-serif; font-weight:300;width: 55%;">
+    <tr class="main-body-row">
+      <td valign="middle" class="shelby-email-lining" style="padding:0px;">
+        <!--  show message in email preview-->
+        <div style="font-size:0px;display:none;">
+          Shelby makes watching video more like TV.  It's simple and easy.  Join for free and check it out.
+        </div>
+        <!-- end email preview message -->
+
+        <h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313435;">
+          <a href="<%= Settings::Email.web_url_base %>">
+            <img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby Mail" title="Shelby Mail" style="padding:8px 0px 5px;display:block;margin: 0px auto;display:block;"/>
+          </a>
+        </h1>
+
+        <!-- /////////////////////////////////////////////////////////////// -->
+        <table class="shelby-email-message" cellpadding="0" cellspacing="0" border="0" style="background:#E2E2E2; padding:10px 50px 5px; width:450px;margin: 0px auto;">
+          <tr>
+            <td width="45">
+              <div style="font-size: 14px; color:#111; font-weight: bold;">
+                <%= @inviters_name %> invites you to join Shelby.tv
+              </div>
+              <div style="margin-bottom: 10px; margin-top: 5px; font-size: 11px; color:#111;">
+                It's invite only, so this is kind of a big deal.
+              </div>
+            </td>
+          </tr>
+
+          <% unless @invite.email_body.blank? %>
+            <tr>
+              <td width="45" valign="top">
+                <table cellpadding="0" cellspacing="0" width="100%" style="margin-top:10px">
+                <tr>
+                  <td valign="top" style="background-color:#EFEFEF;text-align:right;padding:10px 0;width:43px;">
+                    <img src="<%= avatar_url_for_user(@inviter) %>" style="width:33px" />
+                  </td>
+                  <td valign="top" style="background-color:#EFEFEF;padding:10px;">
+                    <div style="font-size:11px;font-weight:bold;color:#333333">
+                      <%= "#{@inviters_nickname} says:" %>
+                    </div>
+                    <div style="font-size:11px;color:#333333;margin-top:10px;">
+                      "<%= @invite.email_body %>"
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              </td>
+            </tr>
+          <% end %>
+
+          <tr>
+            <td align="center" valign="top">
+              <!-- button -->
+              <table cellpadding="10" cellspacing="0" style="border-radius: 5px;border-color: #4AA041;border-width: 1px;border-style: solid;background-color: #4AA041;width: 75%;margin: 0 auto;">
+                <tr>
+                  <td align="center" valign="center" style="border-radius: 5px;border-width: 1px; border-style: solid; border-color: #74C36B #4AA041 #4AA041 #4AA041; height: 38px;">
+                    <a href="<%= @invite.url %>" style="display: block;font-size: 16px;font-weight: bold;font-family: sans-serif;text-decoration: none;">
+                      <font color="#fff">
+                        Join Shelby
+                      </font>
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <!-- /button -->
+            </td>
+          </tr>
+        </table>
+        <!-- /////////////////////////////////////////////////////////////// -->
+
+      </td>
+    </tr><!-- /main-body-row -->
+
+    <!-- footer -->
+    <tr>
+      <td colspan="2">
+        <hr style="background:none;border:none;border-top:1px solid #CACACA;border-bottom: 1px solid #EFEFEF;margin:0;"/>
+        <table cellpadding="10" cellspacing="0" border="0" style="color: #666; text-decoration: none; font-size: 11px;width: 100%;">
+          <tr>
+            <td style="text-align:left; font-weight: bold;">
+              Shelby.tv, a simple new way to enjoy video.
+            </td>
+            <td style="text-align: right;">
+              <%= Settings::Email.shelby_address %>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <!-- /footer -->
+  </table>
+<% end %>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
@@ -80,3 +174,4 @@
   </table>
 </body>
 </html>
+<% end %>
