@@ -14,7 +14,11 @@ class V1::GtInterestController < ApplicationController
     @interest = GtInterest.new(:email => params[:email], :priority_code => params[:priority_code])
     if @interest.save
       @status = 200
-      ShelbyGT_EM.next_tick { GtInterestMailer.interest_autoresponse(@interest.email).deliver }
+
+      # Don't want to email when using this model to test "subscribe via email" signups
+      unless /subscribe_to_roll:.+/.match(params[:priority_code])
+        ShelbyGT_EM.next_tick { GtInterestMailer.interest_autoresponse(@interest.email).deliver }
+      end
     else
       render_error(400, "must have a valid email")
     end
