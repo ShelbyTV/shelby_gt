@@ -28,33 +28,51 @@
           </tr>
 
           <% unless @invite.email_body.blank? %>
-            <tr>
-              <td width="45" valign="top">
-                <table cellpadding="0" cellspacing="0" width="100%" style="margin-top:10px">
+          <% # this html matches /discussion_roll_mailer/_message.html.erb %>
+          <tr>
+            <td colspan="3">
+              <table border="0" cellpadding="0" cellspacing="10" style="border:1px solid #ccc; border-radius: 5px; background-color: #FFFFFF; width:100%;">
                 <tr>
-                  <td valign="top" style="background-color:#EFEFEF;text-align:right;padding:10px 0;width:43px;">
-                    <img src="<%= avatar_url_for_user(@inviter) %>" style="width:33px" />
+                  <!-- media image -->
+                  <td valign="top" style="text-align: left; width: 48px;">
+                    <img src="<%= avatar_url_for_user(@inviter) %>" style="width:48px; height:48px;" />
                   </td>
-                  <td valign="top" style="background-color:#EFEFEF;padding:10px;">
-                    <div style="font-size:11px;font-weight:bold;color:#333333">
-                      <%= "#{@inviters_nickname} says:" %>
-                    </div>
-                    <div style="font-size:11px;color:#333333;margin-top:10px;">
-                      "<%= @invite.email_body %>"
-                    </div>
+
+                  <!-- media body -->
+                  <td valign="top" style="font-size:12px; color:#556; line-height: 1;text-align: left;">
+                    <table border="0" cellspacing="0" cellpadding="0" style="width:100%;margin-top: 5px;">
+                      <tr>
+                        <td valign="middle" style="font-weight:bold; font-size:12px; color:#556; line-height: 1;text-align: left; height: 20px;"><%= "#{@inviters_nickname} says:" %></td>
+
+                        <td valign="middle" style="font-weight:normal; font-size:12px; color:#999; line-height: 1;text-align: right; height: 20px;"><%= message.created_at.strftime("%A, %b %d, %l:%M %p") %></td>
+                      </tr>
+
+                      <tr>
+                        <td colspan="2">
+                          <!-- comment -->
+                          <table border="0" cellspacing="0" cellpadding="0" style="width:100%;margin-top: 10px;">
+                            <tr>
+                              <td valign="top" style="font-weight:normal; font-size:12px; color:#556; line-height: 1.4;text-align: left;">"<%= @invite.email_body %>"</td>
+                            </tr>
+                          </table>
+                          <!-- /comment -->
+                        </td>
+                      </tr>
+                    </table>
                   </td>
+                  <!-- /media body -->
                 </tr>
               </table>
-              </td>
-            </tr>
+            </td>
+          </tr>
           <% end %>
 
           <tr>
             <td align="center" valign="top">
               <!-- button -->
-              <table cellpadding="10" cellspacing="0" style="border-radius: 5px;border-color: #4AA041;border-width: 1px;border-style: solid;background-color: #4AA041;width: 75%;margin: 0 auto;">
+              <table cellpadding="10" cellspacing="0" style="border-radius: 5px;border-color: #0590c4;border-width: 1px;border-style: solid;background-color: #0590c4;width: 75%;margin: 0 auto;">
                 <tr>
-                  <td align="center" valign="center" style="border-radius: 5px;border-width: 1px; border-style: solid; border-color: #74C36B #4AA041 #4AA041 #4AA041; height: 38px;">
+                  <td align="center" valign="center" style="border-radius: 5px;border-width: 1px; border-style: solid; border-color: #A2DCF1 #0590c4 #0590c4 #0590c4; height: 38px;">
                     <a href="<%= @invite.url %>" style="display: block;font-size: 16px;font-weight: bold;font-family: sans-serif;text-decoration: none;">
                       <font color="#fff">
                         Join Shelby
