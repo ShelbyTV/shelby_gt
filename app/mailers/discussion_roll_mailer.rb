@@ -47,17 +47,18 @@ class DiscussionRollMailer < ActionMailer::Base
   
     # Subject must be unique and identical every time an email is sent for a given discussion roll
     # This way email clients can nicely group the emails into a conversation
+    # NB: conversation_with is an array of User's or Strings (of email addresses)
     def subject_for(from_name, conversation_with, verb="sent", suffix="video")
       
       case conversation_with.count
       when 0 
         "#{from_name} #{verb} you #{suffix}"
       when 1
-        "#{from_name} #{verb} you and #{conversation_with[0]} #{suffix}"
+        "#{from_name} #{verb} you and #{nickname_for_user_or_email(conversation_with[0])} #{suffix}"
       when 2
-        "#{from_name} #{verb} you, #{conversation_with[0]} and #{conversation_with[1]} #{suffix}"
+        "#{from_name} #{verb} you, #{nickname_for_user_or_email(conversation_with[0])} and #{nickname_for_user_or_email(conversation_with[1])} #{suffix}"
       else
-        others = conversation_with[0..1].map { |p| p.is_a?(User) ? p.nickname : p } .join(", ")
+        others = conversation_with[0..1].map { |p| nickname_for_user_or_email(p) } .join(", ")
         "#{from_name} #{verb} you, #{others} and #{pluralize(conversation_with.count-2, 'other')} #{suffix}"
       end
     end
@@ -75,7 +76,7 @@ class DiscussionRollMailer < ActionMailer::Base
     def discussion_roll_mail_setup(opts)
       @roll = opts[:discussion_roll]
       @recipient_string_id = opts[:receiving_participant].is_a?(User) ? opts[:receiving_participant].id.to_s : opts[:receiving_participant]
-      @poster_string_name = opts[:posting_participant].is_a?(User) ? opts[:posting_participant].nickname : opts[:posting_participant]
+      @poster_string_name = nickname_for_user_or_email(opts[:posting_participant])
       @token = opts[:token]
       @permalink = "http://shelby.tv/mail/#{@roll.id}?u=#{CGI.escape(@recipient_string_id)}&t=#{CGI.escape(CGI.escape(@token))}"
 
@@ -91,6 +92,10 @@ class DiscussionRollMailer < ActionMailer::Base
       @last_post_video_only = !most_recent_message or most_recent_message.text.blank?
     end
     
+    def nickname_for_user_or_email(user_or_email_string)
+      return user_or_email_string.is_a?(User) ? user_or_email_string.nickname : user_or_email_string
+    end
+
     # Our email is going to display a summary bit of the conversation.
     # Create an array of frames and/or messages that our email template may use directly.
     #
