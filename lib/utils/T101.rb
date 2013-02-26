@@ -26,7 +26,10 @@ class T101
     puts "rolls following: #{user.roll_followings.count}"
     puts ""
     puts "To completely remove the user, the rolls they've created, their special rolls, and all frames in those rolls,"
-    puts "this.terminate"
+    puts "this.terminate!"
+    puts ""
+    puts "To reset the user to the newly-created state; emptying rolls and resetting all user settings/authorizations,"
+    puts "this.reset!"
     puts ""
     puts ""
     puts "**************************************************"
@@ -38,64 +41,110 @@ class T101
   end
   
   def terminate!
-    user = @user
-    puts "Hunting #{user.nickname} (#{user.id}) across the DB..."
-    
-    rolls_created = Roll.where(:creator_id => user.id).all
-    puts " Destroying #{rolls_created.count} rolls created by #{user.nickname}..."
-    rolls_created.each do |r|
-      puts "  destroying roll #{r.title} (#{r.id})..."
-      destroy_roll(r)
-    end
-    
-    puts " Destroying special rolls (if they're still around)..."
-    if user.public_roll
-      puts "   Destroying public_roll..."
-      destroy_roll user.public_roll
-    else
-      puts "   User had no public_roll"
-    end
-    
-    if user.watch_later_roll
-      puts "   Destroying watch_later_roll..."
-      destroy_roll user.watch_later_roll
-    else
-      puts "   User had no watch_later_roll"
-    end
-    
-    if user.upvoted_roll
-      puts "   Destroying upvoted_roll..."
-      destroy_roll user.upvoted_roll
-    else
-      puts "   User had no upvoted_roll"
-    end
-    
-    if user.viewed_roll
-      puts "   Destroying viewed_roll..."
-      destroy_roll user.viewed_roll
-    else
-      puts "   User had no viewed_roll"
-    end
-    
-    puts " Undoing #{user.roll_followings.count} roll followings..."
-    user.roll_followings.each do |rf|
-      rf.roll.remove_follower(user)
-      puts "   terminated following of roll: #{rf.roll.title} (#{rf.roll.id})"
-    end
-    
-    puts " Destroying User Model..."
-    if user.destroy
-      puts "*****************************"
-      puts "*#{user.nickname} TERMINATED*"
-      puts "*****************************"
-    else
-      puts "FAILED to terminate user"
-    end
+    puts "Hunting #{@user.nickname} (#{@user.id}) across the DB for TERMINATION..."
+    wipe_rolls!(true)
+    wipe_dashboard!
+    destroy_users_roll_followings!
+    destroy_user!
+  end
+  
+  def reset!
+    puts "Hunting #{@user.nickname} (#{@user.id}) across the DB for RESET..."
+    wipe_rolls!(false)
+    wipe_dashboard!
+    destroy_users_roll_followings!
+    reset_user!
   end
   
   private
   
-    def destroy_roll(roll)
+    def wipe_dashboard!
+      puts " Destroying all DashboardEntries with user_id #{@user.id}..."
+      DashboardEntry.collection.remove({:a => @user.id}, {:w => 0})
+    end
+  
+    def wipe_rolls!(should_destroy=false)
+      user = @user
+    
+      rolls_created = Roll.where(:creator_id => user.id).all
+      puts " Hunting #{rolls_created.count} rolls created by #{user.nickname}..."
+      rolls_created.each do |r|
+        puts "  target acquired: roll #{r.title} (#{r.id})..."
+        wipe_roll!(r, should_destroy)
+      end
+    
+      puts " Hunting special rolls (if they're still around)..."
+      if user.public_roll
+        puts "   target acquired: public_roll..."
+        wipe_roll!(user.public_roll, should_destroy)
+      else
+        puts "   User had no public_roll"
+      end
+    
+      if user.watch_later_roll
+        puts "   target acquired: watch_later_roll..."
+        wipe_roll!(user.watch_later_roll, should_destroy)
+      else
+        puts "   User had no watch_later_roll"
+      end
+    
+      if user.upvoted_roll
+        puts "   target acquired: upvoted_roll..."
+        wipe_roll!(user.upvoted_roll, should_destroy)
+      else
+        puts "   User had no upvoted_roll"
+      end
+    
+      if user.viewed_roll
+        puts "   target acquired: viewed_roll..."
+        wipe_roll!(user.viewed_roll, should_destroy)
+      else
+        puts "   User had no viewed_roll"
+      end
+    end
+    
+    def destroy_users_roll_followings!
+      puts " Undoing #{@user.roll_followings.count} roll followings..."
+      @user.roll_followings.each do |rf|
+        rf.roll.remove_follower(@user)
+        puts "   terminated following of roll: #{rf.roll.title} (#{rf.roll.id})"
+      end
+    end
+    
+    def reset_user!
+      puts " Resetting User Authentications..."
+      @user.authentications = []
+      
+      puts " Resetting User App Progress..."
+      @user.app_progress = AppProgress.new()
+      
+      puts " Resetting User Miscelaneous stuff..."
+      @user.rolls_unfollowed = []
+      @user.preferences = Preferences.new()
+      @user.authentication_token = nil
+      
+      puts " Saving User Model..."
+      if @user.save(:validate=>false)
+        puts "*****************************"
+        puts "* #{@user.nickname} RESET *"
+        puts "*****************************"
+      else
+        puts " FAILED to Reset User"
+      end
+    end
+    
+    def destroy_user!
+      puts " Destroying User Model..."
+      if @user.destroy
+        puts "*****************************"
+        puts "* #{@user.nickname} TERMINATED *"
+        puts "*****************************"
+      else
+        puts "FAILED to terminate user"
+      end
+    end
+  
+    def wipe_roll!(roll, should_destroy)
       raise ArgumentError, "must supply a Roll" unless roll.is_a? Roll
 
       puts "    undoing #{roll.following_users.count} followings..."
@@ -104,15 +153,19 @@ class T101
         puts "      terminated following for user: #{fu.user.nickname} (#{fu.user.id})"
       end
     
+      # Need to actually call .destroy on each frame b/c of side effects
       puts "    destroying #{roll.frames.count} frames..."
       roll.frames.each do |f|
         f.destroy
         puts "      terminated frame #{f.id}"
       end
     
-      roll.destroy
-      puts "    *Roll Terminated*"
-    
+      if should_destroy
+        roll.destroy
+        puts "    * Roll Destroyed *"
+      end
+      
+      puts "    * Roll Wiped *"
     end
   
 end
