@@ -26,7 +26,7 @@ class User
 
   # the Rolls this user is following and when they started following
   many :roll_followings
-  
+
   # We may embed lots of roll_followings which results in a stack level too deep issue (b/c of the way MM/Rails does validation chaining)
   # But since we don't use validations or callbacks, we can hack around this issue:
   embedded_callbacks_off
@@ -160,6 +160,11 @@ class User
   # Manually created users follow a few rolls which creates the channel.
   # Make the dashboard publicly accessible with this attribute:
   key :public_dashboard,      Boolean, :default => false, :abbr => :bb
+
+  # a url for a user's external website so we can provide a link to it
+  key :website,                String, :abbr => :bc
+  # a description for the user's .tv network
+  key :dot_tv_description,     String, :abbr => :bd
 
   attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original, :avatar
 

@@ -56,6 +56,20 @@ describe 'v1/user' do
           parse_json(response.body)["result"]["twitter_uid"].should == @u1.authentications.first.uid
         end
 
+        it "should return website attribute" do
+          @u1.website = 'www.example.com'
+          get '/v1/user'
+          response.body.should have_json_path("result/website")
+          parse_json(response.body)["result"]["website"].should == @u1.website
+        end
+
+        it "should return dot_tv_description attribute" do
+          @u1.dot_tv_description = 'Welcome to my .tv'
+          get '/v1/user'
+          response.body.should have_json_path("result/dot_tv_description")
+          parse_json(response.body)["result"]["dot_tv_description"].should == @u1.dot_tv_description
+        end
+
         it "should wrap with callback when requesting via jsonp" do
           get '/v1/user/?callback=jQuery17108599677098863208_1335973680689&include_rolls=true&_=1335973682178'
           response.body.should =~ /^\W*jQuery17108599677098863208_1335973680689/
@@ -99,6 +113,22 @@ describe 'v1/user' do
         get '/v1/user/'+u2.id
         response.body.should have_json_path("result/personal_roll_subdomain")
         parse_json(response.body)["result"]["personal_roll_subdomain"].should == "user-name"
+      end
+
+      it "should return website attribute for another user" do
+        u2 = Factory.create(:user)
+        u2.website = 'www.example.com'
+        get '/v1/user/'+u2.id
+        response.body.should have_json_path("result/website")
+        parse_json(response.body)["result"]["website"].should == u2.website
+      end
+
+      it "should return dot_tv_description attribute for another user" do
+        u2 = Factory.create(:user)
+        u2.dot_tv_description = 'Welcome to my .tv'
+        get '/v1/user/'+u2.id
+        response.body.should have_json_path("result/dot_tv_description")
+        parse_json(response.body)["result"]["dot_tv_description"].should == u2.dot_tv_description
       end
 
       it "should get a user by querying by nickname" do
