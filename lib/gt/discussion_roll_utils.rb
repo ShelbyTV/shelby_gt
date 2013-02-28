@@ -45,7 +45,7 @@ module GT
     	  :roll_type => Roll::TYPES[:user_discussion_roll] )
     	  
     	# Full participants list includes given user (make sure it's not doubled)
-    	participants = (participants + [user.id.to_s]).uniq
+    	participants = (participants + [user.id.to_s]).compact.uniq
   	
     	# Look for a roll where the given participants (including given user) matches roll's participants exactly
     	matching_rolls = discussion_rolls.select do |dr|
