@@ -177,19 +177,19 @@ describe GT::DiscussionRollUtils do
       @other_user = Factory.create(:user)
     end
     
-    it "should find a roll created by the given user" do
+    it "should find the roll created by the given user" do
       r = @tester.create_discussion_roll_for(@user, @tester.convert_participants(@other_user.primary_email))
       
       @tester.find_discussion_roll_for(@user, @tester.convert_participants(@other_user.primary_email)).should == r
     end
     
-    it "should find a roll when created by a different user" do
+    it "should find the roll when created by a different user" do
       r = @tester.create_discussion_roll_for(@user, @tester.convert_participants(@other_user.primary_email))
       
       @tester.find_discussion_roll_for(@other_user, @tester.convert_participants(@user.primary_email)).should == r
     end
     
-    it "should find a roll with all the email participants" do
+    it "should find the roll with all the email participants" do
       em1, em2 = Factory.next(:primary_email), Factory.next(:primary_email)
       r = @tester.create_discussion_roll_for(@user, @tester.convert_participants("#{em1};#{em2}"))
       
@@ -201,6 +201,19 @@ describe GT::DiscussionRollUtils do
       r = @tester.create_discussion_roll_for(@user, @tester.convert_participants("#{em1};#{em2},#{@other_user.nickname}"))
       
       @tester.find_discussion_roll_for(@other_user, @tester.convert_participants("#{em1};#{em2},#{@user.nickname}")).should == r
+    end
+    
+    it "should find the roll with creator and no additional participants" do
+      r = @tester.create_discussion_roll_for(@user, @tester.convert_participants("#{@user.primary_email}"))
+      
+      @tester.find_discussion_roll_for(@user, @tester.convert_participants("#{@user.primary_email}")).should == r
+    end
+    
+    it "should find the roll where creator is included in additional participants" do
+      em1 = Factory.next(:primary_email)
+      r = @tester.create_discussion_roll_for(@user, @tester.convert_participants("#{em1}"))
+      
+      @tester.find_discussion_roll_for(@user, @tester.convert_participants("#{em1},#{@user.primary_email}")).should == r
     end
     
     it "should not find a roll of [a, b] when looking for [a, b, c]" do

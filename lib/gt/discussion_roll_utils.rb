@@ -43,14 +43,13 @@ module GT
       discussion_rolls = Roll.where(
     	  :id => user.roll_followings.map { |rf| rf.roll_id }, 
     	  :roll_type => Roll::TYPES[:user_discussion_roll] )
+    	  
+    	# Full participants list includes given user (make sure it's not doubled)
+    	participants = (participants + [user.id.to_s]).uniq
   	
-    	# Look for a roll where the participants list matches exactly
+    	# Look for a roll where the given participants (including given user) matches roll's participants exactly
     	matching_rolls = discussion_rolls.select do |dr|
-    	  if dr.discussion_roll_participants.size == participants.size + 1
-    	    dr.discussion_roll_participants - (participants + [user.id.to_s]) == []
-  	    else
-  	      false
-	      end
+    	  dr.discussion_roll_participants.size == participants.size and dr.discussion_roll_participants - participants == []
   	  end
   	  
   	  Rails.logger.error "[GT::DiscussionRollUtils#find_discussion_roll_for] multiple matching rolls. User: #{user} Participatns: #{participants}" if matching_rolls.size > 1
