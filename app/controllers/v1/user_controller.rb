@@ -1,3 +1,6 @@
+# encoding: UTF-8
+require 'user_stats_manager'
+
 class V1::UserController < ApplicationController
 
   extend NewRelic::Agent::MethodTracer
@@ -143,6 +146,22 @@ class V1::UserController < ApplicationController
         return render_error(404, "This user does not have a #{params[:provider]} authentication to check on")
       end
     end
+  end
+
+  ##
+  # Returns the stats for the user (right now the stats for their personal roll)
+  #   REQUIRES AUTHENTICATION
+  #
+  # [GET] /v1/user/:id/stats
+  #
+  # @param [Required, String] id The id of the user
+  def stats
+    unless user = User.where(:id => params[:id]).first
+      return render_error(404, "could not find that user")
+    end
+
+    @status = 200
+    @stats = GT::UserStatsManager.get_dot_tv_stats_for_recent_frames(user, 3)
   end
 
   private
