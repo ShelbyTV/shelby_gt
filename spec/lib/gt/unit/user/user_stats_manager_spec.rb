@@ -67,24 +67,14 @@ describe GT::UserStatsManager do
       end
 
       context "content" do
-        before(:each) do
-         @video = Factory.create(:video, :view_count => 10)
-         @frame1 = Factory.create(:frame, :roll => @user_public_roll, :like_count =>3, :view_count => 4)
-         @frame1.video = @video
-         @stats = GT::UserStatsManager.get_dot_tv_stats_for_recent_frames(@user, 1)
+
+        it "should return an object containing each frame" do
+          frame = Factory.create(:frame, :roll => @user_public_roll, :like_count =>3, :view_count => 4)
+          stats = GT::UserStatsManager.get_dot_tv_stats_for_recent_frames(@user, 1)
+
+          stats[0].frame.should == frame
         end
 
-        it "should return the view_count for each frame" do
-          @stats[0][:view_count].should == @frame1.view_count
-        end
-
-        it "should return the video_total_view_count for all views of the frame's video on shelby" do
-          @stats[0][:video_total_view_count].should == @video.view_count
-        end
-
-        it "should return the like_count for each frame" do
-          @stats[0][:like_count].should == @frame1.like_count
-        end
       end
     end
 
