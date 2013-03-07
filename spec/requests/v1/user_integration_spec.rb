@@ -342,6 +342,94 @@ describe 'v1/user' do
 
     end
 
+    describe "GET stats" do
+      it "should return user stats on success" do
+        roll = Factory.create(:roll, :creator => @u1)
+        @u1.public_roll = roll
+        get '/v1/user/'+@u1.id+'/stats'
+
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should have_json_path("result")
+        response.body.should have_json_size(0).at_path("result")
+      end
+
+      context "other user" do
+        before(:each) do
+          @u2 = Factory.create(:user)
+        end
+
+        it "should return 401 unauthorized if trying to get a user other than herself" do
+          get '/v1/user/'+@u2.id+'/stats'
+          response.body.should be_json_eql(401).at_path("status")
+        end
+
+        it "should allow an admin user to get stats for another user" do
+          @u1.is_admin = true
+          get '/v1/user/'+@u2.id+'/stats'
+          response.body.should be_json_eql(200).at_path("status")
+        end
+
+        it "should return 404 if another user is not found" do
+          @u1.is_admin = true
+          get '/v1/user/nonexistant/stats'
+          response.body.should be_json_eql(404).at_path("status")
+        end
+
+      end
+
+      describe "result contents" do
+
+        before(:each) do
+          @user_personal_roll = Factory.create(:roll, :creator => @u1)
+          @u1.public_roll = @user_personal_roll
+          @frame1 = Factory.create(:frame, :roll => @user_personal_roll, :like_count => 3, :view_count => 4)
+          @frame2 = Factory.create(:frame, :roll => @user_personal_roll, :like_count => 1, :view_count => 10)
+          @frame3 = Factory.create(:frame, :roll => @user_personal_roll, :like_count => 4, :view_count => 6)
+          @video = Factory.create(:video, :view_count => 20)
+          @frame1.video = @video
+          @frame2.video = @video
+          @frame3.video = @video
+        end
+
+        it "should return the right number of results" do
+          get '/v1/user/'+@u1.id+'/stats'
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(3).at_path("result")
+        end
+
+        it "should return the right number of results when num_frames param is included" do
+          get '/v1/user/'+@u1.id+'/stats?num_frames=1'
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(1).at_path("result")
+        end
+
+        it "should return the right frame attributes" do
+          get '/v1/user/'+@u1.id+'/stats'
+
+          response.body.should have_json_path("result/0/frame")
+          response.body.should have_json_path("result/0/frame/id")
+          response.body.should have_json_path("result/0/frame/like_count")
+          response.body.should have_json_path("result/0/frame/view_count")
+          parse_json(response.body)["result"][0]["frame"]["id"].should eq(@frame3.id.to_s)
+          parse_json(response.body)["result"][0]["frame"]["like_count"].should eq(@frame3.like_count)
+          parse_json(response.body)["result"][0]["frame"]["view_count"].should eq(@frame3.view_count)
+        end
+
+        it "should return the right nested video attributes" do
+          get '/v1/user/'+@u1.id+'/stats'
+
+          response.body.should have_json_path("result/0/frame/video")
+          response.body.should have_json_path("result/0/frame/video/view_count")
+          parse_json(response.body)["result"][0]["frame"]["video"]["view_count"].should eq(@video.view_count)
+        end
+
+      end
+    end
+
     describe "PUT" do
       it "should return user info on success" do
         put '/v1/user/'+@u1.id+'?name=Barack%20Obama'
@@ -590,6 +678,14 @@ describe 'v1/user' do
         response.body.should be_json_eql(401).at_path("status")
       end
 
+    end
+
+    describe "GET stats" do
+      it "should not be able to get user stats" do
+        u = Factory.create(:user)
+        get '/v1/user/'+u.id+'/stats'
+        response.status.should eq(401)
+      end
     end
 
     describe "PUT" do
