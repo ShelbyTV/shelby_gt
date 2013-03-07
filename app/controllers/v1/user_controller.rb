@@ -156,12 +156,20 @@ class V1::UserController < ApplicationController
   #
   # @param [Required, String] id The id of the user
   def stats
-    unless user = User.where(:id => params[:id]).first
-      return render_error(404, "could not find that user")
+    if params[:id] == current_user.id.to_s
+      # A regular user can only view his/her own stats
+      @user = current_user
+    elsif current_user.is_admin
+      # admin users can view anyone's stats
+      unless @user = User.where(:id => params[:id]).first
+        return render_error(404, "could not find that user")
+      end
+    else
+      return render_error(401, "unauthorized")
     end
 
     @status = 200
-    @stats = GT::UserStatsManager.get_dot_tv_stats_for_recent_frames(user, 3)
+    @stats = GT::UserStatsManager.get_dot_tv_stats_for_recent_frames(@user, 3)
   end
 
   private

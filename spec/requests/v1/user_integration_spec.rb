@@ -344,10 +344,37 @@ describe 'v1/user' do
 
     describe "GET stats" do
       it "should return user stats on success" do
+        roll = Factory.create(:roll, :creator => @u1)
+        @u1.public_roll = roll
         get '/v1/user/'+@u1.id+'/stats'
+
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_path("result")
         response.body.should have_json_size(0).at_path("result")
+      end
+
+      context "other user" do
+        before(:each) do
+          @u2 = Factory.create(:user)
+        end
+
+        it "should return 401 unauthorized if trying to get a user other than herself" do
+          get '/v1/user/'+@u2.id+'/stats'
+          response.body.should be_json_eql(401).at_path("status")
+        end
+
+        it "should allow an admin user to get stats for another user" do
+          @u1.is_admin = true
+          get '/v1/user/'+@u2.id+'/stats'
+          response.body.should be_json_eql(200).at_path("status")
+        end
+
+        it "should return 404 if another user is not found" do
+          @u1.is_admin = true
+          get '/v1/user/nonexistant/stats'
+          response.body.should be_json_eql(404).at_path("status")
+        end
+
       end
 
       describe "result contents" do
