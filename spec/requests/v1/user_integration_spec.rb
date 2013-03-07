@@ -695,6 +695,33 @@ describe 'v1/user' do
         response.status.should eq(401)
       end
     end
+    
+    describe "POST create" do
+      it "should create a new user and return via JSON" do
+        post '/v1/user', :user => { :name => "some name", 
+                                    :nickname => Factory.next(:nickname), 
+                                    :primary_email => Factory.next(:primary_email),
+                                    :password => "pass" }
+        response.status.should == 200
+        response.body.should have_json_path("result/name")
+        response.body.should have_json_path("result/nickname")
+        response.body.should have_json_path("result/personal_roll_id")
+        response.body.should have_json_path("result/authentication_token")
+      end
+      
+      it "should fail to create bad user and return errors via JSON" do
+        u1 = Factory.create(:user)
+        
+        post '/v1/user', :user => { :name => "some name", 
+                                    :nickname => u1.nickname, 
+                                    :primary_email => u1.primary_email,
+                                    :password => "pass" }
+        response.status.should == 409
+        response.body.should have_json_path("errors/user/nickname")
+        response.body.should have_json_path("errors/user/primary_email")
+      end
+    end
+    
   end
 
 end

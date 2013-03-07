@@ -46,10 +46,10 @@ ShelbyGt::Application.routes.draw do
     #
     # Be sure to add a /v1/VERB/your-route-here route down below
     #
-    # WHY? We support some browsers that don't suppot CORS, and they use jsonp which only does GETs.
+    # WHY? We support some browsers that don't support CORS, and they use jsonp which only does GETs.
     # Sometimes we have the same route do different things depending on the verb, and that doens't play nice w/ jsonp.
 
-    resources :user, :only => [:index, :update] do
+    resources :user, :only => [:index, :update, :create] do
       # constraints allows for nicknames that include dots, prevents changing format (we're json only, that's ok).
       get ':id' => 'user#show', :as => :show, :on => :collection, :constraints => { :id => /[^\/]+/ }
       get 'is_token_valid' => 'user#valid_token', :on => :member
@@ -125,6 +125,7 @@ ShelbyGt::Application.routes.draw do
     #----------------------------------------------------------------
     # user
     get 'PUT/user/:id' => 'user#update'
+    get 'POST/user' => 'user#create'
       # user password reset is done outside of /v1
     # roll
     get 'POST/roll/:roll_id/share' => 'roll#share'

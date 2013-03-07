@@ -14,6 +14,48 @@ describe V1::UserController do
     @u1.watch_later_roll = r2
     @u1.save
   end
+  
+  describe "POST create" do
+    it "assigns new user to @user for JSON" do
+      post :create, :format => :json, :user => { :name => "some name", 
+                                                 :nickname => Factory.next(:nickname), 
+                                                 :primary_email => Factory.next(:primary_email),
+                                                 :password => "pass" }
+      assigns(:status).should eq(200)
+      assigns(:user).name.should == "some name"
+      assigns(:user).authentication_token.should_not be_nil
+      response.content_type.should == "application/json"
+    end
+    
+    it "assigns new user to @user and redirects for HTML" do
+      post :create, :format => :html, :user => { :name => "some name", 
+                                                 :nickname => Factory.next(:nickname), 
+                                                 :primary_email => Factory.next(:primary_email),
+                                                 :password => "pass" }
+      assigns(:user).name.should == "some name"
+      response.should be_redirect
+      response.should redirect_to("/")
+    end
+    
+    it "assigns errord user to @user for JSON" do
+      post :create, :format => :json, :user => { :name => "some name", 
+                                                 :nickname => @u1.nickname, 
+                                                 :primary_email => @u1.primary_email,
+                                                 :password => "pass" }
+      assigns(:status).should eq(409)
+      response.content_type.should == "application/json"
+    end
+    
+    it "assigns errord user to @user and redirects for HTML" do
+      post :create, :format => :html, :user => { :name => "some name", 
+                                                 :nickname => @u1.nickname, 
+                                                 :primary_email => Factory.next(:primary_email),
+                                                 :password => "pass" }
+
+      response.should be_redirect
+      response.should redirect_to("/user/new")
+    end
+  end
 
   describe "GET index" do
     it "assigns one user to @user" do

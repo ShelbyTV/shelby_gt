@@ -36,6 +36,8 @@ class AuthenticationsController < ApplicationController
   
   # This method has grown into a fucking beast.  
   # ==> Needs *serious* refactoring and simplification. <==
+  # NB: V1::UserController now handles basic user creation from parameters (for JSON & HTTP)
+  # Once we do away with all BetaInvite and CohortEntrance, this method can handle OAuth quite simply
   def create
     if omniauth = request.env["omniauth.auth"]
       user = User.first( :conditions => { 'authentications.provider' => omniauth['provider'], 'authentications.uid' => omniauth['uid'] } )

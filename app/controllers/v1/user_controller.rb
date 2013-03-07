@@ -5,7 +5,7 @@ class V1::UserController < ApplicationController
 
   extend NewRelic::Agent::MethodTracer
 
-  before_filter :user_authenticated?, :except => [:signed_in, :index, :show]
+  before_filter :user_authenticated?, :except => [:signed_in, :create, :index, :show]
 
   ####################################
   # Returns true (false) if user is (not) signed in
@@ -14,6 +14,50 @@ class V1::UserController < ApplicationController
   def signed_in
     @status = 200
     @signed_in = user_signed_in? ? true : false
+  end
+  
+  ##
+  # Creates a new user with the given basic info.
+  # Supports mobile via JSON, web via HTML.
+  #
+  # To create a new user via OAuth for web, use AuthenticationsController#create
+  # To create a new user via OAuth for mobile, use V1::TokenController#create
+  #
+  # This route should only be used over HTTPS
+  #
+  # [POST] /v1/user
+  #
+  # @param [Required, String] user.name The full name of the user signing up
+  # @param [Required, String] user.nickname The desired username
+  # @param [Required, String] user.password The plaintext password
+  # @param [Required, String] user.primary_email The email address of the new user
+  #
+  # Example payload:
+  # {user: {name: "dan spinosa", nickname: "spinosa", primary_email: "dan@shelby.tv", password: "pass"}}
+  def create
+    @user = GT::UserManager.create_new_user_from_params(params[:user])
+    
+    if @user.errors.empty? and @user.valid?
+      sign_in(:user, @user)
+      
+      respond_to do |format|
+        format.json do
+          @status = 200
+          @user.ensure_authentication_token!
+          render 'v1/user/show'
+        end
+        format.html do
+          @user.remember_me!(true)
+          set_common_cookie(@user, form_authenticity_token)
+          redirect_to '/'
+        end
+      end
+    else
+      respond_to do |format|
+        format.json { render_errors_of_model(@user) }
+        format.html { redirect_to '/user/new' } #NOT YET IMPLEMENTED
+      end
+    end
   end
 
   ##
