@@ -11,7 +11,7 @@ module GT
       raise ArgumentError, "must supply user" unless u and u.is_a?(User)
       raise ArgumentError, "must supply num_frames" unless num_frames
 
-      Frame.where(:roll_id => u.public_roll_id).limit(3).map do |f|
+      Frame.where(:roll_id => u.public_roll_id).limit(num_frames).map do |f|
         OpenStruct.new({:frame => f})
       end
     end

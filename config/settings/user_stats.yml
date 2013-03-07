@@ -1,0 +1,14 @@
+defaults: &defaults
+  num_recent_frames : 3
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+
+arnold:
+  <<: *production

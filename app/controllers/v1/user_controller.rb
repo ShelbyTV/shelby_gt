@@ -155,21 +155,25 @@ class V1::UserController < ApplicationController
   # [GET] /v1/user/:id/stats
   #
   # @param [Required, String] id The id of the user
+  # @param [Optional, Integer] num_frames The number of recent frames to return stats for, default 3
   def stats
-    if params[:id] == current_user.id.to_s
-      # A regular user can only view his/her own stats
-      @user = current_user
-    elsif current_user.is_admin
-      # admin users can view anyone's stats
-      unless @user = User.where(:id => params[:id]).first
-        return render_error(404, "could not find that user")
+    StatsManager::StatsD.time(Settings::StatsConstants.api['user']['stats']) do
+      if params[:id] == current_user.id.to_s
+        # A regular user can only view his/her own stats
+        @user = current_user
+      elsif current_user.is_admin
+        # admin users can view anyone's stats
+        unless @user = User.where(:id => params[:id]).first
+          return render_error(404, "could not find that user")
+        end
+      else
+        return render_error(401, "unauthorized")
       end
-    else
-      return render_error(401, "unauthorized")
-    end
 
-    @status = 200
-    @stats = GT::UserStatsManager.get_dot_tv_stats_for_recent_frames(@user, 3)
+      @status = 200
+      num_recent_frames = params[:num_frames] ? params[:num_frames].to_i : Settings::UserStats.num_recent_frames
+      @stats = GT::UserStatsManager.get_dot_tv_stats_for_recent_frames(@user, num_recent_frames)
+    end
   end
 
   private

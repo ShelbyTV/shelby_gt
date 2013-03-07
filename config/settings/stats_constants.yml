@@ -11,6 +11,7 @@ defaults: &defaults
       update: 'user.update'
       rolls: 'user.rolls'
       valid_token: 'user.valid_token'
+      stats: 'user.stats'
     roll:
       index: 'roll.index'
       show: 'roll.show'
