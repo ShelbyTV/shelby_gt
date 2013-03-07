@@ -46,6 +46,15 @@ describe V1::UserController do
     end
   end
 
+  describe "GET stats" do
+
+    it "should return 401 if user not authenticated" do
+      get :stats, :id => @u1.id.to_s, :format => :json
+      assigns(:status).should eq(401)
+    end
+
+  end
+
   describe "PUT update" do
     before(:each) do
       sign_in @u1
