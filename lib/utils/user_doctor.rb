@@ -23,6 +23,18 @@ module GT
       end
     end
     
+    def self.fix_faux_public_roll(u, save=true)
+      return unless u.faux == User::FAUX_STATUS[:true]
+      
+      unless [Roll::TYPES[:special_public_upgraded], Roll::TYPES[:special_public]].include? u.public_roll.roll_type
+        u.public_roll.roll_type = Roll::TYPES[:special_public]
+      end
+      if u.public_roll.origin_network.blank? and u.authentications[0]
+        u.public_roll.origin_network = u.authentications[0].provider
+      end
+      u.public_roll.save if save
+    end
+
     # For each of the user's rolls pointed to by a roll_following: make sure there's a matching following_user on the roll pointing to the user
     def self.ensure_roll_followings_mirrored(u)
       should_clean_roll_followings = false
@@ -93,6 +105,12 @@ module GT
 
         # cohorts
         puts " *FAIL* Should have at least one cohort.  FIX: User.find('#{u.id}').push(:cohorts => Settings::User.current_cohort)" if u.cohorts.size == 0
+      elsif u.faux == User::FAUX_STATUS[:true]
+        # public roll checking
+        unless [Roll::TYPES[:special_public_upgraded], Roll::TYPES[:special_public]].include? u.public_roll.roll_type
+          puts " *FAIL* Public roll should be :special_public (11) or :special_public_upgraded (16) but was #{u.public_roll.roll_type}"
+        end
+        puts " *FAIL* Public roll should have origin network" if u.public_roll.origin_network.empty?
       end
       
       puts "===done==="
