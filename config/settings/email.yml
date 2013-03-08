@@ -56,6 +56,10 @@ defaults: &defaults
     category: "Discussion Roll Notifications"
     from_email: "noreply@shelby.tv"
     max_element_count: 9
+  # Stats
+  weekly_curator_stats:
+    category: "Weekly Curator Stats"
+    subject: "See Your Shelby Stats"
 
 
 development:
