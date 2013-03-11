@@ -59,7 +59,7 @@ defaults: &defaults
   # Stats
   weekly_curator_stats:
     category: "Weekly Curator Stats"
-    subject: "See Your Shelby Stats"
+    subject: "%{curators_name}, check out your Shelby stats"
 
 
 development:

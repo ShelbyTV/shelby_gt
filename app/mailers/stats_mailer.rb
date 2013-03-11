@@ -12,6 +12,6 @@ class StatsMailer < ActionMailer::Base
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
       :to => user_to.primary_email,
-      :subject => Settings::Email.weekly_curator_stats["subject"]
+      :subject => Settings::Email.weekly_curator_stats['subject'] % {:curators_name => user_to.name || user_to.nickname}
   end
 end
