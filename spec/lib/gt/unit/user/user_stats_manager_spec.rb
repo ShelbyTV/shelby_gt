@@ -80,4 +80,67 @@ describe GT::UserStatsManager do
 
   end
 
+  context "get_dot_tv_stats_for_recent_frames" do
+
+    context "arguments" do
+
+      it "should return an error if no user is supplied" do
+        expect {
+          GT::UserStatsManager.get_frames_rolled_since(nil, nil)
+        }.to raise_error(ArgumentError)
+      end
+
+      it "should return an error if no time supplied" do
+        expect {
+          GT::UserStatsManager.get_frames_rolled_since(@user, nil)
+        }.to raise_error(ArgumentError)
+      end
+
+      it "should return no errors if all arguments are supplied and valid" do
+        expect {
+          GT::UserStatsManager.get_frames_rolled_since(@user, Time.now)
+        }.not_to raise_error(ArgumentError)
+      end
+
+    end
+
+    context "results" do
+      before(:each) do
+        @user_public_roll = Factory.create(:roll, :creator => @user)
+        @user.public_roll = @user_public_roll
+
+        @frame1 = Factory.create(:frame, :roll => @user_public_roll)
+        @time1 = Time.now
+        @frame1.score = (@time1.to_f - Frame::SHELBY_EPOCH.to_f) / Frame::TIME_DIVISOR
+        @frame1.save
+
+        @frame2 = Factory.create(:frame, :roll => @user_public_roll)
+        @time2 = Time.now.advance(:minutes => 5)
+        @frame2.score = (@time2.to_f - Frame::SHELBY_EPOCH.to_f) / Frame::TIME_DIVISOR
+        @frame2.save
+
+        @frame3 = Factory.create(:frame, :roll => @user_public_roll)
+        @time3 = Time.now.advance(:minutes => 10)
+        @frame3.score = (@time3.to_f - Frame::SHELBY_EPOCH.to_f) / Frame::TIME_DIVISOR
+        @frame3.save
+      end
+
+      it "should return the count of all frames in the roll if the passed time is before the created time of the first frame" do
+        count = GT::UserStatsManager.get_frames_rolled_since(@user, @time1.ago(1))
+        count.should == @user_public_roll.frame_count
+      end
+
+      it "should return one if the passed time is the created time of the last frame" do
+        count = GT::UserStatsManager.get_frames_rolled_since(@user, @time3)
+        count.should == 1
+      end
+
+      it "should return zero if the passed time is after the created time of the last frame" do
+        count = GT::UserStatsManager.get_frames_rolled_since(@user, @time3.advance(:seconds => 1))
+        count.should == 0
+      end
+    end
+
+  end
+
 end

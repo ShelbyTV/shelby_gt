@@ -16,5 +16,17 @@ module GT
       end
     end
 
+    # Return the number of frames the user has rolled to their personal roll
+    # since a specified time (inclusive)
+    def self.get_frames_rolled_since(u, time)
+      raise ArgumentError, "must supply user" unless u and u.is_a?(User)
+      raise ArgumentError, "must supply time" unless time and time.acts_like?(:time)
+
+      # convert the time to a shelby score, as that is what frames are indexed by
+      time_score = (time.to_f - Frame::SHELBY_EPOCH.to_f) / Frame::TIME_DIVISOR
+      # count all the frames on the user's personal roll with that score or higher
+      Frame.where(:roll_id => u.public_roll_id, :score => { :$gte => time_score }).count
+    end
+
   end
 end
