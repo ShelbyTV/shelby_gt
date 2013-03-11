@@ -31,7 +31,7 @@ child :frame do
   end
 
   child :creator => "creator" do
-    attributes :id, :name, :nickname, :user_image_original, :user_image, :has_shelby_avatar
+    attributes :id, :name, :nickname, :user_image_original, :user_image, :has_shelby_avatar, :shelby_user_image
   end
 
   child :conversation => "conversation" do

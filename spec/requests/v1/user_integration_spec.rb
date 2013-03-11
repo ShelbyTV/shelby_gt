@@ -356,6 +356,8 @@ describe 'v1/user' do
       context "other user" do
         before(:each) do
           @u2 = Factory.create(:user)
+          roll = Factory.create(:roll, :creator => @u2)
+          @u2.public_roll = roll
         end
 
         it "should return 401 unauthorized if trying to get a user other than herself" do
@@ -365,6 +367,7 @@ describe 'v1/user' do
 
         it "should allow an admin user to get stats for another user" do
           @u1.is_admin = true
+
           get '/v1/user/'+@u2.id+'/stats'
           response.body.should be_json_eql(200).at_path("status")
         end
@@ -382,9 +385,9 @@ describe 'v1/user' do
         before(:each) do
           @user_personal_roll = Factory.create(:roll, :creator => @u1)
           @u1.public_roll = @user_personal_roll
-          @frame1 = Factory.create(:frame, :roll => @user_personal_roll, :like_count => 3, :view_count => 4)
-          @frame2 = Factory.create(:frame, :roll => @user_personal_roll, :like_count => 1, :view_count => 10)
-          @frame3 = Factory.create(:frame, :roll => @user_personal_roll, :like_count => 4, :view_count => 6)
+          @frame1 = Factory.create(:frame, :roll => @user_personal_roll, :creator => @u1, :like_count => 3, :view_count => 4)
+          @frame2 = Factory.create(:frame, :roll => @user_personal_roll, :creator => @u1, :like_count => 1, :view_count => 10)
+          @frame3 = Factory.create(:frame, :roll => @user_personal_roll, :creator => @u1, :like_count => 4, :view_count => 6)
           @video = Factory.create(:video, :view_count => 20)
           @frame1.video = @video
           @frame2.video = @video
@@ -417,6 +420,15 @@ describe 'v1/user' do
           parse_json(response.body)["result"][0]["frame"]["id"].should eq(@frame3.id.to_s)
           parse_json(response.body)["result"][0]["frame"]["like_count"].should eq(@frame3.like_count)
           parse_json(response.body)["result"][0]["frame"]["view_count"].should eq(@frame3.view_count)
+        end
+
+        it "should return the right frame creator attributes" do
+          @u1.user_image_original = 'image.jpg'
+          get '/v1/user/'+@u1.id+'/stats'
+
+          response.body.should have_json_path("result/0/frame/creator")
+          response.body.should have_json_path("result/0/frame/creator/shelby_user_image")
+          parse_json(response.body)["result"][0]["frame"]["creator"]["shelby_user_image"].should eq('image.jpg')
         end
 
         it "should return the right nested video attributes" do
@@ -695,11 +707,11 @@ describe 'v1/user' do
         response.status.should eq(401)
       end
     end
-    
+
     describe "POST create" do
       it "should create a new user and return via JSON" do
-        post '/v1/user', :user => { :name => "some name", 
-                                    :nickname => Factory.next(:nickname), 
+        post '/v1/user', :user => { :name => "some name",
+                                    :nickname => Factory.next(:nickname),
                                     :primary_email => Factory.next(:primary_email),
                                     :password => "pass" }
         response.status.should == 200
@@ -708,12 +720,12 @@ describe 'v1/user' do
         response.body.should have_json_path("result/personal_roll_id")
         response.body.should have_json_path("result/authentication_token")
       end
-      
+
       it "should fail to create bad user and return errors via JSON" do
         u1 = Factory.create(:user)
-        
-        post '/v1/user', :user => { :name => "some name", 
-                                    :nickname => u1.nickname, 
+
+        post '/v1/user', :user => { :name => "some name",
+                                    :nickname => u1.nickname,
                                     :primary_email => u1.primary_email,
                                     :password => "pass" }
         response.status.should == 409
@@ -721,7 +733,7 @@ describe 'v1/user' do
         response.body.should have_json_path("errors/user/primary_email")
       end
     end
-    
+
   end
 
 end

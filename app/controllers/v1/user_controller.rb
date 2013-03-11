@@ -5,6 +5,8 @@ class V1::UserController < ApplicationController
 
   extend NewRelic::Agent::MethodTracer
 
+  include ApplicationHelper
+
   before_filter :user_authenticated?, :except => [:signed_in, :create, :index, :show]
 
   ####################################
@@ -15,7 +17,7 @@ class V1::UserController < ApplicationController
     @status = 200
     @signed_in = user_signed_in? ? true : false
   end
-  
+
   ##
   # Creates a new user with the given basic info.
   # Supports mobile via JSON, web via HTML.
@@ -36,10 +38,10 @@ class V1::UserController < ApplicationController
   # {user: {name: "dan spinosa", nickname: "spinosa", primary_email: "dan@shelby.tv", password: "pass"}}
   def create
     @user = GT::UserManager.create_new_user_from_params(params[:user])
-    
+
     if @user.errors.empty? and @user.valid?
       sign_in(:user, @user)
-      
+
       respond_to do |format|
         format.json do
           @status = 200
@@ -217,6 +219,7 @@ class V1::UserController < ApplicationController
       @status = 200
       num_recent_frames = params[:num_frames] ? params[:num_frames].to_i : Settings::UserStats.num_recent_frames
       @stats = GT::UserStatsManager.get_dot_tv_stats_for_recent_frames(@user, num_recent_frames)
+      @stats.each {|s| s.frame.creator[:shelby_user_image] = avatar_url_for_user(@user)}
     end
   end
 
