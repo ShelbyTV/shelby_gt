@@ -42,8 +42,11 @@ module GT
     
     private
       
-      # This is a public message: put it on the public roll of the posting user (unless they're a real user, in which case they must post via Shelby)
-      # Make sure observing user sees it by first following that roll (unless they've specifically unfollowed it)
+      # This is a public message: put it on the public roll of the posting user...
+      # Unless they're a real user, in which case only Shelby posts go on their public roll and
+      # as such we only show this video on the dashboard of observing user.
+      #
+      # In the normal posting case, we make sure observing user sees it by first following that roll (unless they've specifically unfollowed it)
       # Everyone else following that public roll will see it as well.
       def self.sort_public_message(message, video_hash, observing_user, posting_user)
         
@@ -58,8 +61,15 @@ module GT
         end
         
         # Only posting to public roll of faux-users; real users must post via Shelby
-        # NB: special-upgraded rolls which we show still belong to faux users, so that works out fine
-        if posting_user.faux == User::FAUX_STATUS[:true]
+        # If it's a real user
+        if posting_user.faux != User::FAUX_STATUS[:true]
+          # Poster is a real user.
+          # Show on the dashboard of observer, but don't post to public roll of posting_user
+          return self.sort_private_message(message, video_hash, observing_user, posting_user)
+        else
+          # Poster is a faux user.
+          # Show on their public roll (which will result in a dashbaord entry for all observers)
+          # NB: special-upgraded rolls which we show still belong to faux users, so that works out fine
         
           # If the posting (faux) user posted the same video within the last 24 hours, don't create a new frame, just add to the convo
           if old_frame = recent_posting_of_video_on_roll(posting_user.public_roll_id, video_hash[:video].id, 24.hours.ago)
@@ -104,15 +114,19 @@ module GT
       # This is a private message: don't put it on the public roll of the posting user.
       # Make sure the observing user sees it by creating a Frame that is only attached to their dashboard
       def self.sort_private_message(message, video_hash, observing_user, posting_user)
-        # Add Frame to observing_user's dashboard
-        GT::Framer.create_frame(
-          :creator => posting_user,
-          :video => video_hash[:video],
-          :message => message,
-          :dashboard_user_id => observing_user.id,
-          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-          :deep => video_hash[:from_deep]
-          )
+        # Add Frame to observing_user's dashboard unless they unfollowed posting_user
+        if observing_user.unfollowed_roll?(posting_user.public_roll)
+          return nil
+        else
+          return GT::Framer.create_frame(
+            :creator => posting_user,
+            :video => video_hash[:video],
+            :message => message,
+            :dashboard_user_id => observing_user.id,
+            :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+            :deep => video_hash[:from_deep]
+            )
+        end
       end
       
       def self.get_or_create_posting_user_for(message)

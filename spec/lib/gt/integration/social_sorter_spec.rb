@@ -26,7 +26,10 @@ describe GT::SocialSorter do
   end
   
   context "public social postings" do
-    before(:each) do      
+    before(:each) do
+      @existing_user.faux = User::FAUX_STATUS[:true]
+      @existing_user.save
+      
       @existing_user_random_msg = Message.new
       @existing_user_random_msg.nickname = @existing_user.nickname
       @existing_user_random_msg.origin_network = @existing_user_provider
@@ -39,10 +42,27 @@ describe GT::SocialSorter do
       lambda {
         res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res.should_not == false
+        res[:frame].roll.should == @existing_user.public_roll
         res[:frame].persisted?.should == true
         res[:frame].conversation.persisted?.should == true
         res[:frame].conversation.messages[0].persisted?.should == true
       }.should change { @existing_user.public_roll.reload.frames.count }.by(1)
+    end
+    
+    it "should not add to public Roll of real User, should still create DashboardEntry for observer" do
+      @existing_user.faux = User::FAUX_STATUS[:false]
+      @existing_user.save
+      
+      lambda {
+        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
+        res.should_not == false
+        res[:frame].roll.should == nil
+        res[:dashboard_entries].count.should == 1
+        res[:dashboard_entries][0].user.should == @observer
+        res[:dashboard_entries][0].roll.should == nil
+        res[:dashboard_entries][0].action.should == DashboardEntry::ENTRY_TYPE[:new_social_frame]
+        res[:dashboard_entries][0].frame.should == res[:frame]
+      }.should change { @existing_user.public_roll.reload.frames.count }.by(0)
     end
     
     it "should set existing User on the Message" do
