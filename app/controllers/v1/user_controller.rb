@@ -37,9 +37,9 @@ class V1::UserController < ApplicationController
   # Example payload:
   # {user: {name: "dan spinosa", nickname: "spinosa", primary_email: "dan@shelby.tv", password: "pass"}}
   def create
-    @user = GT::UserManager.create_new_user_from_params(params[:user])
+    @user = GT::UserManager.create_new_user_from_params(params[:user]) if params[:user]
 
-    if @user.errors.empty? and @user.valid?
+    if @user and @user.errors.empty? and @user.valid?
       sign_in(:user, @user)
 
       respond_to do |format|
@@ -56,7 +56,7 @@ class V1::UserController < ApplicationController
       end
     else
       respond_to do |format|
-        format.json { render_errors_of_model(@user) }
+        format.json { @user ? render_errors_of_model(@user) : render_error(409, "Must supply params as {user:{name:'name',...}}") }
         format.html { redirect_to '/user/new' } #NOT YET IMPLEMENTED
       end
     end

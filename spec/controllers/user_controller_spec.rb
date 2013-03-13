@@ -55,6 +55,12 @@ describe V1::UserController do
       response.should be_redirect
       response.should redirect_to("/user/new")
     end
+
+    it "handles params without user" do
+      post :create, :format => :json
+      assigns(:status).should eq(409)
+      response.content_type.should == "application/json"
+    end
   end
 
   describe "GET index" do
