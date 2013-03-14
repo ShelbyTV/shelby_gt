@@ -118,6 +118,42 @@ module GT
       return {:videos => videos, :from_deep => false}
     end
     
+    def self.fix_video_if_necessary(video, use_em=false)
+      # can't do anything if video is missing source_url
+      return video if video.source_url.blank?
+
+      if video_needs_fixing?(video)
+        # pull it from embed.ly w/o hitting our cache
+        video_hashes = GT::UrlVideoDetector.examine_url_for_video(video.source_url, use_em, false)
+
+        # update Video
+        return video unless video_hashes and video_hashes[0] and video_hashes[0][:embedly_hash]
+        h = video_hashes[0][:embedly_hash]
+        video.title = h['title']
+        video.name = h['name']
+        video.description = h['description']
+        video.author = h['author_name']
+        video.video_height = h['height']
+        video.video_width = h['width']
+        video.thumbnail_url = h['thumbnail_url']
+        video.thumbnail_height = h['thumbnail_height']
+        video.thumbnail_width = h['thumbnail_width']
+        video.source_url = h['url']
+        video.embed_url = h['html']
+
+        video.save
+      end
+      
+      return video
+    end
+    
+    def self.video_needs_fixing?(video)
+      return video.title.blank? ||
+             video.description.blank? ||
+             video.thumbnail_url.blank? ||
+             video.embed_url.blank?
+    end
+    
     private
     
       def self.find_or_create_videos_for_hashes(video_hashes)

@@ -88,6 +88,7 @@ ShelbyGt::Application.routes.draw do
       get 'queued', :on => :collection
       get 'search' => 'video#search', :on => :collection
       put 'unplayable'
+      put 'fix_if_necessary'
     end
     resources :dashboard_entries, :path => "dashboard", :only => [:update] do
       get 'find_entries_with_video' => 'dashboard_entries#find_entries_with_video', :on => :collection
@@ -146,6 +147,7 @@ ShelbyGt::Application.routes.draw do
     get 'DELETE/frame/:id' => 'frame#destroy'
     # video
     get 'PUT/video/:video_id/unplayable' => 'video#unplayable'
+    get 'PUT/video/:video_id/fix_if_necessary' => 'video#fix_if_necessary'
     # dashboard entry
     get 'PUT/dashboard/:id' => 'dashboard_entries#update'
     # messages

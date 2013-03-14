@@ -161,6 +161,17 @@ describe "Videos" do
     )
   end
 
+  # PUT   /v1/video/:video_id/fix_if_necessary(.:format)                        v1/video#fix_if_necessary {:format=>"json"}
+  it "routes for PUT fix_if_necessary" do
+    { :get => "/v1/PUT/video/33/fix_if_necessary" }.should route_to(
+      :controller => "v1/video",
+      :action => "fix_if_necessary",
+      :format => "json",
+      :video_id => "33"
+    )
+  end
+
+
 end
 
 describe "DashboardEntries" do

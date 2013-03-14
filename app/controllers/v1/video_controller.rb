@@ -8,7 +8,7 @@ class V1::VideoController < ApplicationController
   require 'api_clients/dailymotion_client'
   require 'api_clients/webscraper_client'
 
-  before_filter :user_authenticated?, :except => [:show, :find_or_create, :search]
+  before_filter :user_authenticated?, :except => [:show, :find_or_create, :search, :fix_if_necessary]
 
   ##
   # Returns one video, with the given parameters.
@@ -103,11 +103,29 @@ class V1::VideoController < ApplicationController
   #
   def unplayable
     @video = Video.find(params[:video_id])
-    return render_error(404, "could not find video with id #{params[:id]}") unless @video
+    return render_error(404, "could not find video with id #{params[:video_id]}") unless @video
     @video.first_unplayable_at = Time.now unless @video.first_unplayable_at
     @video.last_unplayable_at = Time.now
     @video.save
 
+    @status = 200
+    render 'show'
+  end
+  
+  ##
+  # If the given video is missing important information (thumbnail, title, description, embed url, etc.)
+  # we will fetch the raw video info, update Video and return it.
+  #
+  # [PUT] /v1/video/:video_id/fix_if_necessary
+  #
+  # Return the updated video or original if no update was needed
+  #
+  def fix_if_necessary
+    @video = Video.find(params[:video_id])
+    return render_error(404, "could not find video with id #{params[:video_id]}") unless @video
+    
+    @video = GT::VideoManager.fix_video_if_necessary(@video)
+    
     @status = 200
     render 'show'
   end

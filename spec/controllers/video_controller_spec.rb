@@ -42,7 +42,7 @@ describe V1::VideoController do
     
   end
   
-  describe "POST unplayable" do
+  describe "PUT unplayable" do
     before(:each) do
       @u1 = Factory.create(:user)
       sign_in @u1
@@ -72,6 +72,23 @@ describe V1::VideoController do
       @video.last_unplayable_at.should_not be_nil
     end
     
+  end
+  
+  describe "PUT fix_if_necessary" do
+    before(:each) do
+      @u1 = Factory.create(:user)
+      sign_in @u1
+      @video = Factory.create(:video, :title=>"test title")
+      Video.stub(:find) { @video }
+    end
+    
+    it "returns the same video" do
+      GT::VideoManager.should_receive(:fix_video_if_necessary).with(@video).and_return(@video)
+      
+      put :fix_if_necessary, {:video_id => @video.id, :format => :json}
+      
+      assigns(:video).should eq(@video)
+    end    
   end
 
 end

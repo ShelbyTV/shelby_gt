@@ -222,6 +222,55 @@ describe GT::VideoManager do
         vids[0].should == @v
       end
       
+      it "should fix a Video when necessary" do
+        h = {
+          'provider_name' => 'utewb',
+          'title' => 'of the book',
+          'name' => 'george',
+          'description' => 'just something im testing',
+          'author_name' => 'espinosa',
+          'height' => '400px',
+          'width' => '800px',
+          'thumbnail_url' => 'http://thu.mb',
+          'thumbnail_height' => '40px',
+          'thumbnail_width' => '80px',
+          'url' => 'the_url',
+          'html' => '-iframe src=\'whatever\' /-'
+          }
+        GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, false ).and_return([{:embedly_hash => h}])
+
+        # A vidoe missing some important information
+        video = Video.new
+        video.provider_name = "dan"
+        video.provider_id = "33"
+        video.source_url = @url1
+        video.save
+        
+        #should not actually create a new video
+        vid_count = Video.count
+        updated_vid = GT::VideoManager.fix_video_if_necessary(video)
+        Video.count.should == vid_count
+        
+        #some things stay the same
+        updated_vid.id.should == video.id
+        updated_vid.provider_name.should == video.provider_name
+        updated_vid.provider_id.should == video.provider_id
+        updated_vid.source_url.should == video.source_url
+        
+        #some things are updated
+        updated_vid.persisted?.should == true
+        updated_vid.title.should == h['title']
+        updated_vid.name.should == h['name']
+        updated_vid.description.should == h['description']
+        updated_vid.author.should == h['author_name']
+        updated_vid.video_height.should == h['height']
+        updated_vid.video_width.should == h['width']
+        updated_vid.thumbnail_url.should == h['thumbnail_url']
+        updated_vid.thumbnail_height.should == h['thumbnail_height']
+        updated_vid.thumbnail_width.should == h['thumbnail_width']
+        updated_vid.embed_url.should == h['html']
+      end
+      
     end
    
     context "mongo failure due to timing issue" do
