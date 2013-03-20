@@ -118,6 +118,12 @@ class V1::UserController < ApplicationController
   # [PUT] /v1/user/:id
   #
   # @param [Required, String] attr The attribute(s) to update
+  # All params are in models/user.rb listed as :attr_accessible
+  #
+  # Note: The payload should be flat with attributes at the top level, not within a user object
+  #   correct: {nickname: "spinosa", ...}
+  #     wrong: {user: {nickname: "spinosa", ...}}
+  #
   def update
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['update']) do
       @user = current_user
