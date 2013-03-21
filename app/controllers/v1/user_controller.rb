@@ -1,5 +1,6 @@
 # encoding: UTF-8
 require 'user_stats_manager'
+require "framer"
 
 class V1::UserController < ApplicationController
 
@@ -226,6 +227,26 @@ class V1::UserController < ApplicationController
       num_recent_frames = params[:num_frames] ? params[:num_frames].to_i : Settings::UserStats.num_recent_frames
       @stats = GT::UserStatsManager.get_dot_tv_stats_for_recent_frames(@user, num_recent_frames)
       @stats.each {|s| s.frame.creator[:shelby_user_image] = avatar_url_for_user(s.frame.creator)}
+    end
+  end
+
+  ##
+  # Creates a new dashboard entry for a user with the given frame id.
+  #
+  # [POST] /v1/user/:id/dashboard_entry
+  #
+  # @param [Required, String] frame_id The frame id to add as a dashboard entry
+  #
+  def add_dashboard_entry
+    if @frame = Frame.find(params.delete(:frame_id))
+      if dbe  = GT::Framer.create_dashboard_entry(@frame, ::DashboardEntry::ENTRY_TYPE[:new_hashtag_frame], current_user)
+        @dbe = dbe.first
+        @status = 200
+      else
+        return render_error(409, "error while creating dashboard entry")
+      end
+    else
+      return render_error(404, "could not frind that frame")
     end
   end
 

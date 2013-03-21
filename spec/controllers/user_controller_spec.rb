@@ -14,11 +14,11 @@ describe V1::UserController do
     @u1.watch_later_roll = r2
     @u1.save
   end
-  
+
   describe "POST create" do
     it "assigns new user to @user for JSON" do
-      post :create, :format => :json, :user => { :name => "some name", 
-                                                 :nickname => Factory.next(:nickname), 
+      post :create, :format => :json, :user => { :name => "some name",
+                                                 :nickname => Factory.next(:nickname),
                                                  :primary_email => Factory.next(:primary_email),
                                                  :password => "pass" }
       assigns(:status).should eq(200)
@@ -26,29 +26,29 @@ describe V1::UserController do
       assigns(:user).authentication_token.should_not be_nil
       response.content_type.should == "application/json"
     end
-    
+
     it "assigns new user to @user and redirects for HTML" do
-      post :create, :format => :html, :user => { :name => "some name", 
-                                                 :nickname => Factory.next(:nickname), 
+      post :create, :format => :html, :user => { :name => "some name",
+                                                 :nickname => Factory.next(:nickname),
                                                  :primary_email => Factory.next(:primary_email),
                                                  :password => "pass" }
       assigns(:user).name.should == "some name"
       response.should be_redirect
       response.should redirect_to("/")
     end
-    
+
     it "assigns errord user to @user for JSON" do
-      post :create, :format => :json, :user => { :name => "some name", 
-                                                 :nickname => @u1.nickname, 
+      post :create, :format => :json, :user => { :name => "some name",
+                                                 :nickname => @u1.nickname,
                                                  :primary_email => @u1.primary_email,
                                                  :password => "pass" }
       assigns(:status).should eq(409)
       response.content_type.should == "application/json"
     end
-    
+
     it "assigns errord user to @user and redirects for HTML" do
-      post :create, :format => :html, :user => { :name => "some name", 
-                                                 :nickname => @u1.nickname, 
+      post :create, :format => :html, :user => { :name => "some name",
+                                                 :nickname => @u1.nickname,
                                                  :primary_email => Factory.next(:primary_email),
                                                  :password => "pass" }
 
@@ -60,6 +60,33 @@ describe V1::UserController do
       post :create, :format => :json
       assigns(:status).should eq(409)
       response.content_type.should == "application/json"
+    end
+  end
+
+  describe "POST create dashboard entry for user" do
+    before(:each) do
+      @f =  Factory.create(:frame, :video => Factory.create(:video))
+      sign_in @u1
+    end
+
+    it "returns 404 in no rame is found" do
+      post :add_dashboard_entry, :id => @u1.id, :frame_id => "test", :format => :json
+      assigns(:status).should eq(404)
+    end
+
+    it "should return 200 if alls hunky dory" do
+      post :add_dashboard_entry, :id => @u1.id, :frame_id => @f.id.to_s, :format => :json
+      assigns(:status).should eq(200)
+    end
+
+    it "should create a dbe that has the frame as part of it" do
+      post :add_dashboard_entry, :id => @u1.id, :frame_id => @f.id.to_s, :format => :json
+      assigns(:dbe).frame_id.should == @f.id
+    end
+
+    it "should have the right type" do
+      post :add_dashboard_entry, :id => @u1.id, :frame_id => @f.id.to_s, :format => :json
+      assigns(:dbe).action.should == ::DashboardEntry::ENTRY_TYPE[:new_hashtag_frame]
     end
   end
 

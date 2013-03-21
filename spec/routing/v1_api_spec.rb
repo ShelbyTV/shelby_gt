@@ -100,6 +100,15 @@ describe V1::UserController do
         :id => "1"
       )
     end
+
+    it "routes for POST to users dashboard with frame" do
+      { :post => "/v1/user/1/dashboard_entry" }.should route_to(
+        :controller => "v1/user",
+        :action => "add_dashboard_entry",
+        :format => "json",
+        :id => "1"
+      )
+    end
   end
 end
 
