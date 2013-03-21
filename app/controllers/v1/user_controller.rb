@@ -243,7 +243,7 @@ class V1::UserController < ApplicationController
         @dbe = dbe.first
         @status = 200
       else
-        return render_error(409, "error while creating dashboard entry")
+        return render_error(404, "error while creating dashboard entry")
       end
     else
       return render_error(404, "could not frind that frame")
