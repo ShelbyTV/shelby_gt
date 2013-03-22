@@ -69,7 +69,7 @@ describe V1::UserController do
       sign_in @u1
     end
 
-    it "returns 404 in no rame is found" do
+    it "returns 404 in no frame is found" do
       post :add_dashboard_entry, :id => @u1.id, :frame_id => "test", :format => :json
       assigns(:status).should eq(404)
     end
@@ -81,12 +81,12 @@ describe V1::UserController do
 
     it "should create a dbe that has the frame as part of it" do
       post :add_dashboard_entry, :id => @u1.id, :frame_id => @f.id.to_s, :format => :json
-      assigns(:dbe).frame_id.should == @f.id
+      assigns(:dashboard_entry).frame_id.should == @f.id
     end
 
     it "should have the right type" do
       post :add_dashboard_entry, :id => @u1.id, :frame_id => @f.id.to_s, :format => :json
-      assigns(:dbe).action.should == ::DashboardEntry::ENTRY_TYPE[:new_hashtag_frame]
+      assigns(:dashboard_entry).action.should == ::DashboardEntry::ENTRY_TYPE[:new_hashtag_frame]
     end
   end
 

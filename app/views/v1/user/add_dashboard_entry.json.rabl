@@ -1,3 +1,3 @@
-object @frame
+object @dashboard_entry
 
-extends 'v1/frame/show'
+attributes :id, :action, :actor_id, :read, :roll, :frame, :video, :conversation, :user

@@ -734,6 +734,40 @@ describe 'v1/user' do
       end
     end
 
+    describe "POST add dashboard entry for user" do
+      before(:each) do
+        @u1 = Factory.create(:user)
+        set_omniauth(:uuid => @u1.authentications.first.uid)
+        get '/auth/twitter/callback'
+        @f =  Factory.create(:frame, :video => Factory.create(:video))
+      end
+
+      it "returns 404 in no frame is found" do
+        post '/v1/user/'+@u1.id+'/dashboard_entry?frame_id=test'
+        response.status.should == 404
+      end
+
+      it "returns 404 in no user is found" do
+        post '/v1/user/test/dashboard_entry?frame_id='+@f.id
+        response.status.should == 404
+      end
+
+      it "should return 200 if alls hunky dory" do
+        post '/v1/user/'+@u1.id+'/dashboard_entry?frame_id='+@f.id
+        response.status.should == 200
+      end
+
+      it "should create a dbe that has the frame as part of it" do
+        post '/v1/user/'+@u1.id+'/dashboard_entry?frame_id='+@f.id
+        response.body.should have_json_path("result/frame")
+      end
+
+      it "shoudl create a dbe with a frame that was specified as a param" do
+        post '/v1/user/'+@u1.id+'/dashboard_entry?frame_id='+@f.id
+        parse_json(response.body)["result"]["frame"]['id'].should eq(@f.id.to_s)
+      end
+    end
+
   end
 
 end

@@ -233,14 +233,14 @@ class V1::UserController < ApplicationController
   ##
   # Creates a new dashboard entry for a user with the given frame id.
   #
-  # [POST] /v1/user/:user_id/dashboard_entry
+  # [POST] /v1/user/:id/dashboard_entry
   #
   # @param [Required, String] frame_id The frame id to add as a dashboard entry
   #
   def add_dashboard_entry
-    if @frame = Frame.find(params.delete(:frame_id)) and u = User.find(params[:user_id])
+    if @frame = Frame.find(params.delete(:frame_id)) and u = User.find(params[:id])
       if dbe  = GT::Framer.create_dashboard_entry(@frame, ::DashboardEntry::ENTRY_TYPE[:new_hashtag_frame], u)
-        @dbe = dbe.first
+        @dashboard_entry = dbe.first
         @status = 200
       else
         return render_error(404, "error while creating dashboard entry")
