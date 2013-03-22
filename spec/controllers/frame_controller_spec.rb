@@ -353,6 +353,13 @@ describe V1::FrameController do
         assigns(:frame).should eq(@f1)
       end
 
+      it "should process the new frame message for hashtags" do
+        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+        GT::HashtagProcessor.should_receive(:process_frame_message_hashtags_for_channels).with(@f1)
+
+        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmark", :format => :json
+      end
+
       it "should create a new frame if given video_url and text params" do
         GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
 
@@ -402,6 +409,13 @@ describe V1::FrameController do
         assigns(:frame).should eq(@f2)
       end
 
+      it "should process the new frame message for hashtags" do
+        @f1.stub(:re_roll).and_return({:frame => @f2})
+        GT::HashtagProcessor.should_receive(:process_frame_message_hashtags_for_channels).with(@f2)
+
+        post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
+      end
+
       it "returns 403 if user can re_roll to that roll" do
         r = stub_model(Roll, :public => false)
         Roll.stub(:find) { r }
@@ -421,6 +435,7 @@ describe V1::FrameController do
         assigns(:status).should eq(404)
         assigns(:message).should eq("could not re_roll: ArgumentError")
       end
+
     end
 
 
