@@ -3,6 +3,7 @@ require 'video_manager'
 require 'link_shortener'
 require 'social_post_formatter'
 require 'user_manager'
+require 'hashtag_processor'
 
 class V1::FrameController < ApplicationController
 
@@ -96,6 +97,9 @@ class V1::FrameController < ApplicationController
           r = frame_options[:video] ? GT::Framer.create_frame(frame_options) : {}
 
           if @frame = r[:frame]
+            # process frame message hashtags in a non-blocking manor
+            ShelbyGT_EM.next_tick { GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame) }
+
             @status = 200
           else
             return render_error(404, "Sorry, but something went wrong trying add that video.")
@@ -125,6 +129,8 @@ class V1::FrameController < ApplicationController
             ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_reroll_notification(frame_to_re_roll, @frame) }
             # send OG action to FB
             ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', current_user, @frame) }
+            # process frame message hashtags in a non-blocking manor
+            ShelbyGT_EM.next_tick { GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame) }
 
             @status = 200
           else
