@@ -1,0 +1,43 @@
+defaults: &defaults
+  channels : [
+    {
+      channel_user_id : '5112fa93b415cc1de20c30a0',
+      hash_tags : ['laugh', 'lol']
+    },
+    {
+      channel_user_id : '5112fb5db415cc1ded0d79a1',
+      hash_tags : ['learnaboutyourworld', 'learn']
+    },
+    {
+      channel_user_id : '5112fb95b415cc1ded0d8c89',
+      hash_tags : ['adrenaline']
+    },
+    {
+      channel_user_id : '5137560bb415cc636c035769',
+      hash_tags : ['thisexists', 'exists']
+    },
+    {
+      channel_user_id : '51375788b415cc68d804aa71',
+      hash_tags : ['greatmoviemoments', 'movies', 'greatmoviemoment']
+    },
+    {
+      channel_user_id : '51375863b415cc57fe02eea9',
+      hash_tags : ['storytellers', 'storyteller', 'stories', 'story']
+    },
+    {
+      channel_user_id : '5112fae1b415cc1e0b0e4d6e',
+      hash_tags : ['natureisrad', 'nature']
+    },
+  ]
+
+development:
+  <<: *defaults
+
+test:
+  channels : [{}]
+
+production: &production
+  <<: *defaults
+
+arnold:
+  <<: *production

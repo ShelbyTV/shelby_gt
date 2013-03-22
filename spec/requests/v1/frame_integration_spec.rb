@@ -159,6 +159,12 @@ describe 'v1/frame' do
     end
 
     describe "POST" do
+      before (:each) do
+        @hashtag_roll_user = Factory.create(:user)
+        Settings::Channels.channels[0]['channel_user_id'] = @hashtag_roll_user.id.to_s
+        Settings::Channels.channels[0]['hash_tags'] = ['test', 'testing']
+      end
+
       context 're-rolling' do
         it "should create and return a frame on success if its payload is a frame_id" do
           # @f = the frame to be re_rolled
@@ -185,6 +191,16 @@ describe 'v1/frame' do
           response.body.should have_json_path("result/conversation/messages")
           response.body.should have_json_size(1).at_path("result/conversation/messages")
           parse_json(response.body)["result"]["conversation"]["messages"][0]["text"].should == message_text
+        end
+
+        it "should find hashtags and add the frame to the user dashboard" do
+          message_text = "this is a #test"
+          roll = Factory.create(:roll, :creator_id => @u1.id)
+          @f.roll_id = roll.id; @f.save
+
+          lambda {
+            post '/v1/roll/'+roll.id+'/frames?frame_id='+@f.id+'&text='+CGI::escape(message_text)
+          }.should change { DashboardEntry.count } .by(1)
         end
       end
 
@@ -213,6 +229,18 @@ describe 'v1/frame' do
           response.body.should have_json_path("result/conversation/messages")
           response.body.should have_json_size(1).at_path("result/conversation/messages")
           parse_json(response.body)["result"]["conversation"]["messages"][0]["text"].should == message_text
+        end
+
+        it "should find hashtags and add the frame to the user dashboard" do
+          message_text = "this is a #test"
+          video_url = "http://some.video.url.com/of_a_movie_i_like"
+          video = Factory.create(:video, :source_url => video_url)
+          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return({:videos=> [video]})
+          roll = Factory.create(:roll, :creator_id => @u1.id)
+
+          lambda {
+            post '/v1/roll/'+roll.id+'/frames?url='+CGI::escape(video_url)+'&text='+CGI::escape(message_text)
+          }.should change { DashboardEntry.count } .by(1)
         end
 
         it "should return 404 error if trying to create a frame via url and action is not known" do
