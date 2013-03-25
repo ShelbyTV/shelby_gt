@@ -6,15 +6,14 @@
 module GT
   class UserActionManager
 
-    def self.view!(user_id, frame_id, start_s=nil, end_s=nil)
-      raise ArgumentError, "user_id must be nil or a valid ObjectId" unless !user_id or BSON::ObjectId.legal? user_id.to_s
-      raise ArgumentError, "frame_id must reference valid Frame" unless frame_id and frame = Frame.find(frame_id)
+    def self.view!(user_id, frame_id, video_id, start_s=nil, end_s=nil)
+      raise ArgumentError, "user_id must be valid ObjectId" unless user_id and BSON::ObjectId.legal? user_id.to_s
+      raise ArgumentError, "frame_id must be valid BSON id" unless frame_id and BSON::ObjectId.legal? frame_id.to_s
+      return nil unless video_id and BSON::ObjectId.legal? video_id.to_s
+      
+      start_s = start_s.to_i if start_s
+      end_s = end_s.to_i if end_s
       raise ArgumentError, "start_s and end_s must both be nil or Integer" unless (start_s == nil and end_s == nil) or (start_s.is_a?(Integer) and end_s.is_a?(Integer))
-
-      unless video_id = frame.video_id
-        Rails.logger.error("[GT::UserActionManager#view!] Frame had no video_id // user_id #{user_id}, frame_id #{frame_id}, start #{start_s}, end #{end_s}")
-        return nil
-      end
 
       UserAction.create(:type => UserAction::TYPES[:view], :user_id => user_id, :frame_id => frame_id, :video_id => video_id, :start_s => start_s, :end_s => end_s)
     end
@@ -28,7 +27,16 @@ module GT
     def self.watch_later!(user_id, orig_frame_id) create_watch_later_action(user_id, orig_frame_id, UserAction::TYPES[:watch_later]); end
     def self.unwatch_later!(user_id, frame_id) create_watch_later_action(user_id, frame_id, UserAction::TYPES[:unwatch_later]); end
 
-    def self.like!(user_id, frame_id) create_like_action(user_id, frame_id, UserAction::TYPES[:like]); end
+    def self.like!(user_id, frame_id, video_id) create_like_action(user_id, frame_id, video_id, UserAction::TYPES[:like]); end
+    
+    def self.frame_rolled!(user_id, frame_id, video_id, roll_id)
+      raise ArgumentError, "user_id must be valid BSON id" unless user_id and BSON::ObjectId.legal? user_id.to_s
+      raise ArgumentError, "frame_id must be valid BSON id" unless frame_id and BSON::ObjectId.legal? frame_id.to_s
+      raise ArgumentError, "video_id must be valid BSON id" unless video_id and BSON::ObjectId.legal? video_id.to_s
+      raise ArgumentError, "roll_id must be valid BSON id" unless roll_id and BSON::ObjectId.legal? roll_id.to_s
+
+      UserAction.create(:type => UserAction::TYPES[:roll], :user_id => user_id, :frame_id => frame_id, :video_id => video_id, :roll_id => roll_id)
+    end
 
     private
 
@@ -53,11 +61,12 @@ module GT
         UserAction.create(:type => type, :user_id => user_id, :frame_id => frame_id)
       end
 
-      def self.create_like_action(user_id, frame_id, type)
+      def self.create_like_action(user_id, frame_id, video_id, type)
         raise ArgumentError, "user_id must be valid BSON id" unless user_id and BSON::ObjectId.legal? user_id.to_s
         raise ArgumentError, "frame_id must be valid BSON id" unless frame_id and BSON::ObjectId.legal? frame_id.to_s
+        raise ArgumentError, "video_id must be valid BSON id" unless video_id and BSON::ObjectId.legal? video_id.to_s
 
-        UserAction.create(:type => type, :user_id => user_id, :frame_id => frame_id)
+        UserAction.create(:type => type, :user_id => user_id, :frame_id => frame_id, :video_id => video_id)
       end
 
   end

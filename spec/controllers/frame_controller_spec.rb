@@ -118,7 +118,7 @@ describe V1::FrameController do
     end
 
     it "shouldn't need a logged in user" do
-      GT::UserActionManager.should_receive(:view!)
+      GT::UserActionManager.should_not_receive(:view!)
 
       sign_out @u1
 
@@ -126,7 +126,7 @@ describe V1::FrameController do
     end
 
     it "shouldn't need start and end times" do
-      GT::UserActionManager.should_not_receive(:view!)
+      GT::UserActionManager.should_receive(:view!)
       Frame.should_receive(:roll_includes_ancestor_of_frame?).and_return(false)
       @frame.should_receive(:reload).and_return(@frame)
 
@@ -278,25 +278,17 @@ describe V1::FrameController do
   describe "POST add_to_watch_later" do
     before(:each) do
       @f2 = Factory.create(:frame)
-    end
-
-    it "creates a watch later UserAction" do
-      GT::UserActionManager.should_receive(:watch_later!)
-      Frame.should_receive(:get_ancestor_of_frame).and_return(nil)
-
-      post :add_to_watch_later, :frame_id => @f2.id, :format => :json
+      @f2.video = Factory.create(:video)
+      @f2.save
     end
 
     it "creates a like UserAction" do
-      GT::UserActionManager.should_receive(:like!).with(@u1.id, @f2.id)
+      GT::UserActionManager.should_receive(:like!).with(@u1.id, @f2.id, @f2.video_id)
 
       post :add_to_watch_later, :frame_id => @f2.id, :format => :json
     end
 
     it "creates a new Frame" do
-      Frame.stub(:find) { @frame }
-
-      GT::UserActionManager.should_receive(:watch_later!)
       Frame.should_receive(:get_ancestor_of_frame).and_return(nil)
 
       lambda {
@@ -304,7 +296,7 @@ describe V1::FrameController do
       }.should change { Frame.count } .by 1
 
       assigns(:new_frame).persisted?.should == true
-      assigns(:new_frame).frame_ancestors.include?(@frame.id).should == true
+      assigns(:new_frame).frame_ancestors.include?(@f2.id).should == true
       assigns(:status).should eq(200)
     end
   end
@@ -312,10 +304,12 @@ describe V1::FrameController do
   describe "POST like" do
     before(:each) do
       @f2 = Factory.create(:frame)
+      @f2.video = Factory.create(:video)
+      @f2.save
     end
 
     it "creates a like UserAction" do
-      GT::UserActionManager.should_receive(:like!).with(@u1.id, @f2.id)
+      GT::UserActionManager.should_receive(:like!).with(@u1.id, @f2.id, @f2.video_id)
 
       post :like, :frame_id => @f2.id, :format => :json
     end
@@ -330,10 +324,14 @@ describe V1::FrameController do
       @video = Factory.create(:video, :source_url => @video_url)
 
       @f1 = Factory.create(:frame, :video => @video)
+      @f1.roll = Factory.create(:roll)
       @f1.conversation = stub_model(Conversation)
+      @f1.save
 
-      @r2 = stub_model(Roll)
       @f2 = Factory.create(:frame)
+      @f2.video = Factory.create(:video)
+      @f2.roll = @r2 = Factory.create(:roll)
+      @f2.save
 
       Frame.stub(:find) { @f1 }
       Roll.stub(:find) { @r2 }
@@ -347,6 +345,7 @@ describe V1::FrameController do
 
       it "should create a new frame if given valid source, video_url and text params" do
         GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+        GT::UserActionManager.should_receive(:frame_rolled!)
 
         post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmark", :format => :json
         assigns(:status).should eq(200)
@@ -356,12 +355,14 @@ describe V1::FrameController do
       it "should process the new frame message for hashtags" do
         GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
         GT::HashtagProcessor.should_receive(:process_frame_message_hashtags_for_channels).with(@f1)
+        GT::UserActionManager.should_receive(:frame_rolled!)
 
         post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmark", :format => :json
       end
 
       it "should create a new frame if given video_url and text params" do
         GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+        GT::UserActionManager.should_receive(:frame_rolled!)
 
         post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :format => :json
         assigns(:status).should eq(200)
@@ -370,6 +371,7 @@ describe V1::FrameController do
 
       it "should return a new frame if a video_url is given but a message is not" do
         GT::Framer.stub(:create_frame).and_return({:frame => @f1})
+        GT::UserActionManager.should_receive(:frame_rolled!)
 
         post :create, :roll_id => @r2.id, :url => @video_url, :format => :json
         assigns(:status).should eq(200)
@@ -379,6 +381,8 @@ describe V1::FrameController do
       it "should be ok if action is f-d up" do
         GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return({:videos=> [@video]})
         GT::Framer.stub(:create_frame_from_url).and_return({:frame => @f1})
+        GT::UserActionManager.should_not_receive(:frame_rolled!)
+        
         post :create, :roll_id => @r2.id, :url => @video_url, :source => "fucked_up", :format => :json
         assigns(:status).should eq(404)
       end
@@ -387,6 +391,7 @@ describe V1::FrameController do
         GT::Framer.stub(:create_frame).and_return({:frame => @f1})
         new_roll = Factory.create(:roll, :creator => @u2 , :public => false )
         Roll.stub(:find) { new_roll }
+        GT::UserActionManager.should_not_receive(:frame_rolled!)
 
         post :create, :roll_id => new_roll.id, :url => @video_url, :format => :json
         assigns(:status).should eq(403)
@@ -394,6 +399,7 @@ describe V1::FrameController do
 
       it "should handle bad roll_id" do
         Roll.stub(:find) { nil }
+        GT::UserActionManager.should_not_receive(:frame_rolled!)
         post :create, :roll_id => "some_Roll_id_that_doesnt_exist", :url => @video_url, :format => :json
         assigns(:status).should eq(404)
       end
@@ -403,6 +409,7 @@ describe V1::FrameController do
     context "new frame by re rolling a frame" do
       it "should re_roll and returns one frame to @frame if given a frame_id param" do
         @f1.should_receive(:re_roll).and_return({:frame => @f2})
+        GT::UserActionManager.should_receive(:frame_rolled!)
 
         post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
         assigns(:status).should eq(200)
@@ -412,11 +419,12 @@ describe V1::FrameController do
       it "should process the new frame message for hashtags" do
         @f1.stub(:re_roll).and_return({:frame => @f2})
         GT::HashtagProcessor.should_receive(:process_frame_message_hashtags_for_channels).with(@f2)
+        GT::UserActionManager.should_receive(:frame_rolled!)
 
         post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
       end
 
-      it "returns 403 if user can re_roll to that roll" do
+      it "returns 403 if user cannot re_roll to that roll" do
         r = stub_model(Roll, :public => false)
         Roll.stub(:find) { r }
 

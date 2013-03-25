@@ -16,7 +16,8 @@ class UserAction
     :unfollow_roll => 5,
     :watch_later => 6,
     :unwatch_later => 7,
-    :like => 8
+    :like => 8,
+    :roll => 9
     }.freeze
 
   # May not have user if this is a play by a non-logged in user
@@ -40,6 +41,8 @@ class UserAction
 
   #---validations---
 
+  #ROLL
+  validates_presence_of [:user_id, :roll_id, :frame_id, :video_id], :if => Proc.new { |ua| ua.type == TYPES[:roll] }
   #VIEW
   validates_presence_of [:start_s, :end_s, :frame_id, :video_id], :if => Proc.new { |ua| ua.type == TYPES[:view] }
   #UPVOTE

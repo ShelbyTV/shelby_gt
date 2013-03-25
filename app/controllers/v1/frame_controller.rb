@@ -145,6 +145,10 @@ class V1::FrameController < ApplicationController
        return render_error(404, "failed to re-roll frame from id.")
 
       end
+      
+      # A Frame was rolled, track that user action
+      GT::UserActionManager.frame_rolled!(current_user.id, @frame.id, @frame.video_id, @frame.roll_id)
+      
     end
   end
 
@@ -235,6 +239,8 @@ class V1::FrameController < ApplicationController
   # [POST] /v1/frame/:id/add_to_watch_later
   #
   # @param [Required, String] id The id of the frame
+  #
+  # DEPRECATED -- replaced by like
   def add_to_watch_later
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['add_to_watch_later']) do
         @frame = Frame.find(params[:frame_id])
@@ -290,14 +296,14 @@ class V1::FrameController < ApplicationController
         if user_signed_in? or (params[:start_time] and params[:start_time].to_i <= 1)
           # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
           GT::UserManager.ensure_users_special_rolls(current_user, true) unless GT::UserManager.user_has_all_special_roll_ids?(current_user) if user_signed_in?
+          
+          # UserAction view recorded each new view of the video
+          GT::UserActionManager.view!(current_user.id, @frame.id, @frame.video_id, params[:start_time], params[:end_time]) if user_signed_in?
+          
           @new_frame = @frame.view!(current_user)
           @frame.reload # to update view_count
         end
 
-        if params[:start_time] and params[:end_time]
-          GT::UserActionManager.view!(current_user ? current_user.id : nil, @frame.id, params[:start_time].to_i, params[:end_time].to_i)
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch"])
-        end
       else
         render_error(404, "could not find frame")
       end
@@ -351,8 +357,7 @@ class V1::FrameController < ApplicationController
 
     def dupe_to_watch_later(frame)
       if new_frame = frame.add_to_watch_later!(current_user)
-        GT::UserActionManager.watch_later!(current_user.id, frame.id)
-        GT::UserActionManager.like!(current_user.id, frame.id)
+        GT::UserActionManager.like!(current_user.id, frame.id, frame.video_id)
         StatsManager::StatsD.increment(Settings::StatsConstants.frame["watch_later"])
       end
       return new_frame

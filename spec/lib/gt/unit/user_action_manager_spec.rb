@@ -6,61 +6,55 @@ describe GT::UserActionManager do
   before(:all) do
     @user = Factory.create(:user)
     @frame = Factory.create(:frame)
+    @frame.video = @video = Factory.create(:video)
+    @frame.save
   end
 
   context "view action" do
-    it "should allow nil user id" do
+    it "should not allow nil user id" do
       lambda {
         GT::UserActionManager.view!(nil, @frame.id, 0, 1)
-      }.should_not raise_error ArgumentError
-    end
-
-    it "should verify frame exists"  do
-      lambda {
-        GT::UserActionManager.view!(@user.id, @user.id, 0, 1)
       }.should raise_error ArgumentError
     end
 
     it "should return nil if Frame doesn't have a video_id" do
-      GT::UserActionManager.view!(@user.id, @frame.id, 0, 1).should == nil
+      GT::UserActionManager.view!(@user.id, @frame.id, nil, 0, 1).should == nil
     end
 
     it "should require start and end times as both nil or both Integers" do
       lambda {
-        GT::UserActionManager.view!(@user.id, @frame.id, nil, 1)
+        GT::UserActionManager.view!(@user.id, @frame.id, @video.id, nil, 1)
       }.should raise_error ArgumentError
 
       lambda {
-        GT::UserActionManager.view!(@user.id, @frame.id, 0, nil)
+        GT::UserActionManager.view!(@user.id, @frame.id, @video.id, 0, nil)
       }.should raise_error ArgumentError
 
+      #convertable to into okay
       lambda {
-        GT::UserActionManager.view!(@user.id, @frame.id, "0", 1)
-      }.should raise_error ArgumentError
+        GT::UserActionManager.view!(@user.id, @frame.id, @video.id, "0", 1)
+      }.should_not raise_error ArgumentError
 
       lambda {
-        GT::UserActionManager.view!(@user.id, @frame.id, 0, "1")
-      }.should raise_error ArgumentError
+        GT::UserActionManager.view!(@user.id, @frame.id, @video.id, 0, "1")
+      }.should_not raise_error ArgumentError
 
       #both int okay
       lambda {
-        GT::UserActionManager.view!(@user.id, @frame.id, 0, 1)
+        GT::UserActionManager.view!(@user.id, @frame.id, @video.id, 0, 1)
       }.should_not raise_error ArgumentError
 
       #both nil okay
       lambda {
-        GT::UserActionManager.view!(@user.id, @frame.id, nil, nil)
-        GT::UserActionManager.view!(@user.id, @frame.id)
+        GT::UserActionManager.view!(@user.id, @frame.id, @video.id, nil, nil)
+        GT::UserActionManager.view!(@user.id, @frame.id, @video.id)
       }.should_not raise_error ArgumentError
     end
 
     it "should create correct, persisted UserAction" do
-      @frame.video_id = "4f6f66349fb5ba2337000002"
-      @frame.save
-
       ua = nil
       lambda {
-        ua = GT::UserActionManager.view!(@user.id, @frame.id, 0, 1)
+        ua = GT::UserActionManager.view!(@user.id, @frame.id, @video.id, 0, 1)
       }.should change{UserAction.count}.by 1
       ua.class.should == UserAction
       ua.persisted?.should == true
@@ -280,34 +274,35 @@ describe GT::UserActionManager do
   context "like action" do
     it "should require valid user_id (w/o lookign for User itself)" do
       lambda {
-        GT::UserActionManager.like!("xxx", "4f6f66349fb5ba2337000002")
+        GT::UserActionManager.like!("xxx", "4f6f66349fb5ba2337000002", @video.id)
       }.should raise_error ArgumentError
 
       lambda {
-        GT::UserActionManager.like!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
+        GT::UserActionManager.like!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002", @video.id)
       }.should_not raise_error ArgumentError
     end
 
     it "should require valid frame_id (w/o looking for Frame itself)" do
       lambda {
-        GT::UserActionManager.like!("4f6f66349fb5ba2337000002", "xxx")
+        GT::UserActionManager.like!("4f6f66349fb5ba2337000002", "xxx", @video.id)
       }.should raise_error ArgumentError
 
       lambda {
-        GT::UserActionManager.like!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
+        GT::UserActionManager.like!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002", @video.id)
       }.should_not raise_error ArgumentError
     end
 
     it "should create correct, persisted UserAction" do
       ua = nil
       lambda {
-        ua = GT::UserActionManager.like!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
+        ua = GT::UserActionManager.like!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002", @video.id)
       }.should change{UserAction.count}.by 1
       ua.class.should == UserAction
       ua.persisted?.should == true
       ua.type.should == UserAction::TYPES[:like]
       ua.user_id.to_s.should == "4f6f66349fb5ba2337000002"
       ua.frame_id.to_s.should == "4f6f66349fb5ba2337000002"
+      ua.video_id.should == @video.id
     end
   end
 
