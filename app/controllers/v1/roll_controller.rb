@@ -4,7 +4,7 @@ require "social_post_formatter"
 
 class V1::RollController < ApplicationController
 
-  before_filter :user_authenticated?, :except => [:index, :show, :index_associated, :explore, :featured]
+  before_filter :user_authenticated?, :except => [:index, :show, :index_associated, :explore, :featured, :show_users_public_roll]
   ##
   # Returns a collection of rolls according to search criteria.
   #

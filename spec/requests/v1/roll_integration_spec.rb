@@ -157,6 +157,11 @@ describe 'v1/roll' do
         response.body.should be_json_eql(200).at_path("status")
       end
 
+      it "should return personal roll of user when given a user_id" do
+        get 'v1/user/'+@u2.id+'/rolls/personal'
+        response.body.should be_json_eql(200).at_path("status")
+      end
+
       it "should return error message if roll doesnt exist" do
         get '/v1/roll/'+ BSON::ObjectId.new.to_s
         response.body.should be_json_eql(404).at_path("status")
@@ -443,6 +448,11 @@ describe 'v1/roll' do
       it "should return error message if roll doesnt exist" do
         get '/v1/roll/'+@r.id+'xxx'
         response.body.should be_json_eql(404).at_path("status")
+      end
+
+      it "should return personal roll of user when given a user_id" do
+        get 'v1/user/'+@u2.id+'/rolls/personal'
+        response.body.should be_json_eql(200).at_path("status")
       end
     end
 
