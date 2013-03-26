@@ -160,9 +160,9 @@ describe GT::Framer do
       res[:dashboard_entries][0].roll.should == @roll
       res[:dashboard_entries][0].frame.should == res[:frame]
       res[:dashboard_entries][0].video.should == @video
+      res[:dashboard_entries][0].actor.should == @frame_creator
       res[:dashboard_entries][0].read?.should == false
       res[:dashboard_entries][0].action.should == DashboardEntry::ENTRY_TYPE[:new_social_frame]
-      res[:dashboard_entries][0].actor.should == nil
     end
   
     it "should create DashboardEntries for all followers of Roll" do
@@ -442,7 +442,7 @@ describe GT::Framer do
       @roll = Factory.create(:roll, :creator => @roll_creator)
       @roll.save
       
-      @frame = Factory.create(:frame)
+      @frame = Factory.create(:frame, :creator => @roll_creator)
       @frame.video = @video = Factory.create(:video)
       @frame.save
     end
@@ -459,6 +459,7 @@ describe GT::Framer do
       d[0].persisted?.should == true
       d[0].frame.should == @frame
       d[0].video.should == @video
+      d[0].actor.should == @roll_creator
       d[0].user.should == observer
     end
   end

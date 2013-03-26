@@ -252,6 +252,7 @@ module GT
           dbe.roll = frame.roll
           dbe.frame = frame
           dbe.video = frame.video
+          dbe.actor = frame.creator
           dbe.action = action
           dbe.save
           entries << dbe

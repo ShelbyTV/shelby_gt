@@ -36,12 +36,12 @@ class DashboardEntry
   }.freeze
   key :action, Integer, :abbr => :e, :default => ENTRY_TYPE[:new_social_frame]
 
-  # If this was an action other than new_*_frame, what Shelbyer was it?
-  belongs_to :actor
+  # Denormalizing actor_id to efficiently create Prioritized Dashboard
+  # Ex: Who is the poster of the Frame
+  belongs_to :actor, :class_name => 'User'
   key :actor_id, ObjectId, :abbr => :f
   
-  # We weren't always denormalizing video_id (this started 3/26/13)
-  # We use it to efficiently create Prioritized Dashboard
+  # Denormalizing video_id to efficiently create Prioritized Dashboard
   belongs_to :video
   key :video_id, ObjectId, :abbr => :g
 
