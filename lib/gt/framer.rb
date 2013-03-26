@@ -251,6 +251,7 @@ module GT
           dbe.user_id = user_id
           dbe.roll = frame.roll
           dbe.frame = frame
+          dbe.video = frame.video
           dbe.action = action
           dbe.save
           entries << dbe

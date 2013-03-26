@@ -39,6 +39,11 @@ class DashboardEntry
   # If this was an action other than new_*_frame, what Shelbyer was it?
   belongs_to :actor
   key :actor_id, ObjectId, :abbr => :f
+  
+  # We weren't always denormalizing video_id (this started 3/26/13)
+  # We use it to efficiently create Prioritized Dashboard
+  belongs_to :video
+  key :video_id, ObjectId, :abbr => :g
 
   attr_accessible :read
 
