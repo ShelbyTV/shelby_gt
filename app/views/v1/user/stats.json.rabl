@@ -1,7 +1,7 @@
 collection @stats
 
 child :frame do
-  attributes :id, :like_count, :view_count
+  attributes :id, :like_count, :view_count, :roll_id
 
   code :created_at do |f|
     concise_time_ago_in_words(f.created_at) if f.created_at

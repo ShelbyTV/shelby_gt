@@ -417,9 +417,11 @@ describe 'v1/user' do
           response.body.should have_json_path("result/0/frame/id")
           response.body.should have_json_path("result/0/frame/like_count")
           response.body.should have_json_path("result/0/frame/view_count")
+          response.body.should have_json_path("result/0/frame/roll_id")
           parse_json(response.body)["result"][0]["frame"]["id"].should eq(@frame3.id.to_s)
           parse_json(response.body)["result"][0]["frame"]["like_count"].should eq(@frame3.like_count)
           parse_json(response.body)["result"][0]["frame"]["view_count"].should eq(@frame3.view_count)
+          parse_json(response.body)["result"][0]["frame"]["roll_id"].should eq(@user_personal_roll.id.to_s)
         end
 
         it "should return the right frame creator attributes" do
