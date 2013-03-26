@@ -259,6 +259,7 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
       SOB_USER_NICKNAME,
       SOB_USER_USER_IMAGE_ORIGINAL,
       SOB_USER_USER_IMAGE,
+      SOB_USER_FAUX,
       SOB_USER_PUBLIC_ROLL_ID,
    };
 

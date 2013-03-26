@@ -86,6 +86,14 @@ describe 'v1/frame' do
           response.body.should have_json_size(0).at_path("result/frames/0/upvoters")
         end
 
+        it "should contain frame creator faux attribute" do
+          get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/frames/0/creator/faux")
+          parse_json(response.body)["result"]["frames"][0]["creator"]["faux"].should eq(@u1.faux)
+        end
+
         it "should populate frame upvoters with correct data" do
           upvoter1 = Factory.create(:user)
           upvoter2 = Factory.create(:user)
@@ -114,22 +122,6 @@ describe 'v1/frame' do
           parse_json(response.body)["result"]["frames"][0]["like_count"].should eq(2)
         end
 
-        it "should return frames of personal roll of user when given a user id" do
-          u2 = Factory.create(:user)
-          u2.downcase_nickname = u2.nickname.downcase
-          u2.save
-          r2 = Factory.create(:roll, :creator => u2, :public => true)
-          u2.public_roll_id = r2.id; u2.save
-          f1 = Factory.create(:frame, :roll_id => r2.id)
-          f2 = Factory.create(:frame, :roll_id => r2.id)
-
-          get 'v1/user/'+u2.id+'/rolls/personal/frames'
-
-          response.body.should be_json_eql(200).at_path("status")
-          response.body.should be_json_eql(2).at_path("result/frame_count")
-          response.body.should have_json_size(2).at_path("result/frames")
-        end
-
         it "should return 404 if cant access frames in a roll" do
           roll = Factory.create(:roll, :creator_id => Factory.create(:user).id, :public => false)
           @f.roll_id = roll.id; @f.save
@@ -143,6 +135,34 @@ describe 'v1/frame' do
           get '/v1/roll/'+@f.id+'xxx/frames'
           response.body.should be_json_eql(404).at_path("status")
         end
+      end
+
+      context 'personal roll' do
+
+        before(:each) do
+          @u2 = Factory.create(:user)
+          @u2.downcase_nickname = @u2.nickname.downcase
+          @u2.save
+          @r2 = Factory.create(:roll, :creator => @u2, :public => true)
+          @u2.public_roll_id = @r2.id; @u2.save
+          @public_roll_frame_1 = Factory.create(:frame, :creator => @u2, :roll_id => @r2.id)
+          @public_roll_frame_2 = Factory.create(:frame, :creator => @u2, :roll_id => @r2.id)
+
+          get 'v1/user/'+@u2.id+'/rolls/personal/frames'
+        end
+
+        it "should return frames of personal roll of user when given a user id" do
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should be_json_eql(2).at_path("result/frame_count")
+          response.body.should have_json_size(2).at_path("result/frames")
+        end
+
+        it "should return frame's creator faux attribute for a personal roll" do
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/frames/0/creator/faux")
+          parse_json(response.body)["result"]["frames"][0]["creator"]["faux"].should eq(@u2.faux)
+        end
+
       end
 
       context 'short_link' do
