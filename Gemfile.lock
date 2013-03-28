@@ -394,6 +394,7 @@ DEPENDENCIES
   json_spec
   km
   koala
+  mail
   memcached (~> 1.4.1)
   mm-devise
   mongo (>= 1.6.4)

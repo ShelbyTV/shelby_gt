@@ -105,6 +105,11 @@ gem 'whenever', :require => false
 gem "beanstalk-client", :git => "git://github.com/ShelbyTV/beanstalk-client-ruby.git"
 
 #
+# ---------- Email parsing
+#
+gem 'mail'
+
+#
 # ---------- TODO: explain what yard is and why it's here
 #
 group :development do
