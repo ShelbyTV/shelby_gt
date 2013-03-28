@@ -30,6 +30,7 @@ class DashboardEntry
     :new_in_app_frame => 2,
     :new_genius_frame => 3,
     :new_hashtag_frame => 4,
+    :new_email_hook_frame => 5,
     :re_roll => 8,
     :watch => 9,
     :comment => 10
@@ -40,7 +41,7 @@ class DashboardEntry
   # Ex: Who is the poster of the Frame
   belongs_to :actor, :class_name => 'User'
   key :actor_id, ObjectId, :abbr => :f
-  
+
   # Denormalizing video_id to efficiently create Prioritized Dashboard
   belongs_to :video
   key :video_id, ObjectId, :abbr => :g

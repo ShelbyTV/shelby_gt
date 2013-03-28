@@ -13,7 +13,21 @@ class EmailWebhookController < ApplicationController
             # if we've got a user, then parse the email for links
             if (params[:text])
               params[:text].scan(/\b(?:https?:\/\/|www\.)\S+\b/) do |link_match|
-                # do something with the links
+                # try to create a video for that link
+                if video = GT::VideoManager.get_or_create_videos_for_url(link_match)[:videos][0]
+                  # if we get a video, make a frame out of it
+                  r = GT::Framer.create_frame({
+                    :action => DashboardEntry::ENTRY_TYPE[:new_email_hook_frame],
+                    :creator => user,
+                    :message => GT::MessageManager.build_message(:user => user, :public => true, :text => "Rolled via email"),
+                    :roll => user.public_roll,
+                    :video => video
+                  })
+                  if r && frame = r[:frame]
+                    # A Frame was rolled, track that user action
+                    GT::UserActionManager.frame_rolled!(user.id, frame.id, frame.video_id, frame.roll_id)
+                  end
+                end
               end
             end
           end
