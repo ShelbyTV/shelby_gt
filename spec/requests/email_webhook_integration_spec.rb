@@ -3,7 +3,7 @@ require 'spec_helper'
 describe EmailWebhookController do
 
   before(:all) do
-    @rolling_address = "#{Settings::EmailHook.email_user_keys['roll']}.#{Settings::EmailHook.email_hook_domain}"
+    @rolling_address = "#{Settings::EmailHook.email_user_keys['roll']}@#{Settings::EmailHook.email_hook_domain}"
   end
 
   before(:each) do

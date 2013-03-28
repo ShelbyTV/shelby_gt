@@ -9,7 +9,7 @@ class EmailWebhookController < ApplicationController
       mail_to = mail.to && mail.to[0]
       # so far, we only support email addressed to roll@volumevolume.com
       Rails.logger.info "mail_to #{mail_to}"
-      if mail_to && mail_to.casecmp("#{Settings::EmailHook.email_user_keys['roll']}.#{Settings::EmailHook.email_hook_domain}") == 0
+      if mail_to && mail_to.casecmp("#{Settings::EmailHook.email_user_keys['roll']}@#{Settings::EmailHook.email_hook_domain}") == 0
         if mail.from
           Rails.logger.info "mail.from #{mail.from}"
           mail.from.each do |address|
