@@ -257,7 +257,7 @@ class V1::FrameController < ApplicationController
   # If there is a user logged in, add the frame to the user's watch later roll,
   #   which internally adds to the like_count
   #
-  # [POST] /v1/frame/:id/like
+  # [PUT] /v1/frame/:id/like
   #
   # @param [Required, String] id The id of the frame
   def like
