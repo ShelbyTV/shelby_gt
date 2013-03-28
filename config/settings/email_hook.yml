@@ -1,0 +1,17 @@
+defaults: &defaults
+  email_hook_domain: 'volumevolume.com'
+  email_user_keys: {
+      roll : 'roll'
+  }
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults
+
+arnold:
+  <<: *defaults
