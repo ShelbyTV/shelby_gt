@@ -1,4 +1,5 @@
 ShelbyGt::Application.routes.draw do
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
@@ -180,6 +181,9 @@ ShelbyGt::Application.routes.draw do
   get '/admin/new_users' => "admin#new_users"
   get '/admin/active_users' => "admin#active_users"
   get '/admin/invited_users' => "admin#invited_users"
+
+  # email webhook processing
+  post "email_webhook/hook"
 
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
 
