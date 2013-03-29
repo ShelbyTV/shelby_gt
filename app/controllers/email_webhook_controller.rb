@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'json'
 
 class EmailWebhookController < ApplicationController
@@ -15,9 +17,9 @@ class EmailWebhookController < ApplicationController
             if user = User.find_by_primary_email(address)
               # if we've got a user, then parse the email for links
               if (params[:text])
-                params[:text].scan(/\b(?:https?:\/\/|www\.)\S+\b/) do |link_match|
+                params[:text].scan(WEB_URL_RE) do |link_match|
                   # try to create a video for that link
-                  if video = GT::VideoManager.get_or_create_videos_for_url(link_match)[:videos][0]
+                  if video = GT::VideoManager.get_or_create_videos_for_url(link_match[0])[:videos][0]
                     # if we get a video, make a frame out of it
                     r = GT::Framer.create_frame({
                       :action => DashboardEntry::ENTRY_TYPE[:new_email_hook_frame],
@@ -39,4 +41,9 @@ class EmailWebhookController < ApplicationController
       end
     }
   end
+
+  private
+
+    WEB_URL_RE = /(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/
+
 end

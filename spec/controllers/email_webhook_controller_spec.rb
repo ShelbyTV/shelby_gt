@@ -44,6 +44,12 @@ describe EmailWebhookController do
         post :hook, :headers => "From: Some Guy <#{@u.primary_email}>\nTo:#{@rolling_address}\n", :text => "www.youtube.com here's an email http://example.com?name=val"
       end
 
+      it "finds links that don't start with http or www" do
+        GT::VideoManager.should_receive(:get_or_create_videos_for_url).with("vimeo.com/12345")
+
+        post :hook, :headers => "From: Some Guy <#{@u.primary_email}>\nTo:#{@rolling_address}\n", :text => "vimeo.com/12345"
+      end
+
       it "creates frames from the videos" do
         GT::Framer.should_receive(:create_frame).with({
           :action => DashboardEntry::ENTRY_TYPE[:new_email_hook_frame],
