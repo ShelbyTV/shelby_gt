@@ -34,6 +34,18 @@ describe EmailWebhookController do
 
       end
 
+      it "increments the user's email rolling count" do
+
+        lambda {
+          post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: #{@rolling_address}")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")
+        }.should change { @u.rolled_since_last_notification["email"] } .by(1)
+
+        lambda {
+          post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: #{@rolling_address}")+"&text="+CGI::escape("two links http://espn.com/something http://example.com?name=val")
+        }.should change { @u.rolled_since_last_notification["email"] } .by(2)
+
+      end
+
       it "creates a frame if the to: address is a channel hashtag" do
 
         lambda {

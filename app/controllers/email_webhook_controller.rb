@@ -12,6 +12,7 @@ class EmailWebhookController < ApplicationController
       p_mail_to = mail_to && mail_to.partition('@')
       valid_mail_to = false
       channel_hastag = nil
+      frames_rolled = 0
       # mail to: address must be either "roll" or a channel hashtag at our domain
       # first validate the domain of the address
       if p_mail_to && p_mail_to[2] && (p_mail_to[2].casecmp(Settings::EmailHook.email_hook_domain) == 0)
@@ -53,6 +54,8 @@ class EmailWebhookController < ApplicationController
                       :video => video
                     })
                     if r && frame = r[:frame]
+                      # keep track of the number of frames rolled
+                      frames_rolled += 1
                       # A Frame was rolled, track that user action
                       GT::UserActionManager.frame_rolled!(user.id, frame.id, frame.video_id, frame.roll_id)
                       # Process frame message hashtags
@@ -60,6 +63,12 @@ class EmailWebhookController < ApplicationController
                     end
                   end
                 end
+              end
+              # if we rolled any frames for this user, add that to the count of rollings that we will notify the user
+              # about the next time they visit the site
+              if frames_rolled > 0
+                user.rolled_since_last_notification["email"] += frames_rolled
+                user.save
               end
             end
           end
