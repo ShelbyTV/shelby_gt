@@ -172,10 +172,10 @@ class User
 
   # a hash of counts of the number of items rolled from different sources by the user
   # since the last time we told them about it
-  key :rolled_since_last_notification, Hash, :abbr => :bf
+  key :rolled_since_last_notification, Hash, :abbr => :bf, :default => {"email" => 0}
 
   attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original, :avatar,
-                  :google_analytics_client_id
+                  :google_analytics_client_id, :rolled_since_last_notification
 
   # Arnold does a *shit ton* of user saving, which runs this validation, which turns out to be very expensive
   # (see shelby_gt/etc/performance/unique_nickname_realtime_profile.gif)

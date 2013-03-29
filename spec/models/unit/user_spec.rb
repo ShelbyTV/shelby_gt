@@ -31,7 +31,7 @@ describe User do
   it "should have the key rolled_since_last_notification with abbreviation bf" do
     User.keys.keys.should include("rolled_since_last_notification")
     User.keys["rolled_since_last_notification"].abbr.should == :bf
-    @user.rolled_since_last_notification.should == {}
+    @user.rolled_since_last_notification.should == {"email" => 0}
   end
 
 end
