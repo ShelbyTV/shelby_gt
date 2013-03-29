@@ -9,8 +9,21 @@ class EmailWebhookController < ApplicationController
     ShelbyGT_EM.next_tick {
       mail = Mail.read_from_string(params[:headers])
       mail_to = mail.to && mail.to[0]
-      # so far, we only support email addressed to roll@volumevolume.com
-      if mail_to && mail_to.casecmp("#{Settings::EmailHook.email_user_keys['roll']}@#{Settings::EmailHook.email_hook_domain}") == 0
+      p_mail_to = mail_to && mail_to.partition('@')
+      valid_mail_to = false
+      channel_hastag = nil
+      # mail to: address must be either "roll" or a channel hashtag at our domain
+      # first validate the domain of the address
+      if p_mail_to && p_mail_to[2] && (p_mail_to[2].casecmp(Settings::EmailHook.email_hook_domain) == 0)
+        email_user = p_mail_to[0]
+        # if the user sent to is 'roll', we will roll
+        if email_user.casecmp("#{Settings::EmailHook.email_user_keys['roll']}") == 0
+          valid_mail_to = true
+        elsif channel_hashtag = Settings::Channels.channels.map {|channel| channel['hash_tags']}.flatten.compact.detect {|hashtag| hashtag.casecmp(email_user) == 0}
+          valid_mail_to = true
+        end
+      end
+      if valid_mail_to
         if mail.from
           mail.from.each do |address|
             # figure out who the email is from and match it up with a shelby user
@@ -24,7 +37,13 @@ class EmailWebhookController < ApplicationController
 
                     # if the email has a subject, use that as the rolling comment, otherwise
                     # we have a default
-                    message_text = (params[:subject] && !params[:subject].empty?) ? params[:subject] : Settings::EmailHook.default_rolling_comment
+                    message_text = (params[:subject] && !params[:subject].empty?) ? params[:subject].clone : Settings::EmailHook.default_rolling_comment.clone
+                    # if the email was mailed to a hashtag address, append that hashtag to the rolling message
+                    # if the message doesn't already have that tag
+                    if channel_hashtag && !message_text.downcase.index('#' + channel_hashtag)
+                      message_text << " " if !message_text.match(/\s\z/)
+                      message_text << "#" + channel_hashtag
+                    end
 
                     r = GT::Framer.create_frame({
                       :action => DashboardEntry::ENTRY_TYPE[:new_email_hook_frame],

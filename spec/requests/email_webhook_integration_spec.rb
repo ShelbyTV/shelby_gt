@@ -4,6 +4,9 @@ describe EmailWebhookController do
 
   before(:all) do
     @rolling_address = "#{Settings::EmailHook.email_user_keys['roll']}@#{Settings::EmailHook.email_hook_domain}"
+    @hashtag_roll_user = Factory.create(:user)
+    Settings::Channels.channels[0]['channel_user_id'] = @hashtag_roll_user.id.to_s
+    Settings::Channels.channels[0]['hash_tags'] = ['test', 'testing']
   end
 
   before(:each) do
@@ -31,26 +34,29 @@ describe EmailWebhookController do
 
       end
 
+      it "creates a frame if the to: address is a channel hashtag" do
+
+        lambda {
+          post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: test@#{Settings::EmailHook.email_hook_domain}")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")
+        }.should change { Frame.count } .by(1)
+
+      end
+
       context "hashtag processing" do
 
-          before(:each) do
-            @hashtag_roll_user = Factory.create(:user)
-            Settings::Channels.channels[0]['channel_user_id'] = @hashtag_roll_user.id.to_s
-            Settings::Channels.channels[0]['hash_tags'] = ['test', 'testing']
+
+          it "creates a dashboard entry on the channel if the rolling comment contains a channel hashtag" do
+
+            lambda {
+              post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: #{@rolling_address}")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")+"&subject="+CGI::escape("here's an subject with a hashtag #test")
+            }.should change { DashboardEntry.count } .by(1)
+
           end
 
           it "creates a dashboard entry on the channel if to:email contains a channel address" do
 
             lambda {
               post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: test@#{Settings::EmailHook.email_hook_domain}")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")
-            }.should change { DashboardEntry.count } .by(1)
-
-          end
-
-          it "creates a dashboard entry on the channel if the rolling comment contains a channel hashtag" do
-
-            lambda {
-              post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: #{@rolling_address}")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")+"&subject="+CGI::escape("here's an subject with a hashtag #test")
             }.should change { DashboardEntry.count } .by(1)
 
           end
@@ -73,7 +79,15 @@ describe EmailWebhookController do
 
       end
 
-      it "creates no frames if it's not sent to the right address" do
+      it "creates no frames if it's not sent to a valid domain" do
+
+        lambda {
+          post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: bob@#{Settings::EmailHook.email_hook_domain}")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")
+        }.should_not change { Frame.count }
+
+      end
+
+      it "creates no frames if it's not sent to a valid email user" do
 
         lambda {
           post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: no.one@volumevolume.com")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")
