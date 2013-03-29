@@ -76,7 +76,7 @@ module ShelbyGt
     #      b/c it always gets overridden for credentialed requests
     config.middleware.use Rack::Cors do
       allow do
-        origins 'web.gt.shelby.tv', 'gt.shelby.tv', 'isoroll.shelby.tv', 'https://shelby.tv', 'shelby.tv', 'https://fb.shelby.tv','fb.shelby.tv', 'm.shelby.tv', 'staging.shelby.tv', 'localhost.shelby.tv:3000', '192.168.2.22:3000', '192.168.2.190:3000', 'm.localhost.shelby.tv:3000'
+        origins 'web.gt.shelby.tv', 'gt.shelby.tv', 'isoroll.shelby.tv', 'https://shelby.tv', 'shelby.tv', 'https://fb.shelby.tv','fb.shelby.tv', 'm.shelby.tv', 'staging.shelby.tv', 'localhost.shelby.tv:3000', '192.168.2.22:3000', '192.168.2.190:3000', 'm.localhost.shelby.tv:3000', "watchthiswith.me"
         resource %r{/v1/(beta_invite|conversation|dashboard|discussion_roll|frame|gt_interest|js_err|remote_control|roll|twitter|user|video)\w*},
           :headers => ['Origin', 'Accept', 'Content-Type', 'X-CSRF-Token', 'X-Shelby-User-Agent'],
           :methods => [:put, :post, :delete]
