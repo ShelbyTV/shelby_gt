@@ -1,4 +1,5 @@
 defaults: &defaults
+  default_rolling_comment: 'Rolled via email'
   email_hook_domain: 'volumevolume.com'
   email_user_keys: {
       roll : 'roll'

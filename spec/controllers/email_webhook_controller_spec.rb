@@ -50,6 +50,26 @@ describe EmailWebhookController do
         post :hook, :headers => "From: Some Guy <#{@u.primary_email}>\nTo:#{@rolling_address}\n", :text => "vimeo.com/12345"
       end
 
+      it "creates a default message if the email has no subject" do
+        GT::MessageManager.should_receive(:build_message).with({
+          :user => @u,
+          :public => true,
+          :text => Settings::EmailHook.default_rolling_comment
+        })
+
+        post :hook, :headers => "From: Some Guy <#{@u.primary_email}>\nTo:#{@rolling_address}\n", :text => "www.youtube.com here's an email http://example.com?name=val"
+      end
+
+      it "uses the email subject as the rolling message if there is one" do
+        GT::MessageManager.should_receive(:build_message).with({
+          :user => @u,
+          :public => true,
+          :text => "The email subject"
+        })
+
+        post :hook, :headers => "From: Some Guy <#{@u.primary_email}>\nTo:#{@rolling_address}\n", :text => "www.youtube.com here's an email http://example.com?name=val", :subject => "The email subject"
+      end
+
       it "creates frames from the videos" do
         GT::Framer.should_receive(:create_frame).with({
           :action => DashboardEntry::ENTRY_TYPE[:new_email_hook_frame],

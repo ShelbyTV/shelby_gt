@@ -21,10 +21,15 @@ class EmailWebhookController < ApplicationController
                   # try to create a video for that link
                   if video = GT::VideoManager.get_or_create_videos_for_url(link_match[0])[:videos][0]
                     # if we get a video, make a frame out of it
+
+                    # if the email has a subject, use that as the rolling comment, otherwise
+                    # we have a default
+                    message_text = (params[:subject] && !params[:subject].empty?) ? params[:subject] : Settings::EmailHook.default_rolling_comment
+
                     r = GT::Framer.create_frame({
                       :action => DashboardEntry::ENTRY_TYPE[:new_email_hook_frame],
                       :creator => user,
-                      :message => GT::MessageManager.build_message(:user => user, :public => true, :text => "Rolled via email"),
+                      :message => GT::MessageManager.build_message(:user => user, :public => true, :text => message_text),
                       :roll => user.public_roll,
                       :video => video
                     })
