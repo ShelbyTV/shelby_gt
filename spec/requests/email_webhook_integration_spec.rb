@@ -39,6 +39,14 @@ describe EmailWebhookController do
             Settings::Channels.channels[0]['hash_tags'] = ['test', 'testing']
           end
 
+          it "creates a dashboard entry on the channel if to:email contains a channel address" do
+
+            lambda {
+              post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: test@#{Settings::EmailHook.email_hook_domain}")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")
+            }.should change { DashboardEntry.count } .by(1)
+
+          end
+
           it "creates a dashboard entry on the channel if the rolling comment contains a channel hashtag" do
 
             lambda {
