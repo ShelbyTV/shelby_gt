@@ -340,6 +340,19 @@ describe 'v1/user' do
         end
       end
 
+      context "rolled_since_last_notification" do
+        it "should return rolled_since_last_notification with user if the supplied user_id is the current_users" do
+          get '/v1/user/' + @u1.id
+          response.body.should have_json_path("result/rolled_since_last_notification")
+        end
+
+       it "should NOT return rolled_since_last_notification with user if the supplied user_id is not the current_users" do
+          u2 = Factory.create(:user)
+          get '/v1/user/' + u2.id
+          response.body.should_not have_json_path("result/rolled_since_last_notification")
+        end
+      end
+
     end
 
     describe "GET stats" do

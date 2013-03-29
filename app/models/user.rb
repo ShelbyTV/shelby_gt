@@ -165,12 +165,16 @@ class User
   key :website,                String, :abbr => :bc
   # a description for the user's .tv network
   key :dot_tv_description,     String, :abbr => :bd
-  
+
   #The set of unique Google Analytics mobile client identifiers linking this user to GA
   #Set b/c a given user may log in on multiple devices, or across multiple installs on a single device
   key :google_analytics_client_ids,  Array, :typecast => 'String', :abbr => :be, :default => []
 
-  attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original, :avatar, 
+  # a hash of counts of the number of items rolled from different sources by the user
+  # since the last time we told them about it
+  key :rolled_since_last_notification, Hash, :abbr => :bf
+
+  attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original, :avatar,
                   :google_analytics_client_id
 
   # Arnold does a *shit ton* of user saving, which runs this validation, which turns out to be very expensive
@@ -241,7 +245,7 @@ class User
 
     "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/#{avatar_size}/#{id.to_s}?#{avatar_updated_at}" if has_shelby_avatar
   end
-  
+
   # When update_attributes recieves a :google_analytics_identifier, add it to our set
   def google_analytics_client_id=(ga_id)
     google_analytics_client_ids_will_change!
