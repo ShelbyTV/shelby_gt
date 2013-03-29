@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-require 'json'
+require 'hashtag_processor'
 
 class EmailWebhookController < ApplicationController
   def hook
@@ -36,6 +36,8 @@ class EmailWebhookController < ApplicationController
                     if r && frame = r[:frame]
                       # A Frame was rolled, track that user action
                       GT::UserActionManager.frame_rolled!(user.id, frame.id, frame.video_id, frame.roll_id)
+                      # Process frame message hashtags
+                      GT::HashtagProcessor.process_frame_message_hashtags_for_channels(frame)
                     end
                   end
                 end
