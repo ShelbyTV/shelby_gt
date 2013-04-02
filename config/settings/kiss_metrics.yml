@@ -9,7 +9,7 @@ defaults: &defaults
         multiple: 'Roll multiple frames via email'
       bookmarklet: 'Roll frame via bookmarklet'
     hooks:
-      email: 'Received rolling email from valid user'
+      email: 'Sent rolling email from valid address'
 development:
   <<: *defaults
 
