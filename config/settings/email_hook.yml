@@ -4,6 +4,7 @@ defaults: &defaults
   email_user_keys: {
       roll : 'roll'
   }
+  max_rolled_videos: 2
 
 development:
   <<: *defaults

@@ -7,6 +7,7 @@ describe EmailWebhookController do
     @hashtag_roll_user = Factory.create(:user)
     Settings::Channels.channels[0]['channel_user_id'] = @hashtag_roll_user.id.to_s
     Settings::Channels.channels[0]['hash_tags'] = ['test', 'testing']
+    Settings::EmailHook['max_rolled_videos'] = 2
   end
 
   before(:each) do
@@ -23,6 +24,14 @@ describe EmailWebhookController do
         lambda {
           post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: #{@rolling_address}")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")
         }.should change { Frame.count } .by(1)
+
+      end
+
+      it "only processes the specified maximum number of links" do
+
+        lambda {
+          post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: #{@rolling_address}")+"&text="+CGI::escape("three links www.link1.com www.link2.com www.link3.com")
+        }.should change { Frame.count } .by(Settings::EmailHook.max_rolled_videos)
 
       end
 

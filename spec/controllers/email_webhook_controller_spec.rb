@@ -9,7 +9,7 @@ describe EmailWebhookController do
     @hashtag_roll_user = Factory.create(:user)
     Settings::Channels.channels[0]['channel_user_id'] = @hashtag_roll_user.id.to_s
     Settings::Channels.channels[0]['hash_tags'] = [@channel_tag]
-
+    Settings::EmailHook['max_rolled_videos'] = 2
   end
 
   before(:each) do
@@ -48,6 +48,12 @@ describe EmailWebhookController do
         GT::VideoManager.should_receive(:get_or_create_videos_for_url).with("http://example.com?name=val")
 
         post :hook, :headers => "From: Some Guy <#{@u.primary_email}>\nTo:#{@rolling_address}\n", :text => "www.youtube.com here's an email http://example.com?name=val"
+      end
+
+      it "only processes the specified maximum number of links" do
+        GT::VideoManager.should_not_receive(:get_or_create_videos_for_url).with("www.thirdlink.com/page")
+
+        post :hook, :headers => "From: Some Guy <#{@u.primary_email}>\nTo:#{@rolling_address}\n", :text => "www.youtube.com here's an email http://example.com?name=val www.thirdlink.com/page"
       end
 
       it "finds links that don't start with http or www" do

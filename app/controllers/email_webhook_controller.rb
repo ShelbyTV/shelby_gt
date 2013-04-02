@@ -31,7 +31,9 @@ class EmailWebhookController < ApplicationController
             if user = User.find_by_primary_email(address)
               # if we've got a user, then parse the email for links
               if (params[:text])
-                params[:text].scan(WEB_URL_RE) do |link_match|
+                params[:text].scan(WEB_URL_RE).each_with_index do |link_match, i|
+                  # limit the number of links we try to process
+                  break if i == Settings::EmailHook.max_rolled_videos
                   # try to create a video for that link
                   if video = GT::VideoManager.get_or_create_videos_for_url(link_match[0])[:videos][0]
                     # if we get a video, make a frame out of it
