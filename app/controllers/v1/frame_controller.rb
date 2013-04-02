@@ -78,7 +78,7 @@ class V1::FrameController < ApplicationController
 
         # set the action, defaults to new_bookmark_frame
         case params[:source]
-        when "bookmark"
+        when "bookmarklet"
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
 
           # track rolling from the bookmarklet in KissMetrics
