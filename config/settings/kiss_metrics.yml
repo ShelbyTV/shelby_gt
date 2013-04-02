@@ -4,10 +4,11 @@ defaults: &defaults
     send_invite: 'Send Shelby invitation'
     accept_invite: 'Accept Shelby invitation'
     roll_frame:
+      bookmarklet: 'Roll frame via bookmarklet'
       email:
         single: 'Roll single frame via email'
         multiple: 'Roll multiple frames via email'
-      bookmarklet: 'Roll frame via bookmarklet'
+      extension: 'Roll frame via extension'
     hooks:
       email: 'Sent rolling email from valid address'
 development:

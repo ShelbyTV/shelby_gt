@@ -79,13 +79,16 @@ class V1::FrameController < ApplicationController
         # set the action, defaults to new_bookmark_frame
         case params[:source]
         when "bookmark", nil, ""
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["bookmarklet"])
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
+
+          # track rolling from the bookmarklet in KissMetrics
+          ShelbyGT_EM.next_tick { APIClients::KissMetrics.identify_and_record(current_user, Settings::KissMetrics.metric['roll_frame']['bookmarklet']) }
         when "extension"
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["extionsion"])
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
+
+          # track rolling from the extension in KissMetrics
+          ShelbyGT_EM.next_tick { APIClients::KissMetrics.identify_and_record(current_user, Settings::KissMetrics.metric['roll_frame']['extension']) }
         when "webapp"
-          StatsManager::StatsD.increment(Settings::StatsConstants.frame["create"]["webapp"])
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_in_app_frame]
         else
           return render_error(404, "that action isn't cool.")
@@ -145,10 +148,10 @@ class V1::FrameController < ApplicationController
        return render_error(404, "failed to re-roll frame from id.")
 
       end
-      
+
       # A Frame was rolled, track that user action
       GT::UserActionManager.frame_rolled!(current_user.id, @frame.id, @frame.video_id, @frame.roll_id)
-      
+
     end
   end
 
@@ -296,10 +299,10 @@ class V1::FrameController < ApplicationController
         if user_signed_in? or (params[:start_time] and params[:start_time].to_i <= 1)
           # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
           GT::UserManager.ensure_users_special_rolls(current_user, true) unless GT::UserManager.user_has_all_special_roll_ids?(current_user) if user_signed_in?
-          
+
           # UserAction view recorded each new view of the video
           GT::UserActionManager.view!(current_user.id, @frame.id, @frame.video_id, params[:start_time], params[:end_time]) if user_signed_in?
-          
+
           @new_frame = @frame.view!(current_user)
           @frame.reload # to update view_count
         end
