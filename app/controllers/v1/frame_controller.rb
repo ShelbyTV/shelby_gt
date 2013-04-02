@@ -78,7 +78,7 @@ class V1::FrameController < ApplicationController
 
         # set the action, defaults to new_bookmark_frame
         case params[:source]
-        when "bookmark", nil, ""
+        when "bookmark"
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
 
           # track rolling from the bookmarklet in KissMetrics
@@ -90,6 +90,8 @@ class V1::FrameController < ApplicationController
           ShelbyGT_EM.next_tick { APIClients::KissMetrics.identify_and_record(current_user, Settings::KissMetrics.metric['roll_frame']['extension']) }
         when "webapp"
           frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_in_app_frame]
+        when nil, ""
+          frame_options[:action] = DashboardEntry::ENTRY_TYPE[:new_bookmark_frame]
         else
           return render_error(404, "that action isn't cool.")
         end
