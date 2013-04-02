@@ -29,6 +29,7 @@ class EmailWebhookController < ApplicationController
           mail.from.each do |address|
             # figure out who the email is from and match it up with a shelby user
             if user = User.find_by_primary_email(address)
+              APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['hooks']['email'])
               # if we've got a user, then parse the email for links
               if (params[:text])
                 params[:text].scan(WEB_URL_RE).each_with_index do |link_match, i|
@@ -71,6 +72,9 @@ class EmailWebhookController < ApplicationController
               if frames_rolled > 0
                 user.rolled_since_last_notification["email"] += frames_rolled
                 user.save
+                # also track the rolling in kissmetrics
+                km_metric = frames_rolled > 1 ? Settings::KissMetrics.metric['roll_frame']['email']['multiple'] : Settings::KissMetrics.metric['roll_frame']['email']['single']
+                APIClients::KissMetrics.identify_and_record(user, km_metric)
               end
             end
           end
