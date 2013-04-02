@@ -347,7 +347,7 @@ describe V1::FrameController do
         GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
         GT::UserActionManager.should_receive(:frame_rolled!)
 
-        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmark", :format => :json
+        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmarklet", :format => :json
         assigns(:status).should eq(200)
         assigns(:frame).should eq(@f1)
       end
@@ -357,7 +357,7 @@ describe V1::FrameController do
         GT::HashtagProcessor.should_receive(:process_frame_message_hashtags_for_channels).with(@f1)
         GT::UserActionManager.should_receive(:frame_rolled!)
 
-        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmark", :format => :json
+        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmarklet", :format => :json
       end
 
       it "should create a new frame if given video_url and text params" do
@@ -382,7 +382,7 @@ describe V1::FrameController do
         GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return({:videos=> [@video]})
         GT::Framer.stub(:create_frame_from_url).and_return({:frame => @f1})
         GT::UserActionManager.should_not_receive(:frame_rolled!)
-        
+
         post :create, :roll_id => @r2.id, :url => @video_url, :source => "fucked_up", :format => :json
         assigns(:status).should eq(404)
       end
