@@ -33,7 +33,8 @@ class DashboardEntry
     :new_email_hook_frame => 5,
     :re_roll => 8,
     :watch => 9,
-    :comment => 10
+    :comment => 10,
+    :prioritized_frame => 30
   }.freeze
   key :action, Integer, :abbr => :e, :default => ENTRY_TYPE[:new_social_frame]
 
