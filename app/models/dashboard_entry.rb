@@ -31,6 +31,7 @@ class DashboardEntry
     :new_genius_frame => 3,
     :new_hashtag_frame => 4,
     :new_email_hook_frame => 5,
+    :new_community_frame => 6,
     :re_roll => 8,
     :watch => 9,
     :comment => 10,

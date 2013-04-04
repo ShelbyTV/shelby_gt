@@ -136,6 +136,9 @@ class Frame
       # send email notification in a non-blocking manor
       ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self, u) }
 
+      # add this frame to the community channel in a non-blocking manner
+      ShelbyGT_EM.next_tick { add_to_community_channel }
+
       return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
     end
   end
@@ -150,6 +153,8 @@ class Frame
     self.reload
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self) }
+    # add this frame to the community channel in a non-blocking manner
+    ShelbyGT_EM.next_tick { add_to_community_channel }
   end
 
   # To remove from watch later, destroy the Frame! (don't forget to add a UserAction)
@@ -359,6 +364,13 @@ class Frame
       Roll.increment(self.roll_id, :j => 1) if self.roll_id
       self.roll.frame_count += 1 if self.roll
       true
+    end
+
+    # look up the community channel user in the db, and add a dashboard entry
+    # for that user containing this frame
+    def add_to_community_channel
+      community_channel_user = User.find(Settings::Channels.community_channel_user_id)
+      GT::Framer.create_dashboard_entry(self, ::DashboardEntry::ENTRY_TYPE[:new_community_frame], community_channel_user)
     end
 
 end

@@ -20,7 +20,7 @@ module GT
             # skip this channel if we've already added to it
             next if channels_rolled_to.include? channel['channel_user_id']
 
-            if channel['hash_tags'].detect {|tag| tag.casecmp(hashtag_match[0]) == 0}
+            if channel['hash_tags'] && channel['hash_tags'].detect {|tag| tag.casecmp(hashtag_match[0]) == 0}
               # we found a channel for this hashtag, get the user for this channel
               if user = User.find(channel['channel_user_id'])
                 # add this frame to the channel user's dashboard

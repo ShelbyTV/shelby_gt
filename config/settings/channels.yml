@@ -29,12 +29,14 @@ defaults: &defaults
       hash_tags : ['natureisrad', 'nature']
     },
   ]
+  community_channel_user_id : '515d83ecb415cc0d1a025bfe'
 
 development:
   <<: *defaults
 
 test:
-  channels : [{},{}]
+  channels : [{},{},{}]
+  community_channel_user_id : ''
 
 production: &production
   <<: *defaults

@@ -302,6 +302,27 @@ describe Frame do
       @frame.score.should > score_before
     end
 
+    context "also add to community channel" do
+
+      before(:each) do
+        @community_channel_user = Factory.create(:user)
+        Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
+      end
+
+      it "should add the frame to the community channel" do
+        lambda {
+          @frame.add_to_watch_later!(@u1)
+        }.should change { DashboardEntry.count } .by(1)
+      end
+
+      it "should create the channel db entry with the correct parameters" do
+        GT::Framer.should_receive(:create_dashboard_entry).with(@frame, ::DashboardEntry::ENTRY_TYPE[:new_community_frame], @community_channel_user)
+
+        @frame.add_to_watch_later!(@u1)
+      end
+
+    end
+
     it "should set metadata correctly" do
       f = nil
       lambda {
@@ -328,12 +349,27 @@ describe Frame do
   context "like" do
     before(:each) do
       @frame = Factory.create(:frame)
+
+      @community_channel_user = Factory.create(:user)
+      Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
     end
 
     it "should increment the like count" do
       lambda {
         @frame.like!
       }.should change { @frame.like_count } .by 1
+    end
+
+    it "should add the frame to the community channel" do
+      lambda {
+        @frame.like!
+      }.should change { DashboardEntry.count } .by(1)
+    end
+
+    it "should create the channel db entry with the correct parameters" do
+      GT::Framer.should_receive(:create_dashboard_entry).with(@frame, ::DashboardEntry::ENTRY_TYPE[:new_community_frame], @community_channel_user)
+
+      @frame.like!
     end
   end
 
