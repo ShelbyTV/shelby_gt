@@ -1,0 +1,25 @@
+defaults: &defaults
+  db_host: '127.0.0.1'
+  db_port: '27017'
+  db_options: {}
+  mm_use_identity_map: true
+
+development:
+  <<: *defaults
+  db_name: 'dev-gt-prioritized-dashboard'
+
+test:
+  <<: *defaults
+  db_name: 'test-gt-prioritized-dashboard'
+
+production: &production
+  <<: *defaults
+  db_name: 'gt-prioritized-dashboard'
+  db_host: '10.176.67.200'
+  db_username: "gt_user"
+  db_password: "GT/us3r!!!"
+  
+arnold:
+  <<: *production
+  mm_use_identity_map: false
+ 
