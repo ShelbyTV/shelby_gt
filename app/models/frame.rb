@@ -369,8 +369,9 @@ class Frame
     # look up the community channel user in the db, and add a dashboard entry
     # for that user containing this frame
     def add_to_community_channel
-      community_channel_user = User.find(Settings::Channels.community_channel_user_id)
-      GT::Framer.create_dashboard_entry(self, ::DashboardEntry::ENTRY_TYPE[:new_community_frame], community_channel_user)
+      if community_channel_user = User.find(Settings::Channels.community_channel_user_id)
+        GT::Framer.create_dashboard_entry(self, ::DashboardEntry::ENTRY_TYPE[:new_community_frame], community_channel_user)
+      end
     end
 
 end
