@@ -12,6 +12,7 @@ class PrioritizedDashboardEntry
   
   set_collection_name "prioritized_dashboard_entries"
   
+  # Not guaranteed to exist (ie. when this represents a non-stream video recommendations)
   belongs_to :dashboard_entry
   key :dashboard_entry_id,      ObjectId,   :abbr => :dbe_id
   
@@ -37,13 +38,14 @@ class PrioritizedDashboardEntry
   scope :ranked, sort(:score => -1)
   
   # --------- convenient getters -----------
-  def friend_sharers() User.where(:id.in => pde.friend_sharers_array); end
-  def friend_viewers() User.where(:id.in => pde.friend_viewers_array); end
-  def friend_likers() User.where(:id.in => pde.friend_likers_array); end
-  def friend_rollers() User.where(:id.in => pde.friend_rollers_array); end
+  def friend_sharers() User.where(:id.in => self.friend_sharers_array); end
+  def friend_viewers() User.where(:id.in => self.friend_viewers_array); end
+  def friend_likers() User.where(:id.in => self.friend_likers_array); end
+  def friend_rollers() User.where(:id.in => self.friend_rollers_array); end
   
   
   # --------- Mirrored From DashboardEntry ---------
+  # If self.dashboard_entry does not exist, this data will still be here, and valid.
   belongs_to :user, :required => true
   key :user_id, ObjectId, :abbr => :a
 
