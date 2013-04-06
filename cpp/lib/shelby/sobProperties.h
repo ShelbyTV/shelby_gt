@@ -22,6 +22,7 @@
 #define ALL_PROPERTIES(apply)        \
    USER_PROPERTIES(apply)            \
    FRAME_PROPERTIES(apply)           \
+   ANCESTOR_FRAME_PROPERTIES(apply)  \
    ROLL_PROPERTIES(apply)            \
    CONVERSATION_PROPERTIES(apply)    \
    VIDEO_PROPERTIES(apply)           \
@@ -59,21 +60,26 @@
    apply(USER , social_tracker       ,  SOCIAL_TRACKER       ,  ARRAY  , social_tracker      ) \
    apply(USER , roll_followings      ,  ROLL_FOLLOWINGS      ,  ARRAY  , roll_followings     )
 
-#define FRAME_PROPERTIES(apply)                                     \
-   apply(FRAME , id                         , ID                         , OID    , _id ) \
-   apply(FRAME , roll_id                    , ROLL_ID                    , OID    , a   ) \
-   apply(FRAME , video_id                   , VIDEO_ID                   , OID    , b   ) \
-   apply(FRAME , conversation_id            , CONVERSATION_ID            , OID    , c   ) \
-   apply(FRAME , creator_id                 , CREATOR_ID                 , OID    , d   ) \
-   apply(FRAME , score                      , SCORE                      , DOUBLE , e   ) \
-   apply(FRAME , upvoters                   , UPVOTERS                   , ARRAY  , f   ) \
-   apply(FRAME , frame_ancestors            , FRAME_ANCESTORS            , ARRAY  , g   ) \
-   apply(FRAME , frame_children             , FRAME_CHILDREN             , ARRAY  , h   ) \
-   apply(FRAME , view_count                 , VIEW_COUNT                 , INT    , i   ) \
-   apply(FRAME , short_links                , SHORT_LINKS                , ARRAY  , j   ) \
-   apply(FRAME , order                      , ORDER                      , DOUBLE , k   ) \
-   apply(FRAME , anonymous_creator_nickname , ANONYMOUS_CREATOR_NICKNAME , STRING , m   ) \
-   apply(FRAME , like_count                 , LIKE_COUNT                 , INT    , n   )
+#define FRAME_PROPERTIES(apply)                                                                       \
+   apply(FRAME , id                         , ID                         , OID    , _id             ) \
+   apply(FRAME , roll_id                    , ROLL_ID                    , OID    , a               ) \
+   apply(FRAME , video_id                   , VIDEO_ID                   , OID    , b               ) \
+   apply(FRAME , conversation_id            , CONVERSATION_ID            , OID    , c               ) \
+   apply(FRAME , creator_id                 , CREATOR_ID                 , OID    , d               ) \
+   apply(FRAME , originator_id              , ORIGINATOR_ID              , OID    , originator_id   ) \
+   apply(FRAME , score                      , SCORE                      , DOUBLE , e               ) \
+   apply(FRAME , upvoters                   , UPVOTERS                   , ARRAY  , f               ) \
+   apply(FRAME , frame_ancestors            , FRAME_ANCESTORS            , ARRAY  , g               ) \
+   apply(FRAME , frame_children             , FRAME_CHILDREN             , ARRAY  , h               ) \
+   apply(FRAME , view_count                 , VIEW_COUNT                 , INT    , i               ) \
+   apply(FRAME , short_links                , SHORT_LINKS                , ARRAY  , j               ) \
+   apply(FRAME , order                      , ORDER                      , DOUBLE , k               ) \
+   apply(FRAME , anonymous_creator_nickname , ANONYMOUS_CREATOR_NICKNAME , STRING , m               ) \
+   apply(FRAME , like_count                 , LIKE_COUNT                 , INT    , n               )
+
+#define ANCESTOR_FRAME_PROPERTIES(apply)                     \
+   apply(ANCESTOR_FRAME , id        , ID        , OID, _id ) \
+   apply(ANCESTOR_FRAME , creator_id, CREATOR_ID, OID, d   ) \
 
 #define ROLL_PROPERTIES(apply)                                                                           \
    apply(ROLL , id                           , ID                           , OID    , _id             ) \
@@ -103,7 +109,7 @@
    apply(CONVERSATION , from_deeplink , FROM_DEEPLINK , BOOL  , d        ) \
    apply(CONVERSATION , messages      , MESSAGES      , ARRAY , messages )
 
-#define VIDEO_PROPERTIES(apply)                               \
+#define VIDEO_PROPERTIES(apply)                                                \
    apply(VIDEO , id                  , ID                  , OID       , _id ) \
    apply(VIDEO , provider_name       , PROVIDER_NAME       , STRING    , a   ) \
    apply(VIDEO , provider_id         , PROVIDER_ID         , STRING    , b   ) \
@@ -135,7 +141,7 @@
    apply(DASHBOARD_ENTRY , action   , ACTION   , INT  , e   ) \
    apply(DASHBOARD_ENTRY , actor_id , ACTOR_ID , OID  , f   )
 
-#define MESSAGE_PROPERTIES(apply)                                   \
+#define MESSAGE_PROPERTIES(apply)                                                    \
    apply(MESSAGE , id                     , ID                      , OID    , _id ) \
    apply(MESSAGE , origin_network         , ORIGIN_NETWORK          , STRING , a   ) \
    apply(MESSAGE , origin_id              , ORIGIN_ID               , STRING , b   ) \

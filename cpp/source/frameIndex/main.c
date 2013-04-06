@@ -274,6 +274,21 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
                       sizeof(userAttributes) / sizeof(sobField));
 }
 
+void printJsonOriginator(sobContext sob, mrjsonContext context, bson *originator)
+{
+   static sobField originatorAttributes[] = {
+      SOB_USER_ID,
+      SOB_USER_NAME,
+      SOB_USER_FAUX
+   };
+
+   sobPrintAttributes(context,
+                      originator,
+                      originatorAttributes,
+                      sizeof(originatorAttributes) / sizeof(sobField));
+
+}
+
 /*
  * There are some attributes in the Ruby API that this C API is not printing
  * (because they seem outdated / unused):
@@ -298,11 +313,49 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
       SOB_FRAME_UPVOTERS,
       SOB_FRAME_LIKE_COUNT
    };
+   bson_oid_t originatorFrameOid;
+   bson *originatorFrame;
+   bson *originator;
 
    sobPrintAttributes(context,
                       frame,
                       frameAttributes,
                       sizeof(frameAttributes) / sizeof(sobField));
+
+   int status = sobBsonOidArrayFieldLast(SOB_FRAME,
+                                         SOB_FRAME_FRAME_ANCESTORS,
+                                         frame,
+                                         &originatorFrameOid);
+
+   // print info about the originating user if the current frame has an ancestor
+   if (status) {
+      sobGetBsonByOid(sob,
+                      SOB_ANCESTOR_FRAME,
+                      originatorFrameOid,
+                      &originatorFrame);
+
+      status = sobGetBsonByOidField(sob,
+                                        SOB_USER,
+                                        originatorFrame,
+                                        SOB_ANCESTOR_FRAME_CREATOR_ID,
+                                        &originator);
+
+      sobPrintAttributeWithKeyOverride(context,
+                                       originator,
+                                       SOB_USER_ID,
+                                       "originator_id");
+
+      sobPrintSubobjectByOid(sob,
+                             context,
+                             originatorFrame,
+                             SOB_ANCESTOR_FRAME_CREATOR_ID,
+                             SOB_USER,
+                             "originator",
+                             &printJsonOriginator);
+   } else {
+      mrjsonNullAttribute(context, "originator_id");
+      mrjsonNullAttribute(context, "originator");
+   }
 
    sobPrintOidConciseTimeAgoAttribute(context,
                                       frame,
@@ -447,6 +500,8 @@ int loadData(sobContext sob)
    cvector userOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector videoOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector conversationOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector frameAncestorOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector originatorOids = cvectorAlloc(sizeof(bson_oid_t));
 
    // means we're looking up the public_roll of a user
    if (strcmp(options.rollString, "") == 0 &&
@@ -481,10 +536,21 @@ int loadData(sobContext sob)
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_CREATOR_ID, userOids);
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_VIDEO_ID, videoOids);
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_CONVERSATION_ID, conversationOids);
+   sobGetLastOidVectorFromOidArrayField(sob,
+                                        SOB_FRAME,
+                                        SOB_FRAME_FRAME_ANCESTORS,
+                                        frameAncestorOids);
    sobLoadAllById(sob, SOB_ROLL, rollOids);
    sobLoadAllById(sob, SOB_USER, userOids);
    sobLoadAllById(sob, SOB_VIDEO, videoOids);
    sobLoadAllById(sob, SOB_CONVERSATION, conversationOids);
+   sobLoadAllById(sob, SOB_ANCESTOR_FRAME, frameAncestorOids);
+
+   // get the creators of the final ancestor frames for each frame, whom we will call the originators,
+   // then load them
+   sobGetOidVectorFromObjectField(sob, SOB_ANCESTOR_FRAME, SOB_ANCESTOR_FRAME_CREATOR_ID, originatorOids);
+   sobLoadAllById(sob, SOB_USER, originatorOids);
+
 
    // need to fail if non-public roll has a different user as its creator
    if (!options.permissionGranted &&

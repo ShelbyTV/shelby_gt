@@ -22,6 +22,7 @@
 #define ALL_DATABASES(apply)        \
    USER_DATABASES(apply)            \
    FRAME_DATABASES(apply)           \
+   ANCESTOR_FRAME_DATABASES(apply)  \
    ROLL_DATABASES(apply)            \
    CONVERSATION_DATABASES(apply)    \
    VIDEO_DATABASES(apply)           \
@@ -30,22 +31,27 @@
 #define USER_DATABASES(apply)                   \
    apply(DEVELOPMENT , dev-gt-user    , users , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(TEST        , test-gt-user   , users , FALSE , , 127.0.0.1:27017 , , , ) \
-   apply(PRODUCTION  , nos-production , users , TRUE , shelbySet , nos-db-s0-a:27018 , nos-db-s0-b:27018 , NULL, ) 
+   apply(PRODUCTION  , nos-production , users , TRUE , shelbySet , nos-db-s0-a:27018 , nos-db-s0-b:27018 , NULL, )
 
 #define FRAME_DATABASES(apply)                       \
    apply(DEVELOPMENT , dev-gt-roll-frame  , frames , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(TEST        , test-gt-roll-frame , frames , FALSE , , 127.0.0.1:27017 , , , ) \
-   apply(PRODUCTION  , gt-roll-frame      , frames , FALSE , , 127.0.0.1:27222 , , gt_user , GT/us3r!!! ) 
+   apply(PRODUCTION  , gt-roll-frame      , frames , FALSE , , 127.0.0.1:27222 , , gt_user , GT/us3r!!! )
+
+#define ANCESTOR_FRAME_DATABASES(apply)                       \
+   apply(DEVELOPMENT , dev-gt-roll-frame  , frames , FALSE , , 127.0.0.1:27017 , , , ) \
+   apply(TEST        , test-gt-roll-frame , frames , FALSE , , 127.0.0.1:27017 , , , ) \
+   apply(PRODUCTION  , gt-roll-frame      , frames , FALSE , , 127.0.0.1:27222 , , gt_user , GT/us3r!!! )
 
 #define ROLL_DATABASES(apply)                       \
    apply(DEVELOPMENT , dev-gt-roll-frame  , rolls , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(TEST        , test-gt-roll-frame , rolls , FALSE , , 127.0.0.1:27017 , , , ) \
-   apply(PRODUCTION  , gt-roll-frame      , rolls , FALSE , , 127.0.0.1:27222 , , gt_user , GT/us3r!!! ) 
+   apply(PRODUCTION  , gt-roll-frame      , rolls , FALSE , , 127.0.0.1:27222 , , gt_user , GT/us3r!!! )
 
 #define CONVERSATION_DATABASES(apply)                         \
    apply(DEVELOPMENT , dev-gt-conversation  , conversations , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(TEST        , test-gt-conversation , conversations , FALSE , , 127.0.0.1:27017 , , , ) \
-   apply(PRODUCTION  , gt-conversation      , conversations , FALSE , , 127.0.0.1:27221 , , gt_user , GT/us3r!!! ) 
+   apply(PRODUCTION  , gt-conversation      , conversations , FALSE , , 127.0.0.1:27221 , , gt_user , GT/us3r!!! )
 
 #define VIDEO_DATABASES(apply)                  \
    apply(DEVELOPMENT , dev-gt-video  , videos , FALSE , , 127.0.0.1:27017 , , , ) \

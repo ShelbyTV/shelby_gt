@@ -22,7 +22,7 @@ static const char *sobReplSetName[] =
 #undef REPLSETNAME
 
 #define PRIMARYSERVER(a,b,c,d,e,f,g,h,i) #f,
-static const char *sobPrimaryServer[] = 
+static const char *sobPrimaryServer[] =
    { ALL_DATABASES(PRIMARYSERVER) };
 #undef PRIMARYSERVER
 
@@ -44,7 +44,7 @@ static const char *sobDBPassword[] =
 #define DBCOLLECTION(a,b,c,d,e,f,g,h,i) #b "." #c,
 static const char *sobDBCollection[] =
    { ALL_DATABASES(DBCOLLECTION) };
-#undef DBCOLLECTION 
+#undef DBCOLLECTION
 
 #define DBNAME(a,b,c,d,e,f,g,h,i) #b,
 static const char *sobDBName[] =
@@ -62,7 +62,7 @@ static bson_type sobFieldBSONType[] =
 #undef FIELD_BSON_TYPE
 
 #define FIELD_LONG_NAME(a,b,c,d,e) #b,
-static const char *sobFieldLongName[] = 
+static const char *sobFieldLongName[] =
    { ALL_PROPERTIES(FIELD_LONG_NAME) };
 #undef FIELD_LONG_NAME
 
@@ -111,7 +111,7 @@ void sobFreeContext(sobContext context)
 {
    for (unsigned int i = 0 ; i < SOB_NUMTYPES ; i++) {
       if (context->allocatedConn[i] != NULL) {
-         mongo_destroy(context->allocatedConn[i]); 
+         mongo_destroy(context->allocatedConn[i]);
          free(context->allocatedConn[i]);
       }
 
@@ -202,7 +202,7 @@ int sobConnect(sobContext context, sobType type)
       mongo_init(context->allocatedConn[type]);
       mongo_parse_host(sobPrimaryServer[sobArrayIndex(type, context->env)], &primary);
 
-      status = mongo_connect(context->allocatedConn[type], primary.host, primary.port);            
+      status = mongo_connect(context->allocatedConn[type], primary.host, primary.port);
    }
 
    if (MONGO_OK != status) {
@@ -214,7 +214,7 @@ int sobConnect(sobContext context, sobType type)
          default:                    printf("received unknown status\n"); return FALSE;
       }
    }
-      
+
    return TRUE;
 }
 
@@ -249,7 +249,7 @@ int sobConnectAndAuthenticate(sobContext context, sobType type)
    if (!sobConnect(context, type)) {
       return FALSE;
    }
-   
+
    return sobAuthenticate(context, type);
 }
 
@@ -264,34 +264,34 @@ bson_oid_t sobGetUniqueOidByStringField(sobContext context,
    bson_init(&query);
    bson_append_string(&query, sobFieldDBName[field], value);
    bson_finish(&query);
-   
+
    bson fields;
    bson_init(&fields);
    bson_append_int(&fields, "_id", 1);
    bson_finish(&fields);
-   
+
    bson out;
    bson_init(&out);
 
    // TODO: check return status
    sobConnectAndAuthenticate(context, type);
 
-   if (mongo_find_one(context->typeToConn[type], 
+   if (mongo_find_one(context->typeToConn[type],
                       sobDBCollection[sobArrayIndex(type, context->env)],
-                      &query, 
-                      &fields, 
+                      &query,
+                      &fields,
                       &out) == MONGO_OK)
    {
       bson_iterator iterator;
       bson_iterator_init(&iterator, &out);
       result = *bson_iterator_oid(&iterator);
-   } 
-   
+   }
+
    bson_destroy(&out);
    bson_destroy(&fields);
    bson_destroy(&query);
 
-   return result; 
+   return result;
 }
 
 void insertMongoCursorIntoObjectMap(sobContext context,
@@ -335,14 +335,14 @@ void sobLoadAllByOidField(sobContext context,
    bson_append_finish_object(&query);
    bson_finish(&query);
 
-   assert(context); 
- 
+   assert(context);
+
    // TODO: check return status
    sobConnectAndAuthenticate(context, type);
    assert(context->typeToConn[type]);
 
    mongo_cursor cursor;
-   mongo_cursor_init(&cursor, 
+   mongo_cursor_init(&cursor,
                      context->typeToConn[type],
                      sobDBCollection[sobArrayIndex(type, context->env)]);
    mongo_cursor_set_options(&cursor, MONGO_SLAVE_OK);
@@ -383,20 +383,20 @@ void sobLoadAllById(sobContext context,
    bson_append_finish_array(&query);
    bson_append_finish_object(&query);
    bson_finish(&query);
- 
+
    // TODO: check return status
    sobConnectAndAuthenticate(context, type);
- 
+
    mongo_cursor cursor;
    mongo_cursor_init(&cursor,
-                     context->typeToConn[type], 
+                     context->typeToConn[type],
                      sobDBCollection[sobArrayIndex(type, context->env)]);
    mongo_cursor_set_options(&cursor, MONGO_SLAVE_OK);
 
    mongo_cursor_set_query(&cursor, &query);
-   
+
    insertMongoCursorIntoObjectMap(context, type, &cursor);
-   
+
    bson_destroy(&query);
    mongo_cursor_destroy(&cursor);
 }
@@ -446,8 +446,8 @@ int sobGetBsonByOid(sobContext context,
                     bson **result)
 {
    cvector vec = context->objectVector[type];
-  
-   // slow linear search, but should be fine until we get tons of objects... 
+
+   // slow linear search, but should be fine until we get tons of objects...
    for (unsigned int i = 0; i < cvectorCount(vec); i++) {
       bson_iterator iterator;
       bson_type type;
@@ -468,7 +468,7 @@ int sobGetBsonByOid(sobContext context,
 int sobGetBsonByOidField(sobContext context,
                          sobType typeToGet,
                          bson *object,
-                         sobField objectOidField, 
+                         sobField objectOidField,
                          bson **result)
 {
    bson_iterator iterator;
@@ -509,7 +509,7 @@ void sobGetOidVectorFromObjectField(sobContext context,
    for (unsigned int i = 0; i < cvectorCount(objectVector); i++) {
       bson_iterator iterator;
       bson_type type;
- 
+
       type = bson_find(&iterator, *(bson **)cvectorGetElement(objectVector, i), sobFieldDBName[field]);
       if (type == BSON_OID) {
          cvectorAddElement(result, bson_iterator_oid(&iterator));
@@ -574,7 +574,7 @@ void sobPrintAttributeWithKeyOverride(mrjsonContext context,
       case BSON_INT:
          mrbsonIntAttribute(context, object, dbName, key);
          break;
-      
+
       case BSON_ARRAY:
          mrbsonSimpleArrayAttribute(context, object, dbName, key);
          break;
@@ -582,7 +582,7 @@ void sobPrintAttributeWithKeyOverride(mrjsonContext context,
       case BSON_DATE:
          mrbsonDateAttribute(context, object, dbName, key);
          break;
-           
+
       case BSON_LONG:
       case BSON_EOO:
       case BSON_OBJECT:
@@ -662,7 +662,7 @@ void sobPrintSubobjectArray(sobContext sob,
       mrjsonEndObject(context);
    }
 
-   mrjsonEndArray(context); 
+   mrjsonEndArray(context);
 }
 
 void sobPrintArrayAttributeCountWithKey(mrjsonContext context,
@@ -684,7 +684,7 @@ void sobPrintArrayAttributeCountWithKey(mrjsonContext context,
    while (bson_iterator_next(&iterator)) {
       count++;
    }
-   
+
    mrjsonIntAttribute(context, key, count);
 }
 
@@ -746,7 +746,7 @@ int sobBsonIntField(sobContext context,
 
 int sobBsonOidField(sobType objectType,
                     sobField fieldToCheck,
-                    bson* object,
+                    bson *object,
                     bson_oid_t *output)
 {
    bson_iterator iterator;
@@ -761,6 +761,39 @@ int sobBsonOidField(sobType objectType,
 
    *output = *bson_iterator_oid(&iterator);
    return TRUE;
+}
+
+int sobBsonOidArrayFieldLast(sobType objectType,
+                             sobField fieldToCheck,
+                             bson *object,
+                             bson_oid_t *output)
+{
+   bson_iterator iterator;
+   bson_type type;
+   bson_oid_t *result;
+
+   assert(sobFieldBSONType[fieldToCheck] == BSON_ARRAY);
+
+   type = bson_find(&iterator, object, sobFieldDBName[fieldToCheck]);
+   if (BSON_ARRAY != type) {
+      return FALSE;
+   }
+
+   bson arrayBson;
+   bson_iterator_subobject(&iterator, &arrayBson);
+   bson_iterator_from_buffer(&iterator, arrayBson.data);
+
+   result = NULL;
+   while (bson_iterator_next(&iterator)) {
+      result = bson_iterator_oid(&iterator);
+   }
+
+   if (result != NULL) {
+      *output = *result;
+      return TRUE;
+   } else {
+      return FALSE;
+   }
 }
 
 void sobPrintFieldIfBoolField(mrjsonContext context,
@@ -826,7 +859,7 @@ void sobGetOidVectorFromObjectArrayField(sobContext context,
    for (unsigned int i = 0; i < cvectorCount(objectVector); i++) {
       bson_iterator iterator;
       bson_type type;
- 
+
       type = bson_find(&iterator, *(bson **)cvectorGetElement(objectVector, i), sobFieldDBName[arrayField]);
       if (type != BSON_ARRAY) {
          continue;
@@ -847,6 +880,64 @@ void sobGetOidVectorFromObjectArrayField(sobContext context,
         }
 
         cvectorAddElement(result, bson_iterator_oid(&subIterator));
+     }
+  }
+}
+
+void sobGetOidVectorFromOidArrayField(sobContext context,
+                                      sobType type,
+                                      sobField arrayField,
+                                      cvector result)
+{
+   assert(cvectorElementSize(result) == sizeof(bson_oid_t));
+   cvector objectVector = context->objectVector[type];
+
+   for (unsigned int i = 0; i < cvectorCount(objectVector); i++) {
+      bson_iterator iterator;
+      bson_type type;
+
+      type = bson_find(&iterator, *(bson **)cvectorGetElement(objectVector, i), sobFieldDBName[arrayField]);
+      if (type != BSON_ARRAY) {
+         continue;
+      }
+
+     bson arrayBson;
+     bson_iterator_subobject(&iterator, &arrayBson);
+     bson_iterator_from_buffer(&iterator, arrayBson.data);
+
+     while (bson_iterator_next(&iterator)) {
+        cvectorAddElement(result, bson_iterator_oid(&iterator));
+     }
+  }
+}
+
+void sobGetLastOidVectorFromOidArrayField(sobContext context,
+                                      sobType type,
+                                      sobField arrayField,
+                                      cvector result)
+{
+   assert(cvectorElementSize(result) == sizeof(bson_oid_t));
+   cvector objectVector = context->objectVector[type];
+
+   for (unsigned int i = 0; i < cvectorCount(objectVector); i++) {
+      bson_iterator iterator;
+      bson_type type;
+
+      type = bson_find(&iterator, *(bson **)cvectorGetElement(objectVector, i), sobFieldDBName[arrayField]);
+      if (type != BSON_ARRAY) {
+         continue;
+      }
+
+     bson arrayBson;
+     bson_iterator_subobject(&iterator, &arrayBson);
+     bson_iterator_from_buffer(&iterator, arrayBson.data);
+
+     const void *objectOid = NULL;
+     while (bson_iterator_next(&iterator)) {
+        objectOid = (const void *)bson_iterator_oid(&iterator);
+     }
+     if (objectOid != NULL) {
+      cvectorAddElement(result, objectOid);
      }
   }
 }
@@ -884,21 +975,21 @@ int sobGetBsonForArrayObjectWithOidField(sobContext sob,
    if (type != BSON_ARRAY) {
       return FALSE;
    }
- 
+
    bson arrayBson;
    bson_iterator_subobject(&iterator, &arrayBson);
    bson_iterator_from_buffer(&iterator, arrayBson.data);
- 
+
    while (bson_iterator_next(&iterator)) {
       bson element;
       bson_iterator subIterator;
       bson_iterator_subobject(&iterator, &element);
- 
+
       type = bson_find(&subIterator, &element, sobFieldDBName[arrayObjectField]);
       if (type != BSON_OID) {
          continue;
       }
- 
+
       if (sobBsonOidEqual(*bson_iterator_oid(&subIterator), oidToCheck)) {
          *result = element;
          return TRUE;

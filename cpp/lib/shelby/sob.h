@@ -17,13 +17,14 @@ extern "C" {
  * querying.
  *
  * Sub-types like MESSAGE are aviailable in sobField, etc. but
- * not here since they're currently only accessible via a 
+ * not here since they're currently only accessible via a
  * CONVERSATION.
  */
 typedef enum sobType
 {
    SOB_USER = 0,
    SOB_FRAME,
+   SOB_ANCESTOR_FRAME,
    SOB_ROLL,
    SOB_CONVERSATION,
    SOB_VIDEO,
@@ -46,7 +47,7 @@ typedef enum sobEnvironment
 #define SOB_FIELD(a,b,c,d,e) SOB_##a##_##c,
 typedef enum sobField
 {
-   ALL_PROPERTIES(SOB_FIELD) 
+   ALL_PROPERTIES(SOB_FIELD)
 } sobField;
 
 typedef struct sobContextStruct *sobContext;
@@ -58,11 +59,11 @@ void sobFreeContext(sobContext context);
 sobEnvironment sobGetEnvironment(sobContext context);
 
 bson_oid_t sobGetUniqueOidByStringField(sobContext context,
-                                        sobType type, 
+                                        sobType type,
                                         sobField field,
                                         const char *value);
 
-void sobLoadAllByOidField(sobContext context, 
+void sobLoadAllByOidField(sobContext context,
                           sobType type,
                           sobField field,
                           bson_oid_t oid,
@@ -78,7 +79,7 @@ int sobGetBsonByOid(sobContext context,
 int sobGetBsonByOidField(sobContext context,
                          sobType typeToGet,
                          bson *object,
-                         sobField objectOidField, 
+                         sobField objectOidField,
                          bson **result);
 
 /*
@@ -101,6 +102,16 @@ void sobGetOidVectorFromObjectArrayField(sobContext context,
                                          sobField arrayField,
                                          sobField subObjectOidField,
                                          cvector result);
+
+void sobGetOidVectorFromOidArrayField(sobContext context,
+                                      sobType type,
+                                      sobField arrayField,
+                                      cvector result);
+
+void sobGetLastOidVectorFromOidArrayField(sobContext context,
+                                          sobType type,
+                                          sobField arrayField,
+                                          cvector result);
 
 void sobLoadAllById(sobContext context,
                     sobType type,
@@ -172,8 +183,13 @@ int sobBsonIntField(sobContext context,
 
 int sobBsonOidField(sobType objectType,
                     sobField fieldToCheck,
-                    bson* object,
+                    bson *object,
                     bson_oid_t *output);
+
+int sobBsonOidArrayFieldLast(sobType objectType,
+                             sobField fieldToCheck,
+                             bson *object,
+                             bson_oid_t *output);
 
 int sobOidArrayFieldContainsOid(sobContext context,
                                 sobField arrayField,

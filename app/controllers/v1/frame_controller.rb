@@ -28,6 +28,8 @@ class V1::FrameController < ApplicationController
         # make sure the frame has a roll so this doesn't get all 'so i married an axe murderer' on the consumer.
         frame_viewable_by = (@frame.roll and @frame.roll.viewable_by?(current_user))
         if (@frame.roll_id == nil or frame_viewable_by)
+          last_ancestor = Frame.find(@frame.frame_ancestors.last)
+          @originator = last_ancestor && last_ancestor.creator
           @status =  200
           @include_frame_children = (params[:include_children] == "true") ? true : false
         else
