@@ -292,7 +292,7 @@ class User
   def gt_enable!
     unless self.gt_enabled?
       self.gt_enabled = true
-      self.faux = (self.user_type == USER_TYPE[:faux] ? USER_TYPE[:converted] : USER_TYPE[:real])
+      self.user_type = (self.user_type == USER_TYPE[:faux] ? USER_TYPE[:converted] : USER_TYPE[:real])
       self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
       GT::UserManager.ensure_users_special_rolls(self, true)
       self.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
