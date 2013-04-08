@@ -279,6 +279,7 @@ void printJsonOriginator(sobContext sob, mrjsonContext context, bson *originator
    static sobField originatorAttributes[] = {
       SOB_USER_ID,
       SOB_USER_NAME,
+      SOB_USER_NICKNAME,
       SOB_USER_FAUX
    };
 
