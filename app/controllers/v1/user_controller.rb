@@ -137,7 +137,7 @@ class V1::UserController < ApplicationController
 
         params[:nickname] = clean_nickname(params[:nickname]) if params[:nickname]
         if params[:nickname] and params[:nickname] != @user.downcase_nickname and (user_with_nickname = User.first(:downcase_nickname => params[:nickname]))
-          if user_with_nickname.faux == User::FAUX_STATUS[:true]
+          if user_with_nickname.user_type == User::USER_TYPE[:faux]
             #we're stealing this faux user's nickname for the real user
             user_with_nickname.release_nickname!
           else

@@ -23,13 +23,13 @@ bson_oid_t userOid;
 typedef struct rollSortable {
    bson *roll;
    bson_timestamp_t followedAt;
-} rollSortable; 
+} rollSortable;
 
 struct timeval beginTime;
 
 void printHelpText()
 {
-   printf("userRollFollowings usage:\n"); 
+   printf("userRollFollowings usage:\n");
    printf("   -h --help           Print this help message\n");
    printf("   -u --user           User downcase nickname\n");
    printf("   -p --postable       Only return postable rolls\n");
@@ -39,7 +39,7 @@ void printHelpText()
 void parseUserOptions(int argc, char **argv)
 {
    int c;
-     
+
    while (1) {
       static struct option long_options[] =
       {
@@ -49,15 +49,15 @@ void parseUserOptions(int argc, char **argv)
          {"environment", required_argument, 0, 'e'},
          {0, 0, 0, 0}
       };
-      
+
       int option_index = 0;
       c = getopt_long(argc, argv, "hu:pe:", long_options, &option_index);
-   
+
       /* Detect the end of the options. */
       if (c == -1) {
          break;
       }
-   
+
       switch (c)
       {
          case 'u':
@@ -72,7 +72,7 @@ void parseUserOptions(int argc, char **argv)
             options.environment = optarg;
             break;
 
-         case 'h': 
+         case 'h':
          case '?':
          default:
             printHelpText();
@@ -85,7 +85,7 @@ void parseUserOptions(int argc, char **argv)
       printHelpText();
       exit(1);
    }
-   
+
    if (strcmp(options.user, "") == 0) {
       printf("Specifying -u or --user is required.\n");
       printHelpText();
@@ -108,7 +108,7 @@ unsigned int timeSinceMS(struct timeval begin)
    struct timeval difference;
    timersub(&currentTime, &begin, &difference);
 
-   return difference.tv_sec * 1000 + (difference.tv_usec / 1000); 
+   return difference.tv_sec * 1000 + (difference.tv_usec / 1000);
 }
 
 int rollPostable(sobContext sob, bson_oid_t rollOid, bson *roll)
@@ -137,7 +137,7 @@ int shouldPrintRegularRoll(sobContext sob, bson *roll)
    if (options.postable && !rollPostable(sob, rollOid, roll)) {
       return FALSE;
    }
-   
+
    int rollType = 10;
    int status = sobBsonIntField(sob, SOB_ROLL, SOB_ROLL_ROLL_TYPE, rollOid, &rollType);
    if (!status) {
@@ -147,7 +147,7 @@ int shouldPrintRegularRoll(sobContext sob, bson *roll)
        * only querying for rolls with roll_type *NOT* 10 or 11. so if roll_type was missing
        * in the DB, it would still get printed out.
        */
-      rollType = 10; 
+      rollType = 10;
    }
 
    // 10 is generic special roll, and 11 is special_public (faux user), types we don't display anymore
@@ -200,7 +200,7 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, unsigned i
                             SOB_ROLL_SUBDOMAIN_ACTIVE);
 
    bson *rollCreator;
-   int status = sobGetBsonByOidField(sob, 
+   int status = sobGetBsonByOidField(sob,
                                      SOB_USER,
                                      roll,
                                      SOB_ROLL_CREATOR_ID,
@@ -222,7 +222,7 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, unsigned i
                                        SOB_USER_AVATAR_UPDATED_AT,
                                        "creator_avatar_updated_at");
    }
-   
+
    sobPrintAttributeWithKeyOverride(context,
                                     roll,
                                     SOB_ROLL_CREATOR_THUMBNAIL_URL,
@@ -280,7 +280,7 @@ void printJsonOutput(sobContext sob)
 
    // allocate context; match Ruby API "status" and "result" response syntax
    mrjsonContext context = mrjsonAllocContext(sobGetEnvironment(sob) != SOB_PRODUCTION);
-   mrjsonStartResponse(context); 
+   mrjsonStartResponse(context);
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartArray(context, "result");
 
@@ -294,13 +294,13 @@ void printJsonOutput(sobContext sob)
    int userStatus = sobGetBsonByOid(sob, SOB_USER, userOid, &userBson);
 
    if (userStatus) {
-      publicRollStatus = sobGetBsonByOidField(sob, 
+      publicRollStatus = sobGetBsonByOidField(sob,
                                               SOB_ROLL,
                                               userBson,
                                               SOB_USER_PUBLIC_ROLL_ID,
                                               &publicRoll);
-   
-      watchLaterRollStatus = sobGetBsonByOidField(sob, 
+
+      watchLaterRollStatus = sobGetBsonByOidField(sob,
                                                   SOB_ROLL,
                                                   userBson,
                                                   SOB_USER_WATCH_LATER_ROLL_ID,
@@ -310,11 +310,11 @@ void printJsonOutput(sobContext sob)
    // first 2 rolls are always the user public roll and the user watch later roll
    if (publicRollStatus) {
       printJsonRoll(sob, context, publicRoll, getRollFollowedAtTime(sob, publicRoll, NULL));
-   } 
+   }
 
    if (watchLaterRollStatus) {
       printJsonRoll(sob, context, watchLaterRoll, getRollFollowedAtTime(sob, watchLaterRoll, NULL));
-   } 
+   }
 
    cvector rollSortVec = cvectorAlloc(sizeof(rollSortable));
 
@@ -334,7 +334,7 @@ void printJsonOutput(sobContext sob)
    }
 
    cvectorSort(rollSortVec, &rollSortByFollowedAt);
-   
+
    for (int i = 0; i < cvectorCount(rollSortVec); i++) {
       rollSortable *rs = (rollSortable *)cvectorGetElement(rollSortVec, i);
       printJsonRoll(sob, context, rs->roll, rs->followedAt.t);
@@ -372,7 +372,7 @@ int loadData(sobContext sob)
    sobLoadAllById(sob, SOB_ROLL, rollOids);
 
    sobGetOidVectorFromObjectField(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, userOids);
-   sobLoadAllById(sob, SOB_USER, userOids); 
+   sobLoadAllById(sob, SOB_USER, userOids);
 
    return TRUE;
 }
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
    setDefaultOptions();
    parseUserOptions(argc, argv);
 
-   sobEnvironment env = sobEnvironmentFromString(options.environment); 
+   sobEnvironment env = sobEnvironmentFromString(options.environment);
    sobContext sob = sobAllocContext(env);
 
    if (!loadData(sob)) {

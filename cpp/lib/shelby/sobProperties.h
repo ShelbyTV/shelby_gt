@@ -38,7 +38,7 @@
    apply(USER , watch_later_roll_id  ,  WATCH_LATER_ROLL_ID  ,  OID    , ad                  ) \
    apply(USER , upvoted_roll_id      ,  UPVOTED_ROLL_ID      ,  OID    , ae                  ) \
    apply(USER , viewed_roll_id       ,  VIEWED_ROLL_ID       ,  OID    , af                  ) \
-   apply(USER , faux                 ,  FAUX                 ,  INT    , ac                  ) \
+   apply(USER , user_type            ,  USER_TYPE            ,  INT    , ac                  ) \
    apply(USER , authentication_token ,  AUTHENTICATION_TOKEN ,  STRING , ah                  ) \
    apply(USER , gt_enabled           ,  GT_ENABLED           ,  BOOL   , ag                  ) \
    apply(USER , applications         ,  APPLICATIONS         ,  ARRAY  , ap                  ) \

@@ -11,12 +11,12 @@
 			</span>
 			<span id="shelby-name">
 				<%= @user.name %>
-			</span>			
+			</span>
 		</div>
 		<div id="special-rolls" class="text-block">
-			<a href="<%= @user.permalink %>">personal roll</a> :: <a href="<%= @watch_later_roll %>">queue </a>	
+			<a href="<%= @user.permalink %>">personal roll</a> :: <a href="<%= @watch_later_roll %>">queue </a>
 		</div>
-		
+
 		<% if @user.public_roll %>
 			<div id="change-public-roll-header-image">
 				<%= form_tag "/v1/roll/#{@user.public_roll.id}", :multipart => true, :method => :put do |f| %>
@@ -26,7 +26,7 @@
 				<% end %>
 			</div>
 		<% end %>
-		
+
 		<div id="born-on-date" class="text-block">
 			(shelby) born on date: <%= distance_of_time_in_words_to_now @user.created_at %> ago
 		</div>
@@ -34,13 +34,13 @@
 			cohorts cohorts: <%= @user.cohorts.join(", ") if @user.cohorts %>
 		</div>
 		<div id="user-type" class="text-block">
-			<% if @user.faux = 0 %>
+			<% if @user.user_type == 0 %>
 				Real User
-			<% elsif @user.faux = 1%>
+			<% elsif @user.user_type == 1 %>
 				Faux User
-			<% else %>
+      <% else %>
 			 	User Converted from Faux
-			<% end %> 
+			<% end %>
 		</div>
 		<div id="social-medias" class="text-block">
 			<% if @social_links[:tw] %>
@@ -59,8 +59,8 @@
 				</a>
 			<% end %>
 		</div>
-	</div>	
-	
+	</div>
+
 	<div id="roll-info-area">
 		<div id="friends-rolls" class="roll-list">
 			<span>Friends Rolls</span>
@@ -80,7 +80,7 @@
 						<%= roll.title %> (<%= roll.frames.count %>)
 					</a>
 				</div>
-		  <% end %>			
+		  <% end %>
 		</div>
 		<div id="user-created-private-rolls" class="roll-list">
 			<span>Private Rolls</span>

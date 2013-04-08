@@ -1,8 +1,8 @@
 require 'user_manager'
 
-class V1::TokenController < ApplicationController  
+class V1::TokenController < ApplicationController
   skip_before_filter :verify_authenticity_token
-  
+
 
   ##
   # Ensures User matching the given credentials has a single sign on token and returns it.
@@ -36,42 +36,42 @@ class V1::TokenController < ApplicationController
     # email/password access
     email = params[:email]
     password = params[:password]
-    
+
     @user = if provider and uid
       User.first( :conditions => { 'authentications.provider' => provider, 'authentications.uid' => uid } )
     elsif email
       User.where(:primary_email => email.downcase).first
       User.find_by_primary_email(email.downcase) || User.find_by_nickname(email.downcase)
     end
-    
+
     if @user
-      
+
       if token and GT::UserManager.verify_user(@user, provider, uid, token, secret)
-        #----------------------------------Current User via 3rd party----------------------------------        
-        if @user.faux == User::FAUX_STATUS[:true]
+        #----------------------------------Current User via 3rd party----------------------------------
+        if @user.user_type == User::USER_TYPE[:faux]
           GT::UserManager.convert_faux_user_to_real(@user, GT::ImposterOmniauth.get_user_info(provider, uid, token, secret))
         else
           GT::UserManager.start_user_sign_in(@user, :provider => provider, :uid => uid, :token => token, :secret => secret)
         end
-        
+
       elsif password and @user.valid_password? password
         #----------------------------------Current User via email/pw----------------------------------
         GT::UserManager.start_user_sign_in(@user)
-        
+
       else
         return render_error(404, "Failed to verify user.")
       end
-      
+
     elsif token
       #----------------------------------New User----------------------------------
       omniauth = GT::ImposterOmniauth.get_user_info(provider, uid, token, secret)
-      
+
       if omniauth.blank?
         return render_error(404, "Failed to create new user.")
       end
-      
+
       @user = GT::UserManager.create_new_user_from_omniauth(omniauth)
-      
+
       unless @user.valid?
         return render_error(404, "Failed to create new user.")
       end
@@ -79,7 +79,7 @@ class V1::TokenController < ApplicationController
     else
       return render_error(404, "Missing valid provider/uid, and/or token/secret")
     end
-    
+
     #we have a valid user if we've made it here
     @user.ensure_authentication_token!
     sign_in(:user, @user)
@@ -87,7 +87,7 @@ class V1::TokenController < ApplicationController
     @status = 200
     #renders v1/user/show which includes user.authentication_token
   end
-  
+
   ##
   # Remove the single sign on token from its User.
   #

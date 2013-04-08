@@ -86,12 +86,12 @@ describe 'v1/frame' do
           response.body.should have_json_size(0).at_path("result/frames/0/upvoters")
         end
 
-        it "should contain frame creator faux attribute" do
+        it "should contain frame creator user_type attribute" do
           get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
 
           response.body.should be_json_eql(200).at_path("status")
-          response.body.should have_json_path("result/frames/0/creator/faux")
-          parse_json(response.body)["result"]["frames"][0]["creator"]["faux"].should eq(@u1.faux)
+          response.body.should have_json_path("result/frames/0/creator/user_type")
+          parse_json(response.body)["result"]["frames"][0]["creator"]["user_type"].should eq(@u1.user_type)
         end
 
         it "should populate frame upvoters with correct data" do
@@ -157,10 +157,10 @@ describe 'v1/frame' do
           response.body.should have_json_size(2).at_path("result/frames")
         end
 
-        it "should return frame's creator faux attribute for a personal roll" do
+        it "should return frame's creator user_type attribute for a personal roll" do
           response.body.should be_json_eql(200).at_path("status")
-          response.body.should have_json_path("result/frames/0/creator/faux")
-          parse_json(response.body)["result"]["frames"][0]["creator"]["faux"].should eq(@u2.faux)
+          response.body.should have_json_path("result/frames/0/creator/user_type")
+          parse_json(response.body)["result"]["frames"][0]["creator"]["user_type"].should eq(@u2.user_type)
         end
 
       end

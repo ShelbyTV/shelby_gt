@@ -55,14 +55,17 @@ class User
   belongs_to :viewed_roll, :class_name => 'Roll'
   key :viewed_roll_id, ObjectId, :abbr => :af
 
-  # When we create a User just for their public Roll, we mark them faux=true
+  # When we create a User just for their public Roll, we mark them user_type=faux
   #  this status allows us to track conversions from faux to real
-  FAUX_STATUS = {
-    :false => 0,
-    :true => 1,
-    :converted => 2
+  # Users created only for the purpose of processing services like bot rolls
+  #  or feed processing should be assigned user_type=service
+  USER_TYPE = {
+    :real => 0,
+    :faux => 1,
+    :converted => 2,
+    :service => 3
   }.freeze
-  key :faux, Integer, :abbr => :ac, :default => FAUX_STATUS[:false]
+  key :user_type, Integer, :abbr => :ac, :default => USER_TYPE[:real]
 
   has_many :dashboard_entries, :foreign_key => :a
 
@@ -289,7 +292,7 @@ class User
   def gt_enable!
     unless self.gt_enabled?
       self.gt_enabled = true
-      self.faux = (self.faux == FAUX_STATUS[:true] ? FAUX_STATUS[:converted] : FAUX_STATUS[:false])
+      self.faux = (self.user_type == USER_TYPE[:faux] ? USER_TYPE[:converted] : USER_TYPE[:real])
       self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
       GT::UserManager.ensure_users_special_rolls(self, true)
       self.public_roll.roll_type = Roll::TYPES[:special_public_real_user]

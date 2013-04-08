@@ -507,7 +507,7 @@ describe 'v1/user' do
       end
 
       it "shuld allow you to take the nickname of a faux user" do
-        u2 = Factory.create(:user, :faux => User::FAUX_STATUS[:true])
+        u2 = Factory.create(:user, :user_type => User::USER_TYPE[:faux])
         new_nick = u2.nickname
         lambda {
           put "/v1/user/#{@u1.id}?nickname=#{new_nick}"
@@ -520,7 +520,7 @@ describe 'v1/user' do
       it "should return 409 if another *real* user has the proposed nickname" do
         u2 = Factory.create(:user)
         u2.gt_enable!
-        u2.faux.should_not == User::FAUX_STATUS[:true]
+        u2.user_type.should_not == User::USER_TYPE[:faux]
         new_nick = u2.nickname
         lambda {
           put "/v1/user/#{@u1.id}?nickname=#{new_nick}"

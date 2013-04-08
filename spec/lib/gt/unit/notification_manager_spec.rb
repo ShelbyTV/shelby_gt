@@ -145,7 +145,7 @@ describe GT::NotificationManager do
     end
 
     it "should send notifications even if Frame is from a faux User" do
-      @frame_creator.faux = User::FAUX_STATUS[:true]
+      @frame_creator.user_type = User::USER_TYPE[:faux]
       @frame_creator.save
 
       lambda {
