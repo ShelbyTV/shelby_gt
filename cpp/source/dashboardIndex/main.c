@@ -467,6 +467,7 @@ int loadData(sobContext sob)
    sobLoadAllById(sob, SOB_USER, userOids);
    sobLoadAllById(sob, SOB_VIDEO, videoOids);
    sobLoadAllById(sob, SOB_CONVERSATION, conversationOids);
+   sobLoadAllById(sob, SOB_ANCESTOR_FRAME, frameAncestorOids);
 
    // get the creators of the final ancestor frames for each frame, whom we will call the originators,
    // then load them
