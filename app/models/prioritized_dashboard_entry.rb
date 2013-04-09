@@ -10,8 +10,6 @@ class PrioritizedDashboardEntry
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::PrioritizedDashboardEntry
   
-  set_collection_name "prioritized_dashboard_entries"
-  
   # Not guaranteed to exist (ie. when this represents a non-stream video recommendations)
   belongs_to :dashboard_entry
   key :dashboard_entry_id,      ObjectId,   :abbr => :dbe_id
