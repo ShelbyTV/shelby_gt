@@ -27,7 +27,7 @@ class PrioritizedDashboardEntry
   # Shelby rollers
   key :friend_rollers_array,  Array, :abbr => :a9, :deafult => []
   
-  # An index exists on {_id:1, score:-1}
+  # An index is created on {a:1, score:-1} each time prioritized dashboard is generated
   key :score, Integer
   
   key :watched_by_owner, Boolean

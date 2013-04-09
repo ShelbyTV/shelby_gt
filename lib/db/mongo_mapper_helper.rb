@@ -23,6 +23,9 @@ module MongoMapper
       
       # Get the newest dashboard entries for a user (a == user_id)
       DashboardEntry.ensure_index([[:a, 1], [:_id, -1]], :background => false)
+      # Get the highest scored dashboard entries for a user (a == user_id)
+      #NB: this index is recreated each time we generate PrioritizedDashboardEntry
+      PrioritizedDashboardEntry.ensure_index([[:a, 1], [:score, -1]], :background => false)
 
       # Index over urls
       DeeplinkCache.ensure_index([[:a,1]], :background => true, :unique=>true)
