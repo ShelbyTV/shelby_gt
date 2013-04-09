@@ -28,6 +28,9 @@ class PrioritizedDashboardEntry
   # An index is created on {a:1, score:-1} each time prioritized dashboard is generated
   key :score, Integer
   
+  # NB: Only watched_by_owner==true is meaningful
+  # False here does NOT mean the user has not watched it outside of Entertainment Graph data limits
+  # For a better signal on User u: u.viewed_roll.frames.where(:video_id => pde.video_id).exists?
   key :watched_by_owner, Boolean
   
   # --------- convenient scopes -----------
@@ -54,7 +57,7 @@ class PrioritizedDashboardEntry
   belongs_to :frame, :required => true
   key :frame_id, ObjectId, :abbr => :c
 
-  # Has the user read this entry?
+  # Has the user read this entry? (see notes on :watched_by_owner)
   key :read, Boolean, :abbr => :d
 
   key :action, Integer, :abbr => :e, :default => DashboardEntry::ENTRY_TYPE[:new_social_frame]
