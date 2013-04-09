@@ -28,15 +28,18 @@ class PrioritizedDashboardEntry
   # An index is created on {a:1, score:-1} each time prioritized dashboard is generated
   key :score, Integer
   
-  # NB: Only watched_by_owner==true is meaningful
-  # False here does NOT mean the user has not watched it outside of Entertainment Graph data limits
+  # NB: Only <watched|rolled>_by_owner==true is meaningful
+  # False here does NOT mean the user has not watched/rolled it outside of Entertainment Graph data limits
   # For a better signal on User u: u.viewed_roll.frames.where(:video_id => pde.video_id).exists?
   key :watched_by_owner, Boolean
+  key :rolled_by_owner, Boolean
   
   # --------- convenient scopes -----------
   scope :for_user_id, lambda { |user_id| where(:user_id => user_id) }
-  scope :unwatched , where(:watched_by_owner => false)
   scope :ranked, sort(:score => -1)
+  scope :possibly_not_watched, where(:watched_by_owner => false)
+  scope :possibly_not_rolled, where(:rolled_by_owner => false)
+  
   
   # --------- convenient getters -----------
   def friend_sharers() User.where(:id.in => self.friend_sharers_array); end
