@@ -19,11 +19,11 @@ class PrioritizedDashboardEntry
   # External sharers
   key :friend_sharers_array,  Array, :abbr => :b1, :default => [] 
   # Shelby views
-  key :friend_viewers_array,  Array, :abbr => :a1, :deafult => []
+  key :friend_viewers_array,  Array, :abbr => :a1, :default => []
   # Shelby likes
-  key :friend_likers_array,   Array, :abbr => :a8, :deafult => []
+  key :friend_likers_array,   Array, :abbr => :a8, :default => []
   # Shelby rollers
-  key :friend_rollers_array,  Array, :abbr => :a9, :deafult => []
+  key :friend_rollers_array,  Array, :abbr => :a9, :default => []
   
   # An index is created on {a:1, score:-1} each time prioritized dashboard is generated
   key :score, Integer
