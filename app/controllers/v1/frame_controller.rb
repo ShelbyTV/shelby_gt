@@ -274,10 +274,14 @@ class V1::FrameController < ApplicationController
 
         if current_user
           if @new_frame = dupe_to_watch_later(@frame)
+            last_ancestor = Frame.find(@frame.frame_ancestors.last)
+            @originator = last_ancestor && last_ancestor.creator
             @status = 200
           end
         else
           @frame.like!
+          last_ancestor = Frame.find(@frame.frame_ancestors.last)
+          @originator = last_ancestor && last_ancestor.creator
           @status = 200
         end
     end

@@ -199,6 +199,8 @@ describe 'v1/frame' do
           response.body.should have_json_path("result/creator")
           response.body.should have_json_path("result/video")
           response.body.should have_json_path("result/conversation")
+          response.body.should have_json_path("result/originator_id")
+          response.body.should have_json_path("result/originator")
         end
 
         it "should add text to the conversation of the newly rolled frame" do
@@ -376,6 +378,17 @@ describe 'v1/frame' do
           put '/v1/frame/'+@f.id+'/like'
 
           response.body.should have_json_size(1).at_path("result/upvoters")
+        end
+
+        it "should return originator" do
+          @f.frame_ancestors = [@f2.id]
+          @f.save
+
+          put '/v1/frame/'+@f.id+'/like'
+
+          response.body.should have_json_path("result/originator_id")
+          response.body.should have_json_path("result/originator")
+          parse_json(response.body)["result"]["originator"]["id"].should eq(@u1.id.to_s)
         end
 
         it "should call add_to_watch_later! on the frame but return the original frame" do

@@ -4,6 +4,10 @@ node :originator_id do
   @originator && @originator.id
 end
 
+child @originator => :originator do
+  attributes :id, :name, :nickname, :faux
+end
+
 if @include_frame_children == true
 
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id, :like_count
@@ -69,9 +73,6 @@ if @include_frame_children == true
 		end
 	end
 
-  child @originator => :originator do
-    attributes :id, :name, :nickname, :faux
-  end
 else
 	attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id, :like_count
 
