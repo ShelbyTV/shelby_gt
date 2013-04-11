@@ -7,16 +7,16 @@ class Roll
 
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Roll
-  
+
   include Paperclip::Glue
-  
+
   # A Roll has many Frames, first and foremost
   many :frames, :foreign_key => :a
-  
+
   # it was created by somebody
   belongs_to :creator,  :class_name => 'User', :required => true
   key :creator_id,      ObjectId, :abbr => :a
-  
+
   # it has some basic categorical info
   key :title,           String, :required => true, :abbr => :b
   key :creator_thumbnail_url,   String, :abbr => :c
@@ -24,21 +24,23 @@ class Roll
   # public rolls can be viewed, posted to, and invited to by any user (doesn't have to be following)
   # private rolls can only be viewed, posted to, and invited to by private_collaborators
   key :public,          Boolean,  :default => true,    :abbr => :d
-  
+
   # collaborative rolls can be posted to by users other than creator, further spcified by public? (above)
   # non-collaborative rolls can only be posted to by creator
   key :collaborative,   Boolean,  :default => true,    :abbr => :e
-  
-  # faux-users get public Rolls, we denormalize the network into the roll
+
+  # faux-users get public Rolls, we denormalize the origin network and the user's nickname on the origin network
+  # into the roll
   key :origin_network,  String, :abbr => :f
   SHELBY_USER_PUBLIC_ROLL = "shelby_person"
-  
+  key :origin_creator_nickname,  String, :abbr => :u
+
   # The shortlinks created for each type of share, eg twitter, tumblr, email, facebook
   key :short_links, Hash, :abbr => :g, :default => {}
 
   # boolean indicating whether this roll is a genius roll
   key :genius,          Boolean, :abbr => :h, :default => false
-  
+
   # indicates the special heart roll (formerly upvoted_roll, known as user.upvoted_roll)
   key :upvoted_roll,    Boolean, :abbr => :i, :default => false
 
@@ -50,7 +52,7 @@ class Roll
   # indicates whether the subdomain for this roll is activated
   key :subdomain_active,Boolean, :abbr => :l, :default => false
   # roll is accesible at the subdomain address if :subdomain is not nil AND :subdomain_active
-  
+
   key :first_frame_thumbnail_url, String, :abbr => :m
 
   TYPES = {
@@ -60,7 +62,7 @@ class Roll
     :special_upvoted => 12,
     :special_watch_later => 13,
     :special_viewed => 14,
-    
+
     # Differentiate special_public rolls of real shelby users and faux users we deem important
     :special_public_real_user => 15, # <-- actual user
     :special_public_upgraded => 16,  # <-- faux user who we deem worthy
@@ -73,9 +75,9 @@ class Roll
     :user_private => 50,
     # User-created private conversations (aka Discussion Rolls)
     :user_discussion_roll => 51,
-    
+
     :hashtag => 69,
-    
+
     :genius => 70
   }
   key :roll_type,       Integer, :abbr => :n, :default => TYPES[:special_roll]
@@ -83,31 +85,31 @@ class Roll
   # each user following this roll and when they started following
   # for private collaborative rolls, these are the participating users
   many :following_users
-  
+
   # We may embed lots of following_users which results in a stack level too deep issue (b/c of the way MM/Rails does validation chaining)
   # But since we don't use validations or callbacks, we can hack around this issue:
   embedded_callbacks_off
-  
+
   # uploadable header image via paperclip (see config/initializers/paperclip.rb for defaults)
-  has_attached_file :header_image, 
+  has_attached_file :header_image,
     :styles => { :guide_wide => "370x50#", :large_wide => "1110x150#" }, # temporary sizes while we test & iterate
-    :bucket => Settings::Paperclip.roll_images_bucket, 
+    :bucket => Settings::Paperclip.roll_images_bucket,
     :path => "/header/:id/:style/:basename.:extension"
   key :header_image_file_name,      String, :abbr => :o
   key :header_image_file_size,      String, :abbr => :p
   key :header_image_content_type,   String, :abbr => :q
   key :header_image_updated_at,     String, :abbr => :r
-  
+
   # Track participants involved in Discussion Rolls
   # Array elements are user's BSON ids (as strings) or email address of non-user
   # ex: ["509bc4cd929d2446ea000001", "spinosa@gmail.com", "4fa39bd89a725b1f920008f3"]
   # Field IS indexed (see DiscussionRollController#idnex for example),
   # but roll can also be found by id or via user.roll_followings
   key :discussion_roll_participants,  Array, :typecast => 'String', :abbr => :s
-  
+
   # Denormalize a bit of frequently used information (added for discussion rolls)
   key :content_updated_at, Time, :abbr => :t
-  
+
   attr_accessible :title, :creator_thumbnail_url, :header_image
 
   RESERVED_SUBDOMAINS = %w(gt anal admin qa vanity staging)
@@ -143,7 +145,7 @@ class Roll
     # only "real" personal rolls get subdomain
     self.roll_type == TYPES[:special_public_real_user] or self.roll_type == TYPES[:special_public_upgraded]
   end
-  
+
   def created_at() self.id.generation_time; end
 
   # only return true if a correct, symmetric following is in the DB (when given a proper User and not user_id)
@@ -157,46 +159,46 @@ class Roll
     end
     return followed
   end
-  
+
   def following_users_ids() following_users.map { |fu| fu.user_id }; end
-  
+
   def following_users_models() following_users.map { |fu| fu.user }; end
-  
+
   # Will create a symmetric following or make a broken, asymetric following correct.
   def add_follower(u, send_notification=true)
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
-    
+
     return false if self.followed_by?(u)
     return false if self.roll_type == TYPES[:special_watch_later] and self.creator_id != u.id
-  
+
     self.push_uniq :following_users => FollowingUser.new(:user => u).to_mongo
     u.push_uniq :roll_followings => RollFollowing.new(:roll => self).to_mongo
-    
+
     #need to reload so the local copy is up to date for future operations
-    self.reload 
+    self.reload
     u.reload
 
     if send_notification
       # send email notification in a non-blocking manor
       ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_join_roll_notification(u, self) }
     end
-    
+
     GT::UserActionManager.follow_roll!(u.id, self.id)
   end
-  
+
   # Should be used when a user explicity takes the action to unfollow the roll
   def remove_follower(u)
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
-    
+
     return false unless self.followed_by?(u, false) #doesntt have to be symmetric for remove to proceed
-    
+
     self.following_users.delete_if { |fu| fu.user_id == u.id }
     u.roll_followings.delete_if { |rf| rf.roll_id == self.id }
     u.rolls_unfollowed << self.id
-    
+
     GT::UserActionManager.unfollow_roll!(u.id, self.id) if u.save and self.save
   end
-  
+
   # For all followers, remove their roll following, but do not save this as a UserAction since it isn't
   # Sets this roll's following_users to an empty array when complete
   #
@@ -213,7 +215,7 @@ class Roll
     self.save
     true
   end
-  
+
   # Anybody can view a public roll
   # Creator of a roll can always view it
   # Private rolls are only viewable by followers
@@ -221,9 +223,9 @@ class Roll
     return true if self.public?
     return false unless u
     user_id = (u.is_a?(User) ? u.id : u)
-    
+
     return true if self.creator_id == user_id
-    
+
     #private roll user didn't create, must be a follower to view
     return self.following_users.any? { |fu| fu.user_id == user_id }
   end
@@ -234,28 +236,28 @@ class Roll
   def postable_by?(u)
     return true if self.public? and self.collaborative?
     return false unless u
-    
+
     # Admins may post to any roll
     return true if u.is_a?(User) and u.is_admin?
-    
+
     user_id = (u.is_a?(User) ? u.id : u)
-    
+
     return true if self.creator_id == user_id
-    
+
     return false unless self.collaborative?
-    
+
     return true if self.public?
-    
+
     # private collaborative roll, must be a follower to post
     return self.following_users.any? { |fu| fu.user_id == user_id }
   end
-  
+
   # The creator of a roll can not leave a roll.
   # To leave a roll a user must delete it.
   def leavable_by?(u)
     raise ArgumentError, "must supply user or user_id" unless u
     user_id = (u.is_a?(User) ? u.id : u)
-    
+
     return self.creator_id != user_id
   end
 
@@ -274,12 +276,12 @@ class Roll
   end
 
   def permalink() "#{Settings::ShelbyAPI.web_root}/roll/#{self.id}"; end
-  
+
   def subdomain_permalink()
     "http://#{subdomain}.#{Settings::ShelbyAPI.web_domain}" if subdomain = self.subdomain
   end
-  
-  
+
+
   def display_thumbnail_url() self.upvoted_roll? ? "#{Settings::ShelbyAPI.web_root}/images/assets/favorite_roll_avatar.png" : self.creator_thumbnail_url; end
-  
+
 end

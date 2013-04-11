@@ -2,19 +2,19 @@
 
 
 module GT
-  
+
   class UserDoctor
-    
+
     def self.clean_roll_followings(u, save=true)
       u.roll_followings.delete_if { |rf| rf.roll == nil }
       u.save if save
     end
-    
+
     def self.update_rolls_metadata(u, save=true)
       u.upvoted_roll.upvoted_roll = true
       u.upvoted_roll.save if save
     end
-    
+
     def self.fix_heart_roll_creators(u)
       u.upvoted_roll.frames.each do |f|
         f_ancestor = Frame.find(f.frame_ancestors.first)
@@ -22,15 +22,18 @@ module GT
         f.save
       end
     end
-    
+
     def self.fix_faux_public_roll(u, save=true)
       return unless u.faux == User::FAUX_STATUS[:true]
-      
+
       unless [Roll::TYPES[:special_public_upgraded], Roll::TYPES[:special_public]].include? u.public_roll.roll_type
         u.public_roll.roll_type = Roll::TYPES[:special_public]
       end
       if u.public_roll.origin_network.blank? and u.authentications[0]
         u.public_roll.origin_network = u.authentications[0].provider
+      end
+      if u.public_roll.origin_creator_nickname.blank? and u.authentications[0]
+        u.public_roll.origin_creator_nickname = u.authentications[0].nickname
       end
       u.public_roll.save if save
     end
@@ -51,7 +54,7 @@ module GT
       end
       clean_roll_followings(u) if should_clean_roll_followings
     end
-    
+
     def self.examine(u)
       puts "==user info=="
       puts " id         : #{u.id}"
@@ -111,10 +114,11 @@ module GT
           puts " *FAIL* Public roll should be :special_public (11) or :special_public_upgraded (16) but was #{u.public_roll.roll_type}"
         end
         puts " *FAIL* Public roll should have origin network" if u.public_roll.origin_network.empty?
+        puts " *FAIL* Public roll should have origin creator nickname" if u.public_roll.origin_creator_nickname.empty?
       end
-      
+
       puts "===done==="
     end
-    
+
   end
 end
