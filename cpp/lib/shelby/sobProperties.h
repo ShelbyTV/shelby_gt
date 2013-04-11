@@ -29,7 +29,8 @@
    DASHBOARD_ENTRY_PROPERTIES(apply) \
    MESSAGE_PROPERTIES(apply)         \
    ROLL_FOLLOWING_PROPERTIES(apply)  \
-   FOLLOWING_USER_PROPERTIES(apply)
+   FOLLOWING_USER_PROPERTIES(apply)  \
+   AUTHENTICATION_PROPERTIES(apply)
 
 #define USER_PROPERTIES(apply)                                                                 \
    apply(USER , id                   ,  ID                   ,  OID    , _id                 ) \
@@ -58,7 +59,8 @@
    apply(USER , referral_frame_id    ,  REFERRAL_FRAME_ID    ,  OID    , referral_frame_id   ) \
    apply(USER , is_admin             ,  IS_ADMIN             ,  BOOL   , is_admin            ) \
    apply(USER , social_tracker       ,  SOCIAL_TRACKER       ,  ARRAY  , social_tracker      ) \
-   apply(USER , roll_followings      ,  ROLL_FOLLOWINGS      ,  ARRAY  , roll_followings     )
+   apply(USER , roll_followings      ,  ROLL_FOLLOWINGS      ,  ARRAY  , roll_followings     ) \
+   apply(USER , authentications      ,  AUTHENTICATIONS      ,  ARRAY  , authentications     )
 
 #define FRAME_PROPERTIES(apply)                                                                       \
    apply(FRAME , id                         , ID                         , OID    , _id             ) \
@@ -161,5 +163,11 @@
 #define FOLLOWING_USER_PROPERTIES(apply)                  \
    apply(FOLLOWING_USER , id      , ID      , OID , _id ) \
    apply(FOLLOWING_USER , user_id , USER_ID , OID , a   )
+
+#define AUTHENTICATION_PROPERTIES(apply)                             \
+   apply(AUTHENTICATION , id       , ID       , OID    , _id       ) \
+   apply(AUTHENTICATION , provider , PROVIDER , STRING , provider  ) \
+   apply(AUTHENTICATION , uid      , UID      , STRING , uid       ) \
+   apply(AUTHENTICATION , nickname , NICKNAME , STRING , nickname  ) \
 
 #endif // __SOB_PROPERTIES_H__
