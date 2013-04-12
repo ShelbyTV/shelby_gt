@@ -15,7 +15,23 @@ module GT
       end_s = end_s.to_i if end_s
       raise ArgumentError, "start_s and end_s must both be nil or Integer" unless (start_s == nil and end_s == nil) or (start_s.is_a?(Integer) and end_s.is_a?(Integer))
 
-      UserAction.create(:type => UserAction::TYPES[:view], :user_id => user_id, :frame_id => frame_id, :video_id => video_id, :start_s => start_s, :end_s => end_s)
+      UserAction.create(:type => UserAction::TYPES[:view], 
+                        :user_id => user_id, 
+                        :frame_id => frame_id, 
+                        :video_id => video_id, 
+                        :start_s => start_s, 
+                        :end_s => end_s)
+    end
+    
+    def self.complete_view!(user_id, frame_id, video_id)
+      raise ArgumentError, "user_id must be valid ObjectId" unless user_id and BSON::ObjectId.legal? user_id.to_s
+      raise ArgumentError, "frame_id must be valid BSON id" unless frame_id and BSON::ObjectId.legal? frame_id.to_s
+      return nil unless video_id and BSON::ObjectId.legal? video_id.to_s
+
+      UserAction.create(:type => UserAction::TYPES[:complete_view], 
+                        :user_id => user_id, 
+                        :frame_id => frame_id, 
+                        :video_id => video_id)
     end
 
     def self.upvote!(user_id, frame_id) create_vote_action(user_id, frame_id, UserAction::TYPES[:upvote]); end

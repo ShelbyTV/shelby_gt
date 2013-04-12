@@ -95,12 +95,29 @@ describe V1::FrameController do
   end
 
   describe "POST watched" do
-    it "creates a UserAction w/ all params" do
+    it "creates a UserAction w/ start/end params" do
       GT::UserActionManager.should_receive(:view!)
       Frame.should_receive(:roll_includes_ancestor_of_frame?).and_return(false)
       @frame.should_receive(:reload).and_return(@frame)
 
       post :watched, :frame_id => @frame.id, :start_time => "0", :end_time => "14", :format => :json
+    end
+    
+    it "creates a complete_view UserAction w/ complete param" do
+      GT::UserActionManager.should_receive(:complete_view!)
+      Frame.should_not_receive(:roll_includes_ancestor_of_frame?)
+      @frame.should_not_receive(:reload)
+
+      post :watched, :frame_id => @frame.id, :complete => "1", :format => :json
+    end
+    
+    it "creates noting w/o any params" do
+      GT::UserActionManager.should_not_receive(:view!)
+      GT::UserActionManager.should_not_receive(:complete_view!)
+      Frame.should_not_receive(:roll_includes_ancestor_of_frame?)
+      @frame.should_not_receive(:reload)
+
+      post :watched, :frame_id => @frame.id, :format => :json
     end
 
     it "creates a new frame w/ all params" do
@@ -133,20 +150,6 @@ describe V1::FrameController do
       sign_out @u1
 
       post :watched, :frame_id => @frame.id, :start_time => "0", :end_time => "14", :format => :json
-    end
-
-    it "shouldn't need start and end times" do
-      GT::UserActionManager.should_receive(:view!)
-      Frame.should_receive(:roll_includes_ancestor_of_frame?).and_return(false)
-      @frame.should_receive(:reload).and_return(@frame)
-
-      lambda {
-        post :watched, :frame_id => @frame.id, :format => :json
-      }.should change { Frame.count } .by 1
-
-      assigns(:view_recorded).persisted?.should == true
-      assigns(:view_recorded).frame_ancestors.include?(@frame.id).should == true
-      assigns(:status).should eq(200)
     end
 
     it "should return 404 if Frame can't be found" do

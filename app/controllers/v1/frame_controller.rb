@@ -297,12 +297,14 @@ class V1::FrameController < ApplicationController
   # @param [Required, String] id The id of the frame
   # @param [Optional, String] start_time The start_time of the current watch span (ie. adjusts to last reported end_time)
   # @param [Optional, String] end_time The end_time of the current watch span (continually updates with progress)
+  # @param [Optional, String] complete Set this param iff the viewer finished the video (and do not set <start|end>_time)
   def watched
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['watched']) do
       if @frame = Frame.find(params[:frame_id])
         @status = 200
+        
         # conditionally count this as a view (once per 24 hours per user)
-        if user_signed_in? or (params[:start_time] and params[:end_time])
+        if params[:start_time] and params[:end_time]
           # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
           GT::UserManager.ensure_users_special_rolls(current_user, true) unless GT::UserManager.user_has_all_special_roll_ids?(current_user) if user_signed_in?
 
@@ -312,6 +314,12 @@ class V1::FrameController < ApplicationController
           if @view_recorded and user_signed_in?
             GT::UserActionManager.view!(current_user.id, @frame.id, @frame.video_id, params[:start_time], params[:end_time])
           end
+        end
+        
+        # The 'complete' action is only sent by the front end when video plays through completely
+        # Currently counting it every time, which is probably/hopefully good enough
+        if user_signed_in? and params[:complete]
+          GT::UserActionManager.complete_view!(current_user.id, @frame.id, @frame.video_id)
         end
 
       else

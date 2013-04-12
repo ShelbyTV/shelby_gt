@@ -17,7 +17,9 @@ class UserAction
     :watch_later => 6,
     :unwatch_later => 7,
     :like => 8,
-    :roll => 9
+    :roll => 9,
+    :complete_view => 11,
+    :prioritized_frame => 30
     }.freeze
 
   # May not have user if this is a play by a non-logged in user
