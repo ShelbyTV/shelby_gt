@@ -8,7 +8,11 @@ code :subdomain do |r|
 end
 
 node(:creator_nickname, :if => lambda { |r| r.creator != nil }) do |r|
-  r.creator.nickname
+  if r.creator.faux == 1 && r.creator.authentications && !r.creator.authentications.empty?
+    r.creator.authentications[0].nickname
+  else
+    r.creator.nickname
+  end
 end
 
 node(:discussion_roll_participants, :if =>  lambda { |r| r.roll_type == Roll::TYPES[:user_discussion_roll]}) do |r|
