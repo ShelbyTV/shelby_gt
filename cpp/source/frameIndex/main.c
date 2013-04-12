@@ -251,6 +251,21 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
 
 }
 
+void printJsonAuthentication(sobContext sob, mrjsonContext context, bson *authentication)
+{
+   static sobField authenticationAttributes[] = {
+      SOB_AUTHENTICATION_UID,
+      SOB_AUTHENTICATION_PROVIDER,
+      SOB_AUTHENTICATION_NICKNAME
+   };
+
+   sobPrintAttributes(context,
+                      authentication,
+                      authenticationAttributes,
+                      sizeof(authenticationAttributes) / sizeof(sobField));
+
+}
+
 void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
 {
    static sobField userAttributes[] = {
@@ -272,6 +287,12 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
                       user,
                       userAttributes,
                       sizeof(userAttributes) / sizeof(sobField));
+
+   sobPrintSubobjectArray(sob,
+                          context,
+                          user,
+                          SOB_USER_AUTHENTICATIONS,
+                          &printJsonAuthentication);
 }
 
 void printJsonOriginator(sobContext sob, mrjsonContext context, bson *originator)

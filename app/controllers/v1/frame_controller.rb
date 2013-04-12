@@ -274,10 +274,14 @@ class V1::FrameController < ApplicationController
 
         if current_user
           if @new_frame = dupe_to_watch_later(@frame)
+            last_ancestor = Frame.find(@frame.frame_ancestors.last)
+            @originator = last_ancestor && last_ancestor.creator
             @status = 200
           end
         else
           @frame.like!
+          last_ancestor = Frame.find(@frame.frame_ancestors.last)
+          @originator = last_ancestor && last_ancestor.creator
           @status = 200
         end
     end
@@ -291,24 +295,23 @@ class V1::FrameController < ApplicationController
   # [POST] /v1/frame/:id/watched
   #
   # @param [Required, String] id The id of the frame
-  # @param [Optional, String] start_time The start_time of the action on the frame
-  # @param [Optional, String] end_time The end_time of the action on the frame
+  # @param [Optional, String] start_time The start_time of the current watch span (ie. adjusts to last reported end_time)
+  # @param [Optional, String] end_time The end_time of the current watch span (continually updates with progress)
   def watched
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['watched']) do
       if @frame = Frame.find(params[:frame_id])
         @status = 200
         # conditionally count this as a view (once per 24 hours per user)
-        #  OR
-        # if this is the beginning of a video mark it as viewed
-        if user_signed_in? or (params[:start_time] and params[:start_time].to_i <= 1)
+        if user_signed_in? or (params[:start_time] and params[:end_time])
           # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
           GT::UserManager.ensure_users_special_rolls(current_user, true) unless GT::UserManager.user_has_all_special_roll_ids?(current_user) if user_signed_in?
 
-          # UserAction view recorded each new view of the video
-          GT::UserActionManager.view!(current_user.id, @frame.id, @frame.video_id, params[:start_time], params[:end_time]) if user_signed_in?
-
-          @new_frame = @frame.view!(current_user)
+          @view_recorded = @frame.view!(current_user)
           @frame.reload # to update view_count
+          
+          if @view_recorded and user_signed_in?
+            GT::UserActionManager.view!(current_user.id, @frame.id, @frame.video_id, params[:start_time], params[:end_time])
+          end
         end
 
       else

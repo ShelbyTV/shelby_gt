@@ -112,9 +112,19 @@ describe V1::FrameController do
         post :watched, :frame_id => @frame.id, :start_time => "0", :end_time => "14", :format => :json
       }.should change { Frame.count } .by 1
 
-      assigns(:new_frame).persisted?.should == true
-      assigns(:new_frame).frame_ancestors.include?(@frame.id).should == true
+      assigns(:view_recorded).persisted?.should == true
+      assigns(:view_recorded).frame_ancestors.include?(@frame.id).should == true
       assigns(:status).should eq(200)
+    end
+    
+    it "should not create a user action if this video was recently viewed" do
+      GT::UserActionManager.should_not_receive(:view!)
+      Frame.should_receive(:roll_includes_ancestor_of_frame?).and_return(true)
+      @frame.should_receive(:reload).and_return(@frame)
+
+      lambda {
+        post :watched, :frame_id => @frame.id, :start_time => "0", :end_time => "14", :format => :json
+      }.should_not change { Frame.count }
     end
 
     it "shouldn't need a logged in user" do
@@ -134,8 +144,8 @@ describe V1::FrameController do
         post :watched, :frame_id => @frame.id, :format => :json
       }.should change { Frame.count } .by 1
 
-      assigns(:new_frame).persisted?.should == true
-      assigns(:new_frame).frame_ancestors.include?(@frame.id).should == true
+      assigns(:view_recorded).persisted?.should == true
+      assigns(:view_recorded).frame_ancestors.include?(@frame.id).should == true
       assigns(:status).should eq(200)
     end
 

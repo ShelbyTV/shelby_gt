@@ -83,35 +83,30 @@ class Frame
 
   #------ Viewing
 
-  # Will add this Frame to the User's viewed_roll if they haven't "viewed" this in the last 24 hours.
+  # Will add this Frame to the User's viewed_roll if they haven't "viewed" this in the last day.
   # Also updates the view_count on this frame and it's video regardless if user is passed in
+  #
+  # Returns false if view was recently recorded, otherwise returns this frame or the dupe when created
   def view!(u)
     raise ArgumentError, "must supply valid User Object or nil" unless u.is_a?(User) or u.nil?
 
-    # If this Frame hasn't been added to the user's viewed_roll in the last X hours, dupe it now
-    if u and Frame.roll_includes_ancestor_of_frame?(u.viewed_roll_id, self.id, 24.hours.ago)
+    if u and Frame.roll_includes_ancestor_of_frame?(u.viewed_roll_id, self.id, 1.day.ago)
+      # This Frame has been added to the user's viewed_roll in the last 1 day, ignore this view
       return false
-    # If this an anonymous watch increment appropriatly
-    elsif u.nil?
-      #update view counts
-      Frame.increment(self.id, :i => 1)        # :view_count is :i in Frame
-      Video.increment(self.video_id, :q => 1)  # :view_count is :q in Video
+    end
 
-      # when a frame.video.reload happens we want to get the real doc that is reloaded, not the cached one.
-      MongoMapper::Plugins::IdentityMap.clear if Settings::Frame.mm_use_identity_map
+    # Always update view counts and reload self
+    Frame.increment(self.id, :i => 1)        # :view_count is :i in Frame
+    Video.increment(self.video_id, :q => 1)  # :view_count is :q in Video
 
+    # when a frame.video.reload happens we want to get the real doc that is reloaded, not the cached one.
+    MongoMapper::Plugins::IdentityMap.clear if Settings::Frame.mm_use_identity_map
+
+    if u.nil?
       return self
     else
-      #update view counts and add dupe for this 'viewing'
-      Frame.increment(self.id, :i => 1)        # :view_count is :i in Frame
-      Video.increment(self.video_id, :q => 1)  # :view_count is :q in Video
-
-      # send OG action to FB
-      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('watch', u, self) } if u
-
-      # when a frame.video.reload happens we want to get the real doc that is reloaded, not the cached one.
-      MongoMapper::Plugins::IdentityMap.clear if Settings::Frame.mm_use_identity_map
-
+      ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('watch', u, self) }
+      # Add this frame to users viewed_roll so we don't double-count view later
       return GT::Framer.dupe_frame!(self, u.id, u.viewed_roll_id)
     end
   end
