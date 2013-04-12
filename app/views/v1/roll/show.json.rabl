@@ -8,7 +8,7 @@ code :subdomain do |r|
 end
 
 node(:creator_nickname, :if => lambda { |r| r.creator != nil }) do |r|
-  if r.creator.faux == 1 && r.creator.authentications && !r.creator.authentications.empty?
+  if r.creator.user_type == 1 && r.creator.authentications && !r.creator.authentications.empty?
     r.creator.authentications[0].nickname
   else
     r.creator.nickname
