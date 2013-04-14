@@ -744,6 +744,26 @@ int sobBsonIntField(sobContext context,
    return TRUE;
 }
 
+int sobBsonIntFieldFromObject(sobContext context,
+                              sobType objectType,
+                              sobField fieldToCheck,
+                              bson* object,
+                              int *result)
+{
+   bson_iterator iterator;
+   bson_type type;
+
+   assert(sobFieldBSONType[fieldToCheck] == BSON_INT);
+
+   type = bson_find(&iterator, object, sobFieldDBName[fieldToCheck]);
+   if (BSON_INT != type) {
+      return FALSE;
+   }
+
+   *result = bson_iterator_int(&iterator);
+   return TRUE;
+}
+
 int sobBsonOidField(sobType objectType,
                     sobField fieldToCheck,
                     bson *object,
@@ -794,6 +814,34 @@ int sobBsonOidArrayFieldLast(sobType objectType,
    } else {
       return FALSE;
    }
+}
+
+int sobBsonObjectArrayFieldFirst(sobType objectType,
+                                 sobField fieldToCheck,
+                                 bson *object,
+                                 bson *output)
+{
+   bson_iterator iterator;
+   bson_type type;
+   bson result;
+
+   assert(sobFieldBSONType[fieldToCheck] == BSON_ARRAY);
+
+   type = bson_find(&iterator, object, sobFieldDBName[fieldToCheck]);
+   if (BSON_ARRAY != type) {
+      return FALSE;
+   }
+
+   bson arrayBson;
+   bson_iterator_subobject(&iterator, &arrayBson);
+   bson_iterator_from_buffer(&iterator, arrayBson.data);
+
+   bson_iterator_next(&iterator);
+   bson_iterator_subobject(&iterator, &result);
+
+   *output = result;
+   return TRUE;
+
 }
 
 void sobPrintFieldIfBoolField(mrjsonContext context,

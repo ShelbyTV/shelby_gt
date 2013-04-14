@@ -181,6 +181,12 @@ int sobBsonIntField(sobContext context,
                     bson_oid_t objectOid,
                     int *result);
 
+int sobBsonIntFieldFromObject(sobContext context,
+                              sobType objectType,
+                              sobField fieldToCheck,
+                              bson *object,
+                              int *result);
+
 int sobBsonOidField(sobType objectType,
                     sobField fieldToCheck,
                     bson *object,
@@ -190,6 +196,11 @@ int sobBsonOidArrayFieldLast(sobType objectType,
                              sobField fieldToCheck,
                              bson *object,
                              bson_oid_t *output);
+
+int sobBsonObjectArrayFieldFirst(sobType objectType,
+                                 sobField fieldToCheck,
+                                 bson *object,
+                                 bson *output);
 
 int sobOidArrayFieldContainsOid(sobContext context,
                                 sobField arrayField,

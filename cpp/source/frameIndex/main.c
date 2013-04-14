@@ -451,10 +451,44 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
                                      SOB_ROLL_CREATOR_ID,
                                      &rollCreator);
    if (status) {
-      sobPrintAttributeWithKeyOverride(context,
-                                       rollCreator,
-                                       SOB_USER_NICKNAME,
-                                       "creator_nickname");
+      // figure out what type of user this is
+      int user_type;
+      int foundUserType = sobBsonIntFieldFromObject(sob,
+                                                    SOB_USER,
+                                                    SOB_USER_USER_TYPE,
+                                                    rollCreator,
+                                                    &user_type);
+
+      int creatorNicknameOverride = FALSE;
+      if (foundUserType && user_type == 1) {
+         // if it's a faux user, override the creator_nickname with
+         // the nickname from the origin network
+
+         bson firstAuth;
+         status = sobBsonObjectArrayFieldFirst(SOB_USER,
+                                               SOB_USER_AUTHENTICATIONS,
+                                               rollCreator,
+                                               &firstAuth);
+         if (status) {
+            sobPrintAttributeWithKeyOverride(context,
+                                             &firstAuth,
+                                             SOB_AUTHENTICATION_NICKNAME,
+                                             "creator_nickname");
+            creatorNicknameOverride = TRUE;
+         }
+
+      }
+
+      if (!creatorNicknameOverride) {
+         // if it's not a faux user or we couldn't find an authentication
+         // with which to override the nickname, just use the roll creator's
+         // nickname
+
+         sobPrintAttributeWithKeyOverride(context,
+                                          rollCreator,
+                                          SOB_USER_NICKNAME,
+                                          "creator_nickname");
+      }
 
       sobPrintStringToBoolAttributeWithKeyOverride(context,
                                                    rollCreator,
@@ -520,6 +554,7 @@ int loadData(sobContext sob)
 {
    cvector rollOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector userOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector rollCreatorOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector videoOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector conversationOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector frameAncestorOids = cvectorAlloc(sizeof(bson_oid_t));
@@ -567,6 +602,10 @@ int loadData(sobContext sob)
    sobLoadAllById(sob, SOB_VIDEO, videoOids);
    sobLoadAllById(sob, SOB_CONVERSATION, conversationOids);
    sobLoadAllById(sob, SOB_ANCESTOR_FRAME, frameAncestorOids);
+
+   // load the creators of all the rolls (probably just this one roll)
+   sobGetOidVectorFromObjectField(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, rollCreatorOids);
+   sobLoadAllById(sob, SOB_USER, rollCreatorOids);
 
    // get the creators of the final ancestor frames for each frame, whom we will call the originators,
    // then load them
