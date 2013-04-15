@@ -138,6 +138,12 @@ class V1::FrameController < ApplicationController
             ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', current_user, @frame) }
             # process frame message hashtags in a non-blocking manor
             ShelbyGT_EM.next_tick { GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame) }
+            # if this is a real human shelby user rolling to a public roll,
+            # add the new frame to the community channel in a non-blocking manner
+            if current_user.user_type != User::USER_TYPE[:service] &&
+               [Roll::TYPES[:special_public_real_user], Roll::TYPES[:user_public], Roll::TYPES[:global_public]].include?(roll.roll_type)
+              ShelbyGT_EM.next_tick { @frame.add_to_community_channel }
+            end
 
             @status = 200
           else
@@ -302,7 +308,7 @@ class V1::FrameController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['watched']) do
       if @frame = Frame.find(params[:frame_id])
         @status = 200
-        
+
         # conditionally count this as a view (once per 24 hours per user)
         if params[:start_time] and params[:end_time]
           # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
@@ -310,12 +316,12 @@ class V1::FrameController < ApplicationController
 
           @view_recorded = @frame.view!(current_user)
           @frame.reload # to update view_count
-          
+
           if @view_recorded and user_signed_in?
             GT::UserActionManager.view!(current_user.id, @frame.id, @frame.video_id, params[:start_time], params[:end_time])
           end
         end
-        
+
         # The 'complete' action is only sent by the front end when video plays through completely
         # Currently counting it every time, which is probably/hopefully good enough
         if user_signed_in? and params[:complete]
