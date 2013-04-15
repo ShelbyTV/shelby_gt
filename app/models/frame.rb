@@ -317,6 +317,14 @@ class Frame
     [Math.log10(self.like_count), -1.0].max + 1.0
   end
 
+  # look up the community channel user in the db, and add a dashboard entry
+  # for that user containing this frame
+  def add_to_community_channel
+    if community_channel_user = User.find(Settings::Channels.community_channel_user_id)
+      GT::Framer.create_dashboard_entry(self, ::DashboardEntry::ENTRY_TYPE[:new_community_frame], community_channel_user)
+    end
+  end
+
   private
 
     SHELBY_EPOCH = Time.utc(2012,2,22)
@@ -359,14 +367,6 @@ class Frame
       Roll.increment(self.roll_id, :j => 1) if self.roll_id
       self.roll.frame_count += 1 if self.roll
       true
-    end
-
-    # look up the community channel user in the db, and add a dashboard entry
-    # for that user containing this frame
-    def add_to_community_channel
-      if community_channel_user = User.find(Settings::Channels.community_channel_user_id)
-        GT::Framer.create_dashboard_entry(self, ::DashboardEntry::ENTRY_TYPE[:new_community_frame], community_channel_user)
-      end
     end
 
 end

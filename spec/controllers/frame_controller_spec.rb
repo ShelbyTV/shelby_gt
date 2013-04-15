@@ -102,7 +102,7 @@ describe V1::FrameController do
 
       post :watched, :frame_id => @frame.id, :start_time => "0", :end_time => "14", :format => :json
     end
-    
+
     it "creates a complete_view UserAction w/ complete param" do
       GT::UserActionManager.should_receive(:complete_view!)
       Frame.should_not_receive(:roll_includes_ancestor_of_frame?)
@@ -110,7 +110,7 @@ describe V1::FrameController do
 
       post :watched, :frame_id => @frame.id, :complete => "1", :format => :json
     end
-    
+
     it "creates noting w/o any params" do
       GT::UserActionManager.should_not_receive(:view!)
       GT::UserActionManager.should_not_receive(:complete_view!)
@@ -133,7 +133,7 @@ describe V1::FrameController do
       assigns(:view_recorded).frame_ancestors.include?(@frame.id).should == true
       assigns(:status).should eq(200)
     end
-    
+
     it "should not create a user action if this video was recently viewed" do
       GT::UserActionManager.should_not_receive(:view!)
       Frame.should_receive(:roll_includes_ancestor_of_frame?).and_return(true)
@@ -436,6 +436,44 @@ describe V1::FrameController do
 
         post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
       end
+
+      context "also add to community channel" do
+
+        before(:each) do
+          @community_channel_user = Factory.create(:user)
+          Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
+
+          @r2.roll_type = Roll::TYPES[:special_public_real_user]
+        end
+
+        it "should add the frame to the community channel, also" do
+          lambda {
+            post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
+          }.should change { DashboardEntry.count } .by(1)
+        end
+
+        it "should not add the frame to the community channel if the user is a service user" do
+          @u1.user_type = User::USER_TYPE[:service]
+          lambda {
+            post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
+          }.should_not change { DashboardEntry.count }
+        end
+
+        it "should not add the frame to the community channel if the destination roll is not a real user public roll" do
+          @r2.roll_type = Roll::TYPES[:special_public_upgraded]
+          lambda {
+            post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
+          }.should_not change { DashboardEntry.count }
+        end
+
+        it "should put the correct frame on the community channel" do
+          @f1.stub(:re_roll).and_return({:frame => @f2})
+          @f2.should_receive(:add_to_community_channel)
+
+          post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
+        end
+
+    end
 
       it "returns 403 if user cannot re_roll to that roll" do
         r = stub_model(Roll, :public => false)
