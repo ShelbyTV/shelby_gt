@@ -18,13 +18,13 @@ describe 'v1/video' do
     end
 
     it "should return video info on success" do
-      get 'v1/video/find_or_create', {:provider_id=>"id3", :provider_name=>"youtube"}
+      get 'v1/video/find_or_create', {:provider_id=>@v.provider_id, :provider_name=>"youtube"}
       response.body.should be_json_eql(200).at_path("status");
     end
 
     it "should create video info on success" do
       GT::VideoManager.stub(:get_or_create_videos_for_url).and_return({:videos => [@v]});
-      get 'v1/video/find_or_create', {:provider_id=>"id4", :provider_name=>"youtu", :url=>"http://www.url.com"}
+      get 'v1/video/find_or_create', {:provider_id=>@v.provider_id, :provider_name=>"youtu", :url=>"http://www.url.com"}
       response.body.should be_json_eql(200).at_path("status");
     end
   end
