@@ -17,10 +17,11 @@ describe EmailWebhookController do
     @u = Factory.create(:user, :public_roll => @r)
     @v = Factory.create(:video)
     @f = Factory.create(:frame, :roll => @r, :video => @v)
+    @f2 = Factory.create(:frame, :roll => @r, :video => @v)
     @m = Factory.create(:message, :user => @u)
     GT::VideoManager.stub(:get_or_create_videos_for_url).and_return({:videos => [@v]})
     GT::MessageManager.stub(:build_message).and_return(@m)
-    GT::Framer.stub(:create_frame).and_return({:frame => @f})
+    GT::Framer.stub(:create_frame).and_return({:frame => @f}, {:frame => @f2})
     GT::UserActionManager.stub(:frame_rolled!)
   end
 
@@ -119,6 +120,39 @@ describe EmailWebhookController do
         GT::UserActionManager.should_receive(:frame_rolled!).with(@u.id, @f.id, @v.id, @r.id)
 
         post :hook, :headers => "From: Some Guy <#{@u.primary_email}>\nTo:#{@rolling_address}\n", :text => "www.youtube.com here's an email http://example.com?name=val"
+      end
+
+      context "also add to community channel" do
+
+        before(:each) do
+          @community_channel_user = Factory.create(:user)
+          Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
+          @r.roll_type = Roll::TYPES[:special_public_real_user]
+        end
+
+        it "should add the frame to the community channel, also" do
+          @f.should_receive(:add_to_community_channel)
+          @f2.should_receive(:add_to_community_channel)
+
+          post :hook, :headers => "From: Some Guy <#{@u.primary_email}>\nTo:#{@rolling_address}\n", :text => "www.youtube.com here's an email http://example.com?name=val"
+        end
+
+        it "should not add the frame to the community channel if the user is a service user" do
+          @u.user_type = User::USER_TYPE[:service]
+          @f.should_not_receive(:add_to_community_channel)
+          @f2.should_not_receive(:add_to_community_channel)
+
+          post :hook, :headers => "From: Some Guy <#{@u.primary_email}>\nTo:#{@rolling_address}\n", :text => "www.youtube.com here's an email http://example.com?name=val"
+        end
+
+        it "should not add the frame to the community channel if the destination roll is not a real user public roll" do
+          @r.roll_type = Roll::TYPES[:special_public_upgraded]
+          @f.should_not_receive(:add_to_community_channel)
+          @f2.should_not_receive(:add_to_community_channel)
+
+          post :hook, :headers => "From: Some Guy <#{@u.primary_email}>\nTo:#{@rolling_address}\n", :text => "www.youtube.com here's an email http://example.com?name=val"
+        end
+
       end
 
       it "does nothing if the email is not sent to the 'roll' address or a channel hashtag" do

@@ -391,6 +391,44 @@ describe V1::FrameController do
         assigns(:frame).should eq(@f1)
       end
 
+      context "also add to community channel" do
+
+        before(:each) do
+          @community_channel_user = Factory.create(:user)
+          Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
+          @r2.roll_type = Roll::TYPES[:special_public_real_user]
+
+          GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+        end
+
+        it "should add the frame to the community channel, also" do
+          lambda {
+            post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmarklet", :format => :json
+          }.should change { DashboardEntry.count } .by(1)
+        end
+
+        it "should not add the frame to the community channel if the user is a service user" do
+          @u1.user_type = User::USER_TYPE[:service]
+          lambda {
+            post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmarklet", :format => :json
+          }.should_not change { DashboardEntry.count }
+        end
+
+        it "should not add the frame to the community channel if the destination roll is not a real user public roll" do
+          @r2.roll_type = Roll::TYPES[:special_public_upgraded]
+          lambda {
+            post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmarklet", :format => :json
+          }.should_not change { DashboardEntry.count }
+        end
+
+        it "should put the correct frame on the community channel" do
+          @f1.should_receive(:add_to_community_channel)
+
+          post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmarklet", :format => :json
+        end
+
+      end
+
       it "should be ok if action is f-d up" do
         GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return({:videos=> [@video]})
         GT::Framer.stub(:create_frame_from_url).and_return({:frame => @f1})

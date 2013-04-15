@@ -92,6 +92,36 @@ describe EmailWebhookController do
 
       end
 
+      context "also add to community channel" do
+
+        before(:each) do
+          @community_channel_user = Factory.create(:user)
+          Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
+          @r.roll_type = Roll::TYPES[:special_public_real_user]
+        end
+
+        it "should add the frame to the community channel, also" do
+          lambda {
+            post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: #{@rolling_address}")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")
+          }.should change { DashboardEntry.count } .by(1)
+        end
+
+        it "should not add the frame to the community channel if the user is a service user" do
+          @u.user_type = User::USER_TYPE[:service]
+          lambda {
+            post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: #{@rolling_address}")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")
+          }.should_not change { DashboardEntry.count }
+        end
+
+        it "should not add the frame to the community channel if the destination roll is not a real user public roll" do
+          @r.roll_type = Roll::TYPES[:special_public_upgraded]
+          lambda {
+            post "email_webhook/hook/?headers="+CGI::escape("From: Some Guy <#{@u.primary_email}>\nTo: #{@rolling_address}")+"&text="+CGI::escape("here's an email with a link http://example.com?name=val")
+          }.should_not change { DashboardEntry.count }
+        end
+
+      end
+
       it "creates no frames if there are no links" do
 
         lambda {
