@@ -108,8 +108,8 @@ class V1::FrameController < ApplicationController
             ShelbyGT_EM.next_tick { GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame) }
             # if this is a real human shelby user rolling to a public roll,
             # add the new frame to the community channel in a non-blocking manner
-            if current_user.user_type != User::USER_TYPE[:service] &&
-               [Roll::TYPES[:special_public_real_user], Roll::TYPES[:user_public], Roll::TYPES[:global_public]].include?(roll.roll_type)
+            if (current_user.user_type != User::USER_TYPE[:service]) &&
+               ([Roll::TYPES[:special_public_real_user], Roll::TYPES[:user_public], Roll::TYPES[:global_public]].include?(roll.roll_type))
               ShelbyGT_EM.next_tick { @frame.add_to_community_channel }
             end
 
@@ -146,8 +146,8 @@ class V1::FrameController < ApplicationController
             ShelbyGT_EM.next_tick { GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame) }
             # if this is a real human shelby user rolling to a public roll,
             # add the new frame to the community channel in a non-blocking manner
-            if current_user.user_type != User::USER_TYPE[:service] &&
-               [Roll::TYPES[:special_public_real_user], Roll::TYPES[:user_public], Roll::TYPES[:global_public]].include?(roll.roll_type)
+            if (current_user.user_type != User::USER_TYPE[:service]) &&
+               ([Roll::TYPES[:special_public_real_user], Roll::TYPES[:user_public], Roll::TYPES[:global_public]].include?(roll.roll_type))
               ShelbyGT_EM.next_tick { @frame.add_to_community_channel }
             end
 
