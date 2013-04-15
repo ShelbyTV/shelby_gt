@@ -17,13 +17,15 @@ class PrioritizedDashboardEntry
   # Following arrays all contain strings of ObjectIds
   
   # External sharers
-  key :friend_sharers_array,  Array, :abbr => :b1, :default => [] 
+  key :friend_sharers_array,          Array, :abbr => :b1,  :default => [] 
   # Shelby views
-  key :friend_viewers_array,  Array, :abbr => :a1, :default => []
+  key :friend_viewers_array,          Array, :abbr => :a1,  :default => []
   # Shelby likes
-  key :friend_likers_array,   Array, :abbr => :a8, :default => []
+  key :friend_likers_array,           Array, :abbr => :a8,  :default => []
   # Shelby rollers
-  key :friend_rollers_array,  Array, :abbr => :a9, :default => []
+  key :friend_rollers_array,          Array, :abbr => :a9,  :default => []
+  # Shelby complete views
+  key :friend_complete_viewers_array, Array, :abbr => :a11, :default => []
   
   # An index is created on {a:1, score:-1} each time prioritized dashboard is generated
   key :score, Integer
@@ -46,6 +48,7 @@ class PrioritizedDashboardEntry
   def friend_viewers() User.where(:id.in => self.friend_viewers_array); end
   def friend_likers() User.where(:id.in => self.friend_likers_array); end
   def friend_rollers() User.where(:id.in => self.friend_rollers_array); end
+  def friend_complete_viewers() User.where(:id.in => self.friend_complete_viewers_array); end
   
   
   # --------- Mirrored From DashboardEntry ---------
