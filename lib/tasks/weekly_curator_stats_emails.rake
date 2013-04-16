@@ -3,7 +3,7 @@ namespace :stats_emails do
   desc 'Send Weekly Curator Stats Email'
   task :send_weekly_curator_stats_emails => :environment do
 
-    active_curator_ids = ['adventurous','arthur','blgevanter','bsoist','chris','christopherritter','enelson1','francisco','gulp','henry','iceberg901','ilyasny','imnotjk','kehrseite','lavvocato','madeinnydemo','matyus','migupatricio','nicholas','reece','shawn.crosby','spinosa','sxsw','the_adventurous','vondoom','yusufroso']
+    active_curator_ids = ['arthur','bananalust','bralfucious','chipsahoy','chris','christopherritter','enelson1','frash','henry','jimungimm','kehrseite','lcderus','lfleisch','matyus','nfpagliaro','nicholas','nm33','reece','sammorrill','spinosa','the_adventurous','thehackedmind','vondoom']
     active_curators = User.where(:nickname => { :$in => active_curator_ids })
     emails_sent = 0
 
