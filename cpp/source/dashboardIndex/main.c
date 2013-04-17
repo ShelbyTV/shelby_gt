@@ -389,6 +389,7 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
 {
    static sobField dashboardEntryAttributes[] = {
       SOB_DASHBOARD_ENTRY_ID,
+      SOB_DASHBOARD_ENTRY_USER_ID,
       SOB_DASHBOARD_ENTRY_ACTION,
       SOB_DASHBOARD_ENTRY_ACTOR_ID,
       SOB_DASHBOARD_ENTRY_READ,
