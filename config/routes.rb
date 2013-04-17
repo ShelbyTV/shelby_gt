@@ -96,6 +96,7 @@ ShelbyGt::Application.routes.draw do
       get 'find_entries_with_video' => 'dashboard_entries#find_entries_with_video', :on => :collection
     end
     resources :dashboard_entries_metal, :path => "dashboard", :only => [:index]
+    resources :prioritized_dashboard_entries, :path => "prioritized_dashboard", :only => [:index]
     resources :conversation, :only => [:show] do
       resources :messages, :only => [:create, :destroy]
     end
