@@ -3,6 +3,22 @@ object @pdb_entry
 #TODO: be sure to include :score when moving to real C API
 attributes :id, :user_id, :action, :actor_id, :read, :score
 
+child :friend_sharers => 'friend_sharers' do
+  extends 'v1/prioritized_dashboard_entries/user_show'
+end
+child :friend_viewers => 'friend_viewers' do
+  extends 'v1/prioritized_dashboard_entries/user_show'
+end
+child :friend_likers => 'friend_likers' do
+  extends 'v1/prioritized_dashboard_entries/user_show'
+end
+child :friend_rollers => 'friend_rollers' do
+  extends 'v1/prioritized_dashboard_entries/user_show'
+end
+child :friend_complete_viewers => 'friend_complete_viewers' do
+  extends 'v1/prioritized_dashboard_entries/user_show'
+end
+
 child :frame do
   attributes :id, :score, :view_count, :creator_id, :conversation_id, :roll_id, :video_id, :upvoters, :like_count
 
@@ -15,11 +31,7 @@ child :frame do
   end
 
   child :creator => "creator" do
-    attributes :id, :name, :nickname, :user_image_original, :user_image, :has_shelby_avatar, :user_type, :public_roll_id, :gt_enabled
-
-    child :authentications do
-      attributes :uid, :provider, :nickname
-    end
+    extends 'v1/prioritized_dashboard_entries/user_show'
   end
 
   child :roll => "roll" do

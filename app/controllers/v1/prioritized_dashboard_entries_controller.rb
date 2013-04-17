@@ -24,11 +24,15 @@ class V1::PrioritizedDashboardEntriesController < ApplicationController
     min_score = params[:min_score] ? params[:min_score] : 0
     
     @pdb_entries = PrioritizedDashboardEntry.for_user_id(current_user.id).ranked.limit(limit).skip(skip).where(:score.gte => min_score).all
+
+    # Pull all the children into the identity map for a little bit of efficiency
     @frames = Frame.find((@pdb_entries.map {|pdb_entry| pdb_entry.frame_id}).compact.uniq)
     @videos = Video.find((@frames.map {|frame| frame.video_id}).compact.uniq)
     @rolls = ::Roll.find((@frames.map {|frame| frame.roll_id}).compact.uniq)
-    @frame_creators = User.find((@frames.map {|frame| frame.creator_id}).compact.uniq)
     @conversations = Conversation.find((@frames.map {|frame| frame.conversation_id}).compact.uniq)
+    user_ids = @frames.map { |frame| frame.creator_id }
+    user_ids += @pdb_entries.map { |e| e.friend_sharers_array + e.friend_viewers_array + e.friend_likers_array + e.friend_rollers_array + e.friend_complete_viewers_array }
+    @users = User.find(user_ids.compact.uniq)
 
     @status = 200
   end
