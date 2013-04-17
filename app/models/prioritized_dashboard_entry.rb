@@ -44,11 +44,15 @@ class PrioritizedDashboardEntry
   
   
   # --------- convenient getters -----------
-  def friend_sharers() User.where(:id.in => self.friend_sharers_array); end
-  def friend_viewers() User.where(:id.in => self.friend_viewers_array); end
-  def friend_likers() User.where(:id.in => self.friend_likers_array); end
-  def friend_rollers() User.where(:id.in => self.friend_rollers_array); end
-  def friend_complete_viewers() User.where(:id.in => self.friend_complete_viewers_array); end
+  def friend_sharers() User.find(self.friend_sharers_array); end
+  def friend_viewers() User.find(self.friend_viewers_array); end
+  def friend_likers() User.find(self.friend_likers_array); end
+  def friend_rollers() User.find(self.friend_rollers_array); end
+  def friend_complete_viewers() User.find(self.friend_complete_viewers_array); end
+  def all_associated_friends
+    friend_ids = self.friend_sharers_array + self.friend_viewers_array + self.friend_likers_array + self.friend_rollers_array + self.friend_complete_viewers_array
+    User.find(friend_ids.uniq)
+  end
   
   
   # --------- Mirrored From DashboardEntry ---------
