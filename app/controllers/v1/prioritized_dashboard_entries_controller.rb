@@ -23,7 +23,7 @@ class V1::PrioritizedDashboardEntriesController < ApplicationController
     skip = params[:skip] ? params[:skip] : 0
     min_score = params[:min_score] ? params[:min_score] : 0
     
-    @pdb_entries = PrioritizedDashboardEntry.for_user_id(current_user.id).ranked.limit(limit).skip(skip).where(:score.gte => min_score).all
+    @pdb_entries = PrioritizedDashboardEntry.for_user_id(current_user.id).ranked.possibly_not_watched.possibly_not_rolled.limit(limit).skip(skip).where(:score.gte => min_score).all
 
     # Pull all the children into the identity map for a little bit of efficiency
     @frames = Frame.find((@pdb_entries.map {|pdb_entry| pdb_entry.frame_id}).compact.uniq)
