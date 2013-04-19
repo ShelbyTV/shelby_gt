@@ -6,7 +6,7 @@ defaults: &defaults
   featured: [
     {
       category_title: "★ Shelby Recommended ★",
-      include_in: {explore: true, onboarding: false, in_line_promos: false},
+      include_in: {explore: true, onboarding: true, in_line_promos: false},
       rolls: [
         {display_title: "Buzzfeed",         id: "4f9577c488ba6b15ec0084c7", display_thumbnail_src: "/images/onboarding/rolls-v2/buzzfeed.png",
           include_in: {explore: false, onboarding: true, in_line_promos: false}},
@@ -46,7 +46,7 @@ defaults: &defaults
           include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
     {
       category_title: "Comedy",
-      include_in: {explore: true, onboarding: true, in_line_promos: false},
+      include_in: {explore: true, onboarding: false, in_line_promos: false},
       rolls: [
         {display_title: "College Humor",        id: "4f9009d9b415cc466a000466", display_thumbnail_src: "/images/onboarding/rolls/collegehumor.png",
           include_in: {explore: true, onboarding: false, in_line_promos: false}},
