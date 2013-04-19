@@ -65,30 +65,21 @@ class AuthenticationsController < ApplicationController
 # ---- Current user, just signing in
     elsif user
 
-      if user.gt_enabled
-        sign_in_current_user(user, omniauth)
-
-      elsif gt_interest = GtInterest.find(cookies[:gt_access_token])
+      if gt_interest = GtInterest.find(cookies[:gt_access_token])
         gt_interest.used!(user)
         cookies.delete(:gt_access_token, :domain => ".shelby.tv")
-        sign_in_current_user(user, omniauth)
-        user.gt_enable!
 
       elsif cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
         use_cohort_entrance(user, cohort_entrance)
         session[:cohort_entrance_id] = nil
-        sign_in_current_user(user, omniauth)
-        user.gt_enable!
 
       elsif beta_invite
         use_beta_invite(user, beta_invite)
-        sign_in_current_user(user, omniauth)
-        user.gt_enable!
 
-      else
-        sign_in_current_user(user, omniauth)
-        user.gt_enable!
       end
+
+      sign_in_current_user(user, omniauth)
+      user.gt_enable! unless user.gt_enabled
 
 # ---- Adding new authentication to current user
     elsif current_user and omniauth
