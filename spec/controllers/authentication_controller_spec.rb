@@ -269,14 +269,34 @@ describe AuthenticationsController do
       context "no permissions" do
         before(:each) do
           request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
-          User.stub(:first).and_return(nil)
+          @u = Factory.create(:user)
+          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(@u)
         end
 
-        it "should reject without additional permissions" do
-          APIClients::TwitterInfoGetter.should_not_receive(:new)
+        it "should accept with no additional permissions" do
           get :create
-          assigns(:opener_location).should == "#{Settings::ShelbyAPI.web_root}?access=nos"
+          assigns(:current_user).should == @u
+          assigns(:current_user).gt_enabled.should == true
+          cookies[:_shelby_gt_common].should_not == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
         end
+
+        context "query string params" do
+
+          it "should remove previous auth failure params from the query string for redirect" do
+            session[:return_url] = 'http://www.example.com?auth_failure=1&auth_strategy=Facebook&param1=val1&param2=val2'
+            controller.should_receive(:redirect_path).and_return('http://www.example.com?param1=val1&param2=val2')
+            get :create, :provider => "Twitter"
+          end
+
+          it "should have no ? if the query string is empty after removing the auth failure params" do
+            session[:return_url] = 'http://www.example.com?auth_failure=1&auth_strategy=Facebook'
+            controller.should_receive(:redirect_path).and_return('http://www.example.com')
+            get :create, :provider => "Twitter"
+          end
+
+        end
+
       end
 
       context "via omniauth" do
@@ -371,11 +391,21 @@ describe AuthenticationsController do
 
     context "faux user" do
       context "no permissions" do
+        before(:each) do
+          request.stub!(:env).and_return({"omniauth.auth" =>
+            {
+              'provider'=>'twitter',
+              'credentials'=>{'token'=>nil, 'secret'=>nil}
+            }})
+          @u = Factory.create(:user, :gt_enabled => false, :user_type => User::USER_TYPE[:faux], :cohorts => ["init"])
+          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(@u)
+        end
 
-        it "should reject without additional permissions" do
-          APIClients::TwitterInfoGetter.should_not_receive(:new)
+        it "should accept without additional permissions" do
           get :create
-          assigns(:current_user).should == nil
+          assigns(:current_user).should == @u
+          cookies[:_shelby_gt_common].should_not == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
         end
 
       end
@@ -451,28 +481,6 @@ describe AuthenticationsController do
       end
     end
 
-  end
-
-  context "Create" do
-    before(:each) do
-      request.stub!(:env).and_return({"omniauth.auth" => {}})
-      @u1 = Factory.create(:user, :gt_enabled => false)
-      User.stub(:first).and_return(@u1)
-
-      AuthenticationsController.any_instance.stub(:current_user).and_return(nil)
-    end
-
-    it "should remove previous auth failure params from the query string for redirect" do
-      controller.stub!(:session).and_return({:return_url => 'http://www.example.com?auth_failure=1&auth_strategy=Facebook&param1=val1&param2=val2'})
-      controller.should_receive(:redirect_path).and_return('http://www.example.com?param1=val1&param2=val2')
-      get :create, :provider => "Twitter"
-    end
-
-    it "should have no ? if the query string is empty after removing the auth failure params" do
-      controller.stub!(:session).and_return({:return_url => 'http://www.example.com?auth_failure=1&auth_strategy=Facebook'})
-      controller.should_receive(:redirect_path).and_return('http://www.example.com')
-      get :create, :provider => "Twitter"
-    end
   end
 
   context "Auth failure" do
