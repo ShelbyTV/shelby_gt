@@ -130,6 +130,8 @@ class AuthenticationsController < ApplicationController
       # can now signup in a popup so no_redirect should not be set!
       @no_redirect = true unless session[:popup]
 
+      session[:return_url] = request.referrer
+
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
 
       user = GT::UserManager.create_new_user_from_params(params[:user])
