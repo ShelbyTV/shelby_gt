@@ -43,17 +43,9 @@
                                       <img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="user_image" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;line-height: 100%;outline: none;text-decoration: none;display: block;"/>
                                     </a>
                                   </div>
-                                  <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> liked "<%= @frame_title %>" on <% if @frame.roll.subdomain_active %>
-  																<a href="http://<%= @frame.roll.subdomain %>.shelby.tv" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @frame.roll.subdomain %>.shelby.tv</a>
-  																<% else %>
-  																	your <a href="<%= @frame.roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@frame.roll) %></a>
-  															  <% end %>
+                                  <a href="<%= @user_permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @user_from_name %></a> liked "<%= @frame_title %>" on your <a href="<%= @frame.roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@frame.roll) %></a>
                                 <% else %>
-                                  Someone liked "<%= @frame_title %>" on <% if @frame.roll.subdomain_active %>
-                                  <a href="http://<%= @frame.roll.subdomain %>.shelby.tv" style="color: #777;font-weight: normal;text-decoration: underline;"><%= @frame.roll.subdomain %>.shelby.tv</a>
-                                  <% else %>
-                                    your <a href="<%= @frame.roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@frame.roll) %></a>
-                                  <% end %>
+                                  Someone liked "<%= @frame_title %>" on your <a href="<%= @frame.roll.permalink %>" style="color: #777;font-weight: normal;text-decoration: underline;"><%= title_for_roll_on_follow(@frame.roll) %></a>
                                 <% end %>
                               </h4>
                           </div>

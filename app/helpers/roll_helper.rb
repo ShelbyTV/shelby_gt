@@ -4,12 +4,12 @@ module RollHelper
   def title_for_roll_on_follow(roll)
     case roll.roll_type
     when Roll::TYPES[:special_watch_later]
-      "Queue"
+      "Likes Roll"
     when Roll::TYPES[:special_public_real_user], Roll::TYPES[:special_public], Roll::TYPES[:special_public_upgraded]
       "Personal Roll"
     when Roll::TYPES[:special_upvoted]
-      "Hearts Roll"
-    else 
+      "Likes Roll"
+    else
       "roll: #{roll.title}"
     end
 
