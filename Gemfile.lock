@@ -159,6 +159,7 @@ GEM
     formatted_rails_logger (0.2.0)
       rails (~> 3.2.0)
     fssm (0.2.9)
+    gabba (1.0.1)
     git (1.2.5)
     grackle (0.1.10)
       json
@@ -387,6 +388,7 @@ DEPENDENCIES
   exception_notification
   factory_girl_rails
   formatted_rails_logger
+  gabba
   grackle
   haml
   httparty

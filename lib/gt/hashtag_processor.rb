@@ -1,3 +1,5 @@
+require 'api_clients/google_analytics_client'
+
 # Processes messages looking for shelby-defined hashtags
 # Performs appropriate actions when hashtags are found
 module GT
@@ -5,17 +7,22 @@ module GT
 
     # processes the hashtags in a frame's message and adds the frame
     # to a channel if a channel hashtag is found
+    # sends an event to google analytics for every hashtag encountered by default
+    # pass send_ga_events=false to opt out of this tracking
     # RETURNS: the created dashboard entry if any hashtags are matched
-    def self.process_frame_message_hashtags_for_channels(frame)
+    def self.process_frame_message_hashtags_for_channels(frame, send_ga_events=true)
       raise ArgumentError, "must supply a valid frame" unless frame and frame.is_a?(Frame)
 
       db_entries = []
       channels_rolled_to = []
 
-      # process the frame's first message, aka the rolling comment, to see
-      # if it contains any channel hashtags
+      # process the frame's first message, aka the rolling comment
       if message = frame.conversation && frame.conversation.messages && frame.conversation.messages[0]
         message.text.scan(/\#(\w*)/) do |hashtag_match|
+          # send an event to google analytics to track each hashtag we encounter, regardless of whether we support
+          # that hashtag
+          APIClients::GoogleAnalyticsClient.track_event('hashtag', 'rolled to', hashtag_match[0].downcase) if send_ga_events
+          # see if the message contains any channel hashtags
           Settings::Channels.channels.each do |channel|
             # skip this channel if we've already added to it
             next if channels_rolled_to.include? channel['channel_user_id']

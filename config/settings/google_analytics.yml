@@ -1,0 +1,14 @@
+defaults: &defaults
+  account_id: "UA-21191360-6"
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+
+arnold:
+  <<: *production
