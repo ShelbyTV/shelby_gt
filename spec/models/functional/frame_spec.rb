@@ -243,7 +243,8 @@ describe Frame do
 
   context "watch later" do
     before(:each) do
-      @frame = Factory.create(:frame)
+      @video = Factory.create(:video)
+      @frame = Factory.create(:frame, :video => @video)
 
       @u1 = Factory.create(:user)
       @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
@@ -289,11 +290,24 @@ describe Frame do
       }.should change { @frame.like_count } .by 2
     end
 
+    it "should increment the number of video likes" do
+      lambda {
+        @frame.add_to_watch_later!(@u1)
+      }.should change { @video.like_count } .by 1
+    end
+
     it "should increment the number of likes once for each user" do
       lambda {
         @frame.add_to_watch_later!(@u1)
         @frame.add_to_watch_later!(@u1)
       }.should change { @frame.like_count } .by 1
+    end
+
+    it "should increment the number of video likes once for each user" do
+      lambda {
+        @frame.add_to_watch_later!(@u1)
+        @frame.add_to_watch_later!(@u1)
+      }.should change { @video.like_count } .by 1
     end
 
     it "should increase the score" do
@@ -348,7 +362,8 @@ describe Frame do
 
   context "like" do
     before(:each) do
-      @frame = Factory.create(:frame)
+      @video = Factory.create(:video)
+      @frame = Factory.create(:frame, :video => @video)
 
       @community_channel_user = Factory.create(:user)
       Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
@@ -358,6 +373,12 @@ describe Frame do
       lambda {
         @frame.like!
       }.should change { @frame.like_count } .by 1
+    end
+
+    it "should increment the video like count" do
+      lambda {
+        @frame.like!
+      }.should change { @video.like_count } .by 1
     end
 
     it "should add the frame to the community channel" do
@@ -574,6 +595,13 @@ describe Frame do
             @stranger_watch_later_roll.frames.first.destroy
             @frame.reload
           }.should change { @frame.like_count } .by(-1)
+        end
+
+        it "should decrement the number of likes of the video of the frame's ancestor (original upvoted frame)" do
+          lambda {
+            @stranger_watch_later_roll.frames.first.destroy
+            @video.reload
+          }.should change { @video.like_count } .by(-1)
         end
 
         it "should decrease score of the frame's ancestor (original upvoted frame)" do
