@@ -65,30 +65,21 @@ class AuthenticationsController < ApplicationController
 # ---- Current user, just signing in
     elsif user
 
-      if user.gt_enabled
-        sign_in_current_user(user, omniauth)
-
-      elsif gt_interest = GtInterest.find(cookies[:gt_access_token])
+      if gt_interest = GtInterest.find(cookies[:gt_access_token])
         gt_interest.used!(user)
         cookies.delete(:gt_access_token, :domain => ".shelby.tv")
-        sign_in_current_user(user, omniauth)
-        user.gt_enable!
 
       elsif cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
         use_cohort_entrance(user, cohort_entrance)
         session[:cohort_entrance_id] = nil
-        sign_in_current_user(user, omniauth)
-        user.gt_enable!
 
       elsif beta_invite
         use_beta_invite(user, beta_invite)
-        sign_in_current_user(user, omniauth)
-        user.gt_enable!
 
-      else
-        # NO GT FOR YOU, just redirect to error page w/o signing in
-        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
       end
+
+      sign_in_current_user(user, omniauth)
+      user.gt_enable! unless user.gt_enabled
 
 # ---- Adding new authentication to current user
     elsif current_user and omniauth
@@ -107,36 +98,31 @@ class AuthenticationsController < ApplicationController
       gt_interest = GtInterest.find(cookies[:gt_access_token])
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
 
-      if gt_interest or cohort_entrance or beta_invite
-        user = GT::UserManager.create_new_user_from_omniauth(omniauth)
+      user = GT::UserManager.create_new_user_from_omniauth(omniauth)
 
-        if user.valid?
-          sign_in(:user, user)
-          user.remember_me!(true)
-          set_common_cookie(user, form_authenticity_token)
+      if user.valid?
+        sign_in(:user, user)
+        user.remember_me!(true)
+        set_common_cookie(user, form_authenticity_token)
 
-          if gt_interest
-            gt_interest.used!(user)
-            cookies.delete(:gt_access_token, :domain => ".shelby.tv")
-          end
-          if cohort_entrance
-            use_cohort_entrance(user, cohort_entrance)
-            session[:cohort_entrance_id] = nil
-          end
-          if beta_invite
-            use_beta_invite(user, beta_invite)
-          end
-
-          StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
-          @opener_location = redirect_path || Settings::ShelbyAPI.web_root
-        else
-
-          Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
-          @opener_location = redirect_path || Settings::ShelbyAPI.web_root
+        if gt_interest
+          gt_interest.used!(user)
+          cookies.delete(:gt_access_token, :domain => ".shelby.tv")
         end
+        if cohort_entrance
+          use_cohort_entrance(user, cohort_entrance)
+          session[:cohort_entrance_id] = nil
+        end
+        if beta_invite
+          use_beta_invite(user, beta_invite)
+        end
+
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
+        @opener_location = redirect_path || Settings::ShelbyAPI.web_root
       else
-        # NO GT FOR YOU!  Just redirect to error page w/o creating account
-        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
+
+        Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
+        @opener_location = redirect_path || Settings::ShelbyAPI.web_root
       end
 
 # ---- New User signing up w/ email & password
@@ -144,48 +130,44 @@ class AuthenticationsController < ApplicationController
       # can now signup in a popup so no_redirect should not be set!
       @no_redirect = true unless session[:popup]
 
+      session[:return_url] = request.referrer
+
       cohort_entrance = CohortEntrance.find(session[:cohort_entrance_id])
 
-      if cohort_entrance or beta_invite
+      user = GT::UserManager.create_new_user_from_params(params[:user])
 
-        user = GT::UserManager.create_new_user_from_params(params[:user])
+      # order matters here: user.valid? will potentially clear user.errors
+      # (especially if errors were added manually instead of part of a model validation)
+      if user.errors.empty? and user.valid?
+        sign_in(:user, user)
+        user.remember_me!(true)
+        set_common_cookie(user, form_authenticity_token)
 
-        # order matters here: user.valid? will potentially clear user.errors
-        # (especially if errors were added manually instead of part of a model validation)
-        if user.errors.empty? and user.valid?
-          sign_in(:user, user)
-          user.remember_me!(true)
-          set_common_cookie(user, form_authenticity_token)
-
-          if cohort_entrance
-            use_cohort_entrance(user, cohort_entrance)
-            session[:cohort_entrance_id] = nil
-          end
-          if beta_invite
-            use_beta_invite(user, beta_invite)
-          end
-
-          StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['username'])
-          @user_errors = false
-          @opener_location = redirect_path || Settings::ShelbyAPI.web_root
-        else
-          Rails.logger.info "AuthenticationsController#create_with_email - FAIL: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name} -- primary_email #{user.primary_email}"
-
-          # keep list of errors handy to pass to a client if necessary.
-          @user_errors = model_errors_as_simple_hash(user)
-
-          # return to beta invite url, origin, or web root with errors
-          loc = nil
-          loc = beta_invite.url if beta_invite
-          loc = cohort_entrance.url if cohort_entrance
-          loc = clean_query_params(redirect_path || Settings::ShelbyAPI.web_root) unless loc
-          @opener_location = add_query_params(loc, @user_errors)
+        if cohort_entrance
+          use_cohort_entrance(user, cohort_entrance)
+          session[:cohort_entrance_id] = nil
+        end
+        if beta_invite
+          use_beta_invite(user, beta_invite)
         end
 
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['username'])
+        @user_errors = false
+        @opener_location = redirect_path || Settings::ShelbyAPI.web_root
       else
-        #not invited, deny access
-        @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
+        Rails.logger.info "AuthenticationsController#create_with_email - FAIL: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name} -- primary_email #{user.primary_email}"
+
+        # keep list of errors handy to pass to a client if necessary.
+        @user_errors = model_errors_as_simple_hash(user)
+
+        # return to beta invite url, origin, or web root with errors
+        loc = nil
+        loc = beta_invite.url if beta_invite
+        loc = cohort_entrance.url if cohort_entrance
+        loc = clean_query_params(redirect_path || Settings::ShelbyAPI.web_root) unless loc
+        @opener_location = add_query_params(loc, @user_errors)
       end
+
     else
 # ---- NO GT FOR YOU!  Just redirect to error page w/o creating account
       @opener_location = add_query_params(redirect_path || Settings::ShelbyAPI.web_root, {:access => "nos"})
