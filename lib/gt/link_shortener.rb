@@ -1,17 +1,17 @@
 module GT
   class LinkShortener
-   
+
    include Awesm
-   
-   
+
+
    # linkable - object (roll or frame) that supports permalink()
    # destinations is a comma seperated string eg "email,twitter"
    def self.get_or_create_shortlinks(linkable, destinations, user=nil)
      raise ArgumentError, "must supply at least one destination" unless destinations and destinations.is_a?(String)
-     raise ArgumentError, "must supply a roll, frame, or video" unless linkable and (linkable.is_a?(Roll) or linkable.is_a?(Frame) or linkable.is_a?(Video))
-     
+     raise ArgumentError, "must supply a roll, frame, video, or dashboard entry" unless linkable and (linkable.is_a?(Roll) or linkable.is_a?(Frame) or linkable.is_a?(Video) or linkable.is_a?(DashboardEntry))
+
      destinations = destinations.split(',')
-     
+
      d_copy = Array.new(destinations)
 
      # 1. check if a destination exists for each destination given, delete if we have it already
@@ -21,38 +21,41 @@ module GT
        d_copy[d_copy.index(d)] = "facebook-post" if d == "facebook"
        d_copy[d_copy.index(d)] = "tumblr-video" if d == "tumblr"
      end
-     
-     # 2. if d_copy is not empty, create whatever short link that is missing form frames hash of short_links    
+
+     # 2. if d_copy is not empty, create whatever short link that is missing form frames hash of short_links
      links = {}
      if !d_copy.empty?
        # 3. create long url
        if linkable.is_a?(Frame)
          frame = linkable
          # for frames on legit shelby rolls, link there instead of SEO page
-         long_url = frame.subdomain_permalink(:require_legit_roll => true) || 
-                    frame.isolated_roll_permalink(:require_legit_roll => true) || 
+         long_url = frame.subdomain_permalink(:require_legit_roll => true) ||
+                    frame.isolated_roll_permalink(:require_legit_roll => true) ||
                     frame.video_page_permalink
+       elsif linkable.is_a?(DashboardEntry)
+         dashboard_entry = linkable
+         long_url = dashboard_entry.permalink
        else
          roll = linkable
-         long_url = roll.subdomain_permalink || 
+         long_url = roll.subdomain_permalink ||
                     roll.permalink
        end
-       
+
        d_copy = d_copy.join(",")
        params = {  :url => long_url,
                    :channel => d_copy,
                    :key=> Settings::Awesm.api_key,
                    :tool => Settings::Awesm.tool_key
                  }
-       
+
        params[:user_id] = user.id.to_s if user
-       
+
        code, resp = Awesm::Url.batch( params )
-       
+
        if code == 200
          resp["awesm_urls"].each do |u|
            awesm_url = u["awesm_url"]
-           
+
            case u["channel"]
            when "twitter"
              linkable.short_links[:twitter] = awesm_url
@@ -73,7 +76,7 @@ module GT
      end
      # 4. return the short_links with the requested destinations
      destinations.each { |d| links[d] = linkable.short_links[d.to_sym] }
-     
+
      links.each do |l|
        links[links.index(l)] = "facebook" if l == "facebook-post"
        links[links.index(l)] = "tumblr" if l == "tumblr-video"
@@ -81,6 +84,6 @@ module GT
 
      return links
    end
-   
+
   end
 end
