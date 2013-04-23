@@ -64,11 +64,15 @@ class EmailWebhookController < ApplicationController
                       GT::UserActionManager.frame_rolled!(user.id, frame.id, frame.video_id, frame.roll_id)
                       # Process frame message hashtags
                       GT::HashtagProcessor.process_frame_message_hashtags_for_channels(frame)
-                      # if this is a real human shelby user rolling to a public roll,
-                      # add the new frame to the community channel in a non-blocking manner
-                      if (user.user_type != User::USER_TYPE[:service]) &&
-                      ([Roll::TYPES[:special_public_real_user], Roll::TYPES[:user_public], Roll::TYPES[:global_public]].include?(user_public_roll.roll_type))
-                        frame.add_to_community_channel
+                      if user.user_type != User::USER_TYPE[:service]
+                        if [Roll::TYPES[:special_public_real_user], Roll::TYPES[:user_public], Roll::TYPES[:global_public]].include?(user_public_roll.roll_type)
+                          # if this is a real human shelby user rolling to a public roll,
+                          # add the new frame to the community channel in a non-blocking manner
+                          frame.add_to_community_channel
+                        end
+                        # if this is a real human shelby user, send events to Google Analytics to track which
+                        # hashtags are being used, in a non-blocking manner
+                        GT::HashtagProcessor.process_frame_message_hashtags_send_to_google_analytics(frame)
                       end
                     end
                   end

@@ -106,11 +106,16 @@ class V1::FrameController < ApplicationController
           if @frame = r[:frame]
             # process frame message hashtags in a non-blocking manor
             ShelbyGT_EM.next_tick { GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame) }
-            # if this is a real human shelby user rolling to a public roll,
-            # add the new frame to the community channel in a non-blocking manner
-            if (current_user.user_type != User::USER_TYPE[:service]) &&
-               ([Roll::TYPES[:special_public_real_user], Roll::TYPES[:user_public], Roll::TYPES[:global_public]].include?(roll.roll_type))
-              ShelbyGT_EM.next_tick { @frame.add_to_community_channel }
+
+            if current_user.user_type != User::USER_TYPE[:service]
+              if [Roll::TYPES[:special_public_real_user], Roll::TYPES[:user_public], Roll::TYPES[:global_public]].include?(roll.roll_type)
+              # if this is a real human shelby user rolling to a public roll,
+              # add the new frame to the community channel in a non-blocking manner
+                ShelbyGT_EM.next_tick { @frame.add_to_community_channel }
+              end
+              # if this is a real human shelby user, send events to Google Analytics to track which
+              # hashtags are being used, in a non-blocking manner
+              ShelbyGT_EM.next_tick { GT::HashtagProcessor.process_frame_message_hashtags_send_to_google_analytics(@frame) }
             end
 
             @status = 200
@@ -144,11 +149,16 @@ class V1::FrameController < ApplicationController
             ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', current_user, @frame) }
             # process frame message hashtags in a non-blocking manor
             ShelbyGT_EM.next_tick { GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame) }
-            # if this is a real human shelby user rolling to a public roll,
-            # add the new frame to the community channel in a non-blocking manner
-            if (current_user.user_type != User::USER_TYPE[:service]) &&
-               ([Roll::TYPES[:special_public_real_user], Roll::TYPES[:user_public], Roll::TYPES[:global_public]].include?(roll.roll_type))
-              ShelbyGT_EM.next_tick { @frame.add_to_community_channel }
+
+            if current_user.user_type != User::USER_TYPE[:service]
+              if [Roll::TYPES[:special_public_real_user], Roll::TYPES[:user_public], Roll::TYPES[:global_public]].include?(roll.roll_type)
+                # if this is a real human shelby user rolling to a public roll,
+                # add the new frame to the community channel in a non-blocking manner
+                ShelbyGT_EM.next_tick { @frame.add_to_community_channel }
+              end
+              # if this is a real human shelby user, send events to Google Analytics to track which
+              # hashtags are being used, in a non-blocking manner
+              ShelbyGT_EM.next_tick { GT::HashtagProcessor.process_frame_message_hashtags_send_to_google_analytics(@frame) }
             end
 
             @status = 200

@@ -368,7 +368,16 @@ describe V1::FrameController do
       it "should process the new frame message for hashtags" do
         GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
         GT::HashtagProcessor.should_receive(:process_frame_message_hashtags_for_channels).with(@f1)
+        GT::HashtagProcessor.should_receive(:process_frame_message_hashtags_send_to_google_analytics).with(@f1)
         GT::UserActionManager.should_receive(:frame_rolled!)
+
+        post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmarklet", :format => :json
+      end
+
+      it "should not send Google Analytics events for hashtags if the roller is a service user" do
+        @u1.user_type = User::USER_TYPE[:service]
+        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+        GT::HashtagProcessor.should_not_receive(:process_frame_message_hashtags_send_to_google_analytics)
 
         post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmarklet", :format => :json
       end
@@ -470,7 +479,16 @@ describe V1::FrameController do
       it "should process the new frame message for hashtags" do
         @f1.stub(:re_roll).and_return({:frame => @f2})
         GT::HashtagProcessor.should_receive(:process_frame_message_hashtags_for_channels).with(@f2)
+        GT::HashtagProcessor.should_receive(:process_frame_message_hashtags_send_to_google_analytics).with(@f2)
         GT::UserActionManager.should_receive(:frame_rolled!)
+
+        post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
+      end
+
+      it "should not send Google Analytics events for hashtags if the roller is a service user" do
+        @u1.user_type = User::USER_TYPE[:service]
+        @f1.stub(:re_roll).and_return({:frame => @f2})
+        GT::HashtagProcessor.should_not_receive(:process_frame_message_hashtags_send_to_google_analytics)
 
         post :create, :roll_id => @r2.id, :frame_id => @f1.id, :format => :json
       end
