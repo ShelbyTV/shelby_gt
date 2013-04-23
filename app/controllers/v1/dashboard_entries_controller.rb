@@ -1,12 +1,12 @@
-class V1::DashboardEntriesController < ApplicationController  
-    
-  before_filter :authenticate_user!
-  
+class V1::DashboardEntriesController < ApplicationController
+
+  before_filter :authenticate_user!, :except => [:short_link]
+
   ##
   # Returns frames of the videos fo the parameters
   #
   # [GET] v1/dashboard/find_entries_with_video/
-  # 
+  #
   # @param [Required, String] provider_name The name of the provider
   # @param [Required, String] provider_id The id of the provider
   #
@@ -32,7 +32,7 @@ class V1::DashboardEntriesController < ApplicationController
   # Updates and returns one dashboard entry, with the given parameters.
   #
   # [PUT] v1/dashboard/:id.json
-  # 
+  #
   # @param [Required, String] id The id of the dashboard entry
   #
   #TODO: Do not user update_attributes, instead only allow updating specific attrs
@@ -40,7 +40,7 @@ class V1::DashboardEntriesController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['update']) do
       if params[:id]
         if @dashboard_entry = DashboardEntry.find(params[:id])
-          begin 
+          begin
             @status = 200 if @dashboard_entry.update_attributes!(params)
           rescue => e
             render_error(404, "could not update dashboard_entry: #{e}")
@@ -53,6 +53,25 @@ class V1::DashboardEntriesController < ApplicationController
       end
     end
   end
- 
+
+
+  ##
+  # gets a short link for the given dashboard_entry
+  #   AUTHENTICATION OPTIONAL
+  #
+  # [GET] /v1/dashboard/:id/short_link
+  #
+  # @param [Required, String] id The id of the dashboard entry
+  def short_link
+    StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['short_link']) do
+      if dbe = DashboardEntry.find(params[:id])
+        @status = 200
+        @short_link = GT::LinkShortener.get_or_create_shortlinks(dbe, 'email', current_user)
+      else
+        render_error(404, "could not find dashboard entry")
+      end
+    end
+  end
+
 
 end

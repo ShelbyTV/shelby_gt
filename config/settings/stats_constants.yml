@@ -5,6 +5,7 @@ defaults: &defaults
       index: 'dashboard.index'
       index_for_user: 'dashboard.index_for_user'
       update: 'dashboard.update'
+      short_link: 'dashboard.short_link'
     user:
       index: 'user.index'
       show: 'user.show'

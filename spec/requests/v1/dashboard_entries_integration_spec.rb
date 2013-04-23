@@ -65,6 +65,19 @@ describe 'v1/dashboard' do
         response.status.should eq(200)
       end
 
+      context 'short_link' do
+        it "should return short_link for a dashboard_enrty on success" do
+          d = Factory.build(:dashboard_entry)
+          d.save
+          short_link = "http://shl.by/1"
+          GT::LinkShortener.stub(:get_or_create_shortlinks).and_return({'email'=>short_link})
+          get '/v1/dashboard/'+d.id+'/short_link'
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/short_link")
+          parse_json(response.body)["result"]["short_link"].should eq(short_link)
+        end
+      end
+
     end
 
     describe "PUT" do
@@ -105,6 +118,17 @@ describe 'v1/dashboard' do
       it "should return 401 Unauthorized" do
         get '/v1/dashboard'
         response.status.should eq(401)
+      end
+    end
+
+    context "short_link" do
+      it "should work without authorization" do
+          d = Factory.build(:dashboard_entry)
+          d.save
+          short_link = "http://shl.by/1"
+          GT::LinkShortener.stub(:get_or_create_shortlinks).and_return({'email'=>short_link})
+          get '/v1/dashboard/'+d.id+'/short_link'
+          response.body.should be_json_eql(200).at_path("status")
       end
     end
 
