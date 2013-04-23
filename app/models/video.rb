@@ -29,22 +29,25 @@ class Video
 
   key :source_url, String, :abbr => :o
   key :embed_url, String, :abbr => :p
-  
+
   # Each time a new view is counted (see Frame#view!) we increment this and frame.view_count
   key :view_count, Integer, :abbr => :q, :default => 0
-  
+
   # Reserved for item share based filtering edges
   key :recs, Array, :typecast => 'Recommendation', :abbr => :r
   many :recommendations, :in => :recs
-  
+
   # Maintain the first and the most recent time we noticed this video had playback errors
   key :first_unplayable_at, Time, :abbr => :s
   key :last_unplayable_at, Time, :abbr => :t
-  
+
   # The shortlinks created for each type of share, eg twitter, tumblr, email, facebook
   key :short_links, Hash, :abbr => :u, :default => {}
 
-  # Arnold does a *shit ton* of Video creation, which runs this validation, which turns out to be very expensive 
+  # Total number of likes - both by upvoters (logged in likers) and logged out likers
+  key :like_count, Integer, :abbr => :v, :default => 0
+
+  # Arnold does a *shit ton* of Video creation, which runs this validation, which turns out to be very expensive
   # This validations is technically unnecessary because there is a unique index on [provider_id, provider_name] in the database.
   # Additionally: 1) Arnold performs manual validation on Video create. 2) This doesn't even gurantee uniqueness (timing issues)
   # So, we turn this validation off for performance reasons inside of Arnold
@@ -54,7 +57,7 @@ class Video
 
   #nothing needs to be mass-assigned
   attr_accessible
-  
+
   def created_at() self.id.generation_time; end
 
   def permalink
