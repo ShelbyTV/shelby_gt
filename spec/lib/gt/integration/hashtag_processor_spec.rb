@@ -3,10 +3,6 @@ require 'hashtag_processor'
 
 # INTEGRATION test
 describe GT::HashtagProcessor do
-  before(:all) do
-    @ga_client = Gabba::Gabba.new(Settings::GoogleAnalytics.account_id, Settings::Global.domain)
-  end
-
   before(:each) do
     @rolling_user = Factory.create(:user)
     @hashtag_channel_user1 = Factory.create(:user)
@@ -18,9 +14,6 @@ describe GT::HashtagProcessor do
     Settings::Channels.channels[0]['hash_tags'] = ['test', 'testing']
     Settings::Channels.channels[1]['channel_user_id'] = @hashtag_channel_user2.id.to_s
     Settings::Channels.channels[1]['hash_tags'] = ['test2']
-
-    @ga_client.stub(:event)
-    Gabba::Gabba.stub(:new).and_return @ga_client
   end
 
   context "process_frame_message_hashtags_for_channels" do
@@ -71,24 +64,27 @@ describe GT::HashtagProcessor do
       res.should be_nil
     end
 
+  end
+
+  context "process_frame_message_hashtags_send_to_google_analytics" do
+    before(:all) do
+      @ga_client = Gabba::Gabba.new(Settings::GoogleAnalytics.account_id, Settings::Global.domain)
+    end
+
+    before(:each) do
+      @ga_client.stub(:event)
+      Gabba::Gabba.stub(:new).and_return @ga_client
+    end
+
     it "should post a google analytics event for every hashtag seen, even those that don't match channels" do
-      @message.text = "#tEsting #test2 #ignoreTHISone one two"
+      @message.text = "#tEsting #test2 #notaCHANNEL one two"
       @conversation.messages << @message
 
       @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'testing')
       @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'test2')
-      @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'ignorethisone')
+      @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'notachannel')
 
-      GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame)
-    end
-
-    it "should not post google analytics events if the opt out parameter (second parameters) is passed as false" do
-      @message.text = "#tEsting #test2 #ignoreTHISone one two"
-      @conversation.messages << @message
-
-      @ga_client.should_not_receive(:event)
-
-      GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame, false)
+      GT::HashtagProcessor.process_frame_message_hashtags_send_to_google_analytics(@frame)
     end
 
   end

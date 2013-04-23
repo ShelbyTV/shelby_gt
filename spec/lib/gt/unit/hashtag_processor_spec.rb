@@ -15,8 +15,6 @@ describe GT::HashtagProcessor do
     Settings::Channels.channels[0]['hash_tags'] = ['test', 'testing']
     Settings::Channels.channels[1]['channel_user_id'] = @hashtag_channel_user2.id.to_s
     Settings::Channels.channels[1]['hash_tags'] = ['test2']
-
-    APIClients::GoogleAnalyticsClient.stub(:track_event)
   end
 
   context "process_frame_message_hashtags_for_channels" do
@@ -62,33 +60,13 @@ describe GT::HashtagProcessor do
     end
 
     it "should process multiple hastags in a message" do
-      @message.text = "#testing #test2 #ignorethisone one two"
+      @message.text = "#testing #test2 one two"
       @conversation.messages << @message
 
       GT::Framer.should_receive(:create_dashboard_entry).with(@frame, ::DashboardEntry::ENTRY_TYPE[:new_hashtag_frame], @hashtag_channel_user1).and_return([Factory.create(:dashboard_entry)])
       GT::Framer.should_receive(:create_dashboard_entry).with(@frame, ::DashboardEntry::ENTRY_TYPE[:new_hashtag_frame], @hashtag_channel_user2).and_return([Factory.create(:dashboard_entry)])
 
       GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame)
-    end
-
-    it "should post a google analytics event for every hashtag seen, even those that don't match channels" do
-      @message.text = "#tEsting #test2 #ignoreTHISone one two"
-      @conversation.messages << @message
-
-      APIClients::GoogleAnalyticsClient.should_receive(:track_event).with('hashtag', 'rolled to', 'testing')
-      APIClients::GoogleAnalyticsClient.should_receive(:track_event).with('hashtag', 'rolled to', 'test2')
-      APIClients::GoogleAnalyticsClient.should_receive(:track_event).with('hashtag', 'rolled to', 'ignorethisone')
-
-      GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame)
-    end
-
-    it "should not post google analytics events if the opt out parameter (second parameters) is passed as false" do
-      @message.text = "#tEsting #test2 #ignoreTHISone one two"
-      @conversation.messages << @message
-
-      APIClients::GoogleAnalyticsClient.should_not_receive(:track_event)
-
-      GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame, false)
     end
 
     it "should add only once to a given channel" do
@@ -119,5 +97,22 @@ describe GT::HashtagProcessor do
       GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame)
     end
 
+  end
+
+  context "process_frame_message_hashtags_send_to_google_analytics" do
+    before(:each) do
+      APIClients::GoogleAnalyticsClient.stub(:track_event)
+    end
+
+    it "should post a google analytics event for every hashtag seen, even those that don't match channels" do
+      @message.text = "#tEsting #test2 #notaCHANNEL one two"
+      @conversation.messages << @message
+
+      APIClients::GoogleAnalyticsClient.should_receive(:track_event).with('hashtag', 'rolled to', 'testing')
+      APIClients::GoogleAnalyticsClient.should_receive(:track_event).with('hashtag', 'rolled to', 'test2')
+      APIClients::GoogleAnalyticsClient.should_receive(:track_event).with('hashtag', 'rolled to', 'notachannel')
+
+      GT::HashtagProcessor.process_frame_message_hashtags_send_to_google_analytics(@frame)
+    end
   end
 end
