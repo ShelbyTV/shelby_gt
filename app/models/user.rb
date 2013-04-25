@@ -213,7 +213,7 @@ class User
 
 
   RESERVED_NICNAMES = %w(admin system anonymous)
-  ROUTE_PREFIXES = %w(signout login users user authentication authentications auth setup bookmarklet pages images javascripts robots stylesheets staging favicon)
+  ROUTE_PREFIXES = %w(signout login users user authentication authentications auth setup bookmarklet pages images javascripts robots stylesheets staging favicon send-invite isolated-roll roll rollFromFrame embed channels help legal search following onboarding preferences likes saves stream tools)
   validates_exclusion_of :nickname, :in => RESERVED_NICNAMES + ROUTE_PREFIXES
 
   validates_format_of :primary_email, :with => /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\Z/, :allow_blank => true
