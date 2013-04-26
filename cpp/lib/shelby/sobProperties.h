@@ -170,5 +170,6 @@
    apply(AUTHENTICATION , provider , PROVIDER , STRING , provider  ) \
    apply(AUTHENTICATION , uid      , UID      , STRING , uid       ) \
    apply(AUTHENTICATION , nickname , NICKNAME , STRING , nickname  ) \
+   apply(AUTHENTICATION , name     , NAME     , STRING , name      )
 
 #endif // __SOB_PROPERTIES_H__

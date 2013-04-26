@@ -302,12 +302,13 @@ describe 'v1/user' do
         parse_json(response.body)["result"]["personal_roll_id"].should eq(@u1.public_roll_id)
       end
 
-      it "should return :creator_nickname, :following_user_count which are specially injected in the controller" do
+      it "should return :creator_nickname, :creator_name, :following_user_count which are specially injected in the controller" do
         r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
         r1.add_follower(@u1)
         get '/v1/user/'+@u1.id+'/rolls/following'
         response.body.should be_json_eql(200).at_path("status")
         parse_json(response.body)["result"][0]["creator_nickname"].should == @u1.nickname
+        parse_json(response.body)["result"][0]["creator_name"].should == @u1.name
         parse_json(response.body)["result"][0]["following_user_count"].should == 1
       end
 

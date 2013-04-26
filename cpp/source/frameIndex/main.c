@@ -460,10 +460,10 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
                                                     rollCreator,
                                                     &user_type);
 
-      int creatorNicknameOverride = FALSE;
+      int creatorAttributesOverride = FALSE;
       if (foundUserType && user_type == 1) {
-         // if it's a faux user, override the creator_nickname with
-         // the nickname from the origin network
+         // if it's a faux user, override the creator_nickname and creator_name with
+         // the corresponding data from the origin network
 
          bson firstAuth;
          status = sobBsonObjectArrayFieldFirst(SOB_USER,
@@ -475,20 +475,29 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
                                              &firstAuth,
                                              SOB_AUTHENTICATION_NICKNAME,
                                              "creator_nickname");
-            creatorNicknameOverride = TRUE;
+            sobPrintAttributeWithKeyOverride(context,
+                                             &firstAuth,
+                                             SOB_AUTHENTICATION_NAME,
+                                             "creator_name");
+            creatorAttributesOverride = TRUE;
          }
 
       }
 
-      if (!creatorNicknameOverride) {
+      if (!creatorAttributesOverride) {
          // if it's not a faux user or we couldn't find an authentication
-         // with which to override the nickname, just use the roll creator's
-         // nickname
+         // with which to override the nickname and name, just use the roll creator's
+         // nickname and name
 
          sobPrintAttributeWithKeyOverride(context,
                                           rollCreator,
                                           SOB_USER_NICKNAME,
                                           "creator_nickname");
+
+         sobPrintAttributeWithKeyOverride(context,
+                                          rollCreator,
+                                          SOB_USER_NAME,
+                                          "creator_name");
       }
 
       sobPrintStringToBoolAttributeWithKeyOverride(context,
