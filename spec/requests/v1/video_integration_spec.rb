@@ -17,15 +17,27 @@ describe 'v1/video' do
       response.body.should be_json_eql(404).at_path("status")
     end
 
-    it "should return video info on success" do
-      get 'v1/video/find_or_create', {:provider_id=>@v.provider_id, :provider_name=>"youtube"}
-      response.body.should be_json_eql(200).at_path("status");
-    end
+    context "find_or_create" do
 
-    it "should create video info on success" do
-      GT::VideoManager.stub(:get_or_create_videos_for_url).and_return({:videos => [@v]});
-      get 'v1/video/find_or_create', {:provider_id=>@v.provider_id, :provider_name=>"youtu", :url=>"http://www.url.com"}
-      response.body.should be_json_eql(200).at_path("status");
+      it "should return video info on success" do
+        get 'v1/video/find_or_create', {:provider_id=>@v.provider_id, :provider_name=>"youtube"}
+        response.body.should be_json_eql(200).at_path("status");
+      end
+
+      it "should create video info on success when video is not in db and url param is passed" do
+        GT::VideoManager.stub(:get_or_create_videos_for_url).and_return({:videos => [@v]});
+        get 'v1/video/find_or_create', {:provider_id=>@v.provider_id, :provider_name=>"vimeo", :url=>"http://www.url.com"}
+        assigns(:url).should == "http://www.url.com"
+        response.body.should be_json_eql(200).at_path("status");
+      end
+
+      it "should create video info on success when video is not in db and url param IS NOT passed" do
+        GT::VideoManager.stub(:get_or_create_videos_for_url).and_return({:videos => [@v]});
+        get 'v1/video/find_or_create', {:provider_id=>@v.provider_id, :provider_name=>"dailymotion"}
+        assigns(:url).should == "http://www.dailymotion.com/video/#{@v.provider_id}"
+        response.body.should be_json_eql(200).at_path("status");
+      end
+
     end
   end
 
