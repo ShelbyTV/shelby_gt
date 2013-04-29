@@ -3,9 +3,7 @@
 
 <article class="user clearfix">
   <div class="user__image">
-    <div style="display:none;">
-      <%= avatar_url_for_user(user) %>
-    </div>
+    <%= image_tag(avatar_url_for_user(user), :size=>"50x50")  %>
 
     <% if user.public_roll and user.public_roll.roll_type >= Roll::TYPES[:special_public_real_user] %>
       <div class="user__form">
