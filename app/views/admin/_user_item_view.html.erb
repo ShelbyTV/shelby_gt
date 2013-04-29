@@ -3,7 +3,7 @@
 
 <article class="user clearfix">
   <div class="user__image">
-    <%= image_tag avatar_url_for_user(user), :size=>"50x50" %>
+    <%= image_tag(avatar_url_for_user(user), :size=>"50x50") if avatar_url_for_user(user) %>
 
     <% if user.public_roll and user.public_roll.roll_type >= Roll::TYPES[:special_public_real_user] %>
       <div class="user__form">
@@ -52,7 +52,7 @@
       <%= link_to user.name, "/admin/user/#{user.id}", :class=>"user__username" %> <span>(<%= user.nickname %>)</span>
     </h1>
 		<% if user.public_roll %>
-	    <div class="user__info">	
+	    <div class="user__info">
 	      <%= link_to "#{user.public_roll.subdomain}.shelby.tv", "http://#{user.public_roll.subdomain}.shelby.tv" %>
 	      <ul class="list user__stats">
 	        <li>
