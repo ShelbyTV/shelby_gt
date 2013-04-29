@@ -12,5 +12,17 @@ code :following_user_count do |r|
 end
 
 node(:creator_nickname, :if => lambda { |r| r.creator != nil }) do |r|
-  r.creator.nickname
+  if r.creator.user_type == 1 && r.creator.authentications && !r.creator.authentications.empty?
+    r.creator.authentications[0].nickname
+  else
+    r.creator.nickname
+  end
+end
+
+node(:creator_name, :if => lambda { |r| r.creator != nil }) do |r|
+  if r.creator.user_type == 1 && r.creator.authentications && !r.creator.authentications.empty?
+    r.creator.authentications[0].name
+  else
+    r.creator.name
+  end
 end

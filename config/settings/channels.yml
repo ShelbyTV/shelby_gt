@@ -1,33 +1,49 @@
 defaults: &defaults
   channels : [
     {
+      channel_user_id : '515d83ecb415cc0d1a025bfe',
+      channel_route : 'trending'
+    },
+    {
       channel_user_id : '5112fa93b415cc1de20c30a0',
-      hash_tags : ['laugh', 'lol']
+      hash_tags : ['laugh', 'lol'],
+      channel_route : 'laugh'
+    },
+    {
+      channel_user_id : '5112fb26b415cc1e160cb0e5',
+      channel_route : 'happenings'
     },
     {
       channel_user_id : '5112fb5db415cc1ded0d79a1',
-      hash_tags : ['learnaboutyourworld', 'learn']
+      hash_tags : ['learnaboutyourworld', 'learn'],
+      channel_route : 'learn'
     },
     {
       channel_user_id : '5112fb95b415cc1ded0d8c89',
-      hash_tags : ['adrenaline']
+      hash_tags : ['adrenaline'],
+      channel_route : 'adrenaline'
     },
     {
       channel_user_id : '5137560bb415cc636c035769',
-      hash_tags : ['thisexists', 'exists']
+      hash_tags : ['thisexists', 'exists'],
+      channel_route : 'thisexists'
     },
     {
       channel_user_id : '51375788b415cc68d804aa71',
-      hash_tags : ['greatmoviemoments', 'movies', 'greatmoviemoment']
+      hash_tags : ['greatmoviemoments', 'movies', 'greatmoviemoment'],
+      channel_route : 'greatmoviemoments'
     },
     {
       channel_user_id : '51375863b415cc57fe02eea9',
-      hash_tags : ['storytellers', 'storyteller', 'stories', 'story']
+      hash_tags : ['storytellers', 'storyteller', 'stories', 'story'],
+      channel_route : 'storytellers'
+
     },
     {
       channel_user_id : '5112fae1b415cc1e0b0e4d6e',
-      hash_tags : ['natureisrad', 'nature']
-    },
+      hash_tags : ['natureisrad', 'nature'],
+      channel_route : 'nature'
+    }
   ]
   community_channel_user_id : '515d83ecb415cc0d1a025bfe'
 

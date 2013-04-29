@@ -1,3 +1,5 @@
+require 'api_clients/google_analytics_client'
+
 # Processes messages looking for shelby-defined hashtags
 # Performs appropriate actions when hashtags are found
 module GT
@@ -39,6 +41,18 @@ module GT
       db_entries.compact!
       return !db_entries.empty? ? db_entries : nil
 
+    end
+
+    # processes the hashtags in a frame's message and sends an event to google analytics
+    # for every hashtag encountered, even if that hashtag doesn't match a Shelby channel
+    def self.process_frame_message_hashtags_send_to_google_analytics(frame)
+      raise ArgumentError, "must supply a valid frame" unless frame and frame.is_a?(Frame)
+
+      if message = frame.conversation && frame.conversation.messages && frame.conversation.messages[0]
+        message.text.scan(/\#(\w*)/) do |hashtag_match|
+          APIClients::GoogleAnalyticsClient.track_event('hashtag', 'rolled to', hashtag_match[0].downcase)
+        end
+      end
     end
 
   end

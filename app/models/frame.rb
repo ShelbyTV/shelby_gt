@@ -128,6 +128,9 @@ class Frame
       self.update_score
       self.save
 
+      Video.collection.update({:_id => self.video_id}, {:$inc => {:v => 1}})
+      Video.find(self.video_id).reload
+
       # send email notification in a non-blocking manor
       ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self, u) }
 
@@ -140,12 +143,14 @@ class Frame
 
   #------ Like ------
 
-  # for now just increment the like_count
+  # increment the like_count of the frame and the video it contains
   # NB: add_to_watch_later! does this too, but not through this method
   #   because it performs other updates at the same time in one atomic DB operation
   def like!()
     Frame.collection.update({:_id => self.id}, {:$inc => {:n => 1}})
     self.reload
+    Video.collection.update({:_id => self.video_id}, {:$inc => {:v => 1}})
+    Video.find(self.video_id).reload
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self) }
     # add this frame to the community channel in a non-blocking manner
@@ -281,11 +286,12 @@ class Frame
           :$pull => {:f => roll.creator.id},
           :$inc => {:n => -1}
         })
-        # 3) recalculate the ancestor frame's score
+        # 3) recalculate the ancestor frame's score and decrement its video like_count
         MongoMapper::Plugins::IdentityMap.clear if Settings::Frame.mm_use_identity_map
         if upvoted_frame = Frame.find(upvoted_frame_id)
           upvoted_frame.update_score
           upvoted_frame.save
+          Video.collection.update({:_id => upvoted_frame.video_id}, {:$inc => {:v => -1}})
         end
       end
     end

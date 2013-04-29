@@ -44,7 +44,7 @@ class V1::VideoController < ApplicationController
       if @video = Video.where(:provider_name => @provider_name, :provider_id => @provider_id).first
         @status = 200
       else
-        @url = params.delete(:url)
+        @url = params.delete(:url) || GT::UrlHelper.generate_url_from_provider_info(@provider_name, @provider_id)
         if @url and @video = GT::VideoManager.get_or_create_videos_for_url(@url)[:videos]
           @video = @video.first
           @status = 200
@@ -111,7 +111,7 @@ class V1::VideoController < ApplicationController
     @status = 200
     render 'show'
   end
-  
+
   ##
   # If the given video is missing important information (thumbnail, title, description, embed url, etc.)
   # we will fetch the raw video info, update Video and return it.
@@ -123,9 +123,9 @@ class V1::VideoController < ApplicationController
   def fix_if_necessary
     @video = Video.find(params[:video_id])
     return render_error(404, "could not find video with id #{params[:video_id]}") unless @video
-    
+
     @video = GT::VideoManager.fix_video_if_necessary(@video)
-    
+
     @status = 200
     render 'show'
   end

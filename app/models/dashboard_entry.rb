@@ -48,8 +48,24 @@ class DashboardEntry
   belongs_to :video
   key :video_id, ObjectId, :abbr => :g
 
+  # The shortlinks created for each type of share, eg twitter, tumblr, email, facebook
+  key :short_links, Hash, :abbr => :h, :default => {}
+
   attr_accessible :read
 
   def created_at() self.id.generation_time; end
+
+  # Returns a link to the entry on a channel if it's a channel user's DashboardEntry
+  # Otherwise return a link to the frame contained in the DashboardEntry
+  def permalink()
+    if channel_info = Settings::Channels.channels.find { |channel| channel["channel_user_id"] == self.user_id.to_s}
+      return "#{Settings::ShelbyAPI.web_root}/channels/#{channel_info['channel_route']}/#{self.id}"
+    else
+      frame = self.frame
+      return frame.subdomain_permalink(:require_legit_roll => true) ||
+             frame.isolated_roll_permalink(:require_legit_roll => true) ||
+             frame.video_page_permalink
+    end
+  end
 
 end

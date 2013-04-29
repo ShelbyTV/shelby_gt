@@ -110,6 +110,12 @@ gem "beanstalk-client", :git => "git://github.com/ShelbyTV/beanstalk-client-ruby
 gem 'mail'
 
 #
+# ---------- Post events to google analytics
+#
+
+gem 'gabba'
+
+#
 # ---------- TODO: explain what yard is and why it's here
 #
 group :development do

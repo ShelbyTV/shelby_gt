@@ -15,6 +15,14 @@ node(:creator_nickname, :if => lambda { |r| r.creator != nil }) do |r|
   end
 end
 
+node(:creator_name, :if => lambda { |r| r.creator != nil }) do |r|
+  if r.creator.user_type == 1 && r.creator.authentications && !r.creator.authentications.empty?
+    r.creator.authentications[0].name
+  else
+    r.creator.name
+  end
+end
+
 node(:discussion_roll_participants, :if =>  lambda { |r| r.roll_type == Roll::TYPES[:user_discussion_roll]}) do |r|
   r.discussion_roll_participants
 end

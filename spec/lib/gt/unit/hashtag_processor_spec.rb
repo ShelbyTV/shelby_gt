@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'hashtag_processor'
+require 'api_clients/google_analytics_client'
 
 # UNIT test
 describe GT::HashtagProcessor do
@@ -96,5 +97,22 @@ describe GT::HashtagProcessor do
       GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame)
     end
 
+  end
+
+  context "process_frame_message_hashtags_send_to_google_analytics" do
+    before(:each) do
+      APIClients::GoogleAnalyticsClient.stub(:track_event)
+    end
+
+    it "should post a google analytics event for every hashtag seen, even those that don't match channels" do
+      @message.text = "#tEsting #test2 #notaCHANNEL one two"
+      @conversation.messages << @message
+
+      APIClients::GoogleAnalyticsClient.should_receive(:track_event).with('hashtag', 'rolled to', 'testing')
+      APIClients::GoogleAnalyticsClient.should_receive(:track_event).with('hashtag', 'rolled to', 'test2')
+      APIClients::GoogleAnalyticsClient.should_receive(:track_event).with('hashtag', 'rolled to', 'notachannel')
+
+      GT::HashtagProcessor.process_frame_message_hashtags_send_to_google_analytics(@frame)
+    end
   end
 end

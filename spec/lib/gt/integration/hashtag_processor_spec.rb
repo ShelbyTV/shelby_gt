@@ -66,4 +66,27 @@ describe GT::HashtagProcessor do
 
   end
 
+  context "process_frame_message_hashtags_send_to_google_analytics" do
+    before(:all) do
+      @ga_client = Gabba::Gabba.new(Settings::GoogleAnalytics.account_id, Settings::Global.domain)
+    end
+
+    before(:each) do
+      @ga_client.stub(:event)
+      Gabba::Gabba.stub(:new).and_return @ga_client
+    end
+
+    it "should post a google analytics event for every hashtag seen, even those that don't match channels" do
+      @message.text = "#tEsting #test2 #notaCHANNEL one two"
+      @conversation.messages << @message
+
+      @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'testing')
+      @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'test2')
+      @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'notachannel')
+
+      GT::HashtagProcessor.process_frame_message_hashtags_send_to_google_analytics(@frame)
+    end
+
+  end
+
 end

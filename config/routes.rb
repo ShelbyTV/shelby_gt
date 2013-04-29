@@ -94,6 +94,7 @@ ShelbyGt::Application.routes.draw do
     end
     resources :dashboard_entries, :path => "dashboard", :only => [:update] do
       get 'find_entries_with_video' => 'dashboard_entries#find_entries_with_video', :on => :collection
+      get 'short_link' => 'dashboard_entries#short_link', :on => :member
     end
     resources :dashboard_entries_metal, :path => "dashboard", :only => [:index]
     resources :prioritized_dashboard_entries, :path => "prioritized_dashboard", :only => [:index]
