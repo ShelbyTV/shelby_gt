@@ -28,8 +28,6 @@ module ApplicationHelper
   def avatar_url_for_user(user, avatar_size="small")
     if user.avatar?
       return user.shelby_avatar_url(avatar_size)
-    elsif user.avatar? and user.avatar == "null"
-        "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png"
     else
       return user.user_image_original || user.user_image || "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png"
     end
