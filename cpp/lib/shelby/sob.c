@@ -185,16 +185,16 @@ int sobConnect(sobContext context, sobType type)
       mongo_host_port primary;
       mongo_host_port secondary;
 
-      mongo_replset_init(context->allocatedConn[type],
+      mongo_replica_set_init(context->allocatedConn[type],
                          sobReplSetName[sobArrayIndex(type, context->env)]);
 
       mongo_parse_host(sobPrimaryServer[sobArrayIndex(type, context->env)], &primary);
       mongo_parse_host(sobSecondaryServer[sobArrayIndex(type, context->env)] , &secondary);
 
-      mongo_replset_add_seed(context->allocatedConn[type], primary.host, primary.port);
-      mongo_replset_add_seed(context->allocatedConn[type], secondary.host, secondary.port);
+      mongo_replica_set_add_seed(context->allocatedConn[type], primary.host, primary.port);
+      mongo_replica_set_add_seed(context->allocatedConn[type], secondary.host, secondary.port);
 
-      status = mongo_replset_connect(context->allocatedConn[type]);
+      status = mongo_replica_set_client(context->allocatedConn[type]);
 
    } else {
       mongo_host_port primary;
@@ -202,7 +202,7 @@ int sobConnect(sobContext context, sobType type)
       mongo_init(context->allocatedConn[type]);
       mongo_parse_host(sobPrimaryServer[sobArrayIndex(type, context->env)], &primary);
 
-      status = mongo_connect(context->allocatedConn[type], primary.host, primary.port);
+      status = mongo_client(context->allocatedConn[type], primary.host, primary.port);
    }
 
    if (MONGO_OK != status) {
