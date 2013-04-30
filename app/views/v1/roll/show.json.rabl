@@ -23,6 +23,18 @@ node(:creator_name, :if => lambda { |r| r.creator != nil }) do |r|
   end
 end
 
+node(:creator_has_shelby_avatar, :if => lambda { |r| r.creator != nil }) do |r|
+  if r.creator.avatar_file_name && (r.creator.avatar_file_name.length > 0)
+    true
+  else
+    false
+  end
+end
+
+node(:creator_avatar_updated_at, :if => lambda { |r| r.creator != nil }) do |r|
+  r.creator.avatar_updated_at
+end
+
 node(:discussion_roll_participants, :if =>  lambda { |r| r.roll_type == Roll::TYPES[:user_discussion_roll]}) do |r|
   r.discussion_roll_participants
 end
