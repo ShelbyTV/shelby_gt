@@ -11,7 +11,8 @@ describe 'v1/dashboard' do
     describe "GET" do
       context "when entries exist" do
         before(:each) do
-          @f = Factory.create(:frame, :creator_id => @u1.id)
+          @v = Factory.create(:video)
+          @f = Factory.create(:frame, :creator_id => @u1.id, :video => @v)
           @d = Factory.build(:dashboard_entry)
           @d.user = @u1; @d.frame = @f
           @d.save
@@ -56,6 +57,26 @@ describe 'v1/dashboard' do
 
           get '/v1/dashboard'
           parse_json(response.body)["result"][0]["frame"]["like_count"].should eq(2)
+        end
+
+        it "should return an empty array when there are no video recommendations" do
+          get '/v1/dashboard'
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(0).at_path("result/0/frame/video/recs")
+        end
+
+        it "should return a non-empty array when there are video recommendations" do
+          @rv = Factory.create(:video)
+          @r = Factory.create(:recommendation, :recommended_video_id => @rv.id)
+          @v.recs << @r
+          @v.save
+
+          get '/v1/dashboard'
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(1).at_path("result/0/frame/video/recs")
+          parse_json(response.body)["result"][0]["frame"]["video"]["recs"][0]["recommended_video_id"].should eq(@rv.id.to_s)
         end
 
       end

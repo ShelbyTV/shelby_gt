@@ -122,6 +122,26 @@ describe 'v1/frame' do
           parse_json(response.body)["result"]["frames"][0]["like_count"].should eq(2)
         end
 
+        it "should return an empty array when there are no video recommendations" do
+          get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(0).at_path("result/frames/0/video/recs")
+        end
+
+        it "should return a non-empty array when there are video recommendations" do
+          @rv = Factory.create(:video)
+          @r = Factory.create(:recommendation, :recommended_video_id => @rv.id)
+          @v.recs << @r
+          @v.save
+
+          get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(1).at_path("result/frames/0/video/recs")
+          parse_json(response.body)["result"]["frames"][0]["video"]["recs"][0]["recommended_video_id"].should eq(@rv.id.to_s)
+        end
+
         it "should return 404 if cant access frames in a roll" do
           roll = Factory.create(:roll, :creator_id => Factory.create(:user).id, :public => false)
           @f.roll_id = roll.id; @f.save
