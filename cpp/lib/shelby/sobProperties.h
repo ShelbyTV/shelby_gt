@@ -30,7 +30,8 @@
    MESSAGE_PROPERTIES(apply)         \
    ROLL_FOLLOWING_PROPERTIES(apply)  \
    FOLLOWING_USER_PROPERTIES(apply)  \
-   AUTHENTICATION_PROPERTIES(apply)
+   AUTHENTICATION_PROPERTIES(apply)  \
+   RECOMMENDATION_PROPERTIES(apply)
 
 #define USER_PROPERTIES(apply)                                                                 \
    apply(USER , id                   ,  ID                   ,  OID    , _id                 ) \
@@ -171,5 +172,10 @@
    apply(AUTHENTICATION , uid      , UID      , STRING , uid       ) \
    apply(AUTHENTICATION , nickname , NICKNAME , STRING , nickname  ) \
    apply(AUTHENTICATION , name     , NAME     , STRING , name      )
+
+#define RECOMMENDATION_PROPERTIES(apply)                                               \
+   apply(RECOMMENDATION , id                   , ID                   , OID    , _id ) \
+   apply(RECOMMENDATION , recommended_video_id , RECOMMENDED_VIDEO_ID , OID    , a   ) \
+   apply(RECOMMENDATION , score                , SCORE                , DOUBLE , b   )
 
 #endif // __SOB_PROPERTIES_H__

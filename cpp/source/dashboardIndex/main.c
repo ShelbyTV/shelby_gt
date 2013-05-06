@@ -167,6 +167,19 @@ void printJsonConversation(sobContext sob, mrjsonContext context, bson *conversa
                           &printJsonMessage);
 }
 
+void printJsonRecommendation(sobContext sob, mrjsonContext context, bson *recommendation) {
+   static sobField recommendationAttributes[] = {
+      SOB_RECOMMENDATION_ID,
+      SOB_RECOMMENDATION_RECOMMENDED_VIDEO_ID,
+      SOB_RECOMMENDATION_SCORE
+   };
+
+   sobPrintAttributes(context,
+                      recommendation,
+                      recommendationAttributes,
+                      sizeof(recommendationAttributes) / sizeof(sobField));
+}
+
 void printJsonVideo(sobContext sob, mrjsonContext context, bson *video)
 {
    static sobField videoAttributes[] = {
@@ -185,14 +198,19 @@ void printJsonVideo(sobContext sob, mrjsonContext context, bson *video)
       SOB_VIDEO_TAGS,
       SOB_VIDEO_CATEGORIES,
       SOB_VIDEO_FIRST_UNPLAYABLE_AT,
-      SOB_VIDEO_LAST_UNPLAYABLE_AT,
-      SOB_VIDEO_RECS
+      SOB_VIDEO_LAST_UNPLAYABLE_AT
    };
 
    sobPrintAttributes(context,
                       video,
                       videoAttributes,
                       sizeof(videoAttributes) / sizeof(sobField));
+
+   sobPrintSubobjectArray(sob,
+                          context,
+                          video,
+                          SOB_VIDEO_RECS,
+                          &printJsonRecommendation);
 }
 
 void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
