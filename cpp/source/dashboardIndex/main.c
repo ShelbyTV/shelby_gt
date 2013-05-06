@@ -185,7 +185,8 @@ void printJsonVideo(sobContext sob, mrjsonContext context, bson *video)
       SOB_VIDEO_TAGS,
       SOB_VIDEO_CATEGORIES,
       SOB_VIDEO_FIRST_UNPLAYABLE_AT,
-      SOB_VIDEO_LAST_UNPLAYABLE_AT
+      SOB_VIDEO_LAST_UNPLAYABLE_AT,
+      SOB_VIDEO_RECS
    };
 
    sobPrintAttributes(context,

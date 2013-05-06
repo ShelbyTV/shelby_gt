@@ -40,7 +40,7 @@ child :frame do
 
   child :video => "video" do
     attributes :id, :provider_name, :provider_id, :title, :description,
-      :duration, :author, :thumbnail_url, :source_url, :embed_url, :view_count, :tags, :categories, :first_unplayable_at, :last_unplayable_at
+      :duration, :author, :thumbnail_url, :source_url, :embed_url, :view_count, :tags, :categories, :first_unplayable_at, :last_unplayable_at, :recs
   end
 
   child :conversation => "conversation" do
