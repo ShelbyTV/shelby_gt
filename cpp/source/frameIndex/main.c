@@ -527,6 +527,16 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
                                        rollCreator,
                                        SOB_USER_AVATAR_UPDATED_AT,
                                        "creator_avatar_updated_at");
+
+      sobPrintAttributeWithKeyOverride(context,
+                                       rollCreator,
+                                       SOB_USER_USER_IMAGE_ORIGINAL,
+                                       "creator_image_original");
+
+      sobPrintAttributeWithKeyOverride(context,
+                                       rollCreator,
+                                       SOB_USER_USER_IMAGE,
+                                       "creator_image");
    }
 
    sobPrintAttributeWithKeyOverride(context,

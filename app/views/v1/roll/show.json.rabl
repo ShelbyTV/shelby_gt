@@ -31,6 +31,14 @@ node(:creator_has_shelby_avatar, :if => lambda { |r| r.creator != nil }) do |r|
   end
 end
 
+node(:creator_image_original, :if => lambda { |r| r.creator != nil }) do |r|
+  r.creator.user_image_original
+end
+
+node(:creator_image, :if => lambda { |r| r.creator != nil }) do |r|
+  r.creator.user_image
+end
+
 node(:creator_avatar_updated_at, :if => lambda { |r| r.creator != nil }) do |r|
   r.creator.avatar_updated_at
 end
