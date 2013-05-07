@@ -169,7 +169,6 @@ void printJsonConversation(sobContext sob, mrjsonContext context, bson *conversa
 
 void printJsonRecommendation(sobContext sob, mrjsonContext context, bson *recommendation) {
    static sobField recommendationAttributes[] = {
-      SOB_RECOMMENDATION_ID,
       SOB_RECOMMENDATION_RECOMMENDED_VIDEO_ID,
       SOB_RECOMMENDATION_SCORE
    };
