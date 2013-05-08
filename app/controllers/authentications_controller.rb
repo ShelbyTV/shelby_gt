@@ -4,7 +4,7 @@ require 'user_merger'
 
 class AuthenticationsController < ApplicationController
 
-  before_filter :authenticate_user!, :only => [:should_merge_accounts, :do_merge_accounts]
+  before_filter :authenticate_user!, :only => [:should_merge_accounts, :do_merge_accounts, :remove_all_authentications]
 
   def index
   end
@@ -237,6 +237,14 @@ class AuthenticationsController < ApplicationController
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signout'])
 
     redirect_to root_path(request.referer) || Settings::ShelbyAPI.web_root
+  end
+
+  # This route is for testing purposes only
+  # It's a GET... very dangerous
+  def remove_all_authentications
+    current_user.authentications = []
+    current_user.save
+    render :text => "Your Auths Are Destroy"
   end
 
   private
