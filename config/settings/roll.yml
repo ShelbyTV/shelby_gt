@@ -226,12 +226,12 @@ defaults: &defaults
         {display_title: "#Nature",  user_id: "5112fae1b415cc1e0b0e4d6e",
           display_description: "Admit it. Nature is rad, so come explore the animals and organisms of our natural world.",
           display_thumbnail_ipad_src: "/images/channels/ipad/natureisrad.png",
-          display_channel_color: "0C122B", # dark grey
+          display_channel_color: "0590C4", # Shelby Blue
           include_in: {ipad_standard: true}},
         {display_title: "#Learn",  user_id: "5112fb5db415cc1ded0d79a1",
           display_description: "Our world is a fascinating place. Learn about it here.",
           display_thumbnail_ipad_src: "/images/channels/ipad/learn.png",
-          display_channel_color: "0590C4", # Shelby Blue
+          display_channel_color: "E1A300", # yellowish
           include_in: {ipad_standard: true}},
         {display_title: "#Adrenaline",  user_id: "5112fb95b415cc1ded0d8c89",
           display_description: "Surf, snow, skate, base-jumping from space... y’know, whatever blows your hair back.",
@@ -251,7 +251,7 @@ defaults: &defaults
         {display_title: "#Laugh",  user_id: "5112fa93b415cc1de20c30a0",
           display_description: "When you need a chuckle, laugh, lol, lulz...",
           display_thumbnail_ipad_src: "/images/channels/ipad/laugh.png",
-          display_channel_color: "E1A300", # yellowish
+          display_channel_color: "FB00FF", # pink
           include_in: {ipad_standard: true}}
       ]},
   ]
