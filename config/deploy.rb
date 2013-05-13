@@ -33,8 +33,8 @@ namespace :util do
   end
 
   def run_with_tty(server, cmd)
-    default_run_options[:shell] = '/bin/bash'
     command = []
+    command += %W( ssh -t #{gateway} -l #{self[:gateway_user] || self[:user]} ) if self[:gateway]
     command += %W( ssh -t )
     command += %W( -l #{user} #{server.host} )
     # have to escape this once if running via double ssh
