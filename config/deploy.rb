@@ -25,24 +25,6 @@ namespace :deploy do
   end
 end
 
-namespace :util do
-  desc "Utils to be run"
-  task :create_new_user do
-    server = find_servers(:roles => [:app]).first
-    run_with_tty server, %W(cd #{deploy_to}/current && #{rake} wizard:create_new_user RAILS_ENV=production)
-  end
-
-  def run_with_tty(server, cmd)
-    command = []
-    command += %W( ssh -t #{gateway} -l #{self[:gateway_user] || self[:user]} ) if self[:gateway]
-    command += %W( ssh -t )
-    command += %W( -l #{user} #{server.host} )
-    # have to escape this once if running via double ssh
-    command += [self[:gateway] ? '\&\&' : '&&']
-    command += Array(cmd)
-    system *command
-  end
-end
 
 #############################################################
 #	Multistage Deploy via capistrano-ext
