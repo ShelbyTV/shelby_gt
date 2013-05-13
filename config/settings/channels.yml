@@ -43,6 +43,11 @@ defaults: &defaults
       channel_user_id : '5112fae1b415cc1e0b0e4d6e',
       hash_tags : ['natureisrad', 'nature'],
       channel_route : 'nature'
+    },
+    {
+      channel_user_id : '51913463b415cc7bd80175c8',
+      hash_tags : ['nyc'],
+      channel_route : 'nyc'
     }
   ]
   community_channel_user_id : '515d83ecb415cc0d1a025bfe'
