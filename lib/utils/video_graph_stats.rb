@@ -10,9 +10,29 @@ module Dev
       user = [user] unless user.is_a? Enumerable
 
       user.map do |u|
-        dashboard_video_ids = DashboardEntry.where(:user_id => BSON.ObjectId(u)).limit(head_size).find_each.map{|dbe| dbe.frame.video.id.to_s}.uniq
-        prioritized_dashboard_video_ids = PrioritizedDashboardEntry.where(:user_id => BSON.ObjectId(u)).limit(head_size).find_each.map{|dbe| dbe.frame.video.id.to_s}.uniq
-        prioritized_dashboard_video_ids - dashboard_video_ids
+        if u.is_a?(BSON::ObjectId) || BSON::ObjectId.legal?(u)
+          user_object = User.find(u)
+        else
+          user_object = User.find_by_nickname(u.to_s)
+        end
+
+        if user_object
+          dashboard_video_ids = DashboardEntry.where(:user_id => user_object.id).limit(head_size).find_each.map{|dbe| dbe.frame.video.id.to_s}.uniq
+          prioritized_dashboard_video_ids = PrioritizedDashboardEntry.where(:user_id => user_object.id).limit(head_size).find_each.map{|dbe| dbe.frame.video.id.to_s}.uniq
+          {
+            :user => {
+              :id => user_object.id,
+              :nickname => user_object.nickname
+            },
+            :dashboard_videos => dashboard_video_ids.count,
+            :prioritized_videos => prioritized_dashboard_video_ids.count,
+            :complement_videos => (prioritized_dashboard_video_ids - dashboard_video_ids).count
+          }
+        else
+          {
+            :user => "not found"
+          }
+        end
       end
     end
 
