@@ -25,6 +25,13 @@ namespace :deploy do
   end
 end
 
+namespace :util do
+  desc "Utils to be run"
+  task :create_new_user do
+    run "cd #{deploy_to}/current && #{rake} wizard:create_new_user RAILS_ENV=production"
+  end
+end
+
 #############################################################
 #	Multistage Deploy via capistrano-ext
 #############################################################
