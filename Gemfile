@@ -109,6 +109,12 @@ gem "beanstalk-client", :git => "git://github.com/ShelbyTV/beanstalk-client-ruby
 #
 gem 'mail'
 
+
+#
+# ---------- Console I/O for Utils
+#
+gem 'highline'
+
 #
 # ---------- Post events to google analytics
 #

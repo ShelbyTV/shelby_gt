@@ -391,6 +391,7 @@ DEPENDENCIES
   gabba
   grackle
   haml
+  highline
   httparty
   jquery-rails
   json_spec
