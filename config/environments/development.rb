@@ -2,7 +2,7 @@ ShelbyGt::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb
 
   # session domain needs to be set by environment so...
-  config.session_store :cookie_store, {:key => '_shelby_gt_api_session'}
+  config.session_store :cookie_store, {:key => '_shelby_gt_api_session', :domain => '.shelby.tv'}
 
 
   # In the development environment your application's code is reloaded on
