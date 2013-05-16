@@ -1,0 +1,14 @@
+defaults: &defaults
+  api_url : "http://108.171.174.224"
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+
+arnold:
+  <<: *production
