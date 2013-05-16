@@ -41,7 +41,7 @@ module Dev
         if @user.save
           puts "[SUCCESS] #{@user.name} created: \n #{@user.inspect}"
           if youtube_user
-            puts "Configuring youtube BotRoll via audrey2"
+            puts "[WORKING] Configuring youtube BotRoll via audrey2"
             begin
               response = HTTParty.post("#{Settings::Audrey2.api_url}/v1/feeds", {:body =>
                 {
