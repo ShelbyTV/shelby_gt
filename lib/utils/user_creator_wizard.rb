@@ -69,7 +69,7 @@ module Dev
       end
     end
 
-    def self.add_botroll_to_user!(nickname)
+    def self.add_botroll_to_user!
       nickname = ask('Enter a username: ') do |q|
         q.validate = lambda { |a| a.length > 0 }
         q.responses[:not_valid] = "You didn't enter a username. Try again please."
