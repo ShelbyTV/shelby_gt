@@ -69,5 +69,49 @@ module Dev
       end
     end
 
+    def self.add_botroll_to_user!(nickname)
+      nickname = ask('Enter a username: ') do |q|
+        q.validate = lambda { |a| a.length > 0 }
+        q.responses[:not_valid] = "You didn't enter a username. Try again please."
+      end
+
+      if user = User.find_by_nickname nickname
+        user.ensure_authentication_token!
+        user.user_type = 3
+        puts "[SUCCESS] #{user.nickname} updated to be a service user."
+        if user.save
+          youtube_username = ask('Enter a youtube username: ') do |q|
+            q.validate = lambda { |a| a.length > 0 }
+            q.responses[:not_valid] = "You didn't enter a username. Try again please."
+          end
+
+          puts "[WORKING] Configuring youtube BotRoll via audrey2"
+          begin
+            response = HTTParty.post("#{Settings::Audrey2.api_url}/v1/feeds", {:body =>
+              {
+                :type => 'youtube',
+                :id => youtube_username,
+                :auth_token => user.authentication_token,
+                :roll_id => user.public_roll_id.to_s
+              }
+            })
+          rescue Exception => e
+            puts "[FAILURE] audrey2 request failed: \n #{e.inspect}"
+            return
+          end
+          if response.code == 200
+            puts "[SUCCESS] audrey2 API responded with: \n #{response.code} -- #{response.body}"
+          else
+            puts "[FAILURE] audrey2 API responded with: \n #{response.code} -- #{response.body}"
+          end
+
+        else
+          puts "[FAILURE] Something went horribly wrong: #{user.errors.messages}"
+        end
+      else
+        puts "[FAILURE] Could't find any user with that nickname"
+      end
+    end
+
   end
 end
