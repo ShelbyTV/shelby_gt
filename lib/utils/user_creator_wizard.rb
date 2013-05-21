@@ -75,7 +75,7 @@ module Dev
         q.responses[:not_valid] = "You didn't enter a username. Try again please."
       end
 
-      if user = User.find_by_nickname nickname
+      if user = User.find_by_nickname(nickname)
         user.ensure_authentication_token!
         user.user_type = 3
         puts "[SUCCESS] #{user.nickname} updated to be a service user."
