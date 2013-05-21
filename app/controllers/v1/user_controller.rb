@@ -172,7 +172,7 @@ class V1::UserController < ApplicationController
             @user_personal_roll_subdomain = (@user.public_roll and @user.public_roll.subdomain)
           end
         else
-          render_error(409, "error updating user.")
+          render_errors_of_model(@user)
         end
       rescue => e
         render_error(404, "error while updating user: #{e}")

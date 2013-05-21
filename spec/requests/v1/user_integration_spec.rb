@@ -477,18 +477,27 @@ describe 'v1/user' do
         parse_json(response.body)["result"]["personal_roll_subdomain"].should == "title1"
       end
 
-      it "should return an error if nickname validation fails" do
+      it "should return an error if nickname is already taken" do
         u2 = Factory.create(:user)
         put '/v1/user/'+@u1.id+'?nickname='+u2.nickname
         response.body.should be_json_eql(409).at_path("status")
         response.body.should have_json_path("errors/user/nickname")
+        response.body.should be_json_eql("\"already taken\"").at_path("errors/user/nickname")
       end
 
-      it "should return an error if email validation fails" do
+      it "should return an error if email is already taken" do
         u2 = Factory.create(:user)
         put '/v1/user/'+@u1.id+'?primary_email='+u2.primary_email
         response.body.should be_json_eql(409).at_path("status")
         response.body.should have_json_path("errors/user/primary_email")
+        response.body.should be_json_eql("\"already taken\"").at_path("errors/user/primary_email")
+      end
+
+      it "should return an error if email is not a valid address" do
+        put '/v1/user/'+@u1.id+'?primary_email=d@g'
+        response.body.should be_json_eql(409).at_path("status")
+        response.body.should have_json_path("errors/user/primary_email")
+        response.body.should include_json("\"is invalid\"").at_path("errors/user/primary_email")
       end
 
       it "should update a users app_progress successfuly" do
