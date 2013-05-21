@@ -46,6 +46,8 @@ class V1::UserController < ApplicationController
       respond_to do |format|
         format.json do
           @status = 200
+          @user.remember_me!(true)
+          set_common_cookie(@user, form_authenticity_token)
           @user.ensure_authentication_token!
           render 'v1/user/show'
         end
