@@ -218,7 +218,7 @@ defaults: &defaults
       rolls: [
       ],
       user_channels: [
-        {display_title: "Channel Zero",  user_id: "515d83ecb415cc0d1a025bfe",
+        {display_title: "Trending",  user_id: "515d83ecb415cc0d1a025bfe",
           display_description: "Powered by the Shelby community",
           display_thumbnail_ipad_src: "/images/channels/ipad/laugh.png",
           display_channel_color: "6FBE47", # Shelby Green
@@ -260,7 +260,7 @@ defaults: &defaults
       rolls: [
       ],
       user_channels: [
-        {display_title: "Channel Zero",  user_id: "515d83ecb415cc0d1a025bfe",
+        {display_title: "Trending",  user_id: "515d83ecb415cc0d1a025bfe",
           display_description: "Powered by the Shelby community",
           display_thumbnail_ipad_src: "/images/channels/ipad/laugh.png",
           display_channel_color: "6FBE47", # Shelby Green
