@@ -143,12 +143,12 @@ class V1::UserController < ApplicationController
             #we're stealing this faux user's nickname for the real user
             user_with_nickname.release_nickname!
           else
-            return render_error(409, "Nickname taken", {:user => {:nickname => "already taken"}})
+            return render_error(409, "Nickname taken", {:user => {:nickname => "has already been taken"}})
           end
         end
 
         if params[:primary_email] and params[:primary_email] != @user.primary_email
-          return render_error(409, "Email taken", {:user => {:primary_email => "already taken"}}) if User.exists?(:primary_email => params[:primary_email])
+          return render_error(409, "Email taken", {:user => {:primary_email => "has already been taken"}}) if User.exists?(:primary_email => params[:primary_email])
         end
 
         had_completed_onboarding = (@user.app_progress? and @user.app_progress.onboarding? and @user.app_progress.onboarding.to_s == '4')

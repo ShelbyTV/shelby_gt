@@ -482,7 +482,7 @@ describe 'v1/user' do
         put '/v1/user/'+@u1.id+'?nickname='+u2.nickname
         response.body.should be_json_eql(409).at_path("status")
         response.body.should have_json_path("errors/user/nickname")
-        response.body.should be_json_eql("\"already taken\"").at_path("errors/user/nickname")
+        response.body.should be_json_eql("\"has already been taken\"").at_path("errors/user/nickname")
       end
 
       it "should return an error if email is already taken" do
@@ -490,7 +490,7 @@ describe 'v1/user' do
         put '/v1/user/'+@u1.id+'?primary_email='+u2.primary_email
         response.body.should be_json_eql(409).at_path("status")
         response.body.should have_json_path("errors/user/primary_email")
-        response.body.should be_json_eql("\"already taken\"").at_path("errors/user/primary_email")
+        response.body.should be_json_eql("\"has already been taken\"").at_path("errors/user/primary_email")
       end
 
       it "should return an error if email is not a valid address" do
