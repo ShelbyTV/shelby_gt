@@ -39,8 +39,11 @@ class V1::DashboardEntriesMetalController < MetalController
   end
 
   ##
-  # Returns DashboadEntries for a "user channel" 
+  # Returns DashboadEntries for a "user channel"
   # Enforces security via user.public_dashboard
+  #
+  # Also able to return DashboardEntries for current user, if authenticated.
+  # This is used by iOS.
   #
   # [GET] v1/user/:user_id/dashboard
   #
@@ -56,8 +59,14 @@ class V1::DashboardEntriesMetalController < MetalController
 
       skip = params[:skip] ? params[:skip] : 0
       sinceId = params[:since_id]
+      
+      # user for "user channel" or current user if requested with proper id
+      user = User.where(:id => params[:user_id], :public_dashboard => true).first
+      if !user and current_user and current_user.id.to_s == params[:user_id]
+        user = current_user
+      end
 
-      if user = User.where(:id => params[:user_id], :public_dashboard => true).first
+      if user
         if (sinceId)
           fast_stdout = `cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
         else
