@@ -214,87 +214,40 @@ defaults: &defaults
           include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
     {
       category_title: "iPad Lineup",
-      include_in: {explore: false, onboarding: false, in_line_promos: false, ipad_standard: true},
+      include_in: {explore: false, onboarding: false, in_line_promos: false, ipad_standard: true, ipad_vertical_one: true},
       rolls: [
       ],
       user_channels: [
         {display_title: "Trending",  user_id: "515d83ecb415cc0d1a025bfe",
           display_description: "Powered by the Shelby community",
-          display_thumbnail_ipad_src: "/images/channels/ipad/laugh.png",
+          display_thumbnail_ipad_src: "",
           display_channel_color: "6FBE47", # Shelby Green
-          include_in: {ipad_standard: true}},
-        {display_title: "#ThisExists",  user_id: "5137560bb415cc636c035769",
-          display_description: "That is all.",
+          include_in: {ipad_standard: true, ipad_vertical_one: true}},
+        {display_title: "Surprising",  user_id: "519e1a39b415cc3410000001",
+          display_description: "",
+          display_thumbnail_ipad_src: "",
+          display_channel_color: "0590C4", # Shelby Blue
+          include_in: {ipad_standard: true, ipad_vertical_one: true}},
+        {display_title: "Inspiring",  user_id: "519e1bceb415cc341000004e",
+          display_description: "",
+          display_thumbnail_ipad_src: "",
+          display_channel_color: "E1A300", # yellowish
+          include_in: {ipad_standard: true, ipad_vertical_one: true}},
+        {display_title: "Entertaining",  user_id: "519e1cb0b415cc34100002a8",
+          display_description: "",
+          display_thumbnail_ipad_src: "",
+          display_channel_color: "B500FF", # purple-ish
+          include_in: {ipad_standard: true, ipad_vertical_one: true}},
+        {display_title: "Daring",  user_id: "519e1e1eb415cc3410000352",
+          display_description: "",
+          display_thumbnail_ipad_src: "",
+          display_channel_color: "ee4c4c", # Shelby Red
+          include_in: {ipad_standard: true, ipad_vertical_one: true}},
+        {display_title: "Curious",  user_id: "519e1ef0b415cc341000038e",
+          display_description: "",
           display_thumbnail_ipad_src: "/images/channels/ipad/laugh.png",
           display_channel_color: "FF6229", # orange-ish
-          include_in: {ipad_standard: true}},
-        {display_title: "#Laugh",  user_id: "5112fa93b415cc1de20c30a0",
-          display_description: "When you need a chuckle, laugh, lol, lulz...",
-          display_thumbnail_ipad_src: "/images/channels/ipad/laugh.png",
-          display_channel_color: "FB00FF", # pink
-          include_in: {ipad_standard: true}},
-        {display_title: "#Nature",  user_id: "5112fae1b415cc1e0b0e4d6e",
-          display_description: "Admit it. Nature is rad, so come explore the animals and organisms of our natural world.",
-          display_thumbnail_ipad_src: "/images/channels/ipad/natureisrad.png",
-          display_channel_color: "0590C4", # Shelby Blue
-          include_in: {ipad_standard: true}},
-        {display_title: "#Adrenaline",  user_id: "5112fb95b415cc1ded0d8c89",
-          display_description: "Surf, snow, skate, base-jumping from space... y’know, whatever blows your hair back.",
-          display_thumbnail_ipad_src: "/images/channels/ipad/adrenaline.png",
-          display_channel_color: "B500FF", # purple-ish
-          include_in: {ipad_standard: true}},
-        {display_title: "#Happenings",  user_id: "5112fb26b415cc1e160cb0e5",
-          display_description: "For trending news and stories via sources like The AP, Al Jazeera, and The New York Times.",
-          display_thumbnail_ipad_src: "/images/channels/ipad/happenings.png",
-          display_channel_color: "ee4c4c", # Shelby Red
-          include_in: {ipad_standard: true}},
-        {display_title: "#Learn",  user_id: "5112fb5db415cc1ded0d79a1",
-          display_description: "Our world is a fascinating place. Learn about it here.",
-          display_thumbnail_ipad_src: "/images/channels/ipad/learn.png",
-          display_channel_color: "E1A300", # yellowish
-          include_in: {ipad_standard: true}}
-      ]},
-    {
-      category_title: "iPad Vertical One",
-      include_in: {explore: false, onboarding: false, in_line_promos: false, ipad_standard: false, ipad_vertical_one: true},
-      rolls: [
-      ],
-      user_channels: [
-        {display_title: "Trending",  user_id: "515d83ecb415cc0d1a025bfe",
-          display_description: "Powered by the Shelby community",
-          display_thumbnail_ipad_src: "/images/channels/ipad/laugh.png",
-          display_channel_color: "6FBE47", # Shelby Green
-          include_in: {ipad_vertical_one: true}},
-        {display_title: "#Nature",  user_id: "5112fae1b415cc1e0b0e4d6e",
-          display_description: "Admit it. Nature is rad, so come explore the animals and organisms of our natural world.",
-          display_thumbnail_ipad_src: "/images/channels/ipad/natureisrad.png",
-          display_channel_color: "0590C4", # Shelby Blue
-          include_in: {ipad_vertical_one: true}},
-        {display_title: "#Learn",  user_id: "5112fb5db415cc1ded0d79a1",
-          display_description: "Our world is a fascinating place. Learn about it here.",
-          display_thumbnail_ipad_src: "/images/channels/ipad/learn.png",
-          display_channel_color: "E1A300", # yellowish
-          include_in: {ipad_vertical_one: true}},
-        {display_title: "#Adrenaline",  user_id: "5112fb95b415cc1ded0d8c89",
-          display_description: "Surf, snow, skate, base-jumping from space... y’know, whatever blows your hair back.",
-          display_thumbnail_ipad_src: "/images/channels/ipad/adrenaline.png",
-          display_channel_color: "B500FF", # purple-ish
-          include_in: {ipad_vertical_one: true}},
-        {display_title: "#Happenings",  user_id: "5112fb26b415cc1e160cb0e5",
-          display_description: "For trending news and stories via sources like The AP, Al Jazeera, and The New York Times.",
-          display_thumbnail_ipad_src: "/images/channels/ipad/happenings.png",
-          display_channel_color: "ee4c4c", # Shelby Red
-          include_in: {ipad_vertical_one: true}},
-        {display_title: "#ThisExists",  user_id: "5137560bb415cc636c035769",
-          display_description: "That is all.",
-          display_thumbnail_ipad_src: "/images/channels/ipad/laugh.png",
-          display_channel_color: "FF6229", # orange-ish
-          include_in: {ipad_vertical_one: true}},
-        {display_title: "#Laugh",  user_id: "5112fa93b415cc1de20c30a0",
-          display_description: "When you need a chuckle, laugh, lol, lulz...",
-          display_thumbnail_ipad_src: "/images/channels/ipad/laugh.png",
-          display_channel_color: "FB00FF", # pink
-          include_in: {ipad_vertical_one: true}}
+          include_in: {ipad_standard: true, ipad_vertical_one: true}}
       ]},
   ]
   explore:
