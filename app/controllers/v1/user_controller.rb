@@ -46,6 +46,8 @@ class V1::UserController < ApplicationController
       respond_to do |format|
         format.json do
           @status = 200
+          @user.remember_me!(true)
+          set_common_cookie(@user, form_authenticity_token)
           @user.ensure_authentication_token!
           render 'v1/user/show'
         end
@@ -141,12 +143,12 @@ class V1::UserController < ApplicationController
             #we're stealing this faux user's nickname for the real user
             user_with_nickname.release_nickname!
           else
-            return render_error(409, "Nickname taken", {:user => {:nickname => "already taken"}})
+            return render_error(409, "Nickname taken", {:user => {:nickname => "has already been taken"}})
           end
         end
 
         if params[:primary_email] and params[:primary_email] != @user.primary_email
-          return render_error(409, "Email taken", {:user => {:primary_email => "already taken"}}) if User.exists?(:primary_email => params[:primary_email])
+          return render_error(409, "Email taken", {:user => {:primary_email => "has already been taken"}}) if User.exists?(:primary_email => params[:primary_email])
         end
 
         had_completed_onboarding = (@user.app_progress? and @user.app_progress.onboarding? and @user.app_progress.onboarding.to_s == '4')
@@ -170,7 +172,7 @@ class V1::UserController < ApplicationController
             @user_personal_roll_subdomain = (@user.public_roll and @user.public_roll.subdomain)
           end
         else
-          render_error(409, "error updating user.")
+          render_errors_of_model(@user)
         end
       rescue => e
         render_error(404, "error while updating user: #{e}")
