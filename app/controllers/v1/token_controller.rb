@@ -1,4 +1,5 @@
 require 'user_manager'
+require 'imposter_omniauth'
 
 class V1::TokenController < ApplicationController
   skip_before_filter :verify_authenticity_token
