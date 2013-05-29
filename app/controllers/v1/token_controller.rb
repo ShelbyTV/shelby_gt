@@ -8,9 +8,15 @@ class V1::TokenController < ApplicationController
   # Ensures User matching the given credentials has a single sign on token and returns it.
   # Either supply 3rd party credentials or email/password.
   #
-  # If given credentials are valid, but don't match any user, a new User will be created.
+  # If we have a currently authenticated user...
+  #   - If given credentials are valid, but don't match any user, they will be added to the current user.
+  #   - If given credentials are valid, and match a user other than the current user, the matched user will be
+  #     merged in to the current user.
+  # If we don't have an authenticated user...
+  #   - If given credentials are valid, and match a user, that user will be returned
+  #   - If given credentials are valid, and do not match a user, a new one will be created and returned
   #
-  # That token can be used to authenticate against the api by including with an HTTP request as the value
+  # The returned token can be used to authenticate against the api by including with an HTTP request as the value
   # for the parameter auth_token.  For example: http://api.gt.shelby.tv/v1/dashboard?auth_token=sF7waBf8jBMqsxeskPp2
   #
   # [POST] /v1/token
@@ -43,11 +49,37 @@ class V1::TokenController < ApplicationController
       User.where(:primary_email => email.downcase).first
       User.find_by_primary_email(email.downcase) || User.find_by_nickname(email.downcase)
     end
+    
+    #----------------------------------Already Authenticated User----------------------------------
+    if current_user
+      if @user
+        if @user != current_user
+          #Merge @user into current_user, return merged current_user w/ token
+          GT::UserMerger.merge_users(@user, current_user)
+          @user = current_user
+        end
+        
+      elsif token
+        #Add auth to current_user, return current_user w/ token
+        omniauth = GT::ImposterOmniauth.get_user_info(provider, uid, token, secret)
+        new_auth = GT::UserManager.add_new_auth_from_omniauth(current_user, omniauth)
+        @user = current_user
 
-    if @user
+        unless new_auth
+          return render_error(404, "failed to add authentication to current user")
+        end
+        
+      elsif password
+        return render_error(404, "user already authenticated, email/password unnecessary")
 
+      else
+        return render_error(404, "user already authenticated; must provide oauth token")
+      end
+      
+    #----------------------------------Existing User, Not Authenticated----------------------------------
+    elsif @user
       if token and GT::UserManager.verify_user(@user, provider, uid, token, secret)
-        #----------------------------------Current User via 3rd party----------------------------------
+        
         if @user.user_type == User::USER_TYPE[:faux]
           GT::UserManager.convert_faux_user_to_real(@user, GT::ImposterOmniauth.get_user_info(provider, uid, token, secret))
         else
@@ -55,15 +87,15 @@ class V1::TokenController < ApplicationController
         end
 
       elsif password and @user.valid_password? password
-        #----------------------------------Current User via email/pw----------------------------------
         GT::UserManager.start_user_sign_in(@user)
 
       else
-        return render_error(404, "Failed to verify user.")
+        return render_error(404, "Failed to verify user; provide oauth tokens or email/password.")
       end
 
+
+    #----------------------------------New User (Not Authenticated)----------------------------------
     elsif token
-      #----------------------------------New User----------------------------------
       omniauth = GT::ImposterOmniauth.get_user_info(provider, uid, token, secret)
 
       if omniauth.blank?
@@ -76,6 +108,9 @@ class V1::TokenController < ApplicationController
         return render_error(404, "Failed to create new user.")
       end
 
+    elsif password
+      return render_error(404, "Use /v1/user/create to create a new user without oauth")
+      
     else
       return render_error(404, "Missing valid provider/uid, and/or token/secret")
     end

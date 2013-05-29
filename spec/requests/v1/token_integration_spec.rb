@@ -8,7 +8,7 @@ describe 'v1/token' do
 
     describe "POST" do
 
-      context "existing GT real user" do
+      context "tokens are for: an existing GT real user" do
         before(:each) do
           @user = Factory.create(:user, :authentication_token => nil) #adds a twitter authentication
           @user.password = (@user_password = "password")
@@ -19,28 +19,64 @@ describe 'v1/token' do
           @user.save
         end
 
-        it "should return user info w/ a new auth token on success (with twitter creds)" do
-          post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}"
-          response.body.should be_json_eql(200).at_path("status")
-          response.body.should have_json_path("result/authentication_token")
-          parse_json(response.body)['result']['authentication_token'].should == @user.reload.authentication_token
-        end
+        context "there is no authenticated user" do
+          it "should return user info w/ a new auth token on success (with twitter creds)" do
+            lambda {
+              post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}"
+              response.body.should be_json_eql(200).at_path("status")
+              response.body.should have_json_path("result/authentication_token")
+              parse_json(response.body)['result']['authentication_token'].should == @user.reload.authentication_token
+            }.should_not change { User.count }
+          end
 
-        it "should return user info w/ a new auth token on success (with email/password)" do
-          post "/v1/token?email=#{@user.primary_email}&password=#{@user_password}"
-          response.body.should be_json_eql(200).at_path("status")
-          response.body.should have_json_path("result/authentication_token")
-          parse_json(response.body)['result']['authentication_token'].should == @user.reload.authentication_token
-        end
+          it "should return user info w/ a new auth token on success (with email/password)" do
+            lambda {
+              post "/v1/token?email=#{@user.primary_email}&password=#{@user_password}"
+              response.body.should be_json_eql(200).at_path("status")
+              response.body.should have_json_path("result/authentication_token")
+              parse_json(response.body)['result']['authentication_token'].should == @user.reload.authentication_token
+            }.should_not change { User.count }
+          end
 
-        it "should not return a user on 404" do
-          post "/v1/token?provider_name=twitter&uid=DNE&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}"
-          response.body.should be_json_eql(404).at_path("status")
-          response.body.should_not have_json_path("result/authentication_token")
+          it "should not return a user on 404" do
+            post "/v1/token?provider_name=twitter&uid=DNE&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}"
+            response.body.should be_json_eql(404).at_path("status")
+            response.body.should_not have_json_path("result/authentication_token")
+          end
+        end
+        
+        context "there is an authenticated user via auth_token" do
+          before(:each) do
+            @current_user_via_token = Factory.create(:user)
+            @current_user_via_token.ensure_authentication_token!
+            @current_user_via_token.save
+          end
+
+          it "should merge in the matched user (if different from current_user)" do
+            lambda {
+              post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}&auth_token=#{@current_user_via_token.authentication_token}"
+              response.body.should be_json_eql(200).at_path("status")
+              response.body.should have_json_path("result/authentication_token")
+              parse_json(response.body)['result']['id'].should == @current_user_via_token.id.to_s
+              parse_json(response.body)['result']['authentication_token'].should == @current_user_via_token.reload.authentication_token
+            }.should change { User.count }.by(-1)
+          end
+          
+          it "should return the matched user (if same as current_user)" do
+            @user.ensure_authentication_token!
+            @user.save
+            
+            lambda {
+              post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}&auth_token=#{@user.authentication_token}"
+              response.body.should be_json_eql(200).at_path("status")
+              response.body.should have_json_path("result/authentication_token")
+              parse_json(response.body)['result']['authentication_token'].should == @user.reload.authentication_token
+            }.should_not change { User.count }
+          end
         end
       end
 
-      context "existing GT faux user" do
+      context "tokens are for: an existing GT faux user" do
         before(:each) do
           @fuser = Factory.create(:user, :authentication_token => nil, :user_type => User::USER_TYPE[:faux]) #adds a twitter authentication
           @twt_auth = @fuser.authentications[0]
@@ -82,7 +118,7 @@ describe 'v1/token' do
         end
       end
 
-      context "new user" do
+      context "tokens are for: a new user" do
         before(:each) do
           @uid, @oauth_token, @oauth_secret, @name, @nickname = "123uid", "oaTok", "oaSec", "name", "someNickname--is--unique"
 
@@ -100,36 +136,68 @@ describe 'v1/token' do
             }
           }
         end
+        
+        context "there is no authenticated user" do
+          it "should create new user if token/secret verify" do
+            GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
 
-        it "should create new user if token/secret verify" do
-          GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
+            lambda {
+              post "/v1/token?provider_name=twitter&uid=#{@uid}&token=#{@oauth_token}&secret=#{@oauth_secret}"
+              response.body.should be_json_eql(200).at_path("status")
+              response.body.should have_json_path("result/authentication_token")
+            }.should change { User.count } .by(1)
 
-          lambda {
-            post "/v1/token?provider_name=twitter&uid=#{@uid}&token=#{@oauth_token}&secret=#{@oauth_secret}"
-            response.body.should be_json_eql(200).at_path("status")
-            response.body.should have_json_path("result/authentication_token")
-          }.should change { User.count } .by(1)
+            u = User.find_by_nickname(@nickname)
+            u.nickname.should == @nickname
+            u.name.should == @name
+            u.authentications.size.should == 1
+            u.authentications[0].provider.should == "twitter"
+            u.authentications[0].uid.should == @uid
+            u.authentications[0].oauth_token.should == @oauth_token
+            u.authentications[0].oauth_secret.should == @oauth_secret
 
-          u = User.find_by_nickname(@nickname)
-          u.nickname.should == @nickname
-          u.name.should == @name
-          u.authentications.size.should == 1
-          u.authentications[0].provider.should == "twitter"
-          u.authentications[0].uid.should == @uid
-          u.authentications[0].oauth_token.should == @oauth_token
-          u.authentications[0].oauth_secret.should == @oauth_secret
+            u.destroy
+          end
 
-          u.destroy
+          it "should handle bad token/secret and return 404" do
+            GT::ImposterOmniauth.stub(:get_user_info).and_return({})
+
+            lambda {
+              post "/v1/token?provider_name=twitter&uid=#{@uid}&token=NOT_THE_TOKEN&secret=#{@oauth_secret}"
+              response.body.should be_json_eql(404).at_path("status")
+              response.body.should_not have_json_path("result/authentication_token")
+            }.should change { User.count } .by(0)
+          end
         end
+        
+        context "there is an authenticated user via auth_token" do
+          before(:each) do
+            @current_user_via_token = Factory.create(:user)
+            @current_user_via_token.ensure_authentication_token!
+            @current_user_via_token.save
+          end
+          
+          it "should add a new authentication to current user" do
+            GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
 
-        it "should handle bad token/secret and return 404" do
-          GT::ImposterOmniauth.stub(:get_user_info).and_return({})
-
-          lambda {
-            post "/v1/token?provider_name=twitter&uid=#{@uid}&token=NOT_THE_TOKEN&secret=#{@oauth_secret}"
-            response.body.should be_json_eql(404).at_path("status")
-            response.body.should_not have_json_path("result/authentication_token")
-          }.should change { User.count } .by(0)
+            lambda {
+              post "/v1/token?provider_name=twitter&uid=#{@uid}&token=#{@oauth_token}&secret=#{@oauth_secret}&auth_token=#{@current_user_via_token.authentication_token}"
+              response.body.should be_json_eql(200).at_path("status")
+              response.body.should have_json_path("result/authentication_token")
+              parse_json(response.body)['result']['id'].should == @current_user_via_token.id.to_s
+              
+              parse_json(response.body)['result']['authentications'].count.should == 2
+              parse_json(response.body)['result']['authentications'][1]['provider'].should == "twitter"
+              parse_json(response.body)['result']['authentications'][1]['uid'].should == @uid
+              
+              @current_user_via_token.reload
+              @current_user_via_token.authentications[1].oauth_token.should == @oauth_token
+              @current_user_via_token.authentications[1].oauth_secret.should == @oauth_secret
+            }.should_not change { User.count }
+            
+            u = User.find_by_nickname(@nickname)
+            u.should == nil
+          end
         end
 
 
