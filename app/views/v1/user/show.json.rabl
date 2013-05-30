@@ -18,7 +18,7 @@ if user_twitter_auth = @user.authentications.detect {|auth| auth.provider == 'tw
 end
 
 child :authentications do
-	attributes :uid, :provider, :nickname
+	attributes :uid, :provider, :nickname, :name
 end
 
 if current_user == @user
