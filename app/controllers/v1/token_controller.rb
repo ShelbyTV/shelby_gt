@@ -55,9 +55,12 @@ class V1::TokenController < ApplicationController
     if current_user
       if @user
         if @user != current_user
-          #Merge @user into current_user, return merged current_user w/ token
-          GT::UserMerger.merge_users(@user, current_user)
-          @user = current_user
+          # Do not merge
+          return render_error(403, {:current_user_nickname => current_user.nickname, 
+                                    :existing_other_user_nickname => @user.nickname,
+                                    :error_message => "Not merging users, email help@shelby.tv to request this." })
+        else
+          return render_error(404, "already authenticated as #{@user.nickname}")
         end
         
       elsif token

@@ -52,25 +52,20 @@ describe 'v1/token' do
             @current_user_via_token.save
           end
 
-          it "should merge in the matched user (if different from current_user)" do
+          it "should not merge in the matched user (if different from current_user)" do
             lambda {
               post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}&auth_token=#{@current_user_via_token.authentication_token}"
-              response.body.should be_json_eql(200).at_path("status")
-              response.body.should have_json_path("result/authentication_token")
-              parse_json(response.body)['result']['id'].should == @current_user_via_token.id.to_s
-              parse_json(response.body)['result']['authentication_token'].should == @current_user_via_token.reload.authentication_token
-            }.should change { User.count }.by(-1)
+              response.body.should be_json_eql(403).at_path("status")
+            }.should_not change { User.count }
           end
           
-          it "should return the matched user (if same as current_user)" do
+          it "should error if matched user is same as current_user (essentially an assert, b/c that's weird)" do
             @user.ensure_authentication_token!
             @user.save
             
             lambda {
               post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}&auth_token=#{@user.authentication_token}"
-              response.body.should be_json_eql(200).at_path("status")
-              response.body.should have_json_path("result/authentication_token")
-              parse_json(response.body)['result']['authentication_token'].should == @user.reload.authentication_token
+              response.body.should be_json_eql(404).at_path("status")
             }.should_not change { User.count }
           end
         end
