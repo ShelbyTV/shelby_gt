@@ -354,9 +354,22 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
       SOB_FRAME_UPVOTERS,
       SOB_FRAME_LIKE_COUNT
    };
+   bson_oid_t frameOid;
    bson_oid_t originatorFrameOid;
    bson *originatorFrame;
    bson *originator;
+
+   sobBsonOidField(SOB_FRAME,
+                   SOB_FRAME_ID,
+                   frame,
+                   &frameOid);
+
+   char frameIdString[25];
+
+   bson_oid_to_string(&frameOid, frameIdString);
+   sobLog("Printing JSON for frame: %s", frameIdString);
+
+   sobLog("Printing frame standard fields");
 
    sobPrintAttributes(context,
                       frame,
@@ -397,6 +410,8 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
       mrjsonNullAttribute(context, "originator_id");
       mrjsonNullAttribute(context, "originator");
    }
+
+   sobLog("Printing frame created_at field");
 
    sobPrintOidConciseTimeAgoAttribute(context,
                                       frame,
@@ -453,7 +468,7 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
       SOB_ROLL_DISCUSSION_ROLL_PARTICIPANTS
    };
 
-   sobLog("Printing standard attributes");
+   sobLog("Printing roll standard fields");
 
    sobPrintAttributes(context,
                       roll,
@@ -461,7 +476,7 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
                       sizeof(rollAttributes) / sizeof(sobField));
 
 
-   sobLog("Printing subdomain_active field");
+   sobLog("Printing roll subdomain_active field");
    sobPrintFieldIfBoolField(context,
                             roll,
                             SOB_ROLL_SUBDOMAIN,
