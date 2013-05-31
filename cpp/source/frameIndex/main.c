@@ -687,13 +687,16 @@ int loadData(sobContext sob)
    sobLoadAllById(sob, SOB_USER, originatorOids);
 
 
+   sobLog("Checking roll permissions");
    // need to fail if non-public roll has a different user as its creator
    if (!options.permissionGranted &&
        !sobBsonBoolField(sob, SOB_ROLL, SOB_ROLL_PUBLIC, options.roll) &&
        !sobBsonOidFieldEqual(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, options.roll, options.user))
    {
+      sobLog("User DOES NOT have permissions to view roll");
       return FALSE;
    }
+   sobLog("User has permissions to view roll");
 
    return TRUE;
 }
