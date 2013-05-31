@@ -59,14 +59,20 @@ describe 'v1/token' do
             }.should_not change { User.count }
           end
           
-          it "should error if matched user is same as current_user (essentially an assert, b/c that's weird)" do
+          it "should update token, secret if matched user is same as current_user" do
             @user.ensure_authentication_token!
             @user.save
+            @new_token = "lkjwelrkjlkjer"
+            @new_secret = "Asdfasdfasdfasdf"
             
             lambda {
-              post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}&auth_token=#{@user.authentication_token}"
-              response.body.should be_json_eql(404).at_path("status")
+              post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@new_token}&secret=#{@new_secret}&auth_token=#{@user.authentication_token}"
+              response.body.should be_json_eql(200).at_path("status")
             }.should_not change { User.count }
+            
+            @user.reload
+            @user.authentications[0].oauth_token.should == @new_token
+            @user.authentications[0].oauth_secret.should == @new_secret
           end
         end
       end

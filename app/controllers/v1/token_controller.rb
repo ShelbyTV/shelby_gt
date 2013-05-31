@@ -59,8 +59,12 @@ class V1::TokenController < ApplicationController
           return render_error(403, {:current_user_nickname => current_user.nickname, 
                                     :existing_other_user_nickname => @user.nickname,
                                     :error_message => "Not merging users, email help@shelby.tv to request this." })
-        else
-          return render_error(404, "already authenticated as #{@user.nickname}")
+        elsif token
+          # Update token and secret, save user
+          auth = @user.authentication_by_provider_and_uid(provider, uid)
+          auth.oauth_token = token
+          auth.oauth_secret = secret
+          @user.save
         end
         
       elsif token
