@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <time.h>
 
 #include "lib/mongo-c-driver/src/mongo.h"
 #include "lib/mrbson/mrbson.h"
@@ -1071,3 +1072,24 @@ unsigned int sobGetOidGenerationTimeSinceEpoch(bson *object, bson_timestamp_t *t
    }
 }
 
+void sobLog(const char *format, ...) {
+   // prepend a time stamp to the log message
+   time_t rawtime;
+   struct tm *timeInfo;
+   char timeStringBuffer[80];
+
+   time (&rawtime);
+   timeInfo = localtime(&rawtime);
+   strftime(timeStringBuffer, 80, "%m-%d-%Y %T", timeInfo);
+
+   fprintf(stderr, "[%s] ", timeStringBuffer);
+
+   // print the log message using the incoming parameters
+   // as if this had been a call to printf
+   va_list args;
+   va_start (args, format);
+   vfprintf (stderr, format, args);
+   va_end (args);
+
+   fprintf(stderr, "\n");
+}

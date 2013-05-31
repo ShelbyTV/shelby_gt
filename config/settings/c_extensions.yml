@@ -1,0 +1,14 @@
+defaults: &defaults
+  log_file : "log/c_extensions"
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+
+arnold:
+  <<: *production

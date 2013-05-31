@@ -453,16 +453,21 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
       SOB_ROLL_DISCUSSION_ROLL_PARTICIPANTS
    };
 
+   sobLog("Printing standard attributes");
+
    sobPrintAttributes(context,
                       roll,
                       rollAttributes,
                       sizeof(rollAttributes) / sizeof(sobField));
 
+
+   sobLog("Printing subdomain_active field");
    sobPrintFieldIfBoolField(context,
                             roll,
                             SOB_ROLL_SUBDOMAIN,
                             SOB_ROLL_SUBDOMAIN_ACTIVE);
 
+   sobLog("Checking if roll has creator");
    bson *rollCreator;
    int status = sobGetBsonByOidField(sob,
                                      SOB_USER,
@@ -470,6 +475,7 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
                                      SOB_ROLL_CREATOR_ID,
                                      &rollCreator);
    if (status) {
+      sobLog("Roll has creator, trying to retrieve creator's user type");
       // figure out what type of user this is
       int user_type;
       int foundUserType = sobBsonIntFieldFromObject(sob,
@@ -478,6 +484,11 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
                                                     rollCreator,
                                                     &user_type);
 
+      if (foundUserType) {
+         sobLog("Creator's user type retrieved");
+      } else {
+         sobLog("Creator's user type could not be retrieved");
+      }
       int creatorAttributesOverride = FALSE;
       if (foundUserType && user_type == 1) {
          // if it's a faux user, override the creator_nickname and creator_name with
@@ -537,6 +548,8 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
                                        rollCreator,
                                        SOB_USER_USER_IMAGE,
                                        "creator_image");
+   } else {
+      sobLog("Roll has no creator");
    }
 
    sobPrintAttributeWithKeyOverride(context,
@@ -547,6 +560,8 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
    // all frames that we loaded are this roll's frames.
    cvector frames = cvectorAlloc(sizeof(bson *));
    sobGetBsonVector(sob, SOB_FRAME, frames);
+
+   sobLog("Printing frames array");
 
    mrjsonStartArray(context, "frames");
    for (unsigned int i = 0; i < cvectorCount(frames); i++) {
@@ -560,6 +575,10 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
 void printJsonOutput(sobContext sob)
 {
    bson *roll;
+   char rollIdString[25];
+
+   bson_oid_to_string(&options.roll, rollIdString);
+   sobLog("Printing JSON for roll: %s", rollIdString);
 
    // TODO: check return status
    sobGetBsonByOid(sob, SOB_ROLL, options.roll, &roll);
@@ -602,6 +621,7 @@ int loadData(sobContext sob)
    if (strcmp(options.rollString, "") == 0 &&
        strcmp(options.userString, "") != 0)
    {
+      sobLog("Looking up public roll by creator id: %s", options.userString);
       cvectorAddElement(userOids, &options.user);
       sobLoadAllById(sob, SOB_USER, userOids);
       sobGetOidVectorFromObjectField(sob, SOB_USER, SOB_USER_PUBLIC_ROLL_ID, rollOids);
@@ -611,6 +631,7 @@ int loadData(sobContext sob)
       // TODO: this is a hack, we should probably be storing this to a better name...
       options.roll = *(bson_oid_t *)cvectorGetElement(rollOids, 0);
    } else {
+      sobLog("Looking up roll by roll id: %s", options.rollString);
       assert(strcmp(options.rollString, "") != 0);
 
       // add this particular roll ID to our vector of rolls to fetch
@@ -664,6 +685,8 @@ int loadData(sobContext sob)
 
 int main(int argc, char **argv)
 {
+   sobLog("------------------------C SAYS: HANDLE /roll/frames START------------------------");
+
    gettimeofday(&beginTime, NULL);
 
    int status = 0;
@@ -674,12 +697,22 @@ int main(int argc, char **argv)
    sobEnvironment env = sobEnvironmentFromString(options.environment);
    sobContext sob = sobAllocContext(env);
 
+   sobLog("BEGIN Load data BEGIN");
+
    if (!loadData(sob)) {
       status = 2;
       goto cleanup;
    }
 
+   sobLog("END Load data END");
+
+   sobLog("BEGIN Print JSON output BEGIN");
+
    printJsonOutput(sob);
+
+   sobLog("END Print JSON output END");
+
+   sobLog("------------------------C SAYS: HANDLE /roll/frames END--------------------------");
 
 cleanup:
    sobFreeContext(sob);

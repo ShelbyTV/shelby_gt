@@ -220,6 +220,8 @@ int sobGetBsonForArrayObjectWithOidField(sobContext sob,
 
 unsigned int sobGetOidGenerationTimeSinceEpoch(bson *object, bson_timestamp_t *ts);
 
+void sobLog(const char *format, ...);
+
 #ifdef __cplusplus
 }
 #endif

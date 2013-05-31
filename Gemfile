@@ -35,6 +35,11 @@ gem 'jquery-rails'
 gem 'quiet_assets', :group => :development
 
 #
+# -- Faster development web server
+#
+gem 'thin', :group => :development
+
+#
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
