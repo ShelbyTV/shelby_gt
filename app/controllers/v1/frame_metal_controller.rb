@@ -50,7 +50,7 @@ class V1::FrameMetalController < MetalController
       Open3.popen3 cmd do |stdin, stdout, stderr, wait_thr|
         fast_stdout = stdout.read
         log_text = stderr.read
-        fast_status = wait_thr.value
+        fast_status = wait_thr.value.exitstatus
       end
 
       ShelbyGT_EM.next_tick {
@@ -105,7 +105,7 @@ class V1::FrameMetalController < MetalController
       Open3.popen3 cmd do |stdin, stdout, stderr, wait_thr|
         fast_stdout = stdout.read
         log_text = stderr.read
-        fast_status = wait_thr.value
+        fast_status = wait_thr.value.exitstatus
       end
 
       ShelbyGT_EM.next_tick {
