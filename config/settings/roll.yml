@@ -249,6 +249,18 @@ defaults: &defaults
           display_channel_color: "FF6229", # orange-ish
           include_in: {ipad_standard: true, ipad_vertical_one: true}}
       ]},
+    {
+      category_title: "iPhone Lineup",
+      include_in: {explore: false, onboarding: false, in_line_promos: false, ipad_standard: false, ipad_vertical_one: false, iphone_standard: true},
+      rolls: [
+      ],
+      user_channels: [
+        {display_title: "Community",  user_id: "515d83ecb415cc0d1a025bfe",
+          display_description: "Powered by the Shelby community",
+          display_thumbnail_ipad_src: "",
+          display_channel_color: "6FBE47", # Shelby Green
+          include_in: {iphone_standard: true}}
+      ]},
   ]
   explore:
     cat10:
