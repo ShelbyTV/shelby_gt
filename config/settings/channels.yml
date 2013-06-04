@@ -2,7 +2,7 @@ defaults: &defaults
   channels : [
     {
       channel_user_id : '515d83ecb415cc0d1a025bfe',
-      channel_route : 'trending'
+      channel_route : 'community'
     },
     {
       channel_user_id : '5112fa93b415cc1de20c30a0',
