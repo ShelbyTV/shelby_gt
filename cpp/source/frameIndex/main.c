@@ -297,15 +297,33 @@ void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
       SOB_USER_PUBLIC_ROLL_ID,
    };
 
+   bson_oid_t userOid;
+
+   sobBsonOidField(SOB_USER,
+                   SOB_USER_ID,
+                   user,
+                   &userOid);
+
+   char userIdString[25];
+
+   bson_oid_to_string(&userOid, userIdString);
+   sobLog("Printing JSON for user: %s", userIdString);
+
+   sobLog("Printing user has_shelby_avatar field");
+
    sobPrintStringToBoolAttributeWithKeyOverride(context,
                                                 user,
                                                 SOB_USER_AVATAR_FILE_NAME,
                                                 "has_shelby_avatar");
 
+   sobLog("Printing user standard fields");
+
    sobPrintAttributes(context,
                       user,
                       userAttributes,
                       sizeof(userAttributes) / sizeof(sobField));
+
+   sobLog("Printing user authentications array");
 
    sobPrintSubobjectArray(sob,
                           context,
@@ -322,6 +340,19 @@ void printJsonOriginator(sobContext sob, mrjsonContext context, bson *originator
       SOB_USER_NICKNAME,
       SOB_USER_USER_TYPE
    };
+   bson_oid_t userOid;
+
+   sobBsonOidField(SOB_USER,
+                   SOB_USER_ID,
+                   originator,
+                   &userOid);
+
+   char userIdString[25];
+
+   bson_oid_to_string(&userOid, userIdString);
+   sobLog("Printing JSON for user: %s", userIdString);
+
+   sobLog("Printing user standard fields");
 
    sobPrintAttributes(context,
                       originator,
@@ -418,6 +449,8 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
                                       SOB_FRAME_ID,
                                       "created_at");
 
+   sobLog("Printing frame creator field");
+
    sobPrintSubobjectByOid(sob,
                           context,
                           frame,
@@ -425,6 +458,8 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
                           SOB_USER,
                           "creator",
                           &printJsonUser);
+
+   sobLog("Printing frame roll field");
 
    sobPrintSubobjectByOid(sob,
                           context,
@@ -434,6 +469,8 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
                           "roll",
                           &printJsonRoll);
 
+   sobLog("Printing frame video field");
+
    sobPrintSubobjectByOid(sob,
                           context,
                           frame,
@@ -441,6 +478,8 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
                           SOB_VIDEO,
                           "video",
                           &printJsonVideo);
+
+   sobLog("Printing frame conversation field");
 
    sobPrintSubobjectByOid(sob,
                           context,
@@ -576,7 +615,7 @@ void printJsonRollWithFrames(sobContext sob, mrjsonContext context, bson *roll)
    cvector frames = cvectorAlloc(sizeof(bson *));
    sobGetBsonVector(sob, SOB_FRAME, frames);
 
-   sobLog("Printing frames array");
+   sobLog("Printing roll frames array");
 
    mrjsonStartArray(context, "frames");
    for (unsigned int i = 0; i < cvectorCount(frames); i++) {
