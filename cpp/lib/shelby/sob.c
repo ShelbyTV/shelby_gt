@@ -650,7 +650,7 @@ void sobPrintSubobjectArray(sobContext sob,
 
    const char *objectArrayDBName = sobFieldDBName[objectArrayField];
 
-   if(bson_find(&iterator, object, objectArrayDBName)) {
+   if (bson_find(&iterator, object, objectArrayDBName)) {
       bson_iterator_subobject(&iterator, &arrayBson);
       bson_iterator_from_buffer(&iterator, arrayBson.data);
 
