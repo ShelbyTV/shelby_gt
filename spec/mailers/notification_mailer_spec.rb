@@ -91,7 +91,7 @@ describe NotificationMailer do
       end
 
       it 'should have a link to the sending user' do
-        @email.body.encoded.should have_tag(:a, :with => { :href => "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll" })
+        @email.body.encoded.should have_tag(:a, :with => { :href => "#{Settings::Email.web_url_base}/#{@user_from.nickname}" })
         @email.body.encoded.should_not match("Someone")
       end
     end
