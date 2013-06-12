@@ -67,6 +67,13 @@ GIT
       httparty
       json
 
+GIT
+  remote: https://github.com/37signals/mail_view.git
+  revision: 2e2b00897cb79b1a6924240b43a7521915efe215
+  specs:
+    mail_view (1.0.1)
+      tilt
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -404,6 +411,7 @@ DEPENDENCIES
   km
   koala
   mail
+  mail_view!
   memcached (~> 1.4.1)
   mm-devise
   mongo (>= 1.6.4)

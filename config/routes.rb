@@ -189,6 +189,11 @@ ShelbyGt::Application.routes.draw do
   # email webhook processing
   post "email_webhook/hook"
 
+  # previewing mailer templates in the browser
+  if Rails.env.development?
+    mount MailPreview => 'mail_view'
+  end
+
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
 
   root :to => redirect(Settings::ShelbyAPI.web_root)
