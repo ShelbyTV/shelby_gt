@@ -163,7 +163,7 @@ GEM
     fssm (0.2.9)
     gabba (1.0.1)
     git (1.2.5)
-    grackle (0.1.10)
+    grackle (0.3.0)
       json
       mime-types
       oauth
@@ -395,7 +395,7 @@ DEPENDENCIES
   factory_girl_rails
   formatted_rails_logger
   gabba
-  grackle
+  grackle (~> 0.3.0)
   haml
   highline
   httparty
