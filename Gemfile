@@ -130,7 +130,8 @@ gem 'gabba'
 # ---------- TODO: explain what yard is and why it's here
 #
 group :development do
-	#gem 'yard', '~> 0.7.4'
+	gem 'yard', '~> 0.8.6'
+	gem 'redcarpet', '~> 2.3.0'
 	#gem 'yard-rest', '0.3.0', :git => 'git://github.com/rknLA/yard-rest-plugin.git'
 end
 

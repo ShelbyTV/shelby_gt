@@ -287,6 +287,7 @@ GEM
     rake (10.0.3)
     rdoc (3.12)
       json (~> 1.4)
+    redcarpet (2.3.0)
     rpm_contrib (2.1.11)
       newrelic_rpm (>= 3.1.1)
       newrelic_rpm (>= 3.1.1)
@@ -366,6 +367,7 @@ GEM
       activesupport (>= 2.3.4)
       chronic (~> 0.6.3)
     yajl-ruby (1.1.0)
+    yard (0.8.6.1)
     youtube_it (2.1.4)
       builder
       faraday (~> 0.7.3)
@@ -421,6 +423,7 @@ DEPENDENCIES
   rack-cors
   rack-oauth2-server
   rails (= 3.2.11)
+  redcarpet (~> 2.3.0)
   rpm_contrib
   rspec-html-matchers
   rspec-rails
@@ -438,5 +441,6 @@ DEPENDENCIES
   vimeo
   whenever
   yajl-ruby
+  yard (~> 0.8.6)
   youtube_it
   yui-compressor
