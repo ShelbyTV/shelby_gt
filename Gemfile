@@ -59,7 +59,7 @@ gem 'devise', '>= 2.0'
 gem 'mm-devise'
 
 gem 'omniauth', '>= 1.0'
-gem 'omniauth-twitter', :git => 'git://github.com/arunagw/omniauth-twitter.git'
+gem 'omniauth-twitter', '~> 0.0.16', :git => 'git://github.com/arunagw/omniauth-twitter.git'
 gem 'omniauth-facebook', :git => 'git://github.com/mkdynamic/omniauth-facebook.git'
 gem 'omniauth-tumblr', :git => 'git://github.com/jamiew/omniauth-tumblr.git'
 
@@ -76,7 +76,7 @@ gem 'aws-sdk', '~> 1.3.4'
 #
 gem "youtube_it"  #youtube api
 gem "vimeo"       # vimeo api
-gem "grackle" 		# twitter
+gem "grackle", '~> 0.3.0' 		# twitter
 gem "koala"				# facebook
 gem "sendgrid", :git => "git://github.com/PracticallyGreen/sendgrid.git" 	# email, with g.analytics customization
 gem "sailthru-client"
@@ -130,7 +130,8 @@ gem 'gabba'
 # ---------- TODO: explain what yard is and why it's here
 #
 group :development do
-	#gem 'yard', '~> 0.7.4'
+	gem 'yard', '~> 0.8.6'
+	gem 'redcarpet', '~> 2.3.0'
 	#gem 'yard-rest', '0.3.0', :git => 'git://github.com/rknLA/yard-rest-plugin.git'
 end
 

@@ -644,23 +644,24 @@ void sobPrintSubobjectArray(sobContext sob,
                             sobSubobjectPrintCallback subobjectPrintCallback)
 {
    bson arrayBson;
-   const char *objectArrayDBName = sobFieldDBName[objectArrayField];
-
    bson_iterator iterator;
-   bson_find(&iterator, object, objectArrayDBName);
-
-   bson_iterator_subobject(&iterator, &arrayBson);
-   bson_iterator_from_buffer(&iterator, arrayBson.data);
 
    mrjsonStartArray(context, sobFieldLongName[objectArrayField]);
 
-   while (bson_iterator_next(&iterator)) {
-      bson element;
-      bson_iterator_subobject(&iterator, &element);
+   const char *objectArrayDBName = sobFieldDBName[objectArrayField];
 
-      mrjsonStartNamelessObject(context);
-      subobjectPrintCallback(sob, context, &element);
-      mrjsonEndObject(context);
+   if (bson_find(&iterator, object, objectArrayDBName)) {
+      bson_iterator_subobject(&iterator, &arrayBson);
+      bson_iterator_from_buffer(&iterator, arrayBson.data);
+
+      while (bson_iterator_next(&iterator)) {
+         bson element;
+         bson_iterator_subobject(&iterator, &element);
+
+         mrjsonStartNamelessObject(context);
+         subobjectPrintCallback(sob, context, &element);
+         mrjsonEndObject(context);
+      }
    }
 
    mrjsonEndArray(context);

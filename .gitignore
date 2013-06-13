@@ -15,7 +15,9 @@
 /tmp
 
 # Ignore yard docs
-.yardoc/*
+.yardoc
+_yardoc
+doc/
 /*/*/.DS_Store
 
 # Ignore sass-cache files.
