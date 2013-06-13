@@ -36,13 +36,13 @@ class NotificationMailer < ActionMailer::Base
   def reroll_notification(old_frame, new_frame)
     sendgrid_category Settings::Email.reroll_notification["category"]
 
-    sendgrid_ganalytics_options(:utm_source => 'reroll', :utm_medium => 'notification', :utm_campaign => "frame_#{old_frame.id.to_s}")
+    sendgrid_ganalytics_options(:utm_source => 'reshare', :utm_medium => 'notification', :utm_campaign => "frame_#{old_frame.id.to_s}")
 
 
     @user_to = old_frame.creator
     @user_from = new_frame.creator
     @user_from_name = (@user_from.name || @user_from.nickname)
-    @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
+    @user_permalink = "#{Settings::Email.web_url_base}/#{@user_from.nickname}"
 
     @old_frame = old_frame
     @new_frame = new_frame
@@ -66,7 +66,7 @@ class NotificationMailer < ActionMailer::Base
       # liked by a logged in user
       @user_from = user_from
       @user_from_name = (@user_from.name || @user_from.nickname)
-      @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
+      @user_permalink = "#{Settings::Email.web_url_base}/#{@user_from.nickname}"
     else
       # liked anonymously by a logged out user
       @user_from_name = "Someone"
@@ -84,12 +84,12 @@ class NotificationMailer < ActionMailer::Base
   def join_roll_notification(user_to, user_from, roll)
     sendgrid_category Settings::Email.join_roll_notification["category"]
 
-    sendgrid_ganalytics_options(:utm_source => 'join-roll', :utm_medium => 'notification', :utm_campaign => "roll_#{roll.id.to_s}")
+    sendgrid_ganalytics_options(:utm_source => 'follow', :utm_medium => 'notification', :utm_campaign => "roll_#{roll.id.to_s}")
 
     @user_to = user_to
     @user_from = user_from
     @user_from_name = (@user_from.name || @user_from.nickname)
-    @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
+    @user_permalink = "#{Settings::Email.web_url_base}/#{@user_from.nickname}"
 
     @roll = roll
 

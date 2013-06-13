@@ -29,15 +29,22 @@ gem 'rack-oauth2-server'
 gem "haml"
 gem 'jquery-rails'
 
-#
-# -- Quiet Logging
-#
-gem 'quiet_assets', :group => :development
+group :development do
+	#
+	# -- Quiet Logging
+	#
+	gem 'quiet_assets'
 
-#
-# -- Faster development web server
-#
-gem 'thin', :group => :development
+	#
+	# -- Faster development web server
+	#
+	gem 'thin'
+
+	#
+	# -- Preview emails in browser w/o sending
+	#
+	gem 'mail_view', :git => 'https://github.com/37signals/mail_view.git'
+end
 
 #
 # Gems used only for assets and not required
@@ -187,7 +194,7 @@ group :test, :development do
 	gem 'rspec-html-matchers'
 end
 
-group :test do
+group :test, :development do
 	gem 'shoulda'
 
 	# rspec has nice mocking, but we could also use

@@ -19,11 +19,11 @@ defaults: &defaults
     category: "Heart Notifications"
     subject: "%{upvoters_name} liked your video"
   reroll_notification:
-    category: "Reroll Notifications"
-    subject: "%{re_rollers_name} rolled your video"
+    category: "Share Notifications"
+    subject: "%{re_rollers_name} shared your video on Shelby.tv"
   like_notification:
     category: "Like Notifications"
-    subject: "%{likers_name} liked your video"
+    subject: "%{likers_name} liked a video you shared on Shelby.tv"
     second_lines:
       any_liker: [ "Is this the beginning of a great relationship?",
                    "You were always the popular one, weren't you?",
@@ -31,8 +31,8 @@ defaults: &defaults
                  ]
       anonymous: [ "How's it feel to have a secret admirer?" ]
   join_roll_notification:
-    category: "Join Roll Notifications"
-    subject: "%{users_name} is following your Roll!"
+    category: "Follow Notifications"
+    subject: "%{users_name} is following you on Shelby.tv!"
   invite_accepted_notification:
     category: "Invite Accepted Notifications"
     subject: "%{users_name} accepted your invitation to join Shelby.tv"
