@@ -145,8 +145,10 @@ class V1::FrameController < ApplicationController
 
             # send email notification in a non-blocking manor
             ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_reroll_notification(frame_to_re_roll, @frame) }
-            # send OG action to FB
-            ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', current_user, @frame) }
+
+            # NOT sending OG action to FB for roll POST spring cleaning
+            #ShelbyGT_EM.next_tick { GT::OpenGraph.send_action('roll', current_user, @frame) }
+
             # process frame message hashtags in a non-blocking manor
             ShelbyGT_EM.next_tick { GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame) }
 
