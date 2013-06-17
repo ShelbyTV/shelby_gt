@@ -1,4 +1,15 @@
 <% standard_html_email_wrapper do %>
+  <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable" style="margin: 0;padding: 0;background-color: <%= Settings::Email.ui_off_white %>;height: 100%;width: 100%;font-family: <%= Settings::Email.font_family %>;">
+
+    <%= render :partial => "/objects/summary_text", :locals => { :text => 'test' } %>
+
+    <tr>
+      <td>
+        <img src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv"
+      </td>
+    </tr>
+  </table>
+
   <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable" style="margin: 0;padding: 0;background-color: #FAFAFA;height: 100%;width: 100%;font-family:Arial,sans-serif;">
     <tr>
       <td align="center" valign="top" style="border-collapse: collapse;">
@@ -10,11 +21,11 @@
                 <tr>
                   <!-- // Begin Module: Standard Header Image \ -->
                   <td valign="middle" class="shelby-email-lining" style="padding:0px;width:85%;min-width: 300px;">
-										<h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313435;">
-											<a href="<%= Settings::Email.web_url_base %>">
-												<img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv logo" title="Shelby.tv" height="30" style="padding:8px 0px 5px;display:block;margin: 0px auto;display:block;"/>
-											</a>
-										</h1>
+                    <h1 class="shelby-logo" style="margin:0px;padding:0 20px;background-color:#313435;">
+                      <a href="<%= Settings::Email.web_url_base %>">
+                        <img class="image_fix" src="<%= Settings::Email.shelby_logo %>" alt="Shelby.tv" title="Shelby.tv" height="30" style="padding:8px 0px 5px;display:block;margin: 0px auto;display:block;"/>
+                      </a>
+                    </h1>
                   </td>
                   <!-- // End Module: Standard Header Image \ -->
                 </tr>

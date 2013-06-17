@@ -1,5 +1,5 @@
 module MailHelper
-  
+
   def standard_html_email_wrapper
     <<-END_HTML
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -15,5 +15,5 @@ module MailHelper
     </html>
     END_HTML
   end
-  
+
 end
