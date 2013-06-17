@@ -108,6 +108,14 @@ describe V1::UserController do
       assigns(:status).should eq(200)
     end
 
+    it "should return user if valid user nickname provided" do
+      User.stub(:find) { nil }
+      User.should_receive(:find_by_nickname).with(@u1.nickname).and_return(@u1)
+      get :show, :id => @u1.nickname, :format => :json
+      assigns(:user).should eq(@u1)
+      assigns(:status).should eq(200)
+    end
+
     it "should return 404 if user_id provided, can't be found" do
       get :show, :id => "certainly this id doesn't exist", :format => :json
       assigns(:user).should eq(@u1)

@@ -254,6 +254,32 @@ describe 'v1/user' do
         end
       end
 
+      context "rolls/personal" do
+        before(:each) do
+          @r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user], :title => 'title')
+          @u1.public_roll = @r1
+          @u1.save
+        end
+
+        it "should return the user's personal roll if user id provided" do
+          get '/v1/user/'+@u1.id+'/rolls/personal'
+          response.body.should be_json_eql(200).at_path("status")
+        end
+
+        it "should return the user's personal roll if user nickname provided" do
+          get '/v1/user/'+@u1.nickname+'/rolls/personal'
+          response.body.should be_json_eql(200).at_path("status")
+        end
+
+        it "should return the user's personal roll if user nickname with non-alphanumeric characters provided" do
+          @u1.nickname = 'user.name'
+          @u1.save
+          get '/v1/user/'+@u1.nickname+'/rolls/personal'
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should be_json_eql("\"user.name\"").at_path("result/creator_nickname")
+        end
+      end
+
       context "rolls/postable" do
         it "should only return the subset of rolls that the user can post to" do
           public_roll = Factory.create(:roll, :creator => @u1, :collaborative => false, :roll_type => Roll::TYPES[:special_public_real_user])
