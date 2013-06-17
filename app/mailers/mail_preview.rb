@@ -4,6 +4,7 @@ if Rails.env.development?
       def reroll_notification #old_roll, new_roll
 
         old_user = User.all.first
+        old_user.primary_email = "test@test.com"
         old_roll = old_user.public_roll
         old_video = Video.all.first
         old_frame = Factory.create(:frame, :roll => old_roll, :video => old_video, :creator => old_user)
