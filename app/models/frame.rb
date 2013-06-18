@@ -199,10 +199,22 @@ class Frame
     return self.upvoters.any? { |uid| uid == user_id }
   end
 
-  # Returns a link to the subdomain when it's a legit roll
-  # Otherwise links to the SEO page
+  # Returns a link to the shares/frame_id route when the frame is on a user's public roll,
+  # Otherwise links to the frame in a roll if it has a roll
+  # Otherwise links to the video page
   def permalink()
-    return self.subdomain_permalink(:require_legit_roll => true) || self.video_page_permalink
+    return self.shares_permalink || self.video_page_permalink
+  end
+
+
+  def shares_permalink
+    return nil unless self.roll && [ Roll::TYPES[:special_public_real_user],
+                          Roll::TYPES[:special_public_upgraded],
+                          Roll::TYPES[:user_public],
+                          Roll::TYPES[:global_public]
+                        ].include?(self.roll.roll_type)
+
+    return "http://#{Settings::ShelbyAPI.web_domain}/#{roll.creator.nickname}/shares/#{self.id}"
   end
 
   # set {:require_legit_roll => true} to get a subdomain link only for a legit roll, otherwise nil

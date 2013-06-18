@@ -396,17 +396,23 @@ describe Frame do
 
   context "permalinks" do
 
-    it "should generate permalinks for frame with a roll" do
+    it "should generate permalink for frame with a roll that is a user's public roll" do
+      user = Factory.create(:user)
+      roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public_real_user], :creator => user)
+      frame = Factory.create(:frame, :roll => roll)
+      frame.permalink.should == "#{Settings::ShelbyAPI.web_root}/#{user.nickname}/shares/#{frame.id}"
+    end
+
+    it "should generate permalink for frame with a roll that is not a user's public roll" do
       roll = Factory.create(:roll)
       frame = Factory.create(:frame, :roll => roll)
       frame.permalink.should == "#{Settings::ShelbyAPI.web_root}/roll/#{roll.id}/frame/#{frame.id}"
-      frame.permalink_to_frame_comments.should == "#{Settings::ShelbyAPI.web_root}/roll/#{roll.id}/frame/#{frame.id}/comments"
     end
 
-    it "should generate permalinks for frame without a roll" do
-      frame = Factory.create(:frame)
-      frame.permalink.should == "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{frame.id}"
-      frame.permalink_to_frame_comments.should == "#{Settings::ShelbyAPI.web_root}/rollFromFrame/#{frame.id}/comments"
+    it "should generate permalink for frame without a roll" do
+      video = Factory.create(:video)
+      frame = Factory.create(:frame, :video => video)
+      frame.permalink.should == "#{Settings::ShelbyAPI.web_root}/video/#{frame.video.provider_name}/#{frame.video.provider_id}/?frame_id=#{frame.id}"
     end
 
     it "should generate permalink for frame with video" do
