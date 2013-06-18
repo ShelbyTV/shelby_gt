@@ -1,0 +1,70 @@
+<% standard_html_email_wrapper do %>
+  <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="margin: 0;padding: 0;background-color: <%= Settings::Email.ui_off_white %>;height: 100%;width: 100%;font-family: <%= Settings::Email.font_family %>; color: <%= Settings::Email.ui_soft_black %>">
+    <tbody>
+      <tr height="0" valign="top">
+        <td>
+          <center>
+            <!-- main -->
+            <table border="0" cellspacing="0" cellpadding="0">
+              <tbody>
+                <%= render :partial => "/objects/summary_text", :locals => { :text => 'test' } %>
+
+                <%= render :partial => "/objects/header" %>
+
+                <tr>
+                  <td>
+                    <table border="0" cellpadding="0" cellspacing="0" height="300" width="100%">
+                      <tr>
+                        <td>&nbsp;</td>
+                        <td style="width: <%= Settings::Email.main_column %>; background-color: <%= Settings::Email.ui_white %>; border: 1px solid <%= Settings::Email.ui_inset %>; font-weight: <%= Settings::Email.font_weight %>">
+
+                          <table border="0" cellspacing="0" cellpadding="40">
+                            <tr>
+                              <td>
+                                  <!-- BODY -->
+
+                                  <h1 style="margin-top:0;">
+                                    Sample Email Copy
+                                  </h1>
+
+                                  <p>
+                                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Necessitatibus illo impedit nobis sint consectetur asperiores fugiat voluptates explicabo. Maxime, officia ab non dolor recusandae hic unde voluptatum molestiae quo fugiat.
+                                  </p>
+
+                                  <h2>
+                                    Subhead
+                                  </h2>
+
+                                  <h3>
+                                    Sub-subhead
+                                  </h3>
+
+                                  <p>
+                                    Some copy <strong>with styling</strong> and <em>like italics</em> or <u>underlines</u>.
+                                  </p>
+
+                                  <br/>
+
+                                  <%= render :partial => "/objects/button", :locals => { :text => 'Scope it out', :url => '#'} %>
+
+                                  <!-- END BODY -->
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td>&nbsp;</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <%= render :partial => "/objects/footer" %>
+              </tbody>
+            </table>
+            <!-- eo main -->
+          </center>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+<% end %>
