@@ -1,7 +1,6 @@
 defaults: &defaults
   shelby_address: "110 E 23rd, 10th Floor, New York NY 10010"
-  shelby_logo: "http://api.shelby.tv/assets/email_logo.png"
-  shelby_logo_gt: "http://shelby.tv/images/assets/shelby_logo.png"
+  shelby_logo: "http://api.shelby.tv/images/email_logo.png"
   shelby_tagline: "The perfect stream of videos built for you and powered by your friends."
   preferences_link: "http://shelby.tv/preferences"
   notifications_link: "http://shelby.tv/preferences/notifications"
@@ -22,6 +21,7 @@ defaults: &defaults
   ui_twitter_blue: "#2CAAE1"
   ui_tumblr_blue: "#2f445b"
   ui_inset: "#adadad"
+  main_column: "600px"
   # Sharing
   share_frame:
     category: "Share Frame"
@@ -81,6 +81,7 @@ defaults: &defaults
 
 development:
   <<: *defaults
+  shelby_logo: "http://localhost.shelby.tv:4000/images/email_logo.png"
 
 test:
   <<: *defaults

@@ -11,7 +11,7 @@
                   <!-- // Begin Module: Standard Header Image \ -->
                   <td align="center" valign="middle" class="shelby-header-logo" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 13px;font-weight: 300;width: 100px;">
                     <a href="<%= Settings::Email.web_url_base %>">
-                      <img src="<%= Settings::Email.shelby_logo_gt %>" id="headerImage" alt="Shelby.tv logo" title="Shelby.tv" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 97px;vertical-align: bottom;">
+                      <img src="<%= Settings::Email.shelby_logo %>" id="headerImage" alt="Shelby.tv logo" title="Shelby.tv" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 97px;vertical-align: bottom;">
                     </a>
                   </td>
                   <td align="right" valign="middle" class="shelby-header" style="border-collapse: collapse;background: #2c2c2c;color: #efefef;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 11px;font-weight: 300;">
@@ -45,7 +45,7 @@
 
 												<% links = {} %>
 												<% u.authentications.each { |a| links[:tw] = "http://twitter.com/#{a.nickname}" if a.provider == "twitter"; links[:fb] = "http://www.facebook.com/#{a.nickname}" if a.provider == "facebook"; links[:tu] = "http://#{a.nickname}.tumblr.com/" if a.provider == "tumblr"; } %>
-												
+
 	                      <tr>
 													<table border="0" cellspacing="0" cellpadding="0" width="100%">
 														<tr>
@@ -76,7 +76,7 @@
 																			<a href="<%= links[:tu] %>" style="color: #777;font-weight: normal;text-decoration:none;"><img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" height="16" alt="" title="" style="height: 12px;outline: none;text-decoration: none;display: inline;"></a>
 																		<% end %>
 																	</span>
-																	
+
 																	/ Friends: <%= pluralize(friends_rolls.length - 1, 'Roll') %> / Public: <%= pluralize(public_rolls.length, 'Roll') %> / Private: <%= pluralize(private_rolls.length, 'Roll') %>
 																</h4>
 															</td>
@@ -84,7 +84,7 @@
 													</table>
 	                      </tr>
 											<% end %>
-											
+
                       <tr>
                         <td align="right" valign="middle" class="shelby-notification-footer" style="border-collapse: collapse;border-top: 1px solid #fff;color: #888;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 11px;line-height: 100%;text-align: right;">
                           <p class="shelby-footer-block" style="line-height: 1.5;margin: 0;">

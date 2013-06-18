@@ -1,42 +1,53 @@
 <% standard_html_email_wrapper do %>
   <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="margin: 0;padding: 0;background-color: <%= Settings::Email.ui_off_white %>;height: 100%;width: 100%;font-family: <%= Settings::Email.font_family %>; color: <%= Settings::Email.ui_soft_black %>">
     <tbody>
-      <tr height="0">
+      <tr height="0" valign="top">
         <td>
-          <%= render :partial => "/objects/summary_text", :locals => { :text => 'test' } %>
-        </td>
-      </tr>
+          <center>
+            <table border="0" cellspacing="0" cellpadding="0">
+              <tbody>
+                <tr>
+                  <td>
+                    <%= render :partial => "/objects/summary_text", :locals => { :text => 'test' } %>
+                  </td>
+                </tr>
 
-      <tr height="70">
-        <td>
-          <%= render :partial => "/objects/header" %>
-        </td>
-      </tr>
+                <tr height="70">
+                  <td>
+                    <%= render :partial => "/objects/header" %>
+                  </td>
+                </tr>
 
-      <tr>
-        <td>
-          <table border="0" cellpadding="20" cellspacing="0" height="100%" width="100%">
-            <tr>
-              <td style="width: 20%;">&nbsp;</td>
-              <td style="background-color: <%= Settings::Email.ui_white %>; border: 1px solid <%= Settings::Email.ui_inset %>; text-align: center; font-weight: <%= Settings::Email.font_weight %>">
-                <p>
-                  <a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>">
-                    <img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;height: 45px;line-height: 1;outline: none;text-decoration: none;display: inline-block;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>"/>
-                  </a>
-                </p>
+                <tr>
+                  <td>
+                    <table border="0" cellpadding="0" cellspacing="0" height="300" width="100%">
+                      <tr>
+                        <td>&nbsp;</td>
+                        <td style="width: <%= Settings::Email.main_column %>; background-color: <%= Settings::Email.ui_white %>; border: 1px solid <%= Settings::Email.ui_inset %>; text-align: center; font-weight: <%= Settings::Email.font_weight %>">
+                          <p>
+                            <a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>">
+                              <img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;height: 45px;line-height: 1;outline: none;text-decoration: none;display: inline-block;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>"/>
+                            </a>
+                          </p>
 
-                <p>
-                  <a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>"><%= @user_from_name %></a> is now following you!
-                </p>
-              </td>
-              <td style="width: 20%;">&nbsp;</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr height="50">
-        <td>
-          <%= render :partial => "/objects/footer" %>
+                          <p>
+                            <a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>"><%= @user_from_name %></a> is now following you!
+                          </p>
+                        </td>
+                        <td>&nbsp;</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr height="50">
+                  <td>
+                    <%= render :partial => "/objects/footer" %>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </center>
         </td>
       </tr>
     </tbody>
