@@ -21,6 +21,7 @@ defaults: &defaults
   ui_facebook_blue: "#013e80"
   ui_twitter_blue: "#2CAAE1"
   ui_tumblr_blue: "#2f445b"
+  ui_inset: "#adadad"
   # Sharing
   share_frame:
     category: "Share Frame"
