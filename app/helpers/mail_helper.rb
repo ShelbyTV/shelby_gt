@@ -7,7 +7,7 @@ module MailHelper
       <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
       </head>
-      <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="-webkit-text-size-adjust: none;margin: 0;padding: 0;background-color: #FAFAFA;width: 100%;">
+      <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="-webkit-text-size-adjust: none;margin: 0;padding: 0;background-color: <%= Settings::Email.ui_off_white %>;width: 100%;">
         <center>
           #{yield}
         </center>

@@ -34,9 +34,10 @@ if Rails.env.development?
       end
 
       def join_roll_notification # user_to, user_from, roll
-        user_to    = User.all.first
-        user_from  = User.all.last
-        roll       = user_to.public_roll
+        user_to               = User.all.first
+        user_to.primary_email = "test@test.com"
+        user_from             = User.all.last
+        roll                  = user_to.public_roll
 
         NotificationMailer.join_roll_notification(user_to, user_from, roll)
       end
