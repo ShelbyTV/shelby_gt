@@ -41,5 +41,5 @@ if Rails.env.development?
         NotificationMailer.join_roll_notification(user_to, user_from, roll)
       end
 
-    end
+  end
 end
