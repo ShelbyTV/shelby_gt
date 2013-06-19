@@ -19,26 +19,26 @@ describe GT::UserEmailProcessor do
       end
 
       context "real user check" do
-        it "should return user if its real user type" do
-          @user.gt_enabled = true
-          @user.user_type = User::USER_TYPE[:real]
-          @email_processor.real_user_check(@user).should eql @user
+        it "should return true if its real user type" do
+          @user["ag"] = true
+          @user["ac"] = User::USER_TYPE[:real]
+          @email_processor.real_user_check(@user).should eql true
         end
 
-        it "should return user if its converted user type" do
-          @user.gt_enabled = true
-          @user.user_type = User::USER_TYPE[:converted]
-          @email_processor.real_user_check(@user).should eql @user
+        it "should return true if its converted user type" do
+          @user["ag"] = true
+          @user["ac"] = User::USER_TYPE[:converted]
+          @email_processor.real_user_check(@user).should eql true
         end
 
         it "should return null if its real or converted user type but not gt_enabled" do
-          @user.gt_enabled = false
-          @email_processor.real_user_check(@user).should eql nil
+          @user["ag"] = false
+          @email_processor.real_user_check(@user).should eql false
         end
 
-        it "should return nil if user is fake" do
-          @user.user_type = User::USER_TYPE[:faux]
-          @email_processor.real_user_check(@user).should eql nil
+        it "should return false if user is fake" do
+          @user["ac"] = User::USER_TYPE[:faux]
+          @email_processor.real_user_check(@user).should eql false
         end
       end
     end
