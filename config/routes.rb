@@ -122,6 +122,7 @@ ShelbyGt::Application.routes.draw do
     # User related
     get 'user' => 'user#show'
     get 'signed_in' => 'user#signed_in'
+    put 'log_session' => 'user#log_session'
 
     ########################
     # Javascript Error Reporting
@@ -133,6 +134,7 @@ ShelbyGt::Application.routes.draw do
     # user
     get 'PUT/user/:id' => 'user#update'
     get 'POST/user' => 'user#create'
+    get 'PUT/log_session' => 'user#log_session'
       # user password reset is done outside of /v1
     # roll
     get 'POST/roll/:roll_id/share' => 'roll#share'

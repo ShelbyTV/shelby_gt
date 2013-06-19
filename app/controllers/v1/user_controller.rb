@@ -19,6 +19,19 @@ class V1::UserController < ApplicationController
     @signed_in = user_signed_in? ? true : false
   end
 
+  ####################################
+  # Updates a users session count.
+  # Returns 200 if successful
+  #
+  # [GET] /v1/log_session
+  def signed_in
+    if current_user.increment(:session_count => 1)
+      @status = 200
+    else
+      render_error(404, "could not update the current users session")
+    end
+  end
+
   ##
   # Creates a new user with the given basic info.
   # Supports mobile via JSON, web via HTML.
