@@ -24,7 +24,7 @@ class V1::UserController < ApplicationController
   # Returns 200 if successful
   #
   # [GET] /v1/log_session
-  def signed_in
+  def log_session
     if current_user.increment(:session_count => 1)
       @status = 200
     else
