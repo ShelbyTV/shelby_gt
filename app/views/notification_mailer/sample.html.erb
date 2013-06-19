@@ -17,40 +17,41 @@
                       <tr>
                         <td>&nbsp;</td>
                         <td style="width: <%= Settings::Email.main_column %>; background-color: <%= Settings::Email.ui_white %>; border: 1px solid <%= Settings::Email.ui_inset %>; font-weight: <%= Settings::Email.font_weight %>">
+                          <center>
+                            <table border="0" cellspacing="0" cellpadding="40">
+                              <tr>
+                                <td>
+                                    <!-- BODY -->
 
-                          <table border="0" cellspacing="0" cellpadding="40">
-                            <tr>
-                              <td>
-                                  <!-- BODY -->
+                                    <h1 style="margin-top:0;">
+                                      Sample Email Copy
+                                    </h1>
 
-                                  <h1 style="margin-top:0;">
-                                    Sample Email Copy
-                                  </h1>
+                                    <p>
+                                      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Necessitatibus illo impedit nobis sint consectetur asperiores fugiat voluptates explicabo. Maxime, officia ab non dolor recusandae hic unde voluptatum molestiae quo fugiat.
+                                    </p>
 
-                                  <p>
-                                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Necessitatibus illo impedit nobis sint consectetur asperiores fugiat voluptates explicabo. Maxime, officia ab non dolor recusandae hic unde voluptatum molestiae quo fugiat.
-                                  </p>
+                                    <h2>
+                                      Subhead
+                                    </h2>
 
-                                  <h2>
-                                    Subhead
-                                  </h2>
+                                    <h3>
+                                      Sub-subhead
+                                    </h3>
 
-                                  <h3>
-                                    Sub-subhead
-                                  </h3>
+                                    <p>
+                                      Some copy <strong>with styling</strong> and <em>like italics</em> or <u>underlines</u>.
+                                    </p>
 
-                                  <p>
-                                    Some copy <strong>with styling</strong> and <em>like italics</em> or <u>underlines</u>.
-                                  </p>
+                                    <br/>
 
-                                  <br/>
+                                    <%= render :partial => "/objects/button", :locals => { :text => 'Scope it out', :url => '#'} %>
 
-                                  <%= render :partial => "/objects/button", :locals => { :text => 'Scope it out', :url => '#'} %>
-
-                                  <!-- END BODY -->
-                              </td>
-                            </tr>
-                          </table>
+                                    <!-- END BODY -->
+                                </td>
+                              </tr>
+                            </table>
+                          </center>
                         </td>
                         <td>&nbsp;</td>
                       </tr>
