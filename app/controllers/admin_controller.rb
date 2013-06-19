@@ -43,7 +43,6 @@ class AdminController < ApplicationController
       @user_created_private_rolls = @rolls.select {|k,v| k.roll_type == 50 }
 
       @public_roll = @user.public_roll
-      @heart_roll = @user.upvoted_roll.permalink if @user.upvoted_roll
       @watch_later_roll = @user.watch_later_roll.permalink if @user.watch_later_roll
 
       @social_links = {}

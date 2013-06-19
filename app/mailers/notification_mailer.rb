@@ -12,7 +12,7 @@ class NotificationMailer < ActionMailer::Base
     @user_to = user_to
     @user_from = user_from
     @user_from_name = (@user_from.name || @user_from.nickname)
-    @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
+    @user_permalink = @user_from.permalink
 
     @frame = frame
     @frame_title = @frame.video.title
@@ -42,7 +42,7 @@ class NotificationMailer < ActionMailer::Base
     @user_to = old_frame.creator
     @user_from = new_frame.creator
     @user_from_name = (@user_from.name || @user_from.nickname)
-    @user_permalink = "#{Settings::Email.web_url_base}/#{@user_from.nickname}"
+    @user_permalink = @user_from.permalink
 
     @old_frame = old_frame
     @new_frame = new_frame
@@ -66,7 +66,7 @@ class NotificationMailer < ActionMailer::Base
       # liked by a logged in user
       @user_from = user_from
       @user_from_name = (@user_from.name || @user_from.nickname)
-      @user_permalink = "#{Settings::Email.web_url_base}/#{@user_from.nickname}"
+      @user_permalink = @user_from.permalink
     else
       # liked anonymously by a logged out user
       @user_from_name = "Someone"
@@ -89,7 +89,7 @@ class NotificationMailer < ActionMailer::Base
     @user_to = user_to
     @user_from = user_from
     @user_from_name = (@user_from.name || @user_from.nickname)
-    @user_permalink = "#{Settings::Email.web_url_base}/#{@user_from.nickname}"
+    @user_permalink = @user_from.permalink
 
     @roll = roll
 
@@ -107,7 +107,7 @@ class NotificationMailer < ActionMailer::Base
     @user_to = user_to
     @user_from = user_from
     @user_from_name = (@user_from.name || @user_from.nickname)
-    @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
+    @user_permalink = @user_from.permalink
 
     @frame = frame
     @frame_title = @frame.video.title
@@ -126,7 +126,7 @@ class NotificationMailer < ActionMailer::Base
     @user_to = user_to
     @user_from = user_from
     @user_from_name = (@user_from.name || @user_from.nickname)
-    @user_permalink = "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll"
+    @user_permalink = @user_from.permalink
 
     @roll = roll
 

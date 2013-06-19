@@ -48,45 +48,45 @@ describe Roll do
         @roll.reload.followed_by?(@user).should == true
         @user.reload.following_roll?(@roll).should == true
       end
-      
+
       it "should NOT be considered 'followed_by' when followings are asymetic (ie. roll has following_user but user doesn't have roll_rollowing)" do
         @roll.add_follower(@user)
-        
+
         #this is normal
         @roll.reload.followed_by?(@user).should == true
-        
+
         #make it asymetric
         @user.update_attribute(:roll_followings, [])
-        
+
         #should no longer be considered followed_by
         @roll.reload.followed_by?(@user).should == false
         #should be considered followed_by in the asymetric sense
         @roll.reload.followed_by?(@user, false).should == true
       end
-      
+
       it "should add follower when followings are asymetric (ie. roll has following_user but user doesn't have roll_rollowing)" do
         @roll.add_follower(@user)
 
         #make it asymetric (on user side)
         @user.update_attribute(:roll_followings, [])
-        
+
         #should no longer be considered followed_by
         @roll.reload.followed_by?(@user).should == false
-        
+
         #should add follower correctly
         @roll.add_follower(@user)
         @roll.reload.followed_by?(@user).should == true
       end
-      
+
       it "should add follower when followings are asymetric (ie. user has roll_rollowing but roll doesn't have following_user)" do
         @roll.add_follower(@user)
 
         #make it asymetric (on roll side)
         @roll.update_attribute(:following_users, [])
-        
+
         #should no longer be considered followed_by
         @roll.reload.followed_by?(@user).should == false
-        
+
         #should add follower correctly
         @roll.add_follower(@user)
         @roll.reload.followed_by?(@user).should == true
@@ -142,21 +142,21 @@ describe Roll do
         @user.following_roll?(@roll).should == true
         @user.unfollowed_roll?(@roll).should == false
       end
-      
+
       it "should be able to remove all followers" do
         @roll.add_follower(@user)
         @roll.add_follower(@stranger)
         @roll.reload.following_users.count.should == 2
         @user.reload.roll_followings.count.should == 1
         @stranger.reload.roll_followings.count.should == 1
-        
+
         @roll.remove_all_followers!
-        
+
         @roll.reload.following_users.count.should == 0
         @user.reload.roll_followings.count.should == 0
         @stranger.reload.roll_followings.count.should == 0
       end
-      
+
       it "should be able to remove all followers even if some are nil" do
         @roll.add_follower(@user)
         @roll.add_follower(@stranger)
@@ -164,7 +164,7 @@ describe Roll do
         @roll.reload.following_users.count.should == 2
 
         @roll.remove_all_followers!
-        
+
         @roll.reload.following_users.count.should == 0
       end
 
@@ -456,6 +456,21 @@ describe Roll do
           @roll.subdomain.should == "newuniquetitle"
           @roll.subdomain_active.should == true
       end
+    end
+
+    context "permalink" do
+
+      it "should generate permalink for a roll that is a user's public roll" do
+        user = Factory.create(:user)
+        roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public_real_user], :creator => user)
+        roll.permalink.should == "#{Settings::ShelbyAPI.web_root}/#{user.nickname}/shares"
+      end
+
+      it "should generate permalink for a roll that is not a user's public roll" do
+        roll = Factory.create(:roll)
+        roll.permalink.should == "#{Settings::ShelbyAPI.web_root}/roll/#{roll.id}"
+      end
+
     end
   end
 end

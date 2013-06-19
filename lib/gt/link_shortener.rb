@@ -29,16 +29,13 @@ module GT
        if linkable.is_a?(Frame)
          frame = linkable
          # for frames on legit shelby rolls, link there instead of SEO page
-         long_url = frame.subdomain_permalink(:require_legit_roll => true) ||
-                    frame.isolated_roll_permalink(:require_legit_roll => true) ||
-                    frame.video_page_permalink
+         long_url = frame.permalink
        elsif linkable.is_a?(DashboardEntry)
          dashboard_entry = linkable
          long_url = dashboard_entry.permalink
        else
          roll = linkable
-         long_url = roll.subdomain_permalink ||
-                    roll.permalink
+         long_url = roll.permalink
        end
 
        d_copy = d_copy.join(",")

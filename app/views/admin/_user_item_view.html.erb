@@ -53,7 +53,7 @@
     </h1>
 		<% if user.public_roll %>
 	    <div class="user__info">
-	      <%= link_to "#{user.public_roll.subdomain}.shelby.tv", "http://#{user.public_roll.subdomain}.shelby.tv" %>
+	      <%= link_to "#{user.public_roll.permalink}", "#{user.public_roll.permalink}" %>
 	      <ul class="list user__stats">
 	        <li>
 	          videos in roll: <%= user.public_roll.frames.count %>
