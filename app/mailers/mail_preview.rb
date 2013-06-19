@@ -25,7 +25,7 @@ if Rails.env.development?
         user_to   = User.all.first
         user_from = User.all.last
         roll      = user_to.public_roll
-        video     = Video.all.first
+        video     = Video.all.last
         frame     = Factory.create(:frame, :roll => roll, :video => video, :creator => user_to)
 
         NotificationMailer.like_notification(user_to, frame, user_from)

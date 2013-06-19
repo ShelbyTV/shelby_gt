@@ -21,7 +21,7 @@
                             <table border="0" cellspacing="0" cellpadding="40">
                               <tr>
                                 <td>
-                                    <!-- BODY -->
+                                  <!-- BODY -->
                                     <center>
                                       <p>
                                         <a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>">
@@ -32,10 +32,7 @@
                                       <p>
                                         <a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>"><%= @user_from_name %></a> is now following you!
                                       </p>
-
-                                      <%= render :partial => "/objects/button", :locals => { :text => 'Scope it out', :url => '#'} %>
                                     </center>
-
                                   <!-- END BODY -->
                                 </td>
                               </tr>
