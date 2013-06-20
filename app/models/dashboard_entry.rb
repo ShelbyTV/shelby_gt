@@ -19,6 +19,11 @@ class DashboardEntry
   belongs_to :frame, :required => true
   key :frame_id, ObjectId, :abbr => :c
 
+  # if part of the contents of the entry or the action originated from some other
+  # frame, that frame is referenced here as src_frame
+  belongs_to :src_frame
+  key :src_frame_id, ObjectId, :abbr => :i
+
   # Has the user read this entry?
   key :read, Boolean, :abbr => :d
 
@@ -35,7 +40,8 @@ class DashboardEntry
     :re_roll => 8,
     :watch => 9,
     :comment => 10,
-    :prioritized_frame => 30
+    :prioritized_frame => 30,
+    :video_graph_recommendation => 31
   }.freeze
   key :action, Integer, :abbr => :e, :default => ENTRY_TYPE[:new_social_frame]
 
