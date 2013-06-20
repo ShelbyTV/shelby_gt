@@ -95,7 +95,7 @@ class NotificationMailer < ActionMailer::Base
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
       :to => @user_to.primary_email,
-      :subject => (Settings::Email.join_roll_notification['subject'] % { :users_name => @user_from_name, :roll_title => @roll_title })
+      :subject => (Settings::Email.join_roll_notification['subject'] % { :users_name => @user_from_name})
   end
 
   def upvote_notification(user_to, user_from, frame)

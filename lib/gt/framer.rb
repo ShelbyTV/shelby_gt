@@ -6,7 +6,7 @@
 module GT
   class Framer
 
-    # Creates a Frame with Conversation & associated DashboardEntries.  
+    # Creates a Frame with Conversation & associated DashboardEntries.
     #  If adding to a Roll, create DashboardEntries for all followers of Roll.
     #  If not adding to a Roll, create single DashboardEntry for the given dashboard owner.
     #
@@ -32,6 +32,7 @@ module GT
     # :order => Float --- OPTIONAL manual ordering for genius rolls
     # :genius => Bool --- OPTIONAL indicates if the frame is a genius frame; genius frames don't create conversations
     # :skip_dashboard_entries => Bool -- OPTIONAL set to true if you don't want any dashboard entries created
+    # :dashboard_entry_options => Hash -- OPTIONAL if dashboard entries are created, this will be passed as the options parameter
     #
     # --returns--
     #
@@ -46,6 +47,7 @@ module GT
       video_id = options.delete(:video_id)
       genius = options.delete(:genius)
       skip_dashboard_entries = options.delete(:skip_dashboard_entries)
+      dashboard_entry_options = options.delete(:dashboard_entry_options) || {}
       raise ArgumentError, "must include a :video or :video_id" unless video.is_a?(Video) or video_id.is_a?(BSON::ObjectId)
       raise ArgumentError, "must not supply both :video and :video_id" if (video and video_id)
       raise ArgumentError, "must supply an :action" unless DashboardEntry::ENTRY_TYPE.values.include?(action = options.delete(:action)) or skip_dashboard_entries
@@ -54,7 +56,7 @@ module GT
       raise ArgumentError, "must include a :roll or :dashboard_user_id" unless roll.is_a?(Roll) or dashboard_user_id.is_a?(BSON::ObjectId)
       message = options.delete(:message)
       raise ArgumentError, ":message must be a Message" if message and !message.is_a?(Message)
-      
+
       # Try to safely create conversation
       if genius
         convo = nil
@@ -73,46 +75,46 @@ module GT
           # unique key failure due to duplicate
           return false
         end
-      end     
- 
+      end
+
       res = { :frame => nil, :dashboard_entries => [] }
-      
+
       # Frame
       # There will always be exactly 1 new frame
       f = Frame.new
       f.creator = creator
       f.video = video if video
-      f.video_id = video_id if video_id 
+      f.video_id = video_id if video_id
       f.roll = roll if roll
       f.conversation = convo
       f.score = score
       f.order = order
 
       f.save
- 
+
       #track the original frame in the convo
       if convo
         convo.update_attribute(:frame_id, f.id)
       end
-      
+
       res[:frame] = f
-      
+
       unless skip_dashboard_entries
         # DashboardEntry
         # We need dashboard entries for the roll's followers or the given dashboard_user_id
         user_ids = []
         user_ids << dashboard_user_id if dashboard_user_id
         user_ids += roll.following_users_ids if roll
-      
-        res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids)
+
+        res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids, dashboard_entry_options)
       end
-      
+
       # Roll - set its thumbnail if missing, update content_updated_at
       ensure_roll_metadata!(roll, f) if roll
-      
+
       return res
     end
-    
+
     # Roll the given Frame for the User into the new Roll
     # orig_frame must be a Frame proper
     # for_user must be a User or the id of a user
@@ -130,25 +132,25 @@ module GT
 
       raise ArgumentError, "must supply roll or roll_id" unless to_roll
       roll_id = (to_roll.is_a?(Roll) ? to_roll.id : to_roll)
-      
+
       res = { :frame => nil, :dashboard_entries => [] }
 
       res[:frame] = basic_re_roll(orig_frame, user_id, roll_id)
-      
+
       unless skip_dashboard_entries
         #create dashboard entries for all roll followers *except* the user who just re-rolled
         res[:dashboard_entries] = create_dashboard_entries(res[:frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
       end
-      
+
       # Roll - set its thumbnail if missing
       ensure_roll_metadata!(Roll.find(roll_id), res[:frame])
-      
+
       return res
     end
-    
+
     def self.dupe_frame!(orig_frame, for_user, to_roll)
       raise ArgumentError, "must supply original Frame" unless orig_frame and orig_frame.is_a? Frame
-      
+
       raise ArgumentError, "must supply user or user_id" unless for_user
       user_id = (for_user.is_a?(User) ? for_user.id : for_user)
 
@@ -157,54 +159,54 @@ module GT
 
       return basic_dupe!(orig_frame, user_id, roll_id)
     end
-    
+
     def self.remove_dupe_of_frame_from_roll!(frame, roll)
       raise ArgumentError, "must supply Frame" unless frame.is_a? Frame
       raise ArgumentError, "must supply roll or roll_id" unless roll
       roll_id = (roll.is_a?(Roll) ? roll.id : roll)
-      
+
       # Is it overkill / does it hurt performance to check frame_ancestors?
       dupe = Frame.where(
-        :roll_id => roll_id, 
-        :video_id => frame.video_id, 
+        :roll_id => roll_id,
+        :video_id => frame.video_id,
         :conversation_id => frame.conversation_id,
         :frame_ancestors => (frame.frame_ancestors << frame.id)).first
-      
+
       dupe.destroy if dupe
     end
-    
+
     def self.backfill_dashboard_entries(user, roll, frame_count=5)
       raise ArgumentError, "must supply a User" unless user.is_a? User
       raise ArgumentError, "must supply a Roll" unless roll.is_a? Roll
       raise ArgumentError, "count must be >= 0" if frame_count < 0
-      
+
       res = []
       roll.frames.sort(:score.desc).limit(frame_count).all.reverse.each do |frame|
         res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user, :backdate => true)
       end
-      
+
       return res.flatten
     end
-    
+
     def self.create_dashboard_entry(frame, action, user, options={})
       raise ArgumentError, "must supply a Frame" unless frame.is_a? Frame
       raise ArgumentError, "must supply an action" unless action
       raise ArgumentError, "must supply a User" unless user.is_a? User
       self.create_dashboard_entries(frame, action, [user.id], options)
     end
-    
+
     private
-      
+
       def self.basic_dupe!(orig_frame, user_id, roll_id)
         # Dupe it
         new_frame = Frame.new
         new_frame.creator_id = orig_frame.creator_id
         new_frame.roll_id = roll_id
         new_frame.video_id = orig_frame.video_id
-        
+
         #copy convo
         new_frame.conversation_id = orig_frame.conversation_id
-        
+
         #copy voting
         new_frame.score = orig_frame.score
         new_frame.upvoters = orig_frame.upvoters.clone
@@ -215,10 +217,10 @@ module GT
         # *NOT* adding this as a frame_child of original as that only tracks re-rolls, not dupes
 
         new_frame.save
-        
+
         return new_frame
       end
-      
+
       def self.basic_re_roll(orig_frame, user_id, roll_id)
         # Set up the basics
         new_frame = Frame.new
@@ -242,7 +244,7 @@ module GT
 
         return new_frame
       end
-      
+
       def self.create_dashboard_entries(frame, action, user_ids, options={})
         entries = []
         user_ids.uniq.each do |user_id|
@@ -251,6 +253,7 @@ module GT
           dbe.user_id = user_id
           dbe.roll = frame.roll
           dbe.frame = frame
+          dbe.src_frame = options[:src_frame]
           dbe.video = frame.video
           dbe.actor = frame.creator
           dbe.action = action
@@ -259,23 +262,23 @@ module GT
         end
         return entries
       end
-      
+
       def self.ensure_roll_metadata!(roll, frame)
         if roll and frame
             # some useful denormalized metadata
             roll.update_attribute(:content_updated_at, Time.now)
-          
+
             if vid = frame.video
             # rolls need thumbnails (user.public_roll thumbnail is already set as their avatar)
             roll.update_attribute(:creator_thumbnail_url, vid.thumbnail_url) if roll.creator_thumbnail_url.blank?
-          
+
             # always try and update the rolls :first_frame_thumbnail_url, always.
             roll.update_attribute(:first_frame_thumbnail_url, vid.thumbnail_url)
           end
         end
       end
-    
+
   end
 end
-    
-    
+
+

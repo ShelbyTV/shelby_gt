@@ -19,6 +19,11 @@ class DashboardEntry
   belongs_to :frame, :required => true
   key :frame_id, ObjectId, :abbr => :c
 
+  # if part of the contents of the entry or the action originated from some other
+  # frame, that frame is referenced here as src_frame
+  belongs_to :src_frame, :class_name => 'Frame'
+  key :src_frame_id, ObjectId, :abbr => :i
+
   # Has the user read this entry?
   key :read, Boolean, :abbr => :d
 

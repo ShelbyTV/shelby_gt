@@ -7,10 +7,7 @@
             <!-- main -->
             <table border="0" cellspacing="0" cellpadding="0">
               <tbody>
-                <%=
-                  render  :partial => "/objects/summary_text",
-                          :locals => { :text => "Someone shared #{@new_frame_title}" }
-                %>
+                <%= render :partial => "/objects/summary_text", :locals => { :text => 'test' } %>
 
                 <%= render :partial => "/objects/header" %>
 
@@ -25,17 +22,31 @@
                               <tr>
                                 <td>
                                     <!-- BODY -->
-                                    <center>
-                                      <p style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;">
-                                        <a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>">
-                                          <img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;height: 45px;line-height: 1;outline: none;text-decoration: none;display: inline-block;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>"/>
-                                        </a>
-                                      </p>
 
-                                      <p style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;">
-                                        <a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>"><%= @user_from_name %></a> re-shared "<%= @new_frame_title %>"
-                                      </p>
-                                    </center>
+                                    <h1 style="margin-top:0;">
+                                      Sample Email Copy
+                                    </h1>
+
+                                    <p>
+                                      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Necessitatibus illo impedit nobis sint consectetur asperiores fugiat voluptates explicabo. Maxime, officia ab non dolor recusandae hic unde voluptatum molestiae quo fugiat.
+                                    </p>
+
+                                    <h2>
+                                      Subhead
+                                    </h2>
+
+                                    <h3>
+                                      Sub-subhead
+                                    </h3>
+
+                                    <p>
+                                      Some copy <strong>with styling</strong> and <em>like italics</em> or <u>underlines</u>.
+                                    </p>
+
+                                    <br/>
+
+                                    <%= render :partial => "/objects/button", :locals => { :text => 'Scope it out', :url => '#'} %>
+
                                     <!-- END BODY -->
                                 </td>
                               </tr>
