@@ -17,6 +17,16 @@ describe DashboardEntry do
       DashboardEntry.keys["user_id"].abbr.should == :a
     end
 
+    it "should be able to access the src_frame attribute" do
+      src_frame = Frame.new
+      @dashboard_entry.src_frame = src_frame
+      @dashboard_entry.save
+      @dashboard_entry.reload
+
+      @dashboard_entry.src_frame_id.should == src_frame.id
+      @dashboard_entry.src_frame.should == src_frame
+    end
+
   end
 
   context "permalinks" do
