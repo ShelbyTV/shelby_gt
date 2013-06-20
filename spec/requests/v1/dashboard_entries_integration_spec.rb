@@ -79,6 +79,30 @@ describe 'v1/dashboard' do
           parse_json(response.body)["result"][0]["frame"]["video"]["recs"][0]["recommended_video_id"].should eq(@rv.id.to_s)
         end
 
+        it "should not return the src_frame when there isn't one" do
+          get '/v1/dashboard'
+
+          response.body.should_not have_json_path("result/0/src_frame")
+        end
+
+        it "should return the src_frame sub-object when there is one" do
+          creator = Factory.create(:user)
+          src_frame = Factory.create(:frame, :creator => creator)
+          @d.src_frame = src_frame
+          @d.save
+
+          get '/v1/dashboard'
+
+          response.body.should have_json_path("result/0/src_frame")
+          response.body.should have_json_path("result/0/src_frame/id")
+          response.body.should have_json_path("result/0/src_frame/creator/id")
+          response.body.should have_json_path("result/0/src_frame/creator/nickname")
+
+          parse_json(response.body)["result"][0]["src_frame"]["id"].should eq(src_frame.id.to_s)
+          parse_json(response.body)["result"][0]["src_frame"]["creator"]["id"].should eq(creator.id.to_s)
+          parse_json(response.body)["result"][0]["src_frame"]["creator"]["nickname"].should eq(creator.nickname)
+        end
+
       end
 
       it "should return 200 if no entries exist" do
