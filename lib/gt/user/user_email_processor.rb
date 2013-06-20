@@ -37,18 +37,20 @@ module GT
           user = User.load(doc)
           # check if they are real users that we need to process
           if is_real?(user)
+
             # cycle through dashboard entries till a video is found with a recommendation
-            dbe_with_rec = scan_dashboard_entries_for_rec(user)
-            if dbe_with_rec
+            if dbe_with_rec = scan_dashboard_entries_for_rec(user)
+
               found += 1
+
               # TODO:
               # - clone dashboard entry with action type = 31
               # - use new dashboard entry to send email
-              #
+              # numSent += 1 if Notification::Weekly.send(user_id, dbe_id)
+
             else
               not_found += 1
             end
-            numSent += 1 #if Notification::Weekly.send(user)
           end
         end
       end
