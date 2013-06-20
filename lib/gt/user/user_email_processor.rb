@@ -5,19 +5,21 @@
 module GT
   class UserEmailProcessor
 
-    DBE_LIMIT = 30 # How far back we are allowing this to search for a dbe with a video with a rec
-    DBE_SKIP = 10
-    TEST_LIMIT = 2000 # FOR TESTING
+    def initialize(should_send_email=false)
+      @dbe_limit = 30 # How far back we are allowing this to search for a dbe with a video with a rec
+      @dbe_skip = 10
+      @user_limit = 2000 # FOR TESTING
 
-    def send_rec_email(limit=TEST_LIMIT)
+      @should_send_email = should_send_email
+    end
+
+    def process_and_send_rec_email(limit=@user_limit)
       # loop through cursor of all users, primary_email is indexed, use it to filter collection some.
       #  load them with following attributes: gt_enabled, user_type, primary_email, preferences
       puts "[GT::UserEmailProcessor] STARTING WEEKLY EMAIL NOTIFICATIONS PROCESS"
       numSent = 0
       found = 0
       not_found =0
-
-      @user_with_rec = []
 
       User.collection.find(
         {:$and => [
@@ -38,7 +40,6 @@ module GT
             # cycle through dashboard entries till a video is found with a recommendation
             dbe_with_rec = scan_dashboard_entries_for_rec(user)
             if dbe_with_rec
-              @user_with_rec << user
               found += 1
               # TODO:
               # - clone dashboard entry with action type = 31
@@ -51,6 +52,7 @@ module GT
           end
         end
       end
+      puts "[GT::UserEmailProcessor] SEND EMAIL: #{@should_send_email}"
       puts "[GT::UserEmailProcessor] FINISHED WEEKLY EMAIL NOTIFICATIONS PROCESS"
       puts "[GT::UserEmailProcessor] Rec Found: #{found}, Not found: #{not_found}"
       puts "[GT::UserEmailProcessor] #{numSent} emails sent"
@@ -70,7 +72,7 @@ module GT
       # loop through dashboard entries until we find one with a rec,
       # stop at a predefined limit so as not to go on forever
       dbe_count = 0
-      while (dbe_count < DBE_LIMIT)
+      while (dbe_count < @dbe_limit)
         DashboardEntry.collection.find(
           { :a => user.id },
           {
@@ -85,7 +87,7 @@ module GT
             @dbe_with_rec = dbe if video and video["r"] and !video["r"].empty?
           end
         end
-        dbe_count += DBE_SKIP
+        dbe_count += @dbe_skip
         # if we find a dbe with a recommendation, return it
         return @dbe_with_rec if @dbe_with_rec
       end
