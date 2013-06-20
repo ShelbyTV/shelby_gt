@@ -57,7 +57,7 @@ module GT
     end
 
     # only return real, gt_enabled (ag) users that are not service or faux user_type (ac)
-    def self.is_real?(user)
+    def is_real?(user)
       if (user["user_type"] == User::USER_TYPE[:real] || user["user_type"] == User::USER_TYPE[:converted]) && user["gt_enabled"]
         return true
       else
@@ -66,7 +66,7 @@ module GT
     end
 
     # cycle through dashboard entries till a video is found with a recommendation
-    def self.scan_dashboard_entries_for_rec(user)
+    def scan_dashboard_entries_for_rec(user)
       # loop through dashboard entries until we find one with a rec,
       # stop at a predefined limit so as not to go on forever
       dbe_count = 0
