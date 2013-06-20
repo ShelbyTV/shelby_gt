@@ -69,6 +69,11 @@ describe GT::UserEmailProcessor do
         end
 
       end
+
+      context "creating a new dashbaord entry from one with a rec" do
+
+      end
+
     end
 
   end

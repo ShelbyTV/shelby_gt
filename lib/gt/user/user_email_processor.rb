@@ -39,12 +39,14 @@ module GT
           if is_real?(user)
 
             # cycle through dashboard entries till a video is found with a recommendation
+            # NOTE: dbe_with_rec.class = DashboardEntry
             if dbe_with_rec = scan_dashboard_entries_for_rec(user)
 
               found += 1
 
               # TODO:
               # - clone dashboard entry with action type = 31
+              create_new_dashboard_entry(dbe_with_rec)
               # - use new dashboard entry to send email
               # numSent += 1 if Notification::Weekly.send(user_id, dbe_id)
 
@@ -95,6 +97,11 @@ module GT
       end
       # if we dont find a dbe with a rec after passing our limit on how far back to scan, just return nil
       return nil unless @dbe_with_rec
+    end
+
+    def create_new_dashboard_entry(dbe)
+      raise ArgumentError, "must supply valid dasboard entry record" unless dbe.is_a?(DashboardEntry)
+
     end
 
   end
