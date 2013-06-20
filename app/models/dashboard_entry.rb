@@ -35,7 +35,8 @@ class DashboardEntry
     :re_roll => 8,
     :watch => 9,
     :comment => 10,
-    :prioritized_frame => 30
+    :prioritized_frame => 30,
+    :video_graph_recommendation => 31
   }.freeze
   key :action, Integer, :abbr => :e, :default => ENTRY_TYPE[:new_social_frame]
 

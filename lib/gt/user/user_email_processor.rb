@@ -5,7 +5,7 @@
 module GT
   class UserEmailProcessor
 
-    DBE_LIMIT = 30 # Howfar back we are allowing this to search for a dbe with a video with a rec
+    DBE_LIMIT = 30 # How far back we are allowing this to search for a dbe with a video with a rec
     DBE_SKIP = 10
     TEST_LIMIT = 200 # FOR TESTING
 
@@ -33,7 +33,7 @@ module GT
           # check if they are real users that we need to process
           if real_user_check(user)
             # cycle through dashboard entries till a video is found with a recommendation
-            dbe_with_rec = scan_dasboard_entries_for_rec(user)
+            dbe_with_rec = scan_dashboard_entries_for_rec(user)
 
             #numSent += 1 if Notification::Weekly.send(user)
           else
@@ -63,9 +63,11 @@ module GT
     end
 
     # cycle through dashboard entries till a video is found with a recommendation
-    def scan_dasboard_entries_for_rec(user)
+    def scan_dashboard_entries_for_rec(user)
+      # loop through dashboard entries until we find one with a rec,
+      # stop at a predefined limit so as not to go on forever
       dbe_count = 0
-      until dbe_count == DBE_LIMIT
+      until (dbe_count == DBE_LIMIT) or !@dbe_with_rec.nil?
         DashboardEntry.collection.find(
           { :a => user["_id"] },
           {
@@ -74,16 +76,17 @@ module GT
           }
         ) do |cursor|
           cursor.each do |doc|
+            # get the video with only the rec key for each dbe
             video = Video.collection.find_one({ :_id => doc["g"] }, { :fields => ["r"] })
-            if video and video["r"] and !video["r"].empty?
-              puts "[GT::UserEmailProcessor] Found DBE with a video recommendation!"
-            end
+            @dbe_with_rec = doc if video and video["r"] and !video["r"].empty?
           end
         end
         dbe_count += DBE_SKIP
-        puts "[GT::UserEmailProcessor] dbe_count: #{dbe_count}"
+        # if we find a dbe with a recommendation, return it
+        return @dbe_with_rec if @dbe_with_rec
       end
-
+      # if we dont find a dbe with a rec after passing our limit on how far back to scan, just return nil
+      return nil unless @dbe_with_rec
     end
 
   end
