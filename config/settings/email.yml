@@ -1,6 +1,6 @@
 defaults: &defaults
   shelby_address: "110 E 23rd, 10th Floor, New York NY 10010"
-  shelby_logo: "http://api.shelby.tv/images/email_logo.png"
+  shelby_logo: "http://api.shelby.tv/images/logo@2x.png"
   shelby_tagline: "The perfect stream of videos built for you and powered by your friends."
   preferences_link: "http://shelby.tv/preferences"
   notifications_link: "http://shelby.tv/preferences/notifications"
@@ -8,6 +8,7 @@ defaults: &defaults
   #CSS UI Constants
   font_family: "'Helvetica Neue',Helvetica,sans-serif"
   font_size: "13px"
+  font_size_large: "18px"
   font_weight: "normal"
   ui_white: "#ffffff"
   ui_off_white: "#f4f4f4"
@@ -86,7 +87,7 @@ defaults: &defaults
 
 development:
   <<: *defaults
-  shelby_logo: "http://localhost.shelby.tv:4000/images/email_logo.png"
+  shelby_logo: "http://localhost.shelby.tv:4000/images/logo@2x.png"
 
 test:
   <<: *defaults
