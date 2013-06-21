@@ -602,6 +602,11 @@ describe 'v1/user' do
         @u1.reload.valid_password?(pass).should == true
       end
 
+      it "will return error if user id is not the current_user" do
+        put "/v1/user/A1/visit"
+        response.body.should be_json_eql(404).at_path("status")
+      end
+
       it "should increment user session count by 1" do
         lambda {
           put "/v1/user/#{@u1.id.to_s}/visit"
