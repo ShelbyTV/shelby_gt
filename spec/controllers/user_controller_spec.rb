@@ -157,6 +157,33 @@ describe V1::UserController do
     end
   end
 
+  describe "PUT log_session" do
+    it "must include a user id" do
+      sign_in @u1
+      put :log_session, :format => :json
+      assigns(:status).should eq(404)
+    end
+
+    it "will return error if user id is not the current_user" do
+      sign_in @u1
+      u2 = Factory.create(:user)
+      put :log_session, :id => u2.id.to_s, :format => :json
+    end
+
+    it "updates a users session count if logged in" do
+      sign_in @u1
+      s0 = @u1.session_count
+      put :log_session, :id => @u1.id.to_s, :format => :json
+      assigns(:status).should eq(200)
+      @u1.reload.session_count.should eq (s0+1)
+    end
+
+    it "returns 401 if a user is not logged in" do
+      put :log_session, :format => :json
+      assigns(:status).should eq(401)
+    end
+  end
+
   describe "GET signed_in" do
     it "returns 200 if signed in" do
       sign_in @u1

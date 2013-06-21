@@ -23,9 +23,11 @@ class V1::UserController < ApplicationController
   # Updates a users session count.
   # Returns 200 if successful
   #
-  # [GET] /v1/log_session
+  # [GET] /v1/user/:id/visit
   def log_session
-    if current_user.increment(:session_count => 1)
+    return render_error(404, "must include a user id") unless params[:id]
+    if User.find(params[:id]) == current_user
+      current_user.increment(:session_count => 1)
       @status = 200
     else
       render_error(404, "could not update the current users session")
