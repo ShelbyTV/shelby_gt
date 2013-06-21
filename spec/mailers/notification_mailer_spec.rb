@@ -92,7 +92,6 @@ describe NotificationMailer do
 
       it 'should have a link to the sending user' do
         @email.body.encoded.should have_tag(:a, :with => { :href => "#{Settings::Email.web_url_base}/#{@user_from.nickname}" })
-        @email.body.encoded.should_not match("Someone")
       end
     end
 
@@ -114,7 +113,7 @@ describe NotificationMailer do
       end
 
       it 'should not have a link to a sending user' do
-        @email.body.encoded.should_not have_tag(:a, :with => { :href => "#{Settings::Email.web_url_base}/user/#{@user_from.id}/personal_roll" })
+        @email.body.encoded.should_not have_tag(:a, :with => { :href => "#{Settings::Email.web_url_base}/#{@user_from.nickname}" })
       end
 
       it 'should contain the like message' do
