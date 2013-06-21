@@ -3,7 +3,7 @@
 
 <article class="user clearfix">
   <div class="user__image">
-    <%= image_tag(avatar_url_for_user(user), :size=>"50x50") unless ((user.user_image == "null") or user.user_image == nil)   %>
+    <%= image_tag(avatar_url_for_user(user), :size=>"50x50") if (user.user_image and (user.user_image != "null") )   %>
 
     <% if user.public_roll and user.public_roll.roll_type >= Roll::TYPES[:special_public_real_user] %>
       <div class="user__form">
