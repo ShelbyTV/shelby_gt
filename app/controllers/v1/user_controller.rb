@@ -23,7 +23,7 @@ class V1::UserController < ApplicationController
   # Updates a users session count.
   # Returns 200 if successful
   #
-  # [GET] /v1/user/:id/visit
+  # [PUT] /v1/user/:id/visit
   def log_session
     return render_error(404, "must include a user id") unless params[:id]
     if User.find(params[:id]) == current_user
