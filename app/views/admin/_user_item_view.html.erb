@@ -3,7 +3,7 @@
 
 <article class="user clearfix">
   <div class="user__image">
-    <% if false and !user.user_image.nil? and !user.user_image_original.nil? and ((user.user_image != "null") or (user.user_image_original != "") ) %>
+    <% if !user.user_image.nil? and !user.user_image_original.nil? and ((user.user_image != "null") or (user.user_image_original != "") ) %>
       <%= image_tag(avatar_url_for_user(user), :size=>"50x50")  %>
     <% end %>
 
@@ -67,6 +67,4 @@
 	    </div><!-- eo user__info -->
 		<% end %>
   </div><!-- eo user__body -->
-  <%= user.user_image.class %>
-  <%= user.user_image_original.class %>
 </article>
