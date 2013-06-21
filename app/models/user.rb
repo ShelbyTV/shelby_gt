@@ -147,6 +147,7 @@ class User
   key :reset_password_sent_at,Time,   :abbr => :ay
   # Trackable
   key :sign_in_count,         Integer, :default => 0
+  key :session_count,         Integer, :default => 0
   key :current_sign_in_at,    Time
   key :last_sign_in_at,       Time
   key :current_sign_in_ip,    String
