@@ -29,6 +29,8 @@ module ApplicationHelper
     if user.avatar?
       return user.shelby_avatar_url(avatar_size)
     else
+      user.user_image = user.user_image.empty? ? "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png" : user.user_image
+      user.user_image_original = user.user_image_original.empty? ? "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png" : user.user_image_original
       return user.user_image_original || user.user_image || "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png"
     end
   end
