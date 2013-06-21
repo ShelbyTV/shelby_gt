@@ -42,5 +42,20 @@ if Rails.env.development?
         NotificationMailer.join_roll_notification(user_to, user_from, roll)
       end
 
+      def weekly_recommendation
+        user      = User.first
+        frame     = Factory.create(:frame, :video => Video.first)
+
+        src_user  = Factory.create(:user)
+        src_frame = Factory.create(:frame, :creator => src_user)
+
+        db_entry  = Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame)
+
+        #permalinks ≠ state dependent,
+        #relative to user's stream
+
+        NotificationMailer.weekly_recommendation(user, db_entry)
+      end
+
   end
 end

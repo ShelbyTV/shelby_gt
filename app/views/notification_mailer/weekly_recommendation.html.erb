@@ -1,15 +1,69 @@
 <% standard_html_email_wrapper do %>
-  <!--  show message in email preview-->
-  <div style="font-size:0px;display:none;">
-    This is a test of the weekly recommendation system.  This is only a test.
-  </div>
-  <!-- end show message-->
+  <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="margin: 0;padding: 0;background-color: <%= Settings::Email.ui_off_white %>;height: 100%;width: 100%;font-family: <%= Settings::Email.font_family %>; color: <%= Settings::Email.ui_soft_black %>">
+    <tbody>
+      <tr height="0" valign="top">
+        <td>
+          <center>
+            <!-- main -->
+            <table border="0" cellspacing="0" cellpadding="0">
+              <tbody>
+                <%= render :partial => "/objects/summary_text", :locals => { :text => "We've discovered that people like #{@src_frame.creator.nickname} are sharing, liking, and watching this video."} %>
 
-  <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable" style="margin: 0;padding: 0;background-color: #FAFAFA;height: 100%;width: 100%;font-family:Arial,sans-serif;">
-    <tr>
-      <td align="center" valign="top" style="border-collapse: collapse;">
-        This is a test of the weekly recommendation system.  This is only a test.
-      </td>
-    </tr>
+                <%= render :partial => "/objects/header" %>
+
+                <tr>
+                  <td>
+                    <table border="0" cellpadding="0" cellspacing="0" height="300" width="100%">
+                      <tr>
+                        <td>&nbsp;</td>
+                        <td style="width: <%= Settings::Email.main_column %>; background-color: <%= Settings::Email.ui_white %>; border: 1px solid <%= Settings::Email.ui_inset %>; font-weight: <%= Settings::Email.font_weight %>; line-height: <%= Settings::Email.line_height %>;">
+                          <center>
+                            <table border="0" cellspacing="0" cellpadding="40">
+                              <tr>
+                                <td style="width: 400px;">
+                                    <!-- BODY -->
+
+                                    <h1 style="color: <%= Settings::Email.ui_green %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; margin-top:0; ">
+                                      Recommended for you:
+                                    </h1>
+
+                                    <p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;">
+                                      We've discovered that people like <%= @src_frame.creator.nickname %> are sharing, liking, and watching this video.
+                                    </p>
+
+                                    <h2 style="font-size: <%= Settings::Email.font_size %>; margin: 0 0 5px;">
+                                      <a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{@new_dbe.id.to_s}" %>" style="color: <%= Settings::Email.ui_black %>;text-decoration: none;">
+                                        <%= @new_frame.video.title %>
+                                      </a>
+                                    </h2>
+
+                                    <a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{@new_dbe.id.to_s}" %>">
+                                      <img src="<%= @new_frame.video.thumbnail_url %>" style="width: 100%;height: auto; border:2px solid <%= Settings::Email.ui_green %>;" />
+                                    </a>
+
+                                    <p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;">
+                                      If you haven't seen it, <a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{@new_dbe.id.to_s}" %>" style="color: <%= Settings::Email.ui_soft_black %>">watch it now</a>!
+                                    </p>
+
+                                    <!-- END BODY -->
+                                </td>
+                              </tr>
+                            </table>
+                          </center>
+                        </td>
+                        <td>&nbsp;</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <%= render :partial => "/objects/footer" %>
+              </tbody>
+            </table>
+            <!-- eo main -->
+          </center>
+        </td>
+      </tr>
+    </tbody>
   </table>
 <% end %>

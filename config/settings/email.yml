@@ -10,6 +10,7 @@ defaults: &defaults
   font_size: "13px"
   font_size_large: "18px"
   font_weight: "normal"
+  line_height: "1.4"
   ui_white: "#ffffff"
   ui_off_white: "#f4f4f4"
   ui_black: "#333333"
