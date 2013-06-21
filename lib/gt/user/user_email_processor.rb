@@ -20,9 +20,11 @@ module GT
       # loop through cursor of all users, primary_email is indexed, use it to filter collection some.
       #  load them with following attributes: gt_enabled, user_type, primary_email, preferences
       puts "[GT::UserEmailProcessor] STARTING WEEKLY EMAIL NOTIFICATIONS PROCESS"
+
       numSent = 0
       found = 0
       not_found =0
+      error_finding = 0
 
       User.collection.find(
         {:$and => [
@@ -50,8 +52,12 @@ module GT
               # create new dashboard entry with action type = 31 (if video graph rec) based on video
               new_dbe = create_new_dashboard_entry(dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
 
-              # use new dashboard entry to send email
-              # numSent += 1 if NotificationMailer.weekly_recommendation(user, new_dbe)
+              if new_dbe
+                # use new dashboard entry to send email
+                # numSent += 1 if NotificationMailer.weekly_recommendation(user, new_dbe)
+              else
+                error_finding += 1
+              end
 
             else
               not_found += 1
@@ -115,7 +121,12 @@ module GT
           :src_frame => dbe.frame
         }
       )
-      return new_dbe[:dashboard_entries].first if new_dbe[:dashboard_entries]
+
+      if new_dbe[:dashboard_entries] and !new_dbe[:dashboard_entries].empty?
+        return new_dbe[:dashboard_entries].first
+      else
+        return nil
+      end
 
     end
 
