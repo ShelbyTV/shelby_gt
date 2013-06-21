@@ -135,17 +135,14 @@ class NotificationMailer < ActionMailer::Base
       :subject => (Settings::Email.invite_accepted_notification['subject'] % { :users_name => @user_from_name })
   end
 
-  def weekly_recommendation(user_to, new_dbe)
+  def weekly_recommendation(user_to, dbe)
     sendgrid_category Settings::Email.weekly_recommendation["category"]
 
     # sendgrid_ganalytics_options(:utm_source => 'weekly-recommendation', :utm_medium => 'notification', :utm_campaign => "roll_#{roll.id.to_s}")
-    @new_frame = new_dbe.frame #video info only
-    @src_frame = new_dbe.src_frame #frame based on video recommendation. "we recommended this because X watched/shared/liked something similar"
+    @new_frame = dbe.frame #video info only
+    @src_frame = dbe.src_frame #frame based on video recommendation. "we recommended this because X watched/shared/liked something similar"
     @user_to   = user_to
-    @new_dbe   = new_dbe #dashboardEntry, shelby.tv/stream/:dbe_id
-
-    @permalink = 'permalink'
-
+    @new_dbe   = dbe #dashboardEntry, shelby.tv/stream/:dbe_id
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
          :to => user_to.primary_email,
