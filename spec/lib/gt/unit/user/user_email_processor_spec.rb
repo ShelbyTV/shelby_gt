@@ -71,6 +71,31 @@ describe GT::UserEmailProcessor do
       end
 
       context "creating a new dashbaord entry from one with a rec" do
+        before(:each) do
+          @email_processor = GT::UserEmailProcessor.new
+          v = Factory.create(:video)
+          v.recs << Factory.create(:recommendation, :recommended_video_id => v.id)
+          f = Factory.create(:frame, :video => v, :creator => @user )
+          @dbe = Factory.create(:dashboard_entry, :frame => f, :user => @user, :video_id => v.id)
+          @user.dashboard_entries << @dbe
+        end
+
+        it "should return argument error if a dbe is not given" do
+          lambda {
+            @email_processor.create_new_dashboard_entry(@user)
+          }.should raise_error(ArgumentError)
+        end
+
+        it "should create something that is a dbe " do
+          @email_processor.create_new_dashboard_entry(@dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]).class.should eql DashboardEntry
+        end
+
+        it "should have a video that is the video rec of the src frame" do
+          new_dbe = @email_processor.create_new_dashboard_entry(@dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+          frame = Frame.find(new_dbe.frame_id)
+          puts frame.inspect
+          frame.video_id.should eq @dbe.video.recs.first._id
+        end
 
       end
 

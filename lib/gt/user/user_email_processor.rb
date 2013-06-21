@@ -1,6 +1,9 @@
 # encoding: UTF-8
+require 'framer'
 
-# Looks up and returns user stats.
+##############
+# Cycles through users and finds a video to recommend
+#
 #
 module GT
   class UserEmailProcessor
@@ -44,11 +47,11 @@ module GT
 
               found += 1
 
-              # TODO:
-              # - clone dashboard entry with action type = 31
-              create_new_dashboard_entry(dbe_with_rec)
-              # - use new dashboard entry to send email
-              # numSent += 1 if Notification::Weekly.send(user_id, dbe_id)
+              # create new dashboard entry with action type = 31 (if video graph rec) based on video
+              new_dbe = create_new_dashboard_entry(dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+
+              # use new dashboard entry to send email
+              # numSent += 1 if NotificationMailer.weekly_recommendation(user, new_dbe)
 
             else
               not_found += 1
@@ -56,7 +59,7 @@ module GT
           end
         end
       end
-      puts "[GT::UserEmailProcessor] SEND EMAIL: #{@should_send_email}"
+      puts "[GT::UserEmailProcessor] SENDING EMAIL: #{@should_send_email}"
       puts "[GT::UserEmailProcessor] FINISHED WEEKLY EMAIL NOTIFICATIONS PROCESS"
       puts "[GT::UserEmailProcessor] Rec Found: #{found}, Not found: #{not_found}"
       puts "[GT::UserEmailProcessor] #{numSent} emails sent"
@@ -99,8 +102,20 @@ module GT
       return nil unless @dbe_with_rec
     end
 
-    def create_new_dashboard_entry(dbe)
+    def create_new_dashboard_entry(dbe, action)
       raise ArgumentError, "must supply valid dasboard entry record" unless dbe.is_a?(DashboardEntry)
+
+      video_rec_id = dbe.video.recs.first._id
+
+      new_dbe = GT::Framer.create_frame(
+        :video_id => video_rec_id,
+        :dashboard_user_id => dbe.user_id,
+        :action => action,
+        :dashboard_entry_options => {
+          :src_frame => dbe.frame
+        }
+      )
+      return new_dbe[:dashboard_entries].first if new_dbe[:dashboard_entries]
 
     end
 
