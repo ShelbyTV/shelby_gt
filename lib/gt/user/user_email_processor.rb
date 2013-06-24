@@ -58,9 +58,9 @@ module GT
               # create new dashboard entry with action type = 31 (if video graph rec) based on video
               new_dbe = create_new_dashboard_entry(dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
 
-              if new_dbe and @should_send_email
+              if new_dbe
                 # use new dashboard entry to send email
-                numSent += 1 if NotificationMailer.weekly_recommendation(user, new_dbe).deliver
+                numSent += 1 if @should_send_email and NotificationMailer.weekly_recommendation(user, new_dbe).deliver
               else
                 error_finding += 1
               end
