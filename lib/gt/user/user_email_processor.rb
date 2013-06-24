@@ -9,7 +9,7 @@ module GT
   class UserEmailProcessor
 
     def initialize(should_send_email=false)
-      @dbe_limit = 30 # How far back we are allowing this to search for a dbe with a video with a rec
+      @dbe_limit = 60 # How far back we are allowing this to search for a dbe with a video with a rec
       @dbe_skip = 10
       @user_limit = 2000 # FOR TESTING
 
@@ -115,7 +115,7 @@ module GT
     def create_new_dashboard_entry(dbe, action)
       raise ArgumentError, "must supply valid dasboard entry record" unless dbe.is_a?(DashboardEntry)
 
-      video_rec_id = dbe.video.recs.first._id
+      video_rec_id = dbe.video.recs.first.recommended_video_id
 
       new_dbe = GT::Framer.create_frame(
         :video_id => video_rec_id,
