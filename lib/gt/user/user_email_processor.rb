@@ -58,7 +58,7 @@ module GT
 
               if new_dbe
                 # use new dashboard entry to send email
-                # numSent += 1 if NotificationMailer.weekly_recommendation(user, new_dbe)
+                numSent += 1 if NotificationMailer.weekly_recommendation(user, new_dbe)
               else
                 error_finding += 1
               end
