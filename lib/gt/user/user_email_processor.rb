@@ -104,15 +104,15 @@ module GT
             next if dbe['action'] == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
             # get the video with only the rec key for each dbe
             video = Video.collection.find_one({ :_id => dbe["video_id"] }, { :fields => ["r"] })
-            @dbe_with_rec = dbe if video and video["r"] and !video["r"].empty?
+            dbe_with_rec = dbe if video and video["r"] and !video["r"].empty?
+            # if we find a dbe with a recommendation, return it
+            return dbe_with_rec if dbe_with_rec
           end
         end
         dbe_count += @dbe_skip
-        # if we find a dbe with a recommendation, return it
-        return @dbe_with_rec if @dbe_with_rec
       end
       # if we dont find a dbe with a rec after passing our limit on how far back to scan, just return nil
-      return nil unless @dbe_with_rec
+      return nil
     end
 
     def create_new_dashboard_entry(dbe, action)
