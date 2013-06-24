@@ -31,13 +31,8 @@ module GT
           {:primary_email => {:$ne => ""}},
           {:primary_email => {:$ne => nil}},
           {"preferences.email_updates" => true},
-          {:$or => [
-            {:nickname => 'henry'},
-            {:nickname => 'matyus'},
-            {:nickname => 'iceberg901'},
-            {:nickname => 'curiousgeorge'}
-            ]}
-        ]},
+          {:nickname => {:$in => [ 'henry', 'matyus', 'iceberg901', 'chris', 'vondoom']}},
+          ]},
         {
           :timeout => false,
           :fields => ["ag", "ac", "primary_email", "preferences", "nickname"],
