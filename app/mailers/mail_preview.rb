@@ -46,7 +46,7 @@ if Rails.env.development?
         user      = User.first
         frame     = Factory.create(:frame, :video => Video.first)
 
-        src_user  = Factory.create(:user)
+        src_user  = User.last #Factory.create(:user)
         src_frame = Factory.create(:frame, :creator => src_user)
 
         db_entry  = Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame)

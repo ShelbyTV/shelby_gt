@@ -30,7 +30,11 @@ module GT
         {:$and => [
           {:primary_email => {:$ne => ""}},
           {:primary_email => {:$ne => nil}},
-          {"preferences.email_updates" => true}
+          {"preferences.email_updates" => true},
+          {:$or => [
+            {:nickname => 'henry'},
+            {:nickname => 'matyus'}
+            ]}
         ]},
         {
           :timeout => false,
@@ -67,7 +71,7 @@ module GT
       end
       puts "[GT::UserEmailProcessor] SENDING EMAIL: #{@should_send_email}"
       puts "[GT::UserEmailProcessor] FINISHED WEEKLY EMAIL NOTIFICATIONS PROCESS"
-      puts "[GT::UserEmailProcessor] Rec Found: #{found}, Not found: #{not_found}"
+      puts "[GT::UserEmailProcessor] Rec Found: #{found}, Not found: #{not_found}, Error: #{error_finding}"
       puts "[GT::UserEmailProcessor] #{numSent} emails sent"
     end
 
