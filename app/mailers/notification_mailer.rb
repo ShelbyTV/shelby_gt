@@ -138,7 +138,8 @@ class NotificationMailer < ActionMailer::Base
   def weekly_recommendation(user_to, dbe)
     sendgrid_category Settings::Email.weekly_recommendation["category"]
 
-    # sendgrid_ganalytics_options(:utm_source => 'weekly-recommendation', :utm_medium => 'notification', :utm_campaign => "roll_#{roll.id.to_s}")
+    sendgrid_ganalytics_options(:utm_source => "#{user_to.nickname}", :utm_medium => 'notification', :utm_campaign => "weekly-recommendation")
+
     @new_frame = dbe.frame #video info only
     @src_frame = dbe.src_frame #frame based on video recommendation. "we recommended this because X watched/shared/liked something similar"
     @user_to   = user_to

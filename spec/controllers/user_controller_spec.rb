@@ -157,6 +157,21 @@ describe V1::UserController do
     end
   end
 
+  describe "PUT log_session" do
+    it "updates a users session count if logged in" do
+      sign_in @u1
+      s0 = @u1.session_count
+      put :log_session, :id => @u1.id.to_s, :format => :json
+      assigns(:status).should eq(200)
+      @u1.reload.session_count.should eq (s0+1)
+    end
+
+    it "returns 401 if a user is not logged in" do
+      put :log_session, :id=> '1', :format => :json
+      assigns(:status).should eq(401)
+    end
+  end
+
   describe "GET signed_in" do
     it "returns 200 if signed in" do
       sign_in @u1

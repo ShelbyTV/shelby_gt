@@ -404,6 +404,40 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
                           &printJsonConversation);
 }
 
+void printJsonSourceFrameCreator(sobContext sob, mrjsonContext context, bson *sourceFrameCreator)
+{
+   static sobField sourceFrameCreatorAttributes[] = {
+      SOB_USER_ID,
+      SOB_USER_NICKNAME
+   };
+
+   sobPrintAttributes(context,
+                      sourceFrameCreator,
+                      sourceFrameCreatorAttributes,
+                      sizeof(sourceFrameCreatorAttributes) / sizeof(sobField));
+}
+
+void printJsonSourceFrame(sobContext sob, mrjsonContext context, bson *sourceFrame)
+{
+   static sobField sourceFrameAttributes[] = {
+      SOB_FRAME_ID,
+      SOB_FRAME_CREATOR_ID
+   };
+
+   sobPrintAttributes(context,
+                      sourceFrame,
+                      sourceFrameAttributes,
+                      sizeof(sourceFrameAttributes) / sizeof(sobField));
+
+   sobPrintSubobjectByOid(sob,
+                          context,
+                          sourceFrame,
+                          SOB_FRAME_CREATOR_ID,
+                          SOB_USER,
+                          "creator",
+                          &printJsonSourceFrameCreator);
+}
+
 void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntry)
 {
    static sobField dashboardEntryAttributes[] = {
@@ -426,6 +460,22 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
                           SOB_FRAME,
                           "frame",
                           &printJsonFrame);
+
+   // include the src_frame attribute, only if the entry has a source frame
+   bson_oid_t sourceFrameOid;
+   int hasSourceFrame = sobBsonOidField(SOB_DASHBOARD_ENTRY,
+                                        SOB_DASHBOARD_ENTRY_SRC_FRAME_ID,
+                                        dbEntry,
+                                        &sourceFrameOid);
+   if (hasSourceFrame) {
+      sobPrintSubobjectByOid(sob,
+                             context,
+                             dbEntry,
+                             SOB_DASHBOARD_ENTRY_SRC_FRAME_ID,
+                             SOB_FRAME,
+                             "src_frame",
+                             &printJsonSourceFrame);
+   }
 }
 
 void printJsonOutput(sobContext sob)
@@ -466,6 +516,7 @@ int loadData(sobContext sob)
 {
    bson_oid_t userOid;
    cvector frameOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector srcFrameOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector rollOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector userOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector videoOids = cvectorAlloc(sizeof(bson_oid_t));
@@ -495,6 +546,14 @@ int loadData(sobContext sob)
                                   frameOids);
 
    sobLoadAllById(sob, SOB_FRAME, frameOids);
+
+   // and all source frames referenced by the dashboard entries
+   sobGetOidVectorFromObjectField(sob,
+                                  SOB_DASHBOARD_ENTRY,
+                                  SOB_DASHBOARD_ENTRY_SRC_FRAME_ID,
+                                  srcFrameOids);
+
+   sobLoadAllById(sob, SOB_FRAME, srcFrameOids);
 
    // and frames have references to everything else, so we load it all up...
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_ROLL_ID, rollOids);

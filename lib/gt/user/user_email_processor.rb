@@ -9,7 +9,7 @@ module GT
   class UserEmailProcessor
 
     def initialize(should_send_email=false)
-      @dbe_limit = 30 # How far back we are allowing this to search for a dbe with a video with a rec
+      @dbe_limit = 60 # How far back we are allowing this to search for a dbe with a video with a rec
       @dbe_skip = 10
       @user_limit = 2000 # FOR TESTING
 
@@ -58,7 +58,7 @@ module GT
 
               if new_dbe
                 # use new dashboard entry to send email
-                # numSent += 1 if NotificationMailer.weekly_recommendation(user, new_dbe)
+                numSent += 1 if NotificationMailer.weekly_recommendation(user, new_dbe).deliver
               else
                 error_finding += 1
               end
@@ -99,6 +99,7 @@ module GT
         ) do |cursor|
           cursor.each do |doc|
             dbe = DashboardEntry.load(doc)
+            next if dbe['action'] == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
             # get the video with only the rec key for each dbe
             video = Video.collection.find_one({ :_id => dbe["video_id"] }, { :fields => ["r"] })
             @dbe_with_rec = dbe if video and video["r"] and !video["r"].empty?
@@ -115,7 +116,7 @@ module GT
     def create_new_dashboard_entry(dbe, action)
       raise ArgumentError, "must supply valid dasboard entry record" unless dbe.is_a?(DashboardEntry)
 
-      video_rec_id = dbe.video.recs.first._id
+      video_rec_id = dbe.video.recs.first.recommended_video_id
 
       new_dbe = GT::Framer.create_frame(
         :video_id => video_rec_id,

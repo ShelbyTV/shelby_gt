@@ -1,13 +1,13 @@
 module APIClients
   class GoogleAnalyticsClient
 
-   def self.track_event(category, action, label)
+   def self.track_event(category, action, label, value=nil)
 
      return if !["production", "test"].include?(Rails.env)
 
      init_ga
 
-     @gabba_client.event(category, action, label)
+     @gabba_client.event(category, action, label, value)
    end
 
    private

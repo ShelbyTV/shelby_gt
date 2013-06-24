@@ -63,6 +63,7 @@ ShelbyGt::Application.routes.draw do
       get 'dashboard' => 'dashboard_entries_metal#index_for_user'
       get 'stats' => 'user#stats', :as => :stats, :on => :member
       post 'dashboard_entry' => 'user#add_dashboard_entry', :on => :member
+      put 'visit' => 'user#log_session', :on => :member
     end
     resources :roll, :only => [:index, :show, :create, :update, :destroy] do
       get 'frames' => 'frame_metal#index'
@@ -133,6 +134,7 @@ ShelbyGt::Application.routes.draw do
     # user
     get 'PUT/user/:id' => 'user#update'
     get 'POST/user' => 'user#create'
+    get 'PUT/user/:id/visit' => 'user#log_session'
       # user password reset is done outside of /v1
     # roll
     get 'POST/roll/:roll_id/share' => 'roll#share'

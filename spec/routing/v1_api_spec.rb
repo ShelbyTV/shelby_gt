@@ -64,6 +64,15 @@ describe V1::UserController do
       )
     end
 
+    it "route for incrementing session count PUT" do
+      { :put => "/v1/user/1/visit" }.should route_to(
+        :controller => "v1/user",
+        :action => "log_session",
+        :format => "json",
+        :id => "1"
+      )
+    end
+
     it "routes for GET users rolls following" do
       { :get => "/v1/user/1/rolls/following" }.should route_to(
         :controller => "v1/user_metal",

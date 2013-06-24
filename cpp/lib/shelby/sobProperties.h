@@ -137,13 +137,14 @@
    apply(VIDEO , like_count          , LIKE_COUNT          , INT       , v   )
 
 #define DASHBOARD_ENTRY_PROPERTIES(apply)                     \
-   apply(DASHBOARD_ENTRY , id       , ID       , OID  , _id ) \
-   apply(DASHBOARD_ENTRY , user_id  , USER_ID  , OID  , a   ) \
-   apply(DASHBOARD_ENTRY , roll_id  , ROLL_ID  , OID  , b   ) \
-   apply(DASHBOARD_ENTRY , frame_id , FRAME_ID , OID  , c   ) \
-   apply(DASHBOARD_ENTRY , read     , READ     , BOOL , d   ) \
-   apply(DASHBOARD_ENTRY , action   , ACTION   , INT  , e   ) \
-   apply(DASHBOARD_ENTRY , actor_id , ACTOR_ID , OID  , f   )
+   apply(DASHBOARD_ENTRY , id           , ID           , OID  , _id ) \
+   apply(DASHBOARD_ENTRY , user_id      , USER_ID      , OID  , a   ) \
+   apply(DASHBOARD_ENTRY , roll_id      , ROLL_ID      , OID  , b   ) \
+   apply(DASHBOARD_ENTRY , frame_id     , FRAME_ID     , OID  , c   ) \
+   apply(DASHBOARD_ENTRY , src_frame_id , SRC_FRAME_ID , OID  , i   ) \
+   apply(DASHBOARD_ENTRY , read         , READ         , BOOL , d   ) \
+   apply(DASHBOARD_ENTRY , action       , ACTION       , INT  , e   ) \
+   apply(DASHBOARD_ENTRY , actor_id     , ACTOR_ID     , OID  , f   )
 
 #define MESSAGE_PROPERTIES(apply)                                                    \
    apply(MESSAGE , id                     , ID                      , OID    , _id ) \
