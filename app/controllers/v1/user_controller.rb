@@ -1,5 +1,6 @@
 # encoding: UTF-8
 require 'user_stats_manager'
+require 'event_tracking'
 require "framer"
 
 class V1::UserController < ApplicationController
@@ -28,6 +29,7 @@ class V1::UserController < ApplicationController
     return render_error(404, "must include a user id") unless params[:id]
     if User.find(params[:id]) == current_user
       current_user.increment(:session_count => 1)
+      ShelbyGT_EM.next_tick { StatsManager::GoogleAnalytics.track_nth_session(current_user, 3) }
       @status = 200
     else
       render_error(404, "could not update the current users session")
