@@ -10,6 +10,7 @@ defaults: &defaults
   font_size: "13px"
   font_size_large: "18px"
   font_weight: "normal"
+  line_height: "1.4"
   ui_white: "#ffffff"
   ui_off_white: "#f4f4f4"
   ui_black: "#333333"
@@ -83,6 +84,11 @@ defaults: &defaults
   weekly_curator_stats:
     category: "Weekly Curator Stats"
     subject: "%{curators_name}, check out your Shelby stats"
+  weekly_recommendation:
+    category: "Weekly Recommendations"
+  postfix:
+    server_address: "localhost"
+    server_domain: "localhost.localdomain"
 
 
 development:
