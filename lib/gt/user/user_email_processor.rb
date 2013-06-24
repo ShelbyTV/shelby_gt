@@ -33,7 +33,9 @@ module GT
           {"preferences.email_updates" => true},
           {:$or => [
             {:nickname => 'henry'},
-            {:nickname => 'matyus'}
+            {:nickname => 'matyus'},
+            {:nickname => 'iceberg901'},
+            {:nickname => 'curiousgeorge'}
             ]}
         ]},
         {
