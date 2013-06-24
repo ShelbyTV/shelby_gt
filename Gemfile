@@ -214,3 +214,5 @@ end
 # ---------- SEO
 #
 gem "sitemap_generator", "~> 3.2.1"
+
+gem "therubyracer", :require => 'v8'
