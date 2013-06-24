@@ -93,7 +93,6 @@ describe GT::UserEmailProcessor do
         it "should have a video that is the video rec of the src frame" do
           new_dbe = @email_processor.create_new_dashboard_entry(@dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
           frame = Frame.find(new_dbe.frame_id)
-          puts frame.inspect
           frame.video_id.should eq @dbe.video.recs.first._id
         end
 
