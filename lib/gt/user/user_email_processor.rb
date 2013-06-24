@@ -58,7 +58,7 @@ module GT
 
               if new_dbe
                 # use new dashboard entry to send email
-                numSent += 1 if NotificationMailer.weekly_recommendation(user, new_dbe)
+                numSent += 1 if NotificationMailer.weekly_recommendation(user, new_dbe).deliver
               else
                 error_finding += 1
               end
@@ -99,6 +99,7 @@ module GT
         ) do |cursor|
           cursor.each do |doc|
             dbe = DashboardEntry.load(doc)
+            next if dbe['action'] == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
             # get the video with only the rec key for each dbe
             video = Video.collection.find_one({ :_id => dbe["video_id"] }, { :fields => ["r"] })
             @dbe_with_rec = dbe if video and video["r"] and !video["r"].empty?
