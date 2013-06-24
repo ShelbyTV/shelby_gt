@@ -80,9 +80,9 @@ describe GT::HashtagProcessor do
       @message.text = "#tEsting #test2 #notaCHANNEL one two"
       @conversation.messages << @message
 
-      @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'testing')
-      @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'test2')
-      @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'notachannel')
+      @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'testing', nil)
+      @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'test2', nil)
+      @ga_client.should_receive(:event).with('hashtag', 'rolled to', 'notachannel', nil)
 
       GT::HashtagProcessor.process_frame_message_hashtags_send_to_google_analytics(@frame)
     end
