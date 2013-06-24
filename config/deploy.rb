@@ -30,6 +30,6 @@ end
 #	Multistage Deploy via capistrano-ext
 #############################################################
 
-set :stages, %w(production arnold1 arnold2 arnold3 arnold4)
+set :stages, %w(production arnold1 arnold2 arnold3 arnold4 email)
 set :default_stage, 'production'
 require 'capistrano/ext/multistage'
