@@ -342,6 +342,7 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
                       frameAttributes,
                       sizeof(frameAttributes) / sizeof(sobField));
 
+   sobLog("Checking if frame has an originator frame");
    int status = sobBsonOidArrayFieldLast(SOB_FRAME,
                                          SOB_FRAME_FRAME_ANCESTORS,
                                          frame,
@@ -354,24 +355,32 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
                       originatorFrameOid,
                       &originatorFrame);
 
+      sobLog("Checking if originator frame has a creator");
       status = sobGetBsonByOidField(sob,
                                         SOB_USER,
                                         originatorFrame,
                                         SOB_ANCESTOR_FRAME_CREATOR_ID,
                                         &originator);
 
-      sobPrintAttributeWithKeyOverride(context,
-                                       originator,
-                                       SOB_USER_ID,
-                                       "originator_id");
+      if (status) {
+         sobLog("Printing frame originator_id field");
+         sobPrintAttributeWithKeyOverride(context,
+                                          originator,
+                                          SOB_USER_ID,
+                                          "originator_id");
 
-      sobPrintSubobjectByOid(sob,
-                             context,
-                             originatorFrame,
-                             SOB_ANCESTOR_FRAME_CREATOR_ID,
-                             SOB_USER,
-                             "originator",
-                             &printJsonOriginator);
+         sobLog("Printing frame originator field");
+         sobPrintSubobjectByOid(sob,
+                                context,
+                                originatorFrame,
+                                SOB_ANCESTOR_FRAME_CREATOR_ID,
+                                SOB_USER,
+                                "originator",
+                                &printJsonOriginator);
+      } else {
+         mrjsonNullAttribute(context, "originator_id");
+         mrjsonNullAttribute(context, "originator");
+      }
    } else {
       mrjsonNullAttribute(context, "originator_id");
       mrjsonNullAttribute(context, "originator");
