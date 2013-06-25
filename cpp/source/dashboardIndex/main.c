@@ -337,6 +337,8 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
    bson_oid_to_string(&frameOid, frameIdString);
    sobLog("Printing JSON for frame: %s", frameIdString);
 
+   sobLog("Printing frame standard fields");
+
    sobPrintAttributes(context,
                       frame,
                       frameAttributes,
