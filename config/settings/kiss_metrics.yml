@@ -12,6 +12,10 @@ defaults: &defaults
     hooks:
       email_invalid_address: 'Sent rolling email from invalid address'
       email_valid_address: 'Sent rolling email from valid address'
+    send_email:
+      weekly_rec_email: "Sent weekly recommendation email"
+    open_email:
+      weekly_rec_email: "Opened+weekly+recommendation+email"
 development:
   <<: *defaults
 

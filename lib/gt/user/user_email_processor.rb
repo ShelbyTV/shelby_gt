@@ -1,5 +1,6 @@
 # encoding: UTF-8
 require 'framer'
+require 'api_clients/kiss_metrics_client'
 
 ##############
 # Cycles through users and finds a video to recommend
@@ -80,6 +81,8 @@ module GT
               if new_dbe
                 # use new dashboard entry to send email
                 numSent += 1 if @should_send_email and NotificationMailer.weekly_recommendation(user, new_dbe).deliver
+                # track that email was sent
+                APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'])
               else
                 error_finding += 1
               end
