@@ -322,9 +322,20 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
       SOB_FRAME_UPVOTERS,
       SOB_FRAME_LIKE_COUNT
    };
+   bson_oid_t frameOid;
    bson_oid_t originatorFrameOid;
    bson *originatorFrame;
    bson *originator;
+
+   sobBsonOidField(SOB_FRAME,
+                   SOB_FRAME_ID,
+                   frame,
+                   &frameOid);
+
+   char frameIdString[25];
+
+   bson_oid_to_string(&frameOid, frameIdString);
+   sobLog("Printing JSON for frame: %s", frameIdString);
 
    sobPrintAttributes(context,
                       frame,
@@ -448,10 +459,26 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
       SOB_DASHBOARD_ENTRY_READ,
    };
 
+   bson_oid_t dbEntryOid;
+
+   sobBsonOidField(SOB_DASHBOARD_ENTRY,
+                   SOB_DASHBOARD_ENTRY_ID,
+                   dbEntry,
+                   &dbEntryOid);
+
+   char dbEntryIdString[25];
+
+   bson_oid_to_string(&dbEntryOid, dbEntryIdString);
+   sobLog("Printing JSON for dbEntry: %s", dbEntryIdString);
+
+   sobLog("Printing dashboard entry standard fields");
+
    sobPrintAttributes(context,
                       dbEntry,
                       dashboardEntryAttributes,
                       sizeof(dashboardEntryAttributes) / sizeof(sobField));
+
+   sobLog("Printing dashboard entry frame field");
 
    sobPrintSubobjectByOid(sob,
                           context,
@@ -462,12 +489,14 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
                           &printJsonFrame);
 
    // include the src_frame attribute, only if the entry has a source frame
+   sobLog("Checking if dashboard entry has src_frame");
    bson_oid_t sourceFrameOid;
    int hasSourceFrame = sobBsonOidField(SOB_DASHBOARD_ENTRY,
                                         SOB_DASHBOARD_ENTRY_SRC_FRAME_ID,
                                         dbEntry,
                                         &sourceFrameOid);
    if (hasSourceFrame) {
+      sobLog("Printing dashboard entry src_frame field");
       sobPrintSubobjectByOid(sob,
                              context,
                              dbEntry,
@@ -489,6 +518,9 @@ void printJsonOutput(sobContext sob)
    mrjsonContext context = mrjsonAllocContext(sobGetEnvironment(sob) != SOB_PRODUCTION);
    mrjsonStartResponse(context);
    mrjsonIntAttribute(context, "status", 200);
+
+   sobLog("Printing dashboard entries array");
+
    mrjsonStartArray(context, "result");
 
    for (unsigned int i = 0; i < cvectorCount(dashboardEntries); i++) {
