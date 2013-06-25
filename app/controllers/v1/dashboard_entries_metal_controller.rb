@@ -24,11 +24,30 @@ class V1::DashboardEntriesMetalController < MetalController
       sinceId = params[:since_id]
 
       if (sinceId)
-        fast_stdout = `cpp/bin/dashboardIndex -u #{current_user.downcase_nickname} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
+        cmd = "cpp/bin/dashboardIndex -u #{current_user.downcase_nickname} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}"
       else
-        fast_stdout = `cpp/bin/dashboardIndex -u #{current_user.downcase_nickname} -l #{limit} -s #{skip} -e #{Rails.env}`
+        cmd = "cpp/bin/dashboardIndex -u #{current_user.downcase_nickname} -l #{limit} -s #{skip} -e #{Rails.env}"
       end
-      fast_status = $?.to_i
+
+      fast_status = 0
+      fast_stdout = ''
+      log_text = ''
+      Open3.popen3 cmd do |stdin, stdout, stderr, wait_thr|
+        fast_stdout = stdout.read
+        log_text = stderr.read
+        fast_status = wait_thr.value.exitstatus
+      end
+
+      ShelbyGT_EM.next_tick {
+        # Append logging from the c executable to our log file, but don't
+        # make responding to the request wait on that
+        File.open("#{Settings::CExtensions.log_file}_#{Rails.env}.log","a") do |f|
+          f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] ---------RUBY SAYS: HANDLE v1/dashboard START---------"
+          f.puts log_text
+          f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] STATUS: #{fast_status == 0 ? 'SUCCESS' : 'ERROR'}"
+          f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] ---------RUBY SAYS: HANDLE v1/dashboard END-----------"
+        end
+      }
 
       if (fast_status == 0)
         renderMetalResponse(200, fast_stdout)
@@ -59,7 +78,7 @@ class V1::DashboardEntriesMetalController < MetalController
 
       skip = params[:skip] ? params[:skip] : 0
       sinceId = params[:since_id]
-      
+
       # user for "user channel" or current user if requested with proper id
       user = User.where(:id => params[:user_id], :public_dashboard => true).first
       if !user and current_user and current_user.id.to_s == params[:user_id]
@@ -68,11 +87,30 @@ class V1::DashboardEntriesMetalController < MetalController
 
       if user
         if (sinceId)
-          fast_stdout = `cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}`
+          cmd = "cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}"
         else
-          fast_stdout = `cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -e #{Rails.env}`
+          cmd = "cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -e #{Rails.env}"
         end
-        fast_status = $?.to_i
+
+        fast_status = 0
+        fast_stdout = ''
+        log_text = ''
+        Open3.popen3 cmd do |stdin, stdout, stderr, wait_thr|
+          fast_stdout = stdout.read
+          log_text = stderr.read
+          fast_status = wait_thr.value.exitstatus
+        end
+
+        ShelbyGT_EM.next_tick {
+          # Append logging from the c executable to our log file, but don't
+          # make responding to the request wait on that
+          File.open("#{Settings::CExtensions.log_file}_#{Rails.env}.log","a") do |f|
+            f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] ---------RUBY SAYS: HANDLE v1/user/#{params[:user_id]}/dashboard START---------"
+            f.puts log_text
+            f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] STATUS: #{fast_status == 0 ? 'SUCCESS' : 'ERROR'}"
+            f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] ---------RUBY SAYS: HANDLE v1/user/#{params[:user_id]}/dashboard END-----------"
+          end
+        }
 
         if (fast_status == 0)
           renderMetalResponse(200, fast_stdout)

@@ -382,6 +382,26 @@ describe 'v1/user' do
 
     end
 
+    describe "GET dashboard" do
+
+      context "when entries exist" do
+        before(:each) do
+          @v = Factory.create(:video)
+          @f = Factory.create(:frame, :creator_id => @u1.id, :video => @v)
+          @d = Factory.build(:dashboard_entry)
+          @d.user = @u1; @d.frame = @f
+          @d.save
+        end
+
+        it "should return dashboard entry on success" do
+          get '/v1/user/'+@u1.id+'/dashboard'
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          parse_json(response.body)["result"][0]["frame"]["id"].should eq(@f.id.to_s)
+        end
+      end
+    end
+
     describe "GET stats" do
       it "should return user stats on success" do
         roll = Factory.create(:roll, :creator => @u1)
