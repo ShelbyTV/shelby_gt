@@ -580,6 +580,8 @@ int loadData(sobContext sob)
 
 int main(int argc, char **argv)
 {
+   sobLog("------------------------C SAYS: HANDLE /dashboard START------------------------");
+
    gettimeofday(&beginTime, NULL);
 
    int status = 0;
@@ -590,12 +592,22 @@ int main(int argc, char **argv)
    sobEnvironment env = sobEnvironmentFromString(options.environment);
    sobContext sob = sobAllocContext(env);
 
+   sobLog("BEGIN Load data BEGIN");
+
    if (!loadData(sob)) {
       status = 2;
       goto cleanup;
    }
 
+   sobLog("END Load data END");
+
+   sobLog("BEGIN Print JSON output BEGIN");
+
    printJsonOutput(sob);
+
+   sobLog("END Print JSON output END");
+
+   sobLog("------------------------C SAYS: HANDLE /dashboard END--------------------------");
 
 cleanup:
    sobFreeContext(sob);
