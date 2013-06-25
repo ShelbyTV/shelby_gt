@@ -77,9 +77,10 @@ module Dev
 
       if user = User.find_by_nickname(nickname)
         user.ensure_authentication_token!
-        user.user_type = 3
+        user.user_type = User::USER_TYPE[:service]
+        user.public_roll.roll_type = Roll::TYPES[:special_public_upgraded]
         puts "[SUCCESS] #{user.nickname} updated to be a service user."
-        if user.save
+        if user.public_roll.save and user.save
           youtube_username = ask('Enter a youtube username: ') do |q|
             q.validate = lambda { |a| a.length > 0 }
             q.responses[:not_valid] = "You didn't enter a username. Try again please."
