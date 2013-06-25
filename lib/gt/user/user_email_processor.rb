@@ -38,6 +38,10 @@ module GT
             'vondoom',
             'reece',
             'spinosa',
+            'edon',
+            'frash',
+            'keren',
+            'tsvitannin',
             'kershite',
             'johnvehr',
             'sheynk',
@@ -47,7 +51,10 @@ module GT
             'blackopal',
             'iperry',
             'arthur',
-            'jacqueline'
+            'jacqueline',
+            'kunaltandon',
+            'imnotjk',
+            'emily'
             ]}},
           ]},
         {
