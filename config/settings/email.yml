@@ -86,6 +86,7 @@ defaults: &defaults
     subject: "%{curators_name}, check out your Shelby stats"
   weekly_recommendation:
     category: "Weekly Recommendations"
+    subject: "It's %{today}. It's hot. Check out this cool video."
   postfix:
     server_address: "localhost"
     server_domain: "localhost.localdomain"
