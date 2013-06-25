@@ -1,3 +1,5 @@
+require 'open3'
+
 class V1::DashboardEntriesMetalController < MetalController
   include AbstractController::Logger
   include AbstractController::Callbacks
