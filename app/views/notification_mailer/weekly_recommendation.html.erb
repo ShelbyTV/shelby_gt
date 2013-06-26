@@ -38,7 +38,7 @@
                                     </h2>
 
                                     <a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{@new_dbe.id.to_s}" %>">
-                                      <% video_description = @new_frame.video.description ? truncate(@new_frame.video.description, length: 130, separator: ' ') : @new_frame.video.title %>
+                                      <% video_description = truncate(@new_frame.video.description || @new_frame.video.title, length: 130, separator: ' ') %>
                                       <img src="<%= @new_frame.video.thumbnail_url %>" style="width: 100%;height: auto; border:2px solid <%= Settings::Email.ui_green %>;min-height:50px;" alt="<%= video_description %>" title="<%= video_description %>"/>
                                     </a>
 
