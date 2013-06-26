@@ -26,6 +26,7 @@ module GT
       found = 0
       not_found =0
       error_finding = 0
+      user_loaded = 0
 
       User.collection.find(
         {:$and => [
@@ -66,6 +67,9 @@ module GT
       ) do |cursor|
         cursor.each do |doc|
           user = User.load(doc)
+
+          user_loaded += 1
+
           # check if they are real users that we need to process
           if is_real?(user)
 
@@ -95,7 +99,7 @@ module GT
       end
       puts "[GT::UserEmailProcessor] SENDING EMAIL: #{@should_send_email}"
       puts "[GT::UserEmailProcessor] FINISHED WEEKLY EMAIL NOTIFICATIONS PROCESS"
-      puts "[GT::UserEmailProcessor] Rec Found: #{found}, Not found: #{not_found}, Error: #{error_finding}"
+      puts "[GT::UserEmailProcessor] Users Loaded: #{user_loaded}, Rec Found: #{found}, Not found: #{not_found}, Error: #{error_finding}"
       puts "[GT::UserEmailProcessor] #{numSent} emails sent"
     end
 
