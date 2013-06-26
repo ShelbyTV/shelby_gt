@@ -84,7 +84,7 @@ module GT
 
               if new_dbe
                 # use new dashboard entry to send email
-                numSent += 1 if @should_send_email and NotificationMailer.weekly_recommendation(user, new_dbe).deliver
+                numSent += 1 if @should_send_email and NotificationManager.send_weekly_recommendation(user, new_dbe)
                 # track that email was sent
                 APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'])
               else
