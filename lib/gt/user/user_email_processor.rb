@@ -162,10 +162,22 @@ module GT
     # Ensure that we aren't sending a video rec that a user has seen in the "recent" past
     def get_rec_from_video(user, recs)
       Rails.logger.info("[weekly email proc] get_rec_from_video - started")
+      frames = Frame.where(:roll_id => user.viewed_roll_id).fields(:id, :video_id).limit(1000)
       recs.each do |r|
-        v = Frame.where(:roll_id => user.viewed_roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}, :video_id=> r['recommended_video_id']).distinct(:b)
-        Rails.logger.info("[weekly email proc] get_rec_from_video - looking for frame with video")
-        return r["recommended_video_id"] if v.empty?
+        video_watched = false
+        frames.find_each.each do |f|
+          if r['recommended_video_id'] == f.video_id
+            video_watched = true
+            break
+          end
+        end
+
+        if !video_watched
+          return r['recommended_video_id']
+        else
+          next
+        end
+
       end
       return nil
     end
