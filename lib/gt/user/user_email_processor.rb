@@ -33,31 +33,7 @@ module GT
           {:primary_email => {:$ne => ""}},
           {:primary_email => {:$ne => nil}},
           {"preferences.email_updates" => true},
-          {:nickname => {:$in => [ 'henry',
-            # 'matyus',
-            # 'iceberg901',
-            # 'chris',
-            #'vondoom',
-            # 'reece',
-            # 'spinosa',
-            # 'edon',
-            # 'frash',
-            # 'keren',
-            # 'tsvi.tannin',
-            # 'kershite',
-            # 'johnvehr',
-            # 'sheynk',
-            # 'nfpagliaro',
-            # 'enelson1',
-            # 'dihard',
-            # 'blackopal',
-            # 'iperry',
-            # 'arthur',
-            # 'jacqueline',
-            # 'kunaltandon',
-            # 'imnotjk',
-            # 'emily'
-            ]}},
+          {:nickname => 'henry'}
           ]},
         {
           :timeout => false,
@@ -168,9 +144,7 @@ module GT
     def get_rec_from_video(user, recs)
       recs.each do |r|
         v = Frame.where(:roll_id => user.viewed_roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}, :video_id=> r['recommended_video_id']).distinct(:b)
-        if v.empty?
-          return r["recommended_video_id"]
-        end
+        return r["recommended_video_id"] if v.empty?
       end
       return nil
     end
