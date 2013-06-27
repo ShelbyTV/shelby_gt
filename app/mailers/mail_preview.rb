@@ -57,5 +57,14 @@ if Rails.env.development?
         NotificationMailer.weekly_recommendation(user, db_entry)
       end
 
+      def weekly_email_summary
+        stats = {
+          :users_scanned => 2013,
+          :sent_emails => 1999,
+          :errors => 1
+        }
+        AdminMailer.weekly_email_summary(stats)
+      end
+
   end
 end

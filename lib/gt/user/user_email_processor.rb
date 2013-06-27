@@ -77,6 +77,14 @@ module GT
       puts "[GT::UserEmailProcessor] FINISHED WEEKLY EMAIL NOTIFICATIONS PROCESS"
       puts "[GT::UserEmailProcessor] Users Loaded: #{user_loaded}, Rec Found: #{found}, Not found: #{not_found}, Error: #{error_finding}"
       puts "[GT::UserEmailProcessor] #{numSent} emails sent"
+
+      stats = {
+        :users_scanned => user_loaded,
+        :sent_emails => numSent,
+        :errors => error_finding
+      }
+
+      return stats
     end
 
     # only return real, gt_enabled (ag) users that are not service or faux user_type (ac)

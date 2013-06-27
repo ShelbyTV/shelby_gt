@@ -75,6 +75,10 @@ defaults: &defaults
     category: "Admin"
     subject: "[%{date}] %{new_users} New Users Yesterday"
     from: "Shelby GT <contact+gt@shelby.tv>"
+  weekly_email_summary:
+    category: "Admin"
+    subject: "%{sent_emails} / %{users_scanned} Weekly Email Sent!"
+    from: "Shelby GT <contact+gt@shelby.tv>"
   # Disucssion Rolls
   discussion_roll:
     category: "Discussion Roll Notifications"

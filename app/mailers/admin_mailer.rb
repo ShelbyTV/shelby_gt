@@ -1,7 +1,7 @@
 class AdminMailer < ActionMailer::Base
   include SendGrid
 
-  helper :mail
+  helper :mail, :application
 
   def new_user_summary(new_new_users, converted_new_users, new_gt_enabled_users)
     sendgrid_category Settings::Email.new_user_summary["category"]
@@ -15,6 +15,19 @@ class AdminMailer < ActionMailer::Base
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
       :to => "new_user_summary@shelby.tv",
       :subject => Settings::Email.new_user_summary['subject'] % { :new_users => @all_new_users.length, :date => Date.today.strftime("%m/%d/%Y") }
+  end
+
+  def weekly_email_summary(stats, time)
+    sendgrid_category Settings::Email.weekly_email_summary["category"]
+
+    @time = time
+    @users_scanned = stats[:users_scanned]
+    @sent_emails = stats[:sent_emails]
+    @errors = stats[:errors]
+
+    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
+      :to => "henry@shelby.tv",
+      :subject => Settings::Email.weekly_email_summary['subject'] % { :sent_emails => @sent_emails, :users_scanned => @users_scanned }
   end
 
 end
