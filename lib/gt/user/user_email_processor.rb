@@ -80,7 +80,7 @@ module GT
               found += 1
 
               # create new dashboard entry with action type = 31 (if video graph rec) based on video
-              new_dbe = create_new_dashboard_entry(dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+              new_dbe = create_new_dashboard_entry(user, dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
 
               if new_dbe
                 # use new dashboard entry to send email
@@ -141,26 +141,36 @@ module GT
       return nil
     end
 
-    def create_new_dashboard_entry(dbe, action)
+    def create_new_dashboard_entry(user, dbe, action)
       raise ArgumentError, "must supply valid dasboard entry record" unless dbe.is_a?(DashboardEntry)
 
-      video_rec_id = dbe.video.recs.first.recommended_video_id
-
-      new_dbe = GT::Framer.create_frame(
-        :video_id => video_rec_id,
-        :dashboard_user_id => dbe.user_id,
-        :action => action,
-        :dashboard_entry_options => {
-          :src_frame => dbe.frame
-        }
-      )
-
-      if new_dbe[:dashboard_entries] and !new_dbe[:dashboard_entries].empty?
-        return new_dbe[:dashboard_entries].first
+      if video_rec_id = get_rec_from_video(user, dbe.video.recs)
+        new_dbe = GT::Framer.create_frame(
+          :video_id => video_rec_id,
+          :dashboard_user_id => dbe.user_id,
+          :action => action,
+          :dashboard_entry_options => {
+            :src_frame => dbe.frame
+          }
+        )
+        if new_dbe[:dashboard_entries] and !new_dbe[:dashboard_entries].empty?
+          return new_dbe[:dashboard_entries].first
+        else
+          return nil
+        end
       else
         return nil
       end
 
+    end
+
+    # Ensure that we aren't sending a video rec that a user has seen in the "recent" past
+    def get_rec_from_video(user, recs)
+      recent_video_ids = Frame.where(:roll_id => user.viewed_roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}).distinct(:b)
+      recs.each do |r|
+        return r["recommended_video_id"] if !recent_video_ids.include?(r['recommended_video_id'])
+      end
+      return nil
     end
 
   end

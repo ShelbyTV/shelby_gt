@@ -9,6 +9,7 @@ describe GT::UserEmailProcessor do
 
   before(:each) do
     @user = Factory.create(:user)
+    @user.viewed_roll = Factory.create(:roll, :creator => @user)
   end
 
   context "send_rec_email" do
@@ -73,10 +74,10 @@ describe GT::UserEmailProcessor do
       context "creating a new dashbaord entry from one with a rec" do
         before(:each) do
           @email_processor = GT::UserEmailProcessor.new
-          v = Factory.create(:video)
-          v.recs << Factory.create(:recommendation, :recommended_video_id => v.id)
-          f = Factory.create(:frame, :video => v, :creator => @user )
-          @dbe = Factory.create(:dashboard_entry, :frame => f, :user => @user, :video_id => v.id)
+          @v = Factory.create(:video)
+          @v.recs << Factory.create(:recommendation, :recommended_video_id => @v.id)
+          @f = Factory.create(:frame, :video => @v, :creator => @user )
+          @dbe = Factory.create(:dashboard_entry, :frame => @f, :user => @user, :video_id => @v.id)
           @user.dashboard_entries << @dbe
         end
 
@@ -87,13 +88,29 @@ describe GT::UserEmailProcessor do
         end
 
         it "should create something that is a dbe " do
-          @email_processor.create_new_dashboard_entry(@dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]).class.should eql DashboardEntry
+          @email_processor.create_new_dashboard_entry(@user, @dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]).class.should eql DashboardEntry
         end
 
         it "should have a video that is the video rec of the src frame" do
-          new_dbe = @email_processor.create_new_dashboard_entry(@dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+          new_dbe = @email_processor.create_new_dashboard_entry(@user, @dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
           frame = Frame.find(new_dbe.frame_id)
           frame.video_id.should eq @dbe.video.recs.first.recommended_video_id
+        end
+
+        it "should not add video if user watched it already" do
+          dbe_with_rec = Factory.create(:dashboard_entry, :user => @user, :frame => @f, :video_id => @v.id)
+          @user.dashboard_entries << dbe_with_rec
+
+          v2 = Factory.create(:video)
+          v2.recs << Factory.create(:recommendation, :recommended_video_id => v2.id)
+          f2 = Factory.create(:frame, :video => v2, :creator => @user )
+          dbe2 = Factory.create(:dashboard_entry, :frame => f2, :user => @user, :video_id => v2.id)
+          @user.dashboard_entries << dbe2
+
+          dupe = GT::Framer.dupe_frame!(@f, @user.id, @user.viewed_roll_id)
+
+          new_dbe = @email_processor.create_new_dashboard_entry(@user, @dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+          new_dbe.should eq nil
         end
 
       end
