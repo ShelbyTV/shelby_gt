@@ -33,12 +33,12 @@ module GT
           {:primary_email => {:$ne => ""}},
           {:primary_email => {:$ne => nil}},
           {"preferences.email_updates" => true},
-          {:nickname => {:$in => [# 'henry',
+          {:nickname => {:$in => [ 'henry',
             # 'matyus',
             # 'iceberg901',
             # 'chris',
             #'vondoom',
-             'reece',
+            # 'reece',
             # 'spinosa',
             # 'edon',
             # 'frash',
@@ -166,9 +166,11 @@ module GT
 
     # Ensure that we aren't sending a video rec that a user has seen in the "recent" past
     def get_rec_from_video(user, recs)
-      recent_video_ids = Frame.where(:roll_id => user.viewed_roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}).distinct(:b)
       recs.each do |r|
-        return r["recommended_video_id"] if !recent_video_ids.include?(r['recommended_video_id'])
+        v = Frame.where(:roll_id => user.viewed_roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}, :video_id=> r['recommended_video_id']).distinct(:b)
+        if v.empty?
+          return r["recommended_video_id"]
+        end
       end
       return nil
     end
