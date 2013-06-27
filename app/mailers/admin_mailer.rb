@@ -26,7 +26,7 @@ class AdminMailer < ActionMailer::Base
     @errors = stats[:errors]
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
-      :to => "henry@shelby.tv",
+      :to => "weekly_email_summary@shelby.tv",
       :subject => Settings::Email.weekly_email_summary['subject'] % { :sent_emails => @sent_emails, :users_scanned => @users_scanned }
   end
 
