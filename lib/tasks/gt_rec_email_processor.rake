@@ -11,7 +11,8 @@ namespace :rec_email_processor do
       @stats = email_processor.process_and_send_rec_email()
     end
 
+    proc_time = (time.real / 60).round(2)
     # send email summary to developers
-    AdminMailer.weekly_email_summary(@stats, time.real).deliver
+    AdminMailer.weekly_email_summary(@stats, proc_time).deliver
   end
 end

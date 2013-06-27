@@ -24,7 +24,7 @@
                                     <!-- BODY -->
 
                                     <h1 style="color: <%= Settings::Email.ui_green %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; margin-top:0; ">
-                                      Summary of Email that was just sent:
+                                      Summary of email processing:
                                     </h1>
 
                                     <h2>Users Processed: <%= @users_scanned %></h2>
@@ -33,7 +33,7 @@
 
                                     <h2>Scanning Errors: <%= @errors %></h2>
 
-                                    <h3>Process took <%= @time %>s to run</h3>
+                                    <h3>Process took <%= @time %> min to run</h3>
 
                                     <!-- END BODY -->
                                 </td>
