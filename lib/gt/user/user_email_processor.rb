@@ -12,12 +12,11 @@ module GT
     def initialize(should_send_email=false)
       @dbe_limit = 60 # How far back we are allowing this to search for a dbe with a video with a rec
       @dbe_skip = 10
-      @user_limit = 10000 # FOR TESTING
 
       @should_send_email = should_send_email
     end
 
-    def process_and_send_rec_email(limit=@user_limit)
+    def process_and_send_rec_email()
       # loop through cursor of all users, primary_email is indexed, use it to filter collection some.
       #  load them with following attributes: gt_enabled, user_type, primary_email, preferences
       Rails.logger.info "[GT::UserEmailProcessor] STARTING WEEKLY EMAIL NOTIFICATIONS PROCESS"
@@ -36,8 +35,7 @@ module GT
           ]},
         {
           :timeout => false,
-          :fields => ["ag", "ac", "primary_email", "preferences", "nickname"],
-          :limit => limit
+          :fields => ["ag", "ac", "primary_email", "preferences", "nickname"]
         }
       ) do |cursor|
         cursor.each do |doc|
@@ -57,9 +55,9 @@ module GT
 
               if new_dbe
                 # use new dashboard entry to send email
-                numSent += 1 if @should_send_email and NotificationManager.send_weekly_recommendation(user, new_dbe)
+                numSent += 1 if @should_send_email #and NotificationManager.send_weekly_recommendation(user, new_dbe)
                 # track that email was sent
-                APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'])
+                #APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'])
               else
                 error_finding += 1
               end
