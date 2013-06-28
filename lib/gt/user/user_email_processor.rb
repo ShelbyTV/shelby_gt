@@ -32,19 +32,7 @@ module GT
         {:$and => [
           {:primary_email => {:$ne => ""}},
           {:primary_email => {:$ne => nil}},
-          {"preferences.email_updates" => true},
-          {:nickname => {:$in => [ 'henry',
-            'matyus',
-            'iceberg901',
-            'chris',
-            'vondoom',
-            'reece',
-            'spinosa',
-            'edon',
-            'frash',
-            'keren',
-            'tsvi.tannin'
-            ]}}
+          {"preferences.email_updates" => true}
           ]},
         {
           :timeout => false,
