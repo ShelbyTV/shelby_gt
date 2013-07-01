@@ -79,6 +79,10 @@ defaults: &defaults
     category: "Admin"
     subject: "%{sent_emails} / %{users_scanned} Weekly Email Sent!"
     from: "Shelby GT <contact+gt@shelby.tv>"
+  user_stats_report:
+    category: "Admin"
+    subject: "Todays User Count: %{total}"
+    from: "Shelby GT <contact+gt@shelby.tv>"
   # Disucssion Rolls
   discussion_roll:
     category: "Discussion Roll Notifications"
