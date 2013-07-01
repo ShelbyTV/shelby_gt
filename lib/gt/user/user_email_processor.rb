@@ -46,12 +46,17 @@ module GT
           # check if they are real users that we need to process
           if is_real?(user)
             # cycle through dashboard entries till a video is found with a recommendation
-            # NOTE: dbe_with_rec.class = DashboardEntry
+            # NOTE: dbe_with_rec.class = DashboardEntry || PrioritizedDashboardEntry
             if dbe_with_rec = scan_dashboard_entries_for_rec(user)
               found += 1
 
-              # create new dashboard entry with action type = 31 (if video graph rec) based on video
-              new_dbe = create_new_dashboard_entry(user, dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+              new_dbe = nil
+              if dbe_with_rec.is_a?(DashboardEntry)
+                # create new dashboard entry with action type = 31 (if video graph rec) based on video
+                new_dbe = create_new_dashboard_entry(user, dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+              elsif dbe_with_rec.is_a?(PrioritizedDashboardEntry)
+                new_dbe = create_new_dashboard_entry_from_prioritized
+              end
 
               if new_dbe
                 # use new dashboard entry to send email
@@ -91,33 +96,42 @@ module GT
       end
     end
 
-    # cycle through dashboard entries till a video is found with a recommendation
+    # look for recommendations in this order
+    # 1) a prioritized dashboard entry for the user, or fall back to
+    # 2) a regular dashboard entry with a video with a recommendation
     def scan_dashboard_entries_for_rec(user)
-      # loop through dashboard entries until we find one with a rec,
-      # stop at a predefined limit so as not to go on forever
-      dbe_count = 0
-      while (dbe_count < @dbe_limit)
-        DashboardEntry.collection.find(
-          { :a => user.id },
-          {
-            :limit => 10,
-            :skip => dbe_count
-          }
-        ) do |cursor|
-          cursor.each do |doc|
-            dbe = DashboardEntry.load(doc)
-            next if dbe['action'] == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-            # get the video with only the rec key for each dbe
-            video = Video.collection.find_one({ :_id => dbe["video_id"] }, { :fields => ["r"] })
-            dbe_with_rec = dbe if video and video["r"] and !video["r"].empty?
-            # if we find a dbe with a recommendation, return it
-            return dbe_with_rec if dbe_with_rec
+      if pdbe = PrioritizedDashboardEntry.for_user_id(user.id).ranked.possibly_not_watched.limit(1).first
+        # if there's an unwatched prioritized dashboard entry for the user, use that as the recommendation
+        return pdbe
+      else
+        # if there's no prioritized dashboard entry
+        # loop through dashboard entries until we find one with a rec,
+        # stop at a predefined limit so as not to go on forever
+        dbe_count = 0
+        while (dbe_count < @dbe_limit)
+          DashboardEntry.collection.find(
+            { :a => user.id },
+            {
+              :limit => 10,
+              :skip => dbe_count
+            }
+          ) do |cursor|
+            cursor.each do |doc|
+              dbe = DashboardEntry.load(doc)
+              next if dbe['action'] == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+              # get the video with only the rec key for each dbe
+              video = Video.collection.find_one({ :_id => dbe["video_id"] }, { :fields => ["r"] })
+              dbe_with_rec = dbe if video and video["r"] and !video["r"].empty?
+              # if we find a dbe with a recommendation, return it
+              return dbe_with_rec if dbe_with_rec
+            end
           end
+          dbe_count += @dbe_skip
         end
-        dbe_count += @dbe_skip
+        # if we dont find a dbe with a rec after passing our limit on how far back to scan, just return nil
+        return nil
       end
-      # if we dont find a dbe with a rec after passing our limit on how far back to scan, just return nil
-      return nil
+
     end
 
     def create_new_dashboard_entry(user, dbe, action)
@@ -140,6 +154,10 @@ module GT
       else
         return nil
       end
+
+    end
+
+    def create_new_dasboard_entry_from_prioritized(user, pdbe)
 
     end
 
