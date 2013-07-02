@@ -114,8 +114,7 @@ module GT
       watched_video_ids = nil
       # if there's a prioritized dashboard entry not watched recently by the user, use that as the recommendation
       cursor = PrioritizedDashboardEntry.for_user_id(user.id).ranked.limit(@pdbe_limit).find_each
-      while (doc = cursor.next)
-        pdbe = PrioritizedDashboardEntry.load(doc)
+      while (pdbe = cursor.next)
         # once we know that we need to check something against the user's recently watched videos,
         # load them only once
         if !watched_video_ids
