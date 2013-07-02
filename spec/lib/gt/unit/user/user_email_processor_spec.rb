@@ -122,6 +122,13 @@ describe GT::UserEmailProcessor do
         end
 
         context "dashboard entry scanning for prioritized dashboard entry recs" do
+          before(:each) do
+            @viewed_roll = Factory.create(:roll)
+            @viewed_video = Factory.create(:video)
+            @viewed_frame = Factory.create(:frame, :roll => @viewed_roll, :video => @viewed_video)
+            @user.viewed_roll = @viewed_roll
+          end
+
           it "should return a prioritized dashboard entry if a possibly unwatched one exists" do
             @pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => false)
             result = @email_processor.scan_dashboard_entries_for_rec(@user)
@@ -129,11 +136,23 @@ describe GT::UserEmailProcessor do
             result.should be_an_instance_of(PrioritizedDashboardEntry)
           end
 
-          it "should not return a prioritized dashboard entry if all of them are watched" do
+          it "should not return a prioritized dashboard entry if all of them are watched_by_owner or on the user's viewed roll" do
             @pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => true)
+            @pdbe2 = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => @viewed_video, :watched_by_owner => false)
             result = @email_processor.scan_dashboard_entries_for_rec(@user)
             result.should_not be_eql(@pdbe)
+            result.should_not be_eql(@pdbe2)
             result.should_not be_an_instance_of(PrioritizedDashboardEntry)
+          end
+
+          it "should skip past watched entries and return an unwatched one" do
+            unviewed_video = Factory.create(:video)
+            @pdbe1 = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => true)
+            @pdbe2 = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => @viewed_video, :watched_by_owner => false)
+            @pdbe3 = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => unviewed_video, :watched_by_owner => false)
+            result = @email_processor.scan_dashboard_entries_for_rec(@user)
+            result.should eql(@pdbe3)
+            result.should be_an_instance_of(PrioritizedDashboardEntry)
           end
         end
 
