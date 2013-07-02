@@ -55,7 +55,7 @@ module GT
                 # create new dashboard entry with action type = 31 (if video graph rec) based on video
                 new_dbe = create_new_dashboard_entry(user, dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
               elsif dbe_with_rec.is_a?(PrioritizedDashboardEntry)
-                new_dbe = create_new_dashboard_entry_from_prioritized
+                new_dbe = create_new_dashboard_entry_from_prioritized(user, dbe_with_rec)
               end
 
               if new_dbe
@@ -157,8 +157,24 @@ module GT
 
     end
 
-    def create_new_dasboard_entry_from_prioritized(user, pdbe)
-
+    def create_new_dashboard_entry_from_prioritized(user, pdbe)
+      new_dbe = GT::Framer.create_frame(
+        :video_id => pdbe.video_id,
+        :dashboard_user_id => user.id,
+        :action => DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation],
+        :dashboard_entry_options => {
+          :friend_sharers_array => pdbe.friend_sharers_array,
+          :friend_viewers_array => pdbe.friend_viewers_array,
+          :friend_likers_array => pdbe.friend_likers_array,
+          :friend_rollers_array => pdbe.friend_rollers_array,
+          :friend_complete_viewers_array => pdbe.friend_complete_viewers_array,
+        }
+      )
+      if new_dbe[:dashboard_entries] and !new_dbe[:dashboard_entries].empty?
+        return new_dbe[:dashboard_entries].first
+      else
+        return nil
+      end
     end
 
     # Ensure that we aren't sending a video rec that a user has seen in the "recent" past

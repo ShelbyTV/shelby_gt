@@ -80,7 +80,7 @@ describe GT::UserEmailProcessor do
           it "should call create_new_dashboard_entry_from_prioritized if there is an unwatched prioritized dashboard entry" do
             @pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => false)
 
-            @email_processor.should_receive(:create_new_dashboard_entry_from_prioritized)
+            @email_processor.should_receive(:create_new_dashboard_entry_from_prioritized).with(@user, @pdbe)
             @email_processor.should_not_receive(:create_new_dashboard_entry)
 
             @email_processor.process_and_send_rec_email
@@ -139,7 +139,7 @@ describe GT::UserEmailProcessor do
 
       end
 
-      context "creating a new dashbaord entry from one with a video rec" do
+      context "creating a new dashboard entry from one with a video rec" do
         before(:each) do
           @email_processor = GT::UserEmailProcessor.new
           @v = Factory.create(:video)
@@ -179,6 +179,45 @@ describe GT::UserEmailProcessor do
 
           new_dbe = @email_processor.create_new_dashboard_entry(@user, @dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
           new_dbe.should eq nil
+        end
+
+      end
+
+      context "creating a new dashboard entry from a prioritized dashboard entry" do
+
+        before(:each) do
+          @email_processor = GT::UserEmailProcessor.new
+          @v = Factory.create(:video)
+          @f = Factory.create(:frame, :video => @v)
+          @friend_user = Factory.create(:user)
+          @pdbe = Factory.create(:prioritized_dashboard_entry, {
+            :frame => @f,
+            :user => @user,
+            :video_id => @v.id,
+            :friend_sharers_array => [@friend_user.id.to_s],
+            :friend_viewers_array => [@friend_user.id.to_s],
+            :friend_likers_array => [@friend_user.id.to_s],
+            :friend_rollers_array => [@friend_user.id.to_s],
+            :friend_complete_viewers_array => [@friend_user.id.to_s]
+          })
+        end
+
+        it "should return a dashboard entry containing the video from the prioritized dashboard entry" do
+          result = @email_processor.create_new_dashboard_entry_from_prioritized(@user, @pdbe)
+          result.should be_an_instance_of(DashboardEntry)
+          result.user.should == @user
+          result.frame.should_not == @f
+          result.frame.video.should == @v
+          result.action.should == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
+        end
+
+        it "should have prioritized dashboard friend arrays copied onto it" do
+          result = @email_processor.create_new_dashboard_entry_from_prioritized(@user, @pdbe)
+          result.friend_sharers_array.should include(@friend_user.id.to_s)
+          result.friend_viewers_array.should include(@friend_user.id.to_s)
+          result.friend_likers_array.should include(@friend_user.id.to_s)
+          result.friend_rollers_array.should include(@friend_user.id.to_s)
+          result.friend_complete_viewers_array.should include(@friend_user.id.to_s)
         end
 
       end
