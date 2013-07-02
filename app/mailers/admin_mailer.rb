@@ -37,7 +37,7 @@ class AdminMailer < ActionMailer::Base
     @real_user_count = stats[:real_user_count]
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
-      :to => "henry@shelby.tv",
+      :to => "henry@shelby.tv,chris@shelby.tv",
       :subject => Settings::Email.user_stats_report['subject'] % { :total => @real_user_count }
   end
 
