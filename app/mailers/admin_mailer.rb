@@ -26,8 +26,19 @@ class AdminMailer < ActionMailer::Base
     @errors = stats[:errors]
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
-      :to => "henry@shelby.tv",
+      :to => "weekly_email_summary@shelby.tv",
       :subject => Settings::Email.weekly_email_summary['subject'] % { :sent_emails => @sent_emails, :users_scanned => @users_scanned }
+  end
+
+  def user_stats_report(stats, time)
+    sendgrid_category Settings::Email.user_stats_report["category"]
+
+    @time = time
+    @real_user_count = stats[:real_user_count]
+
+    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
+      :to => "henry@shelby.tv",
+      :subject => Settings::Email.user_stats_report['subject'] % { :total => @real_user_count }
   end
 
 end
