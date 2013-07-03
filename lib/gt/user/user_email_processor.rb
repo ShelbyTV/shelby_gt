@@ -20,7 +20,7 @@ module GT
       @should_send_email = should_send_email
     end
 
-    def process_and_send_rec_email(user_emails=nil)
+    def process_and_send_rec_email(user_nicknames=nil)
       # loop through cursor of all users, primary_email is indexed, use it to filter collection some.
       #  load them with following attributes: gt_enabled, user_type, primary_email, preferences
       Rails.logger.info "[GT::UserEmailProcessor] STARTING WEEKLY EMAIL NOTIFICATIONS PROCESS"
@@ -33,10 +33,14 @@ module GT
       error_finding = 0
       user_loaded = 0
 
-      if user_emails
-        # user_emails parameter for testing allows us to send to only a specific set of emails
+      if user_nicknames
+        # user_nicknames parameter for testing allows us to send to only a specific set of users
         # and bypass the check on whether they have opted in to receive emails
-        query = {:primary_email => {:$in => user_emails}}
+        query = {:$and => [
+          {:nickname => {:$in => user_nicknames}},
+          {:primary_email => {:$ne => ""}},
+          {:primary_email => {:$ne => nil}}
+          ]}
       else
         # under normal circumstances, we want to send to all users who have a valid email
         # and who have opted in to receive email updates
