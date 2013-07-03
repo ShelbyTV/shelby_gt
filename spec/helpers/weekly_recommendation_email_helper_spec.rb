@@ -24,7 +24,7 @@ describe WeeklyRecommendationEmailHelper do
       end
 
       it "should return the right message for one friend user" do
-        message_text(@dbe, @dbe.all_associated_friends).should start_with("#{@friend_user.nickname} is")
+        message_text(@dbe, @dbe.all_associated_friends).should eql("We've discovered that #{@friend_user.nickname} checked out this video.")
       end
 
       it "should return the right message for two friend users" do

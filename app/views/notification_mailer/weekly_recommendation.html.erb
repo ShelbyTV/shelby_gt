@@ -38,7 +38,7 @@
                                     <% end %>
 
                                               <p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;">
-                                                <%= highlight(message_text(@new_dbe, @friend_users), @highlighted_username, "<b>\\1</b>") %>
+                                                <%= highlight(message_text(@new_dbe, @friend_users), @highlighted_username, :highlighter => "<b>\\1</b>") %>
                                               </p>
 
                                     <% if @new_dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation] %>
