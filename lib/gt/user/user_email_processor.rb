@@ -131,9 +131,7 @@ module GT
         # load them only once
         if !watched_video_ids
           watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(@recent_videos_limit).all.map {|f| f.video_id}.compact : []
-          puts "loaded the watched_video_ids and here they are: #{watched_video_ids.map{|vid| vid.to_s}}"
         end
-        puts "trying a video with id: #{pdbe.video_id}"
         if !pdbe.watched_by_owner && !watched_video_ids.find_index(pdbe.video_id)
           # yay, we found an unwatched prioritized dashboard entry, return it immediately
           cursor.close
