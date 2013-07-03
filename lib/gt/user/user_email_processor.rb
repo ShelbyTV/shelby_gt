@@ -51,7 +51,7 @@ module GT
         query,
         {
           :timeout => false,
-          :fields => ["ag", "ac", "primary_email", "preferences", "nickname"]
+          :fields => ["ac", "af", "ag", "primary_email", "preferences", "nickname"]
         }
       ) do |cursor|
         cursor.each do |doc|
