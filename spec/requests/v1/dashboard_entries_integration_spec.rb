@@ -103,6 +103,55 @@ describe 'v1/dashboard' do
           parse_json(response.body)["result"][0]["src_frame"]["creator"]["nickname"].should eq(creator.nickname)
         end
 
+        it "should return the friend arrays when the entry is an entertainment graph recommendation" do
+          friend_user_id_string1 = Factory.create(:user).id.to_s
+          friend_user_id_string2 = Factory.create(:user).id.to_s
+          friend_user_id_string3 = Factory.create(:user).id.to_s
+          friend_user_id_string4 = Factory.create(:user).id.to_s
+          friend_user_id_string5 = Factory.create(:user).id.to_s
+          @d.action = DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
+          @d.friend_sharers_array = [friend_user_id_string1]
+          @d.friend_viewers_array = [friend_user_id_string2]
+          @d.friend_likers_array = [friend_user_id_string3]
+          @d.friend_rollers_array = [friend_user_id_string4]
+          @d.friend_complete_viewers_array = [friend_user_id_string5]
+          @d.save
+
+          get '/v1/dashboard'
+
+          response.body.should have_json_path("result/0/friend_sharers")
+          response.body.should have_json_size(1).at_path("result/0/friend_sharers")
+          response.body.should include_json("\"#{friend_user_id_string1}\"").at_path("result/0/friend_sharers")
+
+          response.body.should have_json_path("result/0/friend_viewers")
+          response.body.should have_json_size(1).at_path("result/0/friend_viewers")
+          response.body.should include_json("\"#{friend_user_id_string2}\"").at_path("result/0/friend_viewers")
+
+          response.body.should have_json_path("result/0/friend_likers")
+          response.body.should have_json_size(1).at_path("result/0/friend_likers")
+          response.body.should include_json("\"#{friend_user_id_string3}\"").at_path("result/0/friend_likers")
+
+          response.body.should have_json_path("result/0/friend_rollers")
+          response.body.should have_json_size(1).at_path("result/0/friend_rollers")
+          response.body.should include_json("\"#{friend_user_id_string4}\"").at_path("result/0/friend_rollers")
+
+          response.body.should have_json_path("result/0/friend_complete_viewers")
+          response.body.should have_json_size(1).at_path("result/0/friend_complete_viewers")
+          response.body.should include_json("\"#{friend_user_id_string5}\"").at_path("result/0/friend_complete_viewers")
+
+          parse_json(response.body)["result"][0]["action"].should eq(DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation])
+        end
+
+        it "should not return the friend arrays when the entry is not an entertainment graph recommendation" do
+          get '/v1/dashboard'
+          response.body.should have_json_path("result/0")
+          response.body.should_not have_json_path("result/0/friend_sharers")
+          response.body.should_not have_json_path("result/0/friend_viewers")
+          response.body.should_not have_json_path("result/0/friend_likers")
+          response.body.should_not have_json_path("result/0/friend_rollers")
+          response.body.should_not have_json_path("result/0/friend_complete_viewers")
+        end
+
       end
 
       it "should return 200 if no entries exist" do

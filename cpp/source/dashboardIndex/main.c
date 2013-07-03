@@ -12,6 +12,8 @@
 #define TRUE 1
 #define FALSE 0
 
+#define ACTION_ENTERTAINMENT_GRAPH_REC 32
+
 static struct options {
    char *user;
    int limit;
@@ -467,7 +469,7 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
       SOB_DASHBOARD_ENTRY_USER_ID,
       SOB_DASHBOARD_ENTRY_ACTION,
       SOB_DASHBOARD_ENTRY_ACTOR_ID,
-      SOB_DASHBOARD_ENTRY_READ,
+      SOB_DASHBOARD_ENTRY_READ
    };
 
    bson_oid_t dbEntryOid;
@@ -498,6 +500,53 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
                           SOB_FRAME,
                           "frame",
                           &printJsonFrame);
+
+   // include the friend arrays, only if the entry is an entertainment graph recommendation
+   sobLog("Checking if dashboard entry is an entertainment graph recommendation");
+   int action;
+   int status = sobBsonIntFieldFromObject(sob,
+                                          SOB_DASHBOARD_ENTRY,
+                                          SOB_DASHBOARD_ENTRY_ACTION,
+                                          dbEntry,
+                                          &action);
+
+   if (status && action == ACTION_ENTERTAINMENT_GRAPH_REC) {
+
+      sobLog("Printing dashboard entry friend_sharers field");
+
+      sobPrintAttributeWithKeyOverride(context,
+                                       dbEntry,
+                                       SOB_DASHBOARD_ENTRY_FRIEND_SHARERS_ARRAY,
+                                       "friend_sharers");
+
+      sobLog("Printing dashboard entry friend_viewers field");
+
+      sobPrintAttributeWithKeyOverride(context,
+                                       dbEntry,
+                                       SOB_DASHBOARD_ENTRY_FRIEND_VIEWERS_ARRAY,
+                                       "friend_viewers");
+
+      sobLog("Printing dashboard entry friend_likers field");
+
+      sobPrintAttributeWithKeyOverride(context,
+                                       dbEntry,
+                                       SOB_DASHBOARD_ENTRY_FRIEND_LIKERS_ARRAY,
+                                       "friend_likers");
+
+      sobLog("Printing dashboard entry friend_rollers field");
+
+      sobPrintAttributeWithKeyOverride(context,
+                                       dbEntry,
+                                       SOB_DASHBOARD_ENTRY_FRIEND_ROLLERS_ARRAY,
+                                       "friend_rollers");
+
+      sobLog("Printing dashboard entry friend_complete_viewers field");
+
+      sobPrintAttributeWithKeyOverride(context,
+                                       dbEntry,
+                                       SOB_DASHBOARD_ENTRY_FRIEND_COMPLETE_VIEWERS_ARRAY,
+                                       "friend_complete_viewers");
+   }
 
    // include the src_frame attribute, only if the entry has a source frame
    sobLog("Checking if dashboard entry has src_frame");

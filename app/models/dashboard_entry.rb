@@ -24,6 +24,27 @@ class DashboardEntry
   belongs_to :src_frame, :class_name => 'Frame'
   key :src_frame_id, ObjectId, :abbr => :i
 
+  # if the entry originated from a PrioritizedDashboardEntry, that
+  # entry's friend arrays are copied here for easy access
+  # Following arrays all contain strings of ObjectIds
+
+  # External sharers
+  key :friend_sharers_array,          Array, :abbr => :a1,  :default => []
+  # Shelby views
+  key :friend_viewers_array,          Array, :abbr => :a2,  :default => []
+  # Shelby likes
+  key :friend_likers_array,           Array, :abbr => :a3,  :default => []
+  # Shelby rollers
+  key :friend_rollers_array,          Array, :abbr => :a4,  :default => []
+  # Shelby complete views
+  key :friend_complete_viewers_array, Array, :abbr => :a5,  :default => []
+
+  # --------- convenient getters -----------
+  def all_associated_friends
+    friend_ids = self.friend_sharers_array + self.friend_viewers_array + self.friend_likers_array + self.friend_rollers_array + self.friend_complete_viewers_array
+    User.find(friend_ids.uniq)
+  end
+
   # Has the user read this entry?
   key :read, Boolean, :abbr => :d
 
@@ -41,7 +62,8 @@ class DashboardEntry
     :watch => 9,
     :comment => 10,
     :prioritized_frame => 30,
-    :video_graph_recommendation => 31
+    :video_graph_recommendation => 31,
+    :entertainment_graph_recommendation => 32
   }.freeze
   key :action, Integer, :abbr => :e, :default => ENTRY_TYPE[:new_social_frame]
 

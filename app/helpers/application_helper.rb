@@ -26,7 +26,7 @@ module ApplicationHelper
 
   #valid avatar_size options are "small", "large", "original"
   def avatar_url_for_user(user, avatar_size="small")
-    if user.avatar?
+    if user.has_shelby_avatar
       return user.shelby_avatar_url(avatar_size)
     else
       return user.user_image_original || user.user_image || "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png"

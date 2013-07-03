@@ -42,19 +42,33 @@ if Rails.env.development?
         NotificationMailer.join_roll_notification(user_to, user_from, roll)
       end
 
-      def weekly_recommendation
+      def weekly_recommendation_video_graph
         user      = User.first
         frame     = Factory.create(:frame, :video => Video.first)
 
         src_user  = User.last #Factory.create(:user)
         src_frame = Factory.create(:frame, :creator => src_user)
 
-        db_entry  = Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame)
+        db_entry  = Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
 
         #permalinks ≠ state dependent,
         #relative to user's stream
 
         NotificationMailer.weekly_recommendation(user, db_entry)
+      end
+
+      def weekly_recommendation_entertainment_graph
+        user      = User.first
+        frame     = Factory.create(:frame, :video => Video.first)
+
+        friend_liker_ids  = User.skip(1).limit(6).all.map {|u| u.id}
+
+        db_entry  = Factory.create(:dashboard_entry, :frame => frame, :friend_likers_array => friend_liker_ids, :action => DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation])
+
+        #permalinks ≠ state dependent,
+        #relative to user's stream
+
+        NotificationMailer.weekly_recommendation(user, db_entry, db_entry.all_associated_friends)
       end
 
       def weekly_email_summary
