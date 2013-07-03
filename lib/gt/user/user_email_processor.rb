@@ -108,6 +108,8 @@ module GT
       stats = {
         :users_scanned => user_loaded,
         :sent_emails => numSent,
+        :video_graph_recs => found_dbe_with_video_rec,
+        :entertainment_graph_recs => found_pdbe,
         :errors => error_finding
       }
 

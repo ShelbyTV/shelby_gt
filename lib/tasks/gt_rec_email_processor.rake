@@ -8,7 +8,8 @@ namespace :rec_email_processor do
     time = Benchmark.measure do
       should_send_email = true
       email_processor = GT::UserEmailProcessor.new(should_send_email)
-      @stats = email_processor.process_and_send_rec_email()
+      # temporarily restricting this to send only to us for testing
+      @stats = email_processor.process_and_send_rec_email(['iceberg901', 'spinosa', 'henry', 'chris', 'edon', 'matyus', 'keren', 'frash', 'vondoom', 'reece'])
     end
 
     proc_time = (time.real / 60).round(2)
