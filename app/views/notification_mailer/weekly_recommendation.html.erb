@@ -32,7 +32,7 @@
                                         <table border="0" cellspacing="0" cellpadding="0">
                                           <tr>
                                             <td style="width: 50px">
-                                              <img src="<%= avatar_url_for_user(@friend_users.first) %>" width="40" height="40" />
+                                              <img src="<%= avatar_url_for_user(@friend_users.first) %>" width="40" height="40" alt="<%= @highlighted_username %>" title="<%= @highlighted_username %>" />
                                             </td>
                                             <td>
                                     <% end %>
@@ -68,7 +68,7 @@
                                         <tr>
                                           <% @friend_users[1..10].each do |u| %>
                                             <td style="width: 38px">
-                                              <img src="<%= avatar_url_for_user(u) %>" width="28" height="28" />
+                                              <img src="<%= avatar_url_for_user(u) %>" width="28" height="28" alt="<%= u.nickname %>" title="<%= u.nickname %>" />
                                             </td>
                                           <% end %>
                                         </tr>
