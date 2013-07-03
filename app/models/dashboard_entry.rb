@@ -39,6 +39,12 @@ class DashboardEntry
   # Shelby complete views
   key :friend_complete_viewers_array, Array, :abbr => :a5,  :default => []
 
+  # --------- convenient getters -----------
+  def all_associated_friends
+    friend_ids = self.friend_sharers_array + self.friend_viewers_array + self.friend_likers_array + self.friend_rollers_array + self.friend_complete_viewers_array
+    User.find(friend_ids.uniq)
+  end
+
   # Has the user read this entry?
   key :read, Boolean, :abbr => :d
 

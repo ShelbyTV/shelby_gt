@@ -78,9 +78,13 @@ describe GT::UserEmailProcessor do
           end
 
           it "should call create_new_dashboard_entry_from_prioritized if there is an unwatched prioritized dashboard entry" do
-            @pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => false)
+            v = Factory.create(:video)
+            f = Factory.create(:frame, :video => v)
+            pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :frame => f, :video => v, :watched_by_owner => false)
+            new_dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation], :video => v)
+            new_dbe.should_receive(:all_associated_friends).and_return([])
 
-            @email_processor.should_receive(:create_new_dashboard_entry_from_prioritized).with(@user, @pdbe)
+            @email_processor.should_receive(:create_new_dashboard_entry_from_prioritized).with(@user, pdbe).and_return(new_dbe)
             @email_processor.should_not_receive(:create_new_dashboard_entry)
 
             @email_processor.process_and_send_rec_email
@@ -91,14 +95,14 @@ describe GT::UserEmailProcessor do
         context "dashboard entry scanning for video recs" do
 
           it "should only look for video recs if there are no prioritized dashboard recs" do
-            @obj = {}
-            DashboardEntry.stub(:collection).and_return(@obj)
-            @obj.should_receive(:find).at_least(:once)
+            obj = {}
+            DashboardEntry.stub(:collection).and_return(obj)
+            obj.should_receive(:find).at_least(:once)
             @email_processor.scan_dashboard_entries_for_rec(@user)
           end
 
           it "should not scan for video recs if there is a prioritized dashboard rec for the user" do
-            @pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => false)
+            pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => false)
             DashboardEntry.should_not_receive(:collection)
             @email_processor.scan_dashboard_entries_for_rec(@user)
           end
@@ -130,28 +134,28 @@ describe GT::UserEmailProcessor do
           end
 
           it "should return a prioritized dashboard entry if a possibly unwatched one exists" do
-            @pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => false)
+            pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => false)
             result = @email_processor.scan_dashboard_entries_for_rec(@user)
-            result.should eql(@pdbe)
+            result.should eql(pdbe)
             result.should be_an_instance_of(PrioritizedDashboardEntry)
           end
 
           it "should not return a prioritized dashboard entry if all of them are watched_by_owner or on the user's viewed roll" do
-            @pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => true)
-            @pdbe2 = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => @viewed_video, :watched_by_owner => false)
+            pdbe1 = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => true)
+            pdbe2 = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => @viewed_video, :watched_by_owner => false)
             result = @email_processor.scan_dashboard_entries_for_rec(@user)
-            result.should_not be_eql(@pdbe)
-            result.should_not be_eql(@pdbe2)
+            result.should_not be_eql(pdbe1)
+            result.should_not be_eql(pdbe2)
             result.should_not be_an_instance_of(PrioritizedDashboardEntry)
           end
 
           it "should skip past watched entries and return an unwatched one" do
             unviewed_video = Factory.create(:video)
-            @pdbe1 = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => true)
-            @pdbe2 = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => @viewed_video, :watched_by_owner => false)
-            @pdbe3 = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => unviewed_video, :watched_by_owner => false)
+            pdbe1 = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => true)
+            pdbe2 = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => @viewed_video, :watched_by_owner => false)
+            pdbe3 = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => unviewed_video, :watched_by_owner => false)
             result = @email_processor.scan_dashboard_entries_for_rec(@user)
-            result.should eql(@pdbe3)
+            result.should eql(pdbe3)
             result.should be_an_instance_of(PrioritizedDashboardEntry)
           end
         end

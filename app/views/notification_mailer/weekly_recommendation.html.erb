@@ -7,7 +7,7 @@
             <!-- main -->
             <table border="0" cellspacing="0" cellpadding="0">
               <tbody>
-                <%= render :partial => "/objects/summary_text", :locals => { :text => "We've discovered that people like #{@src_frame.creator.nickname} are sharing, liking, and watching this video."} %>
+                <%= render :partial => "/objects/summary_text", :locals => { :text => message_text(@new_dbe, @friend_users) } %>
 
                 <%= render :partial => "/objects/header" %>
 
@@ -28,7 +28,7 @@
                                     </h1>
 
                                     <p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;">
-                                      We've discovered that people like <b><%= @src_frame.creator.nickname %></b> are sharing, liking, and watching this video.
+                                      <%= highlight(message_text(@new_dbe, @friend_users), @highlighted_username, "<b>\\1</b>") %>
                                     </p>
 
                                     <h2 style="font-size: <%= Settings::Email.font_size %>; margin: 0 0 5px;">

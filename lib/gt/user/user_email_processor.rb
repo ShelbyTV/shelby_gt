@@ -57,6 +57,7 @@ module GT
               found += 1
 
               new_dbe = nil
+              friend_users = nil
               if dbe_with_rec.is_a?(DashboardEntry)
                 found_dbe_with_video_rec += 1
                 # create new dashboard entry with action type = 31 (video graph rec) based on video
@@ -65,12 +66,13 @@ module GT
                 found_pdbe +=1
                 # create new dashboard entry with action type = 32 (entertainment graph rec) based on prioritized dashboard entry
                 new_dbe = create_new_dashboard_entry_from_prioritized(user, dbe_with_rec)
+                friend_users = new_dbe.all_associated_friends
               end
 
               if new_dbe
                 # use new dashboard entry to send email
                 if @should_send_email
-                  numSent += 1 if NotificationManager.send_weekly_recommendation(user, new_dbe)
+                  numSent += 1 if NotificationManager.send_weekly_recommendation(user, new_dbe, friend_users)
                   # track that email was sent
                   APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'])
                 end
@@ -118,7 +120,7 @@ module GT
         # once we know that we need to check something against the user's recently watched videos,
         # load them only once
         if !watched_video_ids
-          watched_video_ids = Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(@recent_videos_limit).all.map {|f| f.video_id}.compact
+          watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(@recent_videos_limit).all.map {|f| f.video_id}.compact : []
         end
         if !pdbe.watched_by_owner && !watched_video_ids.find_index(pdbe.video_id)
           # yay, we found an unwatched prioritized dashboard entry, return it immediately
@@ -202,7 +204,7 @@ module GT
 
     # Ensure that we aren't sending a video rec that a user has seen in the "recent" past
     def get_rec_from_video(user, recs)
-      frames = Frame.where(:roll_id => user.viewed_roll_id).fields(:id, :video_id).limit(@recent_videos_limit)
+      frames = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:id, :video_id).limit(@recent_videos_limit) : []
       recs.each do |r|
         video_watched = false
         frames.find_each.each do |f|

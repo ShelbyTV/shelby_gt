@@ -190,7 +190,7 @@ gem 'rvm-capistrano'
 # ---------- Testing
 #
 group :test, :development do
-	gem 'rspec-rails'
+	gem 'rspec-rails', '~>2.13'
 	gem 'rspec-html-matchers'
 end
 
