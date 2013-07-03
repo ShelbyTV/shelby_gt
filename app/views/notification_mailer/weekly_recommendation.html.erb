@@ -27,9 +27,26 @@
                                       Recommended for you:
                                     </h1>
 
-                                    <p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;">
-                                      <%= highlight(message_text(@new_dbe, @friend_users), @highlighted_username, "<b>\\1</b>") %>
-                                    </p>
+                                    <% if @new_dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation] %>
+                                      <p>
+                                        <table border="0" cellspacing="0" cellpadding="0">
+                                          <tr>
+                                            <td style="width: 50px">
+                                              <img src="<%= avatar_url_for_user(@friend_users.first) %>" width="40" height="40" />
+                                            </td>
+                                            <td>
+                                    <% end %>
+
+                                              <p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;">
+                                                <%= highlight(message_text(@new_dbe, @friend_users), @highlighted_username, "<b>\\1</b>") %>
+                                              </p>
+
+                                    <% if @new_dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation] %>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                      </p>
+                                    <% end %>
 
                                     <h2 style="font-size: <%= Settings::Email.font_size %>; margin: 0 0 5px;">
                                       <a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{@new_dbe.id.to_s}" %>" style="color: <%= Settings::Email.ui_black %>;text-decoration: none;">
@@ -45,6 +62,18 @@
                                     <p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;">
                                       If you haven't seen it, <a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{@new_dbe.id.to_s}" %>" style="color: <%= Settings::Email.ui_soft_black %>">watch it now</a>!
                                     </p>
+
+                                    <% if @new_dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation] && @friend_users.count > 1%>
+                                      <table border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                          <% @friend_users[1..10].each do |u| %>
+                                            <td style="width: 38px">
+                                              <img src="<%= avatar_url_for_user(u) %>" width="28" height="28" />
+                                            </td>
+                                          <% end %>
+                                        </tr>
+                                      </table>
+                                    <% end %>
 
                                     <!-- END BODY -->
                                 </td>
