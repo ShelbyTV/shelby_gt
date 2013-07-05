@@ -31,13 +31,13 @@
                                       <p>
                                         <table border="0" cellspacing="0" cellpadding="0">
                                           <tr>
-                                            <td style="width: 50px">
+                                            <td style="width: 50px; vertical-align: top">
                                               <img src="<%= avatar_url_for_user(@friend_users.first) %>" width="40" height="40" alt="<%= @highlighted_username %>" title="<%= @highlighted_username %>" />
                                             </td>
-                                            <td>
+                                            <td style="vertical-align: top">
                                     <% end %>
 
-                                              <p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;">
+                                              <p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;margin-top: 0">
                                                 <%= highlight(message_text(@new_dbe, @friend_users), @highlighted_username, :highlighter => "<b>\\1</b>") %>
                                               </p>
 
