@@ -131,8 +131,8 @@ module GT
     def scan_dashboard_entries_for_rec(user)
       watched_video_ids = nil
       # if there's a prioritized dashboard entry not watched recently by the user, use that as the recommendation
-      cursor = PrioritizedDashboardEntry.for_user_id(user.id).ranked.limit(@pdbe_limit).find_each
-      while (pdbe = cursor.next)
+      pdbe_cursor = PrioritizedDashboardEntry.for_user_id(user.id).ranked.limit(@pdbe_limit).find_each
+      while (pdbe = pdbe_cursor.next)
         # once we know that we need to check something against the user's recently watched videos,
         # load them only once
         if !watched_video_ids
@@ -140,11 +140,11 @@ module GT
         end
         if !pdbe.watched_by_owner && !watched_video_ids.find_index(pdbe.video_id)
           # yay, we found an unwatched prioritized dashboard entry, return it immediately
-          cursor.close
+          pdbe_cursor.close
           return pdbe
         end
       end
-      cursor.close
+      pdbe_cursor.close
 
       # if there's no unwatched prioritized dashboard entry
       # loop through dashboard entries until we find one with a rec,
@@ -157,10 +157,10 @@ module GT
             :limit => 10,
             :skip => dbe_count
           }
-        ) do |cursor|
-          cursor.each do |doc|
+        ) do |dbe_cursor|
+          dbe_cursor.each do |doc|
             dbe = DashboardEntry.load(doc)
-            next if dbe['action'] == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+            next if dbe.is_recommendation?
             # get the video with only the rec key for each dbe
             video = Video.collection.find_one({ :_id => dbe["video_id"] }, { :fields => ["r"] })
             dbe_with_rec = dbe if video and video["r"] and !video["r"].empty?

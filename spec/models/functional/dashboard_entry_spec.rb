@@ -70,4 +70,20 @@ describe DashboardEntry do
 
   end
 
+  context "is_recommendation?" do
+
+    it "should return false if it is not a recommendation" do
+      @dashboard_entry.is_recommendation?.should == false
+    end
+
+    it "should return true if it is a recommendation" do
+      @dashboard_entry.action = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+      @dashboard_entry.is_recommendation?.should == true
+
+      @dashboard_entry.action = DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
+      @dashboard_entry.is_recommendation?.should == true
+    end
+
+  end
+
 end

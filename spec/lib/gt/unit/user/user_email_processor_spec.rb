@@ -111,16 +111,30 @@ describe GT::UserEmailProcessor do
             @email_processor.scan_dashboard_entries_for_rec(@user).should eql nil
           end
 
-          it "should return a regular dbe if one has a video with a rec" do
-            video_with_rec = Factory.create(:video)
-            video_with_rec.recs << Factory.create(:recommendation, :recommended_video_id => video_with_rec.id)
-            video_with_rec.save
-            dbe_with_rec = Factory.create(:dashboard_entry, :user => @user, :video_id => video_with_rec.id)
-            @user.dashboard_entries << dbe_with_rec
+          context "video recommendations present" do
 
-            result = @email_processor.scan_dashboard_entries_for_rec(@user)
-            result["_id"].should eql dbe_with_rec.id
-            result.should be_an_instance_of(DashboardEntry)
+            before(:each) do
+              @video_with_rec = Factory.create(:video)
+              @video_with_rec.recs << Factory.create(:recommendation, :recommended_video_id => @video_with_rec.id)
+              @video_with_rec.save
+              @dbe_with_rec = Factory.create(:dashboard_entry, :user => @user, :video_id => @video_with_rec.id)
+              @user.dashboard_entries << @dbe_with_rec
+            end
+
+            it "should return a regular dbe if one has a video with a rec" do
+              result = @email_processor.scan_dashboard_entries_for_rec(@user)
+              result["_id"].should eql @dbe_with_rec.id
+              result.should be_an_instance_of(DashboardEntry)
+            end
+
+            it "should skip dbes that are already recommendations themselves" do
+              @dbe_with_rec.action = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+              @email_processor.scan_dashboard_entries_for_rec(@user).should be_nil
+
+              @dbe_with_rec.action = DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
+              @email_processor.scan_dashboard_entries_for_rec(@user).should be_nil
+            end
+
           end
 
         end
