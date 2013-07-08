@@ -40,7 +40,9 @@ namespace :embedly_regexes do
       # replace the old file with the new one
       FileUtils.mv(temp_file.path, settings_file)
 
-      Rails.logger.info "Inserted #{num_services_inserted} services"
+      puts "SUCCESS! Inserted #{num_services_inserted} embedly services into #{settings_file}"
+    else
+      puts "SORRY! Embedly API didn't return any services; left #{settings_file} as is"
     end
 
   end
