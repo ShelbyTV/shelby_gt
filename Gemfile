@@ -187,6 +187,13 @@ gem 'rvm-capistrano'
 # gem 'ruby-debug19', :require => 'ruby-debug'
 
 #
+# ---------- Automatic Embedly Regex Update
+#
+group :test, :development do
+  gem 'httparty'
+end
+
+#
 # ---------- Testing
 #
 group :test, :development do
