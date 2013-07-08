@@ -9,7 +9,7 @@ namespace :rec_email_processor do
       should_send_email = false
       email_processor = GT::UserEmailProcessor.new(should_send_email)
       # temporarily restricting this to send only to us for testing
-      @stats = email_processor.process_and_send_rec_email()
+      @stats = email_processor.process_and_send_rec_email(['iceberg901'])
     end
 
     proc_time = (time.real / 60).round(2)
