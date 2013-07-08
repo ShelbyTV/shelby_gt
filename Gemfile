@@ -192,10 +192,7 @@ gem 'rvm-capistrano'
 group :test, :development do
 	gem 'rspec-rails', '~>2.13'
 	gem 'rspec-html-matchers'
-end
-
-group :test, :development do
-	gem 'shoulda'
+	gem 'shoulda-matchers'
 
 	# rspec has nice mocking, but we could also use
 	# gem 'mocha'
