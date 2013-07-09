@@ -46,7 +46,6 @@ describe GT::UserEmailProcessor do
       context "with valid data" do
          before(:each) do
           @email_processor = GT::UserEmailProcessor.new
-          @user = Factory.create(:user)
           30.times do |i|
             v = Factory.create(:video)
             f = Factory.create(:frame, :video => v, :creator => @user )
@@ -60,6 +59,7 @@ describe GT::UserEmailProcessor do
           before(:each) do
             @stub_cursor = {}
             @stub_cursor.should_receive(:each).and_yield({})
+            @friend_user = Factory.create(:user)
             User.stub_chain(:collection, :find).and_yield(@stub_cursor)
             User.should_receive(:load).and_return(@user)
           end
@@ -80,7 +80,7 @@ describe GT::UserEmailProcessor do
           it "should call create_new_dashboard_entry_from_prioritized if there is an unwatched prioritized dashboard entry" do
             v = Factory.create(:video)
             f = Factory.create(:frame, :video => v)
-            pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :frame => f, :video => v, :watched_by_owner => false)
+            pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :frame => f, :video => v, :friend_likers_array => [@friend_user.id.to_s], :watched_by_owner => false)
             new_dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation], :video => v)
             new_dbe.should_receive(:all_associated_friends).and_return([])
 
