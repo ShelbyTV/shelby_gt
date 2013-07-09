@@ -20,7 +20,7 @@ module GT
       @should_send_email = should_send_email
     end
 
-    def process_and_send_rec_email(user_nicknames=nil)
+    def process_and_send_rec_email(user_nicknames=nil, dont_send_until_address=nil)
       # loop through cursor of all users, primary_email is indexed, use it to filter collection some.
       #  load them with following attributes: gt_enabled, user_type, primary_email, preferences
       Rails.logger.info "[GT::UserEmailProcessor] STARTING WEEKLY EMAIL NOTIFICATIONS PROCESS"
@@ -60,51 +60,63 @@ module GT
         }
       ) do |cursor|
         cursor.each do |doc|
-          user = User.load(doc)
+          begin
+            user = User.load(doc)
 
-          user_loaded += 1
-
-          # check if they are real users that we need to process
-          if is_real?(user)
-            # cycle through dashboard entries till a video is found with a recommendation
-            # NOTE: dbe_with_rec.class = DashboardEntry || PrioritizedDashboardEntry
-            if dbe_with_rec = scan_dashboard_entries_for_rec(user)
-              found += 1
-
-              new_dbe = nil
-              friend_users = nil
-              if dbe_with_rec.is_a?(DashboardEntry)
-                found_dbe_with_video_rec += 1
-                # create new dashboard entry with action type = 31 (video graph rec) based on video
-                new_dbe = create_new_dashboard_entry(user, dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
-              elsif dbe_with_rec.is_a?(PrioritizedDashboardEntry)
-                # check if the dbe has any friends, if not, skip it and make a note of this in the log
-                friends = dbe_with_rec.friend_sharers_array + dbe_with_rec.friend_viewers_array + dbe_with_rec.friend_likers_array + dbe_with_rec.friend_rollers_array + dbe_with_rec.friend_complete_viewers_array
-                if friends.length > 0
-                  found_pdbe += 1
-                  # create new dashboard entry with action type = 32 (entertainment graph rec) based on prioritized dashboard entry
-                  new_dbe = create_new_dashboard_entry_from_prioritized(user, dbe_with_rec)
-                  friend_users = new_dbe.all_associated_friends
-                else
-                  pdbe_with_no_friends += 1
-                  Rails.logger.info "[GT::UserEmailProcessor] PROBLEM!: User #{user.nickname}, pdbe #{dbe_with_rec.id} has no friends in the arrays"
-                end
-              end
-
-              if new_dbe
-                # use new dashboard entry to send email
-                if @should_send_email
-                  numSent += 1 if NotificationManager.send_weekly_recommendation(user, new_dbe, friend_users)
-                  # track that email was sent
-                  APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'])
-                end
+            if dont_send_until_address
+              if user.primary_email == dont_send_until_address
+                dont_send_until_address = nil
               else
-                error_finding += 1
+                next
               end
-
-            else
-              not_found += 1
             end
+
+            user_loaded += 1
+
+            # check if they are real users that we need to process
+            if is_real?(user)
+              # cycle through dashboard entries till a video is found with a recommendation
+              # NOTE: dbe_with_rec.class = DashboardEntry || PrioritizedDashboardEntry
+              if dbe_with_rec = scan_dashboard_entries_for_rec(user)
+                found += 1
+
+                new_dbe = nil
+                friend_users = nil
+                if dbe_with_rec.is_a?(DashboardEntry)
+                  found_dbe_with_video_rec += 1
+                  # create new dashboard entry with action type = 31 (video graph rec) based on video
+                  new_dbe = create_new_dashboard_entry(user, dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+                elsif dbe_with_rec.is_a?(PrioritizedDashboardEntry)
+                  # check if the dbe has any friends, if not, skip it and make a note of this in the log
+                  friends = dbe_with_rec.friend_sharers_array + dbe_with_rec.friend_viewers_array + dbe_with_rec.friend_likers_array + dbe_with_rec.friend_rollers_array + dbe_with_rec.friend_complete_viewers_array
+                  if friends.length > 0
+                    found_pdbe += 1
+                    # create new dashboard entry with action type = 32 (entertainment graph rec) based on prioritized dashboard entry
+                    new_dbe = create_new_dashboard_entry_from_prioritized(user, dbe_with_rec)
+                    friend_users = new_dbe.all_associated_friends
+                  else
+                    pdbe_with_no_friends += 1
+                    Rails.logger.info "[GT::UserEmailProcessor] PROBLEM!: User #{user.nickname}, pdbe #{dbe_with_rec.id} has no friends in the arrays"
+                  end
+                end
+
+                if new_dbe
+                  # use new dashboard entry to send email
+                  if @should_send_email
+                    numSent += 1 if NotificationManager.send_weekly_recommendation(user, new_dbe, friend_users)
+                    # track that email was sent
+                    APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'])
+                  end
+                else
+                  error_finding += 1
+                end
+
+              else
+                not_found += 1
+              end
+            end
+          rescue Exception => e
+            Rails.logger.info "[GT::UserEmailProcessor] EXCEPTION: #{e}"
           end
         end
       end
