@@ -6,9 +6,8 @@ namespace :rec_email_processor do
     require "benchmark"
 
     time = Benchmark.measure do
-      should_send_email = false
+      should_send_email = true
       email_processor = GT::UserEmailProcessor.new(should_send_email)
-      # temporarily restricting this to send only to us for testing
       @stats = email_processor.process_and_send_rec_email()
     end
 
