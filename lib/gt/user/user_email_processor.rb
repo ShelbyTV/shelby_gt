@@ -28,6 +28,7 @@ module GT
       numSent = 0
       found = 0
       found_pdbe = 0
+      pdbe_with_no_friends = 0
       found_dbe_with_video_rec = 0
       not_found =0
       error_finding = 0
@@ -77,10 +78,17 @@ module GT
                 # create new dashboard entry with action type = 31 (video graph rec) based on video
                 new_dbe = create_new_dashboard_entry(user, dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
               elsif dbe_with_rec.is_a?(PrioritizedDashboardEntry)
-                found_pdbe +=1
-                # create new dashboard entry with action type = 32 (entertainment graph rec) based on prioritized dashboard entry
-                new_dbe = create_new_dashboard_entry_from_prioritized(user, dbe_with_rec)
-                friend_users = new_dbe.all_associated_friends
+                # check if the dbe has any friends, if not, skip it and make a note of this in the log
+                friends = dbe_with_rec.friend_sharers_array + dbe_with_rec.friend_viewers_array + dbe_with_rec.friend_likers_array + dbe_with_rec.friend_rollers_array + dbe_with_rec.friend_complete_viewers_array
+                if friends.length > 0
+                  found_pdbe += 1
+                  # create new dashboard entry with action type = 32 (entertainment graph rec) based on prioritized dashboard entry
+                  new_dbe = create_new_dashboard_entry_from_prioritized(user, dbe_with_rec)
+                  friend_users = new_dbe.all_associated_friends
+                else
+                  pdbe_with_no_friends += 1
+                  Rails.logger.info "[GT::UserEmailProcessor] PROBLEM!: User #{user.nickname}, pdbe #{dbe_with_rec.id} has no friends in the arrays"
+                end
               end
 
               if new_dbe
@@ -102,7 +110,7 @@ module GT
       end
       Rails.logger.info "[GT::UserEmailProcessor] SENDING EMAIL: #{@should_send_email}"
       Rails.logger.info "[GT::UserEmailProcessor] FINISHED WEEKLY EMAIL NOTIFICATIONS PROCESS"
-      Rails.logger.info "[GT::UserEmailProcessor] Users Loaded: #{user_loaded}, Rec Found: #{found} - (#{found_dbe_with_video_rec} video graph, #{found_pdbe} entertainment graph), Not found: #{not_found}, Error: #{error_finding}"
+      Rails.logger.info "[GT::UserEmailProcessor] Users Loaded: #{user_loaded}, Rec Found: #{found} - (#{found_dbe_with_video_rec} video graph, #{found_pdbe} entertainment graph), PDBEs with no friends: #{pdbe_with_no_friends}, Not found: #{not_found}, Error: #{error_finding}"
       Rails.logger.info "[GT::UserEmailProcessor] #{numSent} emails sent"
 
       stats = {
