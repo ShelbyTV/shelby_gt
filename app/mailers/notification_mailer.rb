@@ -152,7 +152,7 @@ class NotificationMailer < ActionMailer::Base
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
          :to => user_to.primary_email,
-         :subject => Settings::Email.weekly_recommendation['subject'] % {:today => Time.now.strftime('%A')}
+         :subject => view_context.message_subject(dbe, friend_users)
   end
 
 end

@@ -22,6 +22,8 @@ class AdminMailer < ActionMailer::Base
 
     @time = time
     @users_scanned = stats[:users_scanned]
+    @entertainment_graph_recs = stats[:entertainment_graph_recs]
+    @video_graph_recs = stats[:video_graph_recs]
     @sent_emails = stats[:sent_emails]
     @errors = stats[:errors]
 
