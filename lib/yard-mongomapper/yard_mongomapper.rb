@@ -23,26 +23,37 @@ module YARD
           obj.docstring = statement.comments
         end
 
-        # Second parameter to the key method is the type of the field
-        # If we can find it, declare that as the return type for this method via a return tag
-        field_type = statement.parameters[1]
-        if type_name = field_type && field_type.jump(:const).source
-          if return_tag = obj.tag(:return)
-            return_tag.types ||= [type_name]
-          else
-            obj.add_tag(Tags::Tag.new(:return, nil, [type_name]))
-          end
-        end
+        options = {}
 
-        # If the options hash contains a key abbreviation,
-        # store that on the method object for rendering later
+        # parse the options hash
         if options_hash_node = statement.parameters[2]
           options_hash_node.children.each do |child|
             key = child.jump(:ident).source
             if key == 'abbr'
-              # strip off the leading ':' in the abbreviation
-              obj['key_abbreviation'] = child.children[1].source[1..-1]
+              # If the options hash contains a key abbreviation,
+              # store that on the method object for rendering later
+              obj['key_abbreviation'] = options[:key] = child.children[1].jump(:tstring_content, :ident).source
+            elsif key == 'typecast'
+              options[:typecast] = child.children[1].jump(:tstring_content, :ident).source
             end
+          end
+        end
+
+        # Second parameter to the key method is the type of the field
+        field_type = statement.parameters[1]
+        # If there is a second parameter...
+        if type_name = field_type && field_type.jump(:const).source
+          # if the type is an Array and the options contained a typecast, make
+          # the return type a parameterized Array of that type
+          if type_name == 'Array' && options[:typecast]
+            type_name = "Array<#{options[:typecast]}>"
+          end
+
+          # declare the type parsed from the DSL as the return type for this method via a return tag
+          if return_tag = obj.tag(:return)
+            return_tag.types ||= [type_name]
+          else
+            obj.add_tag(Tags::Tag.new(:return, nil, [type_name]))
           end
         end
 
