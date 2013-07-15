@@ -244,6 +244,18 @@ describe GT::UrlHelper do
       end
     end
 
+    context "aol" do
+      it "should parse from url" do
+        GT::UrlHelper.parse_url_for_provider_info('http://on.aol.com/video/asiana-airlines-threatens-to-sue-over-prank-pilot-names-517856446').should ==
+          {:provider_name => "aol", :provider_id => "517856446"}
+      end
+
+      it "should parse from embed" do
+        GT::UrlHelper.parse_url_for_provider_info('<iframe width="480" height="401" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen src="http://embed.5min.com/PlayerSeed/?playList=517856446&autoStart=false"></iframe>').should ==
+          {:provider_name => "aol", :provider_id => "517856446"}
+      end
+    end
+
   end
 
   context "generate_url_from_provider_info" do
@@ -266,6 +278,10 @@ describe GT::UrlHelper do
 
     it "should return correct url for dailymotion video" do
       GT::UrlHelper.generate_url_from_provider_info('dailymotion', '12345').should == "http://www.dailymotion.com/video/12345"
+    end
+
+    it "should return correct url for aol video" do
+      GT::UrlHelper.generate_url_from_provider_info('aol', '12345').should == "http://on.aol.com/video/12345"
     end
 
     it "should return nil for unsupported provider" do

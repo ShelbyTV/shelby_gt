@@ -38,6 +38,10 @@ module GT
       dm = parse_url_for_dailymotion_provider_info(url)
       return dm if dm
 
+      # AOL
+      aol = parse_url_for_aol_provider_info(url)
+      return aol if aol
+
       # CollegeHumor
       ch = parse_url_for_collegehumor_provider_info(url)
       return ch if ch
@@ -75,6 +79,8 @@ module GT
         "http://vimeo.com/#{provider_id}"
       when 'dailymotion'
         "http://www.dailymotion.com/video/#{provider_id}"
+      when 'aol'
+        "http://on.aol.com/video/#{provider_id}"
       end
     end
 
@@ -227,6 +233,19 @@ module GT
         match_data = url.match( /dailymotion.+(video\/)([a-zA-Z0-9-]{5,9})(?:[_?\\"']||\z)+/i )
         if match_data and match_data.size == 3
           return {:provider_name => "dailymotion", :provider_id => match_data[2]}
+        end
+      end
+
+      # AOL
+      def self.parse_url_for_aol_provider_info(url)
+        match_data = url.match( /on.aol.com\/video\/(\S*)-(\w*)/i )
+        if match_data and match_data.size == 3
+          return {:provider_name => "aol", :provider_id => match_data[2]}
+        end
+
+        match_data = url.match( /embed.5min.com\/PlayerSeed\/\?playlist=(\w*)/i )
+        if match_data and match_data.size == 2
+          return {:provider_name => "aol", :provider_id => match_data[1]}
         end
       end
 
