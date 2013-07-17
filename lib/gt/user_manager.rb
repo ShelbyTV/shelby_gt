@@ -325,6 +325,19 @@ module GT
 
       user.downcase_nickname = user.nickname.downcase
     end
+    
+    # Used by UserController when iOS is creating users that are temporarily missing username/password
+    def self.generate_temporary_nickname
+      begin
+        nick = "cobra.#{Time.now.to_f}"
+      end while User.where( :downcase_nickname => nick ).count > 0
+      return nick
+    end
+    
+    # Used by UserController when iOS is creating users that are temporarily missing username/password
+    def self.generate_temporary_password
+      "p.#{Time.now.to_f}"
+    end
 
     def self.clean_nickname!(user)
       #replace standard junk with hyphen
