@@ -27,7 +27,9 @@
                                       Summary of email processing:
                                     </h1>
 
-                                    <h2>Users Processed: <%= @users_scanned %></h2>
+                                    <h2>Total users scanned: <%= @users_scanned %></h2>
+
+                                    <h2>Users we can send to: <%= @user_sendable %></h2>
 
                                     <% if @should_send_pde_recs %>
                                       <h2>Users with Entertainment Graph Recommendations: <%= @entertainment_graph_recs %></h2>
