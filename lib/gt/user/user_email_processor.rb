@@ -136,7 +136,7 @@ module GT
         :sent_emails => numSent,
         :video_graph_recs => found_dbe_with_video_rec,
         :entertainment_graph_recs => found_pdbe,
-        :errors => error_finding
+        :errors => error_finding,
         :should_send_pde_recs => @should_send_pde_recs
       }
 
