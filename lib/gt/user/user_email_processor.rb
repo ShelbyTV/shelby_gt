@@ -9,13 +9,16 @@ require 'api_clients/kiss_metrics_client'
 module GT
   class UserEmailProcessor
 
-    def initialize(should_send_email=false)
+    def initialize(should_send_pde_recs=true, should_send_email=false)
       @pdbe_limit = 20 # How far back we are allowing this to search for a pdbe which hasn't been watched
       @dbe_limit = 60  # How far back we are allowing this to search for a dbe with a video with a rec
       @dbe_skip = 10
 
       # How many recently watched videos will we check to see if the user has watched the video we want to recommend
       @recent_videos_limit = 1000
+
+      # sometimes we might not want to send pdbe recs so...
+      @should_send_pde_recs = should_send_pde_recs
 
       @should_send_email = should_send_email
     end
@@ -32,6 +35,7 @@ module GT
       found_dbe_with_video_rec = 0
       not_found =0
       error_finding = 0
+      user_sendable = 0
       user_loaded = 0
 
       if user_nicknames
@@ -75,6 +79,7 @@ module GT
 
             # check if they are real users that we need to process
             if is_real?(user)
+              user_sendable += 1
               # cycle through dashboard entries till a video is found with a recommendation
               # NOTE: dbe_with_rec.class = DashboardEntry || PrioritizedDashboardEntry
               if dbe_with_rec = scan_dashboard_entries_for_rec(user)
@@ -127,10 +132,12 @@ module GT
 
       stats = {
         :users_scanned => user_loaded,
+        :user_sendable => user_sendable,
         :sent_emails => numSent,
         :video_graph_recs => found_dbe_with_video_rec,
         :entertainment_graph_recs => found_pdbe,
         :errors => error_finding
+        :should_send_pde_recs => @should_send_pde_recs
       }
 
       return stats
@@ -151,20 +158,22 @@ module GT
     def scan_dashboard_entries_for_rec(user)
       watched_video_ids = nil
       # if there's a prioritized dashboard entry not watched recently by the user, use that as the recommendation
-      pdbe_cursor = PrioritizedDashboardEntry.for_user_id(user.id).ranked.limit(@pdbe_limit).find_each
-      while (pdbe = pdbe_cursor.next)
-        # once we know that we need to check something against the user's recently watched videos,
-        # load them only once
-        if !watched_video_ids
-          watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(@recent_videos_limit).all.map {|f| f.video_id}.compact : []
+      if @should_send_pde_recs
+        pdbe_cursor = PrioritizedDashboardEntry.for_user_id(user.id).ranked.limit(@pdbe_limit).find_each
+        while (pdbe = pdbe_cursor.next)
+          # once we know that we need to check something against the user's recently watched videos,
+          # load them only once
+          if !watched_video_ids
+            watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(@recent_videos_limit).all.map {|f| f.video_id}.compact : []
+          end
+          if !pdbe.watched_by_owner && !watched_video_ids.find_index(pdbe.video_id)
+            # yay, we found an unwatched prioritized dashboard entry, return it immediately
+            pdbe_cursor.close
+            return pdbe
+          end
         end
-        if !pdbe.watched_by_owner && !watched_video_ids.find_index(pdbe.video_id)
-          # yay, we found an unwatched prioritized dashboard entry, return it immediately
-          pdbe_cursor.close
-          return pdbe
-        end
+        pdbe_cursor.close
       end
-      pdbe_cursor.close
 
       # if there's no unwatched prioritized dashboard entry
       # loop through dashboard entries until we find one with a rec,

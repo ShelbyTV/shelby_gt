@@ -21,11 +21,7 @@ class AdminMailer < ActionMailer::Base
     sendgrid_category Settings::Email.weekly_email_summary["category"]
 
     @time = time
-    @users_scanned = stats[:users_scanned]
-    @entertainment_graph_recs = stats[:entertainment_graph_recs]
-    @video_graph_recs = stats[:video_graph_recs]
-    @sent_emails = stats[:sent_emails]
-    @errors = stats[:errors]
+    stats.each { |name, value| instance_variable_set("@#{name}", value) }
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
       :to => "weekly_email_summary@shelby.tv",
