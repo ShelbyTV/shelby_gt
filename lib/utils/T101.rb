@@ -106,8 +106,12 @@ class T101
     def destroy_users_roll_followings!
       puts " Undoing #{@user.roll_followings.count} roll followings..."
       @user.roll_followings.each do |rf|
-        rf.roll.remove_follower(@user)
-        puts "   terminated following of roll: #{rf.roll.title} (#{rf.roll.id})"
+        if rf.roll
+          rf.roll.remove_follower(@user)
+          puts "   terminated following of roll: #{rf.roll.title} (#{rf.roll.id})"
+        else
+          puts "   Roll DNE.  Removed following for roll_id: #{rf.roll_id}"
+        end
       end
     end
     

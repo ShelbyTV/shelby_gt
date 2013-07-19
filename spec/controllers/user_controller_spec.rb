@@ -61,6 +61,32 @@ describe V1::UserController do
       assigns(:status).should eq(409)
       response.content_type.should == "application/json"
     end
+    
+    context "without username, password" do
+      
+      it "can generate temporary username and password for JSON" do
+        post :create, :format => :json, :generate_temporary_nickname_and_password => "1",
+                                        :user => { :name => "some name",
+                                                   :primary_email => Factory.next(:primary_email) }
+        assigns(:status).should eq(200)
+        assigns(:user).nickname.should_not be_nil
+        assigns(:user).name.should == "some name"
+        assigns(:user).authentication_token.should_not be_nil
+        response.content_type.should == "application/json"
+      end
+      
+      it "can generate temporary username and password for HTML" do
+        post :create, :format => :html, :generate_temporary_nickname_and_password => "1",
+                                        :user => { :name => "some name",
+                                                   :primary_email => Factory.next(:primary_email) }
+        assigns(:user).nickname.should_not be_nil
+        assigns(:user).name.should == "some name"
+        response.should be_redirect
+        response.should redirect_to("/")
+      end
+        
+    end
+    
   end
 
   describe "POST create dashboard entry for user" do
