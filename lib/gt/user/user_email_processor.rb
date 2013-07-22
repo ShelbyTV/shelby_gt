@@ -15,7 +15,7 @@ module GT
       @dbe_skip = 10
 
       # How many recently watched videos will we check to see if the user has watched the video we want to recommend
-      @recent_videos_limit = 1000
+      @recent_videos_limit = 2000
 
       # sometimes we might not want to send pdbe recs so...
       @should_send_pde_recs = should_send_pde_recs
