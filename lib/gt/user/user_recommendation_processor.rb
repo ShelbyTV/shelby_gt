@@ -60,7 +60,6 @@ module GT
                 new_dbe = nil
                 friend_users = nil
                 if dbe_with_rec.is_a?(DashboardEntry)
-                  found_dbe_with_video_rec += 1
                   # create new dashboard entry with action type = 31 (video graph rec) based on video
                   new_dbe = create_new_dashboard_entry(user, dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
                 end
