@@ -34,7 +34,6 @@ module GT
 
       User.collection.find(
         {:$and => [
-          {:nickname => 'henry'},
           {:primary_email => {:$ne => ""}},
           {:primary_email => {:$ne => nil}},
           {"preferences.email_updates" => true}
@@ -74,7 +73,8 @@ module GT
           end
         end
       end
-
+      Rails.logger.info "[GT::UserEmailProcessor] FINISHED PROCESS TO INSERT RECOMMENDATIONS"
+      Rails.logger.info "[GT::UserEmailProcessor] Users Loaded: #{user_loaded}, Rec Found: #{found} , Not found: #{not_found}, Error: #{error_finding}"
     end
 
     def process_and_send_rec_email(user_nicknames=nil, dont_send_until_address=nil)
