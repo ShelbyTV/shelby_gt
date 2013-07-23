@@ -84,6 +84,19 @@ describe V1::UserController do
         response.should be_redirect
         response.should redirect_to("/")
       end
+      
+      it "updates with client info (for JSON)" do
+        client_string = "iOS_iPhone"
+        post :create, :format => :json, :generate_temporary_nickname_and_password => "1",
+                                        :client_identifier => client_string,
+                                        :user => { :name => "some name",
+                                                   :primary_email => Factory.next(:primary_email) }
+        assigns(:status).should eq(200)
+        assigns(:user).app_progress.onboarding.should == client_string
+        assigns(:user).cohorts.include?(client_string).should == true
+        assigns(:user).authentication_token.should_not be_nil
+        response.content_type.should == "application/json"
+      end
         
     end
     
