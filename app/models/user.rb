@@ -308,6 +308,15 @@ class User
     end
   end
 
+  def update_for_signup_client_identifier!(client_identifier)
+    #prevent web onboarding
+    self.app_progress.onboarding = client_identifier
+    #add cohort so we can track/find them later
+    self.cohorts << client_identifier unless self.cohorts.include? client_identifier
+
+    self.save
+  end
+
   # given a comma separated string or array of strings of autocomplete items in info, store all unique, valid ones
   # in the array at self.autocomplete[key]
   def store_autocomplete_info(key, info)

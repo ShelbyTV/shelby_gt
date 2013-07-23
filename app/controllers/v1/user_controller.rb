@@ -55,6 +55,7 @@ class V1::UserController < ApplicationController
   # @param [Optional, String] user.nickname The desired username, required unless generate_temporary_nickname_and_password == 1
   # @param [Optional, String] user.password The plaintext password, required unless generate_temporary_nickname_and_password == 1
   # @param [Optional, Boolean] generate_temporary_nickname_and_password If "1", nickname and password will use randomly generated values.
+  # @param [Optional, String] client_identifier Used by iOS to update user appropriately (ie. add cohort, don't repeat onboarding on web)
   #
   # Example payloads:
   #   Creating user will all details specified:
@@ -70,6 +71,10 @@ class V1::UserController < ApplicationController
 
     if @user and @user.errors.empty? and @user.valid?
       sign_in(:user, @user)
+      
+      if params[:client_identifier]
+        @user.update_for_signup_client_identifier!(params[:client_identifier])
+      end
 
       respond_to do |format|
         format.json do
