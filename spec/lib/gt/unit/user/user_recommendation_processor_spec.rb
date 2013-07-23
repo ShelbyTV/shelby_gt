@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-require 'user_recommendation_processor'
+require 'user_email_processor'
 
 # UNIT test
-describe GT::UserRecommendationProcessor do
+describe GT::UserEmailProcessor do
 
   before(:each) do
     @user = Factory.create(:user)
@@ -16,7 +16,7 @@ describe GT::UserRecommendationProcessor do
 
     context "private methods" do
       before(:each) do
-        @email_processor = GT::UserRecommendationProcessor.new
+        @email_processor = GT::UserEmailProcessor.new
       end
 
       context "real user check" do
@@ -45,7 +45,7 @@ describe GT::UserRecommendationProcessor do
 
       context "with valid data" do
          before(:each) do
-          @email_processor = GT::UserRecommendationProcessor.new
+          @email_processor = GT::UserEmailProcessor.new
           30.times do |i|
             v = Factory.create(:video)
             f = Factory.create(:frame, :video => v, :creator => @user )
@@ -178,7 +178,7 @@ describe GT::UserRecommendationProcessor do
 
       context "creating a new dashboard entry from one with a video rec" do
         before(:each) do
-          @email_processor = GT::UserRecommendationProcessor.new
+          @email_processor = GT::UserEmailProcessor.new
           @v = Factory.create(:video)
           @v.recs << Factory.create(:recommendation, :recommended_video_id => @v.id)
           @f = Factory.create(:frame, :video => @v, :creator => @user )
@@ -223,7 +223,7 @@ describe GT::UserRecommendationProcessor do
       context "creating a new dashboard entry from a prioritized dashboard entry" do
 
         before(:each) do
-          @email_processor = GT::UserRecommendationProcessor.new
+          @email_processor = GT::UserEmailProcessor.new
           @v = Factory.create(:video)
           @f = Factory.create(:frame, :video => @v)
           @friend_user = Factory.create(:user)
