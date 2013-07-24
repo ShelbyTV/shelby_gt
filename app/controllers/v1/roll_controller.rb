@@ -129,45 +129,6 @@ class V1::RollController < ApplicationController
     end
   end
 
-  ## DEPRECATED, use roll#featured
-  #
-  # Returns a hierarchy of rolls to explore.
-  #
-  # Returns an array of objects that define the hierarchy of Rolls for the Explore section.
-  # [{category_name: "sports", rolls: [array_of_rolls]}, {category_name: "tech", rolls: [array_of_rolls]}, ...]
-  #
-  # The rolls will include the first three Frames which will include Video information sufficient to display on an Explore view.
-  #
-  # [GET] /v1/roll/explore
-  #
-  def explore
-    #DEPRECATED, use roll#featured
-    StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['explore']) do
-
-      # Get all the Documents from the DB so we don't hit N+1 problem later
-      rolls = Roll.find( Settings::Roll.explore.map { |name, cat| cat['rolls'] }.flatten )
-      @frames_map = {}
-      rolls.each do |r|
-        @frames_map[r.id.to_s] = r.frames.limit(10).all
-      end
-      videos = Video.find( (@frames_map.values.flatten.compact.uniq).map { |f| f.video_id }.compact.uniq )
-
-      @categories = []
-
-      Settings::Roll.explore.each do |foo, cat|
-        # single Roll.find uses identity map, preventing N+1
-        rolls = []
-        cat['rolls'].each { |roll_id| rolls << Roll.find(roll_id) }
-        @categories << {
-          :category_name => cat['category_name'],
-          :rolls => rolls.flatten
-        }
-      end
-
-      @status = 200
-    end
-  end
-
   ##
   # Returns a categorical hierarchy of featured rolls (useful in Explore, Onboarding, and possibly more in the future)
   #
@@ -178,7 +139,7 @@ class V1::RollController < ApplicationController
   #
   # [GET] /v1/roll/featured
   #
-  # @params [Optional, String] segment <onboarding | explore> Use when you only want a segment of the feature rolls
+  # @params [Optional, String] segment <onboarding | iphone_standard> Use when you only want a segment of the feature rolls
   #
   def featured
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['featured']) do

@@ -218,56 +218,6 @@ describe 'v1/roll' do
       end
     end
 
-    describe "GET Explore" do
-      before(:each) do
-        @v1, @v2 = Factory.create(:video), Factory.create(:video)
-        #Video.stub(:find).and_return([@v1, @v2])
-        @r1, @r2 = Factory.create(:roll), Factory.create(:roll)
-        Roll.stub(:find).and_return([@r1, @r2])
-        @f1_1, @f1_2, @f1_3 = Factory.create(:frame, :roll => @r1, :video => @v1, :creator => @u1), Factory.create(:frame, :roll => @r1, :video => @v2, :creator => @u1), Factory.create(:frame, :roll => @r1, :video => @v2, :creator => @u1)
-        @f2_1, @f2_2, @f2_3 = Factory.create(:frame, :roll => @r2, :video => @v1, :creator => @u1), Factory.create(:frame, :roll => @r2, :video => @v2, :creator => @u1), Factory.create(:frame, :roll => @r2, :video => @v2, :creator => @u1)
-      end
-
-      it "should return an array of objects" do
-        get 'v1/roll/explore'
-        response.body.should be_json_eql(200).at_path("status")
-        response.body.should have_json_size(Settings::Roll.explore.size).at_path("result")
-      end
-
-      it "should include the category name for each object" do
-        get 'v1/roll/explore'
-        response.body.should have_json_path("result/0/category")
-      end
-
-      it "should include a rolls array for each object" do
-        get 'v1/roll/explore'
-        response.body.should have_json_path("result/0/rolls")
-      end
-
-      it "should include three frames for each Roll in the rolls array" do
-        get 'v1/roll/explore'
-        response.body.should have_json_size(3).at_path("result/0/rolls/0/frames")
-        response.body.should have_json_size(3).at_path("result/1/rolls/0/frames")
-        response.body.should have_json_size(3).at_path("result/1/rolls/1/frames")
-      end
-
-      it "should include each frame's creator's id and nickname" do
-        get 'v1/roll/explore'
-        response.body.should have_json_path("result/0/rolls/0/frames/0/creator")
-        response.body.should have_json_path("result/0/rolls/0/frames/0/creator/id")
-        response.body.should have_json_path("result/0/rolls/0/frames/0/creator/nickname")
-
-        parse_json(response.body)["result"][0]["rolls"][0]["frames"][0]["creator"]["id"].should eq(@u1.id.to_s)
-        parse_json(response.body)["result"][0]["rolls"][0]["frames"][0]["creator"]["nickname"].should eq(@u1.nickname)
-      end
-
-      it "should only call find on Videos once" do
-        Video.should_receive(:find).exactly(1).times
-        get 'v1/roll/explore'
-      end
-
-    end
-
     describe "POST" do
       context "roll creation" do
         it "should create and return a private roll on success" do
