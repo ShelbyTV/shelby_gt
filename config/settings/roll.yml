@@ -5,213 +5,244 @@ defaults: &defaults
   mm_use_identity_map: true
   featured: [
     {
-      category_title: "★ Shelby Recommended ★",
-      include_in: {explore: true, onboarding: true, in_line_promos: false},
+      category_title: "Featured",
+      include_in: {onboarding: true},
       rolls: [
-        {display_title: "Buzzfeed",         id: "4f9577c488ba6b15ec0084c7", display_thumbnail_src: "/images/onboarding/rolls-v2/buzzfeed.png",
-          include_in: {explore: false, onboarding: true, in_line_promos: false}},
-        {display_title: "Pitchfork",        id: "4fa3e6309a725b3689001792", display_thumbnail_src: "/images/onboarding/rolls-v2/pitchfork.png",
-          include_in: {explore: false, onboarding: true, in_line_promos: false}},
-        {display_title: "New York Times",   id: "50522466b415cc5b81002080", display_thumbnail_src: "/images/onboarding/rolls-v2/nytimes.png",
-          include_in: {explore: false, onboarding: true, in_line_promos: false}},
-        {display_title: "TED Talks",        id: "4fa054ff88ba6b09c8000e93", display_thumbnail_src: "/images/onboarding/rolls-v2/ted.png",
-          include_in: {explore: false, onboarding: true, in_line_promos: false}},
-        {display_title: "The Daily What",   id: "4fa28d849a725b79c9000228", display_thumbnail_src: "/images/onboarding/rolls-v2/dailywhat.png",
-          include_in: {explore: false, onboarding: true, in_line_promos: false}},
-        {display_title: "VICE",             id: "4f907a9b9a725b46010005c7", display_thumbnail_src: "/images/onboarding/rolls-v2/vice.png",
-          include_in: {explore: false, onboarding: true, in_line_promos: false}},
-        {display_title: "Sorted",           id: "4fa2750e88ba6b1edf000bc1", display_thumbnail_src: "/images/onboarding/rolls-v2/sorted.png",
-          include_in: {explore: false, onboarding: true, in_line_promos: false}},
-        {display_title: "Look TV",          id: "4fa03b3d88ba6b55840023f4", display_thumbnail_src: "/images/onboarding/rolls-v2/looktv.png",
-          include_in: {explore: false, onboarding: true, in_line_promos: false}},
-        {display_title: "Vimeo",                id: "4f900cf5b415cc466a0005bb",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Creators Project",     id: "4fbbc4211c1cf42b91002eac",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Shelby",               id: "4f901bd8b415cc466a0008ec",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Laughing Squid",       id: "4fc637879a725b755d001f77",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "iVote Nation",         id: "5077955cb415cc60b2002871",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "MOVIECLIPS",           id: "4f958e049a725b0dba014577",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
-    {
-      category_title: "Causes",
-      include_in: {explore: true, onboarding: false, in_line_promos: false},
-      rolls: [
-        {display_title: "Charity Water",        id: "4fe2425b9a725b08ec00ade8",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "joinRED",              id: "4fabff20d10412263a01c009",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
-    {
-      category_title: "Comedy",
-      include_in: {explore: true, onboarding: false, in_line_promos: false},
-      rolls: [
-        {display_title: "College Humor",        id: "4f9009d9b415cc466a000466", display_thumbnail_src: "/images/onboarding/rolls/collegehumor.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "SNL Shorts",           id: "4fbd2d24d10412081e00042e", display_thumbnail_src: "/images/onboarding/rolls/snl.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Team Coco",            id: "4fbffb5fd1041206f6002355", display_thumbnail_src: "/images/onboarding/rolls/coco.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Jake and Amir",        id: "4fb3d39988ba6b33460043bb", display_thumbnail_src: "/images/onboarding/rolls/jakeandamir.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "The Onion",            id: "4fc532169a725b2999000354", display_thumbnail_src: "/images/onboarding/rolls/onion.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
-    {
-      category_title: "Educational",
-      include_in: { explore: true, onboarding: false, in_line_promos: false},
-      rolls: [
-        {display_title: "Minute Physics",       id: "4f9f3fc19a725b5b9700329b",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "The Crash Course",     id: "4fb5a66a9a725b3af0005b66", display_thumbnail_src: "/images/onboarding/rolls/crashcourse.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Smart History",        id: "4fb6344d9a725b2d6a0011b0", display_thumbnail_src: "/images/onboarding/rolls/smarthistory.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Sesame Street",        id: "4fa2931f88ba6b68b6000ba9", display_thumbnail_src: "/images/onboarding/rolls/sesamestreet.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-       {display_title: "Khan Academy",         id: "4fa39bd89a725b1f920008f3", display_thumbnail_src: "/images/onboarding/rolls/khan.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "TED Talks",            id: "4fbaa51d1c1cf44b9d002f58", display_thumbnail_src: "/images/onboarding/rolls/ted.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Brain Picker",         id: "4fbad2c5d1041266bc000d4f", display_thumbnail_src: "/images/onboarding/rolls/brainpicker.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "PBS Idea Channel",     id: "4faabca99a725b5cd50026a2",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}} ]},
-    {
-      category_title: "Gaming",
-      include_in: {explore: true, onboarding: false, in_line_promos: false},
-      rolls: [
-        {display_title: "IGN",                  id: "4f987a5e9a725b032b002f13",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Notch",                id: "4f902217b415cc466a000909",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "freddiew",             id: "4f98926f88ba6b626701474c",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Infinite Ammo",        id: "4f95c23e9a725b4189004f77",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
-    {
-      category_title: "Health",
-      include_in: {explore: true, onboarding: false, in_line_promos: false},
-      rolls: [
-        {display_title: "Nerd Fitness",         id: "4fdee5f91c1cf4714200a607",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
-    {
-      category_title: "Interesting People",
-      include_in: {explore: true, onboarding: false, in_line_promos: false},
-      rolls: [
-        {display_title: "chris",                id: "4f901d4bb415cc661405fde9", display_thumbnail_src: "/images/onboarding/rolls/chris.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "reece",                id: "4f900d56b415cc6614056681", display_thumbnail_src: "/images/onboarding/rolls/reece.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "henry",                id: "4f8f7ef6b415cc476200004a",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "harto",                id: "4f902316b415cc466a0009dd", display_thumbnail_src: "/images/onboarding/rolls/harto.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "jacqueline",           id: "4f900012b415cc661404e72b", display_thumbnail_src: "/images/onboarding/rolls/jacqueline.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "spinosa",              id: "4f8f7ef2b415cc4762000002",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "vondoom",              id: "4f900553b415cc6614051b7b", display_thumbnail_src: "/images/onboarding/rolls/vincent.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "ewood",                id: "4f8fdf0ab415cc6614038e6b",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "matyus",               id: "4f9012f4b415cc6614059c19",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "omgal",                id: "4f8f81beb415cc4762002daa", display_thumbnail_src: "/images/onboarding/rolls/omggal.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
-    {
-      category_title: "Music",
-      include_in: {explore: true, onboarding: false, in_line_promos: false},
-      rolls: [
-        {display_title: "OK Go",                id: "4fd1083cd10412183a00346b",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Garfunkel and Oates",  id: "4f9ed72288ba6b205b00257c",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Perpetua",             id: "4fa291439a725b7e28002071",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Awl Music",            id: "4fa54d559a725b746300016c", display_thumbnail_src: "/images/onboarding/rolls/awl.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Common Revolt",        id: "4fa28fd688ba6b5f59001b71", display_thumbnail_src: "/images/onboarding/rolls/revolt.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Pitchfork Media",      id: "4fa41cfa88ba6b0dcf001a65", display_thumbnail_src: "/images/onboarding/rolls/pitchfork.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Mthrfnkr",             id: "4fa31cd888ba6b2fae00004a", display_thumbnail_src: "/images/onboarding/rolls/mthrfkr.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Flux",                 id: "4fa291439a725b7e28002071", display_thumbnail_src: "/images/onboarding/rolls/fluxperpetua.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "yvynyl",               id: "4fa2908088ba6b61770010af", display_thumbnail_src: "/images/onboarding/rolls/yvynl.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
-    {
-      category_title: "Nature & Science",
-      include_in: {explore: true, onboarding: false, in_line_promos: false},
-      rolls: [
-        {display_title: "Adam Savage",              id: "4fa057c388ba6b0f4200183c", display_thumbnail_src: "/images/onboarding/rolls/adamsavage.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Don't Try This",           id: "4fa057c388ba6b0f4200183c",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Neil deGrasse Tyson",      id: "4fcce43988ba6b5b7400054a", display_thumbnail_src: "/images/onboarding/rolls/neiltyson.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Minute Physics",           id: "4f9f3fc19a725b5b9700329b", display_thumbnail_src: "/images/onboarding/rolls/minutephysics.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Fuck Yeah Fluid Dynamics", id: "4fa28e7388ba6b5a8c001c6e", display_thumbnail_src: "/images/onboarding/rolls/fuckyeah.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "NASA",                     id: "4f9b11f09a725b352f0020c4", display_thumbnail_src: "/images/onboarding/rolls/nasa.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Petsami",                  id: "4f95929288ba6b17c10209a4", display_thumbnail_src: "/images/onboarding/rolls/petsami.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
-    {
-      category_title: "News, Business & Politics",
-      include_in: {explore: true, onboarding: false, in_line_promos: false},
-      rolls: [
-        {display_title: "YouTube Politics",     id: "4fa05c799a725b020a000a5e", display_thumbnail_src: "/images/onboarding/rolls/youtubepolitics.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "BuzzFeed",             id: "4f9577c488ba6b15ec0084c7", display_thumbnail_src: "/images/onboarding/rolls/buzzfeed.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Reuters",              id: "4f95622b9a725b72e700106b", display_thumbnail_src: "/images/onboarding/rolls/reuters.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "WSJ Video",            id: "4fa8542c88ba6b669b000bcd", display_thumbnail_src: "/images/onboarding/rolls/wsj.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "New York Times",       id: "50522466b415cc5b81002080", display_thumbnail_src: "/images/onboarding/rolls/nytimes.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
-    {
-      category_title: "Offbeat & Pop Culture",
-      include_in: {explore: true, onboarding: false, in_line_promos: false},
-      rolls: [
-        {display_title: "Laughing Squid",       id: "4fc637879a725b755d001f77", display_thumbnail_src: "/images/onboarding/rolls/laughingsquid.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "The Daily What",       id: "4fa28d849a725b79c9000228", display_thumbnail_src: "/images/onboarding/rolls/dailywhat.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "ShortFormBlog",        id: "4fa28d8c9a725b7a2a0001e6", display_thumbnail_src: "/images/onboarding/rolls/shortform.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "My Damn Channel",      id: "4f901242b415cc466a00082d", display_thumbnail_src: "/images/onboarding/rolls/damnchannel.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "PBS Idea Channel",     id: "4faabca99a725b5cd50026a2", display_thumbnail_src: "/images/onboarding/rolls/pbs.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Vimeo",                id: "4f900cf5b415cc466a0005bb", display_thumbnail_src: "/images/onboarding/rolls/vimeo.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Creators Project",     id: "4fbbc4211c1cf42b91002eac",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "CHOW",                 id: "50072ee988ba6b796b00e4fd",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Jenna Marbles",        id: "4f98d30a9a725b2dfb010cb6",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
-    {
-      category_title: "Sports",
-      include_in: {explore: true, onboarding: false, in_line_promos: false},
-      rolls: [
-        {display_title: "Red Bull Vids",        id: "4fb413bb9a725b650900195a", display_thumbnail_src: "/images/onboarding/rolls/redbull.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "GoPro",                id: "4f91700d88ba6b2aab000fba", display_thumbnail_src: "/images/onboarding/rolls/gopro.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "ESPN Video",           id: "4fbe42069a725b686300004a", display_thumbnail_src: "/images/onboarding/rolls/espn.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Teton Gravity",        id: "4f9889fd9a725b0db2003876", display_thumbnail_src: "/images/onboarding/rolls/tetongravity.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Tony Hawk",            id: "4f94a9f89a725b7207000006", display_thumbnail_src: "/images/onboarding/rolls/tonyhawk.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}},
-        {display_title: "Kelly Slater",         id: "4f962a5588ba6b1de300503a", display_thumbnail_src: "/images/onboarding/rolls/kellyslater.png",
-          include_in: {explore: true, onboarding: false, in_line_promos: false}}]},
+        {
+          display_title: "Buzzfeed",
+          id: "4f9577c488ba6b15ec0084c7",
+          display_thumbnail_src: 'http://i1.ytimg.com/i/pko_-a4wgz2u_DgDgd9fqA/mq1.jpg',
+          description : 'Social content on the web',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'VICE',
+          id : '4f907a9b9a725b46010005c7',
+          description : 'Exploring uncomfortable truths',
+          display_thumbnail_src : 'http://i3.ytimg.com/i/n8zNIfYAQNdrFRrr8oibKw/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Creators Project',
+          id : '4fbbc4211c1cf42b91002eac',
+          description : 'Tech in music, art, film, and design',
+          display_thumbnail_src : 'http://i4.ytimg.com/i/_NaA2HkWDT6dliWVcvnkuQ/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Blank on Blank',
+          id : '4fa41c4f88ba6b0d4e00130f',
+          description : 'Unheard interviews with American icons',
+          display_thumbnail_src : 'http://i2.ytimg.com/i/9pO2YNforRbdwKOh09djKA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'The Daily What',
+          id : '4fa28d849a725b79c9000228',
+          description : 'Hot off the Internets',
+          display_thumbnail_src : 'http://24.media.tumblr.com/avatar_72e68a2dede0_512.png',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'The Onion',
+          id : '4fc532169a725b2999000354',
+          description : "America's finest news satire",
+          display_thumbnail_src : 'http://i3.ytimg.com/i/fAOh2t5DpxVrgS9NQKjC7A/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'TED',
+          id : '4fa054ff88ba6b09c8000e93',
+          description : 'Ideas worth spreading',
+          display_thumbnail_src : 'http://i2.ytimg.com/i/AuUUnT6oDeKwE6v1NGQxug/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'iamOTHER',
+          id : '519baa7eb415cc0191000007',
+          description : 'Thinkers, innovators and outcasts',
+          display_thumbnail_src : 'http://i2.ytimg.com/i/E560wL2ftkMrQL40LYFUVg/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Life+Times',
+          id : '519bab29b415cc0191000077',
+          description : "JAY Z's digital experience",
+          display_thumbnail_src : 'http://i3.ytimg.com/i/N-sc1xJr-QQNj_uNIM9wTA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Reserve Channel',
+          id : '5005b00e9a725b0e150178fa',
+          description : 'Extraordinary people and places',
+          display_thumbnail_src : 'http://i2.ytimg.com/i/-LE7UowYotavwgFWKfN-nQ/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : "Jamie Oliver's Food Tube",
+          id : '4f9d9c1a88ba6b56aa00150f',
+          description : 'Great recipes',
+          display_thumbnail_src : 'http://i1.ytimg.com/i/pSgg_ECBj25s9moCDfSTsA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'New York Times',
+          id : '50522466b415cc5b81002080',
+          description : 'Where the conversation begins',
+          display_thumbnail_src : 'http://i2.ytimg.com/i/qnbDFdCpuN8CMEg0VuEBqA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'GQ',
+          id : '519bac7cb415cc01910000af',
+          description : 'Look sharp + live smart',
+          display_thumbnail_src : 'https://si0.twimg.com/profile_images/3658741077/a711cfb45b08e33226ea3845223bff15.jpeg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Vogue',
+          id : '4fa062869a725b0c2c0010fc',
+          description : 'Defining the culture of fashion',
+          display_thumbnail_src : 'http://i3.ytimg.com/i/RXiA3h1no_PFkb1JCP0yMA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Pitchfork',
+          id : '4fa3e6309a725b3689001792',
+          description : 'Essential guide to indie music',
+          display_thumbnail_src : 'http://i4.ytimg.com/i/7kI8WjpCfFoMSNDuRh_4lA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Above Average',
+          id : '50951b06b415cc567800aa16',
+          description : 'High-quality laughs',
+          display_thumbnail_src : 'http://i3.ytimg.com/i/NVBYBxWj9dMHqKEl_V8HBQ/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Grantland',
+          id : '519bada3b415cc01910000e5',
+          description : 'Sports and pop culture',
+          display_thumbnail_src : 'http://i4.ytimg.com/i/wLr_DYKR8aS0k4r8bB5I5Q/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'IGN',
+          id : '4f987a5e9a725b032b002f13',
+          description : 'Inside scoop on videogames',
+          display_thumbnail_src : 'https://lh4.googleusercontent.com/-CUStYqbZjKk/AAAAAAAAAAI/AAAAAAAAAAA/-WVBoj_7FTs/s100-c-k/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'GoPro',
+          id : '4f91700d88ba6b2aab000fba',
+          description : "World's most versatile camera",
+          display_thumbnail_src : 'http://i2.ytimg.com/i/qhnX4jA0A5paNd1v-zEysw/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Red Bull',
+          id : '4fb413bb9a725b650900195a',
+          description : "Prepare for maximum 'stoke factor'",
+          display_thumbnail_src : 'http://i3.ytimg.com/i/blfuW_4rakIf2h6aqANefA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'NetworkA',
+          id : '4f987e9188ba6b58500122da',
+          description : 'Intersection of Surf, Skate, Snow, BMX, Ski & Moto',
+          display_thumbnail_src : 'https://lh6.googleusercontent.com/-hG8LNuSwl5c/AAAAAAAAAAI/AAAAAAAAAAA/ZD0mnHsVHX8/s100-c-k/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'RIDE',
+          id : '4f9ee11b9a725b6605001713',
+          description: '22 skateboarding shows',
+          display_thumbnail_src : 'https://lh5.googleusercontent.com/-oCkEPfbsgm8/AAAAAAAAAAI/AAAAAAAAAAA/lfSnlX_J83M/s100-c-k/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Drive',
+          id : '4f99e5069a725b1c7501c038',
+          description : 'The culture of cars',
+          display_thumbnail_src : 'http://i2.ytimg.com/i/5rBpVgv83gYPZ593XwQUsA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Teton Gravity Research',
+          id : '512d1f15b415cc5d8c0001cf',
+          description : 'Ski and snowboard',
+          display_thumbnail_src : 'http://i3.ytimg.com/i/ziB6WaaUPEFSE2X1TNqUTg/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+         {
+          display_title : 'PBS Idea Channel',
+          id : '4faabca99a725b5cd50026a2',
+          description : 'Pop culture, technology and art',
+          display_thumbnail_src : 'http://i4.ytimg.com/i/3LqW4ijMoENQ2Wv17ZrFJA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Wired',
+          id : '4f9a08909a725b43ad00f798',
+          description : 'Intersection of technology with all else',
+          display_thumbnail_src : 'http://i3.ytimg.com/i/ftwRNsjfRo08xYE31tkiyw/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'The Verge',
+          id : '4fa1591f88ba6b78da0008b7',
+          description : 'Intersection of technology, science, art, & culture',
+          display_thumbnail_src : 'http://i1.ytimg.com/i/ddiUEpeqJcYeBxX1IVBKvQ/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Crash Course',
+          id : '4f95f29f88ba6b72c2004aed',
+          description : 'Six awesome courses in from awesome channel',
+          display_thumbnail_src : 'http://i1.ytimg.com/i/X6b17PVsYBQ0ip5gyeme-Q/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Sci Show',
+          id : '4f9731be88ba6b5309025c59',
+          description : 'Science news and history',
+          display_thumbnail_src : 'http://i3.ytimg.com/i/ZYTClx2T1of7BRZ86-8fow/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'THNKR',
+          id : '4fc8f77f88ba6b0881000995',
+          description : 'Extraordinary access to the people, stories, ideas',
+          display_thumbnail_src : 'https://lh4.googleusercontent.com/-s4bLGopD5b8/AAAAAAAAAAI/AAAAAAAAAAA/nU7h6CIJqT8/s60-c-k/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title: "Sesame Street",
+          id: "4fa2931f88ba6b68b6000ba9",
+          display_thumbnail_src: "http://i1.ytimg.com/i/oookXUzPciGrEZEXmh4Jjg/mq1.jpg",
+          include_in: {onboarding: true}
+        },
+       {
+        display_title: "Khan Academy",
+        id: "4fa39bd89a725b1f920008f3",
+        display_thumbnail_src: "http://i1.ytimg.com/i/4a-Gbdw7vOaccHmFo40b9g/mq1.jpg",
+        include_in: {onboarding: true}
+      },
+      {
+        display_title: "College Humor",
+        id: "4f9009d9b415cc466a000466",
+        display_thumbnail_src: "http://i1.ytimg.com/i/PDXXXJj9nax0fr0Wfc048g/mq1.jpg",
+        include_in: {onboarding: true}
+      },
+      {
+        display_title: "Smart History",
+        id: "4fb6344d9a725b2d6a0011b0",
+        display_thumbnail_src: "http://i1.ytimg.com/i/3R-xanNgtoa8b7gpVexVlA/mq1.jpg?v=4f79d422",
+        include_in: {onboarding: true}
+      }]
+    },
     {
       category_title: "iPad Lineup",
       include_in: {explore: false, onboarding: false, in_line_promos: false, ipad_standard: true, ipad_vertical_one: true},
@@ -251,7 +282,7 @@ defaults: &defaults
       ]},
     {
       category_title: "iPhone Lineup",
-      include_in: {explore: false, onboarding: false, in_line_promos: false, ipad_standard: false, ipad_vertical_one: false, iphone_standard: true},
+      include_in: {ipad_standard: false, ipad_vertical_one: false, iphone_standard: true},
       rolls: [
       ],
       user_channels: [
@@ -262,45 +293,6 @@ defaults: &defaults
           include_in: {iphone_standard: true}}
       ]},
   ]
-  explore:
-    cat10:
-      category_name: "★ Shelby Recommended ★"
-      rolls: ["4f900cf5b415cc466a0005bb", "4fbbc4211c1cf42b91002eac", "4f901bd8b415cc466a0008ec", "4fc637879a725b755d001f77", "4f958e049a725b0dba014577"]
-    cat20:
-      category_name: "Causes"
-      rolls: ["4fe2425b9a725b08ec00ade8", "4fabff20d10412263a01c009"]
-    cat30:
-      category_name: "Comedy"
-      rolls: ["4f9009d9b415cc466a000466", "4fbd2d24d10412081e00042e", "4fbffb5fd1041206f6002355", "4fb3d39988ba6b33460043bb", "4fc532169a725b2999000354"]
-    cat40:
-      category_name: "Educational"
-      rolls: ["4f9f3fc19a725b5b9700329b", "4fb5a66a9a725b3af0005b66", "4fb6344d9a725b2d6a0011b0", "4fa2931f88ba6b68b6000ba9", "4fa39bd89a725b1f920008f3", "4fa054ff88ba6b09c8000e93", "4fbad2c5d1041266bc000d4f", "4faabca99a725b5cd50026a2"]
-    cat50:
-      category_name: "Gaming"
-      rolls: ["4f987a5e9a725b032b002f13", "4f902217b415cc466a000909", "4f98926f88ba6b626701474c", "4f95c23e9a725b4189004f77"]
-    cat60:
-      category_name: "Health"
-      rolls: ["4fdee5f91c1cf4714200a607"]
-    cat70:
-      category_name: "Interesting People"
-      rolls: ["4f901d4bb415cc661405fde9", "4f900d56b415cc6614056681", "4f8f7ef6b415cc476200004a", "4f902316b415cc466a0009dd", "4f900012b415cc661404e72b", "4f8f7ef2b415cc4762000002", "4f900553b415cc6614051b7b", "4f8fdf0ab415cc6614038e6b", "4f9012f4b415cc6614059c19", "4f8f81beb415cc4762002daa"]
-    cat80:
-      category_name: "Music"
-      rolls: ["4fd1083cd10412183a00346b", "4f9ed72288ba6b205b00257c", "4fa291439a725b7e28002071", "4fa54d559a725b746300016c", "4fa28fd688ba6b5f59001b71", "4fa41cfa88ba6b0dcf001a65", "4fd1083cd10412183a00346b", "4fa41cfa88ba6b0dcf001a65", "4fa31cd888ba6b2fae00004a", "4fa2908088ba6b61770010af"]
-    cat90:
-      category_name: "Nature & Science"
-      rolls: ["4fa057c388ba6b0f4200183c", "4fcce43988ba6b5b7400054a", "4f9f3fc19a725b5b9700329b", "4fa28e7388ba6b5a8c001c6e", "4f9b11f09a725b352f0020c4", "4f95929288ba6b17c10209a4"]
-    cat100:
-      category_name: "News, Business & Politics"
-      rolls: ["4fa05c799a725b020a000a5e", "4f9577c488ba6b15ec0084c7", "4f95622b9a725b72e700106b", "4fa8542c88ba6b669b000bcd", "50522466b415cc5b81002080"]
-    cat110:
-      category_name: "Offbeat & Pop Culture"
-      rolls: ["4fc637879a725b755d001f77", "4fa28d849a725b79c9000228", "4fa28d8c9a725b7a2a0001e6", "4f901242b415cc466a00082d", "4faabca99a725b5cd50026a2", "4fbbc4211c1cf42b91002eac", "50072ee988ba6b796b00e4fd", "4f98d30a9a725b2dfb010cb6"]
-    cat120:
-      category_name: "Sports"
-      rolls: ["4fb413bb9a725b650900195a", "4f91700d88ba6b2aab000fba", "4fbe42069a725b686300004a", "4f9889fd9a725b0db2003876", "4f94a9f89a725b7207000006", "4f962a5588ba6b1de300503a"]
-
-
 
 development:
   <<: *defaults
