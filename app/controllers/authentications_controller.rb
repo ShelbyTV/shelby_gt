@@ -1,6 +1,7 @@
 # encoding: UTF-8
 require 'user_manager'
 require 'user_merger'
+require 'rack/utils'
 
 class AuthenticationsController < ApplicationController
 
@@ -249,7 +250,11 @@ class AuthenticationsController < ApplicationController
 
   private
     def redirect_path
-      clean_query_params(session[:return_url] || request.env['omniauth.origin'] || params[:redir])
+      path = clean_query_params(session[:return_url] || request.env['omniauth.origin'] || params[:redir])
+      if redir_query = request.env["omniauth.params"] && request.env["omniauth.params"]["redir_query"]
+        path = add_query_params(path, Rack::Utils.parse_nested_query(redir_query))
+      end
+      return path
     end
 
     def use_cohort_entrance(user, cohort_entrance)
