@@ -643,10 +643,25 @@ void sobPrintSubobjectArray(sobContext sob,
                             sobField objectArrayField,
                             sobSubobjectPrintCallback subobjectPrintCallback)
 {
+   sobPrintSubobjectArrayWithKey(sob,
+                                 context,
+                                 object,
+                                 objectArrayField,
+                                 sobFieldLongName[objectArrayField],
+                                 subobjectPrintCallback);
+}
+
+void sobPrintSubobjectArrayWithKey(sobContext sob,
+                                   mrjsonContext context,
+                                   bson *object,
+                                   sobField objectArrayField,
+                                   const char *key,
+                                   sobSubobjectPrintCallback subobjectPrintCallback)
+{
    bson arrayBson;
    bson_iterator iterator;
 
-   mrjsonStartArray(context, sobFieldLongName[objectArrayField]);
+   mrjsonStartArray(context, key);
 
    const char *objectArrayDBName = sobFieldDBName[objectArrayField];
 
