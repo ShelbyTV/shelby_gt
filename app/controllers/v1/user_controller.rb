@@ -30,8 +30,10 @@ class V1::UserController < ApplicationController
     if User.find(params[:id]) == current_user
       current_user.increment(:session_count => 1)
       ShelbyGT_EM.next_tick {
+        StatsManager::GoogleAnalytics.track_nth_session(current_user, 1)
         StatsManager::GoogleAnalytics.track_nth_session(current_user, 3)
         StatsManager::GoogleAnalytics.track_nth_session(current_user, 6)
+        StatsManager::GoogleAnalytics.track_nth_session(current_user, 10)
       }
       @status = 200
     else
@@ -71,7 +73,7 @@ class V1::UserController < ApplicationController
 
     if @user and @user.errors.empty? and @user.valid?
       sign_in(:user, @user)
-      
+
       if params[:client_identifier]
         @user.update_for_signup_client_identifier!(params[:client_identifier])
       end
