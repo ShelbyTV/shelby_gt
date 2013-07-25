@@ -22,6 +22,8 @@ RSpec.configure do |config|
   # to user helpers included with json_spec gem:
   config.include JsonSpec::Helpers
 
+  ga_client = Gabba::Gabba.new(Settings::GoogleAnalytics.account_id, Settings::Global.domain)
+
   config.before(:each) do
     #never hit Rhombus (stats)
     Rhombus.stub(:post)
@@ -44,6 +46,11 @@ RSpec.configure do |config|
     @fb_info_getter.stub(:get_friends_names).and_return(["andy", "beth"])
     @fb_info_getter.stub(:get_friends_names_ids_dictionary).and_return({"dan" => 33, "frank" => 22})
     APIClients::FacebookInfoGetter.stub(:new).and_return(@fb_info_getter)
+
+    # don't want Gabba actually hitting Google Analytics
+    @ga_client = ga_client
+    @ga_client.stub(:event)
+    Gabba::Gabba.stub(:new).and_return @ga_client
   end
 
   config.before(:type => :request) do
