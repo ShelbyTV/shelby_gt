@@ -273,39 +273,6 @@ describe AuthenticationsController do
     end
 
     context "New User signing up" do
-      context "no permissions" do
-        before(:each) do
-          request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
-          @u = Factory.create(:user)
-          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(@u)
-        end
-
-        it "should accept with no additional permissions" do
-          get :create
-          assigns(:current_user).should == @u
-          assigns(:current_user).gt_enabled.should == true
-          cookies[:_shelby_gt_common].should_not == nil
-          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-        end
-
-        context "query string params" do
-
-          it "should remove previous auth failure params from the query string for redirect" do
-            session[:return_url] = 'http://www.example.com?auth_failure=1&auth_strategy=Facebook&param1=val1&param2=val2'
-            controller.should_receive(:redirect_path).and_return('http://www.example.com?param1=val1&param2=val2')
-            get :create, :provider => "Twitter"
-          end
-
-          it "should have no ? if the query string is empty after removing the auth failure params" do
-            session[:return_url] = 'http://www.example.com?auth_failure=1&auth_strategy=Facebook'
-            controller.should_receive(:redirect_path).and_return('http://www.example.com')
-            get :create, :provider => "Twitter"
-          end
-
-        end
-
-      end
-
       context "via omniauth" do
         before(:each) do
           request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
@@ -313,42 +280,6 @@ describe AuthenticationsController do
           GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(@u)
         end
 
-        it "should accept when GtInterest found" do
-          gt_interest = Factory.create(:gt_interest)
-          cookies[:gt_access_token] = {:value => gt_interest.id.to_s, :domain => ".shelby.tv"}
-
-          get :create
-          assigns(:current_user).should == @u
-          assigns(:current_user).gt_enabled.should == true
-          cookies[:_shelby_gt_common].should_not == nil
-          cookies[:gt_access_token].should == nil
-          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-        end
-
-        it "should be able to redirect when GtInterest found" do
-          gt_interest = Factory.create(:gt_interest)
-          cookies[:gt_access_token] = gt_interest.id.to_s
-
-          session[:return_url] = (url = "http://danspinosa.tv")
-          get :create
-          assigns(:opener_location).should == url
-        end
-
-        it "should accept with CohortEntrance, set cohorts" do
-          cohorts = ["a", "b", "c"]
-          cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
-          session[:cohort_entrance_id] = cohort_entrance.id
-
-          get :create
-          assigns(:current_user).should == @u
-          assigns(:current_user).gt_enabled.should == true
-          cookies[:_shelby_gt_common].should_not == nil
-          session[:cohort_entrance_id].should == nil
-          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-
-          assigns(:current_user).cohorts.should == cohorts
-          @u.reload.cohorts.should == cohorts
-        end
       end
 
       context "via email / password" do
@@ -405,14 +336,11 @@ describe AuthenticationsController do
               'credentials'=>{'token'=>nil, 'secret'=>nil}
             }})
           @u = Factory.create(:user, :gt_enabled => false, :user_type => User::USER_TYPE[:faux], :cohorts => ["init"])
-          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(@u)
         end
 
-        it "should accept without additional permissions" do
+        it "should redirect to signup if user is not real. period." do
           get :create
-          assigns(:current_user).should == @u
-          cookies[:_shelby_gt_common].should_not == nil
-          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root+'/signup?social_signup=not_authorized'
         end
 
       end
@@ -428,62 +356,9 @@ describe AuthenticationsController do
           User.stub(:first).and_return(@u)
         end
 
-        it "should accept and convert if gt_enabled" do
-          @u.gt_enabled = true
-          @u.save
-
-          GT::UserManager.should_receive :convert_faux_user_to_real
-          GT::UserManager.should_receive :start_user_sign_in
-
+        it "should redirect to signup if user is not real. period." do
           get :create
-          assigns(:current_user).should == @u
-          assigns(:current_user).gt_enabled.should == true
-          cookies[:_shelby_gt_common].should_not == nil
-          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-        end
-
-        it "should accept and convert if GtInterest found" do
-          gt_interest = Factory.create(:gt_interest)
-          cookies[:gt_access_token] = {:value => gt_interest.id.to_s, :domain => ".shelby.tv"}
-
-          GT::UserManager.should_receive :convert_faux_user_to_real
-          GT::UserManager.should_receive :start_user_sign_in
-
-          get :create
-          assigns(:current_user).should == @u
-          cookies[:_shelby_gt_common].should_not == nil
-          cookies[:gt_access_token].should == nil
-          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-        end
-
-        it "should be able to redirect on GtInterest" do
-          gt_interest = Factory.create(:gt_interest)
-          cookies[:gt_access_token] = gt_interest.id.to_s
-
-          GT::UserManager.should_receive :convert_faux_user_to_real
-          GT::UserManager.should_receive :start_user_sign_in
-
-          session[:return_url] = (url = "http://danspinosa.tv")
-          get :create
-          assigns(:opener_location).should == url
-        end
-
-        it "should accept and convert with CohortEntrance, set cohorts on user" do
-          cohorts = ["a", "b", "c"]
-          expected_cohorts = @u.cohorts + cohorts << "post_onboarding"
-          cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
-          session[:cohort_entrance_id] = cohort_entrance.id
-
-          GT::UserManager.should_receive :convert_faux_user_to_real
-          GT::UserManager.should_receive :start_user_sign_in
-
-          get :create
-          assigns(:current_user).should == @u
-          cookies[:_shelby_gt_common].should_not == nil
-          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
-
-          assigns(:current_user).cohorts.should == expected_cohorts
-          @u.reload.cohorts.should == expected_cohorts
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root+'/signup?social_signup=signup_first'
         end
       end
     end

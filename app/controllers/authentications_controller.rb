@@ -76,11 +76,15 @@ class AuthenticationsController < ApplicationController
 
       elsif beta_invite
         use_beta_invite(user, beta_invite)
-
       end
 
-      sign_in_current_user(user, omniauth)
-      user.gt_enable! unless user.gt_enabled
+      # not letting faux users in this way. redirect to /signup with a message
+      if user.user_type == User::USER_TYPE[:faux]
+        @opener_location = add_query_params(Settings::ShelbyAPI.web_root+'/signup', {:social_signup => "signup_first"})
+      else
+        sign_in_current_user(user, omniauth)
+        user.gt_enable! unless user.gt_enabled
+      end
 
 # ---- Adding new authentication to current user
     elsif current_user and omniauth
@@ -95,7 +99,7 @@ class AuthenticationsController < ApplicationController
 
 # ---- New User signing up w/ omniauth, but we're not allowing this now, so we just redirect back to web with an error
     elsif omniauth
-        @opener_location = add_query_params(Settings::ShelbyAPI.web_root, {:social_signup => "not_authorized"})
+        @opener_location = add_query_params(Settings::ShelbyAPI.web_root+'/signup', {:social_signup => "not_authorized"})
 # ---- New User signing up w/ email & password
     elsif !params[:user].blank?
       # can now signup in a popup so no_redirect should not be set!
