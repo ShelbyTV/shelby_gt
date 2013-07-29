@@ -154,6 +154,13 @@ void sobPrintSubobjectArray(sobContext sob,
                             sobField subobjectOidField,
                             sobSubobjectPrintCallback);
 
+void sobPrintSubobjectArrayWithKey(sobContext sob,
+                                   mrjsonContext context,
+                                   bson *object,
+                                   sobField subobjectOidField,
+                                   const char *key,
+                                   sobSubobjectPrintCallback);
+
 void sobPrintArrayAttributeCountWithKey(mrjsonContext context,
                                         bson *object,
                                         sobField objectArrayField,

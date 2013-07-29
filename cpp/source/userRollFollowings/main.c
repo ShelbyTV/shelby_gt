@@ -170,6 +170,19 @@ int shouldPrintRegularRoll(sobContext sob, bson *roll)
    return TRUE;
 }
 
+void printJsonAuthentication(sobContext sob, mrjsonContext context, bson *authentication)
+{
+   static sobField authenticationAttributes[] = {
+      SOB_AUTHENTICATION_PROVIDER
+   };
+
+   sobPrintAttributes(context,
+                      authentication,
+                      authenticationAttributes,
+                      sizeof(authenticationAttributes) / sizeof(sobField));
+
+}
+
 void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, unsigned int followedAtTime)
 {
    mrjsonStartNamelessObject(context);
@@ -236,6 +249,13 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, unsigned i
                                        rollCreator,
                                        SOB_USER_USER_IMAGE,
                                        "creator_image");
+
+      sobPrintSubobjectArrayWithKey(sob,
+                                    context,
+                                    rollCreator,
+                                    SOB_USER_AUTHENTICATIONS,
+                                    "creator_authentications",
+                                    &printJsonAuthentication);
    }
 
    sobPrintAttributeWithKeyOverride(context,
