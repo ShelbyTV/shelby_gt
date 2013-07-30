@@ -788,10 +788,10 @@ describe GT::UserManager do
         lambda {
           u1 = GT::UserManager.create_new_user_from_params(@params)
           @params[:nickname] = Factory.next :nickname
-          u1 = GT::UserManager.create_new_user_from_params(@params)
-          u1.valid?.should == false
-          u1.errors.should be_a ActiveModel::Errors
-          u1.errors.messages.include?(:primary_email).should == true
+          u2 = GT::UserManager.create_new_user_from_params(@params)
+          u2.valid?.should == false
+          u2.errors.should be_a ActiveModel::Errors
+          u2.errors.messages.include?(:primary_email).should == true
         }.should change { User.count } .by(1)
       end
 

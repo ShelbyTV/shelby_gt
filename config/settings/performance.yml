@@ -8,7 +8,7 @@ development:
 
 test:
   <<: *defaults
-  validate_uniqueness_primary_email: false
+  validate_uniqueness_primary_email: true
 
 production: &production
   <<: *defaults

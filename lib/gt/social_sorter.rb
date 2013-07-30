@@ -51,12 +51,10 @@ module GT
 
         #observing_user should be following the posting_user's public roll, unless they specifically unfollowed it
         unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)
-          puts "[SORTER] not followed or unfollowed: #{posting_user} "
           posting_user.public_roll.add_follower(observing_user, false)
           # To make sure new users get a bunch of historical content, backfill.
           # (This means old users will also get the backfill when they follow sombody new on twitter/fb)
           GT::Framer.backfill_dashboard_entries(observing_user, posting_user.public_roll, 20)
-          puts "[SORTER] posting_user dashbaord count: #{observing_user.dashboard_entries.count} "
           new_following = true
         end
 
@@ -80,8 +78,6 @@ module GT
             :deep => video_hash[:from_deep]
             )
         end
-
-        puts "[SORTER] res: #{res} "
 
         if !res
           # New frame was not created b/c 1) conversation was already posted OR 2) video was posted recently and we added this message to it
