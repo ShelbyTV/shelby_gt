@@ -29,7 +29,7 @@ module GT
       raise ArgumentError, "must supply observing_user" unless observing_user.is_a?(User)
 
       posting_user = get_or_create_posting_user_for(message)
-
+      puts "[SORTER] posting_user: #{posting_user.inspect} "
       return false unless posting_user.is_a?(User) and posting_user.public_roll.is_a?(Roll)
 
       message.user = posting_user
@@ -48,7 +48,6 @@ module GT
       # In the normal posting case, we make sure observing user sees it by first following that roll (unless they've specifically unfollowed it)
       # Everyone else following that public roll will see it as well.
       def self.sort_public_message(message, video_hash, observing_user, posting_user)
-        Rails.logger.error "[GT::SocialSorter] LOGGING (0) SocialSorter.sort_public_message called for: #{observing_user.id}"
         #observing_user should be following the posting_user's public roll, unless they specifically unfollowed it
         unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)
           Rails.logger.error "[GT::SocialSorter] LOGGING (1) user: #{observing_user.id} about to follow #{posting_user.id}"
@@ -67,7 +66,6 @@ module GT
           unless old_frame.conversation and old_frame.conversation.messages.any? { |m| m.origin_id == message.origin_id }
             # This message hasn't been appended to the conversation yet
             # Do so atomically (w/ set semantics so timing doesn't result in multiple posts)
-            Rails.logger.error "[GT::SocialSorter] LOGGING (3) about  add a conversation to set for: #{observing_user.id}"
             Conversation.add_to_set(old_frame.conversation.id, :messages => message.to_mongo)
           end
         else
@@ -84,7 +82,6 @@ module GT
         end
 
         if !res
-          Rails.logger.error "[GT::SocialSorter] LOGGING (4) no result frame for: #{observing_user.id}"
           # New frame was not created b/c 1) conversation was already posted OR 2) video was posted recently and we added this message to it
           #  BUT if observing_user was just added as a follower of posting_user's public_roll,
           #      a DashboardEntry may not have been created for this Frame/observing_user...
