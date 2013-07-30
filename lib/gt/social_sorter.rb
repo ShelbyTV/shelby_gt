@@ -30,7 +30,11 @@ module GT
 
       posting_user = get_or_create_posting_user_for(message)
 
+      Rails.logger.error "[GT::SocialSorter] LOGGING (0) sort called, user is a user and their roll is a roll: #{posting_user.is_a?(User) and posting_user.public_roll.is_a?(Roll)}"
+
       return false unless posting_user.is_a?(User) and posting_user.public_roll.is_a?(Roll)
+
+      Rails.logger.error "[GT::SocialSorter] LOGGING (0.5) testing that we're not returning false"
 
       message.user = posting_user
 
