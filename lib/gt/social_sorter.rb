@@ -29,7 +29,7 @@ module GT
       raise ArgumentError, "must supply observing_user" unless observing_user.is_a?(User)
 
       posting_user = get_or_create_posting_user_for(message)
-      puts "[SORTER] posting_user: #{posting_user.inspect} "
+
       return false unless posting_user.is_a?(User) and posting_user.public_roll.is_a?(Roll)
 
       message.user = posting_user
