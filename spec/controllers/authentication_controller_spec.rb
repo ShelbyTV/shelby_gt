@@ -116,6 +116,28 @@ describe AuthenticationsController do
 
         assigns(:opener_location).should == should_merge_accounts_authentications_path
       end
+
+      it "should merge accounts without asking when a current user authenticates a faux user via omniauth" do
+        @other_user.user_type = User::USER_TYPE[:faux]
+
+        GT::UserMerger.should_receive(:merge_users).with(@other_user, @into_user).and_return(true)
+
+        get :create
+
+        assigns(:opener_location).should == Settings::ShelbyAPI.web_root
+        session[:user_to_merge_in_id].should be_nil()
+      end
+
+      it "should sign out if automatic user merge fails" do
+        @other_user.user_type = User::USER_TYPE[:faux]
+
+        GT::UserMerger.should_receive(:merge_users).with(@other_user, @into_user).and_return(false)
+
+        get :create
+
+        assigns(:opener_location).should == sign_out_user_path
+        session[:user_to_merge_in_id].should be_nil()
+      end
     end
 
     context "should_merge_accounts" do

@@ -57,10 +57,23 @@ class AuthenticationsController < ApplicationController
 
 # ---- Current user with two seperate accounts
     if current_user and user and user != current_user
-      # make sure they want to merge "user" into "current_user"
-      session[:user_to_merge_in_id] = user.id.to_s
 
-      @opener_location = should_merge_accounts_authentications_path
+      if user.user_type == User::USER_TYPE[:faux]
+        # if the new account to be merged in is a faux user, no one
+        # really owns that Shelby account yet, so just merge that account
+        # into the existing account without asking
+        if GT::UserMerger.merge_users(user, current_user)
+          @opener_location = redirect_path || Settings::ShelbyAPI.web_root
+        else
+          # if the merge fails we may be in some kind of corrupt or insecure state,
+          # so sign the user out
+          @opener_location = sign_out_user_path
+        end
+      else
+        # otherwise, make sure they want to merge "user" into "current_user"
+        session[:user_to_merge_in_id] = user.id.to_s
+        @opener_location = should_merge_accounts_authentications_path
+      end
 
 
 # ---- Current user, just signing in
