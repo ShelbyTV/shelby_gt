@@ -97,7 +97,7 @@ class User
   key :downcase_nickname,     String
   key :user_image,            String  # actual URL provided by service
   key :user_image_original,   String  # guess of URL to original upload that became user_image
-  key :primary_email,         String
+  key :primary_email,         String, :default => nil
   key :encrypted_password,    String, :abbr => :ar
 
   # uploadable avatar via paperclip (see config/initializers/paperclip.rb for defaults)
@@ -192,7 +192,7 @@ class User
 
   if Settings::Performance.validate_uniqueness_primary_email
     before_validation(:on => :create) { self.drop_primary_email_if_taken }
-    validates_uniqueness_of :primary_email, :allow_blank => false, :allow_nil => false
+    validates_uniqueness_of :primary_email, :allow_blank => false, :allow_nil => true
   end
 
   # Latin-1 and other extensions:   \u00c0 - \u02ae

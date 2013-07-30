@@ -7,6 +7,8 @@ defaults: &defaults
 
 development:
   <<: *defaults
+  dev_poller_last_page: 1
+  dev_poller_tweets_per_page: 20
 
 test:
   <<: *defaults
@@ -14,6 +16,6 @@ test:
 production: &production
   <<: *defaults
   should_send_tweet: true
-  
+
 arnold:
   <<: *production

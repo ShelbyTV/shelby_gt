@@ -176,6 +176,7 @@ module GT
         u.user_type = User::USER_TYPE[:faux]
         u.preferences = Preferences.new()
         u.app_progress = AppProgress.new()
+        u.primary_email = nil
         # This Authentication is how the user will be looked up...
         auth = Authentication.new(:provider => provider, :uid => uid, :nickname => nickname)
         u.authentications << auth
@@ -325,7 +326,7 @@ module GT
 
       user.downcase_nickname = user.nickname.downcase
     end
-    
+
     # Used by UserController when iOS is creating users that are temporarily missing username/password
     def self.generate_temporary_nickname
       begin
@@ -333,7 +334,7 @@ module GT
       end while User.where( :downcase_nickname => nick ).count > 0
       return nick
     end
-    
+
     # Used by UserController when iOS is creating users that are temporarily missing username/password
     def self.generate_temporary_password
       "p.#{Time.now.to_f}"

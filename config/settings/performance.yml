@@ -8,10 +8,11 @@ development:
 
 test:
   <<: *defaults
+  validate_uniqueness_primary_email: false
 
 production: &production
   <<: *defaults
-  
+
 arnold:
   <<: *production
   validate_uniqueness_user_nickname: false
