@@ -25,10 +25,6 @@ module GT
             next
           end
 
-          ## HENRY LOGGING 7/31/13 ##
-          my_user = (job_details[:provider_user_id] == "1633149930")
-          Rails.logger.error "[GT::JobProcessor] LOGGING (0) twitter backfill_job!" if my_user
-
           vids = []
           # 1) Get videos at that URL
           if job_details[:expanded_urls].is_a?(Array)
@@ -58,10 +54,7 @@ module GT
             end
           end
 
-          Rails.logger.error "[GT::JobProcessor] LOGGING (1) twitter backfill_job vids: #{vids}" if my_user
-
           if vids.empty?
-            Rails.logger.error "[GT::JobProcessor] LOGGING (1.5) twitter backfill_job VIDS EMPTY" if my_user
             #Rails.logger.debug "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] No videos found for #{job_details}"
             StatsManager::StatsD.client.increment($statsd_jobs_processed_bucket)
             results << :no_videos
@@ -73,11 +66,7 @@ module GT
           msg = GT::FacebookNormalizer.normalize_post(job_details[:facebook_status_update]) if job_details[:facebook_status_update]
           msg = GT::TumblrNormalizer.normalize_post(job_details[:tumblr_status_update]) if job_details[:tumblr_status_update]
 
-          Rails.logger.error "[GT::JobProcessor] LOGGING (2) twitter backfill_job MSG: #{msg}" if my_user
-
           if msg == nil or msg.nickname.blank?
-
-            Rails.logger.error "[GT::JobProcessor] LOGGING (2.5) twitter backfill_job MSG EMPTY" if my_user
 
             Rails.logger.info "[GT::Arnold::JobProcessor.process_job(job:#{job.jobid})] Invalid social message. job: #{job}, job_details: #{job_details}, message: #{msg}"
             StatsManager::StatsD.client.increment($statsd_jobs_processed_bucket)
@@ -93,22 +82,14 @@ module GT
             StatsManager::StatsD.client.increment($statsd_jobs_processed_bucket)
             results << :no_observing_user
 
-            Rails.logger.error "[GT::JobProcessor] LOGGING (3.5) twitter backfill_job NO OBSERVING USER" if my_user
-
             next
           end
-
-          Rails.logger.error "[GT::JobProcessor] LOGGING (3) twitter backfill_job USER: #{observing_user.inspect}" if my_user
 
 
           # 4) For each video, post it into the system
           res = []
 
-          Rails.logger.error "[GT::JobProcessor] LOGGING (4) twitter backfill_job CALLING SocialSorter" if my_user
-
           vids.each { |v_hash| res << GT::SocialSorter.sort(msg, v_hash, observing_user) }
-
-          Rails.logger.error "[GT::JobProcessor] LOGGING (5) twitter backfill_job SocialSorter result: #{res}" if my_user
 
           StatsManager::StatsD.client.increment($statsd_jobs_processed_bucket)
           results << res

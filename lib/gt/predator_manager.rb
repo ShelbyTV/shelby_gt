@@ -16,7 +16,6 @@ module GT
         bean = Beanstalk::Connection.new(Settings::Beanstalk.url)
         case a.provider
         when 'twitter'
-          Rails.logger.error "[GT::PredatorManager] LOGGING (1) adding twitter backfill_job" if a.uid == "1633149930"
           tw_add_backfill(a, bean)
           tw_add_to_stream(a, bean)
         when 'facebook'
@@ -69,7 +68,6 @@ module GT
       def self.tw_add_backfill(a, bean)
         bean.use(Settings::Beanstalk.tubes['twitter_backfill'])      # insures we are using watching tw_backfill tube
         backfill_job = {:action=>'add_user', :twitter_id => a.uid, :oauth_token => a.oauth_token, :oauth_secret => a.oauth_secret}
-        Rails.logger.error "[GT::PredatorManager] LOGGING (2) job #{backfill_job}" if a.uid == "1633149930"
         bean.put(backfill_job.to_json)
       end
 
