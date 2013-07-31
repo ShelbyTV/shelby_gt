@@ -53,6 +53,9 @@ module GT
       # In the normal posting case, we make sure observing user sees it by first following that roll (unless they've specifically unfollowed it)
       # Everyone else following that public roll will see it as well.
       def self.sort_public_message(message, video_hash, observing_user, posting_user)
+
+        my_user = (observing_user.id.to_s == "51f91fb2b415cc6c9608f580")
+
         #observing_user should be following the posting_user's public roll, unless they specifically unfollowed it
         unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)
           Rails.logger.error "[GT::SocialSorter] LOGGING (1) user: #{observing_user.id} about to follow #{posting_user.id}" if my_user
