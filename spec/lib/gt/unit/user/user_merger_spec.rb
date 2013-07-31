@@ -8,6 +8,16 @@ describe GT::UserMerger do
     GT::UserTwitterManager.stub(:follow_all_friends_public_rolls)
     GT::UserFacebookManager.stub(:follow_all_friends_public_rolls)
     GT::PredatorManager.stub(:initialize_video_processing)
+    @omniauth = {
+      "provider" => "twitter",
+      "uid" => "4321",
+      "credentials" => {
+        "token" => "somelongtoken"
+      },
+      "info" => {
+        "name" => "Foo Bar"
+      }
+    }
   end
 
   context "pre-merge" do
@@ -34,6 +44,8 @@ describe GT::UserMerger do
         GT::UserMerger.stub(:merge_rolls).and_return(true)
         GT::UserMerger.stub(:change_roll_ownership).and_return(true)
         GT::UserMerger.stub(:move_dashboard_entries).and_return(true)
+        GT::UserMerger.stub(:follow_all_friends_public_rolls).and_return(true)
+        GT::UserMerger.stub(:initialize_video_processing).and_return(true)
 
         @into_user.public_roll.should == nil
         @into_user.watch_later_roll.should == nil
@@ -67,6 +79,8 @@ describe GT::UserMerger do
         GT::UserMerger.stub(:merge_rolls).and_return(true)
         GT::UserMerger.stub(:change_roll_ownership).and_return(true)
         GT::UserMerger.stub(:move_dashboard_entries).and_return(true)
+        GT::UserMerger.stub(:follow_all_friends_public_rolls).and_return(true)
+        GT::UserMerger.stub(:initialize_video_processing).and_return(true)
       end
 
       it "should destroy other_user if everything else succeeds" do
@@ -86,6 +100,8 @@ describe GT::UserMerger do
         GT::UserMerger.stub(:merge_rolls).and_return(true)
         GT::UserMerger.stub(:change_roll_ownership).and_return(true)
         GT::UserMerger.stub(:move_dashboard_entries).and_return(true)
+        GT::UserMerger.stub(:follow_all_friends_public_rolls).and_return(true)
+        GT::UserMerger.stub(:initialize_video_processing).and_return(true)
 
         # Factory.create(:user) adds 1 auth
         @other_user_orig_auths = Array.new @other_user.authentications
@@ -121,6 +137,27 @@ describe GT::UserMerger do
 
         @into_user.reload.authentications.should == @into_user_orig_auths + @other_user_orig_auths
       end
+
+      it "should rebuild/expand other_user's auth if other_user is a faux user and their omniauth info is passed in" do
+        @other_user.user_type = User::USER_TYPE[:faux]
+
+        lambda {
+          GT::UserMerger.merge_users(@other_user, @into_user, @omniauth).should == true
+        }.should change { @into_user.reload.authentications.count } .by(@other_user_orig_auths.size)
+
+        new_auth = @into_user.reload.authentications.last
+        new_auth.provider.should == 'twitter'
+        new_auth.uid.should == '4321'
+        new_auth.name.should == 'Foo Bar'
+        new_auth.oauth_token.should == 'somelongtoken'
+
+        @into_user.authentications.should_not == @into_user_orig_auths + @other_user_orig_auths
+      end
+
+      it "should not rebuild/expand other_user's auth if other_user is not a faux user" do
+        GT::UserMerger.merge_users(@other_user, @into_user, @omniauth)
+        @into_user.reload.authentications.should == @into_user_orig_auths + @other_user_orig_auths
+      end
     end
 
 
@@ -131,6 +168,8 @@ describe GT::UserMerger do
         #GT::UserMerger.stub(:merge_rolls).and_return(true)
         GT::UserMerger.stub(:change_roll_ownership).and_return(true)
         GT::UserMerger.stub(:move_dashboard_entries).and_return(true)
+        GT::UserMerger.stub(:follow_all_friends_public_rolls).and_return(true)
+        GT::UserMerger.stub(:initialize_video_processing).and_return(true)
 
         # Create special rolls for each user
         @other_user.public_roll = @other_public_roll = Factory.create(:roll, :creator => @other_user)
@@ -346,12 +385,19 @@ describe GT::UserMerger do
 
       it "should initialize video processing for authed service being merged in from a faux user" do
         @other_user.user_type = User::USER_TYPE[:faux]
-        GT::PredatorManager.should_receive(:initialize_video_processing).with(@into_user, @other_user.authentications.first)
+        GT::PredatorManager.should_receive(:initialize_video_processing).with(@into_user, @into_user.authentications.last)
 
-        GT::UserMerger.merge_users(@other_user, @into_user)
+        GT::UserMerger.merge_users(@other_user, @into_user, @omniauth)
       end
 
       it "should not initialize video processing if the merged in user is not faux" do
+        GT::PredatorManager.should_not_receive(:initialize_video_processing)
+
+        GT::UserMerger.merge_users(@other_user, @into_user, @omniauth)
+      end
+
+      it "should not initialize video processing if merged in user is faux but no omniauth was passed in" do
+        @other_user.user_type = User::USER_TYPE[:faux]
         GT::PredatorManager.should_not_receive(:initialize_video_processing)
 
         GT::UserMerger.merge_users(@other_user, @into_user)

@@ -62,7 +62,7 @@ class AuthenticationsController < ApplicationController
         # if the new account to be merged in is a faux user, no one
         # really owns that Shelby account yet, so just merge that account
         # into the existing account without asking
-        if GT::UserMerger.merge_users(user, current_user)
+        if GT::UserMerger.merge_users(user, current_user, omniauth)
           @opener_location = redirect_path || Settings::ShelbyAPI.web_root
         else
           # if the merge fails we may be in some kind of corrupt or insecure state,

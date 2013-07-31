@@ -11,12 +11,12 @@ module GT
 
     # Merges Authentications, special Rolls, Rolls created, and DashboardEntries.
     # Destroys other_user
-    def self.merge_users(other_user, into_user)
+    def self.merge_users(other_user, into_user, omniauth=nil)
       raise ArgumentError, "must supply two valid User's" unless other_user.is_a?(User) and into_user.is_a?(User)
 
       return false unless self.ensure_valid_user(into_user)
 
-      return false unless self.move_authentications(other_user, into_user)
+      return false unless self.move_authentications(other_user, into_user, omniauth)
 
       # Array of special roll ids so we don't try to double-convert
       special_roll_ids = []
@@ -43,7 +43,7 @@ module GT
       self.follow_all_friends_public_rolls(into_user)
 
       # If the user being merged in was a faux user, start video processing for the new auth from that user
-      self.initialize_video_processing(into_user, other_user.authentications.first) if other_user.user_type == User::USER_TYPE[:faux]
+      self.initialize_video_processing(into_user, into_user.authentications.last) if ((other_user.user_type == User::USER_TYPE[:faux]) && omniauth)
 
       # Destroy the other user which we have now successfully merged in
       other_user.destroy
@@ -58,9 +58,18 @@ module GT
       end
 
       # Will update both users in the DB
-      def self.move_authentications(other_user, into_user)
-        other_user_auths = other_user.authentications
-        into_user.authentications += other_user.authentications
+      def self.move_authentications(other_user, into_user, omniauth=nil)
+
+        other_user_auths = copy_auths = other_user.authentications
+
+        # if the user being merged in is a faux user and we have full omniauth info for them
+        # merge in an expanded/rebuilt authentication with that additional info
+        if (other_user.user_type == User::USER_TYPE[:faux]) && omniauth
+          new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
+          copy_auths = [new_auth]
+        end
+
+        into_user.authentications += copy_auths
         other_user.authentications = []
         # need to remove old auths first b/c of index requirements
         if other_user.save(:validate => false)
