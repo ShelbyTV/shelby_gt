@@ -30,11 +30,12 @@ module GT
 
       posting_user = get_or_create_posting_user_for(message)
 
-      Rails.logger.error "[GT::SocialSorter] LOGGING (0) sort called, user is a user and their roll is a roll: #{posting_user.is_a?(User) and posting_user.public_roll.is_a?(Roll)}"
+      my_user = (observing_user.id.to_s == "51f91fb2b415cc6c9608f580")
+      Rails.logger.error "[GT::SocialSorter] LOGGING (0) sort called, user is a user and their roll is a roll: #{posting_user.is_a?(User) and posting_user.public_roll.is_a?(Roll)}" if my_user
 
       return false unless posting_user.is_a?(User) and posting_user.public_roll.is_a?(Roll)
 
-      Rails.logger.error "[GT::SocialSorter] LOGGING (0.5) testing that we're not returning false"
+      Rails.logger.error "[GT::SocialSorter] LOGGING (0.5) testing that we're not returning false" if my_user
 
       message.user = posting_user
 
@@ -54,13 +55,13 @@ module GT
       def self.sort_public_message(message, video_hash, observing_user, posting_user)
         #observing_user should be following the posting_user's public roll, unless they specifically unfollowed it
         unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)
-          Rails.logger.error "[GT::SocialSorter] LOGGING (1) user: #{observing_user.id} about to follow #{posting_user.id}"
+          Rails.logger.error "[GT::SocialSorter] LOGGING (1) user: #{observing_user.id} about to follow #{posting_user.id}" if my_user
           posting_user.public_roll.add_follower(observing_user, false)
           # To make sure new users get a bunch of historical content, backfill.
           # (This means old users will also get the backfill when they follow sombody new on twitter/fb)
-          Rails.logger.error "[GT::SocialSorter] LOGGING (2) about to backfill dashboard_entries for: #{observing_user.id}"
+          Rails.logger.error "[GT::SocialSorter] LOGGING (2) about to backfill dashboard_entries for: #{observing_user.id}" if my_user
           GT::Framer.backfill_dashboard_entries(observing_user, posting_user.public_roll, 20)
-          Rails.logger.error "[GT::SocialSorter] LOGGING (3) done backfilling dashboard_entries for: #{observing_user.id}"
+          Rails.logger.error "[GT::SocialSorter] LOGGING (3) done backfilling dashboard_entries for: #{observing_user.id}" if my_user
           new_following = true
         end
 
