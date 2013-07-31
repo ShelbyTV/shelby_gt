@@ -2,12 +2,12 @@
 require 'beanstalk-client'
 
 module GT
-  
+
   #This manager puts jobs on our Queue that are accepted by the Predator
   #  to find links in social postings
-  # 
+  #
   class PredatorManager
-    
+
     # gets as many videos from statuses available and adds user to site streaming
     def self.initialize_video_processing(u, a)
       return unless Settings::Beanstalk.available
@@ -16,6 +16,7 @@ module GT
         bean = Beanstalk::Connection.new(Settings::Beanstalk.url)
         case a.provider
         when 'twitter'
+          Rails.logger.error "[GT::PredatorManager] LOGGING (1) adding twitter backfill_job" if a.uid == "1633149930"
           tw_add_backfill(a, bean)
           tw_add_to_stream(a, bean)
         when 'facebook'
@@ -27,7 +28,7 @@ module GT
         Rails.logger.error("Error: Video processing initialization failed for user #{u.id}: #{e}")
       end
     end
-    
+
     # Puts jobs on Queues to get most recent video we may have missed
     def self.update_video_processing(u, a)
       return unless Settings::Beanstalk.available
@@ -47,9 +48,9 @@ module GT
         Rails.logger.error("Error: Video processing update failed for user #{u.id}: #{e}")
       end
     end
-    
+
     private
-    
+
       ###########################################
       # Add jobs to Message Queue so Predator knows about new user
       #
@@ -58,7 +59,7 @@ module GT
         add_user_job = {:tumblr_id => a.uid, :oauth_token => a.oauth_token, :oauth_secret => a.oauth_secret}
         bean.put(add_user_job.to_json)
       end
-    
+
       def self.fb_add_user(a, bean)
         bean.use(Settings::Beanstalk.tubes['facebook_add_user'])      # insures we are using watching fb_add_user tube
         add_user_job = {:fb_id => a.uid, :fb_access_token => a.oauth_token}
@@ -68,6 +69,7 @@ module GT
       def self.tw_add_backfill(a, bean)
         bean.use(Settings::Beanstalk.tubes['twitter_backfill'])      # insures we are using watching tw_backfill tube
         backfill_job = {:action=>'add_user', :twitter_id => a.uid, :oauth_token => a.oauth_token, :oauth_secret => a.oauth_secret}
+        Rails.logger.error "[GT::PredatorManager] LOGGING (2) job #{backfill_job}" if a.uid == "1633149930"
         bean.put(backfill_job.to_json)
       end
 
@@ -79,7 +81,7 @@ module GT
       #
       #
       ###########################################
-    
+
 
   end
 end
