@@ -99,7 +99,8 @@ describe AuthenticationsController do
       AuthenticationsController.any_instance.stub(:authenticate_user!).and_return(true)
 
       # Have omniauth stuff return another one
-      request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}}) #so that we look for a User
+      @env = {"omniauth.auth" => {'provider'=>'twitter'}}
+      request.stub!(:env).and_return(@env) #so that we look for a User
       @other_user = Factory.create(:user) #returned as if it was found via omniauth
       User.stub(:first).and_return(@other_user)
     end
@@ -120,7 +121,7 @@ describe AuthenticationsController do
       it "should merge accounts without asking when a current user authenticates a faux user via omniauth" do
         @other_user.user_type = User::USER_TYPE[:faux]
 
-        GT::UserMerger.should_receive(:merge_users).with(@other_user, @into_user).and_return(true)
+        GT::UserMerger.should_receive(:merge_users).with(@other_user, @into_user, @env["omniauth.auth"]).and_return(true)
 
         get :create
 
@@ -131,7 +132,7 @@ describe AuthenticationsController do
       it "should sign out if automatic user merge fails" do
         @other_user.user_type = User::USER_TYPE[:faux]
 
-        GT::UserMerger.should_receive(:merge_users).with(@other_user, @into_user).and_return(false)
+        GT::UserMerger.should_receive(:merge_users).with(@other_user, @into_user, @env["omniauth.auth"]).and_return(false)
 
         get :create
 
