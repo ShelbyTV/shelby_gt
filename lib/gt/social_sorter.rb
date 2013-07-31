@@ -30,7 +30,7 @@ module GT
 
       posting_user = get_or_create_posting_user_for(message)
 
-      my_user = (observing_user.id.to_s == "51f91fb2b415cc6c9608f580")
+      my_user = (observing_user.id.to_s == "51f93151b415cc6c960c2661")
       Rails.logger.error "[GT::SocialSorter] LOGGING (0) sort called, user is a user and their roll is a roll: #{posting_user.is_a?(User) and posting_user.public_roll.is_a?(Roll)}" if my_user
 
       return false unless posting_user.is_a?(User) and posting_user.public_roll.is_a?(Roll)
@@ -54,7 +54,7 @@ module GT
       # Everyone else following that public roll will see it as well.
       def self.sort_public_message(message, video_hash, observing_user, posting_user)
 
-        my_user = (observing_user.id.to_s == "51f91fb2b415cc6c9608f580")
+        my_user = (observing_user.id.to_s == "51f93151b415cc6c960c2661")
 
         #observing_user should be following the posting_user's public roll, unless they specifically unfollowed it
         unless posting_user.public_roll.followed_by?(observing_user) or observing_user.unfollowed_roll?(posting_user.public_roll)
