@@ -38,7 +38,11 @@ module GT
     private
 
       def self.friends_ids(user)
-        APIClients::FacebookInfoGetter.new(user).get_friends_ids
+        begin
+          APIClients::FacebookInfoGetter.new(user).get_friends_ids
+        rescue => e
+          Rails.logger.error "[GT::UserFacebookManager] Error getting FB friends of user (#{user.id}): #{e}"
+        end
       end
 
   end

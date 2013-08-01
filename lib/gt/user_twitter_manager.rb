@@ -41,7 +41,11 @@ module GT
     private
 
       def self.friends_ids(user)
-        APIClients::TwitterInfoGetter.new(user).get_following_ids
+        begin
+          APIClients::TwitterInfoGetter.new(user).get_following_ids
+        rescue => e
+          Rails.logger.error "[GT::UserTwitterManager] Error getting Twitter friends of user (#{user.id}): #{e}"
+        end
       end
 
   end
