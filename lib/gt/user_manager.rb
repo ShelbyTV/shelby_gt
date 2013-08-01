@@ -111,15 +111,19 @@ module GT
 
     # Adds a new auth to an existing user
     def self.add_new_auth_from_omniauth(user, omniauth)
+      Rails.logger.error "[GT::UserManager] adding new authentication for #{user.id}"
       new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
       user.authentications << new_auth
       if user.save
+        Rails.logger.error "[GT::UserManager] saved user #{user.id}"
         ShelbyGT_EM.next_tick {
+          Rails.logger.error "[GT::UserManager] Entered next_tick #{user.id}"
           #start following (okay to try to follow everybody)
           GT::UserTwitterManager.follow_all_friends_public_rolls(user)
           GT::UserFacebookManager.follow_all_friends_public_rolls(user)
 
           #start processing
+          Rails.logger.error "[GT::UserManager] calling initialize_video_processing #{user.id}"
           GT::PredatorManager.initialize_video_processing(user, new_auth)
         }
 
@@ -127,6 +131,7 @@ module GT
 
         return user
       else
+        Rails.logger.error "[GT::UserManager] error adding new authentication for #{user.id}"
         StatsManager::StatsD.increment(Settings::StatsConstants.user['add_service']['error'])
 
         Rails.logger.error "[GT::UserManager#add_new_auth_from_omniauth] Failed to save user: #{user.errors.full_messages.join(',')}"
