@@ -27,12 +27,13 @@ module GT
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
 
         ShelbyGT_EM.next_tick {
+          #start processing
+          GT::PredatorManager.initialize_video_processing(user, auth)
+
           #start following
           GT::UserTwitterManager.follow_all_friends_public_rolls(user)
           GT::UserFacebookManager.follow_all_friends_public_rolls(user)
 
-          #start processing
-          GT::PredatorManager.initialize_video_processing(user, auth)
         }
 
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
@@ -118,13 +119,14 @@ module GT
         Rails.logger.error "[GT::UserManager] saved user #{user.id}"
         ShelbyGT_EM.next_tick {
           Rails.logger.error "[GT::UserManager] Entered next_tick #{user.id}"
-          #start following (okay to try to follow everybody)
-          GT::UserTwitterManager.follow_all_friends_public_rolls(user)
-          GT::UserFacebookManager.follow_all_friends_public_rolls(user)
 
           #start processing
           Rails.logger.error "[GT::UserManager] calling initialize_video_processing #{user.id}"
           GT::PredatorManager.initialize_video_processing(user, new_auth)
+
+          #start following (okay to try to follow everybody)
+          GT::UserTwitterManager.follow_all_friends_public_rolls(user)
+          GT::UserFacebookManager.follow_all_friends_public_rolls(user)
         }
 
         StatsManager::StatsD.increment(Settings::StatsConstants.user['add_service'][new_auth.provider])
@@ -233,12 +235,12 @@ module GT
       user.user_type = User::USER_TYPE[:converted]
       if user.save
         ShelbyGT_EM.next_tick {
+          #start processing
+          GT::PredatorManager.initialize_video_processing(user, new_auth) if new_auth
+
           #start following
           GT::UserTwitterManager.follow_all_friends_public_rolls(user)
           GT::UserFacebookManager.follow_all_friends_public_rolls(user)
-
-          #start processing
-          GT::PredatorManager.initialize_video_processing(user, new_auth) if new_auth
         }
 
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'])

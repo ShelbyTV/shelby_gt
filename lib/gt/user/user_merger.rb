@@ -39,11 +39,11 @@ module GT
       # Change ownership of DashboardEntries
       self.move_dashboard_entries_in_background(other_user, into_user)
 
-      # Follow public rolls of friends from social networks that Shelby already knows about
-      self.follow_all_friends_public_rolls(into_user)
-
       # If the user being merged in was a faux user, start video processing for the new auth from that user
       self.initialize_video_processing(into_user, into_user.authentications.last) if ((other_user.user_type == User::USER_TYPE[:faux]) && omniauth)
+
+      # Follow public rolls of friends from social networks that Shelby already knows about
+      self.follow_all_friends_public_rolls(into_user)
 
       # Destroy the other user which we have now successfully merged in
       other_user.destroy
