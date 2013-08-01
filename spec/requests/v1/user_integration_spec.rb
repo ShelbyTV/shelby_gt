@@ -187,6 +187,19 @@ describe 'v1/user' do
           response.body.should have_json_size(0).at_path('result')
         end
 
+        it "should return special_public (faux user) rolls when param include_faux is passed" do
+          r1 = Factory.create(:roll, :creator => Factory.create(:user), :roll_type => Roll::TYPES[:special_public])
+          r1.add_follower(@u1)
+          r2 = Factory.create(:roll, :creator => Factory.create(:user), :roll_type => Roll::TYPES[:special_roll])
+          r2.add_follower(@u1)
+
+          @u1.save
+          get '/v1/user/'+@u1.id+'/rolls/following?include_faux=true'
+          response.body.should be_json_eql(200).at_path("status")
+          parse_json(response.body)["result"].class.should eq(Array)
+          response.body.should have_json_size(1).at_path('result')
+        end
+
         it "should return special_public_real_user rolls" do
           r1 = Factory.create(:roll, :creator => Factory.create(:user), :roll_type => Roll::TYPES[:special_public_real_user])
           r1.add_follower(@u1)

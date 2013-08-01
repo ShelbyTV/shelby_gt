@@ -15,6 +15,7 @@
 static struct options {
    char* user;
    int postable;
+   int includeFaux;
    char *environment;
 } options;
 
@@ -33,6 +34,7 @@ void printHelpText()
    printf("   -h --help           Print this help message\n");
    printf("   -u --user           User downcase nickname\n");
    printf("   -p --postable       Only return postable rolls\n");
+   printf("   -i --include-faux   Include faux user rolls\n");
    printf("   -e --environment    Specify environment: production, test, or development\n");
 }
 
@@ -43,15 +45,16 @@ void parseUserOptions(int argc, char **argv)
    while (1) {
       static struct option long_options[] =
       {
-         {"help",        no_argument,       0, 'h'},
-         {"user",        required_argument, 0, 'u'},
-         {"postable",    no_argument,       0, 'p'},
-         {"environment", required_argument, 0, 'e'},
+         {"help",         no_argument,       0, 'h'},
+         {"user",         required_argument, 0, 'u'},
+         {"postable",     no_argument,       0, 'p'},
+         {"include-faux", no_argument,       0, 'i'},
+         {"environment",  required_argument, 0, 'e'},
          {0, 0, 0, 0}
       };
 
       int option_index = 0;
-      c = getopt_long(argc, argv, "hu:pe:", long_options, &option_index);
+      c = getopt_long(argc, argv, "hu:pie:", long_options, &option_index);
 
       /* Detect the end of the options. */
       if (c == -1) {
@@ -66,6 +69,10 @@ void parseUserOptions(int argc, char **argv)
 
          case 'p':
             options.postable = TRUE;
+            break;
+
+         case 'i':
+            options.includeFaux = TRUE;
             break;
 
          case 'e':
@@ -97,6 +104,7 @@ void setDefaultOptions()
 {
    options.user = "";
    options.postable = FALSE;
+   options.includeFaux = FALSE;
    options.environment = "";
 }
 
@@ -150,8 +158,13 @@ int shouldPrintRegularRoll(sobContext sob, bson *roll)
       rollType = 10;
    }
 
-   // 10 is generic special roll, and 11 is special_public (faux user), types we don't display anymore
-   if (10 == rollType || 11 == rollType) {
+   // 10 is generic special roll a type we don't display anymore
+   if (10 == rollType) {
+      return FALSE;
+   }
+
+   // unless the option is explicitly set to include them, we don't display type 11 special_public (faux user) rolls
+   if (!options.includeFaux && 11 == rollType) {
       return FALSE;
    }
 
