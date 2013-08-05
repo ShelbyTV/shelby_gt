@@ -186,7 +186,9 @@ int shouldPrintRegularRoll(sobContext sob, bson *roll)
 void printJsonAuthentication(sobContext sob, mrjsonContext context, bson *authentication)
 {
    static sobField authenticationAttributes[] = {
-      SOB_AUTHENTICATION_PROVIDER
+      SOB_AUTHENTICATION_PROVIDER,
+      SOB_AUTHENTICATION_NICKNAME,
+      SOB_AUTHENTICATION_NAME,
    };
 
    sobPrintAttributes(context,
