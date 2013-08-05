@@ -171,9 +171,11 @@ describe 'v1/user' do
           response.body.should have_json_path('result/0/creator_authentications')
           response.body.should have_json_size(1).at_path('result/0/creator_authentications')
           response.body.should have_json_path('result/0/creator_authentications/0/provider')
+          response.body.should have_json_path('result/0/creator_authentications/0/uid')
           response.body.should have_json_path('result/0/creator_authentications/0/nickname')
           response.body.should have_json_path('result/0/creator_authentications/0/name')
           response.body.should be_json_eql("\"twitter\"").at_path('result/0/creator_authentications/0/provider')
+          response.body.should be_json_eql("\"#{@u1.authentications[0].uid}\"").at_path('result/0/creator_authentications/0/uid')
           response.body.should be_json_eql("\"nickname\"").at_path('result/0/creator_authentications/0/nickname')
           response.body.should be_json_eql("\"name\"").at_path('result/0/creator_authentications/0/name')
         end

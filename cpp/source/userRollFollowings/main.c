@@ -187,8 +187,9 @@ void printJsonAuthentication(sobContext sob, mrjsonContext context, bson *authen
 {
    static sobField authenticationAttributes[] = {
       SOB_AUTHENTICATION_PROVIDER,
+      SOB_AUTHENTICATION_UID,
       SOB_AUTHENTICATION_NICKNAME,
-      SOB_AUTHENTICATION_NAME,
+      SOB_AUTHENTICATION_NAME
    };
 
    sobPrintAttributes(context,
