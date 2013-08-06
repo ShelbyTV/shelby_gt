@@ -53,7 +53,7 @@
     </div><!-- eo user__contact -->
 
     <h1 class="user__h1">
-      <%= link_to user.name, "/admin/user/#{user.id}", :class=>"user__username" %> <span>(<%= user.nickname %>)</span>
+      <%= link_to user.name, "/admin/user/#{user.id}", :class=>"user__username" %> <span>(<%= user.nickname %>)</span> <small>[ onboarding status: <%= user.app_progress['onboarding'] %></small>
     </h1>
 		<% if user.public_roll %>
 	    <div class="user__info">

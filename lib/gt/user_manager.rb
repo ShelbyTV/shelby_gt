@@ -113,6 +113,8 @@ module GT
     # Adds a new auth to an existing user
     def self.add_new_auth_from_omniauth(user, omniauth)
       new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
+      GT::AuthenticationBuilder.normalize_user_info(user, new_auth)
+
       user.authentications << new_auth
       if user.save
         ShelbyGT_EM.next_tick {
