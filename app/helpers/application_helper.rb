@@ -24,6 +24,10 @@ module ApplicationHelper
     end
   end
 
+  def image_tag(source, options={})
+    super(source, options) if source.present?
+  end
+
   #valid avatar_size options are "small", "large", "original"
   def avatar_url_for_user(user, avatar_size="small")
     if user.has_shelby_avatar
