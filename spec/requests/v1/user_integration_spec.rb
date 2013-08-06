@@ -163,7 +163,7 @@ describe 'v1/user' do
           parse_json(response.body)["result"][0]["followed_at"].should == @u1.roll_followings[0].id.generation_time.to_f
         end
 
-        it "should return the creator authentication providers for each roll" do
+        it "should return the creator authentication info for each roll" do
           r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
           r1.add_follower(@u1)
 
@@ -171,7 +171,13 @@ describe 'v1/user' do
           response.body.should have_json_path('result/0/creator_authentications')
           response.body.should have_json_size(1).at_path('result/0/creator_authentications')
           response.body.should have_json_path('result/0/creator_authentications/0/provider')
+          response.body.should have_json_path('result/0/creator_authentications/0/uid')
+          response.body.should have_json_path('result/0/creator_authentications/0/nickname')
+          response.body.should have_json_path('result/0/creator_authentications/0/name')
           response.body.should be_json_eql("\"twitter\"").at_path('result/0/creator_authentications/0/provider')
+          response.body.should be_json_eql("\"#{@u1.authentications[0].uid}\"").at_path('result/0/creator_authentications/0/uid')
+          response.body.should be_json_eql("\"nickname\"").at_path('result/0/creator_authentications/0/nickname')
+          response.body.should be_json_eql("\"name\"").at_path('result/0/creator_authentications/0/name')
         end
 
         it "should not return special_roll or special_public rolls (since they come from faux users)" do
@@ -185,6 +191,19 @@ describe 'v1/user' do
           response.body.should be_json_eql(200).at_path("status")
           parse_json(response.body)["result"].class.should eq(Array)
           response.body.should have_json_size(0).at_path('result')
+        end
+
+        it "should return special_public (faux user) rolls when param include_faux is passed" do
+          r1 = Factory.create(:roll, :creator => Factory.create(:user), :roll_type => Roll::TYPES[:special_public])
+          r1.add_follower(@u1)
+          r2 = Factory.create(:roll, :creator => Factory.create(:user), :roll_type => Roll::TYPES[:special_roll])
+          r2.add_follower(@u1)
+
+          @u1.save
+          get '/v1/user/'+@u1.id+'/rolls/following?include_faux=true'
+          response.body.should be_json_eql(200).at_path("status")
+          parse_json(response.body)["result"].class.should eq(Array)
+          response.body.should have_json_size(1).at_path('result')
         end
 
         it "should return special_public_real_user rolls" do
