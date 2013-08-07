@@ -238,7 +238,7 @@ class AuthenticationsController < ApplicationController
   private
     def redirect_path
       path = clean_query_params(session[:return_url] || request.env['omniauth.origin'] || params[:redir])
-      if redir_query = request.env["omniauth.params"] && request.env["omniauth.params"]["redir_query"]
+      if redir_query = (request.env["omniauth.params"] && request.env["omniauth.params"]["redir_query"])
         path = add_query_params(path, Rack::Utils.parse_nested_query(redir_query))
       end
       return path
