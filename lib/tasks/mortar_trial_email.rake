@@ -2,6 +2,7 @@ namespace :gt_email do
 
   desc 'Send Mortar Trial Email'
   task :send_mortar_trial_email => :environment do
+    require 'mortar_harvester'
 
     trial_participant_nicknames = ['iceberg901', 'henry']
     trial_participants = User.where(:nickname => { :$in => trial_participant_nicknames })

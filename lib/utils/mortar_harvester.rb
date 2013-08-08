@@ -1,6 +1,5 @@
 # encoding: UTF-8
 module GT
-
   class MortarHarvester
     # pass a user object or user id as the parameter
     def self.get_recs_for_user(u)
