@@ -163,6 +163,10 @@ class AuthenticationsController < ApplicationController
 
     @opener_location = clean_query_params(@opener_location)
 
+    if redir_query = (request.env["omniauth.params"] && request.env["omniauth.params"]["redir_query"])
+      @opener_location = add_query_params(@opener_location, Rack::Utils.parse_nested_query(redir_query))
+    end
+
     render :action => 'redirector', :layout => 'simple'
 
 =begin
@@ -237,11 +241,7 @@ class AuthenticationsController < ApplicationController
 
   private
     def redirect_path
-      path = clean_query_params(session[:return_url] || request.env['omniauth.origin'] || params[:redir])
-      if redir_query = (request.env["omniauth.params"] && request.env["omniauth.params"]["redir_query"])
-        path = add_query_params(path, Rack::Utils.parse_nested_query(redir_query))
-      end
-      return path
+      clean_query_params(session[:return_url] || request.env['omniauth.origin'] || params[:redir])
     end
 
     def use_cohort_entrance(user, cohort_entrance)

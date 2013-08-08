@@ -258,6 +258,12 @@ describe AuthenticationsController do
           assigns(:opener_location).should == url + "?dan=theman"
         end
 
+        it "should handle passthrough redirect query even when omniauth.origin is not defined" do
+          request.env['omniauth.params'] = {"redir_query" => "dan=theman"}
+          get :create
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root + "?dan=theman"
+        end
+
       end
 
     end
