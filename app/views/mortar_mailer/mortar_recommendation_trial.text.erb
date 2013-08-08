@@ -1,3 +1,13 @@
+Shelby.tv recommends these videos for you:
+--------------------------------------------------------------------------
+
 <% @recs.each do |rec| %>
-  <%= rec %>
+<%= rec['video_title_trim'] %>
+<%= rec['video_url'] %>
+<% if @include_reason %>
+because you shared "<%= rec['reason_title_trim'] %>..."
 <% end %>
+
+<% end %>
+--------------------------------------------------------------------------
+Please watch them and send your feedback as requested in a separate email.
