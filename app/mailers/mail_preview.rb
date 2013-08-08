@@ -1,4 +1,6 @@
 if Rails.env.development?
+  require 'mortar_harvester'
+
   class MailPreview < MailView
 
       def reroll_notification #old_roll, new_roll
@@ -78,6 +80,16 @@ if Rails.env.development?
           :errors => 1
         }
         AdminMailer.weekly_email_summary(stats)
+      end
+
+      def mortar_trial
+        user = User.first
+        user.id = '4f32e49fad9f11053b00020a'
+        user.nickname = 'iceberg901'
+        user.primary_email = 'josh@shelby.tv'
+        recs = GT::MortarHarvester.get_recs_for_user(user)
+
+        MortarMailer.mortar_recommendation_trial(user, recs)
       end
 
   end

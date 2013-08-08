@@ -1,7 +1,7 @@
-namespace :stats_emails do
+namespace :gt_email do
 
   desc 'Send Weekly Curator Stats Email'
-  task :send_weekly_curator_stats_emails => :environment do
+  task :send_weekly_curator_stats_email => :environment do
 
     active_curator_ids = ['arthur','bananalust','bralfucious','chipsahoy','chris','christopherritter','enelson1','frash','henry','jimungimm','kehrseite','lcderus','lfleisch','matyus','nfpagliaro','nicholas','nm33','reece','sammorrill','spinosa','the_adventurous','thehackedmind','vondoom']
     active_curators = User.where(:nickname => { :$in => active_curator_ids })
