@@ -92,5 +92,15 @@ if Rails.env.development?
         MortarMailer.mortar_recommendation_trial(user, recs)
       end
 
+      def mortar_trial_with_reason
+        user = User.first
+        user.id = '4f32e49fad9f11053b00020a'
+        user.nickname = 'iceberg901'
+        user.primary_email = 'josh@shelby.tv'
+        recs = GT::MortarHarvester.get_recs_for_user(user)
+
+        MortarMailer.mortar_recommendation_trial(user, recs, true)
+      end
+
   end
 end
