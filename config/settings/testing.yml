@@ -1,0 +1,14 @@
+defaults: &defaults
+  shelby_test_participants_usernames : ['iceberg901']
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+
+arnold:
+  <<: *production
