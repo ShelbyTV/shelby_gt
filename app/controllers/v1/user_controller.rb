@@ -21,20 +21,31 @@ class V1::UserController < ApplicationController
   end
 
   ####################################
-  # Updates a users session count.
+  # Updates a users session count, platform specific.
+  # Sends a special Google Analytics update for interesting web session counts.
   # Returns 200 if successful
+  #
+  # @param [Optional, String] platform Set this to "ios" to track an iPhone or iPad session.  Default platform: "web"
   #
   # [PUT] /v1/user/:id/visit
   def log_session
     return render_error(404, "must include a user id") unless params[:id]
+    sessions_platform = params[:platform] || "web"
     if User.find(params[:id]) == current_user
-      current_user.increment(:session_count => 1)
-      ShelbyGT_EM.next_tick {
-        StatsManager::GoogleAnalytics.track_nth_session(current_user, 1)
-        StatsManager::GoogleAnalytics.track_nth_session(current_user, 3)
-        StatsManager::GoogleAnalytics.track_nth_session(current_user, 6)
-        StatsManager::GoogleAnalytics.track_nth_session(current_user, 10)
-      }
+      case sessions_platform
+      when "ios"
+        current_user.increment(:ios_session_count => 1)
+      when "web"        
+        current_user.increment(:session_count => 1)
+        ShelbyGT_EM.next_tick {
+          StatsManager::GoogleAnalytics.track_nth_session(current_user, 1)
+          StatsManager::GoogleAnalytics.track_nth_session(current_user, 3)
+          StatsManager::GoogleAnalytics.track_nth_session(current_user, 6)
+          StatsManager::GoogleAnalytics.track_nth_session(current_user, 10)
+        }
+      else
+        return render_error(404, "invalid platform.  only ios and web supported.")
+      end
       @status = 200
     else
       render_error(404, "could not update the current users session")
