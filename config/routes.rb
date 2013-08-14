@@ -61,6 +61,7 @@ ShelbyGt::Application.routes.draw do
       get 'rolls/personal' => 'roll#show_users_public_roll', :constraints => { :user_id => /[^\/]+/ }
       get 'rolls/personal/frames' => 'frame_metal#index_for_users_public_roll'
       get 'dashboard' => 'dashboard_entries_metal#index_for_user'
+      get 'recommendations' => 'recommendation#index_for_user'
       get 'stats' => 'user#stats', :as => :stats, :on => :member
       post 'dashboard_entry' => 'user#add_dashboard_entry', :on => :member
       put 'visit' => 'user#log_session', :on => :member

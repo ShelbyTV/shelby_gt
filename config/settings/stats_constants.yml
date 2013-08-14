@@ -13,6 +13,7 @@ defaults: &defaults
       rolls: 'user.rolls'
       valid_token: 'user.valid_token'
       stats: 'user.stats'
+      recommendations: 'user.recommendations'
     roll:
       index: 'roll.index'
       show: 'roll.show'

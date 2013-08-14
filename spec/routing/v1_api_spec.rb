@@ -437,6 +437,19 @@ describe V1::ConversationController do
   end
 end
 
+describe V1::RecommendationController do
+  describe "routing" do
+    it "routes for GET a user's recommendations" do
+      { :get => "/v1/user/1/recommendations" }.should route_to(
+        :controller => "v1/recommendation",
+        :format => "json",
+        :user_id => "1",
+        :action => "index_for_user"
+      )
+    end
+  end
+end
+
 describe V1::DiscussionRollController do
   describe "routing" do
     it "routes for INDEX" do
