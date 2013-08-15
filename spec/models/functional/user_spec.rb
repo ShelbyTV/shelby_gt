@@ -240,7 +240,7 @@ describe User do
 
     it "should generate a permalink for a user" do
       user = Factory.create(:user)
-      user.permalink.should == "#{Settings::ShelbyAPI.web_root}/#{user.nickname}"
+      user.permalink.should == "#{Settings::ShelbyAPI.web_root}/#{user.id.to_s}"
     end
 
   end
