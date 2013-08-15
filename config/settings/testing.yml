@@ -1,0 +1,14 @@
+defaults: &defaults
+  shelby_test_participants_usernames : ['iceberg901', 'frash', 'henry', 'tsvi.tannin', 'chris', 'spinosa', 'matyus', 'reece', 'vondoom', 'keren', 'edon']
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+
+arnold:
+  <<: *production

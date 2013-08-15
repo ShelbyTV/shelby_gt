@@ -663,6 +663,13 @@ describe 'v1/user' do
           response.body.should be_json_eql(200).at_path("status")
         }.should change {@u1.reload.session_count}.by(1)
       end
+      
+      it "should increment user's iOS session count by 1" do
+        lambda {
+          put "/v1/user/#{@u1.id.to_s}/visit?platform=ios"
+          response.body.should be_json_eql(200).at_path("status")
+        }.should change {@u1.reload.ios_session_count}.by(1)
+      end
 
       context "invite accepted notification" do
 
