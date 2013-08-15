@@ -1,3 +1,5 @@
+require 'recommendation_manager'
+
 class V1::RecommendationController < ApplicationController
   def index_for_user
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['recommendations']) do
@@ -12,6 +14,10 @@ class V1::RecommendationController < ApplicationController
       else
         return render_error(401, "unauthorized")
       end
+
+      limit = params[:limit] ? params[:limit].to_i : 1
+
+      recommended_video_ids = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, limit, 100.0)
 
       @status = 200
     end

@@ -441,6 +441,16 @@ describe 'v1/user' do
         response.body.should have_json_size(0).at_path("result")
       end
 
+      it "should pass the right default parameters to the recommendation manager" do
+        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 10, 1, 100.0)
+        get '/v1/user/'+@u1.id+'/recommendations'
+      end
+
+      it "should pass the right parameters from the api request to the recommendation manager" do
+        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 10, 10, 100.0)
+        get '/v1/user/'+@u1.id+'/recommendations?limit=10'
+      end
+
       context "other user" do
         before(:each) do
           @u2 = Factory.create(:user)
