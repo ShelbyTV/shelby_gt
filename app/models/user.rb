@@ -280,7 +280,7 @@ class User
     roll_followings.select { |rf| rf.roll_id == roll_id } [0]
   end
 
-  def permalink() "#{Settings::ShelbyAPI.web_root}/#{self.nickname}"; end
+  def permalink() "#{Settings::ShelbyAPI.web_root}/#{self.id.to_s}"; end
 
   def revoke(client)
     token = Rack::OAuth2::Server::AccessToken.get_token_for(id.to_s, client, "")
