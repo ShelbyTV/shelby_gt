@@ -15,7 +15,7 @@ module GT
         friend = User.first( :conditions => { 'authentications.provider' => 'facebook', 'authentications.uid' => uid.to_s } )
         if friend and friend.public_roll and !user.unfollowed_roll?(friend.public_roll)
           friend.public_roll.add_follower(user)
-          GT::Framer.backfill_dashboard_entries(user, friend.public_roll, 10)
+          GT::Framer.backfill_dashboard_entries(user, friend.public_roll, 30)
         end
       end
     end
