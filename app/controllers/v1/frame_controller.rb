@@ -31,7 +31,8 @@ class V1::FrameController < ApplicationController
           last_ancestor = Frame.find(@frame.frame_ancestors.last)
           @originator = last_ancestor && last_ancestor.creator
           @status =  200
-          @include_frame_children = (params[:include_children] == "true") ? true : false
+          @include_frame_children = params[:include_children]
+          @upvoters = User.find(@frame.upvoters) if @include_frame_children
         else
           render_error(404, "that frame isn't viewable or has a bad roll")
         end

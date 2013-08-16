@@ -34,6 +34,35 @@ describe 'v1/frame' do
           parse_json(response.body)["result"]["roll"]["roll_type"].should eq(@f.roll.roll_type)
         end
 
+        context "upvote_users" do
+
+          it "should include upvote_users attribute if include_children=true" do
+            get '/v1/frame/'+@f.id+'?include_children=true'
+            response.body.should have_json_path("result/upvoters")
+            response.body.should have_json_type(Array).at_path("result/upvoters")
+            response.body.should have_json_size(0).at_path("result/upvoters")
+          end
+
+          it "should include the upvote_users data in the correct format if there are any" do
+            upvote_user = Factory.create(:user)
+            @f.upvoters << upvote_user.id
+            @f.save
+
+            get '/v1/frame/'+@f.id+'?include_children=true'
+            response.body.should have_json_size(1).at_path("result/upvoters")
+            response.body.should have_json_type(Object).at_path("result/upvoters/0")
+            response.body.should have_json_path("result/upvoters/0/id")
+            response.body.should have_json_path("result/upvoters/0/name")
+            response.body.should have_json_path("result/upvoters/0/nickname")
+            response.body.should have_json_path("result/upvoters/0/user_image_original")
+            response.body.should have_json_path("result/upvoters/0/user_image")
+            response.body.should have_json_path("result/upvoters/0/has_shelby_avatar")
+            response.body.should have_json_path("result/upvoters/0/public_roll_id")
+            parse_json(response.body)["result"]["upvoters"][0]["id"].should eq(upvote_user.id.to_s)
+          end
+
+        end
+
         it "should contain like_count attribute" do
           get '/v1/frame/'+@f.id
           response.body.should have_json_path("result/like_count")
