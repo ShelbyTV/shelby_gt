@@ -286,7 +286,7 @@ defaults: &defaults
       rolls: [
       ],
       user_channels: [
-        {display_title: "Featured",  user_id: "521264b4b415cc44c9000001",
+        {display_title: "Featured",  user_id: "515d83ecb415cc0d1a025bfe", #new featured user id: "521264b4b415cc44c9000001",
           display_description: "Featured members of the Shelby community",
           display_thumbnail_ipad_src: "",
           display_channel_color: "6FBE47", # Shelby Green
