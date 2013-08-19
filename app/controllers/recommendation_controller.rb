@@ -16,8 +16,11 @@ class V1::RecommendationController < ApplicationController
       end
 
       limit = params[:limit] ? params[:limit].to_i : 1
+      min_score = params[:min_score] ? params[:min_score].to_f : 100.0
 
-      recommended_video_ids = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, limit, 100.0)
+      recommended_video_ids = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, limit, min_score)
+
+      @videos = Video.find(recommended_video_ids)
 
       @status = 200
     end

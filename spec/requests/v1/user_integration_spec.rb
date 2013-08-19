@@ -447,8 +447,8 @@ describe 'v1/user' do
       end
 
       it "should pass the right parameters from the api request to the recommendation manager" do
-        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 10, 10, 100.0)
-        get '/v1/user/'+@u1.id+'/recommendations?limit=10'
+        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 10, 10, 80.0)
+        get '/v1/user/'+@u1.id+'/recommendations?limit=10&min_score=80.0'
       end
 
       context "other user" do
@@ -472,6 +472,45 @@ describe 'v1/user' do
           @u1.is_admin = true
           get '/v1/user/nonexistant/recommendations'
           response.body.should be_json_eql(404).at_path("status")
+        end
+
+        describe "result contents" do
+
+          before(:each) do
+            @v = Factory.create(:video)
+            @recommended_vid = Factory.create(:video)
+            rec = Factory.create(:recommendation, :recommended_video_id => @recommended_vid.id, :score => 100.0)
+            @v.recs << rec
+
+            @v.save
+
+            f = Factory.create(:frame, :video => @v, :creator => @u1 )
+            dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => @v.id)
+
+            dbe.save
+          end
+
+          it "should return the right number of results" do
+            MongoMapper::Plugins::IdentityMap.clear
+            get '/v1/user/'+@u1.id+'/recommendations'
+
+            response.body.should be_json_eql(200).at_path("status")
+            response.body.should have_json_path("result")
+            response.body.should have_json_size(1).at_path("result")
+          end
+
+          it "should return the right video attributes" do
+            MongoMapper::Plugins::IdentityMap.clear
+            get '/v1/user/'+@u1.id+'/recommendations'
+
+            response.body.should have_json_path("result/0/id")
+            response.body.should have_json_path("result/0/provider_name")
+            response.body.should have_json_path("result/0/provider_id")
+            parse_json(response.body)["result"][0]["id"].should eq(@recommended_vid.id.to_s)
+            parse_json(response.body)["result"][0]["provider_name"].should eq(@recommended_vid.provider_name)
+            parse_json(response.body)["result"][0]["provider_id"].should eq(@recommended_vid.provider_id)
+          end
+
         end
 
       end
