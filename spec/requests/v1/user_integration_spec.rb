@@ -447,8 +447,8 @@ describe 'v1/user' do
       end
 
       it "should pass the right parameters from the api request to the recommendation manager" do
-        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 10, 10, 80.0)
-        get '/v1/user/'+@u1.id+'/recommendations?limit=10&min_score=80.0'
+        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 20, 10, 80.0)
+        get '/v1/user/'+@u1.id+'/recommendations?limit=10&min_score=80.0&scan_limit=20'
       end
 
       context "other user" do

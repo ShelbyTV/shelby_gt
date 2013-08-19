@@ -15,10 +15,11 @@ class V1::RecommendationController < ApplicationController
         return render_error(401, "unauthorized")
       end
 
+      scan_limit = params[:scan_limit] ? params[:scan_limit].to_i : 10
       limit = params[:limit] ? params[:limit].to_i : 1
       min_score = params[:min_score] ? params[:min_score].to_f : 100.0
 
-      recommended_video_ids = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, limit, min_score)
+      recommended_video_ids = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, scan_limit, limit, min_score)
 
       @videos = Video.find(recommended_video_ids)
 
