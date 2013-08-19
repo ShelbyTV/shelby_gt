@@ -286,8 +286,15 @@ defaults: &defaults
       rolls: [
       ],
       user_channels: [
+        #TODO: remove this old channel after shipping enterprise b13
         {display_title: "Community",  user_id: "515d83ecb415cc0d1a025bfe",
-          display_description: "Powered by the Shelby community",
+          display_description: "An old channel...",
+          display_thumbnail_ipad_src: "",
+          display_channel_color: "6FBE47", # Shelby Green
+          include_in: {iphone_standard: true}},
+        #TODO: this should be the only channel returned to iOS (after shipping enterprise b13)
+        {display_title: "Featured",  user_id: "521264b4b415cc44c9000001",
+          display_description: "Featured members of the Shelby community",
           display_thumbnail_ipad_src: "",
           display_channel_color: "6FBE47", # Shelby Green
           include_in: {iphone_standard: true}}
