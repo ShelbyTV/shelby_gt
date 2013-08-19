@@ -11,6 +11,12 @@ module GT
       video_ids = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(max_db_entries_to_scan).fields(:video_id).map{|dbe| dbe.video_id}
       recs = Video.where( :id => {:$in => video_ids}).fields(:recs).map{|v| v.recs}.flatten
 
+      # remove any videos that the user has already watched
+      if recs.length > 0 && user.viewed_roll_id
+          watched_video_ids = Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id}.compact
+          recs.reject!{|rec| watched_video_ids.include? rec.recommended_video_id}
+      end
+
       if min_score
         recs.select!{|r| r.score >= min_score}
       end

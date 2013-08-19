@@ -4,7 +4,8 @@ require 'recommendation_manager'
 # UNIT test
 describe GT::RecommendationManager do
   before(:each) do
-    @user = Factory.create(:user)
+    @viewed_roll = Factory.create(:roll)
+    @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
 
     @frame_ids = []
     @video_ids = []
@@ -43,6 +44,10 @@ describe GT::RecommendationManager do
       video_query.stub_chain(:fields, :map, :flatten).and_return(@recommendations)
       Video.should_receive(:where).with(:id => {:$in => @video_ids}).and_return(video_query)
 
+      @frame_query = double("frame_query")
+      @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([])
+      Frame.should_receive(:where).with(:roll_id => @viewed_roll.id).and_return(@frame_query)
+
       @recommendations.should_receive(:shuffle!)
     end
 
@@ -50,6 +55,14 @@ describe GT::RecommendationManager do
       result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, nil)
       result.length.should == @recommended_video_ids.length
       result.should == @recommended_video_ids
+    end
+
+    it "should exclude videos the user has already watched" do
+      @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_video_ids[0]])
+
+      result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, nil)
+      result.length.should == @recommended_video_ids.length - 1
+      result.should_not include(@recommended_video_ids[0])
     end
 
     it "should return only one recommended video id by default" do

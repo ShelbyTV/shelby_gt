@@ -4,7 +4,8 @@ require 'recommendation_manager'
 # INTEGRATION test
 describe GT::RecommendationManager do
   before(:each) do
-    @user = Factory.create(:user)
+    @viewed_roll = Factory.create(:roll)
+    @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
 
     @recommended_video_ids = []
     # create dashboard entries 0 to n, entry i will have i recommendations attached to its video
@@ -44,6 +45,16 @@ describe GT::RecommendationManager do
         MongoMapper::Plugins::IdentityMap.clear
         result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
         result.should == @recommended_video_ids
+      end
+
+      it "should exclude videos the user has already watched" do
+        @viewed_frame = Factory.create(:frame, :video_id => @recommended_video_ids[0], :creator => @user)
+        @viewed_roll.frames << @viewed_frame
+
+        MongoMapper::Plugins::IdentityMap.clear
+        result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
+        result.length.should == @recommended_video_ids.length - 1
+        result.should_not include(@recommended_video_ids[0])
       end
 
       it "should return only one recommended video by default" do
