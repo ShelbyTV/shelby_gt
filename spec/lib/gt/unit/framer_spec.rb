@@ -37,6 +37,23 @@ describe GT::Framer do
       res[:frame].roll.should == @roll
     end
 
+    it "should not persist anything if dont_persist option is set to true" do
+      res = GT::Framer.create_frame(
+        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+        :creator => @frame_creator,
+        :video => @video,
+        :message => @message,
+        :roll => @roll,
+        :dont_persist => true
+        )
+
+      res[:frame].persisted?.should_not == true
+      res[:frame].creator.should == @frame_creator
+      res[:frame].video.should == @video
+      res[:frame].conversation.should be_nil
+      res[:frame].roll.should == @roll
+    end
+
     it "should return false if safe save failed due to duplicate key" do
       @message.origin_id = "12345"
       lambda {
@@ -171,6 +188,21 @@ describe GT::Framer do
       res[:dashboard_entries][0].action.should == DashboardEntry::ENTRY_TYPE[:new_social_frame]
     end
 
+    it "should not create a DashboardEntry for the Roll's single follower if dont_persist option is set to false" do
+      @roll.add_follower(@roll_creator)
+
+      res = GT::Framer.create_frame(
+        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+        :creator => @frame_creator,
+        :video => @video,
+        :message => @message,
+        :roll => @roll,
+        :dont_persist => true
+        )
+
+      res[:dashboard_entries].size.should == 0
+    end
+
     it "should create DashboardEntries for all followers of Roll" do
       @roll.add_follower(u1 = Factory.create(:user))
       @roll.add_follower(u2 = Factory.create(:user))
@@ -208,12 +240,45 @@ describe GT::Framer do
       res[:dashboard_entries].size.should == 1
       res[:dashboard_entries][0].persisted?.should == true
       res[:dashboard_entries][0].user_id.should == u.id
+      res[:dashboard_entries][0].frame.should == res[:frame]
+      res[:dashboard_entries][0].frame.persisted?.should == true
       res[:dashboard_entries][0].src_frame.should be_nil
       res[:dashboard_entries][0].friend_sharers_array.should == []
       res[:dashboard_entries][0].friend_viewers_array.should == []
       res[:dashboard_entries][0].friend_likers_array.should == []
       res[:dashboard_entries][0].friend_rollers_array.should == []
       res[:dashboard_entries][0].friend_complete_viewers_array.should == []
+    end
+
+    it "should not persist anything for given :dashboard_user_id if dont_persist option is set to true" do
+      u = Factory.create(:user)
+
+      res = GT::Framer.create_frame(
+        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+        :creator => @frame_creator,
+        :video => @video,
+        :message => @message,
+        :dashboard_user_id => u.id,
+        :dont_persist => true
+        )
+
+      #only the given dashboard_user_id should have a DashboardEntry
+      res[:dashboard_entries].size.should == 1
+      res[:dashboard_entries][0].persisted?.should == false
+      res[:dashboard_entries][0].user_id.should == u.id
+      res[:dashboard_entries][0].frame.should be_nil
+      res[:dashboard_entries][0].frame_id.should == res[:frame].id
+      res[:dashboard_entries][0].src_frame.should be_nil
+      res[:dashboard_entries][0].friend_sharers_array.should == []
+      res[:dashboard_entries][0].friend_viewers_array.should == []
+      res[:dashboard_entries][0].friend_likers_array.should == []
+      res[:dashboard_entries][0].friend_rollers_array.should == []
+      res[:dashboard_entries][0].friend_complete_viewers_array.should == []
+
+      res[:frame].persisted?.should_not == true
+      res[:frame].creator.should == @frame_creator
+      res[:frame].video.should == @video
+      res[:frame].conversation.should be_nil
     end
 
     it "should pass through options for DashboardEntry creation" do

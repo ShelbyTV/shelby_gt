@@ -8,12 +8,12 @@ describe GT::Framer do
     @frame_creator = Factory.create(:user)
     @message = Message.new
     @message.public = true
-  
+
     @roll_creator = Factory.create(:user)
     @roll = Factory.create(:roll, :creator => @roll_creator)
     @roll.save
   end
-  
+
   context "updating the frame_count of the owning roll" do
     it "should comply on re-roll" do
       f1 = Factory.create(:frame)
@@ -22,7 +22,7 @@ describe GT::Framer do
         res = GT::Framer.re_roll(f1, Factory.create(:user), @roll)
       }.should change { @roll.reload.frame_count } .by(2)
     end
-    
+
     it "should comply on create_frame" do
       lambda {
         res = GT::Framer.create_frame(
@@ -34,7 +34,32 @@ describe GT::Framer do
           )
         }.should change { @roll.reload.frame_count } .by(1)
     end
-    
+
+    it "should not add a frame to the persisted roll when dont_persist option is set to true" do
+      lambda {
+        res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :roll => @roll,
+          :dont_persist => true
+          )
+        }.should_not change { @roll.reload.frame_count }
+
+      dashboard_user = Factory.create(:user)
+
+      lambda {
+        res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :dashboard_user_id => dashboard_user.id
+        )
+        }.should_not change { @roll.reload.frame_count }
+    end
+
     it "should comply on dupe_frame" do
       f1 = Factory.create(:frame)
       lambda {
@@ -43,5 +68,112 @@ describe GT::Framer do
       }.should change { @roll.reload.frame_count } .by(2)
     end
   end
-  
+
+  context "on create_frame when creating a frame on a roll" do
+
+      before(:each) do
+        @lambda = lambda {
+          res = GT::Framer.create_frame(
+            :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+            :creator => @frame_creator,
+            :video => @video,
+            :message => @message,
+            :roll => @roll
+            )
+        }
+      end
+
+    it "should create a frame" do
+      @lambda.should change { Frame.count } .by(1)
+    end
+
+    it "should create a conversation" do
+      @lambda.should change { Conversation.count } .by(1)
+    end
+
+    context "when dont_persist option is set to true" do
+
+      before(:each) do
+        @lambda = lambda {
+          res = GT::Framer.create_frame(
+            :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+            :creator => @frame_creator,
+            :video => @video,
+            :message => @message,
+            :roll => @roll,
+            :dont_persist => true
+            )
+        }
+      end
+
+      it "should not persist a frame when dont_persist option is set to true" do
+        @lambda.should_not change { Frame.count }
+      end
+
+      it "should not persist a conversation when dont_persist option is set to true" do
+        @lambda.should_not change { Conversation.count }
+      end
+
+    end
+
+  end
+
+  context "on create_frame when creating a single dashboard entry" do
+
+    before(:each) do
+      @dashboard_user = Factory.create(:user)
+      @lambda = lambda {
+        res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :dashboard_user_id => @dashboard_user.id
+        )
+      }
+    end
+
+    it "should create a frame" do
+      @lambda.should change { Frame.count } .by(1)
+    end
+
+    it "should create a conversation for the frame" do
+      @lambda.should change { Conversation.count } .by(1)
+    end
+
+    it "should create a dashboard entry" do
+      @lambda.should change { DashboardEntry.count } .by(1)
+    end
+
+    context "when dont_persist option is set to true" do
+
+      before(:each) do
+        @lambda = lambda {
+          res = GT::Framer.create_frame(
+            :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+            :creator => @frame_creator,
+            :video => @video,
+            :message => @message,
+            :dashboard_user_id => @dashboard_user.id,
+            :dont_persist => true
+          )
+        }
+      end
+
+      it "should not persist a frame" do
+        @lambda.should_not change { Frame.count }
+      end
+
+      it "should not persist a conversation" do
+        @lambda.should_not change { Conversation.count }
+      end
+
+      it "should not persist a dashboard entry" do
+        @lambda.should_not change { DashboardEntry.count }
+      end
+
+    end
+
+  end
+
 end
