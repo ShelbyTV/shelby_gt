@@ -21,8 +21,24 @@ class V1::RecommendationController < ApplicationController
 
       recommended_video_ids = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, scan_limit, limit, min_score)
 
-      @videos = Video.find(recommended_video_ids)
+      @results = []
+      # wrap the recommended videos in 'phantom' frames and dbentries that are not persisted to the db
+      recommended_video_ids.each do |video_id|
+        res = GT::Framer.create_frame(
+          :video_id => video_id,
+          :dashboard_user_id => @user.id,
+          :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+          :dont_persist => true
+        )
+        if res[:dashboard_entries] and !res[:dashboard_entries].empty? && res[:frame]
+          result_struct = OpenStruct.new
+          result_struct.dashboard_entry = res[:dashboard_entries].first
+          result_struct.frame = res[:frame]
+          @results << result_struct
+        end
+      end
 
+      @include_frame_children = true
       @status = 200
     end
   end

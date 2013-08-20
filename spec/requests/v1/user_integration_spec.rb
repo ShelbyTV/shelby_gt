@@ -442,13 +442,23 @@ describe 'v1/user' do
       end
 
       it "should pass the right default parameters to the recommendation manager" do
-        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 10, 1, 100.0)
+        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 10, 1, 100.0).and_return([])
         get '/v1/user/'+@u1.id+'/recommendations'
       end
 
       it "should pass the right parameters from the api request to the recommendation manager" do
-        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 20, 10, 80.0)
+        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 20, 10, 80.0).and_return([])
         get '/v1/user/'+@u1.id+'/recommendations?limit=10&min_score=80.0&scan_limit=20'
+      end
+
+      it "should not persist any new dashboard entries, frames, or conversations to the database" do
+        lambda = lambda {
+          get '/v1/user/'+@u1.id+'/recommendations?limit=10&min_score=80.0&scan_limit=20'
+        }
+
+        lambda.should_not change { DashboardEntry.count }
+        lambda.should_not change { Frame.count }
+        lambda.should_not change { Conversation.count }
       end
 
       context "other user" do
@@ -499,16 +509,25 @@ describe 'v1/user' do
             response.body.should have_json_size(1).at_path("result")
           end
 
-          it "should return the right video attributes" do
+          it "should return the right attributes and contents" do
             MongoMapper::Plugins::IdentityMap.clear
             get '/v1/user/'+@u1.id+'/recommendations'
 
             response.body.should have_json_path("result/0/id")
-            response.body.should have_json_path("result/0/provider_name")
-            response.body.should have_json_path("result/0/provider_id")
-            parse_json(response.body)["result"][0]["id"].should eq(@recommended_vid.id.to_s)
-            parse_json(response.body)["result"][0]["provider_name"].should eq(@recommended_vid.provider_name)
-            parse_json(response.body)["result"][0]["provider_id"].should eq(@recommended_vid.provider_id)
+            response.body.should have_json_path("result/0/user_id")
+            response.body.should have_json_path("result/0/action")
+            response.body.should have_json_path("result/0/actor_id")
+
+            response.body.should have_json_path("result/0/frame")
+            response.body.should have_json_path("result/0/frame/video")
+
+            parse_json(response.body)["result"][0]["user_id"].should eq(@u1.id.to_s)
+            parse_json(response.body)["result"][0]["action"].should eq(DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+            parse_json(response.body)["result"][0]["actor_id"].should eq(nil)
+
+            parse_json(response.body)["result"][0]["frame"]["video"]["id"].should eq(@recommended_vid.id.to_s)
+            parse_json(response.body)["result"][0]["frame"]["video"]["provider_name"].should eq(@recommended_vid.provider_name)
+            parse_json(response.body)["result"][0]["frame"]["video"]["provider_id"].should eq(@recommended_vid.provider_id)
           end
 
         end
