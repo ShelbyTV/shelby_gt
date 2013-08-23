@@ -494,8 +494,10 @@ describe 'v1/user' do
 
             @v.save
 
-            f = Factory.create(:frame, :video => @v, :creator => @u1 )
-            dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => @v.id)
+            src_frame_creator = Factory.create(:user)
+            @src_frame = Factory.create(:frame, :video => @v, :creator => src_frame_creator )
+
+            dbe = Factory.create(:dashboard_entry, :frame => @src_frame, :user => @u1, :video_id => @v.id)
 
             dbe.save
           end
@@ -528,6 +530,24 @@ describe 'v1/user' do
             parse_json(response.body)["result"][0]["frame"]["video"]["id"].should eq(@recommended_vid.id.to_s)
             parse_json(response.body)["result"][0]["frame"]["video"]["provider_name"].should eq(@recommended_vid.provider_name)
             parse_json(response.body)["result"][0]["frame"]["video"]["provider_id"].should eq(@recommended_vid.provider_id)
+          end
+
+          it "should return the src_frame attribute with appropriate content for video graph recommendations" do
+            MongoMapper::Plugins::IdentityMap.clear
+            get '/v1/user/'+@u1.id+'/recommendations'
+
+            response.body.should have_json_path("result/0/src_frame")
+            response.body.should have_json_path("result/0/src_frame/id")
+            response.body.should have_json_path("result/0/src_frame/creator_id")
+            response.body.should have_json_path("result/0/src_frame/creator")
+            response.body.should have_json_path("result/0/src_frame/creator/id")
+            response.body.should have_json_path("result/0/src_frame/creator/nickname")
+
+            parsed_response = parse_json(response.body)
+            parsed_response["result"][0]["src_frame"]["id"].should eq(@src_frame.id.to_s)
+            parsed_response["result"][0]["src_frame"]["creator_id"].should eq(@src_frame.creator.id.to_s)
+            parsed_response["result"][0]["src_frame"]["creator"]["id"].should eq(@src_frame.creator.id.to_s)
+            parsed_response["result"][0]["src_frame"]["creator"]["nickname"].should eq(@src_frame.creator.nickname)
           end
 
         end

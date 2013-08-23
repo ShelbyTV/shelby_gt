@@ -183,7 +183,7 @@ GEM
       multi_json (~> 1.0)
       multi_xml
     httpclient (2.2.5)
-    i18n (0.6.1)
+    i18n (0.6.5)
     jeweler (1.8.3)
       bundler (~> 1.0)
       git (>= 1.2.5)
@@ -215,7 +215,7 @@ GEM
       mongo_mapper (>= 0.9.0)
     mongo (1.8.5)
       bson (~> 1.8.5)
-    multi_json (1.7.7)
+    multi_json (1.7.9)
     multi_xml (0.5.1)
     multipart-post (1.1.5)
     net-scp (1.0.4)
@@ -256,9 +256,8 @@ GEM
       signature (~> 0.1.6)
     quiet_assets (1.0.1)
       railties (~> 3.1)
-    rabl (0.6.13)
+    rabl (0.8.6)
       activesupport (>= 2.3.14)
-      multi_json (~> 1.0)
     rack (1.4.4)
     rack-cache (1.2)
       rack (>= 0.4)
@@ -428,7 +427,7 @@ DEPENDENCIES
   paperclip
   pusher
   quiet_assets
-  rabl (~> 0.6.0)
+  rabl (~> 0.8.0)
   rack-cors
   rack-oauth2-server
   rails (= 3.2.11)
