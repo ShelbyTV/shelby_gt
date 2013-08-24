@@ -256,8 +256,9 @@ GEM
       signature (~> 0.1.6)
     quiet_assets (1.0.1)
       railties (~> 3.1)
-    rabl (0.8.6)
+    rabl (0.7.10)
       activesupport (>= 2.3.14)
+      multi_json (~> 1.0)
     rack (1.4.4)
     rack-cache (1.2)
       rack (>= 0.4)
@@ -427,7 +428,7 @@ DEPENDENCIES
   paperclip
   pusher
   quiet_assets
-  rabl (~> 0.8.0)
+  rabl (~> 0.7.0)
   rack-cors
   rack-oauth2-server
   rails (= 3.2.11)
