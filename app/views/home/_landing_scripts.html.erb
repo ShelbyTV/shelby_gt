@@ -1,0 +1,118 @@
+<script>
+  <% if ("production" == Rails.env or "staging" == Rails.env) %>
+    //Track loading of landing page separate from loading of app -->
+    var shortLink = $.getUrlParam('awesm');
+    if (typeof viaShortLink != 'undefined') { shortLink = 'via Short Link: ' + shortLink; }
+    else { shortLink = "Direct"; }
+    var _gaq=[['_setAccount','<%= Settings::GoogleAnalytics.code %>'],['_setDomainName','shelby.tv'],['_setCustomVar', 1, 'Visit Type', shortLink, 3],['_trackPageview']];
+    (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+    g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+    s.parentNode.insertBefore(g,s);}(document,'script'));
+  <% end %>
+
+  <% if Rails.env == 'production' %>
+    var _kmq = _kmq || [];
+    var _kmk = _kmk || '9b8c2d291a85a66412fc8c0085125194646fd7a6';
+    function _kms(u){
+      setTimeout(function(){
+        var d = document, f = d.getElementsByTagName('script')[0],
+        s = d.createElement('script');
+        s.type = 'text/javascript'; s.async = true; s.src = u;
+        f.parentNode.insertBefore(s, f);
+      }, 1);
+    }
+    _kms('//i.kissmetrics.com/i.js');
+    _kms('//doug1izaerwt3.cloudfront.net/' + _kmk + '.1.js');
+
+    var action = "Visit "+shelbyTrackingCategory;
+    var shortLink = $.getUrlParam('awesm');
+    if (typeof shortLink != 'undefined') {  action += ' via Short Link'; }
+    else { shortLink = null; }
+    _kmq.push(['record', action, {shortLink: shortLink}]);
+  <% end %>
+
+  $(document).ready(function(){
+
+    try {
+      _gaq.push(['_trackEvent', 'Landing Page', 'Visit']);
+    } catch(e) {}
+
+    //button cache
+    var $buttonMain   = $('.js-cta'),
+        $buttonHeader = $('.js-cta-header'),
+        $header       = $('.js-header'),
+        $stream       = $('.js-stream');
+
+    var listening     = true;
+
+    $(window).on('scroll',function(e){
+      if($buttonMain.offset().top + $buttonMain.height() - $(this).scrollTop() - $header.height() > 0) {
+        $buttonHeader.toggleClass('button_transparent',true);
+      } else {
+        $buttonHeader.toggleClass('button_transparent',false);
+      }
+
+      if($stream.offset().top/2 < $(this).scrollTop() && listening) {
+        $stream.addClass('css-vertical-pan');
+        listening = false;
+      }
+    });
+  });
+</script>
+
+
+<script>
+  // Twitter widget -->
+  !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+
+  // Facebook widget -->
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '<%= Settings::Facebook.facebook_app_id %>', // App ID
+      channelURL : '//shelby.tv/channel.html', // Channel File
+      status     : true, // check login status
+      cookie     : true, // enable cookies to allow the server to access the session
+      oauth      : true, // enable OAuth 2.0
+      xfbml      : true  // parse XFBML
+    });
+
+    FB.getLoginStatus(function (response) {
+        if (response.status === 'connected') {
+            $('.shelf--social').removeClass('shelf--facebook-logged-out');
+        } else if (response.status === 'not_authorized') {
+            $('.shelf--social').removeClass('shelf--facebook-logged-out');
+        } else {
+            // the user isn't logged in to Facebook. so keep the facepile hidden
+        }
+    });
+  };
+
+  // Load the SDK Asynchronously
+  (function(d){
+     var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
+     js = d.createElement('script'); js.id = id; js.async = true;
+     js.src = "//connect.facebook.net/en_US/all.js";
+     d.getElementsByTagName('head')[0].appendChild(js);
+   }(document));
+
+  // G +1 widget -->
+  (function() {
+    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+    po.src = 'https://apis.google.com/js/plusone.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+  })();
+</script>
+
+<% # VANITY A/B TESTING %>
+<%= vanity_js %>
+<% experiments = vanity_experiments %>
+<% unless experiments.nil? %>
+  <script>
+    <% experiments.each do |name, alternative| %>
+      try {
+        _gaq.push(['_trackEvent', 'ab-testing', '<%= name %>', '<%= alternative.value %>']);
+        _kmq.push(["set", {"<%= name %>": "<%= alternative.value %>"}]);
+      } catch(e) {}
+    <% end %>
+  </script>
+<% end %>

@@ -1,15 +1,22 @@
-<div class="password-reset-wrapper">
-	
-	<h1>Change your Shelby password</h1>
+<div class="shelf shelf--password_reset">
+  <div class="shelf__lining">
+    <h1 class="shelf__h1">
+      Change your Shelby password
+    </h1>
 
-	<%= form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :put }) do |f| %>
-	  <%= devise_error_messages! %>
-	  <%= f.hidden_field :reset_password_token %>
-	  <%= f.hidden_field :primary_email %>
+    <%= form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :put }, :class => "form_module") do |f| %>
 
-	  <div><%= f.label :password, "New password" %><br />
-	  <%= f.password_field :password, :required => :required %></div>
+      <%= devise_error_messages! %>
+      <%= f.hidden_field :reset_password_token %>
+      <%= f.hidden_field :primary_email %>
 
-	  <div><%= f.submit "Change my password" %></div>
-	<% end %>
+      <fieldset class="form_fieldset">
+        <%= f.label :password, "New password" %>
+        <%= f.password_field :password, :required => :required %>
+      </fieldset>
+
+      <fieldset class="form_fieldset">
+        <%= f.submit "Change my password" %>
+      </fieldset>
+    <% end %>
 </div>

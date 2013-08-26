@@ -1,14 +1,36 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Shelby</title>
+<!doctype html>
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+<% # if we got any meta tag info from request display it, otherwise just render head normally %>
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shelbytv: http://ogp.me/ns/fb/shelbytv#" profile="http://www.w3.org/2005/10/profile">
+  <meta charset="utf-8">
+
+  <title>Shelby.tv</title>
+
+  <% # render :partial => "/home/meta_info" %>
+
   <%= csrf_meta_tags %>
-	<%= stylesheet_link_tag "application" %>
-	<%= javascript_include_tag "application" %>
+  <%= stylesheet_link_tag "//shelby.tv/assets/landing.css" %>
+  <%= stylesheet_link_tag "application" %>
+  <%= javascript_include_tag "application" %>
+
+  <script>
+    var shelbyTrackingCategory = "API";
+  </script>
 </head>
-<body class="<%= 'signup-popup' if @signup_popup %>">
+<body class="shelby<%= ' signup-popup' if @signup_popup %> shelby--landing">
+  <!-- Facebook widget -->
+  <div id="fb-root"></div>
 
-<%= yield %>
+  <div class="shelby__wrapper clearfix" role="main">
 
+    <%= render :partial => '/home/landing_header', :locals => {:show_login => false} %>
+
+    <% #------------ Shelf Content --------------- %>
+      <%= yield %>
+    <% #------------ /Shelf Content --------------- %>
+
+  </div><!-- /shelby-wrapper -->
 </body>
 </html>

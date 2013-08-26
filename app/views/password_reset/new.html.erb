@@ -1,18 +1,34 @@
-<div class="password-reset-wrapper">
-	
-	<h1>Forgot  your password?</h1>
-	
-	<% if flash[:notice] %>
-		<h2 class="error"><%= flash[:notice] %></h2>
-	<% end %>
-	
-	<%= form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :post }) do |f| %>
-	  <%= devise_error_messages! %>
+<% if flash[:notice] %>
+  <div class="shelf shelf--error clearfix">
+    <p>
+      <%= flash[:notice] %>
+    </p>
+  </div>
+<% end %>
 
-	  <div><%= f.label :primary_email, "Email" %><br />
-	  <%= f.email_field :primary_email, :type => "email" %></div>
+<div class="shelf shelf--password_reset">
+  <div class="shelf__lining">
+    <h1 class="shelf__h1">
+      Forgot  your password?
+    </h1>
 
-	  <div><%= f.submit "Send me password reset instructions" %></div>
-	<% end %>
+    <p class="shelf__block">
+      Don't worry, we'll email you a new one!
+    </p>
 
+
+    <%= form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :post , :class => "form_module one-half" }) do |f| %>
+
+      <%= devise_error_messages! %>
+
+      <fieldset class="form_fieldset">
+        <%= f.label :primary_email, "Email", :class => "form_label" %>
+        <%= f.email_field :primary_email, :type => "email", :class => "form_input" %>
+      </fieldset>
+
+      <fieldset class="form_fieldset">
+        <%= f.submit "Reset my password", :class => "button_primer button_command button_command--flexible button_green" %>
+      </fieldset>
+    <% end %>
+  </div>
 </div>

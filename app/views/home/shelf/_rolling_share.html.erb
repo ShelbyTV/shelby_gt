@@ -1,0 +1,30 @@
+<section class="landing-shelf--rolling-share landing-shelf--share landing-shelf">
+  <div class="landing-shelf__lining clearfix">
+
+    <%= render :partial => "/home/shelf/video_embed", :locals => {:share_buttons => true } %>
+
+    <div class="landing-shelf__content">
+        <h1><%= @user['name'] if @user %> shared this video</h1>
+
+      <div class="media_module">
+        <img src="<%= avatar_url_for_user(@user) %>" class="media_image user-avatar" />
+
+        <p class="media_body share-context clearfix">
+          <span class="user-nickname"><%= @user['nickname'] if @user %></span><br />
+          <%= creators_message_from_frame(@frame) %>
+        </p>
+      </div>
+
+      <hr />
+
+      <h2 class="landing-shelf__h2">
+        Shelby is a simple new way to enjoy video.
+        We're currently invite-only.
+      </h2>
+
+      <%= render :partial => "/home/shelf/interest_email_form" %>
+
+    </div>
+
+  </div>
+</section>
