@@ -166,7 +166,7 @@ class Roll
   def add_follower(u, send_notification=true)
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
 
-    send_notification = false if ['cg', 'bobhund', 'ugo'].include?(u.nickname)
+    send_notification = false if ['cg', 'bobhund', 'ugo', 'henry.sztul'].include?(u.nickname)
 
     return false if self.followed_by?(u)
     return false if self.roll_type == TYPES[:special_watch_later] and self.creator_id != u.id
