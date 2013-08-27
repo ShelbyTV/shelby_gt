@@ -365,11 +365,14 @@ describe AuthenticationsController do
               'credentials'=>{'token'=>nil, 'secret'=>nil}
             }})
           @u = Factory.create(:user, :gt_enabled => false, :user_type => User::USER_TYPE[:faux], :cohorts => ["init"])
+          GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(@u)
         end
 
-        it "should redirect to signup if user is not real. period." do
+        it "should accept without additional permissions" do
           get :create
-          assigns(:opener_location).should == Settings::ShelbyAPI.web_root+'/signup?social_signup=not_authorized'
+          assigns(:current_user).should == @u
+          cookies[:_shelby_gt_common].should_not == nil
+          assigns(:opener_location).should == Settings::ShelbyAPI.web_root
         end
 
       end
