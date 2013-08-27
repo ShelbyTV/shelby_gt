@@ -442,6 +442,128 @@ describe GT::UserManager do
     end
   end
 
+  context "convert_real_user_to_faux" do
+    before(:each) do
+      @real_user = Factory.create(:user, :user_type => User::USER_TYPE[:real], :gt_enabled => false)
+    end
+
+    it "should raise an error when given a non-real user" do
+      @real_user.user_type = User::USER_TYPE[:faux]
+      lambda {
+        GT::UserManager.convert_real_user_to_faux(@real_user)
+      }.should raise_error(ArgumentError)
+    end
+
+    it "should raise an error when given a gt enabled user" do
+      @real_user.gt_enabled = true
+      lambda {
+        GT::UserManager.convert_real_user_to_faux(@real_user)
+      }.should raise_error(ArgumentError)
+    end
+
+    it "should change the user type to faux" do
+      GT::UserManager.convert_real_user_to_faux(@real_user)
+      @real_user.user_type.should eq User::USER_TYPE[:faux]
+    end
+
+    it "should reset the preferences" do
+      lambda {
+        GT::UserManager.convert_real_user_to_faux(@real_user)
+      }.should change { @real_user.preferences }
+    end
+
+    it "should reset the app progress" do
+      lambda {
+        GT::UserManager.convert_real_user_to_faux(@real_user)
+      }.should change { @real_user.app_progress}
+    end
+
+    it "should clear the primary email and move the old primary email to the key nos_email" do
+      old_primary_email = @real_user.primary_email
+
+      GT::UserManager.convert_real_user_to_faux(@real_user)
+
+      @real_user.primary_email.should be_nil
+      @real_user.nos_email.should eql old_primary_email
+    end
+
+    it "should save the changes to the user" do
+      GT::UserManager.convert_real_user_to_faux(@real_user)
+
+      #use ActiveRecord changed? to verify that the object is not dirty
+      @real_user.should_not be_changed
+    end
+
+  end
+
+  context "update_app_progress_onboarding" do
+    before(:each) do
+      @user_to_update = Factory.create(:user, :app_progress => AppProgress.new)
+    end
+
+    it "should create an app progress model if there is none" do
+      @user_to_update.should_receive(:save).once.and_call_original
+
+      @user_to_update.app_progress = nil
+
+      GT::UserManager.update_app_progress_onboarding(@user_to_update)
+      @user_to_update.app_progress.onboarding.should eql false
+    end
+
+    it "should make any falsey values false" do
+      @user_to_update.should_receive(:save).twice.and_call_original
+
+      @user_to_update.app_progress.onboarding = nil
+
+      GT::UserManager.update_app_progress_onboarding(@user_to_update)
+      @user_to_update.app_progress.onboarding.should eql false
+
+      @user_to_update.app_progress.onboarding = false
+
+      GT::UserManager.update_app_progress_onboarding(@user_to_update)
+      @user_to_update.app_progress.onboarding.should eql false
+    end
+
+    context "onboarding has an integer value" do
+      it "should leave values < the number of onboarding steps as is" do
+        @user_to_update.should_not_receive(:save)
+
+        @user_to_update.app_progress.onboarding = Settings::Onboarding.num_steps - 1
+
+        GT::UserManager.update_app_progress_onboarding(@user_to_update)
+        @user_to_update.app_progress.onboarding.should == Settings::Onboarding.num_steps - 1
+      end
+
+      it "should set values >= the number of onboarding steps to true" do
+        @user_to_update.should_receive(:save).twice.and_call_original
+
+        @user_to_update.app_progress.onboarding = Settings::Onboarding.num_steps
+
+        GT::UserManager.update_app_progress_onboarding(@user_to_update)
+        @user_to_update.app_progress.onboarding.should == true
+
+        @user_to_update.app_progress.onboarding = Settings::Onboarding.num_steps + 1
+
+        GT::UserManager.update_app_progress_onboarding(@user_to_update)
+        @user_to_update.app_progress.onboarding.should == true
+      end
+    end
+
+    it "should make any other values true" do
+      @user_to_update.should_receive(:save).twice.and_call_original
+
+      @user_to_update.app_progress.onboarding = true
+
+      GT::UserManager.update_app_progress_onboarding(@user_to_update)
+      @user_to_update.app_progress.onboarding.should eql true
+
+      @user_to_update.app_progress.onboarding = 'true'
+
+      GT::UserManager.update_app_progress_onboarding(@user_to_update)
+      @user_to_update.app_progress.onboarding.should eql true
+    end
+  end
+
   context "create_user" do
 
     context "from omniauth" do
