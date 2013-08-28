@@ -251,7 +251,6 @@ module GT
     # convert a real NOS user to a faux user
     def self.convert_real_user_to_faux(u)
       raise ArgumentError, "must supply a real user" unless u.user_type == User::USER_TYPE[:real]
-      raise ArgumentError, "must supply a non-gt-enabled user" if u.gt_enabled
 
       u.user_type = User::USER_TYPE[:faux]
       u.preferences = Preferences.new()

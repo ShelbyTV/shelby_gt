@@ -454,11 +454,11 @@ describe GT::UserManager do
       }.should raise_error(ArgumentError)
     end
 
-    it "should raise an error when given a gt enabled user" do
+    it "should not raise an error when given a gt enabled user" do
       @real_user.gt_enabled = true
       lambda {
         GT::UserManager.convert_real_user_to_faux(@real_user)
-      }.should raise_error(ArgumentError)
+      }.should_not raise_error(ArgumentError)
     end
 
     it "should change the user type to faux" do
