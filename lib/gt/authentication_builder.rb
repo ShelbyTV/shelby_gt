@@ -3,7 +3,7 @@ require 'predator_manager'
 
 module GT
   class AuthenticationBuilder
-   
+
     # Takes an omniauth response and bulds a new authentication
     # - returns the new authentication
     def self.build_from_omniauth(omniauth)
@@ -33,7 +33,7 @@ module GT
 
       # Extra user hash (from services like twitter)
       if omniauth['extra']
-        auth.user_hash = omniauth['extra']['user_hash'] if omniauth['extra']['user_hash']      
+        auth.user_hash = omniauth['extra']['user_hash'] if omniauth['extra']['user_hash']
         if omniauth['provider'] == 'facebook' and omniauth['extra']['user_hash']
           #from FB
           auth.email = omniauth['extra']['user_hash']['email'] if omniauth['extra']['user_hash']['email']
@@ -62,7 +62,7 @@ module GT
 
       return auth
     end
-    
+
     # Takes facebook info and bulds a new authentication
     # - returns the new authentication
     def self.build_from_facebook(fb_info, token, fb_permissions)
@@ -89,14 +89,14 @@ module GT
 
     def self.normalize_user_info(u, auth)
       u.user_image = auth.image if !u.user_image and auth.image
-      
+
       #If auth is twitter, we can try removing the _normal before the extension of the image to get the large version...
       if !u.user_image_original and auth.twitter? and !auth.image.blank? and !auth.image.include?("default_profile")
         u.user_image_original = auth.image.gsub("_normal", "")
       end
-      
-      u.primary_email = auth.email if u.primary_email.blank? and !auth.email.blank?
-      
+
+      u.primary_email = auth.email if u.primary_email.nil? and !auth.email.blank?
+
       if u.name.blank?
         u.name = auth.name
         u.name = "#{auth.first_name} #{auth.last_name}" if auth.first_name
@@ -109,9 +109,9 @@ module GT
       auth = authentication_by_provider_and_uid(u, provider, uid)
       return auth ? update_oauth_tokens!(u, auth, credentials_token, credentials_secret) : false
     end
-    
+
     private
-    
+
       # Updates oauth tokens for a users auth given an authentication
       #  - returns the updated auth
       def self.update_oauth_tokens!(u, a, credentials_token, credentials_secret)
@@ -123,11 +123,11 @@ module GT
         end
         return a
       end
-    
+
       # Finds a auth by provider and id
       def self.authentication_by_provider_and_uid(u, provider, uid)
         u.authentications.select { |a| a.provider == provider and a.uid == uid } .first
       end
-    
+
   end
 end
