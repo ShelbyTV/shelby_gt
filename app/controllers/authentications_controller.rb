@@ -121,7 +121,7 @@ class AuthenticationsController < ApplicationController
       else
 
         Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
-        @opener_location = redirect_path || Settings::ShelbyAPI.web_root
+        @opener_location = Settings::ShelbyAPI.web_root
       end
 
 # ---- New User signing up w/ email & password
@@ -252,7 +252,6 @@ class AuthenticationsController < ApplicationController
 
   private
     def redirect_path
-      session[:return_url] = Settings::ShelbyAPI.web_root if /shelby.tv\/video/.match(request.env['omniauth.origin'])
       clean_query_params(session[:return_url] || request.env['omniauth.origin'] || params[:redir])
     end
 
