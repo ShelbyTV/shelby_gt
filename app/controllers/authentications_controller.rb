@@ -92,12 +92,8 @@ class AuthenticationsController < ApplicationController
       end
 
       # not letting faux users in this way. redirect to /signup with a message
-      if user.user_type == User::USER_TYPE[:faux]
-        @opener_location = add_query_params(Settings::ShelbyAPI.web_root+'/signup', {:social_signup => "signup_first"})
-      else
-        sign_in_current_user(user, omniauth)
-        user.gt_enable! unless user.gt_enabled
-      end
+      sign_in_current_user(user, omniauth)
+      user.gt_enable! unless user.gt_enabled
 
 # ---- Adding new authentication to current user
     elsif current_user and omniauth
