@@ -252,6 +252,7 @@ class AuthenticationsController < ApplicationController
 
   private
     def redirect_path
+      session[:return_url] = Settings::ShelbyAPI.web_root if /shelby.tv\/video/.match(request.env['omniauth.origin'])
       clean_query_params(session[:return_url] || request.env['omniauth.origin'] || params[:redir])
     end
 
