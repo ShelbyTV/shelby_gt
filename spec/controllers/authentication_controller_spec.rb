@@ -388,10 +388,6 @@ describe AuthenticationsController do
           User.stub(:first).and_return(@u)
         end
 
-        it "should redirect to signup if user is not real. period." do
-          get :create
-          assigns(:opener_location).should == Settings::ShelbyAPI.web_root+'/signup?social_signup=signup_first'
-        end
       end
     end
 
