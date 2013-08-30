@@ -27,7 +27,7 @@
       <div class="user__contact">
         <%= link_to(user.primary_email || "", "mailto:#{user.primary_email}") %>
 
-        <ul class="list list--social-links clearfix">
+        <ul class="list list--inline clearfix">
           <% if links[:tw] %>
             <li>
               <a href="<%= links[:tw] %>">
