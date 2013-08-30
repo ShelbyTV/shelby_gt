@@ -117,7 +117,7 @@ class AuthenticationsController < ApplicationController
         set_common_cookie(user, form_authenticity_token)
 
         StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
-        @opener_location = redirect_path || Settings::ShelbyAPI.web_root
+        @opener_location = Settings::ShelbyAPI.web_root
       else
 
         Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
