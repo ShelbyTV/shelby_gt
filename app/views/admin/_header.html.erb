@@ -1,19 +1,21 @@
-<div id="admin-header">
-	<h1 id="shelby-logo" style="padding: 15px; width:500px;">
-		<img src="<%= Settings::Email.shelby_logo %>" id="headerImage" alt="Shelby.tv logo" title="Shelby.tv" style="border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;margin: 0;width: 120px;vertical-align: middle;">
-		user info :: <%= title %>
-	</h1>
-	<div id="user-info" style="position:fixed; top: 20px; right: 20px;">
-		<div id="admin-choices">
-				<a href="/admin/active_users"><span>active users</span></a> |
-				<a href="/admin/new_users"><span>new users</span></a> |
-				<a href="/admin/invited_users"><span>invited users</span></a>
-		</div>
-		<form id="js-email-form" class="user-search-form" action="/admin/user/" method="get">
-			<input name="search" type="text" id="js-user-input" class="user-form-input" placeholder="find someone" /><!--
+<div class="shelf shelf--menu">
+  <div class="shelf__lining">
+    <ul id="admin-choices" class="list list--inline">
+      <li class="list__item">
+        <a href="/admin/active_users"><span>active users</span></a>
+      </li>
+      <li class="list__item">
+        <a href="/admin/new_users"><span>new users</span></a>
+      </li>
+      <li class="list__item">
+        <a href="/admin/invited_users"><span>invited users</span></a>
+      </li>
+    </ul><!-- eo list -->
 
-			--><input type="submit" value="find user" id="js-user-search-submit" class="user-form-submit" />
-		</form>
+    <form id="js-email-form" class="user-search-form" action="/admin/user/" method="get">
+      <input name="search" type="text" id="js-user-input" class="user-form-input" placeholder="find someone" /><!--
+      --><input type="submit" value="find user" id="js-user-search-submit" class="user-form-submit" />
+    </form>
 
-	</div>
-</div>
+  </div><!-- eo shelf__lining-->
+</div><!-- eo shelf -->

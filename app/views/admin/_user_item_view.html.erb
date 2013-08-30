@@ -2,74 +2,76 @@
 <% user.authentications.each { |a| links[:tw] = "http://twitter.com/#{a.nickname}" if a.provider == "twitter"; links[:fb] = "http://www.facebook.com/#{a.nickname}" if a.provider == "facebook"; links[:tu] = "http://#{a.nickname}.tumblr.com/" if a.provider == "tumblr"; } %>
 
 <article class="user clearfix">
-  <div class="user__image">
-    <% if !user.user_image.nil? and !user.user_image_original.nil? and ((user.user_image != "null") or (user.user_image_original != "") ) and (avatar_url_for_user(user) != "null")%>
-      <%= image_tag(avatar_url_for_user(user), :size=>"50x50")  %>
-    <% else %>
-      BAD IMG
-    <% end %>
+  <div class="media_module">
+    <div class="media_image user__image">
+      <% if !user.user_image.nil? and !user.user_image_original.nil? and ((user.user_image != "null") or (user.user_image_original != "") ) and (avatar_url_for_user(user) != "null")%>
+        <%= image_tag(avatar_url_for_user(user), :size=>"50x50")  %>
+      <% else %>
+        BAD IMG
+      <% end %>
 
-    <% if user.public_roll and user.public_roll.roll_type >= Roll::TYPES[:special_public_real_user] %>
-      <div class="user__form">
-        <%= form_tag "/v1/roll/#{user.public_roll.id}/join", :class =>"form form--follow", :multipart => true, :method => :post do |f| %>
-          <%= submit_tag "Follow" %>
-        <% end %>
-      </div><!-- eo user__form -->
-		<% elsif user.public_roll == nil %>
-			<div class="user__form">
-				<%= submit_tag "BAD" %>
-			</div>
-    <% end %>
-  </div><!-- eo user__image -->
+      <% if user.public_roll and user.public_roll.roll_type >= Roll::TYPES[:special_public_real_user] %>
+        <div class="user__form">
+          <%= form_tag "/v1/roll/#{user.public_roll.id}/join", :class =>"form form--follow", :multipart => true, :method => :post do |f| %>
+            <%= submit_tag "Follow" %>
+          <% end %>
+        </div><!-- eo user__form -->
+      <% elsif user.public_roll == nil %>
+        <div class="user__form">
+          <%= submit_tag "BAD" %>
+        </div>
+      <% end %>
+    </div><!-- eo user__image -->
 
-  <div class="user__body">
-    <div class="user__contact">
-      <%= link_to(user.primary_email || "", "mailto:#{user.primary_email}") %>
+    <div class="media_body user__body">
+      <div class="user__contact">
+        <%= link_to(user.primary_email || "", "mailto:#{user.primary_email}") %>
 
-      <ul class="list list--social-links clearfix">
-        <% if links[:tw] %>
-          <li>
-            <a href="<%= links[:tw] %>">
-              <img src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" height="16" alt="" title="" />
-            </a>
-          </li>
-        <% end %>
-        <% if links[:fb] %>
-          <li>
-            <a href="<%= links[:fb] %>">
-              <img src="http://forums.appsorama.com/fbb/facebook_logo_16x16.gif" alt="" title="" height="16" />
-            </a>
-          </li>
-        <% end %>
-        <% if links[:tu] %>
-          <li>
-            <a href="<%= links[:tu] %>">
-              <img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" height="16" alt="" title=""/>
-            </a>
-          </li>
-        <% end %>
+        <ul class="list list--social-links clearfix">
+          <% if links[:tw] %>
+            <li>
+              <a href="<%= links[:tw] %>">
+                <img src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" height="16" alt="" title="" />
+              </a>
+            </li>
+          <% end %>
+          <% if links[:fb] %>
+            <li>
+              <a href="<%= links[:fb] %>">
+                <img src="http://forums.appsorama.com/fbb/facebook_logo_16x16.gif" alt="" title="" height="16" />
+              </a>
+            </li>
+          <% end %>
+          <% if links[:tu] %>
+            <li>
+              <a href="<%= links[:tu] %>">
+                <img src="http://i20.photobucket.com/albums/b218/Sylphcat/TumblrLogoSmall.png" height="16" alt="" title=""/>
+              </a>
+            </li>
+          <% end %>
 
-      </ul><!-- eo user__social-links -->
-    </div><!-- eo user__contact -->
+        </ul><!-- eo user__social-links -->
+      </div><!-- eo user__contact -->
 
-    <h1 class="user__h1">
-      <%= link_to user.name || user.nickname, "/admin/user/#{user.id}", :class=>"user__username" %> <span>(<%= user.nickname %>)</span>
-    </h1>
-		<% if user.public_roll %>
-	    <div class="user__info">
-	      <%= link_to "#{user.public_roll.permalink}", "#{user.public_roll.permalink}" %>
-	      <ul class="list user__stats">
-	        <li>
-	          videos in roll: <%= user.public_roll.frames.count %>
-	        </li>
-	        <li>
-	          videos queued: <%= user.watch_later_roll.frames.count %>
-	        </li>
-              <li>
-                <small>[ onboarding status: <%= user.app_progress['onboarding'] %> ]</small>
-              </li>
-	      </ul>
-	    </div><!-- eo user__info -->
-		<% end %>
-  </div><!-- eo user__body -->
+      <h1 class="user__h1">
+        <%= link_to user.name || user.nickname, "/admin/user/#{user.id}", :class=>"user__username" %> <span>(<%= user.nickname %>)</span>
+      </h1>
+      <% if user.public_roll %>
+        <div class="user__info">
+          <%= link_to "#{user.public_roll.permalink}", "#{user.public_roll.permalink}" %>
+          <ul class="list user__stats">
+            <li>
+              videos in roll: <%= user.public_roll.frames.count %>
+            </li>
+            <li>
+              videos queued: <%= user.watch_later_roll.frames.count %>
+            </li>
+                <li>
+                  <small>[ onboarding status: <%= user.app_progress['onboarding'] %> ]</small>
+                </li>
+          </ul>
+        </div><!-- eo user__info -->
+      <% end %>
+    </div><!-- eo user__body -->
+  </div><!-- media_module -->
 </article>

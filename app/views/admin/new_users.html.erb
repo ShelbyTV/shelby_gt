@@ -1,9 +1,9 @@
 <%= render :partial => "/admin/header", :locals => { :title => "new users in the last 24 hrs" } %>
-	
-<hr/>
 
-<div id="users">
-	<% @all_new_users.each do |u| %>
-		<%= render :partial => "user_item_view", :locals => { :user => u } %>
-	<% end %>	
-</div>
+<div class="shelf shelf--users_list" id="users">
+  <div class="shelf__lining">
+    <% @all_new_users.each do |u| %>
+      <%= render :partial => "user_item_view", :locals => { :user => u } %>
+    <% end %>
+  </div><!-- eo shelf__lining -->
+</div><!-- eo shelf -->
