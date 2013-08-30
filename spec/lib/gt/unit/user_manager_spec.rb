@@ -510,18 +510,27 @@ describe GT::UserManager do
       @user_to_update.app_progress.onboarding.should eql false
     end
 
-    it "should make any falsey values false" do
-      @user_to_update.should_receive(:save).twice.and_call_original
+    it "should make nil values false" do
+      @user_to_update.should_receive(:save).and_call_original
 
       @user_to_update.app_progress.onboarding = nil
 
       GT::UserManager.update_app_progress_onboarding(@user_to_update)
       @user_to_update.app_progress.onboarding.should eql false
+    end
+
+    it "should do nothing if the value of onboarding is already false or true" do
+      @user_to_update.should_not_receive(:save)
 
       @user_to_update.app_progress.onboarding = false
 
       GT::UserManager.update_app_progress_onboarding(@user_to_update)
       @user_to_update.app_progress.onboarding.should eql false
+
+      @user_to_update.app_progress.onboarding = true
+
+      GT::UserManager.update_app_progress_onboarding(@user_to_update)
+      @user_to_update.app_progress.onboarding.should eql true
     end
 
     context "onboarding has an integer value" do
@@ -550,12 +559,7 @@ describe GT::UserManager do
     end
 
     it "should make any other values true" do
-      @user_to_update.should_receive(:save).twice.and_call_original
-
-      @user_to_update.app_progress.onboarding = true
-
-      GT::UserManager.update_app_progress_onboarding(@user_to_update)
-      @user_to_update.app_progress.onboarding.should eql true
+      @user_to_update.should_receive(:save).once.and_call_original
 
       @user_to_update.app_progress.onboarding = 'true'
 

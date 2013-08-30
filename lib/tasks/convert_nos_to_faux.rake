@@ -6,8 +6,14 @@ namespace :users do
 
       puts "Processing users"
 
+      processed = 0
+
       #can't pass :timeout => nil to find_each, so need to drop down to the driver...
-      User.collection.find({}, {:timeout => false}) do |cursor|
+      #don't want to keep running forever if users get created during the life of the cursor,
+      #  so limit ourselves to records created before the cursor is started, this also causes
+      #  the query to use the index on _id so that modified records won't come out of the cursor
+      #  a second time
+      User.collection.find({:_id => {:$lt => BSON::ObjectId.from_time(Time.now.utc)}}, {:timeout => false}) do |cursor|
         cursor.each do |hsh|
           begin
             u = User.load(hsh)
@@ -24,9 +30,12 @@ namespace :users do
             puts ""
             puts "[convert_nos_to_faux] EXCEPTION PROCESSING USER #{u.id.to_s}: #{e}"
           end
+          processed += 1
         end
       end
-      puts " done!"
+      puts ""
+      puts "Done! Processed #{processed} users"
+
     end
 
 end

@@ -265,14 +265,16 @@ module GT
     def self.update_app_progress_onboarding(u)
       if u.app_progress
         if !u.app_progress.onboarding
-          u.app_progress.onboarding = false
-          u.save
+          unless u.app_progress.onboarding == false
+            u.app_progress.onboarding = false
+            u.save
+          end
         elsif u.app_progress.onboarding.is_a? Integer
           if u.app_progress.onboarding >= Settings::Onboarding.num_steps
             u.app_progress.onboarding = true
             u.save
           end
-        else
+        elsif u.app_progress.onboarding != true
           u.app_progress.onboarding = true
           u.save
         end
