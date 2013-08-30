@@ -1,6 +1,6 @@
 <%= render :partial => "/admin/header", :locals => { :title => "new users in the last 24 hrs" } %>
 
-<div class="shelf shelf--users_list" id="users">
+<div class="shelf shelf--merge_accounts" id="users">
   <div class="shelf__lining">
     <% @all_new_users.each do |u| %>
       <%= render :partial => "user_item_view", :locals => { :user => u } %>
