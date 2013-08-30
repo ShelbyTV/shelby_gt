@@ -199,7 +199,6 @@ class AuthenticationsController < ApplicationController
   # confirm that they want to merge, will post to do_merge_accounts
   def should_merge_accounts
     @into_user = current_user
-    session[:user_to_merge_in_id] = current_user.id if Rails.env == "development"
     redirect_to sign_out_user_path unless @other_user = User.find_by_id(session[:user_to_merge_in_id])
   end
 

@@ -1,78 +1,152 @@
-<div class="cohort-entrance-wrapper">
-	
-	<h1>You have two Shelby accounts...</h1>
-
-	<div class="shelby-user-summary">
-		<h2>Your permanent account is <span class="shelby-username"><%= @into_user.nickname %></span></h2>
-		<%= image_tag avatar_url_for_user(@into_user) %>
-		
-		<% if !@into_user.authentications.empty? %>
-			<div class="external-services">
-				<%= pluralize @into_user.authentications.size, "external service" %> is connected to <%= @into_user.nickname %>
-				<ul>
-				<% @into_user.authentications.each do |auth| %>
-					<li><em><%= auth.nickname %></em> on <%= auth.provider %></li>
-				<% end %>
-				</ul>
-			</div>
-		<% end %>
-	</div>
-
-	<div class="shelby-user-summary">
-		<h2>Your other account <span class="shelby-username"><%= @other_user.nickname %></span> can be merged into <span class="shelby-username"><%= @into_user.nickname %></span></h2>
-		<%= image_tag avatar_url_for_user(@other_user) %>
-		
-		<% if !@other_user.authentications.empty? %>
-			<div class="external-services">
-				<%= pluralize @other_user.authentications.size, "external service" %> is connected to <%= @other_user.nickname %>
-				<ul>
-				<% @other_user.authentications.each do |auth| %>
-					<li><em><%= auth.nickname %></em> on <%= auth.provider %></li>
-				<% end %>
-				</ul>
-			</div>
-		<% end %>
-	</div>
-
-	<hr />
-	
-	<h1>If we merge them...</h1>
-	
-	<div class="shelby-user-summary">
-		<% all_auths =  @into_user.authentications + @other_user.authentications%>
-		
-		<h2>You will be <span class="shelby-username"><%= @into_user.nickname %></span></h2>
-		<%= image_tag avatar_url_for_user(@into_user) %>
-		
-		<% if !@into_user.authentications.empty? %>
-			<div class="external-services">
-				You will have <%= pluralize all_auths.size, "external service" %> connected to <%= @into_user.nickname %>
-				<ul>
-				<% all_auths.each do |auth| %>
-					<li><em><%= auth.nickname %></em> on <%= auth.provider %></li>
-				<% end %>
-				</ul>
-			</div>
-		<% end %>
-		
-		<h2>Videos Rolled, history, account info for <span class="shelby-username"><%= @other_user.nickname %></span> will belong to <span class="shelby-username"><%= @into_user.nickname %></span></h2>
-		<h2>The <span class="shelby-username"><%= @other_user.nickname %></span> account will be deleted</h2>
-	</div>
-
-	<%= form_for(:user, :url => do_merge_accounts_authentications_path) do |f| %>
-		<div>
-			<%= f.submit "Merge These Users", :id => "do-merge" %>
-			<spanb id="cancel-merge">or <%= link_to "Cancel and Sign Out", sign_out_user_path, :class => "cancel" %></span>
-			</div>
-	<% end %>
-	
+<div class="shelf shelf--error">
+  <p>
+    You've authenticated that service with an existing user account!
+  </p>
 </div>
 
+<div class="shelf shelf--merge_accounts">
+  <div class="shelf__lining">
+    <h1 class="shelf__h1">
+      Would you like to merge accounts?
+    </h1>
+
+    <h2 class="shelf__h2">
+      You're signed in with:
+    </h2>
+
+    <div class="user">
+      <div class="media_module clearfix">
+        <% into_avatar = avatar_url_for_user(@into_user) %>
+        <span class="media_image image_module avatar avatar--small user__avatar" role="img" style="background-image:url(<%= into_avatar %>);">
+          <img class="visuallyhidden" src="<%= into_avatar %>"/>
+        </span><!-- eo media_image -->
+
+        <div class="media_body">
+          <h3 class="user__h1">
+            <%= @into_user.nickname %>
+          </h3>
+
+          <h4 class="user__h2">
+            <%= @into_user.name || '' %>
+          </h4>
+
+        </div><!-- eo media_body -->
+      </div><!-- eo media_module -->
+    </div><!-- eo user -->
+
+    <% if !@into_user.authentications.empty? %>
+      <div class="external-services">
+        <p class="shelf__block">
+          This account has <%= pluralize @into_user.authentications.size, "external service" %> connected:
+        </p>
+
+        <ul>
+          <% @into_user.authentications.each do |auth| %>
+            <li><em><%= auth.nickname %></em> on <%= auth.provider.capitalize %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <h2 class="shelf__h2">
+      This account has already been connected:
+    </h2>
+
+    <div class="user">
+      <div class="media_module clearfix">
+        <% other_avatar = avatar_url_for_user(@other_user) %>
+
+        <span class="media_image image_module avatar avatar--small user__avatar" role="img" style="background-image:url(<%= other_avatar %>);">
+          <img class="visuallyhidden" src="<%= other_avatar %>"/>
+        </span><!-- eo media_image -->
+
+        <div class="media_body">
+          <h3 class="user__h1">
+            <%= @other_user.nickname %>
+          </h3>
+
+          <h4 class="user__h2">
+            <%= @into_user.name || '' %>
+          </h4>
+        </div><!-- eo media_body -->
+      </div><!-- eo media_module -->
+    </div><!-- eo user -->
+
+    <% if !@other_user.authentications.empty? %>
+      <div class="external-services">
+        <p class="shelf__block">
+          This account has <%= pluralize @other_user.authentications.size, "external service" %> connected:
+        </p>
+
+        <ul>
+          <% @other_user.authentications.each do |auth| %>
+            <li><em><%= auth.nickname %></em> on <%= auth.provider.capitalize %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div><!-- eo shelf__lining -->
+</div><!-- eo shelf -->
+
+<div class="shelf shelf--merge_accounts">
+  <div class="shelf__lining">
+    <h2 class="shelf__h1">
+      If you combine accounts:
+    </h2>
+
+    <p class="shelf__block shelf__h3 shelf__block--warning">
+      Videos shared, history, and account info for <strong class="shelby-username"><%= @other_user.nickname %></strong> will belong to <strong class="shelby-username"><%= @into_user.nickname %></strong>.
+      <br/>
+      <strong>The <span class="shelby-username"><%= @other_user.nickname %></span> account will be deleted.</strong>
+    </p>
+
+
+    <% all_auths =  @into_user.authentications + @other_user.authentications %>
+    <div class="user">
+      <div class="media_module clearfix">
+        <span class="media_image image_module avatar avatar--small user__avatar" role="img" style="background-image:url(<%= into_avatar %>);">
+          <img class="visuallyhidden" src="<%= into_avatar %>"/>
+        </span><!-- eo media_image -->
+
+        <div class="media_body">
+          <h3 class="user__h1">
+            <%= @into_user.nickname %>
+          </h3>
+
+          <h4 class="user__h2">
+            <%= @into_user.name || '' %>
+          </h4>
+        </div><!-- eo media_body -->
+      </div><!-- eo media_module -->
+    </div><!-- eo user -->
+
+    <% if !@into_user.authentications.empty? %>
+      <div class="external-services">
+        <p class="shelf__block">
+          You will have <%= pluralize all_auths.size, "external service" %> connected:
+        </p>
+
+        <ul>
+          <% all_auths.each do |auth| %>
+            <li><em><%= auth.nickname %></em> on <%= auth.provider.capitalize %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+    <%= form_for(:user,:html => {:class => "form_module js-do-merge"}, :url => do_merge_accounts_authentications_path) do |f| %>
+      <div>
+        <%= f.submit "Merge These Users", :id => "do-merge", :class => "button_primer button_command button_command--flexible button_green" %>
+        <span id="cancel-merge">or <%= link_to "Cancel and Sign Out", sign_out_user_path, :class => "cancel" %></span>
+      </div>
+    <% end %>
+  </div>
+</div><!-- eo shelf -->
+
 <script>
-	$("input#do-merge").click( function(e){
-		$(this).attr('disabled', 'disabled');
-		$(this).attr('value', 'Merging!  This may take a few minutes...');
-		$("#cancel-merge").hide();
-		$(e.currentTarget).parents("form").submit();
-	});
+  $("input#do-merge").click( function(e){
+    $(this).attr('disabled', 'disabled');
+    $(this).attr('value', 'Merging!  This may take a few minutes...');
+    $("#cancel-merge").hide();
+    $(e.currentTarget).parents("form").submit();
+  });
 </script>
