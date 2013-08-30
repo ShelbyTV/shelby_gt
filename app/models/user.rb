@@ -98,6 +98,8 @@ class User
   key :user_image,            String  # actual URL provided by service
   key :user_image_original,   String  # guess of URL to original upload that became user_image
   key :primary_email,         String, :default => nil
+  # email address the user had claimed when they were a nos user, if available
+  key :nos_email,             String, :abbr => :bg, :default => nil
   key :encrypted_password,    String, :abbr => :ar
 
   # uploadable avatar via paperclip (see config/initializers/paperclip.rb for defaults)

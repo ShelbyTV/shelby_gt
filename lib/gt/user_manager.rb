@@ -248,6 +248,42 @@ module GT
       end
     end
 
+    # convert a real NOS user to a faux user
+    def self.convert_real_user_to_faux(u)
+      raise ArgumentError, "must supply a real user" unless u.user_type == User::USER_TYPE[:real]
+
+      u.user_type = User::USER_TYPE[:faux]
+      u.preferences = Preferences.new()
+      u.app_progress = AppProgress.new()
+      u.nos_email = u.primary_email
+      u.primary_email = nil
+
+      u.save
+    end
+
+    # update any value for u.app_progress.onboarding to match the new system
+    def self.update_app_progress_onboarding(u)
+      if u.app_progress
+        if !u.app_progress.onboarding
+          unless u.app_progress.onboarding == false
+            u.app_progress.onboarding = false
+            u.save
+          end
+        elsif u.app_progress.onboarding.is_a? Integer
+          if u.app_progress.onboarding >= Settings::Onboarding.num_steps
+            u.app_progress.onboarding = true
+            u.save
+          end
+        elsif u.app_progress.onboarding != true
+          u.app_progress.onboarding = true
+          u.save
+        end
+      else
+        u.app_progress = AppProgress.new
+        u.save
+      end
+    end
+
     def self.user_has_all_special_roll_ids?(u)
       return (u.public_roll_id != nil and
              u.upvoted_roll_id != nil and

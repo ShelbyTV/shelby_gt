@@ -92,12 +92,8 @@ class AuthenticationsController < ApplicationController
       end
 
       # not letting faux users in this way. redirect to /signup with a message
-      if user.user_type == User::USER_TYPE[:faux]
-        @opener_location = add_query_params(Settings::ShelbyAPI.web_root+'/signup', {:social_signup => "signup_first"})
-      else
-        sign_in_current_user(user, omniauth)
-        user.gt_enable! unless user.gt_enabled
-      end
+      sign_in_current_user(user, omniauth)
+      user.gt_enable! unless user.gt_enabled
 
 # ---- Adding new authentication to current user
     elsif current_user and omniauth
@@ -110,9 +106,24 @@ class AuthenticationsController < ApplicationController
         @opener_location = redirect_path || Settings::ShelbyAPI.web_root
       end
 
-# ---- New User signing up w/ omniauth, but we're not allowing this now, so we just redirect back to web with an error
+# ---- New User signing up w/ omniauth!
     elsif omniauth
-        @opener_location = add_query_params(Settings::ShelbyAPI.web_root+'/signup', {:social_signup => "not_authorized"})
+
+      user = GT::UserManager.create_new_user_from_omniauth(omniauth)
+
+      if user.valid?
+        sign_in(:user, user)
+        user.remember_me!(true)
+        set_common_cookie(user, form_authenticity_token)
+
+        StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
+        @opener_location = Settings::ShelbyAPI.web_root
+      else
+
+        Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
+        @opener_location = Settings::ShelbyAPI.web_root
+      end
+
 # ---- New User signing up w/ email & password
     elsif !params[:user].blank?
       # can now signup in a popup so no_redirect should not be set!
