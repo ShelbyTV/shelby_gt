@@ -267,7 +267,7 @@ module GT
           :dashboard_user_id => dbe.user_id,
           :action => action,
           :dashboard_entry_options => {
-            :src_frame => dbe.frame
+            :src_frame_id => dbe.frame.id
           }
         )
         if new_dbe[:dashboard_entries] and !new_dbe[:dashboard_entries].empty?

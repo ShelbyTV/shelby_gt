@@ -177,6 +177,7 @@ describe GT::Framer do
       res[:dashboard_entries][0].roll.should == @roll
       res[:dashboard_entries][0].frame.should == res[:frame]
       res[:dashboard_entries][0].src_frame.should be_nil
+      res[:dashboard_entries][0].src_frame_id.should be_nil
       res[:dashboard_entries][0].friend_sharers_array.should == []
       res[:dashboard_entries][0].friend_viewers_array.should == []
       res[:dashboard_entries][0].friend_likers_array.should == []
@@ -243,6 +244,7 @@ describe GT::Framer do
       res[:dashboard_entries][0].frame.should == res[:frame]
       res[:dashboard_entries][0].frame.persisted?.should == true
       res[:dashboard_entries][0].src_frame.should be_nil
+      res[:dashboard_entries][0].src_frame_id.should be_nil
       res[:dashboard_entries][0].friend_sharers_array.should == []
       res[:dashboard_entries][0].friend_viewers_array.should == []
       res[:dashboard_entries][0].friend_likers_array.should == []
@@ -269,6 +271,7 @@ describe GT::Framer do
       res[:dashboard_entries][0].frame.should be_nil
       res[:dashboard_entries][0].frame_id.should == res[:frame].id
       res[:dashboard_entries][0].src_frame.should be_nil
+      res[:dashboard_entries][0].src_frame_id.should be_nil
       res[:dashboard_entries][0].friend_sharers_array.should == []
       res[:dashboard_entries][0].friend_viewers_array.should == []
       res[:dashboard_entries][0].friend_likers_array.should == []
@@ -294,7 +297,7 @@ describe GT::Framer do
         :message => @message,
         :dashboard_user_id => u.id,
         :dashboard_entry_options => {
-          :src_frame => f,
+          :src_frame_id => f.id,
           :friend_sharers_array => [friend_user_id_string],
           :friend_viewers_array => [friend_user_id_string],
           :friend_likers_array => [friend_user_id_string],
@@ -306,6 +309,7 @@ describe GT::Framer do
       res[:dashboard_entries].size.should == 1
       res[:dashboard_entries][0].persisted?.should == true
       res[:dashboard_entries][0].src_frame.should == f
+      res[:dashboard_entries][0].src_frame_id.should == f.id
       res[:dashboard_entries][0].friend_sharers_array.should == [friend_user_id_string]
       res[:dashboard_entries][0].friend_viewers_array.should == [friend_user_id_string]
       res[:dashboard_entries][0].friend_likers_array.should == [friend_user_id_string]
@@ -407,6 +411,7 @@ describe GT::Framer do
       res[:dashboard_entries][0].action.should == DashboardEntry::ENTRY_TYPE[:re_roll]
       res[:dashboard_entries][0].frame.should == res[:frame]
       res[:dashboard_entries][0].src_frame.should be_nil
+      res[:dashboard_entries][0].src_frame_id.should be_nil
       res[:dashboard_entries][0].friend_sharers_array.should == []
       res[:dashboard_entries][0].friend_viewers_array.should == []
       res[:dashboard_entries][0].friend_likers_array.should == []
@@ -574,6 +579,7 @@ describe GT::Framer do
       d[0].persisted?.should == true
       d[0].frame.should == @frame
       d[0].src_frame.should be_nil
+      d[0].src_frame_id.should be_nil
       d[0].friend_sharers_array.should == []
       d[0].friend_viewers_array.should == []
       d[0].friend_likers_array.should == []
@@ -589,12 +595,13 @@ describe GT::Framer do
 
       d = nil
       lambda {
-        d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {:src_frame => @src_frame})
+        d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {:src_frame_id => @src_frame.id})
       }.should change { DashboardEntry.count } .by 1
 
       d.size.should == 1
       d[0].persisted?.should == true
       d[0].src_frame.should == @src_frame
+      d[0].src_frame_id.should == @src_frame.id
     end
 
     it "should set the DashboardEntry's friend arrays when specified as options" do

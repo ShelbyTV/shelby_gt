@@ -256,7 +256,7 @@ module GT
           dbe.user_id = user_id
           dbe.roll = frame.roll
           dbe.frame_id = frame.id
-          dbe.src_frame = options[:src_frame]
+          dbe.src_frame_id = options[:src_frame_id]
           dbe.friend_sharers_array = options[:friend_sharers_array] if options[:friend_sharers_array]
           dbe.friend_viewers_array = options[:friend_viewers_array] if options[:friend_viewers_array]
           dbe.friend_likers_array = options[:friend_likers_array] if options[:friend_likers_array]

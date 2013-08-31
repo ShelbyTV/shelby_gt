@@ -24,14 +24,13 @@ class V1::RecommendationController < ApplicationController
       @results = []
       # wrap the recommended videos in 'phantom' frames and dbentries that are not persisted to the db
       recommendations.each do |rec|
-        src_frame = Frame.find(rec[:src_frame_id])
         res = GT::Framer.create_frame(
           :video_id => rec[:recommended_video_id],
           :dashboard_user_id => @user.id,
           :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
           :dont_persist => true,
           :dashboard_entry_options => {
-            :src_frame => src_frame
+            :src_frame_id => rec[:src_frame_id]
           }
         )
         if res[:dashboard_entries] and !res[:dashboard_entries].empty? && res[:frame]
