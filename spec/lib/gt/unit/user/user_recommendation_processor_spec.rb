@@ -202,6 +202,11 @@ describe GT::UserRecommendationProcessor do
           frame.video_id.should eq @dbe.video.recs.first.recommended_video_id
         end
 
+        it "should set src_frame attribute correctly" do
+          new_dbe = @email_processor.create_new_dashboard_entry(@user, @dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+          new_dbe.src_frame.should == @f
+        end
+
         it "should not add video if user watched it already" do
           dbe_with_rec = Factory.create(:dashboard_entry, :user => @user, :frame => @f, :video_id => @v.id)
           @user.dashboard_entries << dbe_with_rec
