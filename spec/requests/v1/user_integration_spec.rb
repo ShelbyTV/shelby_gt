@@ -452,13 +452,9 @@ describe 'v1/user' do
       end
 
       it "should not persist any new dashboard entries, frames, or conversations to the database" do
-        lambda = lambda {
+        lambda {
           get '/v1/user/'+@u1.id+'/recommendations?limit=10&min_score=80.0&scan_limit=20'
-        }
-
-        lambda.should_not change { DashboardEntry.count }
-        lambda.should_not change { Frame.count }
-        lambda.should_not change { Conversation.count }
+        }.should_not change { "#{DashboardEntry.count},#{Frame.count},#{Conversation.count}" }
       end
 
       context "other user" do

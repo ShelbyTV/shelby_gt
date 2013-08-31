@@ -16,18 +16,27 @@ module GT
       max_db_entries_to_scan_for_videograph = 10
       num_dbes_to_fetch = [num_recents_to_check, max_db_entries_to_scan_for_videograph].max
 
-      dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(num_dbes_to_fetch).fields(:video_id, :frame_id, :action)
+      dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(num_dbes_to_fetch).fields(:video_id, :frame_id, :action).all
 
-      unless dbes.slice(0, num_recents_to_check).any? { |dbe| dbe.is_recommendation? }
-        # if we don't find any recommendations within the recency limit, grab one
+      unless dbes.first(num_recents_to_check).any? { |dbe| dbe.is_recommendation? }
+        # if we don't find any recommendations within the recency limit, generate a new recommendation
         recs = self.get_random_video_graph_recs_for_user(user, 10, 1, 100.0, dbes)
         unless recs.empty?
-
-        else
-          nil
+          # wrap the recommended video in a dashboard entry
+          rec = recs[0]
+          res = GT::Framer.create_frame(
+            :video_id => rec[:recommended_video_id],
+            :dashboard_user_id => user.id,
+            :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+            :dashboard_entry_options => {
+              :src_frame_id => rec[:src_frame_id]
+            }
+          )
+          if res[:dashboard_entries] and !res[:dashboard_entries].empty?
+            # return the new dashboard entry
+            return res[:dashboard_entries][0]
+          end
         end
-      else
-        nil
       end
     end
 

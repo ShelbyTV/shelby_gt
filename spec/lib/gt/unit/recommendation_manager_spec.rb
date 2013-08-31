@@ -134,7 +134,7 @@ describe GT::RecommendationManager do
 
     it "should not generate recs if there are recommendations within num_recents_to_check dbes" do
       dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
-      DashboardEntry.stub_chain(:where, :order, :limit, :fields).and_return([dbe])
+      DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return([dbe])
       GT::RecommendationManager.should_not_receive(:get_random_video_graph_recs_for_user)
 
       GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
@@ -142,16 +142,26 @@ describe GT::RecommendationManager do
 
     it "should generate recs if there are no recommendations within num_recents_to_check dbes" do
       dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
-      @dbes = [dbe]
-      DashboardEntry.stub_chain(:where, :order, :limit, :fields).and_return(@dbes)
-      GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@user, 10, 1, 100.0, @dbes)
+      dbes = [dbe]
+      DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return(dbes)
+      GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@user, 10, 1, 100.0, dbes).and_return([])
 
       GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
     end
 
+    it "should limit the search for recent recs according to the num_recents_to_check_parameter" do
+      dbe_social = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
+      dbe_rec = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+      dbes = [dbe_social, dbe_rec]
+      DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return(dbes)
+      GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@user, 10, 1, 100.0, dbes).and_return([])
+
+      GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, 1)
+    end
+
     it "should return nil if no video graph recommendations are available within the given search parameters" do
-      dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
-      DashboardEntry.stub_chain(:where, :order, :limit, :fields).and_return([dbe])
+      dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
+      DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return([dbe])
       GT::RecommendationManager.stub(:get_random_video_graph_recs_for_user).and_return([])
 
       result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
@@ -161,17 +171,22 @@ describe GT::RecommendationManager do
     it "should return a new dashboard entry with a video graph recommendation if any are available" do
       v = Factory.create(:video)
       rec_vid = Factory.create(:video)
-      rec = Factory.create(:recommendation, :recommended_video_id => rec_vid.id)
+      rec = Factory.create(:recommendation, :recommended_video_id => rec_vid.id, :score => 100.0)
       v.recs << rec
 
       f = Factory.create(:frame, :video => v, :creator => @user )
 
       dbe = Factory.create(:dashboard_entry, :frame => f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
-      @dbes = [dbe]
-      DashboardEntry.stub_chain(:where, :order, :limit, :fields).and_return(@dbes)
+
+      DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return([dbe])
+      GT::RecommendationManager.stub(:get_random_video_graph_recs_for_user).and_return(
+        [{:recommended_video_id => rec_vid.id, :src_frame_id => f.id}]
+      )
 
       result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
       result.should be_an_instance_of(DashboardEntry)
+      result.src_frame.should == f
+      result.video_id.should == rec_vid.id
     end
   end
 
