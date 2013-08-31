@@ -247,13 +247,23 @@ describe User do
 
   context "avatar_url" do
 
-    it "should return the avatar url for the shelby user" do
-      user = Factory.create(:user)
-      updated_at_time = Time.new
-      user.avatar_updated_at = updated_at_time.to_s
-      user.avatar_file_name = 'file.jpg'
+    before(:each) do
+      @updated_at_time = Time.new
+      @user.avatar_file_name = 'file.jpg'
+    end
 
-      user.shelby_avatar_url("small").should eql "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/sq48x48/#{user.id.to_s}?#{updated_at_time.strftime('%s')}"
+    it "should return the avatar url for the shelby user" do
+      @user.avatar_updated_at = @updated_at_time.to_s
+
+      @user.shelby_avatar_url("small").should eql "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/sq48x48/#{@user.id.to_s}?#{@updated_at_time.strftime('%s')}"
+    end
+
+    it "should use a default time if avatar_updated_at value is bad" do
+      @user.avatar_updated_at = 'blah'
+      Time.stub(:new).and_return(@updated_at_time)
+
+      @user.shelby_avatar_url("small").should_not raise_error(ArgumentError)
+      @user.shelby_avatar_url("small").should eql "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/sq48x48/#{@user.id.to_s}?#{@updated_at_time.strftime('%s')}"
     end
   end
 

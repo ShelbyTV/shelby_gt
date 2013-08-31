@@ -250,7 +250,11 @@ class User
                     "original"
                   end
 
-    updated_time_string = Time.parse(avatar_updated_at).strftime('%s')
+    begin
+      updated_time_string = Time.parse(avatar_updated_at).strftime('%s')
+    rescue
+      updated_time_string = Time.new.strftime('%s')
+    end
 
     "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/#{avatar_size}/#{id.to_s}?#{updated_time_string}" if has_shelby_avatar
   end
