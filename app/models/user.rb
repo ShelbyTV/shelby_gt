@@ -250,7 +250,9 @@ class User
                     "original"
                   end
 
-    "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/#{avatar_size}/#{id.to_s}?#{avatar_updated_at}" if has_shelby_avatar
+    updated_time_string = Time.parse(avatar_updated_at).strftime('%s')
+
+    "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/#{avatar_size}/#{id.to_s}?#{updated_time_string}" if has_shelby_avatar
   end
 
   # When update_attributes recieves a :google_analytics_identifier, add it to our set

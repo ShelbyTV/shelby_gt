@@ -245,4 +245,16 @@ describe User do
 
   end
 
+  context "avatar_url" do
+
+    it "should return the avatar url for the shelby user" do
+      user = Factory.create(:user)
+      updated_at_time = Time.new
+      user.avatar_updated_at = updated_at_time.to_s
+      user.avatar_file_name = 'file.jpg'
+
+      user.shelby_avatar_url("small").should eql "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/sq48x48/#{user.id.to_s}?#{updated_at_time.strftime('%s')}"
+    end
+  end
+
 end
