@@ -172,6 +172,38 @@ describe 'v1/dashboard' do
         end
       end
 
+      context 'trigger_recs param' do
+        it "should do a check for inserting recommendations when trigger_recs param is included" do
+          GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec)
+          get '/v1/dashboard?trigger_recs=true'
+        end
+
+        it "should create a new dashboard entry" do
+          v = Factory.create(:video)
+          rec_vid = Factory.create(:video)
+          rec = Factory.create(:recommendation, :recommended_video_id => rec_vid.id, :score => 100.0)
+          v.recs << rec
+
+          f = Factory.create(:frame, :video => v, :creator => @user )
+
+          dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
+
+          lambda {
+            get '/v1/dashboard?trigger_recs=true'
+          }.should change { DashboardEntry.count }
+        end
+
+        it "should not do a check for inserting recommendations when a since_id is included" do
+          GT::RecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
+          get '/v1/dashboard?trigger_recs=true&since_id=someid'
+        end
+
+        it "should not do a check for inserting recommendations when trigger_recs param is not included" do
+          GT::RecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
+          get '/v1/dashboard'
+        end
+      end
+
     end
 
     describe "PUT" do

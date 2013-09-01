@@ -15,6 +15,7 @@ class V1::DashboardEntriesMetalController < MetalController
   # @param [Optional, Integer] limit The number of entries to return (default/max 20)
   # @param [Optional, Integer] skip The number of entries to skip (default 0)
   # @param [Optional, String]  since_id the id of the dashboard entry to start from (inclusive)
+  # @param [Optional, Boolean] trigger_recs if true, after responding, check if new recommendations are needed and if so, insert
   def index
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['index']) do
       # default params
@@ -50,6 +51,13 @@ class V1::DashboardEntriesMetalController < MetalController
           f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] ---------RUBY SAYS: HANDLE v1/dashboard END-----------"
         end
       }
+
+      if !sinceId && params[:trigger_recs]
+        ShelbyGT_EM.next_tick {
+          # check if we need new recommendations, and if so, insert them into the stream
+          GT::RecommendationManager.if_no_recent_recs_generate_rec(current_user, { :insert_at_random_location => true })
+        }
+      end
 
       if (fast_status == 0)
         renderMetalResponse(200, fast_stdout)
