@@ -156,7 +156,7 @@ describe GT::RecommendationManager do
       DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return(dbes)
       GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@user, 10, 1, 100.0, dbes).and_return([])
 
-      GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, 1)
+      GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:num_recents_to_check => 1})
     end
 
     it "should return nil if no video graph recommendations are available within the given search parameters" do

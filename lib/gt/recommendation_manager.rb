@@ -6,31 +6,52 @@ module GT
   # sources
   class RecommendationManager
 
-    # checks num_recents_to_check dbentries to see if they are recommendations
+    # checks options[:num_recents_to_check] (default 5) dbentries to see if they are recommendations
     # if so, returns nil
-    # if not, returns a persisted dbe recommendation
-    def self.if_no_recent_recs_generate_rec(user, num_recents_to_check=5)
+    # if not, returns a new, persisted dbe recommendation
+    #
+    # --options--
+    #
+    # :num_recents_to_check => Integer --- if there is already a recommendation within this many stream entries,
+    #   this function will not insert a new one (default 5)
+    # :insert_at_random_location => Bool --- set to false to insert the new recommendation as the most recent
+    #   in the stream, set to true to insert just after a randomly selected entry within the num_recents_to_check range
+    def self.if_no_recent_recs_generate_rec(user, options={})
+
+      defaults = {
+        :num_recents_to_check => 5,
+        :insert_at_random_location => false
+      }
+
+      options = defaults.merge(options)
 
       # we're looking ahead to using these dbentries to look for some video graph recommendations,
       # so get as many we need for that and to check for recent recommendations
       max_db_entries_to_scan_for_videograph = 10
-      num_dbes_to_fetch = [num_recents_to_check, max_db_entries_to_scan_for_videograph].max
+      num_dbes_to_fetch = [options[:num_recents_to_check], max_db_entries_to_scan_for_videograph].max
 
       dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(num_dbes_to_fetch).fields(:video_id, :frame_id, :action).all
+      recent_dbes = dbes.first(options[:num_recents_to_check])
 
-      unless dbes.first(num_recents_to_check).any? { |dbe| dbe.is_recommendation? }
+      unless recent_dbes.any? { |dbe| dbe.is_recommendation? }
         # if we don't find any recommendations within the recency limit, generate a new recommendation
         recs = self.get_random_video_graph_recs_for_user(user, 10, 1, 100.0, dbes)
         unless recs.empty?
           # wrap the recommended video in a dashboard entry
           rec = recs[0]
+          dashboard_entry_options = {:src_frame_id => rec[:src_frame_id]}
+          if options[:insert_at_random_location]
+            # if requested, set the new dashboard entry's creation time to be just earlier
+            # than a randomly selected recent entry, so it will appear just before that entry
+            # in the stream
+            insert_before_entry = recent_dbes.sample
+            dashboard_entry_options[:creation_time] = insert_before_entry.id.generation_time - 1
+          end
           res = GT::Framer.create_frame(
             :video_id => rec[:recommended_video_id],
             :dashboard_user_id => user.id,
             :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
-            :dashboard_entry_options => {
-              :src_frame_id => rec[:src_frame_id]
-            }
+            :dashboard_entry_options => dashboard_entry_options
           )
           if res[:dashboard_entries] and !res[:dashboard_entries].empty?
             # return the new dashboard entry

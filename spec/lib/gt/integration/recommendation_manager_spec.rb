@@ -92,7 +92,7 @@ describe GT::RecommendationManager do
 
       @f = Factory.create(:frame, :video => v, :creator => @user )
 
-      dbe = Factory.create(:dashboard_entry, :frame => @f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
+      @dbe = Factory.create(:dashboard_entry, :frame => @f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
     end
 
     context "no recommendations yet within the recent limit number of frames" do
@@ -102,6 +102,17 @@ describe GT::RecommendationManager do
         result.should be_an_instance_of(DashboardEntry)
         result.src_frame.should == @f
         result.video_id.should == @rec_vid.id
+      end
+
+      it "should create the newest entry in the dashboard by default" do
+        result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+        result.should == DashboardEntry.sort(:id.desc).first
+      end
+
+      it "should insert the newest entry just after a randomly selected dbentry if options[:insert_at_random_locations] is specified" do
+        Array.any_instance.stub(:sample).and_return(@dbe)
+        result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:insert_at_random_location => true})
+        result.id.generation_time.to_i.should == @dbe.id.generation_time.to_i - 1
       end
 
       it "should persist a new dashboard entry to the database" do
