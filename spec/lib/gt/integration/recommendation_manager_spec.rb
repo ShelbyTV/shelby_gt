@@ -145,6 +145,7 @@ describe GT::RecommendationManager do
           # since there's already a recommendation in the last five (the one we just created), we shouldn't put another
         }.should_not change {"#{DashboardEntry.count},#{Frame.count}"}
       end
+
     end
 
   end

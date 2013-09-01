@@ -317,6 +317,26 @@ describe GT::Framer do
       res[:dashboard_entries][0].friend_complete_viewers_array.should == [friend_user_id_string]
     end
 
+    it "should set the DashboardEntry's id when creation_time is specified in :dashboard_entry_options" do
+      u = Factory.create(:user)
+      creation_time = 4.minutes.ago
+
+      res = GT::Framer.create_frame(
+        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+        :creator => @frame_creator,
+        :video => @video,
+        :message => @message,
+        :dashboard_user_id => u.id,
+        :dashboard_entry_options => {
+          :creation_time => creation_time
+        }
+        )
+
+      res[:dashboard_entries].size.should == 1
+      res[:dashboard_entries][0].persisted?.should == true
+      res[:dashboard_entries][0].id.generation_time.to_i.should == creation_time.to_i
+    end
+
     it "should create a Frame with a public Message" do
       res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
@@ -602,6 +622,15 @@ describe GT::Framer do
       d[0].persisted?.should == true
       d[0].src_frame.should == @src_frame
       d[0].src_frame_id.should == @src_frame.id
+    end
+
+    it "should set the DashboardEntry's id when creation_time is specified as an option" do
+      creation_time = 4.minutes.ago
+
+      d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {:creation_time => creation_time})
+
+      d.size.should == 1
+      d[0].id.generation_time.to_i.should == creation_time.to_i
     end
 
     it "should set the DashboardEntry's friend arrays when specified as options" do

@@ -252,7 +252,11 @@ module GT
         entries = []
         user_ids.uniq.each do |user_id|
           dbe = DashboardEntry.new
-          dbe.id = BSON::ObjectId.from_time(frame.created_at, :unique => true) if options[:backdate]
+          if options[:creation_time]
+            dbe.id = BSON::ObjectId.from_time(options[:creation_time], :unique => true)
+          elsif options[:backdate]
+            dbe.id = BSON::ObjectId.from_time(frame.created_at, :unique => true)
+          end
           dbe.user_id = user_id
           dbe.roll = frame.roll
           dbe.frame_id = frame.id
