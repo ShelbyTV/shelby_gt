@@ -47,6 +47,13 @@ class Video
   # Total number of likes - both by upvoters (logged in likers) and logged out likers
   key :like_count, Integer, :abbr => :v, :default => 0
 
+  # whether the video is still available from the provider
+  key :available, Boolean, :abbr => :w, :default => true
+
+  # the last time the video info was refreshed from the provider
+  key :info_updated_at, Time, :abbr => :x
+
+
   # Arnold does a *shit ton* of Video creation, which runs this validation, which turns out to be very expensive
   # This validations is technically unnecessary because there is a unique index on [provider_id, provider_name] in the database.
   # Additionally: 1) Arnold performs manual validation on Video create. 2) This doesn't even gurantee uniqueness (timing issues)

@@ -13,13 +13,13 @@ module GT
       end
 
       return nil unless youtube_http
-      # pretty sure this doesn't make an http request 
+      # pretty sure this doesn't make an http request
       begin
         parser = YouTubeIt::Parser::VideoFeedParser.new(youtube_http)
       #if the page does not have an entry element
       rescue NoMethodError => e
         return nil
-      end 
+      end
       # a youtube it video object
       begin
         return get_or_create_videos_for_yt_model(parser.parse)
@@ -28,14 +28,22 @@ module GT
         Rails.logger.info "[GT::VideoProviderApi#examine_url_for_youtube_video] rescuing YouTubeIt::Parser::VideoFeedParser#parse exception #{e}"
         return nil
       end
-      
-
     end
-      
+
+    # returns an HTTParty response with info about the video from the corresponding provider api
+    def self.get_video_info(provider_name, provider_id)
+      case provider_name
+      when "youtube"
+        response = HTTParty.get("http://gdata.youtube.com/feeds/api/videos/#{provider_id}")
+      when "vimeo"
+        response = HTTParty.get "http://vimeo.com/api/oembed.json?url=http%3A//vimeo.com/#{provider_id}"
+      end
+    end
+
     private
 
       def self.get_or_create_videos_for_yt_model(yt_model)
-        
+
         v = Video.where(:provider_name => "youtube", :provider_id => yt_model.unique_id).first
         return v if v
 

@@ -13,7 +13,7 @@ describe GT::VideoManager do
     @v.provider_name = "pro1"
     @v.provider_id = "330033"
     @v.save
-    
+
 
     @deep_url = "http://www.youtube.com/embed/lMBMcMf85ow?version=3&rel=1&fs=1&showsearch=0&showinfo=1&iv_load_policy=1&wmode=transparent"
     @dl = DeeplinkCache.new
@@ -64,13 +64,13 @@ describe GT::VideoManager do
       cached[:url].should == @urlnolink
       cached[:videos].should == []
     end
-        
 
-    
+
+
   end
 
   context "get_or_create_videos_for_url" do
-   
+
     it "should return [] with crappy url" do
       GT::VideoManager.get_or_create_videos_for_url(nil).should == {:videos => [], :from_deep => false}
       GT::VideoManager.get_or_create_videos_for_url("dan").should == {:videos => [], :from_deep => false}
@@ -79,66 +79,66 @@ describe GT::VideoManager do
 
     it "should find Video already in DB" do
       GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
-      
+
       GT::VideoManager.get_or_create_videos_for_url(@url1).should == {:videos => [@v], :from_deep => false}
     end
-    
+
     it "should resolve shortlink" do
       GT::UrlHelper.should_receive( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
-      
+
       GT::VideoManager.get_or_create_videos_for_url(@short_url).should == {:videos => [], :from_deep => false}
     end
-    
+
     it "should not resolve shortlink is should_resolve_url==false" do
       GT::UrlHelper.should_not_receive( :resolve_url )
-      
+
       GT::VideoManager.get_or_create_videos_for_url(@short_url, false, nil, false).should == {:videos => [], :from_deep => false}
     end
-    
+
     it "should find Video already in DB after resolving shortlink" do
       GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
       GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
       GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
-      
+
       GT::VideoManager.get_or_create_videos_for_url(@short_url).should == {:videos => [@v], :from_deep => false}
     end
-    
+
     context "reaching out to external service" do
-    
+
       it "should use an external service to find video if we have nothing in DB" do
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
-        
+
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return( [{}] )
-        
+
         GT::VideoManager.get_or_create_videos_for_url(@short_url).should == {:videos => [], :from_deep => false}
       end
-    
+
       it "should handle nil return from external service" do
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
-        
+
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return( nil )
-        
+
         GT::VideoManager.get_or_create_videos_for_url(@short_url).should == {:videos => [], :from_deep => false}
       end
-    
+
       it "should handle single video hash return" do
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with( @url1).and_return({:provider_name => "name", :provider_id => "id"})
-        
+
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([
           {:embedly_hash => { 'url' => "something" }}
           ])
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with("something").and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
-        
+
         GT::VideoManager.get_or_create_videos_for_url(@short_url)[:videos].size.should == 1
       end
-      
+
       it "should handle multiple video hash return" do
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>"name",:provider_id=>"id"})
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
-        
+
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([
           {:embedly_hash => { 'url' => "something" }},
           {:embedly_hash => { 'url' => "something" }},
@@ -146,14 +146,14 @@ describe GT::VideoManager do
           {:embedly_hash => { 'url' => "something" }}
           ])
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with("something").and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
-        
+
         GT::VideoManager.get_or_create_videos_for_url(@short_url)[:videos].size.should == 4
       end
-    
+
     end
-    
+
     context "embed.ly hash" do
-      
+
       it "should create and persist a Video from an embed.ly hash" do
         h = {
           'provider_name' => 'utewb',
@@ -172,17 +172,17 @@ describe GT::VideoManager do
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>"name", :provider_id=>"id"})
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
-        
+
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([
           {:embedly_hash => h}
           ])
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with("the_url").and_return({:provider_name=>"the_provider_name", :provider_id=>"the_provider_id"})
-        
+
         #should actually create a new video
         vid_count = Video.count
         vids = GT::VideoManager.get_or_create_videos_for_url(@short_url)[:videos]
         Video.count.should == vid_count + 1
-        
+
         vids.size.should == 1
         v = vids[0]
         v.persisted?.should == true
@@ -201,27 +201,27 @@ describe GT::VideoManager do
         v.source_url.should == h['url']
         v.embed_url.should == h['html']
       end
-      
+
       it "should return Video from DB if embed.ly hash references one in there" do
         h = { 'url' => 'a_new_url' }
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@short_url).and_return(nil)
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with(@url1).and_return({:provider_name=>"name", :provider_id=>"id"})
         GT::UrlHelper.stub( :resolve_url ).with(@short_url, false, nil).and_return( @url1 )
-        
+
         GT::UrlVideoDetector.stub( :examine_url_for_video ).with( @url1, false, nil ).and_return([
           {:embedly_hash => h}
           ])
         GT::UrlHelper.stub( :parse_url_for_provider_info ).with("a_new_url").and_return({:provider_name=>@v.provider_name, :provider_id=>@v.provider_id})
-        
+
         vid_count = Video.count
         vids = GT::VideoManager.get_or_create_videos_for_url(@short_url)[:videos]
-        
+
         #should find the Video in our DB, not create one
         Video.count.should == vid_count
         vids.size.should == 1
         vids[0].should == @v
       end
-      
+
       it "should fix a Video when necessary" do
         h = {
           'provider_name' => 'utewb',
@@ -245,18 +245,18 @@ describe GT::VideoManager do
         video.provider_id = "33"
         video.source_url = @url1
         video.save
-        
+
         #should not actually create a new video
         vid_count = Video.count
         updated_vid = GT::VideoManager.fix_video_if_necessary(video)
         Video.count.should == vid_count
-        
+
         #some things stay the same
         updated_vid.id.should == video.id
         updated_vid.provider_name.should == video.provider_name
         updated_vid.provider_id.should == video.provider_id
         updated_vid.source_url.should == video.source_url
-        
+
         #some things are updated
         updated_vid.persisted?.should == true
         updated_vid.title.should == h['title']
@@ -270,9 +270,9 @@ describe GT::VideoManager do
         updated_vid.thumbnail_width.should == h['thumbnail_width']
         updated_vid.embed_url.should == h['html']
       end
-      
+
     end
-   
+
     context "mongo failure due to timing issue" do
       before(:each) do
         @h = {
@@ -290,7 +290,7 @@ describe GT::VideoManager do
           'html' => '-iframe src=\'whatever\' /-'
         }
       end
-      
+
       it "should return correct Video if it gets created after checking for existance but before trying to save" do
         # In this scenario, GT::VideoManager.find_or_create_video_for_embedly_hash looks for Video, finds nothing.
         #
@@ -319,12 +319,74 @@ describe GT::VideoManager do
         v.should == @v
       end
     end
-    
+
     context "shelby hash" do
       #TODO when it's implemented
     end
-    
+
   end
 
-  
+  context "update_video_info" do
+
+    before(:each) do
+      @vid = Factory.create(:video)
+    end
+
+    it "should try to update the video info if it's never been updated" do
+      GT::VideoProviderApi.should_receive(:get_video_info).with(@vid.provider_name, @vid.provider_id)
+
+      GT::VideoManager.update_video_info(@vid)
+    end
+
+    it "should try to update the video info if it hasn't been updated recently enough" do
+      @vid.info_updated_at = 3.hours.ago
+      GT::VideoProviderApi.should_receive(:get_video_info).with(@vid.provider_name, @vid.provider_id)
+
+      GT::VideoManager.update_video_info(@vid)
+    end
+
+    it "should not try to update the video info if it was updated recently enough" do
+      @vid.info_updated_at = 1.hours.ago
+      GT::VideoProviderApi.should_not_receive(:get_video_info)
+
+      GT::VideoManager.update_video_info(@vid)
+    end
+
+    it "should always try to update the video if cache=false is passed" do
+      @vid.info_updated_at = 1.hours.ago
+      GT::VideoProviderApi.should_receive(:get_video_info)
+
+      GT::VideoManager.update_video_info(@vid, false)
+    end
+
+    it "should set the video to available if a 200 is returned" do
+      response = double("response", :code => 200)
+      GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+      @vid.should_not_receive(:save)
+
+      GT::VideoManager.update_video_info(@vid)
+      @vid.available.should == true
+    end
+
+    it "should set the video to unavailable if a 404 is returned" do
+      response = double("response", :code => 404)
+      GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+      @vid.should_receive(:save)
+
+      GT::VideoManager.update_video_info(@vid)
+      @vid.available.should == false
+    end
+
+    it "should do nothing if neither 200 nor 404 is returned" do
+      response = double("response", :code => 500)
+      GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+      @vid.should_not_receive(:save)
+
+      lambda {
+        GT::VideoManager.update_video_info(@vid)
+      }.should_not change { @vid.available }
+    end
+
+  end
+
 end
