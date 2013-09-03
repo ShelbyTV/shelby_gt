@@ -99,6 +99,14 @@ module GT
         end
       end
 
+      # we want to end up with different recs each time, so shuffle the array after we've reduced it to
+      # recs with a certain minimum score
+      recs.shuffle!
+
+      if limit
+        recs.slice!(limit..-1)
+      end
+
       # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
       # but we may be calling out to provider APIs for each video here if we don't have the video info recently updated
       recs.select! do |rec|
@@ -107,14 +115,6 @@ module GT
           GT::VideoManager.update_video_info(vid)
           vid.available
         end
-      end
-
-      # we want to end up with different recs each time, so shuffle the array after we've reduced it to
-      # recs with a certain minimum score
-      recs.shuffle!
-
-      if limit
-        recs.slice!(limit..-1)
       end
 
       return recs
