@@ -41,6 +41,10 @@ describe GT::RecommendationManager do
 
       # don't actually do any shuffling so we can predict and compare results
       Array.any_instance.should_receive(:shuffle!)
+
+      @available_vid = Factory.create(:video)
+      Video.stub(:find).and_return(@available_vid)
+      GT::VideoManager.stub(:update_video_info)
     end
 
     context "no prefetched dbes" do
@@ -72,6 +76,17 @@ describe GT::RecommendationManager do
 
         it "should exclude videos the user has already watched" do
           @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_video_ids[0]])
+
+          result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, nil)
+          result.length.should == @recommended_video_ids.length - 1
+          result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
+        end
+
+        it "should exclude videos that are no longer available at the provider" do
+          @available_vid = Factory.create(:video)
+          @unavailable_vid = Factory.create(:video, :available => false)
+          Video.should_receive(:find).exactly(@recommended_video_ids.length).times.and_return(@unavailable_vid, @available_vid)
+          GT::VideoManager.should_receive(:update_video_info).exactly(@recommended_video_ids.length).times
 
           result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, nil)
           result.length.should == @recommended_video_ids.length - 1

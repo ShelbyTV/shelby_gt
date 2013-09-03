@@ -9,7 +9,7 @@ describe GT::RecommendationManager do
       @viewed_roll = Factory.create(:roll)
       @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
 
-      @recommended_video_ids = []
+      @recommended_videos = []
       @src_frame_ids = []
       @dbes = []
       # create dashboard entries 0 to n, entry i will have i recommendations attached to its video
@@ -22,11 +22,11 @@ describe GT::RecommendationManager do
           rec_vid = Factory.create(:video)
           rec = Factory.create(:recommendation, :recommended_video_id => rec_vid.id)
           v.recs << rec
-          recs_for_this_video << rec_vid.id
+          recs_for_this_video << rec_vid
           @src_frame_ids.unshift f.id
         end
 
-        @recommended_video_ids.unshift recs_for_this_video
+        @recommended_videos.unshift recs_for_this_video
 
         v.save
 
@@ -34,7 +34,9 @@ describe GT::RecommendationManager do
         @dbes.unshift dbe
       end
 
-      @recommended_video_ids.flatten!
+      @recommended_videos.flatten!
+
+      GT::VideoManager.stub(:update_video_info)
     end
 
     it "should return all of the recommendations when there are no restricting limits" do
@@ -43,8 +45,8 @@ describe GT::RecommendationManager do
       MongoMapper::Plugins::IdentityMap.clear
       result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
       result_video_ids = result.map{|rec|rec[:recommended_video_id]}
-      result_video_ids.length.should == @recommended_video_ids.length
-      (result_video_ids - @recommended_video_ids).should == []
+      result_video_ids.length.should == @recommended_videos.length
+      (result_video_ids - @recommended_videos.map { |v| v.id }).should == []
     end
 
     context "stub shuffle! so we can test everything else more carefully " do
@@ -56,19 +58,30 @@ describe GT::RecommendationManager do
       it "should return all of the recommendations when there are no restricting limits" do
         MongoMapper::Plugins::IdentityMap.clear
         result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
-        result.length.should == @recommended_video_ids.length
-        result.should == @recommended_video_ids.each_with_index.map{|id, i| {:recommended_video_id => id, :src_frame_id => @src_frame_ids[i]}}
+        result.length.should == @recommended_videos.length
+        result.should == @recommended_videos.each_with_index.map{|vid, i| {:recommended_video_id => vid.id, :src_frame_id => @src_frame_ids[i]}}
       end
 
       it "should exclude videos the user has already watched" do
-        @viewed_frame = Factory.create(:frame, :video_id => @recommended_video_ids[0], :creator => @user)
+        @viewed_frame = Factory.create(:frame, :video_id => @recommended_videos[0].id, :creator => @user)
         @viewed_roll.frames << @viewed_frame
 
         MongoMapper::Plugins::IdentityMap.clear
         result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
-        result.length.should == @recommended_video_ids.length - 1
-        result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
-        result.should include({:recommended_video_id => @recommended_video_ids[1], :src_frame_id => @src_frame_ids[1]})
+        result.length.should == @recommended_videos.length - 1
+        result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
+        result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
+      end
+
+      it "should exclude videos that are no longer available at the provider" do
+        @recommended_videos[0].available = false
+        @recommended_videos[0].save
+
+        MongoMapper::Plugins::IdentityMap.clear
+        result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
+        result.length.should == @recommended_videos.length - 1
+        result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
+        result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
       end
 
       it "should return only one recommended video by default" do
