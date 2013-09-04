@@ -77,6 +77,10 @@ module GT
       watched_videos_loaded = false
 
       dbes.each do |dbe|
+        # don't consider recommendation entries themselves as they don't respresent shares and therefore
+        # won't have as much context for explaining the recommendation
+        next if dbe.is_recommendation?
+
         recs_for_this_video = Video.where( :id => dbe.video_id ).fields(:recs).map{|v| v.recs}.flatten
 
         if min_score

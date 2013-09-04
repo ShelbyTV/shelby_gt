@@ -56,7 +56,7 @@ describe GT::RecommendationManager do
         @video_ids.each_with_index do |id, j|
           video_query = double("video_query")
           video_query.stub_chain(:fields, :map, :flatten).and_return(@recs_per_video[j])
-          Video.should_receive(:where).with(:id => id).and_return(video_query)
+          Video.stub(:where).with(:id => id).and_return(video_query)
         end
       end
 
@@ -87,6 +87,14 @@ describe GT::RecommendationManager do
           @unavailable_vid = Factory.create(:video, :available => false)
           Video.should_receive(:find).exactly(@recommended_video_ids.length).times.and_return(@unavailable_vid, @available_vid)
           GT::VideoManager.should_receive(:update_video_info).exactly(@recommended_video_ids.length).times
+
+          result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, nil)
+          result.length.should == @recommended_video_ids.length - 1
+          result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
+        end
+
+        it "shoud exclude from consideration dashboard entries that are recommendations themselves" do
+          @dbes[1].action = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
 
           result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, nil)
           result.length.should == @recommended_video_ids.length - 1

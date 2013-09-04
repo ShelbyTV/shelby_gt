@@ -74,14 +74,25 @@ describe GT::RecommendationManager do
       end
 
       it "should exclude videos that are no longer available at the provider" do
+        MongoMapper::Plugins::IdentityMap.clear
         @recommended_videos[0].available = false
         @recommended_videos[0].save
 
-        MongoMapper::Plugins::IdentityMap.clear
         result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
+      end
+
+      it "shoud exclude from consideration dashboard entries that are recommendations themselves" do
+        MongoMapper::Plugins::IdentityMap.clear
+        @dbes[2].action = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+        @dbes[2].save
+
+        result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
+        result.length.should == @recommended_videos.length - 1
+        result.should_not include({:recommended_video_id => @recommended_videos.last.id, :src_frame_id => @src_frame_ids.last})
+        result.should include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
       end
 
       it "should return only one recommended video by default" do
