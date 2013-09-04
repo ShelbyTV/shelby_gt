@@ -28,6 +28,12 @@ describe GT::VideoProviderApi do
 
       GT::VideoProviderApi.get_video_info("vimeo", "12345")
     end
+
+    it "should call the correct dailymotion api route" do
+      HTTParty.should_receive(:get).with("https://api.dailymotion.com/video/12345?fields=allow_embed%2Cstatus")
+
+      GT::VideoProviderApi.get_video_info("dailymotion", "12345")
+    end
   end
 end
 

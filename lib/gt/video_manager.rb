@@ -181,9 +181,14 @@ module GT
                 Rails.logger.info "[GT::VideoManager#update_video_info] rescuing YouTubeIt::Parser::VideoFeedParser#failed parsing Youtube video info #{e}"
               end
               if ytmodel
-                # we'll also consider videos unavailable if they are not embeddable or in a non-playable "state"
+                # we'll also consider youtube videos unavailable if they are not embeddable or in a non-playable "state"
                 video.available = !ytmodel.noembed && (!ytmodel.state[:name] || ytmodel.state[:name] == "published")
               end
+            when "dailymotion"
+              # TODO: don't need to cache for dailymotion as their API has no rate limit
+              # we'll also consider dailymotion videos unavailable if they are not embeddable or have a non-playable "status"
+              video_info = response.parsed_response
+              video.available = video_info["allow_embed"] && (video_info["status"] == "published")
             end
           end
           # if something has changed, save the changes

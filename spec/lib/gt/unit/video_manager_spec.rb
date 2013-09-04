@@ -406,6 +406,51 @@ describe GT::VideoManager do
 
     end
 
+    context "dailymotion specific info" do
+      before(:each) do
+        @vid.provider_name = "dailymotion"
+        @vid.save
+      end
+
+      it "should set the video to unavailable if its not embeddable" do
+        response = double("response", :code => 200, :body => "", :parsed_response => {"allow_embed"=> false})
+        GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+
+        @vid.should_receive(:save)
+
+        GT::VideoManager.update_video_info(@vid)
+        @vid.available.should == false
+      end
+
+      it "should set the video to unavailable if its status is not published" do
+        response = double("response", :code => 200, :body => "", :parsed_response => {"allow_embed"=> true, "status" => "processing"})
+        GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+
+        @vid.should_receive(:save)
+
+        GT::VideoManager.update_video_info(@vid)
+        @vid.available.should == false
+      end
+
+      it "should set the video to available otherwise" do
+        response = double("response", :code => 200, :body => "", :parsed_response => {"allow_embed"=> true, "status" => "published"})
+        GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+
+        @vid.should_not_receive(:save)
+
+        GT::VideoManager.update_video_info(@vid)
+        @vid.available.should == true
+      end
+
+      it "should not do any youtube type processing" do
+        response = double("response", :code => 200, :body => "", :parsed_response => {"allow_embed"=> true, "status" => "published"})
+        GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+        YouTubeIt::Parser::VideoFeedParser.should_not_receive(:new)
+
+        GT::VideoManager.update_video_info(@vid)
+      end
+    end
+
     context "vimeo specific info" do
       before(:each) do
         @vid.provider_name = "vimeo"

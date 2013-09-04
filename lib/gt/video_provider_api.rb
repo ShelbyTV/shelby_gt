@@ -34,9 +34,11 @@ module GT
     def self.get_video_info(provider_name, provider_id)
       case provider_name
       when "youtube"
-        response = HTTParty.get("http://gdata.youtube.com/feeds/api/videos/#{provider_id}")
+        response = HTTParty.get "http://gdata.youtube.com/feeds/api/videos/#{provider_id}"
       when "vimeo"
         response = HTTParty.get "http://vimeo.com/api/oembed.json?url=http%3A//vimeo.com/#{provider_id}"
+      when "dailymotion"
+        response = HTTParty.get "https://api.dailymotion.com/video/#{provider_id}?fields=allow_embed%2Cstatus"
       end
     end
 
