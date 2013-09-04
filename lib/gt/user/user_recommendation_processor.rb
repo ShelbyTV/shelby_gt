@@ -221,9 +221,16 @@ module GT
             watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(@recent_videos_limit).all.map {|f| f.video_id}.compact : []
           end
           if !pdbe.watched_by_owner && !watched_video_ids.find_index(pdbe.video_id)
-            # yay, we found an unwatched prioritized dashboard entry, return it immediately
-            pdbe_cursor.close
-            return pdbe
+            # yay, we found an unwatched prioritized dashboard entry
+            # make sure the video is still available at the provider
+            if v = Video.find(pdbe.video_id)
+              GT::VideoManager.update_video_info(v)
+              if v.available
+                # this video is still available, so return immediately and use it as the recommendation
+                pdbe_cursor.close
+                return pdbe
+              end
+            end
           end
         end
         pdbe_cursor.close
@@ -314,7 +321,18 @@ module GT
         end
 
         if !video_watched
-          return r['recommended_video_id']
+          video_id = r['recommended_video_id']
+          if v = Video.find(video_id)
+          # make sure the video is still available at the provider before we return it to the user
+            GT::VideoManager.update_video_info(v)
+            if v.available
+              return video_id
+            else
+              next
+            end
+          else
+            next
+          end
         else
           next
         end

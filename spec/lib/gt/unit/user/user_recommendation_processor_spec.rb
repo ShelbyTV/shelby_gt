@@ -10,6 +10,7 @@ describe GT::UserRecommendationProcessor do
   before(:each) do
     @user = Factory.create(:user)
     @user.viewed_roll = Factory.create(:roll, :creator => @user)
+    GT::VideoManager.stub(:update_video_info)
   end
 
   context "send_rec_email" do
@@ -102,7 +103,8 @@ describe GT::UserRecommendationProcessor do
           end
 
           it "should not scan for video recs if there is a prioritized dashboard rec for the user" do
-            pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => false)
+            video = Factory.create(:video)
+            pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => video, :watched_by_owner => false)
             DashboardEntry.should_not_receive(:collection)
             @email_processor.scan_dashboard_entries_for_rec(@user)
           end
@@ -148,7 +150,8 @@ describe GT::UserRecommendationProcessor do
           end
 
           it "should return a prioritized dashboard entry if a possibly unwatched one exists" do
-            pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :watched_by_owner => false)
+            video = Factory.create(:video)
+            pdbe = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => video, :watched_by_owner => false)
             result = @email_processor.scan_dashboard_entries_for_rec(@user)
             result.should eql(pdbe)
             result.should be_an_instance_of(PrioritizedDashboardEntry)
@@ -172,6 +175,16 @@ describe GT::UserRecommendationProcessor do
             result.should eql(pdbe3)
             result.should be_an_instance_of(PrioritizedDashboardEntry)
           end
+
+          it "should skip past entries not available from the provider and return an available one" do
+            unviewed_video = Factory.create(:video)
+            unavailable_video = Factory.create(:video, :available => false)
+            pdbe1 = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => unavailable_video, :watched_by_owner => false)
+            pdbe2 = Factory.create(:prioritized_dashboard_entry, :user => @user, :video => unviewed_video, :watched_by_owner => false)
+            result = @email_processor.scan_dashboard_entries_for_rec(@user)
+            result.should eql(pdbe2)
+            result.should be_an_instance_of(PrioritizedDashboardEntry)
+          end
         end
 
       end
@@ -193,21 +206,34 @@ describe GT::UserRecommendationProcessor do
         end
 
         it "should create something that is a dbe " do
+          GT::VideoManager.should_receive(:update_video_info)
           @email_processor.create_new_dashboard_entry(@user, @dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]).class.should eql DashboardEntry
         end
 
         it "should have a video that is the video rec of the src frame" do
+          GT::VideoManager.should_receive(:update_video_info)
           new_dbe = @email_processor.create_new_dashboard_entry(@user, @dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
           frame = Frame.find(new_dbe.frame_id)
           frame.video_id.should eq @dbe.video.recs.first.recommended_video_id
         end
 
         it "should set src_frame attribute correctly" do
+          GT::VideoManager.should_receive(:update_video_info)
           new_dbe = @email_processor.create_new_dashboard_entry(@user, @dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
           new_dbe.src_frame.should == @f
         end
 
+        it "should not add video that is no longer available at the provider" do
+          GT::VideoManager.should_receive(:update_video_info)
+          @v.available = false
+
+          result = @email_processor.create_new_dashboard_entry(@user, @dbe, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+          result.should be_nil
+        end
+
         it "should not add video if user watched it already" do
+          GT::VideoManager.should_not_receive(:update_video_info)
+
           dbe_with_rec = Factory.create(:dashboard_entry, :user => @user, :frame => @f, :video_id => @v.id)
           @user.dashboard_entries << dbe_with_rec
 
