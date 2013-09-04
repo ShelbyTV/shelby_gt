@@ -169,6 +169,23 @@ module GT
           end
           # if the video can't be found, mark it as unavailable
           video.available = (response.code != 404)
+          if response.code == 200
+            # if we got a valid response, process the info in the response, which will be different for each provider
+            case video.provider_name
+            when "youtube"
+              ytmodel = nil
+              begin
+                parser = YouTubeIt::Parser::VideoFeedParser.new(response.body)
+                ytmodel = parser.parse
+              rescue => e
+                Rails.logger.info "[GT::VideoManager#update_video_info] rescuing YouTubeIt::Parser::VideoFeedParser#failed parsing Youtube video info #{e}"
+              end
+              if ytmodel
+                # we'll also consider videos unavailable if they are not embeddable or in a non-playable "state"
+                video.available = !ytmodel.noembed && (!ytmodel.state[:name] || ytmodel.state[:name] == "published")
+              end
+            end
+          end
           # if something has changed, save the changes
           video.save if video.changed?
         end

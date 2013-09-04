@@ -330,6 +330,9 @@ describe GT::VideoManager do
 
     before(:each) do
       @vid = Factory.create(:video)
+      @yt_model = double("yt_model", :noembed => false, :state => {:name => "published"})
+      yt_parser = double("yt_parser", :parse => @yt_model)
+      YouTubeIt::Parser::VideoFeedParser.stub(:new).and_return(yt_parser)
     end
 
     it "should try to update the video info if it's never been updated" do
@@ -360,7 +363,7 @@ describe GT::VideoManager do
     end
 
     it "should set the video to available if a 200 is returned" do
-      response = double("response", :code => 200)
+      response = double("response", :code => 200, :body => "")
       GT::VideoProviderApi.stub(:get_video_info).and_return(response)
       @vid.should_not_receive(:save)
 
@@ -369,7 +372,7 @@ describe GT::VideoManager do
     end
 
     it "should set the video to unavailable if a 404 is returned" do
-      response = double("response", :code => 404)
+      response = double("response", :code => 404, :body => "")
       GT::VideoProviderApi.stub(:get_video_info).and_return(response)
       @vid.should_receive(:save)
 
@@ -377,8 +380,53 @@ describe GT::VideoManager do
       @vid.available.should == false
     end
 
+    context "youtube specific info" do
+
+      it "should set the video to unavailable if its not embeddable" do
+        response = double("response", :code => 200, :body => "")
+        GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+        @yt_model.should_receive(:noembed).and_return(true)
+
+        @vid.should_receive(:save)
+
+        GT::VideoManager.update_video_info(@vid)
+        @vid.available.should == false
+      end
+
+      it "should set the video to unavailable if its state is not published" do
+        response = double("response", :code => 200, :body => "")
+        GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+        @yt_model.should_receive(:state).twice.and_return({:name => "restricted"})
+
+        @vid.should_receive(:save)
+
+        GT::VideoManager.update_video_info(@vid)
+        @vid.available.should == false
+      end
+
+    end
+
+    context "vimeo specific info" do
+      before(:each) do
+        @vid.provider_name = "vimeo"
+        @vid.save
+      end
+
+      it "should not do any youtube type processing" do
+        response = double("response", :code => 200, :body => "")
+        GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+        YouTubeIt::Parser::VideoFeedParser.should_not_receive(:new)
+
+        @vid.should_not_receive(:save)
+
+        GT::VideoManager.update_video_info(@vid)
+        @vid.available.should == true
+      end
+
+    end
+
     it "should do nothing if neither 200 nor 404 is returned" do
-      response = double("response", :code => 500)
+      response = double("response", :code => 500, :body => "")
       GT::VideoProviderApi.stub(:get_video_info).and_return(response)
       @vid.should_not_receive(:save)
 
