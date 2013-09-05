@@ -1,4 +1,5 @@
 require 'rhombus'
+require 'T101'
 
 class AdminController < ApplicationController
   before_filter :is_admin?
@@ -75,6 +76,16 @@ class AdminController < ApplicationController
     # get all the users who got into shelby via the (current) user's invitations
     invited_uids = invites.map {|invite| invite.invitee_id}.compact
     @invited_users = User.find(invited_uids)
+  end
+  
+  def destroy_user
+    if (@user = User.find params[:id])
+      t = T101.new(:target => @user)
+      t.terminate!
+      render :text => "#{@user.nickname} is no more.   Well, probably.  Try going back and refreshing... if the page is a 404, destroy worked!"
+    else
+      render :text => "The girl must give a name."
+    end
   end
 
   private

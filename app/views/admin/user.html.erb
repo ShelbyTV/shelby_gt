@@ -93,6 +93,15 @@
 		  <% end %>
 		</div>
 	</div>
+	
+	<div style="border: 5px solid red; margin-top: 33px; float: left; padding: 5px">
+  	<%= form_tag "/admin/destroy_user/#{@user.id}", :class =>"form form--follow", :method => :post do |f| %>
+      This is for realsies!<br/>
+      You have been warned.<br/>
+      <strong>PERMANENTLY DELETE USER: <%= submit_tag "Destroy #{@user.nickname}" %>
+    <% end %>
+  </div>
+  
 	<% else %>
 	  These aren't the droids you are looking for.
 	<% end %>
