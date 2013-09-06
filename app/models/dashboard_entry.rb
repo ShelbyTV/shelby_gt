@@ -24,6 +24,11 @@ class DashboardEntry
   belongs_to :src_frame, :class_name => 'Frame'
   key :src_frame_id, ObjectId, :abbr => :i
 
+  # if part of the contents of the entry or the action originated from some other
+  # video, that video is referenced here as src_video
+  belongs_to :src_video, :class_name => 'Video'
+  key :src_video_id, ObjectId, :abbr => :j
+
   # if the entry originated from a PrioritizedDashboardEntry, that
   # entry's friend arrays are copied here for easy access
   # Following arrays all contain strings of ObjectIds

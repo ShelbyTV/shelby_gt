@@ -35,7 +35,7 @@ describe GT::Framer do
         }.should change { @roll.reload.frame_count } .by(1)
     end
 
-    it "should not add a frame to the persisted roll when dont_persist option is set to true" do
+    it "should not add a frame to the persisted roll when persist option is set to false" do
       lambda {
         res = GT::Framer.create_frame(
           :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
@@ -43,7 +43,7 @@ describe GT::Framer do
           :video => @video,
           :message => @message,
           :roll => @roll,
-          :dont_persist => true
+          :persist => false
           )
         }.should_not change { @roll.reload.frame_count }
 
@@ -91,7 +91,7 @@ describe GT::Framer do
       @lambda.should change { Conversation.count } .by(1)
     end
 
-    context "when dont_persist option is set to true" do
+    context "when persist option is set to false" do
 
       before(:each) do
         @lambda = lambda {
@@ -101,16 +101,16 @@ describe GT::Framer do
             :video => @video,
             :message => @message,
             :roll => @roll,
-            :dont_persist => true
+            :persist => false
             )
         }
       end
 
-      it "should not persist a frame when dont_persist option is set to true" do
+      it "should not persist a frame when persist option is set to false" do
         @lambda.should_not change { Frame.count }
       end
 
-      it "should not persist a conversation when dont_persist option is set to true" do
+      it "should not persist a conversation when persist option is set to false" do
         @lambda.should_not change { Conversation.count }
       end
 
@@ -145,7 +145,7 @@ describe GT::Framer do
       @lambda.should change { DashboardEntry.count } .by(1)
     end
 
-    context "when dont_persist option is set to true" do
+    context "when persist option is set to false" do
 
       before(:each) do
         @lambda = lambda {
@@ -155,7 +155,7 @@ describe GT::Framer do
             :video => @video,
             :message => @message,
             :dashboard_user_id => @dashboard_user.id,
-            :dont_persist => true
+            :persist => false
           )
         }
       end

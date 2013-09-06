@@ -18,13 +18,25 @@ describe DashboardEntry do
     end
 
     it "should be able to access the src_frame attribute" do
-      src_frame = Frame.new
+      src_frame = Factory.create(:frame)
       @dashboard_entry.src_frame = src_frame
       @dashboard_entry.save
       @dashboard_entry.reload
 
-      @dashboard_entry.src_frame_id.should == src_frame.id
+      @dashboard_entry.src_frame.should be_a Frame
       @dashboard_entry.src_frame.should == src_frame
+      @dashboard_entry.src_frame_id.should == src_frame.id
+    end
+
+    it "should be able to access the src_video attribute" do
+      src_video = Factory.create(:video)
+      @dashboard_entry.src_video = src_video
+      @dashboard_entry.save
+      @dashboard_entry.reload
+
+      @dashboard_entry.src_video.should be_a Video
+      @dashboard_entry.src_video.should == src_video
+      @dashboard_entry.src_video_id.should == src_video.id
     end
 
   end

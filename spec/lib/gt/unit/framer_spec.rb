@@ -37,14 +37,14 @@ describe GT::Framer do
       res[:frame].roll.should == @roll
     end
 
-    it "should not persist anything if dont_persist option is set to true" do
+    it "should not persist anything if persist option is set to false" do
       res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
         :creator => @frame_creator,
         :video => @video,
         :message => @message,
         :roll => @roll,
-        :dont_persist => true
+        :persist => false
         )
 
       res[:frame].persisted?.should_not == true
@@ -178,6 +178,8 @@ describe GT::Framer do
       res[:dashboard_entries][0].frame.should == res[:frame]
       res[:dashboard_entries][0].src_frame.should be_nil
       res[:dashboard_entries][0].src_frame_id.should be_nil
+      res[:dashboard_entries][0].src_video.should be_nil
+      res[:dashboard_entries][0].src_video_id.should be_nil
       res[:dashboard_entries][0].friend_sharers_array.should == []
       res[:dashboard_entries][0].friend_viewers_array.should == []
       res[:dashboard_entries][0].friend_likers_array.should == []
@@ -189,7 +191,7 @@ describe GT::Framer do
       res[:dashboard_entries][0].action.should == DashboardEntry::ENTRY_TYPE[:new_social_frame]
     end
 
-    it "should not create a DashboardEntry for the Roll's single follower if dont_persist option is set to false" do
+    it "should not create a DashboardEntry for the Roll's single follower if persist option is set to false" do
       @roll.add_follower(@roll_creator)
 
       res = GT::Framer.create_frame(
@@ -198,7 +200,7 @@ describe GT::Framer do
         :video => @video,
         :message => @message,
         :roll => @roll,
-        :dont_persist => true
+        :persist => false
         )
 
       res[:dashboard_entries].size.should == 0
@@ -245,6 +247,8 @@ describe GT::Framer do
       res[:dashboard_entries][0].frame.persisted?.should == true
       res[:dashboard_entries][0].src_frame.should be_nil
       res[:dashboard_entries][0].src_frame_id.should be_nil
+      res[:dashboard_entries][0].src_video.should be_nil
+      res[:dashboard_entries][0].src_video_id.should be_nil
       res[:dashboard_entries][0].friend_sharers_array.should == []
       res[:dashboard_entries][0].friend_viewers_array.should == []
       res[:dashboard_entries][0].friend_likers_array.should == []
@@ -252,7 +256,7 @@ describe GT::Framer do
       res[:dashboard_entries][0].friend_complete_viewers_array.should == []
     end
 
-    it "should not persist anything for given :dashboard_user_id if dont_persist option is set to true" do
+    it "should not persist anything for given :dashboard_user_id if persist option is set to false" do
       u = Factory.create(:user)
 
       res = GT::Framer.create_frame(
@@ -261,7 +265,7 @@ describe GT::Framer do
         :video => @video,
         :message => @message,
         :dashboard_user_id => u.id,
-        :dont_persist => true
+        :persist => false
         )
 
       #only the given dashboard_user_id should have a DashboardEntry
@@ -272,6 +276,8 @@ describe GT::Framer do
       res[:dashboard_entries][0].frame_id.should == res[:frame].id
       res[:dashboard_entries][0].src_frame.should be_nil
       res[:dashboard_entries][0].src_frame_id.should be_nil
+      res[:dashboard_entries][0].src_video.should be_nil
+      res[:dashboard_entries][0].src_video_id.should be_nil
       res[:dashboard_entries][0].friend_sharers_array.should == []
       res[:dashboard_entries][0].friend_viewers_array.should == []
       res[:dashboard_entries][0].friend_likers_array.should == []
@@ -432,6 +438,8 @@ describe GT::Framer do
       res[:dashboard_entries][0].frame.should == res[:frame]
       res[:dashboard_entries][0].src_frame.should be_nil
       res[:dashboard_entries][0].src_frame_id.should be_nil
+      res[:dashboard_entries][0].src_video.should be_nil
+      res[:dashboard_entries][0].src_video_id.should be_nil
       res[:dashboard_entries][0].friend_sharers_array.should == []
       res[:dashboard_entries][0].friend_viewers_array.should == []
       res[:dashboard_entries][0].friend_likers_array.should == []
@@ -600,6 +608,8 @@ describe GT::Framer do
       d[0].frame.should == @frame
       d[0].src_frame.should be_nil
       d[0].src_frame_id.should be_nil
+      d[0].src_video.should be_nil
+      d[0].src_video_id.should be_nil
       d[0].friend_sharers_array.should == []
       d[0].friend_viewers_array.should == []
       d[0].friend_likers_array.should == []
@@ -611,17 +621,31 @@ describe GT::Framer do
     end
 
     it "should set the DashboardEntry's src_frame when specified as an option" do
-      @src_frame = Factory.create(:frame)
+      src_frame = Factory.create(:frame)
 
       d = nil
       lambda {
-        d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {:src_frame_id => @src_frame.id})
+        d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {:src_frame_id => src_frame.id})
       }.should change { DashboardEntry.count } .by 1
 
       d.size.should == 1
       d[0].persisted?.should == true
-      d[0].src_frame.should == @src_frame
-      d[0].src_frame_id.should == @src_frame.id
+      d[0].src_frame.should == src_frame
+      d[0].src_frame_id.should == src_frame.id
+    end
+
+    it "should set the DashboardEntry's src_video when specified as an option" do
+      src_video = Factory.create(:video)
+
+      d = nil
+      lambda {
+        d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {:src_video_id => src_video.id})
+      }.should change { DashboardEntry.count } .by 1
+
+      d.size.should == 1
+      d[0].persisted?.should == true
+      d[0].src_video.should == src_video
+      d[0].src_video_id.should == src_video.id
     end
 
     it "should set the DashboardEntry's id when creation_time is specified as an option" do
