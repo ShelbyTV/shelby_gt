@@ -444,7 +444,8 @@ describe GT::UserManager do
 
   context "convert_real_user_to_faux" do
     before(:each) do
-      @real_user = Factory.create(:user, :user_type => User::USER_TYPE[:real], :gt_enabled => false)
+      @public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public_real_user])
+      @real_user = Factory.create(:user, :user_type => User::USER_TYPE[:real], :public_roll => @public_roll, :gt_enabled => false)
     end
 
     it "should raise an error when given a non-real user" do
@@ -492,6 +493,37 @@ describe GT::UserManager do
 
       #use ActiveRecord changed? to verify that the object is not dirty
       @real_user.should_not be_changed
+    end
+
+    it "should update the type of the user's public roll and save it" do
+      GT::UserManager.convert_real_user_to_faux(@real_user)
+
+      @public_roll.roll_type.should eql Roll::TYPES[:special_public]
+      #use ActiveRecord changed? to verify that the roll object is not dirty
+      @public_roll.should_not be_changed
+    end
+
+  end
+
+  context "fix_user_public_roll_type" do
+
+    it "should correct the roll type for a faux user" do
+      public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public_real_user])
+      faux_user = Factory.create(:user, :user_type => User::USER_TYPE[:faux], :public_roll => public_roll)
+
+      GT::UserManager.fix_user_public_roll_type(faux_user).should == true
+
+      faux_user.public_roll.roll_type.should eql Roll::TYPES[:special_public]
+      #use ActiveRecord changed? to verify that the roll object is not dirty
+      faux_user.public_roll.should_not be_changed
+    end
+
+    it "should do nothing if the user type and user public roll type already match" do
+      public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public])
+      faux_user = Factory.create(:user, :user_type => User::USER_TYPE[:faux], :public_roll => public_roll)
+      faux_user.public_roll.should_not_receive(:save)
+
+      GT::UserManager.fix_user_public_roll_type(faux_user).should == false
     end
 
   end
