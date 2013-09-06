@@ -257,8 +257,23 @@ module GT
       u.app_progress = AppProgress.new()
       u.nos_email = u.primary_email
       u.primary_email = nil
-
       u.save
+
+      user_public_roll = u.public_roll
+      user_public_roll.roll_type = Roll::TYPES[:special_public]
+      user_public_roll.save
+    end
+
+    # fix user's public roll's type if it is inconsistent with the user's type
+    # returns a boolean specifying whether or not anything needed to be fixed
+    def self.fix_user_public_roll_type(u)
+      user_public_roll = u.public_roll
+      if u.user_type == User::USER_TYPE[:faux] && user_public_roll.roll_type == Roll::TYPES[:special_public_real_user]
+        user_public_roll.roll_type = Roll::TYPES[:special_public]
+        user_public_roll.save
+        return true
+      end
+      return false
     end
 
     # update any value for u.app_progress.onboarding to match the new system
