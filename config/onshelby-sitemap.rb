@@ -5,7 +5,7 @@ SitemapGenerator::Sitemap.default_host = "http://onshelby.tv"
 SitemapGenerator::Sitemap.sitemaps_host = "http://api.shelby.tv"
 
 # Use a shared directory that stays constant across capistrano deploys on API server to hold sitemaps
-SitemapGenerator::Sitemap.sitemaps_path = 'system/'
+SitemapGenerator::Sitemap.sitemaps_path = 'system/onshelby/'
 
 
 SitemapGenerator::Sitemap.create do
@@ -29,11 +29,8 @@ SitemapGenerator::Sitemap.create do
       ) do |cursor|
         cursor.each do |doc|
           begin
-            video = Video.load(doc)
-            titleHyph = video.title ? video.title.downcase.gsub(/\W/,'-').gsub(/"/,"'").squeeze('-').chomp('-') : ""
-            add("video/#{video.provider_name}/#{video.provider_id}/#{titleHyph}")
-            # this keeps memory usage and object lookup speed at reasonable levels
-            MongoMapper::Plugins::IdentityMap.clear
+            titleHyph = doc['c'] ? doc['c']title.downcase.gsub(/\W/,'-').gsub(/"/,"'").squeeze('-').chomp('-') : ""
+            add("video/#{doc['a']}/#{doc['b']}/#{titleHyph}")
           rescue => e
 
           end
