@@ -31,8 +31,9 @@ SitemapGenerator::Sitemap.create do
           begin
             titleHyph = doc['c'] ? doc['c']title.downcase.gsub(/\W/,'-').gsub(/"/,"'").squeeze('-').chomp('-') : ""
             add("video/#{doc['a']}/#{doc['b']}/#{titleHyph}")
+            print "."
           rescue => e
-
+            puts "[SITEMAP GENERATOR] Error on #{doc['_id']}: #{e}"
           end
         end
       end
