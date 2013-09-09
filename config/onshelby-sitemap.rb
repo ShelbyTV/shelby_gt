@@ -29,7 +29,7 @@ SitemapGenerator::Sitemap.create do
       ) do |cursor|
         cursor.each do |doc|
           begin
-            titleHyph = doc['c'] ? doc['c']title.downcase.gsub(/\W/,'-').gsub(/"/,"'").squeeze('-').chomp('-') : ""
+            titleHyph = doc['c'] ? doc['c'].downcase.gsub(/\W/,'-').gsub(/"/,"'").squeeze('-').chomp('-') : ""
             add("video/#{doc['a']}/#{doc['b']}/#{titleHyph}")
             print "."
           rescue => e
