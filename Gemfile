@@ -180,7 +180,7 @@ end
 gem 'formatted_rails_logger'
 
 # Deploy with Capistrano
-gem 'capistrano'
+gem 'capistrano', '2.15.2'
 gem 'rvm-capistrano'
 
 # To use debugger

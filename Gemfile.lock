@@ -120,7 +120,7 @@ GEM
     bson_ext (1.8.2)
       bson (~> 1.8.2)
     builder (3.0.4)
-    capistrano (2.15.5)
+    capistrano (2.15.2)
       highline
       net-scp (>= 1.0.0)
       net-sftp (>= 2.0.0)
@@ -318,8 +318,8 @@ GEM
       rspec-core (~> 2.13.0)
       rspec-expectations (~> 2.13.0)
       rspec-mocks (~> 2.13.0)
-    rvm-capistrano (1.4.4)
-      capistrano (>= 2.15.4)
+    rvm-capistrano (1.4.1)
+      capistrano (>= 2.0.0)
     sailthru-client (1.15)
       json
       multipart-post
@@ -393,7 +393,7 @@ DEPENDENCIES
   awesm!
   aws-sdk (~> 1.3.4)
   beanstalk-client!
-  capistrano
+  capistrano (= 2.15.2)
   compass-rails (~> 1.0.3)
   devise (>= 2.0)
   em-http-request!
