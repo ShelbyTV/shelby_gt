@@ -52,6 +52,8 @@ class V1::RecommendationController < ApplicationController
         end
       end
 
+      @results.shuffle!
+
       @include_frame_children = true
       @status = 200
     end
