@@ -1,3 +1,17 @@
+require 'rubygems'
+require 'sitemap_generator'
+
+require "./environment"
+
+
+#####################################
+# IMORTANT:
+# RUN ME WITH:
+#    env RAILS_ENV=production nohup bundle exec ruby onshelby-sitemap.rb > ~/onshelby-sitemap.out &
+#
+# IN THE DIR: ~/api/current/config
+#####################################
+
 # Set the host name for URL creation
 SitemapGenerator::Sitemap.default_host = "http://onshelby.tv"
 
