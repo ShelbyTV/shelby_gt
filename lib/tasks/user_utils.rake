@@ -99,13 +99,13 @@ namespace :user_utils do
             u = User.load(hsh)
             if u.user_type == User::USER_TYPE[:faux]
               # only export facebook uids for users with facebook auth
-              if fb_auth = u.authentications.find(nil) { |auth| auth.provider == 'facebook' }
+              if fb_auth = u.authentications.to_ary.find { |auth| auth.provider == 'facebook' }
                 faux_user_file.puts(fb_auth.uid)
                 num_faux_uids_exported += 1
               end
             elsif u.user_type == User::USER_TYPE[:real] || u.user_type == User::USER_TYPE[:converted]
               # only export facebook uids for users with facebook auth
-              if fb_auth = u.authentications.find(nil) { |auth| auth.provider == 'facebook' }
+              if fb_auth = u.authentications.to_ary.find { |auth| auth.provider == 'facebook' }
                 real_user_file.puts(fb_auth.uid)
                 num_real_uids_exported += 1
               end
