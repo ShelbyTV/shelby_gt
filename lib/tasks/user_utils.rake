@@ -73,17 +73,19 @@ namespace :user_utils do
 
   end
 
-  desc "Export facebook UIDs to two CSV files, one for real users one for faux"
-  task :export_facebook_uids => :environment do
+  desc "Export facebook UIDs and real user emails to three CSV files"
+  task :export_facebook_uids_and_real_user_emails => :environment do
 
     puts "Processing users"
 
     processed = 0
-    num_faux_exported = 0
-    num_real_exported = 0
+    num_faux_uids_exported = 0
+    num_real_uids_exported = 0
+    num_real_emails_exported = 0
 
     faux_user_file = File.open(File.expand_path("~/faux_user_facebook_uids.csv"), "w")
     real_user_file = File.open(File.expand_path("~/real_user_facebook_uids.csv"), "w")
+    real_user_email_file = File.open(File.expand_path("~/real_user_emails.csv"), "w")
 
     #can't pass :timeout => nil to find_each, so need to drop down to the driver...
     #don't want to keep running forever if users get created during the life of the cursor,
@@ -93,18 +95,23 @@ namespace :user_utils do
     User.collection.find({:_id => {:$lt => BSON::ObjectId.from_time(Time.now.utc)}}, {:timeout => false}) do |cursor|
       cursor.each do |hsh|
         begin
-          u = User.load(hsh)
-          if u.user_type != User.USER_TYPE[:service]
-            # only interested in users with facebook auth
-            if fb_auth = u.authentications.find { |auth| auth.provider == 'facebook'}
-              if u.user_type == User.USER_TYPE[:faux]
-                faux_user_file.write "," if num_faux_exported > 0
-                faux_user_file.write fb_auth.uid
-                num_faux_exported += 1
-              elsif u.user_type == User.USER_TYPE[:real] || u.user_type == User.USER_TYPE[:converted]
-                real_user_file.write "," if num_real_exported > 0
-                real_user_file.write fb_auth.uid
-                num_real_exported += 1
+          if hsh["ac"] != User::USER_TYPE[:service]
+            u = User.load(hsh)
+            if u.user_type == User::USER_TYPE[:faux]
+              # only export facebook uids for users with facebook auth
+              if fb_auth = u.authentications.find(nil) { |auth| auth.provider == 'facebook' }
+                faux_user_file.puts(fb_auth.uid)
+                num_faux_uids_exported += 1
+              end
+            elsif u.user_type == User::USER_TYPE[:real] || u.user_type == User::USER_TYPE[:converted]
+              # only export facebook uids for users with facebook auth
+              if fb_auth = u.authentications.find(nil) { |auth| auth.provider == 'facebook' }
+                real_user_file.puts(fb_auth.uid)
+                num_real_uids_exported += 1
+              end
+              if u.primary_email && !u.primary_email.empty?
+                real_user_email_file.puts(u.primary_email)
+                num_real_emails_exported += 1
               end
             end
           end
@@ -119,12 +126,13 @@ namespace :user_utils do
 
     faux_user_file.close
     real_user_file.close
+    real_user_email_file.close
 
     puts ""
     puts "Done! Processed #{processed} users"
-    puts "#{num_faux_exported} faux user uids were exported"
-    puts "#{num_real_exported} real user uids were exported"
-
+    puts "#{num_faux_uids_exported} faux user uids were exported"
+    puts "#{num_real_uids_exported} real user uids were exported"
+    puts "#{num_real_emails_exported} real user emails were exported"
   end
 
 end
