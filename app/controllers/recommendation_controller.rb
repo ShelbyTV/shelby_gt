@@ -7,7 +7,7 @@ class V1::RecommendationController < ApplicationController
         # A regular user can only view his/her own recommendations
         @user = current_user
       elsif current_user.is_admin
-        # admin users can view anyone's stats
+        # admin users can view anyone's recommendations
         unless @user = User.where(:id => params[:user_id]).first
           return render_error(404, "could not find that user")
         end
@@ -16,26 +16,37 @@ class V1::RecommendationController < ApplicationController
       end
 
       scan_limit = params[:scan_limit] ? params[:scan_limit].to_i : 10
-      limit = params[:limit] ? params[:limit].to_i : 1
+      limit = params[:limit] ? params[:limit].to_i : 3
       min_score = params[:min_score] ? params[:min_score].to_f : 100.0
 
-      recommendations = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, scan_limit, limit, min_score)
+      # get some video graph recommendations
+      video_graph_recommendations = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, scan_limit, limit, min_score)
+      video_graph_recommendations.each do |rec|
+        # remap the name of the src key so that we can process all the recommendations together
+        rec[:src_id] = rec.delete(:src_frame_id)
+        rec[:action] = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+      end
+
+      # get at least 3 mortar recs, but more if there weren't as many video graph recs as we wanted
+      num_mortar_recommendations = 3 + (limit - video_graph_recommendations.count)
+      mortar_recommendations = GT::RecommendationManager.get_mortar_recs_for_user(@user, num_mortar_recommendations)
 
       @results = []
+      recs = video_graph_recommendations + mortar_recommendations
       # wrap the recommended videos in 'phantom' frames and dbentries that are not persisted to the db
-      recommendations.each do |rec|
-        res = GT::Framer.create_frame(
-          :video_id => rec[:recommended_video_id],
-          :dashboard_user_id => @user.id,
-          :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
-          :dont_persist => true,
-          :dashboard_entry_options => {
-            :src_frame_id => rec[:src_frame_id]
+      recs.each do |rec|
+        res = GT::RecommendationManager.create_recommendation_dbentry(
+          @user,
+          rec[:recommended_video_id],
+          rec[:action],
+          {
+            :persist => false,
+            :src_id => rec[:src_id]
           }
         )
-        if res[:dashboard_entries] and !res[:dashboard_entries].empty? && res[:frame]
+        if res
           result_struct = OpenStruct.new
-          result_struct.dashboard_entry = res[:dashboard_entries].first
+          result_struct.dashboard_entry = res[:dashboard_entry]
           result_struct.frame = res[:frame]
           @results << result_struct
         end

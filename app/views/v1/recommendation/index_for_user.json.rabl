@@ -13,6 +13,12 @@ glue :dashboard_entry do
 
   end
 
+  child :src_video => 'src_video' do
+
+    attributes :id, :title
+
+  end
+
 end
 
 child :frame do

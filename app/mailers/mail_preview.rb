@@ -87,7 +87,7 @@ if Rails.env.development?
         user.id = '4f32e49fad9f11053b00020a'
         user.nickname = 'iceberg901'
         user.primary_email = 'josh@shelby.tv'
-        recs = GT::MortarHarvester.get_recs_for_user(user)
+        recs = GT::MortarHarvester.get_recs_for_user(user, 9)
 
         MortarMailer.mortar_recommendation_trial(user, recs)
       end
@@ -97,7 +97,7 @@ if Rails.env.development?
         user.id = '4f32e49fad9f11053b00020a'
         user.nickname = 'iceberg901'
         user.primary_email = 'josh@shelby.tv'
-        recs = GT::MortarHarvester.get_recs_for_user(user)
+        recs = GT::MortarHarvester.get_recs_for_user(user, 9)
 
         MortarMailer.mortar_recommendation_trial(user, recs, true)
       end

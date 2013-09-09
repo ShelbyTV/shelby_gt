@@ -33,7 +33,7 @@ module GT
     # :genius => Bool --- OPTIONAL indicates if the frame is a genius frame; genius frames don't create conversations
     # :skip_dashboard_entries => Bool -- OPTIONAL set to true if you don't want any dashboard entries created
     # :dashboard_entry_options => Hash -- OPTIONAL if dashboard entries are created, this will be passed as the options parameter
-    # :dont_persist => Bool -- OPTIONAL if set to true, the created frames and/or dashboard entries will not be saved to the DB
+    # :persist => Bool -- OPTIONAL if set to false, the created frames and/or dashboard entries will not be saved to the DB
     #                        - For the moment, non-persistent frames will not support conversations, so :message param will be ignored
     #
     # --returns--
@@ -48,7 +48,6 @@ module GT
       video = options.delete(:video)
       video_id = options.delete(:video_id)
       genius = options.delete(:genius)
-      dont_persist = options.delete(:dont_persist)
       skip_dashboard_entries = options.delete(:skip_dashboard_entries)
       dashboard_entry_options = options.delete(:dashboard_entry_options) || {}
       raise ArgumentError, "must include a :video or :video_id" unless video.is_a?(Video) or video_id.is_a?(BSON::ObjectId)
@@ -59,9 +58,11 @@ module GT
       raise ArgumentError, "must include a :roll or :dashboard_user_id" unless roll.is_a?(Roll) or dashboard_user_id.is_a?(BSON::ObjectId)
       message = options.delete(:message)
       raise ArgumentError, ":message must be a Message" if message and !message.is_a?(Message)
+      persist = options.delete(:persist)
+      persist = true if persist.nil?
 
       # Try to safely create conversation
-      if genius || dont_persist
+      if genius || !persist
         convo = nil
       else
         convo = Conversation.new
@@ -93,7 +94,7 @@ module GT
       f.score = score
       f.order = order
 
-      f.save unless dont_persist
+      f.save if persist
 
       #track the original frame in the convo
       if convo
@@ -107,9 +108,9 @@ module GT
         # We need dashboard entries for the roll's followers or the given dashboard_user_id
         user_ids = []
         user_ids << dashboard_user_id if dashboard_user_id
-        user_ids += roll.following_users_ids if (roll && !dont_persist)
+        user_ids += roll.following_users_ids if (roll && persist)
 
-        res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids, dashboard_entry_options, dont_persist)
+        res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids, dashboard_entry_options, persist)
       end
 
       # Roll - set its thumbnail if missing, update content_updated_at
@@ -248,7 +249,7 @@ module GT
         return new_frame
       end
 
-      def self.create_dashboard_entries(frame, action, user_ids, options={}, dont_persist=false)
+      def self.create_dashboard_entries(frame, action, user_ids, options={}, persist=true)
         entries = []
         user_ids.uniq.each do |user_id|
           dbe = DashboardEntry.new
@@ -261,6 +262,7 @@ module GT
           dbe.roll = frame.roll
           dbe.frame_id = frame.id
           dbe.src_frame_id = options[:src_frame_id]
+          dbe.src_video_id = options[:src_video_id]
           dbe.friend_sharers_array = options[:friend_sharers_array] if options[:friend_sharers_array]
           dbe.friend_viewers_array = options[:friend_viewers_array] if options[:friend_viewers_array]
           dbe.friend_likers_array = options[:friend_likers_array] if options[:friend_likers_array]
@@ -269,7 +271,7 @@ module GT
           dbe.video = frame.video
           dbe.actor = frame.creator
           dbe.action = action
-          dbe.save unless dont_persist
+          dbe.save if persist
           entries << dbe
         end
         return entries

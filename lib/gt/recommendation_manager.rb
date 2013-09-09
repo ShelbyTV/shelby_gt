@@ -1,4 +1,5 @@
 # encoding: UTF-8
+require 'mortar_harvester'
 
 module GT
 
@@ -39,25 +40,70 @@ module GT
         unless recs.empty?
           # wrap the recommended video in a dashboard entry
           rec = recs[0]
-          dashboard_entry_options = {:src_frame_id => rec[:src_frame_id]}
+          creation_options = {:src_id => rec[:src_frame_id]}
           if options[:insert_at_random_location]
             # if requested, set the new dashboard entry's creation time to be just earlier
             # than a randomly selected recent entry, so it will appear just before that entry
             # in the stream
             insert_before_entry = recent_dbes.sample
-            dashboard_entry_options[:creation_time] = insert_before_entry.id.generation_time - 1
+            creation_options[:dashboard_entry_options] = {}
+            creation_options[:dashboard_entry_options][:creation_time] = insert_before_entry.id.generation_time - 1
           end
-          res = GT::Framer.create_frame(
-            :video_id => rec[:recommended_video_id],
-            :dashboard_user_id => user.id,
-            :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
-            :dashboard_entry_options => dashboard_entry_options
+
+          res = self.create_recommendation_dbentry(user,
+            rec[:recommended_video_id],
+            DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+            creation_options
           )
-          if res[:dashboard_entries] and !res[:dashboard_entries].empty?
-            # return the new dashboard entry
-            return res[:dashboard_entries][0]
-          end
+          return res && res[:dashboard_entry]
         end
+      end
+    end
+
+    # Returns:
+    #   a Framer result of the following form:
+    #     {:dashboard_entry => the_new_dashboard_entry, :frame => the_new_dashboard_entrys_frame}
+    #   or, nil if the Framer fails
+    #
+    # --options--
+    #
+    # :persist => Bool --- OPTIONAL whether the newly created dbe and its frame should be persisted to the database or not
+    #   defaults to true
+    # :src_id => BSON::ObjectId --- OPTIONAL the id of the source object for the recommendation
+    #   should be the src frame for a dbe of type DashboardEntry::ENTRY_TYPE[:video_graph_recommendation
+    #   should be the reason video for a dbe of type DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+    # :dashboard_entry_options => Hash --- OPTIONAL additional options to be pased to the Framer when creating dashboard entries
+
+    def self.create_recommendation_dbentry(user, video_id, dbe_action, options={})
+
+      defaults = {
+        :persist => true,
+        :dashboard_entry_options => {}
+      }
+
+      options = defaults.merge(options)
+
+      framer_options = {
+        :video_id => video_id,
+        :dashboard_user_id => user.id,
+        :action => dbe_action,
+        :persist => options[:persist]
+      }
+
+      case dbe_action
+      when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+        framer_options[:dashboard_entry_options] = {:src_frame_id => options[:src_id]}
+      when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+        framer_options[:dashboard_entry_options] = {:src_video_id => options[:src_id]}
+      else
+        framer_options[:dashboard_entry_options] = {}
+      end
+
+      framer_options[:dashboard_entry_options].merge!(options[:dashboard_entry_options])
+
+      res = GT::Framer.create_frame(framer_options)
+      if res && res[:dashboard_entries] && !res[:dashboard_entries].empty? && res[:frame]
+        return {:dashboard_entry => res[:dashboard_entries].first, :frame => res[:frame]}
       end
     end
 
@@ -122,6 +168,31 @@ module GT
       end
 
       return recs
+    end
+
+    # Returns an array of recommended video ids and source video ids for a user based on the criteria supplied as params
+    def self.get_mortar_recs_for_user(user, limit=1)
+      res = GT::MortarHarvester.get_recs_for_user(user, limit)
+      if res
+        # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
+        # but we may be calling out to provider APIs for each video here if we don't have the video info recently updated
+        res.select! do |rec|
+          vid = Video.find(rec["item_id"])
+          if vid
+            GT::VideoManager.update_video_info(vid)
+            vid.available
+          end
+        end
+        res.map! do |rec|
+          {
+            :recommended_video_id => BSON::ObjectId.from_string(rec["item_id"]),
+            :src_id => BSON::ObjectId.from_string(rec["reason_id"]),
+            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          }
+        end
+      else
+        []
+      end
     end
 
   end

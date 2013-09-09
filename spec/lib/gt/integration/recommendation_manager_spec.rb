@@ -3,6 +3,9 @@ require 'recommendation_manager'
 
 # INTEGRATION test
 describe GT::RecommendationManager do
+  before(:each) do
+    GT::VideoManager.stub(:update_video_info)
+  end
 
   context "get_random_video_graph_recs_for_user" do
     before(:each) do
@@ -35,8 +38,6 @@ describe GT::RecommendationManager do
       end
 
       @recommended_videos.flatten!
-
-      GT::VideoManager.stub(:update_video_info)
     end
 
     it "should return all of the recommendations when there are no restricting limits" do
@@ -126,6 +127,7 @@ describe GT::RecommendationManager do
         result.should be_an_instance_of(DashboardEntry)
         result.src_frame.should == @f
         result.video_id.should == @rec_vid.id
+        result.action.should == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
       end
 
       it "should create the newest entry in the dashboard by default" do
@@ -139,22 +141,25 @@ describe GT::RecommendationManager do
         result.id.generation_time.to_i.should == @dbe.id.generation_time.to_i - 1
       end
 
-      it "should persist a new dashboard entry to the database" do
-        lambda {
-          GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
-        }.should change { DashboardEntry.count }
-      end
+      context "database peristence" do
+        before(:each) do
+          @lambda = lambda {
+            GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+          }
+        end
 
-      it "should persist a new frame to the database" do
-        lambda {
-          GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
-        }.should change { Frame.count }
-      end
+        it "should persist a new dashboard entry to the database" do
+          @lambda.should change { DashboardEntry.count }
+        end
 
-      it "should not create a conversation because no message is being passed" do
-        lambda {
-          GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
-        }.should change { Conversation.count }
+        it "should persist a new frame to the database" do
+          @lambda.should change { Frame.count }
+        end
+
+        it "should persist a conversation because the frame is being persisted" do
+          @lambda.should change { Conversation.count }
+        end
+
       end
 
     end
@@ -170,7 +175,7 @@ describe GT::RecommendationManager do
         result.should be_nil
       end
 
-      it "should not persist any new frames or dashboard entries to the database" do
+      it "should not persist any new dashboard entries, frames, or conversations to the database" do
         # put a recommendation in the dashboard
         GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
 
@@ -178,9 +183,114 @@ describe GT::RecommendationManager do
           # check if we need to put another one
           GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
           # since there's already a recommendation in the last five (the one we just created), we shouldn't put another
-        }.should_not change {"#{DashboardEntry.count},#{Frame.count}"}
+        }.should_not change {"#{DashboardEntry.count},#{Frame.count},#{Conversation.count}"}
       end
 
+    end
+
+  end
+
+  context "create_recommendation_dbentry" do
+    before(:each) do
+      @user = Factory.create(:user)
+      @rec_vid = Factory.create(:video)
+    end
+
+    it "should create a db entry for a video graph recommendation with the corresponding video, action, and src_frame" do
+      src_frame = Factory.create(:frame)
+
+      result = GT::RecommendationManager.create_recommendation_dbentry(
+        @user,
+        @rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+        {
+          :src_id => src_frame.id
+        }
+      )
+
+      result[:dashboard_entry].should be_a DashboardEntry
+      result[:dashboard_entry].user.should == @user
+      result[:dashboard_entry].video.should == @rec_vid
+      result[:dashboard_entry].action.should == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+      result[:dashboard_entry].src_frame.should == src_frame
+
+      result[:frame].should be_a Frame
+      result[:frame].video.should == @rec_vid
+    end
+
+    context "database persistence" do
+
+      context "persist by default" do
+        before(:each) do
+          @lambda = lambda {
+            GT::RecommendationManager.create_recommendation_dbentry(
+              @user,
+              @rec_vid.id,
+              DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+              {
+                :src_id => nil
+              }
+            )
+          }
+        end
+
+        it "should persist a new dashboard entry to the database" do
+          @lambda.should change { DashboardEntry.count }
+        end
+
+        it "should persist a new frame to the database" do
+          @lambda.should change { Frame.count }
+        end
+
+        it "should persist a conversation because the frame is being persisted" do
+          @lambda.should change { Conversation.count }
+        end
+      end
+
+    end
+
+    it "should create a db entry for a mortar recommendation with the corresponding video, action, and src_video" do
+      src_video = Factory.create(:video)
+
+      result = GT::RecommendationManager.create_recommendation_dbentry(
+        @user,
+        @rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:mortar_recommendation],
+        {
+          :src_id => src_video.id
+        }
+      )
+
+      result[:dashboard_entry].should be_a DashboardEntry
+      result[:dashboard_entry].user.should == @user
+      result[:dashboard_entry].video.should == @rec_vid
+      result[:dashboard_entry].action.should == DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+      result[:dashboard_entry].src_video.should == src_video
+
+      result[:frame].should be_a Frame
+      result[:frame].video.should == @rec_vid
+    end
+  end
+
+  context "get_mortar_recs_for_user" do
+    before(:each) do
+      @user = Factory.create(:user)
+    end
+
+    it "should return the recommended videos" do
+      recommended_video = Factory.create(:video)
+      reason_video = Factory.create(:video)
+      GT::MortarHarvester.stub(:get_recs_for_user).and_return([{"item_id" => recommended_video.id.to_s, "reason_id" => reason_video.id.to_s}])
+
+      GT::RecommendationManager.get_mortar_recs_for_user(@user).length.should == 1
+    end
+
+    it "should exclude videos that are no longer available at the provider" do
+      recommended_video = Factory.create(:video, :available => false)
+      reason_video = Factory.create(:video)
+      GT::MortarHarvester.stub(:get_recs_for_user).and_return([{"item_id" => recommended_video.id.to_s, "reason_id" => reason_video.id.to_s}])
+
+      GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
     end
 
   end

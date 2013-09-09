@@ -3,6 +3,9 @@ require 'recommendation_manager'
 
 # UNIT test
 describe GT::RecommendationManager do
+  before(:each) do
+    GT::VideoManager.stub(:update_video_info)
+  end
 
   context "get_random_video_graph_recs_for_user" do
     before(:each) do
@@ -44,7 +47,6 @@ describe GT::RecommendationManager do
 
       @available_vid = Factory.create(:video)
       Video.stub(:find).and_return(@available_vid)
-      GT::VideoManager.stub(:update_video_info)
     end
 
     context "no prefetched dbes" do
@@ -206,11 +208,160 @@ describe GT::RecommendationManager do
         [{:recommended_video_id => rec_vid.id, :src_frame_id => f.id}]
       )
 
+      GT::RecommendationManager.should_receive(:create_recommendation_dbentry).with(
+        @user,
+        rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+        { :src_id => f.id}
+      ).and_call_original
+
       result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
       result.should be_an_instance_of(DashboardEntry)
       result.src_frame.should == f
       result.video_id.should == rec_vid.id
+      result.action.should == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
     end
+  end
+
+  context "create_recommendation_dbentry" do
+    before(:each) do
+      @user = Factory.create(:user)
+      @rec_vid = Factory.create(:video)
+    end
+
+    it "should return nil if the Framer fails" do
+      GT::Framer.stub(:create_frame)
+
+      GT::RecommendationManager.create_recommendation_dbentry(
+        @user,
+        @rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+      ).should be_nil
+    end
+
+    it "should re-format the Framer result to return the correct format of data" do
+      new_dbe = Factory.create(:dashboard_entry)
+      new_frame = Factory.create(:frame)
+      GT::Framer.stub(:create_frame).and_return({:dashboard_entries => [new_dbe], :frame => new_frame})
+
+      GT::RecommendationManager.create_recommendation_dbentry(
+        @user,
+        @rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+      ).should == {:dashboard_entry => new_dbe, :frame => new_frame}
+    end
+
+    it "should create a db entry for a video graph recommendation with the corresponding video, action, and src_frame" do
+      src_frame = Factory.create(:frame)
+      GT::Framer.should_receive(:create_frame).with({
+        :video_id => @rec_vid.id,
+        :dashboard_user_id => @user.id,
+        :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+        :persist => true,
+        :dashboard_entry_options => {
+          :src_frame_id => src_frame.id
+        }
+      })
+
+      GT::RecommendationManager.create_recommendation_dbentry(
+        @user,
+        @rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+        {
+          :src_id => src_frame.id
+        }
+      )
+    end
+
+    it "should pass through the persist option to the framer" do
+      src_frame = Factory.create(:frame)
+      GT::Framer.should_receive(:create_frame).with({
+        :video_id => @rec_vid.id,
+        :dashboard_user_id => @user.id,
+        :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+        :persist => false,
+        :dashboard_entry_options => {
+          :src_frame_id => src_frame.id
+        }
+      })
+
+      GT::RecommendationManager.create_recommendation_dbentry(
+        @user,
+        @rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+        {
+          :src_id => src_frame.id,
+          :persist => false
+        }
+      )
+    end
+
+    it "should create a db entry for a mortar recommendation with the corresponding video, action, and src_video" do
+      src_video = Factory.create(:video)
+      GT::Framer.should_receive(:create_frame).with({
+        :video_id => @rec_vid.id,
+        :dashboard_user_id => @user.id,
+        :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation],
+        :persist => true,
+        :dashboard_entry_options => {
+          :src_video_id => src_video.id
+        }
+      })
+
+      GT::RecommendationManager.create_recommendation_dbentry(
+        @user,
+        @rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:mortar_recommendation],
+        {
+          :src_id => src_video.id
+        }
+      )
+    end
+  end
+
+  context "get_mortar_recs_for_user" do
+    before(:each) do
+      @user = Factory.create(:user)
+    end
+
+    it "should call MortarHarvester with the appropriate parameters" do
+      GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 1).ordered
+      GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 20).ordered
+
+      GT::RecommendationManager.get_mortar_recs_for_user(@user)
+      GT::RecommendationManager.get_mortar_recs_for_user(@user, 20)
+    end
+
+    it "should map the key names correctly" do
+      recommended_video = Factory.create(:video)
+      reason_video = Factory.create(:video)
+      Video.stub(:find).and_return(recommended_video)
+      GT::MortarHarvester.stub(:get_recs_for_user).and_return([{"item_id" => recommended_video.id.to_s, "reason_id" => reason_video.id.to_s}])
+
+      GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+        [{
+          :recommended_video_id => recommended_video.id,
+          :src_id => reason_video.id,
+          :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+        }]
+    end
+
+    it "should exclude videos that are no longer available at the provider" do
+      recommended_video = Factory.create(:video, :available => false)
+      reason_video = Factory.create(:video)
+      Video.stub(:find).and_return(recommended_video)
+      GT::VideoManager.should_receive(:update_video_info).with(recommended_video).once()
+      GT::MortarHarvester.stub(:get_recs_for_user).and_return([{"item_id" => recommended_video.id.to_s, "reason_id" => reason_video.id.to_s}])
+
+      GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+    end
+
+    it "should return an empty array if the request to Mortar fails" do
+      GT::MortarHarvester.stub(:get_recs_for_user).and_return(nil)
+
+      GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+    end
+
   end
 
 end
