@@ -172,18 +172,32 @@ module GT
 
     # Returns an array of recommended video ids and source video ids for a user based on the criteria supplied as params
     def self.get_mortar_recs_for_user(user, limit=1)
-      res = GT::MortarHarvester.get_recs_for_user(user, limit)
-      if res
+      recs = GT::MortarHarvester.get_recs_for_user(user, limit)
+      if recs
+        watched_video_ids = []
+        watched_videos_loaded = false
+
+        # remove any videos that the user has already watched
+        if recs.length > 0 && user.viewed_roll_id
+          # once we know we need them, load the ids of the videos the user has watched - only do this once
+          if !watched_videos_loaded
+            watched_video_ids = Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id.to_s}.compact
+            watched_videos_loaded = true
+          end
+
+          recs.reject!{|rec| watched_video_ids.include? rec["item_id"]}
+        end
+
         # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
         # but we may be calling out to provider APIs for each video here if we don't have the video info recently updated
-        res.select! do |rec|
+        recs.select! do |rec|
           vid = Video.find(rec["item_id"])
           if vid
             GT::VideoManager.update_video_info(vid)
             vid.available
           end
         end
-        res.map! do |rec|
+        recs.map! do |rec|
           {
             :recommended_video_id => BSON::ObjectId.from_string(rec["item_id"]),
             :src_id => BSON::ObjectId.from_string(rec["reason_id"]),

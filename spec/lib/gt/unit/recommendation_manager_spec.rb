@@ -321,46 +321,77 @@ describe GT::RecommendationManager do
 
   context "get_mortar_recs_for_user" do
     before(:each) do
-      @user = Factory.create(:user)
+      @viewed_roll = Factory.create(:roll)
+      @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
     end
 
     it "should call MortarHarvester with the appropriate parameters" do
       GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 1).ordered
       GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 20).ordered
+      Frame.should_not_receive(:where)
 
       GT::RecommendationManager.get_mortar_recs_for_user(@user)
       GT::RecommendationManager.get_mortar_recs_for_user(@user, 20)
     end
 
-    it "should map the key names correctly" do
-      recommended_video = Factory.create(:video)
-      reason_video = Factory.create(:video)
-      Video.stub(:find).and_return(recommended_video)
-      GT::MortarHarvester.stub(:get_recs_for_user).and_return([{"item_id" => recommended_video.id.to_s, "reason_id" => reason_video.id.to_s}])
-
-      GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
-        [{
-          :recommended_video_id => recommended_video.id,
-          :src_id => reason_video.id,
-          :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-        }]
-    end
-
-    it "should exclude videos that are no longer available at the provider" do
-      recommended_video = Factory.create(:video, :available => false)
-      reason_video = Factory.create(:video)
-      Video.stub(:find).and_return(recommended_video)
-      GT::VideoManager.should_receive(:update_video_info).with(recommended_video).once()
-      GT::MortarHarvester.stub(:get_recs_for_user).and_return([{"item_id" => recommended_video.id.to_s, "reason_id" => reason_video.id.to_s}])
-
-      GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
-    end
-
     it "should return an empty array if the request to Mortar fails" do
       GT::MortarHarvester.stub(:get_recs_for_user).and_return(nil)
+      Frame.should_not_receive(:where)
 
       GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
     end
+
+    context "recommendations found and returned" do
+      before(:each) do
+        @recommended_video = Factory.create(:video)
+        @reason_video = Factory.create(:video)
+        Video.stub(:find).and_return(@recommended_video)
+        GT::MortarHarvester.stub(:get_recs_for_user).and_return([{"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s}])
+
+        @frame_query = double("frame_query")
+        @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([])
+        # only needs to load the user's viewed videos once
+        Frame.should_receive(:where).with(:roll_id => @viewed_roll.id).exactly(1).times.and_return(@frame_query)
+      end
+
+
+      it "should map the key names correctly" do
+        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+          [{
+            :recommended_video_id => @recommended_video.id,
+            :src_id => @reason_video.id,
+            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          }]
+      end
+
+      it "should exclude videos the user has already watched" do
+        @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_video.id.to_s])
+
+        GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+      end
+
+      it "should still only load the viewed videos once when multiple recommended videos are processed" do
+        second_recommended_video = Factory.create(:video)
+        Video.stub(:find).and_return(@recommended_video, second_recommended_video)
+
+        GT::MortarHarvester.stub(:get_recs_for_user).and_return([
+          {"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
+          {"item_id" => second_recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
+        ])
+        GT::RecommendationManager.get_mortar_recs_for_user(@user).length.should == 2
+      end
+
+      it "should exclude videos that are no longer available at the provider" do
+        @recommended_video.available = false
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video).once()
+
+        GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+      end
+
+
+    end
+
+
 
   end
 
