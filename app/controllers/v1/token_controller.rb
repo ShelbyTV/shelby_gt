@@ -107,7 +107,8 @@ class V1::TokenController < ApplicationController
     elsif token
       if params[:intention] == "login"
         #iOS sends this; we don't want to create account for OAuth unless explicity signing up
-        return render_error(403, "Account not found for given token.  Use sign up to create an account.")
+        return render_error(403, {:error_code => 403001,
+                                  :error_message => "Account not found for given token.  Use sign up to create an account."})
       end
 
       omniauth = GT::ImposterOmniauth.get_user_info(provider, uid, token, secret)
