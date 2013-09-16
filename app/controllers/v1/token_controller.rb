@@ -16,6 +16,7 @@ class V1::TokenController < ApplicationController
   # If we don't have an authenticated user...
   #   - If given credentials are valid, and match a user, that user will be returned
   #   - If given credentials are valid, and do not match a user, a new one will be created and returned
+  #      - unless params[:intention] == "login" in which case we return a 403 error
   #
   # The returned token can be used to authenticate against the api by including with an HTTP request as the value
   # for the parameter auth_token.  For example: http://api.gt.shelby.tv/v1/dashboard?auth_token=sF7waBf8jBMqsxeskPp2
@@ -104,7 +105,7 @@ class V1::TokenController < ApplicationController
 
     #----------------------------------New User (Not Authenticated)----------------------------------
     elsif token
-      if params[:action] == "login"
+      if params[:intention] == "login"
         #iOS sends this; we don't want to create account for OAuth unless explicity signing up
         return render_error(403, "Account not found for given token.  Use sign up to create an account.")
       end

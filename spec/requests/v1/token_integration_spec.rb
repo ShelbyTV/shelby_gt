@@ -160,6 +160,14 @@ describe 'v1/token' do
             u.destroy
           end
 
+          it "should not create a new user if action is login" do
+            lambda {
+              post "/v1/token?provider_name=facebook&uid=#{@uid}&token=#{@oauth_token}&intention=login"
+              response.body.should be_json_eql(403).at_path("status")
+              response.body.should_not have_json_path("result/authentication_token")
+            }.should_not change { User.count }
+          end
+
           it "should handle bad token/secret and return 404" do
             GT::ImposterOmniauth.stub(:get_user_info).and_return({})
 
