@@ -164,7 +164,7 @@ describe 'v1/token' do
             lambda {
               post "/v1/token?provider_name=facebook&uid=#{@uid}&token=#{@oauth_token}&intention=login"
               response.body.should be_json_eql(403).at_path("status")
-              response.body.should have_json_path("result/error_code")
+              response.body.should have_json_path("message/error_code")
               response.body.should_not have_json_path("result/authentication_token")
             }.should_not change { User.count }
           end
