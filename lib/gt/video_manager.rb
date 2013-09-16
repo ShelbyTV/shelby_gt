@@ -161,15 +161,14 @@ module GT
       if !cache || !video.info_updated_at || video.info_updated_at < 2.hours.ago
         response = GT::VideoProviderApi.get_video_info(video.provider_name, video.provider_id)
         if response
-          if ![200, 404].include? response.code
+          if ![200, 404, 403].include? response.code
             # if we're not getting normal response codes, I might start worrying about rate limiting
             # so make a note of it and move on
             Rails.logger.info("[GT::VideoManager#update_video_info] Request to #{video.provider_name} API returned code #{response.code} - maybe being rate limited?")
             return nil
           end
-          # if the video can't be found, mark it as unavailable
-          video.available = (response.code != 404)
           if response.code == 200
+            video.available = true
             # if we got a valid response, process the info in the response, which will be different for each provider
             case video.provider_name
             when "youtube"
@@ -190,6 +189,9 @@ module GT
               video_info = response.parsed_response
               video.available = video_info["allow_embed"] && (video_info["status"] == "published")
             end
+          else
+            # if the video can't be found or is private, mark it as unavailable
+            video.available = false
           end
           # if something has changed, save the changes
           video.save if video.changed?

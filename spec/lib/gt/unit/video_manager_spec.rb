@@ -371,8 +371,17 @@ describe GT::VideoManager do
       @vid.available.should == true
     end
 
-    it "should set the video to unavailable if a 404 is returned" do
+    it "should set the video to unavailable if a 404 (deleted or nonexistant) is returned" do
       response = double("response", :code => 404, :body => "")
+      GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+      @vid.should_receive(:save)
+
+      GT::VideoManager.update_video_info(@vid)
+      @vid.available.should == false
+    end
+
+    it "should set the video to unavailable if a 403 (private) is returned" do
+      response = double("response", :code => 403, :body => "")
       GT::VideoProviderApi.stub(:get_video_info).and_return(response)
       @vid.should_receive(:save)
 
