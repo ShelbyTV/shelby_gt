@@ -197,7 +197,7 @@ end
 # ---------- Testing
 #
 group :test, :development do
-	gem 'rspec-rails', '~>2.13'
+	gem 'rspec-rails', '~>2.14'
 	gem 'rspec-html-matchers'
 	gem 'shoulda-matchers'
 
