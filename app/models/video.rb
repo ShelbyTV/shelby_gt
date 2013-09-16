@@ -81,4 +81,38 @@ class Video
     # since the video doesn't belong to any particular shelby subdomain, same as regular permalink
     self.permalink
   end
+
+  #------ Viewing
+
+  # Create a Frame with this video on the User's viewed_roll if they haven't viewed this in the last day.
+  # Also updates the view_count on this video regardless if user is passed in
+  #
+  # Returns false if view was recently recorded, otherwise returns this video
+  def view!(u)
+    raise ArgumentError, "must supply valid User Object or nil" unless u.is_a?(User) or u.nil?
+
+    if u and Frame.roll_includes_video?(u.viewed_roll_id, self.id, 1.day.ago)
+      # This Video has been added to the user's viewed_roll in the last 1 day, ignore this view
+      return false
+    end
+
+    # Always update view counts
+    Video.increment(self.id, :q => 1)  # :view_count is :q in Video
+
+    # when a video.reload happens we want to get the real doc that is reloaded, not the cached one.
+    MongoMapper::Plugins::IdentityMap.clear if Settings::Video.mm_use_identity_map
+
+    unless u.nil?
+      # Create a frame on users viewed_roll with this video
+      GT::Framer.create_frame({
+        :creator => u,
+        :video => self,
+        :roll => u.viewed_roll,
+        :skip_dashboard_entries => true
+      })
+    end
+
+    return self
+  end
+
 end

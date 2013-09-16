@@ -78,6 +78,34 @@ describe Frame do
     end
   end
 
+  context "find video on roll" do
+    it "should find the video if it's on the roll" do
+      roll = Factory.create(:roll)
+      video = Factory.create(:video)
+      frame = Factory.create(:frame, :roll => roll, :video => video)
+
+      Frame.roll_includes_video?(roll.id, video.id, 24.hours.ago).should == true
+    end
+
+    it "should not find the video if it's not on the roll" do
+      roll = Factory.create(:roll)
+      video = Factory.create(:video)
+      some_other_video = Factory.create(:video)
+      frame = Factory.create(:frame, :roll => roll, :video => some_other_video)
+
+      Frame.roll_includes_video?(roll.id, video.id, 24.hours.ago).should == false
+    end
+
+    it "should not find the video if it was viewed too long ago" do
+      roll = Factory.create(:roll)
+      video = Factory.create(:video)
+      frame = Factory.create(:frame, :_id => BSON::ObjectId.from_time(2.days.ago), :roll => roll, :video => video)
+
+      Frame.roll_includes_video?(roll.id, video.id, 24.hours.ago).should == false
+      Frame.roll_includes_video?(roll.id, video.id, 3.days.ago).should == true
+    end
+  end
+
   # We're testing a private method here, but it's a pretty fucking important/tricky one and has to be correct
   context "get ancestor" do
     it "should return an ancestor when one exists" do
