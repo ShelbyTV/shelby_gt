@@ -365,6 +365,23 @@ class Frame
         ).exists?
     end
 
+    # Checks for a Frame, with the given roll_id, where the frame has the specified video_id
+    #
+    # DANGEROUS - This has to walk the DB!  It will use the index on Frame.roll_id, but that's it.
+    #             We set created_after to ensure Mongo doesn't have to walk too far, but it will walk,
+    #             checking each frame.video_id to see if it is video_id
+    def self.roll_includes_video?(roll_id, video_id, created_after)
+      raise ArgumentError, "must supply roll_id" unless roll_id and (roll_id.is_a?(String) or roll_id.is_a?(BSON::ObjectId))
+      raise ArgumentError, "must supply video_id" unless video_id and (video_id.is_a?(String) or video_id.is_a?(BSON::ObjectId))
+      raise AagumentError, "must supply valid time" unless created_after.is_a? Time
+
+      Frame.where(
+        :roll_id => roll_id,
+        :_id.gt => BSON::ObjectId.from_time(created_after),
+        :video_id => video_id
+        ).exists?
+    end
+
     # Gets a Frame, with the given roll_id, where frame_ancestors contains frame_id
     #
     # DANGEROUS - This has to walk the DB!  It will use the index on Frame.roll_id, but that's it.

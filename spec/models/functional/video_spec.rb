@@ -81,4 +81,82 @@ describe Video do
     end
 
   end
+
+  context "viewed" do
+    before(:each) do
+      @video = Factory.create(:video)
+
+      @user = Factory.create(:user)
+      @user.viewed_roll = Factory.create(:roll, :creator => @user)
+      @user.save
+    end
+
+    it "should require full User model, not just id" do
+      lambda {
+        @video.view!(@user.id)
+      }.should raise_error(ArgumentError)
+    end
+
+    it "should be ok with no user also" do
+      lambda {
+        @video.view!(nil)
+      }.should_not raise_error(ArgumentError)
+    end
+
+    it "should update view_count of Video" do
+      lambda {
+        @video.view!(@user)
+      }.should change { @video.reload.view_count } .by 1
+
+      lambda {
+        @video.view!(nil)
+      }.should change { @video.reload.view_count } .by 1
+    end
+
+    it "should return the video if the view_count was updated" do
+      @video.view!(@user).should == @video
+      @video.view!(nil).should == @video
+    end
+
+    it "should create a frame on the users viewed_roll, persisted" do
+      v = nil
+      lambda {
+        v = @video.view!(@user)
+      }.should change { Frame.count } .by 1
+
+      f = Frame.last
+
+      f.persisted?.should == true
+      f.creator.should == @user
+      f.video.should == @video
+      f.roll.should == @user.viewed_roll
+    end
+
+    it "should not create any dashboard entries" do
+      GT::Framer.should_not_receive(:create_dashboard_entries)
+      @video.view!(@user)
+    end
+
+    it "should not create any frames if no user is passed in" do
+      lambda {
+        @video.view!(nil)
+      }.should_not change { Frame.count }
+    end
+
+    it "should not do anything if this video was added to the viewed roll in the last day" do
+      @user.viewed_roll.frames << Factory.create(:frame, :video => @video)
+
+      @video.view!(@user).should == false
+
+      lambda {
+        @video.view!(@user)
+      }.should_not change { @video.reload.view_count }
+
+      lambda {
+        @video.view!(@user)
+      }.should_not change { Frame.count }
+    end
+
+  end
+
 end
