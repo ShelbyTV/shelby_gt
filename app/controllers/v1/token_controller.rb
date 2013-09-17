@@ -58,12 +58,20 @@ class V1::TokenController < ApplicationController
     #----------------------------------Already Authenticated User----------------------------------
     if current_user
       if @user
+
+        #always update the token/secret
+        if token
+          auth = @user.authentication_by_provider_and_uid(provider, uid)
+          auth.oauth_token = token
+          auth.oauth_secret = secret
+          @user.save(:validate => false)
+        end
+
+        #if this is a different, faux user: merge them in
         if @user != current_user
           if @user.user_type == User::USER_TYPE[:faux]
-            #merge newly authenticated @user into the logged in current_user
             if GT::UserMerger.merge_users(@user, current_user)
-              #keep current_user logged in
-              @user = current_user
+              @user = current_user #keep current_user logged in
             else
               return render_error(403, {:error_code => 403002,
                                         :current_user_nickname => current_user.nickname,
@@ -77,13 +85,6 @@ class V1::TokenController < ApplicationController
                                       :existing_other_user_nickname => @user.nickname,
                                       :error_message => "Not merging users, please email support@shelby.tv" })
           end
-
-        elsif token
-          # @user == current_user ...update token and secret, save user
-          auth = @user.authentication_by_provider_and_uid(provider, uid)
-          auth.oauth_token = token
-          auth.oauth_secret = secret
-          @user.save
         end
         
       elsif token
