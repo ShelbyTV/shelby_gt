@@ -326,8 +326,7 @@ describe GT::RecommendationManager do
     end
 
     it "should call MortarHarvester with the appropriate parameters" do
-      GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 1).ordered
-      GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 20).ordered
+      GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 50).twice
       Frame.should_not_receive(:where)
 
       GT::RecommendationManager.get_mortar_recs_for_user(@user)
@@ -345,8 +344,13 @@ describe GT::RecommendationManager do
       before(:each) do
         @recommended_video = Factory.create(:video)
         @reason_video = Factory.create(:video)
+        @recommended_video2 = Factory.create(:video)
+        @reason_video2 = Factory.create(:video)
         Video.stub(:find).and_return(@recommended_video)
-        GT::MortarHarvester.stub(:get_recs_for_user).and_return([{"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s}])
+        GT::MortarHarvester.stub(:get_recs_for_user).and_return([
+          {"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
+          {"item_id" => @recommended_video2.id.to_s, "reason_id" => @reason_video2.id.to_s},
+        ])
 
         @frame_query = double("frame_query")
         @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([])
@@ -367,18 +371,17 @@ describe GT::RecommendationManager do
       it "should exclude videos the user has already watched" do
         @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_video.id.to_s])
 
-        GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+        GT::RecommendationManager.get_mortar_recs_for_user(@user).should == [{
+            :recommended_video_id => @recommended_video2.id,
+            :src_id => @reason_video2.id,
+            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          }]
       end
 
       it "should still only load the viewed videos once when multiple recommended videos are processed" do
-        second_recommended_video = Factory.create(:video)
-        Video.stub(:find).and_return(@recommended_video, second_recommended_video)
+        Video.stub(:find).and_return(@recommended_video, @recommended_video2)
 
-        GT::MortarHarvester.stub(:get_recs_for_user).and_return([
-          {"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
-          {"item_id" => second_recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
-        ])
-        GT::RecommendationManager.get_mortar_recs_for_user(@user).length.should == 2
+        GT::RecommendationManager.get_mortar_recs_for_user(@user,2).length.should == 2
       end
 
       it "should exclude videos that are no longer available at the provider" do

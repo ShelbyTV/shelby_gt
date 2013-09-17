@@ -172,7 +172,9 @@ module GT
 
     # Returns an array of recommended video ids and source video ids for a user based on the criteria supplied as params
     def self.get_mortar_recs_for_user(user, limit=1)
-      recs = GT::MortarHarvester.get_recs_for_user(user, limit)
+      # get more recs than the caller asked for because some of them might be eliminated because they were
+      # previously watched by the user and we want to have the chance to still recommend something
+      recs = GT::MortarHarvester.get_recs_for_user(user, 50)
       if recs
         watched_video_ids = []
         watched_videos_loaded = false
@@ -186,6 +188,10 @@ module GT
           end
 
           recs.reject!{|rec| watched_video_ids.include? rec["item_id"]}
+        end
+
+        if limit
+          recs.slice!(limit..-1)
         end
 
         # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
