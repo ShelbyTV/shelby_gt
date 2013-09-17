@@ -348,7 +348,7 @@ describe GT::RecommendationManager do
         @reason_video2 = Factory.create(:video)
         @recommended_video3 = Factory.create(:video)
         @reason_video3 = Factory.create(:video)
-        Video.stub(:find).and_return(@recommended_video)
+        Video.stub(:find).and_return(@recommended_video, @recommended_video2, @recommended_video3)
         GT::MortarHarvester.stub(:get_recs_for_user).and_return([
           {"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
           {"item_id" => @recommended_video2.id.to_s, "reason_id" => @reason_video2.id.to_s},
@@ -371,10 +371,27 @@ describe GT::RecommendationManager do
           }]
       end
 
+      it "should skip videos whose ids are not in the Shelby DB" do
+        Video.should_receive(:find).twice().and_return(nil, @recommended_video2)
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video2).once()
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_video)
+
+        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+          [{
+            :recommended_video_id => @recommended_video2.id,
+            :src_id => @reason_video2.id,
+            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          }]
+      end
+
       it "should skip videos the user has already watched" do
         @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_video.id.to_s])
+        Video.should_receive(:find).once().and_return(@recommended_video2)
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video2).once()
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_video)
 
-        GT::RecommendationManager.get_mortar_recs_for_user(@user).should == [{
+        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+          [{
             :recommended_video_id => @recommended_video2.id,
             :src_id => @reason_video2.id,
             :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
@@ -382,16 +399,39 @@ describe GT::RecommendationManager do
       end
 
       it "should still only load the viewed videos once when multiple recommended videos are processed" do
-        Video.stub(:find).and_return(@recommended_video, @recommended_video2)
+        Video.should_receive(:find).twice().and_return(@recommended_video, @recommended_video2)
 
         GT::RecommendationManager.get_mortar_recs_for_user(@user,2).length.should == 2
       end
 
-      it "should exclude videos that are no longer available at the provider" do
+      it "should skip videos that are known to be no longer available at the provider" do
         @recommended_video.available = false
-        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video).once()
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video2).once()
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_video)
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_video3)
 
-        GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+          [{
+            :recommended_video_id => @recommended_video2.id,
+            :src_id => @reason_video2.id,
+            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          }]
+      end
+
+      it "should skip videos that are no longer available at the provider after re-checking" do
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video) {
+          @recommended_video.available = false
+          nil
+        }
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video2).once()
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_video3)
+
+        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+          [{
+            :recommended_video_id => @recommended_video2.id,
+            :src_id => @reason_video2.id,
+            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          }]
       end
 
 

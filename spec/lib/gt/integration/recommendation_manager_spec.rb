@@ -299,18 +299,24 @@ describe GT::RecommendationManager do
       @viewed_frame = Factory.create(:frame, :video_id => @recommended_video.id, :creator => @user)
       @viewed_roll.frames << @viewed_frame
 
-      GT::RecommendationManager.get_mortar_recs_for_user(@user).should == [{
+      GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+        [{
           :recommended_video_id => @recommended_video2.id,
           :src_id => @reason_video2.id,
           :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-      }]
+        }]
     end
 
-    it "should exclude videos that are no longer available at the provider" do
+    it "should skip videos that are no longer available at the provider" do
       @recommended_video.available = false
       @recommended_video.save
 
-      GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+      GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+        [{
+          :recommended_video_id => @recommended_video2.id,
+          :src_id => @reason_video2.id,
+          :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+        }]
     end
 
   end
