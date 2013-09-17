@@ -279,19 +279,31 @@ describe GT::RecommendationManager do
 
       @recommended_video = Factory.create(:video)
       @reason_video = Factory.create(:video)
+      @recommended_video2 = Factory.create(:video)
+      @reason_video2 = Factory.create(:video)
+      @recommended_video3 = Factory.create(:video)
+      @reason_video3 = Factory.create(:video)
 
-      GT::MortarHarvester.stub(:get_recs_for_user).and_return([{"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s}])
+      GT::MortarHarvester.stub(:get_recs_for_user).and_return([
+        {"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
+        {"item_id" => @recommended_video2.id.to_s, "reason_id" => @reason_video2.id.to_s},
+        {"item_id" => @recommended_video3.id.to_s, "reason_id" => @reason_video3.id.to_s}
+      ])
     end
 
     it "should return the recommended videos" do
       GT::RecommendationManager.get_mortar_recs_for_user(@user).length.should == 1
     end
 
-    it "should exclude videos the user has already watched" do
+    it "should skip videos the user has already watched" do
       @viewed_frame = Factory.create(:frame, :video_id => @recommended_video.id, :creator => @user)
       @viewed_roll.frames << @viewed_frame
 
-      GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+      GT::RecommendationManager.get_mortar_recs_for_user(@user).should == [{
+          :recommended_video_id => @recommended_video2.id,
+          :src_id => @reason_video2.id,
+          :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+      }]
     end
 
     it "should exclude videos that are no longer available at the provider" do

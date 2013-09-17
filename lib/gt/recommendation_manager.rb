@@ -137,7 +137,7 @@ module GT
         if recs_for_this_video.length > 0 && user.viewed_roll_id
           # once we know we need them, load the ids of the videos the user has watched - only do this once
           if !watched_videos_loaded
-            watched_video_ids = Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id}.compact
+            watched_video_ids = Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id}.compact.uniq
             watched_videos_loaded = true
           end
 
@@ -176,18 +176,19 @@ module GT
       # previously watched by the user and we want to have the chance to still recommend something
       recs = GT::MortarHarvester.get_recs_for_user(user, 50)
       if recs
-        watched_video_ids = []
-        watched_videos_loaded = false
-
         # remove any videos that the user has already watched
         if recs.length > 0 && user.viewed_roll_id
-          # once we know we need them, load the ids of the videos the user has watched - only do this once
-          if !watched_videos_loaded
-            watched_video_ids = Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id.to_s}.compact
-            watched_videos_loaded = true
+          watched_video_ids = Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id.to_s}.compact.uniq
+          if limit
+            unwatched_recommendations = []
+            recs.each do |rec|
+              unwatched_recommendations << rec if !watched_video_ids.include? rec["item_id"]
+              break if unwatched_recommendations.count == limit
+            end
+            recs = unwatched_recommendations
+          else
+            recs.reject!{|rec| watched_video_ids.include? rec["item_id"]}
           end
-
-          recs.reject!{|rec| watched_video_ids.include? rec["item_id"]}
         end
 
         if limit

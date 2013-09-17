@@ -346,10 +346,13 @@ describe GT::RecommendationManager do
         @reason_video = Factory.create(:video)
         @recommended_video2 = Factory.create(:video)
         @reason_video2 = Factory.create(:video)
+        @recommended_video3 = Factory.create(:video)
+        @reason_video3 = Factory.create(:video)
         Video.stub(:find).and_return(@recommended_video)
         GT::MortarHarvester.stub(:get_recs_for_user).and_return([
           {"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
           {"item_id" => @recommended_video2.id.to_s, "reason_id" => @reason_video2.id.to_s},
+          {"item_id" => @recommended_video3.id.to_s, "reason_id" => @reason_video3.id.to_s},
         ])
 
         @frame_query = double("frame_query")
@@ -368,7 +371,7 @@ describe GT::RecommendationManager do
           }]
       end
 
-      it "should exclude videos the user has already watched" do
+      it "should skip videos the user has already watched" do
         @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_video.id.to_s])
 
         GT::RecommendationManager.get_mortar_recs_for_user(@user).should == [{
