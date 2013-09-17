@@ -12,12 +12,14 @@ class V1::TokenController < ApplicationController
   #
   # If we have a currently authenticated user...
   #   - If given credentials are valid, but don't match any user, they will be added to the current user.
-  #   - If given credentials are valid, and match a user other than the current user, the matched user will be
-  #     merged in to the current user.
+  #   - If given credentials are valid, and match a user other than the current user...
+  #      - if matched other user is faux, they will be merged in and updated user model will be returned
+  #      - if matched other user is real, no merging happens and we return a 403 error (code: 403003)
   # If we don't have an authenticated user...
   #   - If given credentials are valid, and match a user, that user will be returned
+  #      - unless user is real and params[:intention] == "signup" in which case return a 403 error (code: 403004)
   #   - If given credentials are valid, and do not match a user, a new one will be created and returned
-  #      - unless params[:intention] == "login" in which case we return a 403 error
+  #      - unless params[:intention] == "login" in which case we return a 403 error (code: 403001)
   #
   # The returned token can be used to authenticate against the api by including with an HTTP request as the value
   # for the parameter auth_token.  For example: http://api.gt.shelby.tv/v1/dashboard?auth_token=sF7waBf8jBMqsxeskPp2
@@ -106,8 +108,18 @@ class V1::TokenController < ApplicationController
       if token and GT::UserManager.verify_user(@user, provider, uid, token, secret)
         
         if @user.user_type == User::USER_TYPE[:faux]
+          if params[:intention] == "login"
+            #iOS sends this; we don't want to create account for OAuth unless explicity signing up
+            return render_error(403, {:error_code => 403001,
+                                      :error_message => "Real user not found for given token.  Use sign up to create an account."})
+          end
           GT::UserManager.convert_faux_user_to_real(@user, GT::ImposterOmniauth.get_user_info(provider, uid, token, secret))
         else
+          if params[:intention] == "signup"
+            #iOS sends this; doesn't want a login success when it thinks it's creating a new user
+            return render_error(403, {:error_code => 403004,
+                                      :error_message => "Real user already exists.  Should login."})
+          end
           GT::UserManager.start_user_sign_in(@user, :provider => provider, :uid => uid, :token => token, :secret => secret)
         end
 

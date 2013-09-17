@@ -29,6 +29,13 @@ describe 'v1/token' do
             }.should_not change { User.count }
           end
 
+          it "should not login if intention is signup" do
+            lambda {
+              post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}&intention=signup"
+              response.body.should be_json_eql(403).at_path("status")
+            }.should_not change { User.count }
+          end
+
           it "should return user info w/ a new auth token on success (with email/password)" do
             lambda {
               post "/v1/token?email=#{@user.primary_email}&password=#{@user_password}"
@@ -130,6 +137,14 @@ describe 'v1/token' do
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/authentication_token")
           @fuser.reload.user_type.should == User::USER_TYPE[:converted]
+        end
+
+        it "should not convert faux user to real if intention is login" do
+          GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
+
+          post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}&intention=login"
+          response.body.should be_json_eql(403).at_path("status")
+          @fuser.reload.user_type.should == User::USER_TYPE[:faux]
         end
 
         it "should not convert faux user if token/secret don't match" do
