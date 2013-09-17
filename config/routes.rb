@@ -93,7 +93,7 @@ ShelbyGt::Application.routes.draw do
       get 'viewed', :on => :collection
       get 'queued', :on => :collection
       get 'search' => 'video#search', :on => :collection
-      post 'watched' => 'video#watched'
+      put 'watched' => 'video#watched'
       put 'unplayable'
       put 'fix_if_necessary'
     end
@@ -158,7 +158,7 @@ ShelbyGt::Application.routes.draw do
     # video
     get 'PUT/video/:video_id/unplayable' => 'video#unplayable'
     get 'PUT/video/:video_id/fix_if_necessary' => 'video#fix_if_necessary'
-    get 'POST/video/:video_id/watched' => 'video#watched'
+    get 'PUT/video/:video_id/watched' => 'video#watched'
     # dashboard entry
     get 'PUT/dashboard/:id' => 'dashboard_entries#update'
     # messages

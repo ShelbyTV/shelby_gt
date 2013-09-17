@@ -19,14 +19,14 @@ describe V1::VideoController do
 
   end
 
-  describe "POST watched" do
+  describe "PUT watched" do
     before(:each) do
       @video = Factory.create(:video)
       Video.stub(:find) { @video }
     end
 
     it "should return 200 if Video is found" do
-      post :watched, :video_id => @video.id, :format => :json
+      put :watched, :video_id => @video.id, :format => :json
       assigns(:video).should eq(@video)
       assigns(:status).should eq(200)
     end
@@ -37,7 +37,7 @@ describe V1::VideoController do
       @video.should_not_receive(:view!)
       @video.should_not_receive(:reload)
 
-      post :watched, :video_id => "somebadid", :format => :json
+      put :watched, :video_id => "somebadid", :format => :json
       assigns(:status).should eq(404)
     end
 
@@ -55,7 +55,7 @@ describe V1::VideoController do
         @video.should_receive(:view!).with(@u1)
         @video.should_receive(:reload)
 
-        post :watched, :video_id => @video.id, :format => :json
+        put :watched, :video_id => @video.id, :format => :json
       end
     end
 
@@ -63,7 +63,7 @@ describe V1::VideoController do
       @video.should_receive(:view!).with(nil)
       @video.should_receive(:reload)
 
-      post :watched, :video_id => @video.id, :start_time => "0", :end_time => "14", :format => :json
+      put :watched, :video_id => @video.id, :start_time => "0", :end_time => "14", :format => :json
     end
 
   end
