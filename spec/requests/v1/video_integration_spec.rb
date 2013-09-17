@@ -150,6 +150,51 @@ describe 'v1/video' do
 
   end
 
+  describe "PUT watched" do
+
+    context "logged in" do
+      before(:each) do
+        @u1 = Factory.create(:user)
+
+        #sign that user in
+        set_omniauth(:uuid => @u1.authentications.first.uid)
+        get '/auth/twitter/callback'
+      end
+
+      it "should return video info on success" do
+        put '/v1/video/'+@v.id+'/watched'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should be_json_eql(1).at_path("result/view_count")
+      end
+
+      it "should add to the user's viewed roll" do
+        lambda {
+          put '/v1/video/'+@v.id+'/watched'
+        }.should change { Frame.count }
+      end
+
+      it "should return 404 when video not found" do
+        put '/v1/video/badid/watched'
+        response.body.should be_json_eql(404).at_path("status")
+      end
+    end
+
+    context "logged out" do
+      it "should return video info on success" do
+        put '/v1/video/'+@v.id+'/watched'
+        response.body.should be_json_eql(200).at_path("status")
+        response.body.should be_json_eql(1).at_path("result/view_count")
+      end
+
+      it "should not add to any roll" do
+        lambda {
+          put '/v1/video/'+@v.id+'/watched'
+        }.should_not change { Frame.count }
+      end
+    end
+
+  end
+
   describe "PUT unplayable" do
     before(:each) do
       @u1 = Factory.create(:user)

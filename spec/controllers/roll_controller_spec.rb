@@ -7,7 +7,7 @@ describe V1::RollController do
     sign_in @u1
     @roll = Factory.create(:roll, :creator => @u1)
     @roll.public = false
-    Roll.stub!(:find).and_return(@roll)
+    Roll.stub(:find).and_return(@roll)
   end
 
   describe "GET index" do
@@ -146,11 +146,11 @@ describe V1::RollController do
   describe "POST create" do
     before(:each) do
       @roll = Factory.create(:roll, :creator_id => @u1.id)
-      Roll.stub!(:find).and_return(@roll)
+      Roll.stub(:find).and_return(@roll)
     end
 
     it "creates and assigns one roll to @roll" do
-      Roll.stub!(:new).and_return(@roll)
+      Roll.stub(:new).and_return(@roll)
       @roll.stub(:valid?).and_return(true)
       post :create, :title =>"foo", :thumbnail_url => "http://bar.com", :public => false, :collaborative => false, :format => :json
       assigns(:roll).should eq(@roll)
@@ -160,7 +160,7 @@ describe V1::RollController do
     end
 
     it "creates and assigns one roll to @roll without thumbnail" do
-      Roll.stub!(:new).and_return(@roll)
+      Roll.stub(:new).and_return(@roll)
       @roll.stub(:valid?).and_return(true)
       post :create, :title =>"foo", :public => false, :collaborative => false, :format => :json
       assigns(:roll).should eq(@roll)
@@ -207,7 +207,7 @@ describe V1::RollController do
     before(:each) do
       sign_in @u1
       @roll = Factory.create(:roll, :creator => @u1)
-      Roll.stub!(:find).and_return(@roll)
+      Roll.stub(:find).and_return(@roll)
       resp = {"awesm_urls" => [{"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"}]}
       Awesm::Url.stub(:batch).and_return([200, resp])
     end
@@ -247,14 +247,14 @@ describe V1::RollController do
 
       it "should return 404 if roll is private and you try to share to a social network" do
         roll = stub_model(Roll, :public => false)
-        Roll.stub!(:find).and_return(roll)
+        Roll.stub(:find).and_return(roll)
         post :share, :roll_id => roll.id.to_s, :destination => ["twitter"], :text => "testing", :format => :json
         assigns(:status).should eq(404)
         assigns(:message).should eq("that roll is private, can not share to twitter")
       end
 
       it "should return 404 if roll not found" do
-        Roll.stub!(:find).and_return(nil)
+        Roll.stub(:find).and_return(nil)
         post :share, :roll_id => "whatever", :destination => ["twitter"], :text => "testing", :format => :json
         assigns(:status).should eq(404)
       end
@@ -267,7 +267,7 @@ describe V1::RollController do
       @u = Factory.create(:user)
       @fu = Factory.create(:user)
       @r = Factory.create(:roll, :creator => @u, :following_users=>[{:user_id=>@u1.id}] )
-      Roll.stub!(:find).and_return(@r)
+      Roll.stub(:find).and_return(@r)
     end
 
     it "should return 200 if the user joins a roll succesfully" do
@@ -296,7 +296,7 @@ describe V1::RollController do
     end
 
     it "should return 404 if roll is not found" do
-      Roll.stub!(:find).and_return(nil)
+      Roll.stub(:find).and_return(nil)
       post :join, :roll_id => '123', :format => :json
       assigns(:status).should eq(404)
 
@@ -312,7 +312,7 @@ describe V1::RollController do
       sign_in @u1
 
       @roll = Factory.create(:roll, :creator => @u1)
-      Roll.stub!(:find).and_return(@roll)
+      Roll.stub(:find).and_return(@roll)
     end
 
     it "destroys a roll successfuly" do

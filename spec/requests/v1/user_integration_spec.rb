@@ -160,7 +160,7 @@ describe 'v1/user' do
           response.body.should have_json_size(2).at_path('result')
           #most recently followed roll is returned first
           parse_json(response.body)["result"][0]["id"].should == r2.id.to_s
-          parse_json(response.body)["result"][0]["followed_at"].should == @u1.roll_followings[0].id.generation_time.to_f
+          parse_json(response.body)["result"][0]["followed_at"].to_i == @u1.roll_followings[0].id.generation_time.to_i
         end
 
         it "should return the creator authentication info for each roll" do
@@ -432,6 +432,10 @@ describe 'v1/user' do
       end
 
       context 'trigger_recs param' do
+        before(:each) do
+          GT::VideoProviderApi.stub(:get_video_info)
+        end
+
         it "should do a check for inserting recommendations when trigger_recs param is included" do
           GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec)
           get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true'
@@ -474,7 +478,7 @@ describe 'v1/user' do
 
     describe "GET recommendations" do
       before(:each) do
-        GT::MortarHarvester.stub(:get_mortar_recs_for_user).and_return([])
+        GT::MortarHarvester.stub(:get_recs_for_user).and_return([])
       end
 
       it "should return user recommendations on success" do
@@ -514,7 +518,7 @@ describe 'v1/user' do
           response.body.should be_json_eql(401).at_path("status")
         end
 
-        it "should allow an admin user to get stats for another user" do
+        it "should allow an admin user to get recommendations for another user" do
           @u1.is_admin = true
 
           get '/v1/user/'+@u2.id+'/recommendations'
@@ -526,131 +530,132 @@ describe 'v1/user' do
           get '/v1/user/nonexistant/recommendations'
           response.body.should be_json_eql(404).at_path("status")
         end
+      end
 
-        describe "result contents" do
-          before(:each) do
-            Array.any_instance.stub(:shuffle!)
+      describe "result contents" do
+        before(:each) do
+          Array.any_instance.stub(:shuffle!)
+          GT::VideoProviderApi.stub(:get_video_info)
 
-            #create some video graph recs
-            @recommended_vids = []
-            @src_frames = []
+          #create some video graph recs
+          @recommended_vids = []
+          @src_frames = []
 
-            3.times do
-              v = Factory.create(:video)
-              recommended_vid = Factory.create(:video)
-              @recommended_vids.unshift recommended_vid
-              rec = Factory.create(:recommendation, :recommended_video_id => recommended_vid.id, :score => 100.0)
-              v.recs << rec
+          3.times do
+            v = Factory.create(:video)
+            recommended_vid = Factory.create(:video)
+            @recommended_vids.unshift recommended_vid
+            rec = Factory.create(:recommendation, :recommended_video_id => recommended_vid.id, :score => 100.0)
+            v.recs << rec
 
-              v.save
+            v.save
 
-              src_frame_creator = Factory.create(:user)
-              src_frame = Factory.create(:frame, :video => v, :creator => src_frame_creator )
-              @src_frames.unshift src_frame
+            src_frame_creator = Factory.create(:user)
+            src_frame = Factory.create(:frame, :video => v, :creator => src_frame_creator )
+            @src_frames.unshift src_frame
 
-              dbe = Factory.create(:dashboard_entry, :frame => src_frame, :user => @u1, :video_id => v.id)
+            dbe = Factory.create(:dashboard_entry, :frame => src_frame, :user => @u1, :video_id => v.id)
 
-              dbe.save
-            end
-
-            #create some mortar recs
-            @mortar_recommended_vids = []
-            @src_vids = []
-            mortar_response = []
-
-            3.times do
-              recommended_vid = Factory.create(:video)
-              src_vid = Factory.create(:video)
-              @mortar_recommended_vids.unshift recommended_vid
-              @src_vids.unshift src_vid
-              mortar_response.unshift({"item_id" => recommended_vid.id.to_s, "reason_id" => src_vid.id.to_s})
-            end
-
-            GT::MortarHarvester.stub(:get_recs_for_user).and_return(mortar_response)
+            dbe.save
           end
 
-          it "should return the right number of results" do
-            MongoMapper::Plugins::IdentityMap.clear
-            get '/v1/user/'+@u1.id+'/recommendations'
+          #create some mortar recs
+          @mortar_recommended_vids = []
+          @src_vids = []
+          mortar_response = []
 
-            response.body.should be_json_eql(200).at_path("status")
-            response.body.should have_json_path("result")
-            response.body.should have_json_size(6).at_path("result")
+          3.times do
+            recommended_vid = Factory.create(:video)
+            src_vid = Factory.create(:video)
+            @mortar_recommended_vids.unshift recommended_vid
+            @src_vids.unshift src_vid
+            mortar_response.unshift({"item_id" => recommended_vid.id.to_s, "reason_id" => src_vid.id.to_s})
           end
 
-          it "should return the right attributes and contents for a video graph recommendation" do
-            MongoMapper::Plugins::IdentityMap.clear
-            get '/v1/user/'+@u1.id+'/recommendations'
-
-            response.body.should have_json_path("result/0/id")
-            response.body.should have_json_path("result/0/user_id")
-            response.body.should have_json_path("result/0/action")
-            response.body.should have_json_path("result/0/actor_id")
-
-            response.body.should have_json_path("result/0/frame")
-            response.body.should have_json_path("result/0/frame/video")
-
-            response.body.should have_json_path("result/0/src_frame")
-            response.body.should have_json_path("result/0/src_frame/id")
-            response.body.should have_json_path("result/0/src_frame/creator_id")
-            response.body.should have_json_path("result/0/src_frame/creator")
-            response.body.should have_json_path("result/0/src_frame/creator/id")
-            response.body.should have_json_path("result/0/src_frame/creator/nickname")
-
-            parsed_response = parse_json(response.body)
-
-            parsed_response["result"][0]["user_id"].should eq(@u1.id.to_s)
-            parsed_response["result"][0]["action"].should eq(DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
-            parsed_response["result"][0]["actor_id"].should eq(nil)
-
-            parsed_response["result"][0]["frame"]["video"]["id"].should eq(@recommended_vids[0].id.to_s)
-            parsed_response["result"][0]["frame"]["video"]["provider_name"].should eq(@recommended_vids[0].provider_name)
-            parsed_response["result"][0]["frame"]["video"]["provider_id"].should eq(@recommended_vids[0].provider_id)
-
-            parsed_response["result"][0]["src_frame"]["id"].should eq(@src_frames[0].id.to_s)
-            parsed_response["result"][0]["src_frame"]["creator_id"].should eq(@src_frames[0].creator.id.to_s)
-            parsed_response["result"][0]["src_frame"]["creator"]["id"].should eq(@src_frames[0].creator.id.to_s)
-            parsed_response["result"][0]["src_frame"]["creator"]["nickname"].should eq(@src_frames[0].creator.nickname)
-          end
-
-          it "should return the right attributes and contents for a mortar recommendation" do
-            MongoMapper::Plugins::IdentityMap.clear
-            get '/v1/user/'+@u1.id+'/recommendations'
-
-            response.body.should have_json_path("result/5/id")
-            response.body.should have_json_path("result/5/user_id")
-            response.body.should have_json_path("result/5/action")
-            response.body.should have_json_path("result/5/actor_id")
-
-            response.body.should have_json_path("result/5/frame")
-            response.body.should have_json_path("result/5/frame/video")
-
-            response.body.should have_json_path("result/5/src_video")
-            response.body.should have_json_path("result/5/src_video/id")
-            response.body.should have_json_path("result/5/src_video/title")
-
-            parsed_response = parse_json(response.body)
-
-            parsed_response["result"][5]["user_id"].should eq(@u1.id.to_s)
-            parsed_response["result"][5]["action"].should eq(DashboardEntry::ENTRY_TYPE[:mortar_recommendation])
-            parsed_response["result"][5]["actor_id"].should eq(nil)
-
-            parsed_response["result"][5]["frame"]["video"]["id"].should eq(@mortar_recommended_vids.last.id.to_s)
-            parsed_response["result"][5]["frame"]["video"]["provider_name"].should eq(@mortar_recommended_vids.last.provider_name)
-            parsed_response["result"][5]["frame"]["video"]["provider_id"].should eq(@mortar_recommended_vids.last.provider_id)
-
-            parsed_response["result"][5]["src_video"]["id"].should eq(@src_vids.last.id.to_s)
-            parsed_response["result"][5]["src_video"]["title"].should eq(@src_vids.last.title)
-          end
-
-          it "should not persist any new dashboard entries, frames, or conversations to the database" do
-            MongoMapper::Plugins::IdentityMap.clear
-            lambda {
-              get '/v1/user/'+@u1.id+'/recommendations'
-            }.should_not change { "#{DashboardEntry.count},#{Frame.count},#{Conversation.count}" }
-          end
-
+          GT::MortarHarvester.stub(:get_recs_for_user).and_return(mortar_response)
         end
+
+        it "should return the right number of results" do
+          MongoMapper::Plugins::IdentityMap.clear
+          get '/v1/user/'+@u1.id+'/recommendations'
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(6).at_path("result")
+        end
+
+        it "should return the right attributes and contents for a video graph recommendation" do
+          MongoMapper::Plugins::IdentityMap.clear
+          get '/v1/user/'+@u1.id+'/recommendations'
+
+          response.body.should have_json_path("result/0/id")
+          response.body.should have_json_path("result/0/user_id")
+          response.body.should have_json_path("result/0/action")
+          response.body.should have_json_path("result/0/actor_id")
+
+          response.body.should have_json_path("result/0/frame")
+          response.body.should have_json_path("result/0/frame/video")
+
+          response.body.should have_json_path("result/0/src_frame")
+          response.body.should have_json_path("result/0/src_frame/id")
+          response.body.should have_json_path("result/0/src_frame/creator_id")
+          response.body.should have_json_path("result/0/src_frame/creator")
+          response.body.should have_json_path("result/0/src_frame/creator/id")
+          response.body.should have_json_path("result/0/src_frame/creator/nickname")
+
+          parsed_response = parse_json(response.body)
+
+          parsed_response["result"][0]["user_id"].should eq(@u1.id.to_s)
+          parsed_response["result"][0]["action"].should eq(DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+          parsed_response["result"][0]["actor_id"].should eq(nil)
+
+          parsed_response["result"][0]["frame"]["video"]["id"].should eq(@recommended_vids[0].id.to_s)
+          parsed_response["result"][0]["frame"]["video"]["provider_name"].should eq(@recommended_vids[0].provider_name)
+          parsed_response["result"][0]["frame"]["video"]["provider_id"].should eq(@recommended_vids[0].provider_id)
+
+          parsed_response["result"][0]["src_frame"]["id"].should eq(@src_frames[0].id.to_s)
+          parsed_response["result"][0]["src_frame"]["creator_id"].should eq(@src_frames[0].creator.id.to_s)
+          parsed_response["result"][0]["src_frame"]["creator"]["id"].should eq(@src_frames[0].creator.id.to_s)
+          parsed_response["result"][0]["src_frame"]["creator"]["nickname"].should eq(@src_frames[0].creator.nickname)
+        end
+
+        it "should return the right attributes and contents for a mortar recommendation" do
+          MongoMapper::Plugins::IdentityMap.clear
+          get '/v1/user/'+@u1.id+'/recommendations'
+
+          response.body.should have_json_path("result/5/id")
+          response.body.should have_json_path("result/5/user_id")
+          response.body.should have_json_path("result/5/action")
+          response.body.should have_json_path("result/5/actor_id")
+
+          response.body.should have_json_path("result/5/frame")
+          response.body.should have_json_path("result/5/frame/video")
+
+          response.body.should have_json_path("result/5/src_video")
+          response.body.should have_json_path("result/5/src_video/id")
+          response.body.should have_json_path("result/5/src_video/title")
+
+          parsed_response = parse_json(response.body)
+
+          parsed_response["result"][5]["user_id"].should eq(@u1.id.to_s)
+          parsed_response["result"][5]["action"].should eq(DashboardEntry::ENTRY_TYPE[:mortar_recommendation])
+          parsed_response["result"][5]["actor_id"].should eq(nil)
+
+          parsed_response["result"][5]["frame"]["video"]["id"].should eq(@mortar_recommended_vids.last.id.to_s)
+          parsed_response["result"][5]["frame"]["video"]["provider_name"].should eq(@mortar_recommended_vids.last.provider_name)
+          parsed_response["result"][5]["frame"]["video"]["provider_id"].should eq(@mortar_recommended_vids.last.provider_id)
+
+          parsed_response["result"][5]["src_video"]["id"].should eq(@src_vids.last.id.to_s)
+          parsed_response["result"][5]["src_video"]["title"].should eq(@src_vids.last.title)
+        end
+
+        it "should not persist any new dashboard entries, frames, or conversations to the database" do
+          MongoMapper::Plugins::IdentityMap.clear
+          lambda {
+            get '/v1/user/'+@u1.id+'/recommendations'
+          }.should_not change { "#{DashboardEntry.count},#{Frame.count},#{Conversation.count}" }
+        end
+
       end
     end
 

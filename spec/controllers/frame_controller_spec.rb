@@ -220,7 +220,7 @@ describe V1::FrameController do
       end
 
       it "should return 404 if frame/roll not found" do
-        Frame.stub!(:find).and_return(nil)
+        Frame.stub(:find).and_return(nil)
         post :share, :frame_id => "whatever", :destination => ["twitter"], :text => "testing", :format => :json
         assigns(:status).should eq(404)
       end
@@ -235,14 +235,14 @@ describe V1::FrameController do
 
       it "should return 200 if frame is on watch later roll and has ancestors" do
         @frame_ancestor = Factory.create(:frame)
-        @frame.stub!(:frame_ancestors).and_return [@frame_ancestor._id]
+        @frame.stub(:frame_ancestors).and_return [@frame_ancestor._id]
         Frame.should_receive(:find).twice.and_return(@frame, @frame_ancestor)
         post :share, :frame_id => @frame.id.to_s, :destination => ["twitter"], :text => "testing", :format => :json
         assigns(:status).should eq(200)
       end
 
       it "should return 404 if frame is on watch later roll and has no ancestors" do
-        @frame.stub!(:frame_ancestors).and_return []
+        @frame.stub(:frame_ancestors).and_return []
         Frame.should_receive(:find).once.and_return(@frame)
         post :share, :frame_id => @frame.id.to_s, :destination => ["twitter"], :text => "testing", :format => :json
         assigns(:status).should eq(404)
@@ -273,7 +273,7 @@ describe V1::FrameController do
         @roll.roll_type = Roll::TYPES[:special_watch_later]
         @video = Factory.create(:video)
         @frame.video = @video
-        @frame.stub!(:frame_ancestors).and_return []
+        @frame.stub(:frame_ancestors).and_return []
         Frame.should_receive(:find).once.and_return(@frame)
       end
 
@@ -564,7 +564,7 @@ describe V1::FrameController do
   describe "DELETE destroy" do
     it "destroys a frame successfuly" do
       frame = Factory.create(:frame)
-      Frame.stub!(:find).and_return(frame)
+      Frame.stub(:find).and_return(frame)
       frame.should_receive(:destroy).and_return(frame)
       delete :destroy, :id => frame.id, :format => :json
       assigns(:status).should eq(200)
@@ -572,7 +572,7 @@ describe V1::FrameController do
 
     it "unsuccessfuly destroys a frame returning 404" do
       frame = Factory.create(:frame)
-      Frame.stub!(:find).and_return(frame)
+      Frame.stub(:find).and_return(frame)
       frame.should_receive(:destroy).and_return(false)
       delete :destroy, :id => frame.id, :format => :json
       assigns(:status).should eq(404)
@@ -592,7 +592,7 @@ describe V1::FrameController do
 
       before(:each) do
         @frame = Factory.create(:frame, :roll => Factory.create(:roll, :creator => @u1), :conversation => Factory.create(:conversation))
-        Frame.stub!(:find).and_return(@frame)
+        Frame.stub(:find).and_return(@frame)
       end
 
       it "should return 200" do
@@ -615,8 +615,8 @@ describe V1::FrameController do
           @roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_watch_later], :creator => @u1)
           @frame_ancestor = Factory.create(:frame)
           @frame = Factory.create(:frame, :roll => @roll, :conversation => Factory.create(:conversation))
-          @frame.stub!(:frame_ancestors).and_return [@frame_ancestor._id]
-          Frame.stub!(:find).and_return(@frame, @frame_ancestor)
+          @frame.stub(:frame_ancestors).and_return [@frame_ancestor._id]
+          Frame.stub(:find).and_return(@frame, @frame_ancestor)
         end
 
         it "should return 200" do
@@ -637,8 +637,8 @@ describe V1::FrameController do
           @roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_watch_later], :creator => @u1)
           @video = Factory.create(:video)
           @frame = Factory.create(:frame, :roll => @roll, :video => @video, :conversation => Factory.create(:conversation))
-          @frame.stub!(:frame_ancestors).and_return []
-          Frame.stub!(:find).and_return(@frame)
+          @frame.stub(:frame_ancestors).and_return []
+          Frame.stub(:find).and_return(@frame)
         end
 
         it "should return 200" do
@@ -674,8 +674,8 @@ describe V1::FrameController do
 
     it "returns 404 when no valid entity to shortlink" do
       @frame = Factory.create(:frame)
-      Frame.stub!(:find).and_return(@frame)
-      controller.stub!(:get_linkable_entity).and_return(nil)
+      Frame.stub(:find).and_return(@frame)
+      controller.stub(:get_linkable_entity).and_return(nil)
       get :short_link, :frame_id => @frame.id.to_s, :format => :json
       assigns(:status).should eq(404)
       assigns(:message).should eq("no valid entity to shortlink")

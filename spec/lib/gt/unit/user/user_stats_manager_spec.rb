@@ -30,7 +30,7 @@ describe GT::UserStatsManager do
       it "should return no errors if all arguments are supplied" do
         expect {
           GT::UserStatsManager.get_dot_tv_stats_for_recent_frames(@user, 3)
-        }.not_to raise_error(ArgumentError)
+        }.not_to raise_error
       end
 
     end
@@ -99,7 +99,7 @@ describe GT::UserStatsManager do
       it "should return no errors if all arguments are supplied and valid" do
         expect {
           GT::UserStatsManager.get_frames_rolled_since(@user, Time.now)
-        }.not_to raise_error(ArgumentError)
+        }.not_to raise_error
       end
 
     end

@@ -306,10 +306,11 @@ describe GT::UrlHelper do
 
         r1to2 = Net::HTTPMovedPermanently.new("1", "301", "x")
         r1to2['location'] = url2
-        Net::HTTP.stub( :get_response, url1).and_return(r1to2)
+
         r2to3 = Net::HTTPMovedPermanently.new("1", "301", "x")
         r2to3['location'] = url3
-        Net::HTTP.stub( :get_response, url2).and_return(r2to3)
+
+        Net::HTTP.stub(:get_response).and_return(r1to2, r2to3)
 
         GT::UrlHelper.resolve_url(url1, false, nil).should == url3
       end
@@ -357,7 +358,7 @@ describe GT::UrlHelper do
         #fake resolution
         r1to3 = Net::HTTPMovedPermanently.new("1", "301", "x")
         r1to3['location'] = url3
-        Net::HTTP.stub( :get_response, url1).and_return(r1to3)
+        Net::HTTP.stub(:get_response).and_return(r1to3)
 
         #expect save to cache
         MemcachedLinkResolvingCache.stub( :create ).with( {:original_url => url1, :resolved_url => url3}, :fake_memcache)

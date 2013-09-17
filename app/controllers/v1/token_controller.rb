@@ -1,4 +1,5 @@
 require 'user_manager'
+require 'user_merger'
 require 'imposter_omniauth'
 
 class V1::TokenController < ApplicationController
@@ -16,6 +17,7 @@ class V1::TokenController < ApplicationController
   # If we don't have an authenticated user...
   #   - If given credentials are valid, and match a user, that user will be returned
   #   - If given credentials are valid, and do not match a user, a new one will be created and returned
+  #      - unless params[:intention] == "login" in which case we return a 403 error
   #
   # The returned token can be used to authenticate against the api by including with an HTTP request as the value
   # for the parameter auth_token.  For example: http://api.gt.shelby.tv/v1/dashboard?auth_token=sF7waBf8jBMqsxeskPp2
@@ -55,12 +57,27 @@ class V1::TokenController < ApplicationController
     if current_user
       if @user
         if @user != current_user
-          # Do not merge
-          return render_error(403, {:current_user_nickname => current_user.nickname, 
-                                    :existing_other_user_nickname => @user.nickname,
-                                    :error_message => "Not merging users, email help@shelby.tv to request this." })
+          if @user.user_type == User::USER_TYPE[:faux]
+            #merge newly authenticated @user into the logged in current_user
+            if GT::UserMerger.merge_users(@user, current_user)
+              #keep current_user logged in
+              @user = current_user
+            else
+              return render_error(403, {:error_code => 403002,
+                                        :current_user_nickname => current_user.nickname,
+                                        :existing_other_user_nickname => @user.nickname,
+                                        :error_message => "Failed to merge users, email support@shelby.tv and we'll fix it for you" })
+            end
+          else
+            # Not merging a real user
+            return render_error(403, {:error_code => 403003,
+                                      :current_user_nickname => current_user.nickname,
+                                      :existing_other_user_nickname => @user.nickname,
+                                      :error_message => "Not merging users, please email support@shelby.tv" })
+          end
+
         elsif token
-          # Update token and secret, save user
+          # @user == current_user ...update token and secret, save user
           auth = @user.authentication_by_provider_and_uid(provider, uid)
           auth.oauth_token = token
           auth.oauth_secret = secret
@@ -104,6 +121,12 @@ class V1::TokenController < ApplicationController
 
     #----------------------------------New User (Not Authenticated)----------------------------------
     elsif token
+      if params[:intention] == "login"
+        #iOS sends this; we don't want to create account for OAuth unless explicity signing up
+        return render_error(403, {:error_code => 403001,
+                                  :error_message => "Account not found for given token.  Use sign up to create an account."})
+      end
+
       omniauth = GT::ImposterOmniauth.get_user_info(provider, uid, token, secret)
 
       if omniauth.blank?

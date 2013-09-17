@@ -39,8 +39,8 @@ describe V1::DashboardEntriesController do
       @dashboard_entry.short_links[:email] = 'http://some.sh/ort/link'
       Settings::Channels.channels[0]['channel_user_id'] = @channel_user.id.to_s
 
-      DashboardEntry.stub!(:find).and_return(@dashboard_entry)
-      GT::LinkShortener.stub!(:get_or_create_shortlinks).and_return(@dashboard_entry.short_links)
+      DashboardEntry.stub(:find).and_return(@dashboard_entry)
+      GT::LinkShortener.stub(:get_or_create_shortlinks).and_return(@dashboard_entry.short_links)
     end
 
     it "should return 200" do

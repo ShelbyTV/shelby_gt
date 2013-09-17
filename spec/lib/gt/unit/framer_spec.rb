@@ -506,27 +506,27 @@ describe GT::Framer do
     it "should require original frame, not allow id" do
       lambda {
         GT::Framer.dupe_frame!(nil, @u, @r2)
-      }.should raise_exception(ArgumentError)
+      }.should raise_error
     end
 
     it "should accept user or user_id" do
       lambda {
         GT::Framer.dupe_frame!(@f1, @u, @r2)
-      }.should_not raise_exception(ArgumentError)
+      }.should_not raise_error
 
       lambda {
         GT::Framer.dupe_frame!(@f1, @u.id, @r2)
-      }.should_not raise_exception(ArgumentError)
+      }.should_not raise_error
     end
 
     it "should accept roll or roll_id" do
       lambda {
         GT::Framer.dupe_frame!(@f1, @u, @r2)
-      }.should_not raise_exception(ArgumentError)
+      }.should_not raise_error
 
       lambda {
         GT::Framer.dupe_frame!(@f1, @u, @r2.id)
-      }.should_not raise_exception(ArgumentError)
+      }.should_not raise_error
     end
 
     it "should copy F1's video_id, and conversation_id but have new roll id" do

@@ -89,7 +89,8 @@ describe GT::LinkShortener do
     end
 
     it "should not return error for video as linkable argument" do
-      lambda { GT::LinkShortener.get_or_create_shortlinks(@video, "twitter") }.should_not raise_error(ArgumentError)
+      Awesm::Url.stub(:batch).and_return([404, nil])
+      lambda { GT::LinkShortener.get_or_create_shortlinks(@video, "twitter") }.should_not raise_error
     end
 
     it "should return a short link that we have already" do
@@ -120,7 +121,8 @@ describe GT::LinkShortener do
     end
 
     it "should not return error for dashboard entry as linkable argument" do
-      lambda { GT::LinkShortener.get_or_create_shortlinks(@dashboard_entry, "twitter") }.should_not raise_error(ArgumentError)
+      Awesm::Url.stub(:batch).and_return([404, nil])
+      lambda { GT::LinkShortener.get_or_create_shortlinks(@dashboard_entry, "twitter") }.should_not raise_error
     end
 
     it "should return a short link that we have already" do

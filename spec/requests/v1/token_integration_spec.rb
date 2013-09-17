@@ -52,13 +52,36 @@ describe 'v1/token' do
             @current_user_via_token.save
           end
 
-          it "should not merge in the matched user (if different from current_user)" do
+          it "should not merge in a real user (if different from current_user)" do
+            @user.user_type.should == User::USER_TYPE[:real]
             lambda {
               post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}&auth_token=#{@current_user_via_token.authentication_token}"
               response.body.should be_json_eql(403).at_path("status")
             }.should_not change { User.count }
           end
           
+          it "should merge in a faux user (if different from current_user)" do
+            @user.user_type = User::USER_TYPE[:faux]
+            @user.save
+            @user.reload.user_type.should == User::USER_TYPE[:faux]
+            lambda {
+              post "/v1/token?provider_name=facebook&uid=#{@fb_auth.uid}&token=#{@fb_auth.oauth_token}&auth_token=#{@current_user_via_token.authentication_token}"
+
+              response.body.should be_json_eql(200).at_path("status")
+              #original user returned
+              parse_json(response.body)['result']['id'].should == @current_user_via_token.id.to_s
+              #with original auth
+              parse_json(response.body)['result']['authentications'][0]['provider'].should == "twitter"
+              #plus merged in twitter auth
+              parse_json(response.body)['result']['authentications'][1]['provider'].should == "twitter"
+              parse_json(response.body)['result']['authentications'][1]['uid'].should == @twt_auth.uid
+              #plus merged in facebook auth
+              parse_json(response.body)['result']['authentications'][2]['provider'].should == "facebook"
+              parse_json(response.body)['result']['authentications'][2]['uid'].should == @fb_auth.uid
+              #and merged in user is gone
+            }.should change { User.count } .by(-1)
+          end
+
           it "should update token, secret if matched user is same as current_user" do
             @user.ensure_authentication_token!
             @user.save
@@ -158,6 +181,15 @@ describe 'v1/token' do
             u.authentications[0].oauth_secret.should == @oauth_secret
 
             u.destroy
+          end
+
+          it "should not create a new user if action is login" do
+            lambda {
+              post "/v1/token?provider_name=facebook&uid=#{@uid}&token=#{@oauth_token}&intention=login"
+              response.body.should be_json_eql(403).at_path("status")
+              response.body.should have_json_path("message/error_code")
+              response.body.should_not have_json_path("result/authentication_token")
+            }.should_not change { User.count }
           end
 
           it "should handle bad token/secret and return 404" do

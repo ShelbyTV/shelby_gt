@@ -33,22 +33,22 @@ describe GT::UserActionManager do
       #convertable to into okay
       lambda {
         GT::UserActionManager.view!(@user.id, @frame.id, @video.id, "0", 1)
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
 
       lambda {
         GT::UserActionManager.view!(@user.id, @frame.id, @video.id, 0, "1")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
 
       #both int okay
       lambda {
         GT::UserActionManager.view!(@user.id, @frame.id, @video.id, 0, 1)
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
 
       #both nil okay
       lambda {
         GT::UserActionManager.view!(@user.id, @frame.id, @video.id, nil, nil)
         GT::UserActionManager.view!(@user.id, @frame.id, @video.id)
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should create correct, persisted UserAction" do
@@ -75,7 +75,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.upvote!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should require valid frame_id (w/o looking for Frame itself)" do
@@ -85,7 +85,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.upvote!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should create correct, persisted UserAction" do
@@ -109,7 +109,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.unupvote!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should require valid frame_id (w/o looking for Frame itself)" do
@@ -119,7 +119,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.unupvote!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should create correct, persisted UserAction" do
@@ -143,7 +143,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.follow_roll!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should require valid roll_id (w/o looking for Frame itself)" do
@@ -153,7 +153,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.follow_roll!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should create correct, persisted UserAction" do
@@ -177,7 +177,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.unfollow_roll!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should require valid roll_id (w/o looking for Frame itself)" do
@@ -187,7 +187,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.unfollow_roll!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should create correct, persisted UserAction" do
@@ -211,7 +211,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.watch_later!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should require valid frame_id (w/o looking for Frame itself)" do
@@ -221,7 +221,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.watch_later!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should create correct, persisted UserAction" do
@@ -245,7 +245,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.unwatch_later!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should require valid frame_id (w/o looking for Frame itself)" do
@@ -255,7 +255,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.unwatch_later!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002")
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should create correct, persisted UserAction" do
@@ -279,7 +279,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.like!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002", @video.id)
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should require valid frame_id (w/o looking for Frame itself)" do
@@ -289,7 +289,7 @@ describe GT::UserActionManager do
 
       lambda {
         GT::UserActionManager.like!("4f6f66349fb5ba2337000002", "4f6f66349fb5ba2337000002", @video.id)
-      }.should_not raise_error ArgumentError
+      }.should_not raise_error
     end
 
     it "should create correct, persisted UserAction" do

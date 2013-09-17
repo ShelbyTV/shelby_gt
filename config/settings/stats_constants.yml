@@ -53,7 +53,7 @@ defaults: &defaults
       find: 'video.find'
       viewed: 'video.viewed'
       queued: 'video.queued'
-
+      watched: 'video.watched'
   user:
     new:
       faux: "user.new.faux"

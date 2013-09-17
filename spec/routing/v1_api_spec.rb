@@ -385,6 +385,15 @@ describe V1::VideoController do
       )
     end
 
+    it "routes for PUT watched" do
+      { :put => "/v1/video/1/watched" }.should route_to(
+        :controller => "v1/video",
+        :action => "watched",
+        :video_id => "1",
+        :format => "json"
+      )
+    end
+
     it "routes for PUT fix_if_necessary" do
       { :put => "/v1/video/1/fix_if_necessary" }.should route_to(
         :controller => "v1/video",

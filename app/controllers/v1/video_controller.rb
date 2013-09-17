@@ -8,7 +8,7 @@ class V1::VideoController < ApplicationController
   require 'api_clients/dailymotion_client'
   require 'api_clients/webscraper_client'
 
-  before_filter :user_authenticated?, :except => [:show, :find_or_create, :search, :fix_if_necessary]
+  before_filter :user_authenticated?, :except => [:show, :find_or_create, :search, :fix_if_necessary, :watched]
 
   ##
   # Returns one video, with the given parameters.
@@ -92,6 +92,36 @@ class V1::VideoController < ApplicationController
       end
 
       @status = 200
+    end
+  end
+
+  ##
+  # For logged in user, update their viewed_roll and view_count on Video (once per 24 hours per user)
+  # For non-logged in user, update their view_count on Video.
+  #   AUTHENTICATION OPTIONAL
+  #
+  # [POST] /v1/video/:id/watched
+  #
+  # @param [Required, String] id The id of the video
+  # @param [Optional, String] start_time The start_time of the current watch span (ie. adjusts to last reported end_time)
+  # @param [Optional, String] end_time The end_time of the current watch span (continually updates with progress)
+  # @param [Optional, String] complete Set this param iff the viewer finished the video (and do not set <start|end>_time)
+  def watched
+    StatsManager::StatsD.time(Settings::StatsConstants.api['video']['watched']) do
+      if @video = Video.find(params[:video_id])
+        @status = 200
+
+        # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
+        GT::UserManager.ensure_users_special_rolls(current_user, true) unless GT::UserManager.user_has_all_special_roll_ids?(current_user) if user_signed_in?
+
+        # conditionally count this as a view (once per 24 hours per user)
+        view_recorded = @video.view!(current_user)
+        @video.reload # to update view_count
+
+        render 'show'
+      else
+        render_error(404, "could not find video")
+      end
     end
   end
 
