@@ -5,7 +5,7 @@ require 'api_clients/twitter_client'
 
 # UNIT test
 describe APIClients::TwitterClient do
-  
+
   it "should create a Grackle twitter client given appropriate parameters" do
     c = APIClients::TwitterClient.build_for_token_and_secret('x','y')
     c.should be_an_instance_of(Grackle::Client)
@@ -17,7 +17,7 @@ describe APIClients::TwitterClient do
       @client = APIClients::TwitterClient.new
       @user = Factory.create(:user)
     end
-    
+
     it "should raise argument errors when oauth_token or oauth_secret are mising" do
       expect {
         APIClients::TwitterClient.build_for_token_and_secret(nil, nil)
@@ -33,7 +33,7 @@ describe APIClients::TwitterClient do
 
       expect {
         APIClients::TwitterClient.build_for_token_and_secret('x', 'y')
-      }.to_not raise_error(ArgumentError)
+      }.to_not raise_error
 
       expect {
         @client.setup_for_token_and_secret(nil, nil)
@@ -49,9 +49,9 @@ describe APIClients::TwitterClient do
 
       expect {
         @client.setup_for_token_and_secret('x', 'y')
-      }.to_not raise_error(ArgumentError)
+      }.to_not raise_error
     end
-    
+
     it "should raise argument errors when user is missing" do
       expect {
         @client.setup_for_user(nil)
@@ -60,7 +60,7 @@ describe APIClients::TwitterClient do
       # NOTE: the factory created user has twitter auth, otherwise this would fail
       expect {
         @client.setup_for_user(@user)
-      }.to_not raise_error(ArgumentError)
+      }.to_not raise_error
     end
 
     it "should raise argument errors when user doesn't have twitter auth" do

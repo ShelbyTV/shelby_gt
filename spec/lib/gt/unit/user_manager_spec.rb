@@ -153,7 +153,7 @@ describe GT::UserManager do
       u = "blah"
       lambda {
         u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, {:user_thumbnail_url => thumb_url})
-      }.should_not raise_error(Mongo::OperationFailure)
+      }.should_not raise_error
       u.should == nil
     end
 
@@ -169,7 +169,7 @@ describe GT::UserManager do
       u = nil
       lambda {
         u = GT::UserManager.get_or_create_faux_user(nick, provider, uid, {:user_thumbnail_url => thumb_url})
-      }.should_not raise_error(Mongo::OperationFailure)
+      }.should_not raise_error
       u.should == :the_user
     end
 
@@ -459,7 +459,7 @@ describe GT::UserManager do
       @real_user.gt_enabled = true
       lambda {
         GT::UserManager.convert_real_user_to_faux(@real_user)
-      }.should_not raise_error(ArgumentError)
+      }.should_not raise_error
     end
 
     it "should change the user type to faux" do

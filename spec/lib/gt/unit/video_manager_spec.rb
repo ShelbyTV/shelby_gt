@@ -315,7 +315,7 @@ describe GT::VideoManager do
         v = nil
         lambda {
           v = GT::VideoManager.send(:find_or_create_video_for_embedly_hash, @h).should
-        }.should_not raise_error(Mongo::OperationFailure)
+        }.should_not raise_error
         v.should == @v
       end
     end

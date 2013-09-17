@@ -100,7 +100,7 @@ describe Video do
     it "should be ok with no user also" do
       lambda {
         @video.view!(nil)
-      }.should_not raise_error(ArgumentError)
+      }.should_not raise_error
     end
 
     it "should update view_count of Video" do

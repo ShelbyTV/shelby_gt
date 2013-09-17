@@ -471,7 +471,7 @@ describe Frame do
     it "should be ok with no user also" do
       lambda {
         @frame.view!(nil)
-      }.should_not raise_error(ArgumentError)
+      }.should_not raise_error
     end
 
     it "should dupe the frame into the users viewed_roll, persisted" do

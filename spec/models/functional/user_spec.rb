@@ -262,8 +262,13 @@ describe User do
       @user.avatar_updated_at = 'blah'
       Time.stub(:new).and_return(@updated_at_time)
 
-      @user.shelby_avatar_url("small").should_not raise_error(ArgumentError)
-      @user.shelby_avatar_url("small").should eql "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/sq48x48/#{@user.id.to_s}?#{@updated_at_time.strftime('%s')}"
+      url = nil
+
+      lambda {
+        url = @user.shelby_avatar_url("small")
+      }.should_not raise_error
+
+      url.should eql "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/sq48x48/#{@user.id.to_s}?#{@updated_at_time.strftime('%s')}"
     end
   end
 

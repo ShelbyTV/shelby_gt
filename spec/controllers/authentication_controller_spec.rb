@@ -100,7 +100,7 @@ describe AuthenticationsController do
 
       # Have omniauth stuff return another one
       @env = {"omniauth.auth" => {'provider'=>'twitter'}}
-      request.stub!(:env).and_return(@env) #so that we look for a User
+      request.stub(:env).and_return(@env) #so that we look for a User
       @other_user = Factory.create(:user) #returned as if it was found via omniauth
       User.stub(:first).and_return(@other_user)
     end
@@ -203,7 +203,7 @@ describe AuthenticationsController do
     context "gt_enabled, non-faux user, just signing in" do
       context "via omniauth" do
         before(:each) do
-          request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
+          request.stub(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
           @u = Factory.create(:user, :gt_enabled => true, :user_type => User::USER_TYPE[:real], :cohorts => ["init"])
           User.stub(:first).and_return(@u)
 
@@ -270,7 +270,7 @@ describe AuthenticationsController do
 
     context "Adding new authentication to current user" do
       before(:each) do
-        request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
+        request.stub(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
         User.stub(:first).and_return(nil)
 
         @u = Factory.create(:user, :gt_enabled => true)
@@ -304,7 +304,7 @@ describe AuthenticationsController do
     context "New User signing up" do
       context "via omniauth" do
         before(:each) do
-          request.stub!(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
+          request.stub(:env).and_return({"omniauth.auth" => {'provider'=>'twitter'}})
           @u = Factory.create(:user)
           GT::UserManager.should_receive(:create_new_user_from_omniauth).and_return(@u)
         end
@@ -359,7 +359,7 @@ describe AuthenticationsController do
     context "faux user" do
       context "no permissions" do
         before(:each) do
-          request.stub!(:env).and_return({"omniauth.auth" =>
+          request.stub(:env).and_return({"omniauth.auth" =>
             {
               'provider'=>'twitter',
               'credentials'=>{'token'=>nil, 'secret'=>nil}
@@ -379,7 +379,7 @@ describe AuthenticationsController do
 
       context "via omniauth" do
         before(:each) do
-          request.stub!(:env).and_return({"omniauth.auth" =>
+          request.stub(:env).and_return({"omniauth.auth" =>
             {
               'provider'=>'twitter',
               'credentials'=>{'token'=>nil, 'secret'=>nil}
@@ -406,13 +406,13 @@ describe AuthenticationsController do
     end
 
     it "should add failure param to session return url on auth failure" do
-      controller.stub!(:session).and_return({:return_url => 'http://www.example.com?param1=val1&param2=val2'})
+      controller.stub(:session).and_return({:return_url => 'http://www.example.com?param1=val1&param2=val2'})
       get :fail
       assigns(:opener_location).should eq('http://www.example.com?auth_failure=1&param1=val1&param2=val2')
     end
 
     it "should add failure param and strategy param to session return url on auth failure when strategy specified" do
-      controller.stub!(:session).and_return({:return_url => 'http://www.example.com?param1=val1&param2=val2'})
+      controller.stub(:session).and_return({:return_url => 'http://www.example.com?param1=val1&param2=val2'})
       get :fail, :strategy => 'Facebook'
       assigns(:opener_location).should eq('http://www.example.com?auth_failure=1&auth_strategy=Facebook&param1=val1&param2=val2')
     end

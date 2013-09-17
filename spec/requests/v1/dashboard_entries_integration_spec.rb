@@ -188,8 +188,10 @@ describe 'v1/dashboard' do
 
           dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
 
+          GT::VideoProviderApi.stub(:get_video_info)
+
           lambda {
-            get '/v1/dashboard?trigger_recs=true'
+              get '/v1/dashboard?trigger_recs=true'
           }.should change { DashboardEntry.count }
         end
 
