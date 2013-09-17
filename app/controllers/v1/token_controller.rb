@@ -1,4 +1,5 @@
 require 'user_manager'
+require 'user_merger'
 require 'imposter_omniauth'
 
 class V1::TokenController < ApplicationController
@@ -56,12 +57,27 @@ class V1::TokenController < ApplicationController
     if current_user
       if @user
         if @user != current_user
-          # Do not merge
-          return render_error(403, {:current_user_nickname => current_user.nickname, 
-                                    :existing_other_user_nickname => @user.nickname,
-                                    :error_message => "Not merging users, email help@shelby.tv to request this." })
+          if @user.user_type == User::USER_TYPE[:faux]
+            #merge newly authenticated @user into the logged in current_user
+            if GT::UserMerger.merge_users(@user, current_user)
+              #keep current_user logged in
+              @user = current_user
+            else
+              return render_error(403, {:error_code => 403002,
+                                        :current_user_nickname => current_user.nickname,
+                                        :existing_other_user_nickname => @user.nickname,
+                                        :error_message => "Failed to merge users, email support@shelby.tv and we'll fix it for you" })
+            end
+          else
+            # Not merging a real user
+            return render_error(403, {:error_code => 403003,
+                                      :current_user_nickname => current_user.nickname,
+                                      :existing_other_user_nickname => @user.nickname,
+                                      :error_message => "Not merging users, please email support@shelby.tv" })
+          end
+
         elsif token
-          # Update token and secret, save user
+          # @user == current_user ...update token and secret, save user
           auth = @user.authentication_by_provider_and_uid(provider, uid)
           auth.oauth_token = token
           auth.oauth_secret = secret
