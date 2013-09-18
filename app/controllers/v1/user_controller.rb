@@ -199,8 +199,11 @@ class V1::UserController < ApplicationController
 
         had_completed_onboarding = (@user.app_progress? and @user.app_progress.onboarding? and @user.app_progress.onboarding.to_s == '4')
         if params[:app_progress] and params[:app_progress][:onboarding]
-          params[:app_progress][:onboarding] = true if params[:app_progress][:onboarding] == "true"
-          params[:app_progress][:onboarding] = params[:app_progress][:onboarding].to_i if params[:app_progress][:onboarding] != "true"
+          if params[:app_progress][:onboarding] == "true"
+            params[:app_progress][:onboarding] = true
+          else
+            params[:app_progress][:onboarding] = params[:app_progress][:onboarding].to_i
+          end
         end
 
         if @user.update_attributes(params)
