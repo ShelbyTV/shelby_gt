@@ -7,7 +7,7 @@ describe GT::RecommendationManager do
     GT::VideoManager.stub(:update_video_info)
   end
 
-  context "get_random_video_graph_recs_for_user" do
+  context "get_video_graph_recs_for_user" do
     before(:each) do
       @viewed_roll = Factory.create(:roll)
       @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
@@ -71,7 +71,7 @@ describe GT::RecommendationManager do
         end
 
         it "should return all the recommended videos when there is no limit parameter" do
-          result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, nil)
+          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, nil)
           result.length.should == @recommended_video_ids.length
           result.should == @recommended_video_ids.each_with_index.map{|id, i| {:recommended_video_id => id, :src_frame_id => @src_frame_ids[i]}}
         end
@@ -79,7 +79,7 @@ describe GT::RecommendationManager do
         it "should exclude videos the user has already watched" do
           @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_video_ids[0]])
 
-          result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, nil)
+          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, nil)
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
@@ -90,7 +90,7 @@ describe GT::RecommendationManager do
           Video.should_receive(:find).exactly(@recommended_video_ids.length).times.and_return(@unavailable_vid, @available_vid)
           GT::VideoManager.should_receive(:update_video_info).exactly(@recommended_video_ids.length).times
 
-          result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, nil)
+          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, nil)
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
@@ -98,20 +98,20 @@ describe GT::RecommendationManager do
         it "shoud exclude from consideration dashboard entries that are recommendations themselves" do
           @dbes[1].action = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
 
-          result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, nil)
+          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, nil)
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
 
         it "should return only one recommended video id by default" do
-          result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user)
+          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user)
           result.should be_an_instance_of(Array)
           result.should == [{:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]}]
         end
 
         it "should restrict the results to recommended videos that meet the minimum score parameter" do
           max_score = @recommendations.max_by{|r| r.score}.score
-          result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, nil, max_score)
+          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, nil, max_score)
           result.should == [{:recommended_video_id => @recommended_video_ids.last, :src_frame_id => @src_frame_ids.last}]
         end
 
@@ -122,7 +122,7 @@ describe GT::RecommendationManager do
         it "should not load the user's viewed videos to check against" do
           Frame.should_not_receive(:where)
 
-          result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 1, 1, 1000.0)
+          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 1, 1, 1000.0)
         end
 
       end
@@ -133,17 +133,17 @@ describe GT::RecommendationManager do
       it "should not fetch any dbes" do
         DashboardEntry.should_not_receive(:where)
 
-        GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 1, 100.0, [])
+        GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 1, 100.0, [])
       end
 
       it "should use the prefetched_dbes the same way it would if it looked them up itself" do
-        result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 1, nil, @dbes)
+        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 1, nil, @dbes)
         result.should be_an_instance_of(Array)
         result.should == [{:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]}]
       end
 
       it "should only look at as many prefetched_dbes as we tell it to with max_db_entries_to_scan parameter" do
-        result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 0, 1, nil, @dbes)
+        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 0, 1, nil, @dbes)
         result.should be_an_instance_of(Array)
         result.should be_empty
       end
@@ -160,7 +160,7 @@ describe GT::RecommendationManager do
     it "should not generate recs if there are recommendations within num_recents_to_check dbes" do
       dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
       DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return([dbe])
-      GT::RecommendationManager.should_not_receive(:get_random_video_graph_recs_for_user)
+      GT::RecommendationManager.should_not_receive(:get_video_graph_recs_for_user)
 
       GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
     end
@@ -169,7 +169,7 @@ describe GT::RecommendationManager do
       dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
       dbes = [dbe]
       DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return(dbes)
-      GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@user, 10, 1, 100.0, dbes).and_return([])
+      GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@user, 10, 1, 100.0, dbes).and_return([])
 
       GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
     end
@@ -179,7 +179,7 @@ describe GT::RecommendationManager do
       dbe_rec = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
       dbes = [dbe_social, dbe_rec]
       DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return(dbes)
-      GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@user, 10, 1, 100.0, dbes).and_return([])
+      GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@user, 10, 1, 100.0, dbes).and_return([])
 
       GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:num_recents_to_check => 1})
     end
@@ -187,7 +187,7 @@ describe GT::RecommendationManager do
     it "should return nil if no video graph recommendations are available within the given search parameters" do
       dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
       DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return([dbe])
-      GT::RecommendationManager.stub(:get_random_video_graph_recs_for_user).and_return([])
+      GT::RecommendationManager.stub(:get_video_graph_recs_for_user).and_return([])
 
       result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
       result.should be_nil
@@ -204,7 +204,7 @@ describe GT::RecommendationManager do
       dbe = Factory.create(:dashboard_entry, :frame => f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
 
       DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return([dbe])
-      GT::RecommendationManager.stub(:get_random_video_graph_recs_for_user).and_return(
+      GT::RecommendationManager.stub(:get_video_graph_recs_for_user).and_return(
         [{:recommended_video_id => rec_vid.id, :src_frame_id => f.id}]
       )
 

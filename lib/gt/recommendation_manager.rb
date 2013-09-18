@@ -36,7 +36,7 @@ module GT
 
       unless recent_dbes.any? { |dbe| dbe.is_recommendation? }
         # if we don't find any recommendations within the recency limit, generate a new recommendation
-        recs = self.get_random_video_graph_recs_for_user(user, 10, 1, 100.0, dbes)
+        recs = self.get_video_graph_recs_for_user(user, 10, 1, 100.0, dbes)
         unless recs.empty?
           # wrap the recommended video in a dashboard entry
           rec = recs[0]
@@ -110,7 +110,7 @@ module GT
     # Returns an array of recommended video ids and source frame ids for a user based on the criteria supplied as params
     # NB: This is a slow thing to be doing - ideally we'd want to run this periodically in the background and store
     # the results somewhere to then be loaded instantaneously when asked for
-    def self.get_random_video_graph_recs_for_user(user, max_db_entries_to_scan=10, limit=1, min_score=nil, prefetched_dbes=nil)
+    def self.get_video_graph_recs_for_user(user, max_db_entries_to_scan=10, limit=1, min_score=nil, prefetched_dbes=nil)
 
       unless prefetched_dbes
         dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(max_db_entries_to_scan).fields(:video_id, :frame_id).all

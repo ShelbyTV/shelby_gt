@@ -20,7 +20,7 @@ class V1::RecommendationController < ApplicationController
       min_score = params[:min_score] ? params[:min_score].to_f : 100.0
 
       # get some video graph recommendations
-      video_graph_recommendations = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, scan_limit, limit, min_score)
+      video_graph_recommendations = GT::RecommendationManager.get_video_graph_recs_for_user(@user, scan_limit, limit, min_score)
       video_graph_recommendations.each do |rec|
         # remap the name of the src key so that we can process all the recommendations together
         rec[:src_id] = rec.delete(:src_frame_id)

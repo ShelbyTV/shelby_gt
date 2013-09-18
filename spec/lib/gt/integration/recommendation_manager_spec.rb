@@ -7,7 +7,7 @@ describe GT::RecommendationManager do
     GT::VideoManager.stub(:update_video_info)
   end
 
-  context "get_random_video_graph_recs_for_user" do
+  context "get_video_graph_recs_for_user" do
     before(:each) do
       @viewed_roll = Factory.create(:roll)
       @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
@@ -44,7 +44,7 @@ describe GT::RecommendationManager do
       Array.any_instance.should_receive(:shuffle!).and_call_original
 
       MongoMapper::Plugins::IdentityMap.clear
-      result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
+      result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 10)
       result_video_ids = result.map{|rec|rec[:recommended_video_id]}
       result_video_ids.length.should == @recommended_videos.length
       (result_video_ids - @recommended_videos.map { |v| v.id }).should == []
@@ -58,7 +58,7 @@ describe GT::RecommendationManager do
 
       it "should return all of the recommendations when there are no restricting limits" do
         MongoMapper::Plugins::IdentityMap.clear
-        result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
+        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 10)
         result.length.should == @recommended_videos.length
         result.should == @recommended_videos.each_with_index.map{|vid, i| {:recommended_video_id => vid.id, :src_frame_id => @src_frame_ids[i]}}
       end
@@ -68,7 +68,7 @@ describe GT::RecommendationManager do
         @viewed_roll.frames << @viewed_frame
 
         MongoMapper::Plugins::IdentityMap.clear
-        result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
+        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 10)
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
@@ -79,7 +79,7 @@ describe GT::RecommendationManager do
         @recommended_videos[0].available = false
         @recommended_videos[0].save
 
-        result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
+        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 10)
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
@@ -90,7 +90,7 @@ describe GT::RecommendationManager do
         @dbes[2].action = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
         @dbes[2].save
 
-        result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, 10, 10)
+        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 10)
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos.last.id, :src_frame_id => @src_frame_ids.last})
         result.should include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
@@ -98,7 +98,7 @@ describe GT::RecommendationManager do
 
       it "should return only one recommended video by default" do
         MongoMapper::Plugins::IdentityMap.clear
-        result = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user)
+        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user)
         result.should == [{:recommended_video_id => @dbes.first.video.recs.first.recommended_video_id, :src_frame_id => @dbes.first.frame_id}]
       end
 

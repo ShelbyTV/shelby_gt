@@ -491,19 +491,19 @@ describe 'v1/user' do
 
       it "should pass the right default parameters to the recommendation manager" do
         recs_array_double = double("recs_array", :each => nil, :count => 3, :+ => [])
-        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 10, 3, 100.0).and_return(recs_array_double)
+        GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@u1, 10, 3, 100.0).and_return(recs_array_double)
         GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 3).and_call_original
         get '/v1/user/'+@u1.id+'/recommendations'
       end
 
       it "should try to fill in more mortar recommendations if video graph recommendations are not found" do
-        GT::RecommendationManager.stub(:get_random_video_graph_recs_for_user).and_return([])
+        GT::RecommendationManager.stub(:get_video_graph_recs_for_user).and_return([])
         GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 6).and_call_original
         get '/v1/user/'+@u1.id+'/recommendations'
       end
 
       it "should pass the right parameters from the api request to the recommendation manager" do
-        GT::RecommendationManager.should_receive(:get_random_video_graph_recs_for_user).with(@u1, 20, 10, 80.0).and_return([])
+        GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@u1, 20, 10, 80.0).and_return([])
         get '/v1/user/'+@u1.id+'/recommendations?limit=10&min_score=80.0&scan_limit=20'
       end
 
