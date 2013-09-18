@@ -29,6 +29,13 @@ describe 'v1/token' do
             }.should_not change { User.count }
           end
 
+          it "should not login if intention is signup" do
+            lambda {
+              post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}&intention=signup"
+              response.body.should be_json_eql(403).at_path("status")
+            }.should_not change { User.count }
+          end
+
           it "should return user info w/ a new auth token on success (with email/password)" do
             lambda {
               post "/v1/token?email=#{@user.primary_email}&password=#{@user_password}"
@@ -58,28 +65,6 @@ describe 'v1/token' do
               post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}&auth_token=#{@current_user_via_token.authentication_token}"
               response.body.should be_json_eql(403).at_path("status")
             }.should_not change { User.count }
-          end
-          
-          it "should merge in a faux user (if different from current_user)" do
-            @user.user_type = User::USER_TYPE[:faux]
-            @user.save
-            @user.reload.user_type.should == User::USER_TYPE[:faux]
-            lambda {
-              post "/v1/token?provider_name=facebook&uid=#{@fb_auth.uid}&token=#{@fb_auth.oauth_token}&auth_token=#{@current_user_via_token.authentication_token}"
-
-              response.body.should be_json_eql(200).at_path("status")
-              #original user returned
-              parse_json(response.body)['result']['id'].should == @current_user_via_token.id.to_s
-              #with original auth
-              parse_json(response.body)['result']['authentications'][0]['provider'].should == "twitter"
-              #plus merged in twitter auth
-              parse_json(response.body)['result']['authentications'][1]['provider'].should == "twitter"
-              parse_json(response.body)['result']['authentications'][1]['uid'].should == @twt_auth.uid
-              #plus merged in facebook auth
-              parse_json(response.body)['result']['authentications'][2]['provider'].should == "facebook"
-              parse_json(response.body)['result']['authentications'][2]['uid'].should == @fb_auth.uid
-              #and merged in user is gone
-            }.should change { User.count } .by(-1)
           end
 
           it "should update token, secret if matched user is same as current_user" do
@@ -123,22 +108,70 @@ describe 'v1/token' do
           }
         end
 
-        it "should convert faux user to real if token/secret match" do
-          GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
+        context "there is no authenticated user" do
+          it "should convert faux user to real if token/secret match" do
+            GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
 
-          post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}"
-          response.body.should be_json_eql(200).at_path("status")
-          response.body.should have_json_path("result/authentication_token")
-          @fuser.reload.user_type.should == User::USER_TYPE[:converted]
+            post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}"
+            response.body.should be_json_eql(200).at_path("status")
+            response.body.should have_json_path("result/authentication_token")
+            @fuser.reload.user_type.should == User::USER_TYPE[:converted]
+          end
+
+          it "should not convert faux user to real if intention is login" do
+            GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
+
+            post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@twt_auth.oauth_token}&secret=#{@twt_auth.oauth_secret}&intention=login"
+            response.body.should be_json_eql(403).at_path("status")
+            @fuser.reload.user_type.should == User::USER_TYPE[:faux]
+          end
+
+          it "should not convert faux user if token/secret don't match" do
+            GT::UserManager.stub(:verify_user).and_return(false)
+
+            post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=BAD_TOKEN&secret=#{@twt_auth.oauth_secret}"
+            response.body.should be_json_eql(404).at_path("status")
+            response.body.should_not have_json_path("result/authentication_token")
+            @fuser.reload.user_type.should == User::USER_TYPE[:faux]
+          end
         end
 
-        it "should not convert faux user if token/secret don't match" do
-          GT::UserManager.stub(:verify_user).and_return(false)
+        context "there is an authenticated user via auth_token" do
+          before(:each) do
+            @current_user_via_token = Factory.create(:user)
+            @current_user_via_token.ensure_authentication_token!
+            @current_user_via_token.save
+          end
 
-          post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=BAD_TOKEN&secret=#{@twt_auth.oauth_secret}"
-          response.body.should be_json_eql(404).at_path("status")
-          response.body.should_not have_json_path("result/authentication_token")
-          @fuser.reload.user_type.should == User::USER_TYPE[:faux]
+          it "should merge in a faux user (if different from current_user)" do
+            @fuser.authentications[0].oauth_token = nil
+            @fuser.authentications[0].oauth_secret = nil
+            @fuser.authentications[1].oauth_token = nil
+            @fuser.authentications[1].oauth_secret = nil
+            @fuser.save(:validate => false)
+
+            fb_token = "new_fb-tokeno827u354"
+
+            lambda {
+              post "/v1/token?provider_name=facebook&uid=#{@fb_auth.uid}&token=#{fb_token}&auth_token=#{@current_user_via_token.authentication_token}"
+
+              response.body.should be_json_eql(200).at_path("status")
+              #original user returned
+              parse_json(response.body)['result']['id'].should == @current_user_via_token.id.to_s
+              #with original auth
+              parse_json(response.body)['result']['authentications'][0]['provider'].should == "twitter"
+              #plus merged in twitter auth
+              parse_json(response.body)['result']['authentications'][1]['provider'].should == "twitter"
+              parse_json(response.body)['result']['authentications'][1]['uid'].should == @twt_auth.uid
+              #plus merged in facebook auth
+              parse_json(response.body)['result']['authentications'][2]['provider'].should == "facebook"
+              parse_json(response.body)['result']['authentications'][2]['uid'].should == @fb_auth.uid
+              #and merged in user is gone
+            }.should change { User.count } .by(-1)
+
+            @current_user_via_token.authentications[2].oauth_token.should == fb_token
+          end
+
         end
       end
 
