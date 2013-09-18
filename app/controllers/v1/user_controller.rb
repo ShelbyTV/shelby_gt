@@ -35,7 +35,7 @@ class V1::UserController < ApplicationController
       case sessions_platform
       when "ios"
         current_user.increment(:ios_session_count => 1)
-      when "web"        
+      when "web"
         current_user.increment(:session_count => 1)
         ShelbyGT_EM.next_tick {
           StatsManager::GoogleAnalytics.track_nth_session(current_user, 1)
@@ -198,6 +198,10 @@ class V1::UserController < ApplicationController
         end
 
         had_completed_onboarding = (@user.app_progress? and @user.app_progress.onboarding? and @user.app_progress.onboarding.to_s == '4')
+        if params[:app_progress] and params[:app_progress][:onboarding]
+          params[:app_progress][:onboarding] = true if params[:app_progress][:onboarding] == "true"
+          params[:app_progress][:onboarding] = params[:app_progress][:onboarding].to_i if params[:app_progress][:onboarding] != "true"
+        end
 
         if @user.update_attributes(params)
           @status = 200
