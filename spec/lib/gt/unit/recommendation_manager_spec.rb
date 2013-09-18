@@ -325,8 +325,22 @@ describe GT::RecommendationManager do
       @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
     end
 
+    context "arguments" do
+      it "requires a user" do
+        expect { GT::RecommendationManager.get_mortar_recs_for_user(nil) }.to raise_error(ArgumentError)
+        expect { GT::RecommendationManager.get_mortar_recs_for_user(1) }.to raise_error(ArgumentError)
+      end
+
+      it "requires a limit greater than zero" do
+        expect { GT::RecommendationManager.get_mortar_recs_for_user(@user, nil) }.to raise_error(ArgumentError)
+        expect { GT::RecommendationManager.get_mortar_recs_for_user(@user, 0) }.to raise_error(ArgumentError)
+        expect { GT::RecommendationManager.get_mortar_recs_for_user(@user, -1) }.to raise_error(ArgumentError)
+      end
+    end
+
     it "should call MortarHarvester with the appropriate parameters" do
-      GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 50).twice
+      GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 50).ordered
+      GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 20 + 49).ordered
       Frame.should_not_receive(:where)
 
       GT::RecommendationManager.get_mortar_recs_for_user(@user)

@@ -172,66 +172,44 @@ module GT
 
     # Returns an array of recommended video ids and source video ids for a user based on the criteria supplied as params
     def self.get_mortar_recs_for_user(user, limit=1)
+      raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
+      raise ArgumentError, "must supply a limt > 0" unless limit.respond_to?(:to_i) && limit.to_i > 0
+
       # get more recs than the caller asked for because some of them might be eliminated and we want to
       # have the chance to still recommend something
-      recs = GT::MortarHarvester.get_recs_for_user(user, 50)
+      recs = GT::MortarHarvester.get_recs_for_user(user, limit + 49)
       if recs
         if recs.length > 0
           watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id.to_s}.compact.uniq : []
-          if limit
-            valid_recommendations = []
+          valid_recommendations = []
 
-            # process the recs and remove ones that we don't want to show the user because they
-            # are not available or because the user has already watched them
-            recs.each do |rec|
-              # check if the user has already watched the video
-              if !watched_video_ids.include? rec["item_id"]
-                # check if the video is still available at the provider
-                vid = Video.find(rec["item_id"])
-                if vid
-                  # if we think the video is available, re-check the provider to
-                  # make sure it is
-                  # OPTIMIZATION: if we previously thought the video was unavailable,
-                  # we won't check if it's become available again;we need a perpetually
-                  # running Video Doctor to take care of that or we need a more efficient
-                  # idea for how to deal with it here
-                  if vid.available
-                    GT::VideoManager.update_video_info(vid)
-                    valid_recommendations << rec if vid.available
-                    break if valid_recommendations.count == limit
-                  end
+          # process the recs and remove ones that we don't want to show the user because they
+          # are not available or because the user has already watched them
+          recs.each do |rec|
+            # check if the user has already watched the video
+            if !watched_video_ids.include? rec["item_id"]
+              # check if the video is still available at the provider
+              vid = Video.find(rec["item_id"])
+              if vid
+                # if we think the video is available, re-check the provider to
+                # make sure it is
+                # OPTIMIZATION: if we previously thought the video was unavailable,
+                # we won't check if it's become available again;we need a perpetually
+                # running Video Doctor to take care of that or we need a more efficient
+                # idea for how to deal with it here
+                if vid.available
+                  GT::VideoManager.update_video_info(vid)
+                  valid_recommendations << rec if vid.available
+                  break if valid_recommendations.count == limit
                 end
               end
             end
-
-            recs = valid_recommendations
-          else
-            # when there's no limit parameter we can't optimize to quit checking once we know we have
-            # enough recommendations because there is no concept of "enough"
-            recs.reject!{|rec| watched_video_ids.include? rec["item_id"]}
           end
+
+          recs = valid_recommendations
         end
 
-        if limit
-          recs.slice!(limit..-1)
-        else
-          # when there's no limit parameter we can't optimize to quit checking once we know we have
-          # enough recommendations because there is no concept of "enough"
-
-          # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
-          # but we may be calling out to provider APIs for each video here if we don't have the video info recently updated
-          recs.select! do |rec|
-            vid = Video.find(rec["item_id"])
-            if vid
-              # OPTIMIZATION: if we previously thought the video was unavailable,
-              # we won't check if it's become available again;we need a perpetually
-              # running Video Doctor to take care of that or we need a more efficient
-              # idea for how to deal with it here
-              GT::VideoManager.update_video_info(vid) if vid.available
-              vid.available
-            end
-          end
-        end
+        recs.slice!(limit..-1)
 
         recs.map! do |rec|
           {
