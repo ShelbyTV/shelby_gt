@@ -323,6 +323,7 @@ describe GT::RecommendationManager do
     before(:each) do
       @viewed_roll = Factory.create(:roll)
       @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
+      GT::RecommendationManager.stub(:filter_recs).and_return([])
     end
 
     context "arguments" do
@@ -341,33 +342,91 @@ describe GT::RecommendationManager do
     it "should call MortarHarvester with the appropriate parameters" do
       GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 50).ordered
       GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 20 + 49).ordered
-      Frame.should_not_receive(:where)
 
       GT::RecommendationManager.get_mortar_recs_for_user(@user)
       GT::RecommendationManager.get_mortar_recs_for_user(@user, 20)
     end
 
-    it "should return an empty array if the request to Mortar fails" do
+    it "should return an empty array if the request to Mortar doesn't return any recs" do
       GT::MortarHarvester.stub(:get_recs_for_user).and_return(nil)
-      Frame.should_not_receive(:where)
+      GT::RecommendationManager.should_not_receive(:filter_recs)
+
+      GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+    end
+
+    it "should return an empty array if the request to Mortar fails" do
+      GT::MortarHarvester.stub(:get_recs_for_user).and_return([])
+      GT::RecommendationManager.should_not_receive(:filter_recs)
 
       GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
     end
 
     context "recommendations found and returned" do
       before(:each) do
-        @recommended_video = Factory.create(:video)
-        @reason_video = Factory.create(:video)
-        @recommended_video2 = Factory.create(:video)
-        @reason_video2 = Factory.create(:video)
-        @recommended_video3 = Factory.create(:video)
-        @reason_video3 = Factory.create(:video)
-        Video.stub(:find).and_return(@recommended_video, @recommended_video2, @recommended_video3)
-        GT::MortarHarvester.stub(:get_recs_for_user).and_return([
-          {"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
-          {"item_id" => @recommended_video2.id.to_s, "reason_id" => @reason_video2.id.to_s},
-          {"item_id" => @recommended_video3.id.to_s, "reason_id" => @reason_video3.id.to_s},
-        ])
+        @recommended_videos = [Factory.create(:video), Factory.create(:video), Factory.create(:video)]
+        @reason_videos = [Factory.create(:video), Factory.create(:video), Factory.create(:video)]
+
+        @mortar_recs = [
+          {"item_id" => @recommended_videos[0].id.to_s, "reason_id" => @reason_videos[0].id.to_s},
+          {"item_id" => @recommended_videos[1].id.to_s, "reason_id" => @reason_videos[1].id.to_s},
+          {"item_id" => @recommended_videos[2].id.to_s, "reason_id" => @reason_videos[2].id.to_s},
+        ]
+        GT::MortarHarvester.stub(:get_recs_for_user).and_return(@mortar_recs)
+      end
+
+      it "should map the key names correctly" do
+        GT::RecommendationManager.should_receive(:filter_recs).and_return(@mortar_recs)
+        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+          [{
+            :recommended_video_id => @recommended_videos[0].id,
+            :src_id => @reason_videos[0].id,
+            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          }]
+      end
+
+      it "should filter the recs" do
+        GT::RecommendationManager.should_receive(:filter_recs).with(
+          @user,
+          @mortar_recs,
+          {:limit => 1, :recommended_video_key => "item_id"}
+        ).ordered.and_return([])
+
+        GT::RecommendationManager.should_receive(:filter_recs).with(
+          @user,
+          @mortar_recs,
+          {:limit => 2, :recommended_video_key => "item_id"}
+        ).ordered.and_return([])
+
+        GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+        GT::RecommendationManager.get_mortar_recs_for_user(@user, 2).should == []
+      end
+
+    end
+  end
+
+  context "filter_recs" do
+    before(:each) do
+      @viewed_roll = Factory.create(:roll)
+      @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
+
+      Frame.stub_chain(:where, :fields, :limit, :all).and_return([])
+    end
+
+    context "arguments" do
+      it "should require a limit greater than zero or nil" do
+        expect { GT::RecommendationManager.filter_recs(@user, [], { :limit => 0 }) }.to raise_error(ArgumentError)
+        expect { GT::RecommendationManager.filter_recs(@user, [], { :limit => -1 }) }.to raise_error(ArgumentError)
+
+        expect { GT::RecommendationManager.filter_recs(@user, [], { :limit => 1 }) }.not_to raise_error
+        expect { GT::RecommendationManager.filter_recs(@user, [], { :limit => nil }) }.not_to raise_error
+        expect { GT::RecommendationManager.filter_recs(@user, []) }.not_to raise_error
+      end
+    end
+
+    context "recommendations passed in" do
+      before(:each) do
+        @recommended_videos = [Factory.create(:video), Factory.create(:video), Factory.create(:video)]
+        @recommendations = @recommended_videos.map {|vid| { :recommended_video_id => vid.id.to_s }}
 
         @frame_query = double("frame_query")
         @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([])
@@ -375,83 +434,85 @@ describe GT::RecommendationManager do
         Frame.should_receive(:where).with(:roll_id => @viewed_roll.id).exactly(1).times.and_return(@frame_query)
       end
 
+      context "return all recs" do
+        before(:each) do
+          Video.should_receive(:find).with(@recommended_videos[0].id.to_s).ordered.and_return(@recommended_videos[0])
+          Video.should_receive(:find).with(@recommended_videos[1].id.to_s).ordered.and_return(@recommended_videos[1])
+          Video.should_receive(:find).with(@recommended_videos[2].id.to_s).ordered.and_return(@recommended_videos[2])
+        end
 
-      it "should map the key names correctly" do
-        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
-          [{
-            :recommended_video_id => @recommended_video.id,
-            :src_id => @reason_video.id,
-            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-          }]
+        it "should work without a limit" do
+          GT::RecommendationManager.filter_recs(@user, @recommendations).should == @recommendations
+        end
+
+        it "should work when limit is large enough" do
+          GT::RecommendationManager.filter_recs(@user, @recommendations, { :limit => 3}).should == @recommendations
+        end
+
+        it "should work when limit is bigger than the number of available recs" do
+          GT::RecommendationManager.filter_recs(@user, @recommendations, { :limit => 4}).should == @recommendations
+        end
+
+        it "should work when the video key is not the default" do
+          @recommendations = @recommended_videos.map {|vid| { "rec_id" => vid.id.to_s }}
+          GT::RecommendationManager.filter_recs(@user, @recommendations, { :limit => 3, :recommended_video_key => "rec_id"}).should == @recommendations
+        end
+      end
+
+      it "should quit processing after it reaches the limit" do
+        Video.should_receive(:find).twice().and_return(@recommended_videos[0], @recommended_videos[1])
+        GT::RecommendationManager.filter_recs(@user, @recommendations, { :limit => 2}).should == [
+          @recommendations[0],
+          @recommendations[1]
+        ]
       end
 
       it "should skip videos whose ids are not in the Shelby DB" do
-        Video.should_receive(:find).twice().and_return(nil, @recommended_video2)
-        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video2).once()
-        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_video)
+        Video.should_receive(:find).twice().and_return(nil, @recommended_videos[1])
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[1]).once()
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[0])
 
-        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
-          [{
-            :recommended_video_id => @recommended_video2.id,
-            :src_id => @reason_video2.id,
-            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-          }]
+        GT::RecommendationManager.filter_recs(@user, @recommendations, {:limit => 1}).should == [
+          @recommendations[1]
+        ]
       end
 
       it "should skip videos the user has already watched" do
-        @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_video.id.to_s])
-        Video.should_receive(:find).once().and_return(@recommended_video2)
-        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video2).once()
-        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_video)
+        @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_videos[0].id.to_s])
+        Video.should_receive(:find).once().and_return(@recommended_videos[1])
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[1])
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[0])
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[2])
 
-        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
-          [{
-            :recommended_video_id => @recommended_video2.id,
-            :src_id => @reason_video2.id,
-            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-          }]
-      end
-
-      it "should still only load the viewed videos once when multiple recommended videos are processed" do
-        Video.should_receive(:find).twice().and_return(@recommended_video, @recommended_video2)
-
-        GT::RecommendationManager.get_mortar_recs_for_user(@user,2).length.should == 2
+        GT::RecommendationManager.filter_recs(@user, @recommendations, {:limit => 1}).should == [
+          @recommendations[1]
+        ]
       end
 
       it "should skip videos that are known to be no longer available at the provider" do
-        @recommended_video.available = false
-        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video2).once()
-        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_video)
-        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_video3)
+        @recommended_videos[0].available = false
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[1])
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[0])
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[2])
 
-        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
-          [{
-            :recommended_video_id => @recommended_video2.id,
-            :src_id => @reason_video2.id,
-            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-          }]
+        GT::RecommendationManager.filter_recs(@user, @recommendations, {:limit => 1}).should == [
+          @recommendations[1]
+        ]
       end
 
       it "should skip videos that are no longer available at the provider after re-checking" do
-        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video) {
-          @recommended_video.available = false
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[0]) {
+          @recommended_videos[0].available = false
           nil
         }
-        GT::VideoManager.should_receive(:update_video_info).with(@recommended_video2).once()
-        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_video3)
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[1])
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[2])
 
-        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
-          [{
-            :recommended_video_id => @recommended_video2.id,
-            :src_id => @reason_video2.id,
-            :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-          }]
+        GT::RecommendationManager.filter_recs(@user, @recommendations, {:limit => 1}).should == [
+          @recommendations[1]
+        ]
       end
-
-
     end
-
-
 
   end
 

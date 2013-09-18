@@ -173,44 +173,14 @@ module GT
     # Returns an array of recommended video ids and source video ids for a user based on the criteria supplied as params
     def self.get_mortar_recs_for_user(user, limit=1)
       raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
-      raise ArgumentError, "must supply a limt > 0" unless limit.respond_to?(:to_i) && limit.to_i > 0
+      raise ArgumentError, "must supply a limit > 0" unless limit.respond_to?(:to_i) && ((limit = limit.to_i) > 0)
 
       # get more recs than the caller asked for because some of them might be eliminated and we want to
       # have the chance to still recommend something
       recs = GT::MortarHarvester.get_recs_for_user(user, limit + 49)
-      if recs
-        if recs.length > 0
-          watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id.to_s}.compact.uniq : []
-          valid_recommendations = []
-
-          # process the recs and remove ones that we don't want to show the user because they
-          # are not available or because the user has already watched them
-          recs.each do |rec|
-            # check if the user has already watched the video
-            if !watched_video_ids.include? rec["item_id"]
-              # check if the video is still available at the provider
-              vid = Video.find(rec["item_id"])
-              if vid
-                # if we think the video is available, re-check the provider to
-                # make sure it is
-                # OPTIMIZATION: if we previously thought the video was unavailable,
-                # we won't check if it's become available again;we need a perpetually
-                # running Video Doctor to take care of that or we need a more efficient
-                # idea for how to deal with it here
-                if vid.available
-                  GT::VideoManager.update_video_info(vid)
-                  valid_recommendations << rec if vid.available
-                  break if valid_recommendations.count == limit
-                end
-              end
-            end
-          end
-
-          recs = valid_recommendations
-        end
-
+      if recs && recs.length > 0
+        recs = self.filter_recs(user, recs, {:limit => limit, :recommended_video_key => "item_id"})
         recs.slice!(limit..-1)
-
         recs.map! do |rec|
           {
             :recommended_video_id => BSON::ObjectId.from_string(rec["item_id"]),
@@ -221,6 +191,66 @@ module GT
       else
         []
       end
+    end
+
+  private
+
+    # Return the passed in array of recs with recs removed that have already been watched by the user
+    # or are no longer available at the provider
+    #
+    # --params--
+    #
+    # recs => Array -- each entry in the array is a hash where one of its keys holds the id of a video to recommend
+    #   by default, we'll look for that video id at [:recommended_video_id], unless options[:recommended_video_key]
+    #   specifies otherwise (see below
+    #
+    # --options--
+    #
+    # :limit => Integer --- OPTIONAL if an integer greater than zero is passed, will return an array of
+    #   recs of length limit as soon as that many are found
+    # :recommended_video_key => String or Symbol --- OPTIONAL the key on the hash
+    def self.filter_recs(user, recs, options={})
+
+      defaults = {
+        :limit => nil,
+        :recommended_video_key => :recommended_video_id
+      }
+
+      options = defaults.merge(options)
+
+      limit = options.delete(:limit)
+
+      raise ArgumentError, "must supply a limit > 0 or nil" unless limit.nil? || (limit.respond_to?(:to_i) && ((limit = limit.to_i) > 0))
+
+      watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id.to_s}.compact.uniq : []
+      valid_recommendations = []
+
+      # process the recs and remove ones that we don't want to show the user because they
+      # are not available or because the user has already watched them
+      recs.each do |rec|
+        # check if the user has already watched the video
+        if !watched_video_ids.include? rec[options[:recommended_video_key]]
+          # check if the video is still available at the provider
+          vid = Video.find(rec[options[:recommended_video_key]])
+          if vid
+            # if we think the video is available, re-check the provider to
+            # make sure it is
+            # OPTIMIZATION: if we previously thought the video was unavailable,
+            # we won't check if it's become available again;we need a perpetually
+            # running Video Doctor to take care of that or we need a more efficient
+            # idea for how to deal with it here
+            if vid.available
+              GT::VideoManager.update_video_info(vid)
+              valid_recommendations << rec if vid.available
+              # if there's a limited number of recommendations that we need and we've hit it, quit
+              break if valid_recommendations.count == limit
+            end
+          end
+        end
+      end
+
+      return valid_recommendations
+
     end
 
   end
