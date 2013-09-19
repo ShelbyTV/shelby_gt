@@ -170,7 +170,7 @@ module GT
       return recs
     end
 
-    # Returns an array of recommended video ids and source video ids for a user based on the criteria supplied as params
+    # Returns an array of recommended video ids and source video ids for a user from our Mortar recommendation engine
     def self.get_mortar_recs_for_user(user, limit=1)
       raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
       raise ArgumentError, "must supply a limit > 0" unless limit.respond_to?(:to_i) && ((limit = limit.to_i) > 0)
@@ -180,7 +180,6 @@ module GT
       recs = GT::MortarHarvester.get_recs_for_user(user, limit + 49)
       if recs && recs.length > 0
         recs = self.filter_recs(user, recs, {:limit => limit, :recommended_video_key => "item_id"})
-        recs.slice!(limit..-1)
         recs.map! do |rec|
           {
             :recommended_video_id => BSON::ObjectId.from_string(rec["item_id"]),
@@ -191,6 +190,34 @@ module GT
       else
         []
       end
+    end
+
+    # Returns an array of recommended video ids for a user from another user's channel/dashboard
+    def self.get_channel_recs_for_user(user, channel_user_id, limit=1)
+      raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
+      unless channel_user_id.is_a?(BSON::ObjectId)
+        channel_user_id_string = channel_user_id.to_s
+        if BSON::ObjectId.legal?(channel_user_id_string)
+          channel_user_id = BSON::ObjectId.from_string(channel_user_id_string)
+        else
+          raise ArgumentError, "must supply a valid channel user id"
+        end
+      end
+      raise ArgumentError, "must supply a limit > 0" unless limit.respond_to?(:to_i) && ((limit = limit.to_i) > 0)
+
+      # get more recs than the caller asked for because some of them might be eliminated and we want to
+      # have the chance to still recommend something
+      recs = DashboardEntry.where(:user_id => channel_user_id).order(:_id.desc).limit(limit + 49).fields(:video_id, :frame_id).all
+      recs = self.filter_recs(user, recs, {:limit => limit, :recommended_video_key => "video_id"})
+      recs.map! do |rec|
+        {
+          :recommended_video_id => rec.video_id,
+          :src_id => rec.frame_id,
+          :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+        }
+      end
+
+      return recs
     end
 
   private
@@ -229,7 +256,7 @@ module GT
       # are not available or because the user has already watched them
       recs.each do |rec|
         # check if the user has already watched the video
-        if !watched_video_ids.include? rec[options[:recommended_video_key]]
+        if !watched_video_ids.include? rec[options[:recommended_video_key]].to_s
           # check if the video is still available at the provider
           vid = Video.find(rec[options[:recommended_video_key]])
           if vid

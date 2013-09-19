@@ -317,6 +317,54 @@ describe GT::RecommendationManager do
 
   end
 
+  context "get_channel_recs_for_user" do
+    before(:each) do
+      @viewed_roll = Factory.create(:roll)
+      @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
+      @channel_user = Factory.create(:user)
+
+      @dbes = []
+      @videos = []
+      @frames = []
+      3.times do
+        video = Factory.create(:video)
+        @videos.unshift video
+        frame = Factory.create(:frame, :video_id => video.id)
+        @frames.unshift frame
+        @dbes.unshift Factory.create(:dashboard_entry, :user_id => @channel_user.id, :frame_id => frame.id, :video_id => video.id)
+      end
+    end
+
+    it "should return the recommended videos" do
+      GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).length.should == 1
+    end
+
+    it "should skip videos the user has already watched" do
+      @viewed_frame = Factory.create(:frame, :video_id => @videos[0].id, :creator => @user)
+      @viewed_roll.frames << @viewed_frame
+
+      GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).should ==
+        [{
+          :recommended_video_id => @videos[1].id,
+          :src_id => @frames[1].id,
+          :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+        }]
+    end
+
+    it "should skip videos that are no longer available at the provider" do
+      @videos[0].available = false
+      @videos[0].save
+
+      GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).should ==
+        [{
+          :recommended_video_id => @videos[1].id,
+          :src_id => @frames[1].id,
+          :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+        }]
+    end
+
+  end
+
   context "filter_recs" do
     before(:each) do
       @viewed_roll = Factory.create(:roll)
