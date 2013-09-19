@@ -31,8 +31,10 @@ class V1::RecommendationController < ApplicationController
       num_mortar_recommendations = 3 + (limit - video_graph_recommendations.count)
       mortar_recommendations = GT::RecommendationManager.get_mortar_recs_for_user(@user, num_mortar_recommendations)
 
+      channel_recommendations = GT::RecommendationManager.get_channel_recs_for_user(@user, Settings::Channels.community_channel_user_id, 3)
+
       @results = []
-      recs = video_graph_recommendations + mortar_recommendations
+      recs = video_graph_recommendations + mortar_recommendations + channel_recommendations
       # wrap the recommended videos in 'phantom' frames and dbentries that are not persisted to the db
       recs.each do |rec|
         res = GT::RecommendationManager.create_recommendation_dbentry(

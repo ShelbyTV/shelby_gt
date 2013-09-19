@@ -479,6 +479,8 @@ describe 'v1/user' do
     describe "GET recommendations" do
       before(:each) do
         GT::MortarHarvester.stub(:get_recs_for_user).and_return([])
+        @community_channel_user = Factory.create(:user)
+        Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
       end
 
       it "should return user recommendations on success" do
@@ -492,13 +494,15 @@ describe 'v1/user' do
       it "should pass the right default parameters to the recommendation manager" do
         recs_array_double = double("recs_array", :each => nil, :count => 3, :+ => [])
         GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@u1, 10, 3, 100.0).and_return(recs_array_double)
-        GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 3).and_call_original
+        GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 3).and_return([])
+        GT::RecommendationManager.should_receive(:get_channel_recs_for_user).with(@u1, @community_channel_user.id.to_s, 3).and_return([])
         get '/v1/user/'+@u1.id+'/recommendations'
       end
 
       it "should try to fill in more mortar recommendations if video graph recommendations are not found" do
         GT::RecommendationManager.stub(:get_video_graph_recs_for_user).and_return([])
-        GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 6).and_call_original
+        GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 6).and_return([])
+        GT::RecommendationManager.should_receive(:get_channel_recs_for_user).with(@u1, @community_channel_user.id.to_s, 3).and_return([])
         get '/v1/user/'+@u1.id+'/recommendations'
       end
 
@@ -573,6 +577,23 @@ describe 'v1/user' do
           end
 
           GT::MortarHarvester.stub(:get_recs_for_user).and_return(mortar_response)
+
+          #create some channel recs
+          @community_channel_dbes = []
+          @channel_recommended_vids = []
+          @community_channel_frames = []
+          @featured_curator = Factory.create(:user)
+          @conversation = Factory.create(:conversation)
+          @message = Factory.create(:message, :text => "Some interesting text", :user_id => @featured_curator.id)
+          @conversation.messages << @message
+          @conversation.save
+          3.times do
+            video = Factory.create(:video)
+            @channel_recommended_vids.unshift video
+            frame = Factory.create(:frame, :creator_id => @featured_curator.id, :video_id => video.id, :conversation_id => @conversation.id)
+            @community_channel_frames.unshift frame
+            @community_channel_dbes.unshift Factory.create(:dashboard_entry, :user_id => @community_channel_user.id, :frame_id => frame.id, :video_id => video.id)
+          end
         end
 
         it "should return the right number of results" do
@@ -581,7 +602,7 @@ describe 'v1/user' do
 
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result")
-          response.body.should have_json_size(6).at_path("result")
+          response.body.should have_json_size(9).at_path("result")
         end
 
         it "should return the right attributes and contents for a video graph recommendation" do
@@ -647,6 +668,51 @@ describe 'v1/user' do
 
           parsed_response["result"][5]["src_video"]["id"].should eq(@src_vids.last.id.to_s)
           parsed_response["result"][5]["src_video"]["title"].should eq(@src_vids.last.title)
+        end
+
+        it "should return the right attributes and contents for a channel recommendation" do
+          MongoMapper::Plugins::IdentityMap.clear
+          get '/v1/user/'+@u1.id+'/recommendations'
+
+          response.body.should have_json_path("result/6/id")
+          response.body.should have_json_path("result/6/user_id")
+          response.body.should have_json_path("result/6/action")
+          response.body.should have_json_path("result/6/actor_id")
+
+          response.body.should have_json_path("result/6/frame")
+          response.body.should have_json_path("result/6/frame/video")
+
+          response.body.should have_json_path("result/6/src_frame")
+          response.body.should have_json_path("result/6/src_frame/id")
+          response.body.should have_json_path("result/6/src_frame/creator_id")
+          response.body.should have_json_path("result/6/src_frame/creator")
+          response.body.should have_json_path("result/6/src_frame/creator/id")
+          response.body.should have_json_path("result/6/src_frame/creator/nickname")
+          response.body.should have_json_path("result/6/src_frame/creator/name")
+
+          response.body.should have_json_path("result/6/src_frame/conversation")
+          response.body.should have_json_path("result/6/src_frame/conversation/messages")
+          response.body.should have_json_size(1).at_path("result/6/src_frame/conversation/messages")
+          response.body.should have_json_path("result/6/src_frame/conversation/messages/0")
+          response.body.should have_json_path("result/6/src_frame/conversation/messages/0/text")
+
+          parsed_response = parse_json(response.body)
+
+          parsed_response["result"][6]["user_id"].should eq(@u1.id.to_s)
+          parsed_response["result"][6]["action"].should eq(DashboardEntry::ENTRY_TYPE[:channel_recommendation])
+          parsed_response["result"][6]["actor_id"].should eq(nil)
+
+          parsed_response["result"][6]["frame"]["video"]["id"].should eq(@channel_recommended_vids[0].id.to_s)
+          parsed_response["result"][6]["frame"]["video"]["provider_name"].should eq(@channel_recommended_vids[0].provider_name)
+          parsed_response["result"][6]["frame"]["video"]["provider_id"].should eq(@channel_recommended_vids[0].provider_id)
+
+          parsed_response["result"][6]["src_frame"]["id"].should eq(@community_channel_frames[0].id.to_s)
+          parsed_response["result"][6]["src_frame"]["creator_id"].should eq(@featured_curator.id.to_s)
+          parsed_response["result"][6]["src_frame"]["creator"]["id"].should eq(@featured_curator.id.to_s)
+          parsed_response["result"][6]["src_frame"]["creator"]["nickname"].should eq(@featured_curator.nickname)
+          parsed_response["result"][6]["src_frame"]["creator"]["name"].should eq(@featured_curator.name)
+
+          parsed_response["result"][6]["src_frame"]["conversation"]["messages"][0]["text"].should eq(@message.text)
         end
 
         it "should not persist any new dashboard entries, frames, or conversations to the database" do

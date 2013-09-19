@@ -273,6 +273,28 @@ describe GT::RecommendationManager do
       )
     end
 
+    it "should create a db entry for a channel recommendation with the corresponding video, action, and src_frame" do
+      src_frame = Factory.create(:frame)
+      GT::Framer.should_receive(:create_frame).with({
+        :video_id => @rec_vid.id,
+        :dashboard_user_id => @user.id,
+        :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation],
+        :persist => true,
+        :dashboard_entry_options => {
+          :src_frame_id => src_frame.id
+        }
+      })
+
+      GT::RecommendationManager.create_recommendation_dbentry(
+        @user,
+        @rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:channel_recommendation],
+        {
+          :src_id => src_frame.id
+        }
+      )
+    end
+
     it "should pass through the persist option to the framer" do
       src_frame = Factory.create(:frame)
       GT::Framer.should_receive(:create_frame).with({

@@ -93,6 +93,8 @@ module GT
       case dbe_action
       when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
         framer_options[:dashboard_entry_options] = {:src_frame_id => options[:src_id]}
+      when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+        framer_options[:dashboard_entry_options] = {:src_frame_id => options[:src_id]}
       when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
         framer_options[:dashboard_entry_options] = {:src_video_id => options[:src_id]}
       else
