@@ -519,25 +519,42 @@ describe 'v1/user' do
         response.body.should have_json_size(0).at_path("result")
       end
 
+      context "sources parameter" do
+        it "should use video graph and mortar as sources by deafault" do
+          GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).and_return([])
+          GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).and_return([])
+          GT::RecommendationManager.should_not_receive(:get_channel_recs_for_user)
+          get '/v1/user/'+@u1.id+'/recommendations'
+        end
+
+        it "should parse the source entries and get the recommendations for the corresponding sources, ignoring invalid entries" do
+          GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).and_return([])
+          GT::RecommendationManager.should_receive(:get_channel_recs_for_user).and_return([])
+          GT::RecommendationManager.should_not_receive(:get_mortar_recs_for_user)
+          expect { get '/v1/user/'+@u1.id+'/recommendations?sources=0,31,,,fred,!,34'}.not_to raise_error
+        end
+      end
+
       it "should pass the right default parameters to the recommendation manager" do
-        recs_array_double = double("recs_array", :each => nil, :count => 3, :+ => [])
-        GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@u1, 10, 3, 100.0).and_return(recs_array_double)
+        GT::RecommendationManager.stub(:create_recommendation_dbentry).and_return({})
+        GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@u1, 10, 3, 100.0).and_return([{}, {}, {}])
         GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 3).and_return([])
         GT::RecommendationManager.should_receive(:get_channel_recs_for_user).with(@u1, @community_channel_user.id.to_s, 3).and_return([])
-        get '/v1/user/'+@u1.id+'/recommendations'
+        get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
       end
 
       it "should try to fill in more mortar recommendations if video graph recommendations are not found" do
         GT::RecommendationManager.stub(:get_video_graph_recs_for_user).and_return([])
         GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 6).and_return([])
         GT::RecommendationManager.should_receive(:get_channel_recs_for_user).with(@u1, @community_channel_user.id.to_s, 3).and_return([])
-        get '/v1/user/'+@u1.id+'/recommendations'
+        get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
       end
 
       it "should pass the right parameters from the api request to the recommendation manager" do
         GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@u1, 20, 10, 80.0).and_return([])
-        get '/v1/user/'+@u1.id+'/recommendations?limit=10&min_score=80.0&scan_limit=20'
+        get '/v1/user/'+@u1.id+'/recommendations?limit=10&min_score=80.0&scan_limit=20&sources=31'
       end
+
 
 
       context "other user" do
@@ -626,7 +643,7 @@ describe 'v1/user' do
 
         it "should return the right number of results" do
           MongoMapper::Plugins::IdentityMap.clear
-          get '/v1/user/'+@u1.id+'/recommendations'
+          get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
 
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result")
@@ -635,7 +652,7 @@ describe 'v1/user' do
 
         it "should return the right attributes and contents for a video graph recommendation" do
           MongoMapper::Plugins::IdentityMap.clear
-          get '/v1/user/'+@u1.id+'/recommendations'
+          get '/v1/user/'+@u1.id+'/recommendations?sources=31'
 
           response.body.should have_json_path("result/0/id")
           response.body.should have_json_path("result/0/user_id")
@@ -670,77 +687,77 @@ describe 'v1/user' do
 
         it "should return the right attributes and contents for a mortar recommendation" do
           MongoMapper::Plugins::IdentityMap.clear
-          get '/v1/user/'+@u1.id+'/recommendations'
+          get '/v1/user/'+@u1.id+'/recommendations?sources=33'
 
-          response.body.should have_json_path("result/5/id")
-          response.body.should have_json_path("result/5/user_id")
-          response.body.should have_json_path("result/5/action")
-          response.body.should have_json_path("result/5/actor_id")
+          response.body.should have_json_path("result/2/id")
+          response.body.should have_json_path("result/2/user_id")
+          response.body.should have_json_path("result/2/action")
+          response.body.should have_json_path("result/2/actor_id")
 
-          response.body.should have_json_path("result/5/frame")
-          response.body.should have_json_path("result/5/frame/video")
+          response.body.should have_json_path("result/2/frame")
+          response.body.should have_json_path("result/2/frame/video")
 
-          response.body.should have_json_path("result/5/src_video")
-          response.body.should have_json_path("result/5/src_video/id")
-          response.body.should have_json_path("result/5/src_video/title")
+          response.body.should have_json_path("result/2/src_video")
+          response.body.should have_json_path("result/2/src_video/id")
+          response.body.should have_json_path("result/2/src_video/title")
 
           parsed_response = parse_json(response.body)
 
-          parsed_response["result"][5]["user_id"].should eq(@u1.id.to_s)
-          parsed_response["result"][5]["action"].should eq(DashboardEntry::ENTRY_TYPE[:mortar_recommendation])
-          parsed_response["result"][5]["actor_id"].should eq(nil)
+          parsed_response["result"][2]["user_id"].should eq(@u1.id.to_s)
+          parsed_response["result"][2]["action"].should eq(DashboardEntry::ENTRY_TYPE[:mortar_recommendation])
+          parsed_response["result"][2]["actor_id"].should eq(nil)
 
-          parsed_response["result"][5]["frame"]["video"]["id"].should eq(@mortar_recommended_vids.last.id.to_s)
-          parsed_response["result"][5]["frame"]["video"]["provider_name"].should eq(@mortar_recommended_vids.last.provider_name)
-          parsed_response["result"][5]["frame"]["video"]["provider_id"].should eq(@mortar_recommended_vids.last.provider_id)
+          parsed_response["result"][2]["frame"]["video"]["id"].should eq(@mortar_recommended_vids.last.id.to_s)
+          parsed_response["result"][2]["frame"]["video"]["provider_name"].should eq(@mortar_recommended_vids.last.provider_name)
+          parsed_response["result"][2]["frame"]["video"]["provider_id"].should eq(@mortar_recommended_vids.last.provider_id)
 
-          parsed_response["result"][5]["src_video"]["id"].should eq(@src_vids.last.id.to_s)
-          parsed_response["result"][5]["src_video"]["title"].should eq(@src_vids.last.title)
+          parsed_response["result"][2]["src_video"]["id"].should eq(@src_vids.last.id.to_s)
+          parsed_response["result"][2]["src_video"]["title"].should eq(@src_vids.last.title)
         end
 
         it "should return the right attributes and contents for a channel recommendation" do
           MongoMapper::Plugins::IdentityMap.clear
-          get '/v1/user/'+@u1.id+'/recommendations'
+          get '/v1/user/'+@u1.id+'/recommendations?sources=34'
 
-          response.body.should have_json_path("result/6/id")
-          response.body.should have_json_path("result/6/user_id")
-          response.body.should have_json_path("result/6/action")
-          response.body.should have_json_path("result/6/actor_id")
+          response.body.should have_json_path("result/0/id")
+          response.body.should have_json_path("result/0/user_id")
+          response.body.should have_json_path("result/0/action")
+          response.body.should have_json_path("result/0/actor_id")
 
-          response.body.should have_json_path("result/6/frame")
-          response.body.should have_json_path("result/6/frame/video")
+          response.body.should have_json_path("result/0/frame")
+          response.body.should have_json_path("result/0/frame/video")
 
-          response.body.should have_json_path("result/6/src_frame")
-          response.body.should have_json_path("result/6/src_frame/id")
-          response.body.should have_json_path("result/6/src_frame/creator_id")
-          response.body.should have_json_path("result/6/src_frame/creator")
-          response.body.should have_json_path("result/6/src_frame/creator/id")
-          response.body.should have_json_path("result/6/src_frame/creator/nickname")
-          response.body.should have_json_path("result/6/src_frame/creator/name")
+          response.body.should have_json_path("result/0/src_frame")
+          response.body.should have_json_path("result/0/src_frame/id")
+          response.body.should have_json_path("result/0/src_frame/creator_id")
+          response.body.should have_json_path("result/0/src_frame/creator")
+          response.body.should have_json_path("result/0/src_frame/creator/id")
+          response.body.should have_json_path("result/0/src_frame/creator/nickname")
+          response.body.should have_json_path("result/0/src_frame/creator/name")
 
-          response.body.should have_json_path("result/6/src_frame/conversation")
-          response.body.should have_json_path("result/6/src_frame/conversation/messages")
-          response.body.should have_json_size(1).at_path("result/6/src_frame/conversation/messages")
-          response.body.should have_json_path("result/6/src_frame/conversation/messages/0")
-          response.body.should have_json_path("result/6/src_frame/conversation/messages/0/text")
+          response.body.should have_json_path("result/0/src_frame/conversation")
+          response.body.should have_json_path("result/0/src_frame/conversation/messages")
+          response.body.should have_json_size(1).at_path("result/0/src_frame/conversation/messages")
+          response.body.should have_json_path("result/0/src_frame/conversation/messages/0")
+          response.body.should have_json_path("result/0/src_frame/conversation/messages/0/text")
 
           parsed_response = parse_json(response.body)
 
-          parsed_response["result"][6]["user_id"].should eq(@u1.id.to_s)
-          parsed_response["result"][6]["action"].should eq(DashboardEntry::ENTRY_TYPE[:channel_recommendation])
-          parsed_response["result"][6]["actor_id"].should eq(nil)
+          parsed_response["result"][0]["user_id"].should eq(@u1.id.to_s)
+          parsed_response["result"][0]["action"].should eq(DashboardEntry::ENTRY_TYPE[:channel_recommendation])
+          parsed_response["result"][0]["actor_id"].should eq(nil)
 
-          parsed_response["result"][6]["frame"]["video"]["id"].should eq(@channel_recommended_vids[0].id.to_s)
-          parsed_response["result"][6]["frame"]["video"]["provider_name"].should eq(@channel_recommended_vids[0].provider_name)
-          parsed_response["result"][6]["frame"]["video"]["provider_id"].should eq(@channel_recommended_vids[0].provider_id)
+          parsed_response["result"][0]["frame"]["video"]["id"].should eq(@channel_recommended_vids[0].id.to_s)
+          parsed_response["result"][0]["frame"]["video"]["provider_name"].should eq(@channel_recommended_vids[0].provider_name)
+          parsed_response["result"][0]["frame"]["video"]["provider_id"].should eq(@channel_recommended_vids[0].provider_id)
 
-          parsed_response["result"][6]["src_frame"]["id"].should eq(@community_channel_frames[0].id.to_s)
-          parsed_response["result"][6]["src_frame"]["creator_id"].should eq(@featured_curator.id.to_s)
-          parsed_response["result"][6]["src_frame"]["creator"]["id"].should eq(@featured_curator.id.to_s)
-          parsed_response["result"][6]["src_frame"]["creator"]["nickname"].should eq(@featured_curator.nickname)
-          parsed_response["result"][6]["src_frame"]["creator"]["name"].should eq(@featured_curator.name)
+          parsed_response["result"][0]["src_frame"]["id"].should eq(@community_channel_frames[0].id.to_s)
+          parsed_response["result"][0]["src_frame"]["creator_id"].should eq(@featured_curator.id.to_s)
+          parsed_response["result"][0]["src_frame"]["creator"]["id"].should eq(@featured_curator.id.to_s)
+          parsed_response["result"][0]["src_frame"]["creator"]["nickname"].should eq(@featured_curator.nickname)
+          parsed_response["result"][0]["src_frame"]["creator"]["name"].should eq(@featured_curator.name)
 
-          parsed_response["result"][6]["src_frame"]["conversation"]["messages"][0]["text"].should eq(@message.text)
+          parsed_response["result"][0]["src_frame"]["conversation"]["messages"][0]["text"].should eq(@message.text)
         end
 
         it "should not persist any new dashboard entries, frames, or conversations to the database" do
