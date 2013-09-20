@@ -104,12 +104,7 @@ class DashboardEntry
 
   # @return [Boolean] Whether the entry is a video recommendation
   def is_recommendation?()
-    [
-      ENTRY_TYPE[:video_graph_recommendation],
-      ENTRY_TYPE[:entertainment_graph_recommendation],
-      ENTRY_TYPE[:mortar_recommendation],
-      ENTRY_TYPE[:channel_recommendation]
-    ].include? self.action
+    self.action && (self.action >= ENTRY_TYPE[:video_graph_recommendation]) && (self.action <= ENTRY_TYPE[:channel_recommendation])
   end
 
 end
