@@ -507,8 +507,8 @@ describe 'v1/user' do
     describe "GET recommendations" do
       before(:each) do
         GT::MortarHarvester.stub(:get_recs_for_user).and_return([])
-        @community_channel_user = Factory.create(:user)
-        Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
+        @featured_channel_user = Factory.create(:user)
+        Settings::Channels['featured_channel_user_id'] = @featured_channel_user.id.to_s
       end
 
       it "should return user recommendations on success" do
@@ -539,14 +539,14 @@ describe 'v1/user' do
         GT::RecommendationManager.stub(:create_recommendation_dbentry).and_return({})
         GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@u1, 10, 3, 100.0).and_return([{}, {}, {}])
         GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 3).and_return([])
-        GT::RecommendationManager.should_receive(:get_channel_recs_for_user).with(@u1, @community_channel_user.id.to_s, 3).and_return([])
+        GT::RecommendationManager.should_receive(:get_channel_recs_for_user).with(@u1, @featured_channel_user.id.to_s, 3).and_return([])
         get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
       end
 
       it "should try to fill in more mortar recommendations if video graph recommendations are not found" do
         GT::RecommendationManager.stub(:get_video_graph_recs_for_user).and_return([])
         GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 6).and_return([])
-        GT::RecommendationManager.should_receive(:get_channel_recs_for_user).with(@u1, @community_channel_user.id.to_s, 3).and_return([])
+        GT::RecommendationManager.should_receive(:get_channel_recs_for_user).with(@u1, @featured_channel_user.id.to_s, 3).and_return([])
         get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
       end
 
@@ -637,7 +637,7 @@ describe 'v1/user' do
             @channel_recommended_vids.unshift video
             frame = Factory.create(:frame, :creator_id => @featured_curator.id, :video_id => video.id, :conversation_id => @conversation.id)
             @community_channel_frames.unshift frame
-            @community_channel_dbes.unshift Factory.create(:dashboard_entry, :user_id => @community_channel_user.id, :frame_id => frame.id, :video_id => video.id)
+            @community_channel_dbes.unshift Factory.create(:dashboard_entry, :user_id => @featured_channel_user.id, :frame_id => frame.id, :video_id => video.id)
           end
         end
 

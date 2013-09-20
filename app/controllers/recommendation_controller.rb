@@ -56,7 +56,7 @@ class V1::RecommendationController < ApplicationController
       end
 
       if sources.include? DashboardEntry::ENTRY_TYPE[:channel_recommendation]
-        channel_recommendations = GT::RecommendationManager.get_channel_recs_for_user(@user, Settings::Channels.community_channel_user_id, 3)
+        channel_recommendations = GT::RecommendationManager.get_channel_recs_for_user(@user, Settings::Channels.featured_channel_user_id, 3)
         recs.concat(channel_recommendations)
       end
 
