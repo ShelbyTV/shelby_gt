@@ -91,55 +91,61 @@ class V1::DashboardEntriesMetalController < MetalController
       skip = params[:skip] ? params[:skip] : 0
       sinceId = params[:since_id]
 
-      # user for "user channel" or current user if requested with proper id
-      user = User.where(:id => params[:user_id], :public_dashboard => true).first
-      if !user and current_user and current_user.id.to_s == params[:user_id]
+      if current_user && (params[:user_id] == current_user.id.to_s)
+        # A regular logged in user can view his/her own dashboard
         user = current_user
-      end
-
-      if user
-        if (sinceId)
-          cmd = "cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}"
-        else
-          cmd = "cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -e #{Rails.env}"
-        end
-
-        fast_status = 0
-        fast_stdout = ''
-        log_text = ''
-        Open3.popen3 cmd do |stdin, stdout, stderr, wait_thr|
-          fast_stdout = stdout.read
-          log_text = stderr.read
-          fast_status = wait_thr.value.exitstatus
-        end
-
-        ShelbyGT_EM.next_tick {
-          # Append logging from the c executable to our log file, but don't
-          # make responding to the request wait on that
-          File.open("#{Settings::CExtensions.log_file}_#{Rails.env}.log","a") do |f|
-            f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] ---------RUBY SAYS: HANDLE v1/user/#{params[:user_id]}/dashboard START---------"
-            f.puts log_text
-            f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] STATUS: #{fast_status == 0 ? 'SUCCESS' : 'ERROR'}"
-            f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] ---------RUBY SAYS: HANDLE v1/user/#{params[:user_id]}/dashboard END-----------"
-          end
-        }
-
-        # only for the currently logged in user's dashboard
-        if !sinceId && params[:trigger_recs] && user == current_user
-          ShelbyGT_EM.next_tick {
-            # check if we need new recommendations, and if so, insert them into the stream
-            GT::RecommendationManager.if_no_recent_recs_generate_rec(current_user, { :insert_at_random_location => true })
-          }
-        end
-
-        if (fast_status == 0)
-          renderMetalResponse(200, fast_stdout)
-        else
-          renderMetalResponse(404, "{\"status\" : 404, \"message\" : \"fast index failed with status #{fast_status}\"}")
+      elsif user = User.find(params[:user_id])
+        # public dashboards can be viewed by anyone, even without authentication
+        # logged in admin users can view any user's dashboard
+        unless user.public_dashboard || (current_user && current_user.is_admin)
+          renderMetalResponse(404, "{\"status\" : 401, \"message\" : \"you are not authorized to view that user's dashboard\"}")
+          return
         end
       else
-        renderMetalResponse(404, "could not find the user you are looking for")
+        renderMetalResponse(404, "{\"status\" : 404, \"message\" : \"could not find the user you are looking for\"}")
+        return
       end
+
+      if (sinceId)
+        cmd = "cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -i #{sinceId} -e #{Rails.env}"
+      else
+        cmd = "cpp/bin/dashboardIndex -u #{user.downcase_nickname} -l #{limit} -s #{skip} -e #{Rails.env}"
+      end
+
+      fast_status = 0
+      fast_stdout = ''
+      log_text = ''
+      Open3.popen3 cmd do |stdin, stdout, stderr, wait_thr|
+        fast_stdout = stdout.read
+        log_text = stderr.read
+        fast_status = wait_thr.value.exitstatus
+      end
+
+      ShelbyGT_EM.next_tick {
+        # Append logging from the c executable to our log file, but don't
+        # make responding to the request wait on that
+        File.open("#{Settings::CExtensions.log_file}_#{Rails.env}.log","a") do |f|
+          f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] ---------RUBY SAYS: HANDLE v1/user/#{params[:user_id]}/dashboard START---------"
+          f.puts log_text
+          f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] STATUS: #{fast_status == 0 ? 'SUCCESS' : 'ERROR'}"
+          f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] ---------RUBY SAYS: HANDLE v1/user/#{params[:user_id]}/dashboard END-----------"
+        end
+      }
+
+      # only for the currently logged in user's dashboard
+      if !sinceId && params[:trigger_recs] && user == current_user
+        ShelbyGT_EM.next_tick {
+          # check if we need new recommendations, and if so, insert them into the stream
+          GT::RecommendationManager.if_no_recent_recs_generate_rec(current_user, { :insert_at_random_location => true })
+        }
+      end
+
+      if (fast_status == 0)
+        renderMetalResponse(200, fast_stdout)
+      else
+        renderMetalResponse(500, "{\"status\" : 500, \"message\" : \"fast index failed with status #{fast_status}\"}")
+      end
+
     end
   end
 

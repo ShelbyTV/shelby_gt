@@ -429,6 +429,34 @@ describe 'v1/user' do
           response.body.should have_json_path("result")
           parse_json(response.body)["result"][0]["frame"]["id"].should eq(@f.id.to_s)
         end
+
+        context "other user" do
+          before(:each) do
+            @u2 = Factory.create(:user)
+          end
+
+          it "should return 401 unauthorized if trying to get a user other than herself" do
+            get '/v1/user/'+@u2.id+'/dashboard'
+            response.body.should be_json_eql(401).at_path("status")
+          end
+
+          it "should allow a user to get dashboard for another user who has a public dashboard" do
+            @u2.public_dashboard = true
+            get '/v1/user/'+@u2.id+'/dashboard'
+            response.body.should be_json_eql(200).at_path("status")
+          end
+
+          it "should allow an admin user to get dashboard for another user" do
+            @u1.is_admin = true
+            get '/v1/user/'+@u2.id+'/dashboard'
+            response.body.should be_json_eql(200).at_path("status")
+          end
+
+          it "should return 404 if another user is not found" do
+            get '/v1/user/nonexistant/dashboard'
+            response.body.should be_json_eql(404).at_path("status")
+          end
+        end
       end
 
       context 'trigger_recs param' do
@@ -1101,6 +1129,27 @@ describe 'v1/user' do
         u = Factory.create(:user)
         get '/v1/user/'+u.id+'/rolls/following'
         response.body.should be_json_eql(401).at_path("status")
+      end
+
+    end
+
+    describe "GET dashboard" do
+
+      it "should return 401 unauthorized if trying to get a user whose dashboard is not public`" do
+        u = Factory.create(:user)
+        get '/v1/user/'+u.id+'/dashboard'
+        response.body.should be_json_eql(401).at_path("status")
+      end
+
+      it "should return success if trying to get a user who has a public dashboard" do
+        u = Factory.create(:user, :public_dashboard => true)
+        get '/v1/user/'+u.id+'/dashboard'
+        response.body.should be_json_eql(200).at_path("status")
+      end
+
+      it "should return 404 if another user is not found" do
+        get '/v1/user/nonexistant/dashboard'
+        response.body.should be_json_eql(404).at_path("status")
       end
 
     end
