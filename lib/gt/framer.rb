@@ -192,11 +192,11 @@ module GT
       return res.flatten
     end
 
-    def self.create_dashboard_entry(frame, action, user, options={})
+    def self.create_dashboard_entry(frame, action, user, options={}, persist=true)
       raise ArgumentError, "must supply a Frame" unless frame.is_a? Frame
       raise ArgumentError, "must supply an action" unless action
       raise ArgumentError, "must supply a User" unless user.is_a? User
-      self.create_dashboard_entries(frame, action, [user.id], options)
+      self.create_dashboard_entries(frame, action, [user.id], options, persist)
     end
 
     private
