@@ -8,17 +8,7 @@ glue :dashboard_entry do
     attributes :id, :creator_id
 
     child :creator => 'creator' do
-      attributes :id, :nickname, :name
-    end
-
-    child :conversation => 'conversation' do
-
-      child :messages => 'messages' do
-
-        attributes :text
-
-      end
-
+      attributes :id, :nickname
     end
 
   end
