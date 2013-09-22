@@ -726,44 +726,40 @@ describe 'v1/user' do
 
           response.body.should have_json_path("result/0/frame")
           response.body.should have_json_path("result/0/frame/video")
-
-          response.body.should have_json_path("result/0/src_frame")
-          response.body.should have_json_path("result/0/src_frame/id")
-          response.body.should have_json_path("result/0/src_frame/creator_id")
-          response.body.should have_json_path("result/0/src_frame/creator")
-          response.body.should have_json_path("result/0/src_frame/creator/id")
-          response.body.should have_json_path("result/0/src_frame/creator/nickname")
-          response.body.should have_json_path("result/0/src_frame/creator/name")
-
-          response.body.should have_json_path("result/0/src_frame/conversation")
-          response.body.should have_json_path("result/0/src_frame/conversation/messages")
-          response.body.should have_json_size(1).at_path("result/0/src_frame/conversation/messages")
-          response.body.should have_json_path("result/0/src_frame/conversation/messages/0")
-          response.body.should have_json_path("result/0/src_frame/conversation/messages/0/text")
+          response.body.should have_json_path("result/0/frame/creator_id")
+          response.body.should have_json_path("result/0/frame/creator")
+          response.body.should have_json_path("result/0/frame/creator/id")
+          response.body.should have_json_path("result/0/frame/creator/nickname")
+          response.body.should have_json_path("result/0/frame/creator/name")
+          response.body.should have_json_path("result/0/frame/conversation")
+          response.body.should have_json_path("result/0/frame/conversation/messages")
+          response.body.should have_json_size(1).at_path("result/0/frame/conversation/messages")
+          response.body.should have_json_path("result/0/frame/conversation/messages/0")
+          response.body.should have_json_path("result/0/frame/conversation/messages/0/text")
 
           parsed_response = parse_json(response.body)
 
           parsed_response["result"][0]["user_id"].should eq(@u1.id.to_s)
           parsed_response["result"][0]["action"].should eq(DashboardEntry::ENTRY_TYPE[:channel_recommendation])
-          parsed_response["result"][0]["actor_id"].should eq(nil)
+          parsed_response["result"][0]["actor_id"].should eq(@featured_curator.id.to_s)
 
           parsed_response["result"][0]["frame"]["video"]["id"].should eq(@channel_recommended_vids[0].id.to_s)
           parsed_response["result"][0]["frame"]["video"]["provider_name"].should eq(@channel_recommended_vids[0].provider_name)
           parsed_response["result"][0]["frame"]["video"]["provider_id"].should eq(@channel_recommended_vids[0].provider_id)
 
-          parsed_response["result"][0]["src_frame"]["id"].should eq(@community_channel_frames[0].id.to_s)
-          parsed_response["result"][0]["src_frame"]["creator_id"].should eq(@featured_curator.id.to_s)
-          parsed_response["result"][0]["src_frame"]["creator"]["id"].should eq(@featured_curator.id.to_s)
-          parsed_response["result"][0]["src_frame"]["creator"]["nickname"].should eq(@featured_curator.nickname)
-          parsed_response["result"][0]["src_frame"]["creator"]["name"].should eq(@featured_curator.name)
+          parsed_response["result"][0]["frame"]["id"].should eq(@community_channel_frames[0].id.to_s)
+          parsed_response["result"][0]["frame"]["creator_id"].should eq(@featured_curator.id.to_s)
+          parsed_response["result"][0]["frame"]["creator"]["id"].should eq(@featured_curator.id.to_s)
+          parsed_response["result"][0]["frame"]["creator"]["nickname"].should eq(@featured_curator.nickname)
+          parsed_response["result"][0]["frame"]["creator"]["name"].should eq(@featured_curator.name)
 
-          parsed_response["result"][0]["src_frame"]["conversation"]["messages"][0]["text"].should eq(@message.text)
+          parsed_response["result"][0]["frame"]["conversation"]["messages"][0]["text"].should eq(@message.text)
         end
 
         it "should not persist any new dashboard entries, frames, or conversations to the database" do
           MongoMapper::Plugins::IdentityMap.clear
           lambda {
-            get '/v1/user/'+@u1.id+'/recommendations'
+            get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
           }.should_not change { "#{DashboardEntry.count},#{Frame.count},#{Conversation.count}" }
         end
 

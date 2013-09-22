@@ -229,13 +229,28 @@ describe GT::RecommendationManager do
       @rec_vid = Factory.create(:video)
     end
 
-    it "should return nil if the Framer fails" do
+    it "should return nil if the Framer fails to create a frame" do
       GT::Framer.stub(:create_frame)
 
       GT::RecommendationManager.create_recommendation_dbentry(
         @user,
         @rec_vid.id,
         DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+      ).should be_nil
+    end
+
+    it "should return nil if the Framer fails to create a dashboard entry" do
+      src_frame = Factory.create(:frame)
+      GT::Framer.stub(:create_dashboard_entry)
+
+      GT::RecommendationManager.create_recommendation_dbentry(
+        @user,
+        @rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:channel_recommendation],
+        {
+          :src_id => src_frame.id,
+          :persist => false
+        }
       ).should be_nil
     end
 
@@ -267,28 +282,6 @@ describe GT::RecommendationManager do
         @user,
         @rec_vid.id,
         DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
-        {
-          :src_id => src_frame.id
-        }
-      )
-    end
-
-    it "should create a db entry for a channel recommendation with the corresponding video, action, and src_frame" do
-      src_frame = Factory.create(:frame)
-      GT::Framer.should_receive(:create_frame).with({
-        :video_id => @rec_vid.id,
-        :dashboard_user_id => @user.id,
-        :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation],
-        :persist => true,
-        :dashboard_entry_options => {
-          :src_frame_id => src_frame.id
-        }
-      })
-
-      GT::RecommendationManager.create_recommendation_dbentry(
-        @user,
-        @rec_vid.id,
-        DashboardEntry::ENTRY_TYPE[:channel_recommendation],
         {
           :src_id => src_frame.id
         }
@@ -339,6 +332,27 @@ describe GT::RecommendationManager do
         }
       )
     end
+
+    it "should create a db entry for a channel recommendation with the corresponding frame, video, and action" do
+      src_frame = Factory.create(:frame)
+      Frame.stub(:find).and_return(src_frame)
+
+      new_dbe = Factory.create(:dashboard_entry, :frame => src_frame)
+      GT::Framer.should_receive(:create_dashboard_entry).with(src_frame, DashboardEntry::ENTRY_TYPE[:channel_recommendation], @user, {}, false).and_return([new_dbe])
+
+      GT::Framer.should_not_receive(:create_frame)
+
+      GT::RecommendationManager.create_recommendation_dbentry(
+        @user,
+        @rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:channel_recommendation],
+        {
+          :src_id => src_frame.id,
+          :persist => false
+        }
+      ).should == {:dashboard_entry => new_dbe, :frame => src_frame}
+    end
+
   end
 
   context "get_channel_recs_for_user" do

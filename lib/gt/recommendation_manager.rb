@@ -72,6 +72,7 @@ module GT
     # :src_id => BSON::ObjectId --- OPTIONAL the id of the source object for the recommendation
     #   should be the src frame for a dbe of type DashboardEntry::ENTRY_TYPE[:video_graph_recommendation
     #   should be the reason video for a dbe of type DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+    #   should be the frame from the source channel for a dbe of type Dashboard Entry::ENTRY_TYPE[:channel_recommendation]
     # :dashboard_entry_options => Hash --- OPTIONAL additional options to be pased to the Framer when creating dashboard entries
 
     def self.create_recommendation_dbentry(user, video_id, dbe_action, options={})
@@ -83,29 +84,35 @@ module GT
 
       options = defaults.merge(options)
 
-      framer_options = {
-        :video_id => video_id,
-        :dashboard_user_id => user.id,
-        :action => dbe_action,
-        :persist => options[:persist]
-      }
+      if dbe_action != DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+        framer_options = {
+          :video_id => video_id,
+          :dashboard_user_id => user.id,
+          :action => dbe_action,
+          :persist => options[:persist]
+        }
 
-      case dbe_action
-      when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-        framer_options[:dashboard_entry_options] = {:src_frame_id => options[:src_id]}
-      when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
-        framer_options[:dashboard_entry_options] = {:src_frame_id => options[:src_id]}
-      when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-        framer_options[:dashboard_entry_options] = {:src_video_id => options[:src_id]}
+        case dbe_action
+        when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+          framer_options[:dashboard_entry_options] = {:src_frame_id => options[:src_id]}
+        when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          framer_options[:dashboard_entry_options] = {:src_video_id => options[:src_id]}
+        else
+          framer_options[:dashboard_entry_options] = {}
+        end
+
+        framer_options[:dashboard_entry_options].merge!(options[:dashboard_entry_options])
+
+        res = GT::Framer.create_frame(framer_options)
+        if res && res[:dashboard_entries] && !res[:dashboard_entries].empty? && res[:frame]
+          return {:dashboard_entry => res[:dashboard_entries].first, :frame => res[:frame]}
+        end
       else
-        framer_options[:dashboard_entry_options] = {}
-      end
-
-      framer_options[:dashboard_entry_options].merge!(options[:dashboard_entry_options])
-
-      res = GT::Framer.create_frame(framer_options)
-      if res && res[:dashboard_entries] && !res[:dashboard_entries].empty? && res[:frame]
-        return {:dashboard_entry => res[:dashboard_entries].first, :frame => res[:frame]}
+        frame = Frame.find(options[:src_id])
+        res = GT::Framer.create_dashboard_entry(frame, dbe_action, user, {}, options[:persist])
+        if res && !res.empty?
+          return {:dashboard_entry => res[0], :frame => res[0].frame}
+        end
       end
     end
 

@@ -247,6 +247,65 @@ describe GT::RecommendationManager do
         end
       end
 
+      it "should not persist when persist false option is passed" do
+        lambda {
+          GT::RecommendationManager.create_recommendation_dbentry(
+            @user,
+            @rec_vid.id,
+            DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+            {
+              :src_id => nil,
+              :persist => false
+            }
+          )
+        }.should_not change { "#{DashboardEntry.count},#{Frame.count},#{Conversation.count}" }
+      end
+
+      context "channel recommendation" do
+        context "persist by default" do
+          before(:each) do
+            src_frame = Factory.create(:frame)
+            @lambda = lambda {
+              GT::RecommendationManager.create_recommendation_dbentry(
+                @user,
+                @rec_vid.id,
+                DashboardEntry::ENTRY_TYPE[:channel_recommendation],
+                {
+                  :src_id => src_frame.id
+                }
+              )
+            }
+          end
+
+          it "should persist a new dashboard entry to the database" do
+            @lambda.should change { DashboardEntry.count }
+          end
+
+          it "should not persist a new frame because it's using an existing one" do
+            @lambda.should_not change { Frame.count }
+          end
+
+          it "should not persist a conversation because a frame is not being persisted" do
+            @lambda.should_not change { Conversation.count }
+          end
+        end
+
+        it "should not persist when persist false option is passed" do
+          src_frame = Factory.create(:frame)
+          lambda {
+            GT::RecommendationManager.create_recommendation_dbentry(
+              @user,
+              @rec_vid.id,
+              DashboardEntry::ENTRY_TYPE[:channel_recommendation],
+              {
+                :src_id => src_frame.id,
+                :persist => false
+              }
+            )
+          }.should_not change { "#{DashboardEntry.count},#{Frame.count},#{Conversation.count}" }
+        end
+      end
+
     end
 
     it "should create a db entry for a mortar recommendation with the corresponding video, action, and src_video" do
@@ -269,6 +328,26 @@ describe GT::RecommendationManager do
 
       result[:frame].should be_a Frame
       result[:frame].video.should == @rec_vid
+    end
+
+    it "should create a db entry for a channel recommendation with the corresponding frame, video, and action" do
+      src_frame = Factory.create(:frame, :video => @rec_vid)
+
+      result = GT::RecommendationManager.create_recommendation_dbentry(
+        @user,
+        @rec_vid.id,
+        DashboardEntry::ENTRY_TYPE[:channel_recommendation],
+        {
+          :src_id => src_frame.id
+        }
+      )
+
+      result[:dashboard_entry].should be_a DashboardEntry
+      result[:dashboard_entry].user.should == @user
+      result[:dashboard_entry].video.should == @rec_vid
+      result[:dashboard_entry].action.should == DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+
+      result[:frame].should == src_frame
     end
   end
 
