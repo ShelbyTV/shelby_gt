@@ -1167,6 +1167,16 @@ describe 'v1/user' do
 
     end
 
+    describe "GET recommendations" do
+
+      it "should return 401 unauthorized" do
+        u = Factory.create(:user)
+        get '/v1/user/'+u.id+'/recommendations'
+        response.status.should eq(401)
+      end
+
+    end
+
     describe "GET stats" do
       it "should not be able to get user stats" do
         u = Factory.create(:user)

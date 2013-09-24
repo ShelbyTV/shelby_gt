@@ -1,6 +1,9 @@
 require 'recommendation_manager'
 
 class V1::RecommendationController < ApplicationController
+
+  before_filter :user_authenticated?
+
   ####################################
   # Returns a set of dashboard entries containing recommended videos for the user
   # Returns 200 if successful
