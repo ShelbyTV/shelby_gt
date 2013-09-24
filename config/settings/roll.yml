@@ -221,27 +221,102 @@ defaults: &defaults
         {
           display_title: "Sesame Street",
           id: "4fa2931f88ba6b68b6000ba9",
+          description: 'Can you tell me how to get to...',
           display_thumbnail_src: "http://i1.ytimg.com/i/oookXUzPciGrEZEXmh4Jjg/mq1.jpg",
           include_in: {onboarding: true}
         },
        {
         display_title: "Khan Academy",
         id: "4fa39bd89a725b1f920008f3",
+        description: "Changing education for the better by providing a free world-class education for anyone anywhere",
         display_thumbnail_src: "http://i1.ytimg.com/i/4a-Gbdw7vOaccHmFo40b9g/mq1.jpg",
         include_in: {onboarding: true}
       },
       {
         display_title: "College Humor",
         id: "4f9009d9b415cc466a000466",
+        description: "Funny Videos, Funny Pictures, Funny Links!",
         display_thumbnail_src: "http://i1.ytimg.com/i/PDXXXJj9nax0fr0Wfc048g/mq1.jpg",
         include_in: {onboarding: true}
       },
       {
         display_title: "Smart History",
         id: "4fb6344d9a725b2d6a0011b0",
+        description: "Smarthistory is the art history part of Khan Academy",
         display_thumbnail_src: "http://i1.ytimg.com/i/3R-xanNgtoa8b7gpVexVlA/mq1.jpg?v=4f79d422",
         include_in: {onboarding: true}
-      }]
+      },
+      {
+        display_title: "MTV",
+        id: "4fa0a50a88ba6b448f000dd4",
+        description: "Music Television, and more of course",
+        display_thumbnail_src: "http://www.youtube.com/user/MTV/videos) (http://i1.ytimg.com/i/xAICW_LdkfFYwTqTHHE0vg/mq1.jpg",
+        include_in: {onboarding: true}
+      },
+      {
+        display_title: "VH1",
+        id: "4f907d3f9a725b45e50009ad",
+        description: "SHOWS + POP CULTURE + MUSIC + CELEBRITY",
+        display_thumbnail_src: "http://i1.ytimg.com/i/vn-HVrAGYEKsVx6gW3MeNQ/mq1.jpg",
+        include_in: {onboarding: true}
+      },
+      {
+        display_title: "SpikeTV",
+        id: "4f957feb88ba6b17c100e88c",
+        description: "SPIKE, the ultimate destination for men",
+        display_thumbnail_src: "https://lh4.googleusercontent.com/-f4hkwQxHAGQ/AAAAAAAAAAI/AAAAAAAAAAA/tWyYCuj4eP8/s100-c-k/photo.jpg",
+        include_in: {onboarding: true}
+      },
+      {
+        display_title: "Comedy Central",
+        id: "4f95c8ec88ba6b4d7e0138e9",
+        description: "The funniest stuff on the planet.",
+        display_thumbnail_src: "https://lh3.googleusercontent.com/-ios1OK1LQyc/AAAAAAAAAAI/AAAAAAAAAAA/1lJALaYer2c/s100-c-k/photo.jpg",
+        include_in: {onboarding: true}
+      },
+      {
+        display_title: "Comedy Central",
+        id: "4f95c8ec88ba6b4d7e0138e9",
+        description: "The funniest stuff on the planet.",
+        display_thumbnail_src: "https://lh3.googleusercontent.com/-ios1OK1LQyc/AAAAAAAAAAI/AAAAAAAAAAA/1lJALaYer2c/s100-c-k/photo.jpg",
+        include_in: {onboarding: true}
+      },
+      {
+        display_title: "Machinima",
+        id: "52419d90b415cc3493000007",
+        description: "The number one video entertainment network for gamers",
+        display_thumbnail_src: "https://lh5.googleusercontent.com/-pymaumvxDsA/AAAAAAAAAAI/AAAAAAAAAAA/3Br0EbtsPDU/s100-c-k/photo.jpg",
+        include_in: {onboarding: true}
+      },
+      {
+        display_title: "Epic Meal Time",
+        id: "4f92e08f9a725b23ec001068",
+        description: "We make your dreams come true... and then we eat them.",
+        display_thumbnail_src: "https://lh6.googleusercontent.com/-wsUurA2UA6Q/AAAAAAAAAAI/AAAAAAAAAAA/mYrc7qkwqbw/s100-c-k/photo.jpg",
+        include_in: {onboarding: true}
+      },
+      {
+        display_title: "Nova Online",
+        id: "512d1e55b415cc5d8c00013f",
+        description: "Making science more accessible to better understand the world",
+        display_thumbnail_src: "https://lh4.googleusercontent.com/-_vUbB-8EGHw/AAAAAAAAAAI/AAAAAAAAAAA/Q3iieA7QFc8/s48-c-k/photo.jpg",
+        include_in: {onboarding: true}
+      },
+      {
+        display_title: "Patagonia",
+        id: "4f95f25488ba6b70ed0080e3",
+        description: "Build the best product, cause no unnecessary harm, use business to inspire.",
+        display_thumbnail_src: "https://lh4.googleusercontent.com/-s3AUNZ0SZzo/AAAAAAAAAAI/AAAAAAAAAAA/wX0iy0H2YYo/s100-c-k/photo.jpg",
+        include_in: {onboarding: true}
+      },
+      {
+        display_title: "Glamour Magazine",
+        id: "4fc64bfd9a725b24af0014db",
+        description: "The latest scoop on celebs, fashion, beauty, sex & relationships and health news",
+        display_thumbnail_src: "https://lh6.googleusercontent.com/-rgrooeRabA4/AAAAAAAAAAI/AAAAAAAAAAA/KqSexgQLt4E/s100-c-k/photo.jpg",
+        include_in: {onboarding: true}
+      }
+      ]
     },
     {
       category_title: "iPad Lineup",

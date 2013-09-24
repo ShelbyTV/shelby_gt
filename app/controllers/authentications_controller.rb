@@ -121,7 +121,7 @@ class AuthenticationsController < ApplicationController
       else
 
         Rails.logger.error "AuthenticationsController#create - ERROR: user invalid: #{user.errors.full_messages.join(', ')} -- nickname: #{user.nickname} -- name #{user.name}"
-        @opener_location = request.env['omniauth.origin']  || Settings::ShelbyAPI.web_root
+        @opener_location = redirect_path || Settings::ShelbyAPI.web_root
       end
 
 # ---- New User signing up w/ email & password
