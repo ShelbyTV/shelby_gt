@@ -681,6 +681,25 @@ describe GT::Framer do
       d[0].friend_rollers_array.should == [@friend_user_id_string]
       d[0].friend_complete_viewers_array.should == [@friend_user_id_string]
     end
+
+    it "should pass persist parameter through to create_dashboard_entries" do
+      GT::Framer.should_receive(:create_dashboard_entries).with(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {}, true).ordered
+      GT::Framer.should_receive(:create_dashboard_entries).with(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {}, true).ordered
+      GT::Framer.should_receive(:create_dashboard_entries).with(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {}, false).ordered
+
+      GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer)
+      GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {}, true)
+      GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {}, false)
+    end
+
+    it "should not persist anything when persist option is set to false" do
+      d = nil
+      lambda {
+        d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {}, false)
+      }.should_not change { DashboardEntry.count }
+
+      d[0].persisted?.should_not == true
+    end
   end
 
   context "backfilling DashboardEntries" do

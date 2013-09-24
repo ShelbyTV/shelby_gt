@@ -51,6 +51,7 @@ defaults: &defaults
     }
   ]
   community_channel_user_id : '515d83ecb415cc0d1a025bfe'
+  featured_channel_user_id : '521264b4b415cc44c9000001'
 
 development:
   <<: *defaults
@@ -58,6 +59,7 @@ development:
 test:
   channels : [{},{},{}]
   community_channel_user_id : ''
+  featured_channel_user_id : ''
 
 production: &production
   <<: *defaults

@@ -69,7 +69,8 @@ class DashboardEntry
     :prioritized_frame => 30,
     :video_graph_recommendation => 31,
     :entertainment_graph_recommendation => 32,
-    :mortar_recommendation => 33
+    :mortar_recommendation => 33,
+    :channel_recommendation => 34
   }.freeze
   key :action, Integer, :abbr => :e, :default => ENTRY_TYPE[:new_social_frame]
 
@@ -103,9 +104,7 @@ class DashboardEntry
 
   # @return [Boolean] Whether the entry is a video recommendation
   def is_recommendation?()
-    (self.action == ENTRY_TYPE[:video_graph_recommendation]) ||
-    (self.action == ENTRY_TYPE[:entertainment_graph_recommendation]) ||
-    (self.action == ENTRY_TYPE[:mortar_recommendation])
+    self.action && (self.action >= ENTRY_TYPE[:video_graph_recommendation]) && (self.action <= ENTRY_TYPE[:channel_recommendation])
   end
 
 end
