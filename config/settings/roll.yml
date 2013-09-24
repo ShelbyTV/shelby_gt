@@ -275,13 +275,6 @@ defaults: &defaults
         include_in: {onboarding: true}
       },
       {
-        display_title: "Comedy Central",
-        id: "4f95c8ec88ba6b4d7e0138e9",
-        description: "The funniest stuff on the planet.",
-        display_thumbnail_src: "https://lh3.googleusercontent.com/-ios1OK1LQyc/AAAAAAAAAAI/AAAAAAAAAAA/1lJALaYer2c/s100-c-k/photo.jpg",
-        include_in: {onboarding: true}
-      },
-      {
         display_title: "Machinima",
         id: "52419d90b415cc3493000007",
         description: "The number one video entertainment network for gamers",
