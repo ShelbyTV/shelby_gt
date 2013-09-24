@@ -36,7 +36,7 @@ module GT
 
       unless recent_dbes.any? { |dbe| dbe.is_recommendation? }
         # if we don't find any recommendations within the recency limit, generate a new recommendation
-        recs = self.get_random_video_graph_recs_for_user(user, 10, 1, 100.0, dbes)
+        recs = self.get_video_graph_recs_for_user(user, 10, 1, 100.0, dbes)
         unless recs.empty?
           # wrap the recommended video in a dashboard entry
           rec = recs[0]
@@ -72,6 +72,7 @@ module GT
     # :src_id => BSON::ObjectId --- OPTIONAL the id of the source object for the recommendation
     #   should be the src frame for a dbe of type DashboardEntry::ENTRY_TYPE[:video_graph_recommendation
     #   should be the reason video for a dbe of type DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+    #   should be the frame from the source channel for a dbe of type Dashboard Entry::ENTRY_TYPE[:channel_recommendation]
     # :dashboard_entry_options => Hash --- OPTIONAL additional options to be pased to the Framer when creating dashboard entries
 
     def self.create_recommendation_dbentry(user, video_id, dbe_action, options={})
@@ -83,34 +84,42 @@ module GT
 
       options = defaults.merge(options)
 
-      framer_options = {
-        :video_id => video_id,
-        :dashboard_user_id => user.id,
-        :action => dbe_action,
-        :persist => options[:persist]
-      }
+      if dbe_action != DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+        framer_options = {
+          :video_id => video_id,
+          :dashboard_user_id => user.id,
+          :action => dbe_action,
+          :persist => options[:persist]
+        }
 
-      case dbe_action
-      when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-        framer_options[:dashboard_entry_options] = {:src_frame_id => options[:src_id]}
-      when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-        framer_options[:dashboard_entry_options] = {:src_video_id => options[:src_id]}
+        case dbe_action
+        when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+          framer_options[:dashboard_entry_options] = {:src_frame_id => options[:src_id]}
+        when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          framer_options[:dashboard_entry_options] = {:src_video_id => options[:src_id]}
+        else
+          framer_options[:dashboard_entry_options] = {}
+        end
+
+        framer_options[:dashboard_entry_options].merge!(options[:dashboard_entry_options])
+
+        res = GT::Framer.create_frame(framer_options)
+        if res && res[:dashboard_entries] && !res[:dashboard_entries].empty? && res[:frame]
+          return {:dashboard_entry => res[:dashboard_entries].first, :frame => res[:frame]}
+        end
       else
-        framer_options[:dashboard_entry_options] = {}
-      end
-
-      framer_options[:dashboard_entry_options].merge!(options[:dashboard_entry_options])
-
-      res = GT::Framer.create_frame(framer_options)
-      if res && res[:dashboard_entries] && !res[:dashboard_entries].empty? && res[:frame]
-        return {:dashboard_entry => res[:dashboard_entries].first, :frame => res[:frame]}
+        frame = Frame.find(options[:src_id])
+        res = GT::Framer.create_dashboard_entry(frame, dbe_action, user, {}, options[:persist])
+        if res && !res.empty?
+          return {:dashboard_entry => res[0], :frame => res[0].frame}
+        end
       end
     end
 
     # Returns an array of recommended video ids and source frame ids for a user based on the criteria supplied as params
     # NB: This is a slow thing to be doing - ideally we'd want to run this periodically in the background and store
     # the results somewhere to then be loaded instantaneously when asked for
-    def self.get_random_video_graph_recs_for_user(user, max_db_entries_to_scan=10, limit=1, min_score=nil, prefetched_dbes=nil)
+    def self.get_video_graph_recs_for_user(user, max_db_entries_to_scan=10, limit=1, min_score=nil, prefetched_dbes=nil)
 
       unless prefetched_dbes
         dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(max_db_entries_to_scan).fields(:video_id, :frame_id).all
@@ -170,69 +179,16 @@ module GT
       return recs
     end
 
-    # Returns an array of recommended video ids and source video ids for a user based on the criteria supplied as params
+    # Returns an array of recommended video ids and source video ids for a user from our Mortar recommendation engine
     def self.get_mortar_recs_for_user(user, limit=1)
+      raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
+      raise ArgumentError, "must supply a limit > 0" unless limit.respond_to?(:to_i) && ((limit = limit.to_i) > 0)
+
       # get more recs than the caller asked for because some of them might be eliminated and we want to
       # have the chance to still recommend something
-      recs = GT::MortarHarvester.get_recs_for_user(user, 50)
-      if recs
-        if recs.length > 0
-          watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id.to_s}.compact.uniq : []
-          if limit
-            valid_recommendations = []
-
-            # process the recs and remove ones that we don't want to show the user because they
-            # are not available or because the user has already watched them
-            recs.each do |rec|
-              # check if the user has already watched the video
-              if !watched_video_ids.include? rec["item_id"]
-                # check if the video is still available at the provider
-                vid = Video.find(rec["item_id"])
-                if vid
-                  # if we think the video is available, re-check the provider to
-                  # make sure it is
-                  # OPTIMIZATION: if we previously thought the video was unavailable,
-                  # we won't check if it's become available again;we need a perpetually
-                  # running Video Doctor to take care of that or we need a more efficient
-                  # idea for how to deal with it here
-                  if vid.available
-                    GT::VideoManager.update_video_info(vid)
-                    valid_recommendations << rec if vid.available
-                    break if valid_recommendations.count == limit
-                  end
-                end
-              end
-            end
-
-            recs = valid_recommendations
-          else
-            # when there's no limit parameter we can't optimize to quit checking once we know we have
-            # enough recommendations because there is no concept of "enough"
-            recs.reject!{|rec| watched_video_ids.include? rec["item_id"]}
-          end
-        end
-
-        if limit
-          recs.slice!(limit..-1)
-        else
-          # when there's no limit parameter we can't optimize to quit checking once we know we have
-          # enough recommendations because there is no concept of "enough"
-
-          # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
-          # but we may be calling out to provider APIs for each video here if we don't have the video info recently updated
-          recs.select! do |rec|
-            vid = Video.find(rec["item_id"])
-            if vid
-              # OPTIMIZATION: if we previously thought the video was unavailable,
-              # we won't check if it's become available again;we need a perpetually
-              # running Video Doctor to take care of that or we need a more efficient
-              # idea for how to deal with it here
-              GT::VideoManager.update_video_info(vid) if vid.available
-              vid.available
-            end
-          end
-        end
-
+      recs = GT::MortarHarvester.get_recs_for_user(user, limit + 49)
+      if recs && recs.length > 0
+        recs = self.filter_recs(user, recs, {:limit => limit, :recommended_video_key => "item_id"})
         recs.map! do |rec|
           {
             :recommended_video_id => BSON::ObjectId.from_string(rec["item_id"]),
@@ -243,6 +199,94 @@ module GT
       else
         []
       end
+    end
+
+    # Returns an array of recommended video ids for a user from another user's channel/dashboard
+    def self.get_channel_recs_for_user(user, channel_user_id, limit=1)
+      raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
+      unless channel_user_id.is_a?(BSON::ObjectId)
+        channel_user_id_string = channel_user_id.to_s
+        if BSON::ObjectId.legal?(channel_user_id_string)
+          channel_user_id = BSON::ObjectId.from_string(channel_user_id_string)
+        else
+          raise ArgumentError, "must supply a valid channel user id"
+        end
+      end
+      raise ArgumentError, "must supply a limit > 0" unless limit.respond_to?(:to_i) && ((limit = limit.to_i) > 0)
+
+      # get more recs than the caller asked for because some of them might be eliminated and we want to
+      # have the chance to still recommend something
+      recs = DashboardEntry.where(:user_id => channel_user_id).order(:_id.desc).limit(limit + 49).fields(:video_id, :frame_id).all
+      recs = self.filter_recs(user, recs, {:limit => limit, :recommended_video_key => "video_id"})
+      recs.map! do |rec|
+        {
+          :recommended_video_id => rec.video_id,
+          :src_id => rec.frame_id,
+          :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+        }
+      end
+
+      return recs
+    end
+
+  private
+
+    # Return the passed in array of recs with recs removed that have already been watched by the user
+    # or are no longer available at the provider
+    #
+    # --params--
+    #
+    # recs => Array -- each entry in the array is a hash where one of its keys holds the id of a video to recommend
+    #   by default, we'll look for that video id at [:recommended_video_id], unless options[:recommended_video_key]
+    #   specifies otherwise (see below
+    #
+    # --options--
+    #
+    # :limit => Integer --- OPTIONAL if an integer greater than zero is passed, will return an array of
+    #   recs of length limit as soon as that many are found
+    # :recommended_video_key => String or Symbol --- OPTIONAL the key on the hash
+    def self.filter_recs(user, recs, options={})
+
+      defaults = {
+        :limit => nil,
+        :recommended_video_key => :recommended_video_id
+      }
+
+      options = defaults.merge(options)
+
+      limit = options.delete(:limit)
+
+      raise ArgumentError, "must supply a limit > 0 or nil" unless limit.nil? || (limit.respond_to?(:to_i) && ((limit = limit.to_i) > 0))
+
+      watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id.to_s}.compact.uniq : []
+      valid_recommendations = []
+
+      # process the recs and remove ones that we don't want to show the user because they
+      # are not available or because the user has already watched them
+      recs.each do |rec|
+        # check if the user has already watched the video
+        if !watched_video_ids.include? rec[options[:recommended_video_key]].to_s
+          # check if the video is still available at the provider
+          vid = Video.find(rec[options[:recommended_video_key]])
+          if vid
+            # if we think the video is available, re-check the provider to
+            # make sure it is
+            # OPTIMIZATION: if we previously thought the video was unavailable,
+            # we won't check if it's become available again;we need a perpetually
+            # running Video Doctor to take care of that or we need a more efficient
+            # idea for how to deal with it here
+            if vid.available
+              GT::VideoManager.update_video_info(vid)
+              valid_recommendations << rec if vid.available
+              # if there's a limited number of recommendations that we need and we've hit it, quit
+              break if valid_recommendations.count == limit
+            end
+          end
+        end
+      end
+
+      return valid_recommendations
+
     end
 
   end

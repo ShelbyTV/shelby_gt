@@ -97,6 +97,9 @@ describe DashboardEntry do
 
       @dashboard_entry.action = DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
       @dashboard_entry.is_recommendation?.should == true
+
+      @dashboard_entry.action = DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+      @dashboard_entry.is_recommendation?.should == true
     end
 
   end

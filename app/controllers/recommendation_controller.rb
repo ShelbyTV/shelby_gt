@@ -1,6 +1,18 @@
 require 'recommendation_manager'
 
 class V1::RecommendationController < ApplicationController
+
+  before_filter :user_authenticated?
+
+  ####################################
+  # Returns a set of dashboard entries containing recommended videos for the user
+  # Returns 200 if successful
+  #
+  # @param [Optional, String] sources A comma separated list of recommendation sources to use to find recommendations
+  #   the values should correspond to the dashboard entry types/actions of the recommendations that will be created;
+  #   by default will look for video graph recommendations and mortar recommendations
+  #
+  # [GET] /v1/user/:id/recommendations
   def index_for_user
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['recommendations']) do
       if params[:user_id] == current_user.id.to_s
@@ -15,24 +27,43 @@ class V1::RecommendationController < ApplicationController
         return render_error(401, "unauthorized")
       end
 
+      if params[:sources]
+        sources = params[:sources].split(",").map {|source_string| source_string.to_i}.select do |source|
+          [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation], DashboardEntry::ENTRY_TYPE[:channel_recommendation]].include? source
+        end
+      else
+        sources = [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]]
+      end
+      recs = []
+
       scan_limit = params[:scan_limit] ? params[:scan_limit].to_i : 10
       limit = params[:limit] ? params[:limit].to_i : 3
       min_score = params[:min_score] ? params[:min_score].to_f : 100.0
 
-      # get some video graph recommendations
-      video_graph_recommendations = GT::RecommendationManager.get_random_video_graph_recs_for_user(@user, scan_limit, limit, min_score)
-      video_graph_recommendations.each do |rec|
-        # remap the name of the src key so that we can process all the recommendations together
-        rec[:src_id] = rec.delete(:src_frame_id)
-        rec[:action] = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+      if sources.include? DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+        # get some video graph recommendations
+        video_graph_recommendations = GT::RecommendationManager.get_video_graph_recs_for_user(@user, scan_limit, limit, min_score)
+        video_graph_recommendations.each do |rec|
+          # remap the name of the src key so that we can process all the recommendations together
+          rec[:src_id] = rec.delete(:src_frame_id)
+          rec[:action] = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+        end
+        recs.concat(video_graph_recommendations)
       end
 
-      # get at least 3 mortar recs, but more if there weren't as many video graph recs as we wanted
-      num_mortar_recommendations = 3 + (limit - video_graph_recommendations.count)
-      mortar_recommendations = GT::RecommendationManager.get_mortar_recs_for_user(@user, num_mortar_recommendations)
+      if sources.include? DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+        # get at least 3 mortar recs, but more if there weren't as many video graph recs as we wanted
+        num_mortar_recommendations = 3 + (limit - recs.count)
+        mortar_recommendations = GT::RecommendationManager.get_mortar_recs_for_user(@user, num_mortar_recommendations)
+        recs.concat(mortar_recommendations)
+      end
+
+      if sources.include? DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+        channel_recommendations = GT::RecommendationManager.get_channel_recs_for_user(@user, Settings::Channels.featured_channel_user_id, 3)
+        recs.concat(channel_recommendations)
+      end
 
       @results = []
-      recs = video_graph_recommendations + mortar_recommendations
       # wrap the recommended videos in 'phantom' frames and dbentries that are not persisted to the db
       recs.each do |rec|
         res = GT::RecommendationManager.create_recommendation_dbentry(
