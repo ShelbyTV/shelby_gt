@@ -250,7 +250,7 @@ defaults: &defaults
         display_title: "MTV",
         id: "4fa0a50a88ba6b448f000dd4",
         description: "Music Television, and more of course",
-        display_thumbnail_src: "http://www.youtube.com/user/MTV/videos) (http://i1.ytimg.com/i/xAICW_LdkfFYwTqTHHE0vg/mq1.jpg",
+        display_thumbnail_src: "http://i1.ytimg.com/i/xAICW_LdkfFYwTqTHHE0vg/mq1.jpg",
         include_in: {onboarding: true}
       },
       {
