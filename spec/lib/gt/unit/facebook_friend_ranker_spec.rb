@@ -28,10 +28,6 @@ describe APIClients::FacebookFriendRanker do
       }.should raise_error(ArgumentError)
     end
 
-    it "should return false if FB call throws exception" do
-      Koala::Facebook::API.stub_chain(:new, :get_connections).and_throw Koala::Facebook::APIError
-      #GT::UserFacebookManager.verify_auth(:whatever).should == false
-    end
   end
 
 end
