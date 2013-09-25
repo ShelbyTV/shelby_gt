@@ -1,6 +1,6 @@
 require 'koala'
 
-module APIClients
+module GT
   class FacebookFriendRanker
 
     # pass in FB access token for user and desired weights for each attribute
