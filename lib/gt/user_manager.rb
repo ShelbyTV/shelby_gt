@@ -6,7 +6,7 @@ require 'user_facebook_manager'
 require 'api_clients/twitter_client'
 require 'api_clients/twitter_info_getter'
 require 'api_clients/facebook_info_getter'
-require 'api_clients/facebook_friend_ranker'
+require 'facebook_friend_ranker'
 
 
 # This is the one and only place where Users are created.
@@ -546,7 +546,7 @@ module GT
           end
         elsif u.authentications.any?{|auth| auth.provider == 'facebook'}
           begin
-            client = APIClients::FacebookFriendRanker.new(u)
+            client = GT::FacebookFriendRanker.new(u)
             friends_ranked = client.get_friends_sorted_by_rank
             u.store_autocomplete_info(:facebook, friends_ranked)
           rescue Koala::Facebook::APIError => e
