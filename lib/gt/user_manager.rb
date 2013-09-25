@@ -543,6 +543,7 @@ module GT
           rescue Grackle::TwitterError
             # if we have Grackle problems, just give up
           end
+=begin
         elsif u.authentications.any?{|auth| auth.provider == 'facebook'}
           begin
             client = APIClients::FacebookFriendRanker.new(u)
@@ -551,6 +552,7 @@ module GT
           rescue Koala::Facebook::APIError => e
             Rails.logger.error "[USER MANAGER ERROR] error with getting friends to rank: #{e}"
           end
+=end
         end
       end
   end
