@@ -199,7 +199,7 @@ class V1::UserController < ApplicationController
 
         had_completed_onboarding = (@user.app_progress? and @user.app_progress.onboarding? and @user.app_progress.onboarding.to_s == '4')
         if params[:app_progress] and params[:app_progress][:onboarding]
-          if params[:app_progress][:onboarding] == "true"
+          if [true, "true"].include?(params[:app_progress][:onboarding])
             params[:app_progress][:onboarding] = true
           else
             params[:app_progress][:onboarding] = params[:app_progress][:onboarding].to_i
