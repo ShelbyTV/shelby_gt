@@ -124,6 +124,7 @@ module GT
           #start following (okay to try to follow everybody)
           GT::UserTwitterManager.follow_all_friends_public_rolls(user)
           GT::UserFacebookManager.follow_all_friends_public_rolls(user)
+          populate_autocomplete_info(user)
         }
 
         StatsManager::StatsD.increment(Settings::StatsConstants.user['add_service'][new_auth.provider])
