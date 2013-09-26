@@ -217,6 +217,7 @@ module GT
       # get more recs than the caller asked for because some of them might be eliminated and we want to
       # have the chance to still recommend something
       recs = DashboardEntry.where(:user_id => channel_user_id).order(:_id.desc).limit(limit + 49).fields(:video_id, :frame_id).all
+      recs.reject! { |rec| rec.actor_id == user.id }
       recs = self.filter_recs(user, recs, {:limit => limit, :recommended_video_key => "video_id"})
       recs.map! do |rec|
         {
