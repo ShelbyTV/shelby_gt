@@ -168,6 +168,7 @@ namespace :user_utils do
         @processed += 1
       end
       puts "FINISHED processing #{@processed} users. #{@saved} users updated. huge success."
+    end
   end
 
 end
