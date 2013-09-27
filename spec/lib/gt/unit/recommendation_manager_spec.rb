@@ -436,6 +436,23 @@ describe GT::RecommendationManager do
         GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).should == []
         GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id, 2).should == []
       end
+
+      it "should skip frames that were created by the user for whom recommendations are being generated" do
+        @dbes[0].actor_id = @user.id
+        remaining_dbes = @dbes.slice(1..-1)
+        GT::RecommendationManager.should_receive(:filter_recs).with(
+          @user,
+          remaining_dbes,
+          {:limit => 1, :recommended_video_key => "video_id"}
+        ).and_return([@dbes.slice(1)])
+
+        GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).should ==
+          [{
+            :recommended_video_id => @videos[1].id,
+            :src_id => @frames[1].id,
+            :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+          }]
+      end
     end
 
   end
