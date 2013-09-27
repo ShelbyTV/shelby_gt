@@ -135,4 +135,39 @@ namespace :user_utils do
     puts "#{num_real_emails_exported} real user emails were exported"
   end
 
+  desc "Get facebook friend info for all current gt_enabled users that have fb authenticated"
+  task :fetch_facebook_friends => :environment do
+
+    puts "Processing users"
+
+    @processed = 0
+    @saved = 0
+
+     User.collection.find({
+      'authentications.provider' => 'facebook',
+      'ag' => true
+      }, {:timeout => false}) do |cursor|
+      cursor.each do |hsh|
+        begin
+          u = User.load(hsh)
+          begin
+            client = GT::FacebookFriendRanker.new(u)
+            friends_ranked = client.get_friends_sorted_by_rank
+          rescue Koala::Facebook::APIError => e
+            Rails.logger.error "[USER MANAGER ERROR] error with getting friends to rank: #{e}"
+          end
+          u.store_autocomplete_info(:facebook, friends_ranked)
+          if u.save!
+            print '.'
+            @saved += 1
+          end
+        rescue => e
+          puts ""
+          puts "[fetch_facebook_friends] ERROR #{u.id.to_s}: #{e}"
+        end
+        @processed += 1
+      end
+      puts "FINISHED processing #{@processed} users. #{@saved} users updated. huge success."
+  end
+
 end
