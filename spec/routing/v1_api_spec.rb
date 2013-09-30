@@ -1,5 +1,16 @@
 require 'spec_helper'
 
+describe V1::ClientConfigurationController do
+  describe "routing" do
+    it "routes for multivariate_tests" do
+      { :get => "/v1/client_configuration/multivariate_tests" }.should route_to(
+        :controller => "v1/client_configuration",
+        :action => "multivariate_tests",
+        :format => "json")
+    end
+  end
+end
+
 describe V1::TokenController do
   describe "routing" do
     it "routes for token create" do

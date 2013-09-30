@@ -1,0 +1,52 @@
+defaults: &defaults
+  multivariate_tests: [
+    {
+      name: "retention1.0",
+      buckets: [
+        { 
+          name: "A",
+          description: "Thursday Evening, Copy v1",
+          active: true,
+          day: 5,
+          time: 1900,
+          message: "Check out video from folks like %@, %@ and %@."
+        },
+        {
+          name: "B",
+          description: "Thursday Evening, Copy v2",
+          active: true,
+          day: 5,
+          time: 1900,
+          message: "You've got a bunch of interesting video waiting for you!"
+        },
+        {
+          name: "C",
+          description: "Sunday Morning, Copy v1",
+          active: true,
+          day: 1,
+          time: 1000,
+          message: "Check out video from folks like %@, %@ and %@."
+        },
+        {
+          name: "D",
+          description: "Sunday Morning, Copy v2",
+          active: true,
+          day: 1,
+          time: 1000,
+          message: "You've got a bunch of interesting video waiting for you!"
+        }
+      ]
+    }
+  ]
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+
+arnold:
+  <<: *production
