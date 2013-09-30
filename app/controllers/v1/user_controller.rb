@@ -2,6 +2,7 @@
 require 'user_stats_manager'
 require 'event_tracking'
 require "framer"
+require "predator_manager"
 
 class V1::UserController < ApplicationController
 
@@ -32,6 +33,11 @@ class V1::UserController < ApplicationController
     return render_error(404, "must include a user id") unless params[:id]
     sessions_platform = params[:platform] || "web"
     if User.find(params[:id]) == current_user
+
+      # Go get any new videos from facebook explicity
+      facebook_auth = current_user.authentications.select { |a| a.provider == 'facebook'  }.first
+      GT::PredatorManager.update_video_processing(current_user, facebook_auth) if facebook_auth
+
       case sessions_platform
       when "ios"
         current_user.increment(:ios_session_count => 1)
