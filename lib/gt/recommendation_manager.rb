@@ -4,8 +4,12 @@ require 'mortar_harvester'
 module GT
 
   # This manager gets video recommendations of various types from our different recommendation
-  # sources
+  # sources.  Most of the operations need context around a specific user to find valid recommendations,
+  # so they require instatiating an instance of the RecommendationManager class with a user passed in
+  # as a parameter.  Other utility methods that don't need stored state are defined as class methods.
   class RecommendationManager
+
+    # BEGIN CLASS METHODS
 
     # checks options[:num_recents_to_check] (default 5) dbentries to see if they are recommendations
     # if so, returns nil
@@ -36,7 +40,8 @@ module GT
 
       unless recent_dbes.any? { |dbe| dbe.is_recommendation? }
         # if we don't find any recommendations within the recency limit, generate a new recommendation
-        recs = self.get_video_graph_recs_for_user(user, 10, 1, 100.0, dbes)
+        rec_manager = GT::RecommendationManager.new(user)
+        recs = rec_manager.get_video_graph_recs_for_user(10, 1, 100.0, dbes)
         unless recs.empty?
           # wrap the recommended video in a dashboard entry
           rec = recs[0]
@@ -116,13 +121,24 @@ module GT
       end
     end
 
+    # END CLASS METHODS
+
+    # BEGIN INSTANCE METHODS
+
+    def initialize(user)
+      raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
+
+      @user = user
+      @watched_videos_loaded = false
+    end
+
     # Returns an array of recommended video ids and source frame ids for a user based on the criteria supplied as params
     # NB: This is a slow thing to be doing - ideally we'd want to run this periodically in the background and store
     # the results somewhere to then be loaded instantaneously when asked for
-    def self.get_video_graph_recs_for_user(user, max_db_entries_to_scan=10, limit=1, min_score=nil, prefetched_dbes=nil)
+    def get_video_graph_recs_for_user(max_db_entries_to_scan=10, limit=1, min_score=nil, prefetched_dbes=nil)
 
       unless prefetched_dbes
-        dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(max_db_entries_to_scan).fields(:video_id, :frame_id).all
+        dbes = DashboardEntry.where(:user_id => @user.id).order(:_id.desc).limit(max_db_entries_to_scan).fields(:video_id, :frame_id).all
       else
         dbes = prefetched_dbes.slice(0, max_db_entries_to_scan)
       end
@@ -143,10 +159,10 @@ module GT
         end
 
         # remove any videos that the user has already watched
-        if recs_for_this_video.length > 0 && user.viewed_roll_id
+        if recs_for_this_video.length > 0 && @user.viewed_roll_id
           # once we know we need them, load the ids of the videos the user has watched - only do this once
           if !watched_videos_loaded
-            watched_video_ids = Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id}.compact.uniq
+            watched_video_ids = Frame.where(:roll_id => @user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id}.compact.uniq
             watched_videos_loaded = true
           end
 
@@ -180,15 +196,14 @@ module GT
     end
 
     # Returns an array of recommended video ids and source video ids for a user from our Mortar recommendation engine
-    def self.get_mortar_recs_for_user(user, limit=1)
-      raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
+    def get_mortar_recs_for_user(limit=1)
       raise ArgumentError, "must supply a limit > 0" unless limit.respond_to?(:to_i) && ((limit = limit.to_i) > 0)
 
       # get more recs than the caller asked for because some of them might be eliminated and we want to
       # have the chance to still recommend something
-      recs = GT::MortarHarvester.get_recs_for_user(user, limit + 49)
+      recs = GT::MortarHarvester.get_recs_for_user(@user, limit + 49)
       if recs && recs.length > 0
-        recs = self.filter_recs(user, recs, {:limit => limit, :recommended_video_key => "item_id"})
+        recs = filter_recs(recs, {:limit => limit, :recommended_video_key => "item_id"})
         recs.map! do |rec|
           {
             :recommended_video_id => BSON::ObjectId.from_string(rec["item_id"]),
@@ -202,8 +217,7 @@ module GT
     end
 
     # Returns an array of recommended video ids for a user from another user's channel/dashboard
-    def self.get_channel_recs_for_user(user, channel_user_id, limit=1)
-      raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
+    def get_channel_recs_for_user(channel_user_id, limit=1)
       unless channel_user_id.is_a?(BSON::ObjectId)
         channel_user_id_string = channel_user_id.to_s
         if BSON::ObjectId.legal?(channel_user_id_string)
@@ -217,8 +231,8 @@ module GT
       # get more recs than the caller asked for because some of them might be eliminated and we want to
       # have the chance to still recommend something
       recs = DashboardEntry.where(:user_id => channel_user_id).order(:_id.desc).limit(limit + 49).fields(:video_id, :frame_id).all
-      recs.reject! { |rec| rec.actor_id == user.id }
-      recs = self.filter_recs(user, recs, {:limit => limit, :recommended_video_key => "video_id"})
+      recs.reject! { |rec| rec.actor_id == @user.id }
+      recs = filter_recs(recs, {:limit => limit, :recommended_video_key => "video_id"})
       recs.map! do |rec|
         {
           :recommended_video_id => rec.video_id,
@@ -246,7 +260,7 @@ module GT
     # :limit => Integer --- OPTIONAL if an integer greater than zero is passed, will return an array of
     #   recs of length limit as soon as that many are found
     # :recommended_video_key => String or Symbol --- OPTIONAL the key on the hash
-    def self.filter_recs(user, recs, options={})
+    def filter_recs(recs, options={})
 
       defaults = {
         :limit => nil,
@@ -259,14 +273,19 @@ module GT
 
       raise ArgumentError, "must supply a limit > 0 or nil" unless limit.nil? || (limit.respond_to?(:to_i) && ((limit = limit.to_i) > 0))
 
-      watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id.to_s}.compact.uniq : []
+      # we're only going to look up the watched videos once per instance of the class
+      # by the time more videos have been watched, we'll probably be creating a new instance
+      if !@watched_videos_loaded
+        @watched_video_ids = @user.viewed_roll_id ? Frame.where(:roll_id => @user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id.to_s}.compact.uniq : []
+        @watched_videos_loaded = true
+      end
       valid_recommendations = []
 
       # process the recs and remove ones that we don't want to show the user because they
       # are not available or because the user has already watched them
       recs.each do |rec|
         # check if the user has already watched the video
-        if !watched_video_ids.include? rec[options[:recommended_video_key]].to_s
+        if !@watched_video_ids.include? rec[options[:recommended_video_key]].to_s
           # check if the video is still available at the provider
           vid = Video.find(rec[options[:recommended_video_key]])
           if vid
@@ -289,6 +308,8 @@ module GT
       return valid_recommendations
 
     end
+
+    # END INSTANCE METHODS
 
   end
 end

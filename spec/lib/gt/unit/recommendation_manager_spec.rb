@@ -7,6 +7,28 @@ describe GT::RecommendationManager do
     GT::VideoManager.stub(:update_video_info)
   end
 
+  context "constructor" do
+
+    before(:each) do
+      @user = Factory.create(:user)
+    end
+
+    context "arguments" do
+      it "requires a user" do
+        expect { GT::RecommendationManager.new }.to raise_error(ArgumentError)
+        expect { GT::RecommendationManager.new("fred") }.to raise_error(ArgumentError, "must supply valid User Object")
+        expect { GT::RecommendationManager.new(@user) }.not_to raise_error
+      end
+    end
+
+    it "should initialize instance variables" do
+      u = GT::RecommendationManager.new(@user)
+      u.instance_variable_get(:@user).should == @user
+      u.instance_variable_get(:@watched_videos_loaded).should == false
+      u.instance_variable_get(:@watched_video_ids).should be_nil
+    end
+  end
+
   context "get_video_graph_recs_for_user" do
     before(:each) do
       @viewed_roll = Factory.create(:roll)
@@ -47,6 +69,8 @@ describe GT::RecommendationManager do
 
       @available_vid = Factory.create(:video)
       Video.stub(:find).and_return(@available_vid)
+
+      @recommendation_manager = GT::RecommendationManager.new(@user)
     end
 
     context "no prefetched dbes" do
@@ -71,7 +95,7 @@ describe GT::RecommendationManager do
         end
 
         it "should return all the recommended videos when there is no limit parameter" do
-          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, nil)
+          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
           result.length.should == @recommended_video_ids.length
           result.should == @recommended_video_ids.each_with_index.map{|id, i| {:recommended_video_id => id, :src_frame_id => @src_frame_ids[i]}}
         end
@@ -79,7 +103,7 @@ describe GT::RecommendationManager do
         it "should exclude videos the user has already watched" do
           @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_video_ids[0]])
 
-          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, nil)
+          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
@@ -90,7 +114,7 @@ describe GT::RecommendationManager do
           Video.should_receive(:find).exactly(@recommended_video_ids.length).times.and_return(@unavailable_vid, @available_vid)
           GT::VideoManager.should_receive(:update_video_info).exactly(@recommended_video_ids.length).times
 
-          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, nil)
+          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
@@ -98,20 +122,20 @@ describe GT::RecommendationManager do
         it "shoud exclude from consideration dashboard entries that are recommendations themselves" do
           @dbes[1].action = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
 
-          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, nil)
+          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
 
         it "should return only one recommended video id by default" do
-          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user)
+          result = @recommendation_manager.get_video_graph_recs_for_user
           result.should be_an_instance_of(Array)
           result.should == [{:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]}]
         end
 
         it "should restrict the results to recommended videos that meet the minimum score parameter" do
           max_score = @recommendations.max_by{|r| r.score}.score
-          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, nil, max_score)
+          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil, max_score)
           result.should == [{:recommended_video_id => @recommended_video_ids.last, :src_frame_id => @src_frame_ids.last}]
         end
 
@@ -122,7 +146,7 @@ describe GT::RecommendationManager do
         it "should not load the user's viewed videos to check against" do
           Frame.should_not_receive(:where)
 
-          result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 1, 1, 1000.0)
+          result = @recommendation_manager.get_video_graph_recs_for_user(1, 1, 1000.0)
         end
 
       end
@@ -133,17 +157,17 @@ describe GT::RecommendationManager do
       it "should not fetch any dbes" do
         DashboardEntry.should_not_receive(:where)
 
-        GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 1, 100.0, [])
+        @recommendation_manager.get_video_graph_recs_for_user(10, 1, 100.0, [])
       end
 
       it "should use the prefetched_dbes the same way it would if it looked them up itself" do
-        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 1, nil, @dbes)
+        result = @recommendation_manager.get_video_graph_recs_for_user(10, 1, nil, @dbes)
         result.should be_an_instance_of(Array)
         result.should == [{:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]}]
       end
 
       it "should only look at as many prefetched_dbes as we tell it to with max_db_entries_to_scan parameter" do
-        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 0, 1, nil, @dbes)
+        result = @recommendation_manager.get_video_graph_recs_for_user(0, 1, nil, @dbes)
         result.should be_an_instance_of(Array)
         result.should be_empty
       end
@@ -160,7 +184,7 @@ describe GT::RecommendationManager do
     it "should not generate recs if there are recommendations within num_recents_to_check dbes" do
       dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
       DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return([dbe])
-      GT::RecommendationManager.should_not_receive(:get_video_graph_recs_for_user)
+      GT::RecommendationManager.any_instance.should_not_receive(:get_video_graph_recs_for_user)
 
       GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
     end
@@ -169,7 +193,7 @@ describe GT::RecommendationManager do
       dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
       dbes = [dbe]
       DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return(dbes)
-      GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@user, 10, 1, 100.0, dbes).and_return([])
+      GT::RecommendationManager.any_instance.should_receive(:get_video_graph_recs_for_user).with(10, 1, 100.0, dbes).and_return([])
 
       GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
     end
@@ -179,7 +203,7 @@ describe GT::RecommendationManager do
       dbe_rec = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
       dbes = [dbe_social, dbe_rec]
       DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return(dbes)
-      GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@user, 10, 1, 100.0, dbes).and_return([])
+      GT::RecommendationManager.any_instance.should_receive(:get_video_graph_recs_for_user).with(10, 1, 100.0, dbes).and_return([])
 
       GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:num_recents_to_check => 1})
     end
@@ -187,7 +211,7 @@ describe GT::RecommendationManager do
     it "should return nil if no video graph recommendations are available within the given search parameters" do
       dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
       DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return([dbe])
-      GT::RecommendationManager.stub(:get_video_graph_recs_for_user).and_return([])
+      GT::RecommendationManager.any_instance.stub(:get_video_graph_recs_for_user).and_return([])
 
       result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
       result.should be_nil
@@ -204,7 +228,7 @@ describe GT::RecommendationManager do
       dbe = Factory.create(:dashboard_entry, :frame => f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
 
       DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return([dbe])
-      GT::RecommendationManager.stub(:get_video_graph_recs_for_user).and_return(
+      GT::RecommendationManager.any_instance.stub(:get_video_graph_recs_for_user).and_return(
         [{:recommended_video_id => rec_vid.id, :src_frame_id => f.id}]
       )
 
@@ -360,27 +384,25 @@ describe GT::RecommendationManager do
       @viewed_roll = Factory.create(:roll)
       @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
       @channel_user = Factory.create(:user)
-      GT::RecommendationManager.stub(:filter_recs).and_return([])
+
+      @recommendation_manager = GT::RecommendationManager.new(@user)
+      @recommendation_manager.stub(:filter_recs).and_return([])
     end
 
     context "arguments" do
-      it "requires a user" do
-        expect { GT::RecommendationManager.get_channel_recs_for_user(nil, @channel_user.id) }.to raise_error(ArgumentError, "must supply valid User Object")
-        expect { GT::RecommendationManager.get_channel_recs_for_user(1, @channel_user.id) }.to raise_error(ArgumentError, "must supply valid User Object")
-      end
 
       it "requires a channel user id" do
-        expect { GT::RecommendationManager.get_channel_recs_for_user(@user, nil) }.to raise_error(ArgumentError, "must supply a valid channel user id")
-        expect { GT::RecommendationManager.get_channel_recs_for_user(@user, "123") }.to raise_error(ArgumentError, "must supply a valid channel user id")
+        expect { @recommendation_manager.get_channel_recs_for_user(nil) }.to raise_error(ArgumentError, "must supply a valid channel user id")
+        expect { @recommendation_manager.get_channel_recs_for_user("123") }.to raise_error(ArgumentError, "must supply a valid channel user id")
 
-        expect { GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id) }.to_not raise_error
-        expect { GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id.to_s) }.to_not raise_error
+        expect { @recommendation_manager.get_channel_recs_for_user(@channel_user.id) }.to_not raise_error
+        expect { @recommendation_manager.get_channel_recs_for_user(@channel_user.id.to_s) }.to_not raise_error
       end
 
       it "requires a limit greater than zero" do
-        expect { GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id, nil) }.to raise_error(ArgumentError, "must supply a limit > 0")
-        expect { GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id, 0) }.to raise_error(ArgumentError, "must supply a limit > 0")
-        expect { GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id, -1) }.to raise_error(ArgumentError, "must supply a limit > 0")
+        expect { @recommendation_manager.get_channel_recs_for_user(@channel_user.id, nil) }.to raise_error(ArgumentError, "must supply a limit > 0")
+        expect { @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 0) }.to raise_error(ArgumentError, "must supply a limit > 0")
+        expect { @recommendation_manager.get_channel_recs_for_user(@channel_user.id, -1) }.to raise_error(ArgumentError, "must supply a limit > 0")
       end
     end
 
@@ -389,7 +411,7 @@ describe GT::RecommendationManager do
       dbe_query.stub_chain(:order, :limit, :fields, :all).and_return([])
       DashboardEntry.should_receive(:where).with(:user_id => @channel_user.id).and_return(dbe_query)
 
-      GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).should == []
+      @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should == []
     end
 
     context "recommendations found and returned" do
@@ -411,8 +433,8 @@ describe GT::RecommendationManager do
       end
 
       it "should map the key names correctly" do
-        GT::RecommendationManager.should_receive(:filter_recs).and_return([@dbes[0]])
-        GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).should ==
+        @recommendation_manager.should_receive(:filter_recs).and_return([@dbes[0]])
+        @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
           [{
             :recommended_video_id => @videos[0].id,
             :src_id => @frames[0].id,
@@ -421,32 +443,29 @@ describe GT::RecommendationManager do
       end
 
       it "should filter the recs" do
-        GT::RecommendationManager.should_receive(:filter_recs).with(
-          @user,
+        @recommendation_manager.should_receive(:filter_recs).with(
           @dbes,
           {:limit => 1, :recommended_video_key => "video_id"}
         ).ordered.and_return([])
 
-        GT::RecommendationManager.should_receive(:filter_recs).with(
-          @user,
+        @recommendation_manager.should_receive(:filter_recs).with(
           @dbes,
           {:limit => 2, :recommended_video_key => "video_id"}
         ).ordered.and_return([])
 
-        GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).should == []
-        GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id, 2).should == []
+        @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should == []
+        @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 2).should == []
       end
 
       it "should skip frames that were created by the user for whom recommendations are being generated" do
         @dbes[0].actor_id = @user.id
         remaining_dbes = @dbes.slice(1..-1)
-        GT::RecommendationManager.should_receive(:filter_recs).with(
-          @user,
+        @recommendation_manager.should_receive(:filter_recs).with(
           remaining_dbes,
           {:limit => 1, :recommended_video_key => "video_id"}
         ).and_return([@dbes.slice(1)])
 
-        GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).should ==
+        @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
           [{
             :recommended_video_id => @videos[1].id,
             :src_id => @frames[1].id,
@@ -461,19 +480,15 @@ describe GT::RecommendationManager do
     before(:each) do
       @viewed_roll = Factory.create(:roll)
       @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
-      GT::RecommendationManager.stub(:filter_recs).and_return([])
+      @recommendation_manager = GT::RecommendationManager.new(@user)
+      @recommendation_manager.stub(:filter_recs).and_return([])
     end
 
     context "arguments" do
-      it "requires a user" do
-        expect { GT::RecommendationManager.get_mortar_recs_for_user(nil) }.to raise_error(ArgumentError, "must supply valid User Object")
-        expect { GT::RecommendationManager.get_mortar_recs_for_user(1) }.to raise_error(ArgumentError, "must supply valid User Object")
-      end
-
       it "requires a limit greater than zero" do
-        expect { GT::RecommendationManager.get_mortar_recs_for_user(@user, nil) }.to raise_error(ArgumentError, "must supply a limit > 0")
-        expect { GT::RecommendationManager.get_mortar_recs_for_user(@user, 0) }.to raise_error(ArgumentError, "must supply a limit > 0")
-        expect { GT::RecommendationManager.get_mortar_recs_for_user(@user, -1) }.to raise_error(ArgumentError, "must supply a limit > 0")
+        expect { @recommendation_manager.get_mortar_recs_for_user(nil) }.to raise_error(ArgumentError, "must supply a limit > 0")
+        expect { @recommendation_manager.get_mortar_recs_for_user(0) }.to raise_error(ArgumentError, "must supply a limit > 0")
+        expect { @recommendation_manager.get_mortar_recs_for_user(-1) }.to raise_error(ArgumentError, "must supply a limit > 0")
       end
     end
 
@@ -481,22 +496,22 @@ describe GT::RecommendationManager do
       GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 50).ordered
       GT::MortarHarvester.should_receive(:get_recs_for_user).with(@user, 20 + 49).ordered
 
-      GT::RecommendationManager.get_mortar_recs_for_user(@user)
-      GT::RecommendationManager.get_mortar_recs_for_user(@user, 20)
+      @recommendation_manager.get_mortar_recs_for_user
+      @recommendation_manager.get_mortar_recs_for_user(20)
     end
 
     it "should return an empty array if the request to Mortar doesn't return any recs" do
       GT::MortarHarvester.stub(:get_recs_for_user).and_return(nil)
-      GT::RecommendationManager.should_not_receive(:filter_recs)
+      @recommendation_manager.should_not_receive(:filter_recs)
 
-      GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+      @recommendation_manager.get_mortar_recs_for_user.should == []
     end
 
     it "should return an empty array if the request to Mortar fails" do
       GT::MortarHarvester.stub(:get_recs_for_user).and_return([])
-      GT::RecommendationManager.should_not_receive(:filter_recs)
+      @recommendation_manager.should_not_receive(:filter_recs)
 
-      GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
+      @recommendation_manager.get_mortar_recs_for_user.should == []
     end
 
     context "recommendations found and returned" do
@@ -513,8 +528,8 @@ describe GT::RecommendationManager do
       end
 
       it "should map the key names correctly" do
-        GT::RecommendationManager.should_receive(:filter_recs).and_return([@mortar_recs[0]])
-        GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+        @recommendation_manager.should_receive(:filter_recs).and_return([@mortar_recs[0]])
+        @recommendation_manager.get_mortar_recs_for_user.should ==
           [{
             :recommended_video_id => @recommended_videos[0].id,
             :src_id => @reason_videos[0].id,
@@ -523,20 +538,18 @@ describe GT::RecommendationManager do
       end
 
       it "should filter the recs" do
-        GT::RecommendationManager.should_receive(:filter_recs).with(
-          @user,
+        @recommendation_manager.should_receive(:filter_recs).with(
           @mortar_recs,
           {:limit => 1, :recommended_video_key => "item_id"}
         ).ordered.and_return([])
 
-        GT::RecommendationManager.should_receive(:filter_recs).with(
-          @user,
+        @recommendation_manager.should_receive(:filter_recs).with(
           @mortar_recs,
           {:limit => 2, :recommended_video_key => "item_id"}
         ).ordered.and_return([])
 
-        GT::RecommendationManager.get_mortar_recs_for_user(@user).should == []
-        GT::RecommendationManager.get_mortar_recs_for_user(@user, 2).should == []
+        @recommendation_manager.get_mortar_recs_for_user.should == []
+        @recommendation_manager.get_mortar_recs_for_user(2).should == []
       end
 
     end
@@ -548,16 +561,18 @@ describe GT::RecommendationManager do
       @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
 
       Frame.stub_chain(:where, :fields, :limit, :all).and_return([])
+
+      @recommendation_manager = GT::RecommendationManager.new(@user)
     end
 
     context "arguments" do
       it "should require a limit greater than zero or nil" do
-        expect { GT::RecommendationManager.filter_recs(@user, [], { :limit => 0 }) }.to raise_error(ArgumentError)
-        expect { GT::RecommendationManager.filter_recs(@user, [], { :limit => -1 }) }.to raise_error(ArgumentError)
+        expect { @recommendation_manager.send(:filter_recs, [], { :limit => 0 }) }.to raise_error(ArgumentError)
+        expect { @recommendation_manager.send(:filter_recs, [], { :limit => -1 }) }.to raise_error(ArgumentError)
 
-        expect { GT::RecommendationManager.filter_recs(@user, [], { :limit => 1 }) }.not_to raise_error
-        expect { GT::RecommendationManager.filter_recs(@user, [], { :limit => nil }) }.not_to raise_error
-        expect { GT::RecommendationManager.filter_recs(@user, []) }.not_to raise_error
+        expect { @recommendation_manager.send(:filter_recs, [], { :limit => 1 }) }.not_to raise_error
+        expect { @recommendation_manager.send(:filter_recs, [], { :limit => nil }) }.not_to raise_error
+        expect { @recommendation_manager.send(:filter_recs, []) }.not_to raise_error
       end
     end
 
@@ -569,7 +584,16 @@ describe GT::RecommendationManager do
         @frame_query = double("frame_query")
         @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([])
         # only needs to load the user's viewed videos once
-        Frame.should_receive(:where).with(:roll_id => @viewed_roll.id).exactly(1).times.and_return(@frame_query)
+        Frame.stub(:where).with(:roll_id => @viewed_roll.id).and_return(@frame_query)
+      end
+
+      it "looks up the user's viewed frames only once, caching the results for future invocations" do
+        Frame.should_receive(:where).exactly(1).times.and_return(@frame_query)
+
+        @recommendation_manager.instance_variable_get(:@watched_video_ids).should be_nil
+        @recommendation_manager.send(:filter_recs, @recommendations)
+        @recommendation_manager.instance_variable_get(:@watched_video_ids).should == []
+        @recommendation_manager.send(:filter_recs, @recommendations)
       end
 
       context "return all recs with id strings" do
@@ -580,20 +604,20 @@ describe GT::RecommendationManager do
         end
 
         it "should work without a limit" do
-          GT::RecommendationManager.filter_recs(@user, @recommendations).should == @recommendations
+          @recommendation_manager.send(:filter_recs, @recommendations).should == @recommendations
         end
 
         it "should work when limit is large enough" do
-          GT::RecommendationManager.filter_recs(@user, @recommendations, { :limit => 3}).should == @recommendations
+          @recommendation_manager.send(:filter_recs, @recommendations, { :limit => 3}).should == @recommendations
         end
 
         it "should work when limit is bigger than the number of available recs" do
-          GT::RecommendationManager.filter_recs(@user, @recommendations, { :limit => 4}).should == @recommendations
+          @recommendation_manager.send(:filter_recs, @recommendations, { :limit => 4}).should == @recommendations
         end
 
         it "should work when the video key is not the default" do
           @recommendations = @recommended_videos.map {|vid| { "rec_id" => vid.id.to_s }}
-          GT::RecommendationManager.filter_recs(@user, @recommendations, { :limit => 3, :recommended_video_key => "rec_id"}).should == @recommendations
+          @recommendation_manager.send(:filter_recs, @recommendations, { :limit => 3, :recommended_video_key => "rec_id"}).should == @recommendations
         end
       end
 
@@ -604,13 +628,13 @@ describe GT::RecommendationManager do
           Video.should_receive(:find).with(@recommended_videos[2].id).ordered.and_return(@recommended_videos[2])
 
           @recommendations = @recommended_videos.map {|vid| { :recommended_video_id => vid.id }}
-          GT::RecommendationManager.filter_recs(@user, @recommendations, { :limit => 3}).should == @recommendations
+          @recommendation_manager.send(:filter_recs, @recommendations, { :limit => 3}).should == @recommendations
         end
       end
 
       it "should quit processing after it reaches the limit" do
         Video.should_receive(:find).twice().and_return(@recommended_videos[0], @recommended_videos[1])
-        GT::RecommendationManager.filter_recs(@user, @recommendations, { :limit => 2}).should == [
+        @recommendation_manager.send(:filter_recs, @recommendations, { :limit => 2}).should == [
           @recommendations[0],
           @recommendations[1]
         ]
@@ -621,7 +645,7 @@ describe GT::RecommendationManager do
         GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[1]).once()
         GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[0])
 
-        GT::RecommendationManager.filter_recs(@user, @recommendations, {:limit => 1}).should == [
+        @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
           @recommendations[1]
         ]
       end
@@ -633,7 +657,7 @@ describe GT::RecommendationManager do
         GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[0])
         GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[2])
 
-        GT::RecommendationManager.filter_recs(@user, @recommendations, {:limit => 1}).should == [
+        @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
           @recommendations[1]
         ]
       end
@@ -644,7 +668,7 @@ describe GT::RecommendationManager do
         GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[0])
         GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[2])
 
-        GT::RecommendationManager.filter_recs(@user, @recommendations, {:limit => 1}).should == [
+        @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
           @recommendations[1]
         ]
       end
@@ -657,7 +681,7 @@ describe GT::RecommendationManager do
         GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[1])
         GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[2])
 
-        GT::RecommendationManager.filter_recs(@user, @recommendations, {:limit => 1}).should == [
+        @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
           @recommendations[1]
         ]
       end
