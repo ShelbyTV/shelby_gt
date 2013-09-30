@@ -52,6 +52,9 @@ ShelbyGt::Application.routes.draw do
     # WHY? We support some browsers that don't support CORS, and they use jsonp which only does GETs.
     # Sometimes we have the same route do different things depending on the verb, and that doens't play nice w/ jsonp.
 
+    namespace :client_configuration do
+      get 'multivariate_tests'
+    end
     resources :user, :only => [:index, :update, :create] do
       # constraints allows for nicknames that include dots, prevents changing format (we're json only, that's ok).
       get ':id' => 'user#show', :as => :show, :on => :collection, :constraints => { :id => /[^\/]+/ }
