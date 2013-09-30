@@ -156,7 +156,7 @@ namespace :user_utils do
           rescue Koala::Facebook::APIError => e
             Rails.logger.error "[USER MANAGER ERROR] error with getting friends to rank: #{e}"
           end
-          u.store_autocomplete_info(:facebook, friends_ranked)
+          u.store_autocomplete_info(:facebook, friends_ranked) if friends_ranked
           if u.save!
             print '.'
             @saved += 1

@@ -93,6 +93,13 @@ defaults: &defaults
           include_in: {onboarding: true}
         },
         {
+          display_title: 'The North Face',
+          id: "4f95a19988ba6b25ae021141",
+          description: "Never Stop Exploring. Athletes, expeditions, events, products, sustainability efforts, and more.",
+          display_thumbnail_src: 'http://i1.ytimg.com/i/NfWDbERpf34FsSWIpqGD0Q/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
           display_title : 'GQ',
           id : '519bac7cb415cc01910000af',
           description : 'Look sharp + live smart',
