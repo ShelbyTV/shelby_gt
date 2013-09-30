@@ -231,8 +231,7 @@ module GT
       # get more recs than the caller asked for because some of them might be eliminated and we want to
       # have the chance to still recommend something
       recs = DashboardEntry.where(:user_id => channel_user_id).order(:_id.desc).limit(limit + 49).fields(:video_id, :frame_id).all
-      recs.reject! { |rec| rec.actor_id == @user.id }
-      recs = filter_recs(recs, {:limit => limit, :recommended_video_key => "video_id"})
+      recs = filter_recs(recs, {:limit => limit, :recommended_video_key => "video_id"}) { |rec| rec.actor_id != @user.id }
       recs.map! do |rec|
         {
           :recommended_video_id => rec.video_id,
@@ -255,12 +254,16 @@ module GT
     #   by default, we'll look for that video id at [:recommended_video_id], unless options[:recommended_video_key]
     #   specifies otherwise (see below
     #
+    # block => Block --- OPTIONAL Call with a block that takes a recommendation as the parameter and returns true or false
+    #   that condition will be tested on each recommendation for prequalification - return false and the rec will be filtered out;
+    #   return true and filtering will move on to checking if the rec has been watched and whether it is available
+    #
     # --options--
     #
     # :limit => Integer --- OPTIONAL if an integer greater than zero is passed, will return an array of
     #   recs of length limit as soon as that many are found
     # :recommended_video_key => String or Symbol --- OPTIONAL the key on the hash
-    def filter_recs(recs, options={})
+    def filter_recs(recs, options={}, &block)
 
       defaults = {
         :limit => nil,
@@ -284,22 +287,29 @@ module GT
       # process the recs and remove ones that we don't want to show the user because they
       # are not available or because the user has already watched them
       recs.each do |rec|
-        # check if the user has already watched the video
-        if !@watched_video_ids.include? rec[options[:recommended_video_key]].to_s
-          # check if the video is still available at the provider
-          vid = Video.find(rec[options[:recommended_video_key]])
-          if vid
-            # if we think the video is available, re-check the provider to
-            # make sure it is
-            # OPTIMIZATION: if we previously thought the video was unavailable,
-            # we won't check if it's become available again;we need a perpetually
-            # running Video Doctor to take care of that or we need a more efficient
-            # idea for how to deal with it here
-            if vid.available
-              GT::VideoManager.update_video_info(vid)
-              valid_recommendations << rec if vid.available
-              # if there's a limited number of recommendations that we need and we've hit it, quit
-              break if valid_recommendations.count == limit
+        rec_prequalified = true
+        # rec can optionally be filtered based on a block before going to the default tests
+        if block_given?
+          rec_prequalified = yield rec
+        end
+        if rec_prequalified
+          # check if the user has already watched the video
+          if !@watched_video_ids.include? rec[options[:recommended_video_key]].to_s
+            # check if the video is still available at the provider
+            vid = Video.find(rec[options[:recommended_video_key]])
+            if vid
+              # if we think the video is available, re-check the provider to
+              # make sure it is
+              # OPTIMIZATION: if we previously thought the video was unavailable,
+              # we won't check if it's become available again;we need a perpetually
+              # running Video Doctor to take care of that or we need a more efficient
+              # idea for how to deal with it here
+              if vid.available
+                GT::VideoManager.update_video_info(vid)
+                valid_recommendations << rec if vid.available
+                # if there's a limited number of recommendations that we need and we've hit it, quit
+                break if valid_recommendations.count == limit
+              end
             end
           end
         end

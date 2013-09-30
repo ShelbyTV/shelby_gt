@@ -446,32 +446,17 @@ describe GT::RecommendationManager do
         @recommendation_manager.should_receive(:filter_recs).with(
           @dbes,
           {:limit => 1, :recommended_video_key => "video_id"}
-        ).ordered.and_return([])
+        ).ordered.and_yield(@dbes[0]).and_return([])
 
         @recommendation_manager.should_receive(:filter_recs).with(
           @dbes,
           {:limit => 2, :recommended_video_key => "video_id"}
-        ).ordered.and_return([])
+        ).ordered.and_yield(@dbes[0]).and_yield(@dbes[1]).and_return([])
 
         @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should == []
         @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 2).should == []
       end
 
-      it "should skip frames that were created by the user for whom recommendations are being generated" do
-        @dbes[0].actor_id = @user.id
-        remaining_dbes = @dbes.slice(1..-1)
-        @recommendation_manager.should_receive(:filter_recs).with(
-          remaining_dbes,
-          {:limit => 1, :recommended_video_key => "video_id"}
-        ).and_return([@dbes.slice(1)])
-
-        @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
-          [{
-            :recommended_video_id => @videos[1].id,
-            :src_id => @frames[1].id,
-            :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation]
-          }]
-      end
     end
 
   end
@@ -587,6 +572,10 @@ describe GT::RecommendationManager do
         Frame.stub(:where).with(:roll_id => @viewed_roll.id).and_return(@frame_query)
       end
 
+      it "should yield when a block is passed in" do
+        expect { |b| @recommendation_manager.send(:filter_recs, @recommendations, &b) }.to yield_successive_args(@recommendations[0], @recommendations[1], @recommendations[2])
+      end
+
       it "looks up the user's viewed frames only once, caching the results for future invocations" do
         Frame.should_receive(:where).exactly(1).times.and_return(@frame_query)
 
@@ -646,6 +635,20 @@ describe GT::RecommendationManager do
         GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[0])
 
         @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
+          @recommendations[1]
+        ]
+      end
+
+      it "should skip videos for which the block returns false" do
+        @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_videos[0].id.to_s])
+        Video.should_receive(:find).once().and_return(@recommended_videos[1])
+        GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[1])
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[0])
+        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[2])
+
+        num_calls = 0
+
+        @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}){ |rec| num_calls +=1; num_calls == 2 }.should == [
           @recommendations[1]
         ]
       end
