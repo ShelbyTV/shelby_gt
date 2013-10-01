@@ -132,6 +132,62 @@ module GT
       @watched_videos_loaded = false
     end
 
+    def get_recs_for_user(options={})
+
+      defaults = {
+        :fill_in_with_final_type => true,
+        :limits => [3, 3],
+        :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]],
+        :video_graph_entries_to_scan => 10,
+        :video_graph_min_score => 40.0
+      }
+
+      options = defaults.merge(options)
+
+      limits = options.delete(:limits)
+      sources = options.delete(:sources)
+      raise ArgumentError, ":sources and :limits options must be Arrays of the same length" unless limits.is_a?(Array) && sources.is_a?(Array) && (limits.length == sources.length)
+      fill_in_with_final_type = options.delete(:fill_in_with_final_type)
+      video_graph_entries_to_scan = options.delete(:video_graph_entries_to_scan)
+      video_graph_min_score = options.delete(:video_graph_min_score)
+
+      if fill_in_with_final_type
+        total_recs_desired = limits.inject(:+)
+      end
+
+      recs = []
+
+      sources.each_with_index do |source, i|
+        # on the last source, if specified, fill in extra recommendations to make up
+        # for previous sources that didn't supply as many recommendations as desired
+        if fill_in_with_final_type && (i == sources.length - 1)
+          limit = total_recs_desired - recs.length
+        else
+          limit = limits[i]
+        end
+
+        case source
+        when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+          # get some video graph recommendations
+          video_graph_recommendations = self.get_video_graph_recs_for_user(video_graph_entries_to_scan, limit, video_graph_min_score)
+          video_graph_recommendations.each do |rec|
+            # remap the name of the src key so that we can process all the recommendations together
+            rec[:src_id] = rec.delete(:src_frame_id)
+            rec[:action] = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+          end
+          recs.concat(video_graph_recommendations)
+        when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          mortar_recommendations = self.get_mortar_recs_for_user(limit)
+          recs.concat(mortar_recommendations)
+        when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+          channel_recommendations = self.get_channel_recs_for_user(Settings::Channels.featured_channel_user_id, limit)
+          recs.concat(channel_recommendations)
+        end
+      end
+
+      recs
+    end
+
     # Returns an array of recommended video ids and source frame ids for a user based on the criteria supplied as params
     # NB: This is a slow thing to be doing - ideally we'd want to run this periodically in the background and store
     # the results somewhere to then be loaded instantaneously when asked for
@@ -229,7 +285,7 @@ module GT
 
       # get more recs than the caller asked for because some of them might be eliminated and we want to
       # have the chance to still recommend something
-      recs = DashboardEntry.where(:user_id => channel_user_id).order(:_id.desc).limit(limit + 49).fields(:video_id, :frame_id).all
+      recs = DashboardEntry.where(:user_id => channel_user_id).order(:_id.desc).limit(limit + 49).fields(:video_id, :frame_id)
       recs = filter_recs(recs, {:limit => limit, :recommended_video_key => "video_id"}) { |rec| rec.actor_id != @user.id }
       recs.map! do |rec|
         {
