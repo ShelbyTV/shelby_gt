@@ -29,13 +29,18 @@
 
                                     <% @dbes.each do |dbe| %>
 
-                                      <% if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation] %>
-                                          <%= render :partial => "/notification_mailer/partials/video_graph_recommendation", :locals => {:dbe => dbe} %>
-                                      <% elsif dbe.action == DashboardEntry::ENTRY_TYPE[:mortar_recommendation] %>
-                                          <%= render :partial => "/notification_mailer/partials/mortar_recommendation", :locals => {:dbe => dbe} %>
-                                      <% elsif dbe.action == DashboardEntry::ENTRY_TYPE[:channel_recommendation] %>
-                                          <%= render :partial => "/notification_mailer/partials/channel_recommendation", :locals => {:dbe => dbe} %>
-                                      <% end %>
+                                      <%= render :partial => '/notification_mailer/partials/frame',
+                                          :locals => {
+                                            :embed_video    => true,
+                                            :frame          => dbe.frame,
+                                            :frame_owner    => dbe.frame.creator,
+                                            :ga_category    => "Email",
+                                            :is_mobile      => false,
+                                            :roll_type      => nil,
+                                            :signed_in_user => {},
+                                            :video  => dbe.frame.video,
+                                            :dbe => dbe }
+                                      %>
 
                                     <% end %>
 
