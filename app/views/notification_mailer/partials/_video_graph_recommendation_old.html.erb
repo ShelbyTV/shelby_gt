@@ -1,0 +1,18 @@
+<p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;margin-top: 0">
+  <%= highlight(message_text(dbe, nil), dbe.src_frame.creator.nickname, :highlighter => "<b>\\1</b>") %>
+</p>
+
+<h2 style="font-size: <%= Settings::Email.font_size %>; margin: 0 0 5px;">
+<a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{dbe.id.to_s}" %>" style="color: <%= Settings::Email.ui_black %>;text-decoration: none;">
+  <%= dbe.frame.video.title %>
+</a>
+</h2>
+
+<a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{dbe.id.to_s}" %>">
+<% video_description = truncate(dbe.frame.video.description || dbe.frame.video.title, length: 100, separator: ' ') %>
+<img src="<%= dbe.frame.video.thumbnail_url %>" style="width: 100%;height: auto; border:2px solid <%= Settings::Email.ui_green %>;min-height:50px;" alt="<%= video_description %>" title="<%= video_description %>"/>
+</a>
+
+<p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;">
+If you haven't seen it, <a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{dbe.frame.id.to_s}" %>" style="color: <%= Settings::Email.ui_soft_black %>">watch it now</a>!
+</p>

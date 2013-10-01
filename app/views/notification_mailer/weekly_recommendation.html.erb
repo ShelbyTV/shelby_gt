@@ -7,7 +7,7 @@
             <!-- main -->
             <table border="0" cellspacing="0" cellpadding="0">
               <tbody>
-                <%= render :partial => "/objects/summary_text", :locals => { :text => message_text(@new_dbe, @friend_users) } %>
+                <%= render :partial => "/objects/summary_text", :locals => { :text => message_subject(@dbes, @friend_users) } %>
 
                 <%= render :partial => "/objects/header" %>
 
@@ -27,55 +27,17 @@
                                       Recommended for you:
                                     </h1>
 
-                                    <% if @new_dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation] %>
-                                      <p>
-                                        <table border="0" cellspacing="0" cellpadding="0">
-                                          <tr>
-                                            <td style="width: 50px; vertical-align: top">
-                                              <img src="<%= avatar_url_for_user(@friend_users.first) %>" width="40" height="40" alt="<%= @highlighted_username %>" title="<%= @highlighted_username %>" />
-                                            </td>
-                                            <td style="vertical-align: top">
+                                    <% @dbes.each do |dbe| %>
+
+                                      <% if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation] %>
+                                          <%= render :partial => "/notification_mailer/partials/video_graph_recommendation", :locals => {:dbe => dbe} %>
+                                      <% elsif dbe.action == DashboardEntry::ENTRY_TYPE[:mortar_recommendation] %>
+                                          <%= render :partial => "/notification_mailer/partials/mortar_recommendation", :locals => {:dbe => dbe} %>
+                                      <% elsif dbe.action == DashboardEntry::ENTRY_TYPE[:channel_recommendation] %>
+                                          <%= render :partial => "/notification_mailer/partials/channel_recommendation", :locals => {:dbe => dbe} %>
+                                      <% end %>
+
                                     <% end %>
-
-                                              <p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;margin-top: 0">
-                                                <%= highlight(message_text(@new_dbe, @friend_users), @highlighted_username, :highlighter => "<b>\\1</b>") %>
-                                              </p>
-
-                                    <% if @new_dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation] %>
-                                            </td>
-                                          </tr>
-                                        </table>
-                                      </p>
-                                    <% end %>
-
-                                    <h2 style="font-size: <%= Settings::Email.font_size %>; margin: 0 0 5px;">
-                                      <a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{@new_dbe.id.to_s}" %>" style="color: <%= Settings::Email.ui_black %>;text-decoration: none;">
-                                        <%= @new_frame.video.title %>
-                                      </a>
-                                    </h2>
-
-                                    <a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{@new_dbe.id.to_s}" %>">
-                                      <% video_description = truncate(@new_frame.video.description || @new_frame.video.title, length: 100, separator: ' ') %>
-                                      <img src="<%= @new_frame.video.thumbnail_url %>" style="width: 100%;height: auto; border:2px solid <%= Settings::Email.ui_green %>;min-height:50px;" alt="<%= video_description %>" title="<%= video_description %>"/>
-                                    </a>
-
-                                    <% if @new_dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation] && @friend_users.count > 1%>
-                                      <p>
-                                        <table border="0" cellspacing="0" cellpadding="0">
-                                          <tr>
-                                            <% @friend_users[1..10].each do |u| %>
-                                              <td style="width: 38px">
-                                                <img src="<%= avatar_url_for_user(u) %>" width="28" height="28" alt="<%= u.nickname %>" title="<%= u.nickname %>" />
-                                              </td>
-                                            <% end %>
-                                          </tr>
-                                        </table>
-                                      </p>
-                                    <% end %>
-
-                                    <p style="color: <%= Settings::Email.ui_soft_black %>;line-height: <%= Settings::Email.line_height %>;">
-                                      If you haven't seen it, <a href="<%= "#{Settings::Email.web_url_base}/stream?entry=#{@new_dbe.id.to_s}" %>" style="color: <%= Settings::Email.ui_soft_black %>">watch it now</a>!
-                                    </p>
 
                                     <!-- END BODY -->
                                 </td>
