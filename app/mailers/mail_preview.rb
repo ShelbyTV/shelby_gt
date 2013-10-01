@@ -46,22 +46,25 @@ if Rails.env.development?
 
       def weekly_recommendation_video_graph
         user      = User.first
-        frame     = Factory.create(:frame, :video => Video.first)
+        frame     = Factory.create(:frame, :video => Video.first, :creator => user, :conversation => Conversation.first)
 
         src_user  = User.last #Factory.create(:user)
-        src_frame = Factory.create(:frame, :creator => src_user)
+        src_frame = Factory.create(:frame, :creator => src_user, :conversation => Conversation.first)
 
         db_entry  = Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+
+        db_entries = []
+        3.times.each {|i| db_entries << db_entry }
 
         #permalinks ≠ state dependent,
         #relative to user's stream
 
-        NotificationMailer.weekly_recommendation(user, db_entry)
+        NotificationMailer.weekly_recommendation(user, db_entries)
       end
 
       def weekly_recommendation_entertainment_graph
         user      = User.first
-        frame     = Factory.create(:frame, :video => Video.first)
+        frame     = Factory.create(:frame, :video => Video.first, :creator => user)
 
         friend_liker_ids  = User.skip(1).limit(6).all.map {|u| u.id}
 
