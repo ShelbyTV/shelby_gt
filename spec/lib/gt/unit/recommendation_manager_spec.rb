@@ -408,7 +408,7 @@ describe GT::RecommendationManager do
 
     it "should fetch dbes from the specified user channel" do
       dbe_query = double("dbe_query")
-      dbe_query.stub_chain(:order, :limit, :fields, :all).and_return([])
+      dbe_query.stub_chain(:order, :limit, :fields).and_return([])
       DashboardEntry.should_receive(:where).with(:user_id => @channel_user.id).and_return(dbe_query)
 
       @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should == []
@@ -428,7 +428,7 @@ describe GT::RecommendationManager do
         end
 
         dbe_query = double("dbe_query")
-        dbe_query.stub_chain(:order, :limit, :fields, :all).and_return(@dbes)
+        dbe_query.stub_chain(:order, :limit, :fields).and_return(@dbes)
         DashboardEntry.stub(:where).with(:user_id => @channel_user.id).and_return(dbe_query)
       end
 
@@ -538,6 +538,109 @@ describe GT::RecommendationManager do
       end
 
     end
+  end
+
+  context "get_recs_for_user" do
+      before(:each) do
+        @user = Factory.create(:user)
+        @featured_channel_user = Factory.create(:user)
+        Settings::Channels['featured_channel_user_id'] = @featured_channel_user.id.to_s
+        @recommendation_manager = GT::RecommendationManager.new(@user)
+      end
+
+      it "should map and return results correctly" do
+        video_graph_rec = { :src_frame_id => "someid", :importantstuff => "ishere"}
+        mortar_rec = { :something => 'somethingelse'}
+        channel_rec = { :somethingdifferent => 'moredate'}
+
+        @recommendation_manager.stub(:get_video_graph_recs_for_user).and_return([video_graph_rec])
+        @recommendation_manager.stub(:get_mortar_recs_for_user).and_return([mortar_rec])
+        @recommendation_manager.stub(:get_channel_recs_for_user).and_return([channel_rec])
+
+        @recommendation_manager.get_recs_for_user({ :sources => [31, 33, 34], :limits => [1, 1, 1] }).should == [
+          {
+            :src_id => "someid",
+            :importantstuff => "ishere",
+            :action =>  DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+          },
+          mortar_rec,
+          channel_rec
+        ]
+      end
+
+      it "raises an error if the sources and limits options arrays are not the same length" do
+        expect {
+          @recommendation_manager.get_recs_for_user({ :sources => [], :limits => [1,2] })
+        }.to raise_error(ArgumentError, ":sources and :limits options must be Arrays of the same length")
+
+        expect {
+          @recommendation_manager.get_recs_for_user({ :sources => 1, :limits => 2 })
+        }.to raise_error(ArgumentError, ":sources and :limits options must be Arrays of the same length")
+      end
+
+      it "uses video graph and mortar as sources by default" do
+        @recommendation_manager.should_receive(:get_video_graph_recs_for_user).ordered.and_return([])
+        @recommendation_manager.should_receive(:get_mortar_recs_for_user).ordered.and_return([])
+        @recommendation_manager.should_not_receive(:get_channel_recs_for_user)
+
+        @recommendation_manager.get_recs_for_user.should == []
+      end
+
+      it "calls methods to get the right kinds of recommendations based on the options" do
+        @recommendation_manager.should_receive(:get_channel_recs_for_user).ordered.and_return([])
+        @recommendation_manager.should_receive(:get_video_graph_recs_for_user).ordered.and_return([])
+        @recommendation_manager.should_not_receive(:get_mortar_recs_for_user)
+
+        @recommendation_manager.get_recs_for_user({ :sources => [34,31], :limits => [3, 3] })
+      end
+
+      it "calls the recommendation functions for each recommendation source with the right default parameters" do
+        limits = [1,2,3]
+
+        @recommendation_manager.should_receive(:get_video_graph_recs_for_user).with(
+          Settings::Recommendations.video_graph_from_stream['entries_to_scan'],
+          limits[0],
+          Settings::Recommendations.video_graph_from_stream['min_score']
+        ).ordered().and_return(Array.new(limits[0]) { {} })
+        @recommendation_manager.should_receive(:get_mortar_recs_for_user).with(limits[1]).ordered().and_return(Array.new(limits[1]) { {} })
+        @recommendation_manager.should_receive(:get_channel_recs_for_user).with(@featured_channel_user.id.to_s, limits[2]).ordered().and_return(Array.new(limits[2]) { {} })
+
+        @recommendation_manager.get_recs_for_user({ :sources => [31, 33, 34], :limits => limits }).length.should == 6
+      end
+
+      it "passes through the appropriate options to get_video_graph_recs_for_user" do
+        @recommendation_manager.should_receive(:get_video_graph_recs_for_user).with(
+          20,
+          1,
+          100.0
+        ).ordered().and_return([ {} ])
+
+        @recommendation_manager.get_recs_for_user({
+          :sources => [31],
+          :limits => [1],
+          :video_graph_entries_to_scan => 20,
+          :video_graph_min_score => 100.0
+        }).length.should == 1
+      end
+
+      it "tries to fill in extras of the last type of recommendation if the earlier types don't find enough" do
+        limits = [2,3]
+
+        @recommendation_manager.should_receive(:get_mortar_recs_for_user).with(limits[0]).ordered().and_return([{}])
+        @recommendation_manager.should_receive(:get_channel_recs_for_user).with(@featured_channel_user.id.to_s, 4).ordered().and_return(Array.new(4) { {} })
+
+        @recommendation_manager.get_recs_for_user({ :sources => [33, 34], :limits => limits }).length.should == 5
+      end
+
+      it "doesn't fill in extras if {:fill_in_with_final_type => false} option is passed" do
+        limits = [2,3]
+
+        @recommendation_manager.should_receive(:get_mortar_recs_for_user).with(limits[0]).ordered().and_return([{}])
+        @recommendation_manager.should_receive(:get_channel_recs_for_user).with(@featured_channel_user.id.to_s, 3).ordered().and_return(Array.new(3) { {} })
+
+        @recommendation_manager.get_recs_for_user({ :sources => [33, 34], :limits => limits, :fill_in_with_final_type => false }).length.should == 4
+      end
+
   end
 
   context "filter_recs" do

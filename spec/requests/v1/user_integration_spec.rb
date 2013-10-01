@@ -519,43 +519,31 @@ describe 'v1/user' do
         response.body.should have_json_size(0).at_path("result")
       end
 
-      context "sources parameter" do
-        it "should use video graph and mortar as sources by deafault" do
-          GT::RecommendationManager.any_instance.should_receive(:get_video_graph_recs_for_user).and_return([])
-          GT::RecommendationManager.any_instance.should_receive(:get_mortar_recs_for_user).and_return([])
-          GT::RecommendationManager.any_instance.should_not_receive(:get_channel_recs_for_user)
-          get '/v1/user/'+@u1.id+'/recommendations'
-        end
-
-        it "should parse the source entries and get the recommendations for the corresponding sources, ignoring invalid entries" do
-          GT::RecommendationManager.any_instance.should_receive(:get_video_graph_recs_for_user).and_return([])
-          GT::RecommendationManager.any_instance.should_receive(:get_channel_recs_for_user).and_return([])
-          GT::RecommendationManager.any_instance.should_not_receive(:get_mortar_recs_for_user)
-          expect { get '/v1/user/'+@u1.id+'/recommendations?sources=0,31,,,fred,!,34'}.not_to raise_error
-        end
+      it "should use video graph and mortar as sources by deafault" do
+        GT::RecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
+          :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]],
+          :limits => [3,3]
+        }).and_return([])
+        get '/v1/user/'+@u1.id+'/recommendations'
       end
 
-      it "should pass the right default parameters to the recommendation manager" do
-        GT::RecommendationManager.stub(:create_recommendation_dbentry).and_return({})
-        GT::RecommendationManager.any_instance.should_receive(:get_video_graph_recs_for_user).with(10, 3, 100.0).and_return([{}, {}, {}])
-        GT::RecommendationManager.any_instance.should_receive(:get_mortar_recs_for_user).with(3).and_return([])
-        GT::RecommendationManager.any_instance.should_receive(:get_channel_recs_for_user).with(@featured_channel_user.id.to_s, 3).and_return([])
-        get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
-      end
-
-      it "should try to fill in more mortar recommendations if video graph recommendations are not found" do
-        GT::RecommendationManager.any_instance.stub(:get_video_graph_recs_for_user).and_return([])
-        GT::RecommendationManager.any_instance.should_receive(:get_mortar_recs_for_user).with(6).and_return([])
-        GT::RecommendationManager.any_instance.should_receive(:get_channel_recs_for_user).with(@featured_channel_user.id.to_s, 3).and_return([])
-        get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
+      it "should parse the source entries and get the recommendations for the corresponding sources, ignoring invalid entries" do
+        GT::RecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
+          :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:channel_recommendation]],
+          :limits => [3,3]
+        }).and_return([])
+        expect { get '/v1/user/'+@u1.id+'/recommendations?sources=0,31,,,fred,!,34'}.not_to raise_error
       end
 
       it "should pass the right parameters from the api request to the recommendation manager" do
-        GT::RecommendationManager.any_instance.should_receive(:get_video_graph_recs_for_user).with(20, 10, 80.0).and_return([])
-        get '/v1/user/'+@u1.id+'/recommendations?limit=10&min_score=80.0&scan_limit=20&sources=31'
+        GT::RecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
+          :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]],
+          :limits => [3],
+          :video_graph_entries_to_scan => 20,
+          :video_graph_min_score => 80.0
+        }).and_return([])
+        get '/v1/user/'+@u1.id+'/recommendations?min_score=80.0&scan_limit=20&sources=31'
       end
-
-
 
       context "other user" do
         before(:each) do
@@ -762,6 +750,13 @@ describe 'v1/user' do
             get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
           }.should_not change { "#{DashboardEntry.count},#{Frame.count},#{Conversation.count}" }
         end
+
+        # it "should try to fill in more mortar recommendations if video graph recommendations are not found" do
+        #   GT::RecommendationManager.any_instance.stub(:get_video_graph_recs_for_user).and_return([])
+        #   GT::RecommendationManager.any_instance.should_receive(:get_mortar_recs_for_user).with(6).and_return([])
+        #   GT::RecommendationManager.any_instance.should_receive(:get_channel_recs_for_user).with(@featured_channel_user.id.to_s, 3).and_return([])
+        #   get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
+        # end
 
       end
     end

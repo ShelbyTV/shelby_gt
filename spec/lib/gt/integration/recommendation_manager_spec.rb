@@ -461,6 +461,74 @@ describe GT::RecommendationManager do
 
   end
 
+  context "get_recs_for_user" do
+    before(:each) do
+      @user = Factory.create(:user)
+      @featured_channel_user = Factory.create(:user)
+      Settings::Channels['featured_channel_user_id'] = @featured_channel_user.id.to_s
+      @recommendation_manager = GT::RecommendationManager.new(@user)
+
+      Array.any_instance.stub(:shuffle!)
+      GT::VideoProviderApi.stub(:get_video_info)
+
+      #create a video graph rec
+      v = Factory.create(:video)
+      @vid_graph_recommended_vid = Factory.create(:video)
+      rec = Factory.create(:recommendation, :recommended_video_id => @vid_graph_recommended_vid.id, :score => 100.0)
+      v.recs << rec
+
+      v.save
+
+      src_frame_creator = Factory.create(:user)
+      @vid_graph_src_frame = Factory.create(:frame, :video => v, :creator => src_frame_creator )
+
+      dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @user, :video_id => v.id)
+
+      dbe.save
+
+      #create a mortar rec
+      @mortar_recommended_vid = Factory.create(:video)
+      @mortar_src_vid = Factory.create(:video)
+      mortar_response = [{"item_id" => @mortar_recommended_vid.id.to_s, "reason_id" => @mortar_src_vid.id.to_s}]
+
+      GT::MortarHarvester.stub(:get_recs_for_user).and_return(mortar_response)
+
+      #create a channel rec
+      @featured_curator = Factory.create(:user)
+      @conversation = Factory.create(:conversation)
+      @message = Factory.create(:message, :text => "Some interesting text", :user_id => @featured_curator.id)
+      @conversation.messages << @message
+      @conversation.save
+
+      @channel_recommended_vid = Factory.create(:video)
+      @community_channel_frame = Factory.create(:frame, :creator_id => @featured_curator.id, :video_id => @channel_recommended_vid.id, :conversation_id => @conversation.id)
+      @community_channel_dbes = Factory.create(:dashboard_entry, :user_id => @featured_channel_user.id, :frame_id => @community_channel_frame.id, :video_id => @channel_recommended_vid.id)
+    end
+
+    it "returns the right results" do
+      MongoMapper::Plugins::IdentityMap.clear
+
+      res = @recommendation_manager.get_recs_for_user({ :sources => [31, 33, 34], :limits => [1, 1, 1] })
+      res.length.should == 3
+      res[0].should == {
+        :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+        :recommended_video_id => @vid_graph_recommended_vid.id,
+        :src_id => @vid_graph_src_frame.id
+      }
+      res[1].should == {
+        :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation],
+        :recommended_video_id => @mortar_recommended_vid.id,
+        :src_id => @mortar_src_vid.id
+      }
+      res[2].should == {
+        :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation],
+        :recommended_video_id => @channel_recommended_vid.id,
+        :src_id => @community_channel_frame.id
+      }
+    end
+
+  end
+
   context "filter_recs" do
     before(:each) do
       @viewed_roll = Factory.create(:roll)
