@@ -93,6 +93,13 @@ defaults: &defaults
           include_in: {onboarding: true}
         },
         {
+          display_title: "The Washington Post",
+          id: '4f92e06b9a725b23fb000b8a',
+          description: 'Watch news video, sports commentary, local and foreign reporting from The Washington Post',
+          display_thumbnail_src: 'http://i1.ytimg.com/i/Hd62-u_v4DvJ8TCFtpi4GA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
           display_title: 'The North Face',
           id: "4f95a19988ba6b25ae021141",
           description: "Never Stop Exploring. Athletes, expeditions, events, products, sustainability efforts, and more.",
