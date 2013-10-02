@@ -101,6 +101,10 @@ describe GT::RecommendationManager do
           result.should == @recommended_video_ids.each_with_index.map{|id, i| {:recommended_video_id => id, :src_frame_id => @src_frame_ids[i]}}
         end
 
+        it "limits to the proper number of results when there is a limit parameter" do
+          @recommendation_manager.get_video_graph_recs_for_user(10, 2).length.should == 2
+        end
+
         it "should exclude videos the user has already watched" do
           @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_video_ids[0]])
 
@@ -696,19 +700,19 @@ describe GT::RecommendationManager do
           Video.should_receive(:find).with(@recommended_videos[2].id.to_s).ordered.and_return(@recommended_videos[2])
         end
 
-        it "should work without a limit" do
+        it "works without a limit" do
           @recommendation_manager.send(:filter_recs, @recommendations).should == @recommendations
         end
 
-        it "should work when limit is large enough" do
+        it "returns all recs when limit is large enough" do
           @recommendation_manager.send(:filter_recs, @recommendations, { :limit => 3}).should == @recommendations
         end
 
-        it "should work when limit is bigger than the number of available recs" do
+        it "returns all recs when limit is bigger than the number of available recs" do
           @recommendation_manager.send(:filter_recs, @recommendations, { :limit => 4}).should == @recommendations
         end
 
-        it "should work when the video key is not the default" do
+        it "works when the video key is not the default" do
           @recommendations = @recommended_videos.map {|vid| { "rec_id" => vid.id.to_s }}
           @recommendation_manager.send(:filter_recs, @recommendations, { :limit => 3, :recommended_video_key => "rec_id"}).should == @recommendations
         end
@@ -725,8 +729,9 @@ describe GT::RecommendationManager do
         end
       end
 
-      it "should quit processing after it reaches the limit" do
+      it "quits processing after it reaches the limit" do
         Video.should_receive(:find).twice().and_return(@recommended_videos[0], @recommended_videos[1])
+        Video.should_not_receive(:find).with(@recommended_videos[2].id.to_s)
         @recommendation_manager.send(:filter_recs, @recommendations, { :limit => 2}).should == [
           @recommendations[0],
           @recommendations[1]
