@@ -4,7 +4,7 @@ require 'recommendation_manager'
 # INTEGRATION test
 describe GT::RecommendationManager do
   before(:each) do
-    GT::VideoManager.stub(:update_video_info)
+    GT::VideoProviderApi.stub(:get_video_info)
   end
 
   context "get_video_graph_recs_for_user" do
@@ -476,7 +476,6 @@ describe GT::RecommendationManager do
       @recommendation_manager = GT::RecommendationManager.new(@user)
 
       Array.any_instance.stub(:shuffle!)
-      GT::VideoProviderApi.stub(:get_video_info)
 
       #create a video graph rec
       v = Factory.create(:video)

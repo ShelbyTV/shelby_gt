@@ -4,7 +4,7 @@ require 'recommendation_manager'
 # UNIT test
 describe GT::RecommendationManager do
   before(:each) do
-    GT::VideoManager.stub(:update_video_info)
+    GT::VideoProviderApi.stub(:get_video_info)
   end
 
   context "constructor" do

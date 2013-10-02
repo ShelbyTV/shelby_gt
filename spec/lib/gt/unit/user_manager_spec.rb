@@ -1033,6 +1033,9 @@ describe GT::UserManager do
         end
 
         it "should not save twitter autocomplete info if the user doesn't have twitter auth" do
+            friend_ranker_double = double("friend_ranker", :get_friends_sorted_by_rank => [])
+            GT::FacebookFriendRanker.stub(:new).and_return(friend_ranker_double)
+
             omniauth = @omniauth_hash.clone()
             omniauth['provider'] = 'facebook'
             u = GT::UserManager.create_new_user_from_omniauth(omniauth)
