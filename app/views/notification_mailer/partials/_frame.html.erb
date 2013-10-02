@@ -1,56 +1,57 @@
-<article id="<%= frame['id'] %>" data-video_id="<%= video.id %>" class="animate_module frame js-frame js-<%= frame.id %>">
-  <span class="frame-header js-frame-activate">
-    <h1 class="frame-title" title="<%= video.title %>">
-      <%= video.title %>
-    </h1>
-  </span>
-
-  <div class="frame-body-wrapper clearfix">
-    <div class="frame-body">
-      <span class="image_module frame-thumbnail frame-thumbnail--tall js-frame-activate" style="background-image: url('<%= video.thumbnail_url %>');" role="img">
-          <img class="visuallyhidden" src="<%= video.thumbnail_url %>" title="<%- video.title %>" alt="<%- video.title %> thumbnail">
-        </span>
-    </div><!-- eo .frame-body -->
-
-    <footer class="media_module frame-footer clearfix">
-      <%
-        avatar = frame_owner.user_image_original || frame_owner.user_image
-        userNickname = frame_owner.nickname
-      %>
-      <a href="" class="js-track-event" data-ga_category="<%= ga_category %>" data-ga_action="Click Username" data-ga_label="<%= signed_in_user['nickname'] || "anonymous" %>" data-user_nickname="<%= userNickname %>">
-        <span class="image_module media_image avatar avatar--medium" style="background-image: url(<%= avatar %>);" role="img">
-          <img src="<%= avatar %>" class="cloaked">
-        </span>
-      </a>
-
-      <div class="media_body">
-        <span class="xuser-data-timestamp">
-          <%= frame.created_at %>
-        </span>
-
-        <p class="xuser-data">
-          <a href="#{}" class="js-track-event no-faux-link" data-ga_category="<%= ga_category %>" data-ga_action="Click Username" data-ga_label="<%= signed_in_user['nickname'] || "anonymous" %>" data-user_nickname="<%= userNickname %>"<% if frame_owner.name %> title="<%= frame_owner.name %>"<%end%>><strong><%= userNickname %></strong></a>
-        </p>
-
-        <% message = frame.conversation.messages.first.text if frame.conversation and frame.conversation.messages and frame.conversation.messages.first %>
-        <p class="xuser-message<%= " line-clamp js-toggle-comment" if message and frame.conversation.messages.first.text.length > 265%>">
-          <%= message %>
-        </p>
-      </div><!-- eo .media_body -->
-    </footer><!-- eo .media_module-->
-  </div><!-- eo .frame-body-wrapper -->
-
-  <div class="form_fieldset frame_interactions">
-    <span class="column one-half">
-      <button class="button_primer button_command button_command--flexible button_green one-whole js-share-init js-track-event" data-frame_id="<%= frame.id %>" data-ga_category="<%= ga_category %>" data-ga_action="Click Share" data-ga_label="<%= signed_in_user['nickname'] || "anonymous" %>" data-user_nickname="<%= userNickname %>">
-        <span class="icon icon-share"></span>Share…
-      </button>
-    </span><!--
-  --><span class="column one-half">
-      <button class="button_primer button_command button_command--flexible button_gray one-whole js-like js-track-event" data-frame_id="<%= frame.id %>" data-ga_category="<%= ga_category %>" data-ga_action="Click Like" data-ga_label="<%= signed_in_user['nickname'] || "anonymous" %>" data-user_nickname="<%= userNickname %>">
-          <span class="icon icon-like"></span>Like
-      </button>
-    </span>
-    <div class="share_panel frame-body-wrapper fin fin--top_left fin--edging clearfix js-shares hidden"></div>
-  </div>
-</article>
+<%
+  avatar = frame_owner.user_image_original || frame_owner.user_image
+  userNickname = frame_owner.nickname
+  message = frame.conversation.messages.first.text if frame.conversation and frame.conversation.messages and frame.conversation.messages.first
+%>
+<table>
+  <tr>
+    <td>
+      <span class="frame-header js-frame-activate">
+        <h1 class="frame-title" title="<%= video.title %>">
+          <%= video.title %>
+        </h1>
+      </span>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="<%= video.thumbnail_url %>" title="<%- video.title %>" alt="<%- video.title %> thumbnail">
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <table>
+        <tr>
+          <td>
+              <img src="<%= avatar %>">
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <table>
+              <tr>
+                <td>
+                  <p class="xuser-data">
+                    <a href="#{}" class="js-track-event no-faux-link" data-ga_category="<%= ga_category %>" data-ga_action="Click Username" data-ga_label="<%= signed_in_user['nickname'] || "anonymous" %>" data-user_nickname="<%= userNickname %>"<% if frame_owner.name %> title="<%= frame_owner.name %>"<%end%>><strong><%= userNickname %></strong></a>
+                  </p>
+                </td>
+                <td>
+                  <span class="xuser-data-timestamp">
+                    <%= frame.created_at %>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p class="xuser-message<%= " line-clamp js-toggle-comment" if message and frame.conversation.messages.first.text.length > 265%>">
+                    <%= message %>
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
