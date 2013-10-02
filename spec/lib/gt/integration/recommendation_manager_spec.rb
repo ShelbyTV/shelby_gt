@@ -87,7 +87,7 @@ describe GT::RecommendationManager do
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
       end
 
-      it "shoud exclude from consideration dashboard entries that are recommendations themselves" do
+      it "should exclude from consideration dashboard entries that are recommendations themselves" do
         MongoMapper::Plugins::IdentityMap.clear
         @dbes[2].action = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
         @dbes[2].save
@@ -98,10 +98,15 @@ describe GT::RecommendationManager do
         result.should include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
       end
 
-      it "should return only one recommended video by default" do
+      it "returns the proper number of recs based on the limit parameter" do
         MongoMapper::Plugins::IdentityMap.clear
-        result = @recommendation_manager.get_video_graph_recs_for_user
-        result.should == [{:recommended_video_id => @dbes.first.video.recs.first.recommended_video_id, :src_frame_id => @dbes.first.frame_id}]
+        @recommendation_manager.get_video_graph_recs_for_user.should == [
+          {:recommended_video_id => @dbes.first.video.recs.first.recommended_video_id, :src_frame_id => @dbes.first.frame_id}
+        ]
+        @recommendation_manager.get_video_graph_recs_for_user(10, 2).should == [
+          {:recommended_video_id => @dbes.first.video.recs[0].recommended_video_id, :src_frame_id => @dbes[0].frame_id},
+          {:recommended_video_id => @dbes.first.video.recs[1].recommended_video_id, :src_frame_id => @dbes[0].frame_id}
+        ]
       end
 
     end
@@ -372,6 +377,7 @@ describe GT::RecommendationManager do
 
     it "should return the recommended videos" do
       @recommendation_manager.get_mortar_recs_for_user.length.should == 1
+      @recommendation_manager.get_mortar_recs_for_user(2).length.should == 2
     end
 
     it "should skip videos the user has already watched" do
@@ -422,6 +428,7 @@ describe GT::RecommendationManager do
 
     it "should return the recommended videos" do
       @recommendation_manager.get_channel_recs_for_user(@channel_user.id).length.should == 1
+      @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 2).length.should == 2
     end
 
     it "should skip videos the user has already watched" do
