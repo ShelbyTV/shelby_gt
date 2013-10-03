@@ -34,34 +34,23 @@ class V1::RecommendationController < ApplicationController
       else
         sources = [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]]
       end
+      limits = Array.new(sources.length) { 3 }
       recs = []
 
-      scan_limit = params[:scan_limit] ? params[:scan_limit].to_i : 10
-      limit = params[:limit] ? params[:limit].to_i : 3
-      min_score = params[:min_score] ? params[:min_score].to_f : 100.0
-
-      if sources.include? DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-        # get some video graph recommendations
-        video_graph_recommendations = GT::RecommendationManager.get_video_graph_recs_for_user(@user, scan_limit, limit, min_score)
-        video_graph_recommendations.each do |rec|
-          # remap the name of the src key so that we can process all the recommendations together
-          rec[:src_id] = rec.delete(:src_frame_id)
-          rec[:action] = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+      rec_manager = GT::RecommendationManager.new(@user)
+      rec_options = {
+        :limits => limits,
+        :sources => sources
+      }
+      if (sources.include?(DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]))
+        if params[:scan_limit]
+          rec_options[:video_graph_entries_to_scan] = params[:scan_limit].to_i
         end
-        recs.concat(video_graph_recommendations)
+        if params[:min_score]
+          rec_options[:video_graph_min_score] = params[:min_score].to_f
+        end
       end
-
-      if sources.include? DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-        # get at least 3 mortar recs, but more if there weren't as many video graph recs as we wanted
-        num_mortar_recommendations = 3 + (limit - recs.count)
-        mortar_recommendations = GT::RecommendationManager.get_mortar_recs_for_user(@user, num_mortar_recommendations)
-        recs.concat(mortar_recommendations)
-      end
-
-      if sources.include? DashboardEntry::ENTRY_TYPE[:channel_recommendation]
-        channel_recommendations = GT::RecommendationManager.get_channel_recs_for_user(@user, Settings::Channels.featured_channel_user_id, 3)
-        recs.concat(channel_recommendations)
-      end
+      recs = rec_manager.get_recs_for_user(rec_options)
 
       @results = []
       # wrap the recommended videos in 'phantom' frames and dbentries that are not persisted to the db

@@ -519,43 +519,31 @@ describe 'v1/user' do
         response.body.should have_json_size(0).at_path("result")
       end
 
-      context "sources parameter" do
-        it "should use video graph and mortar as sources by deafault" do
-          GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).and_return([])
-          GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).and_return([])
-          GT::RecommendationManager.should_not_receive(:get_channel_recs_for_user)
-          get '/v1/user/'+@u1.id+'/recommendations'
-        end
-
-        it "should parse the source entries and get the recommendations for the corresponding sources, ignoring invalid entries" do
-          GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).and_return([])
-          GT::RecommendationManager.should_receive(:get_channel_recs_for_user).and_return([])
-          GT::RecommendationManager.should_not_receive(:get_mortar_recs_for_user)
-          expect { get '/v1/user/'+@u1.id+'/recommendations?sources=0,31,,,fred,!,34'}.not_to raise_error
-        end
+      it "should use video graph and mortar as sources by deafault" do
+        GT::RecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
+          :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]],
+          :limits => [3,3]
+        }).and_return([])
+        get '/v1/user/'+@u1.id+'/recommendations'
       end
 
-      it "should pass the right default parameters to the recommendation manager" do
-        GT::RecommendationManager.stub(:create_recommendation_dbentry).and_return({})
-        GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@u1, 10, 3, 100.0).and_return([{}, {}, {}])
-        GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 3).and_return([])
-        GT::RecommendationManager.should_receive(:get_channel_recs_for_user).with(@u1, @featured_channel_user.id.to_s, 3).and_return([])
-        get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
-      end
-
-      it "should try to fill in more mortar recommendations if video graph recommendations are not found" do
-        GT::RecommendationManager.stub(:get_video_graph_recs_for_user).and_return([])
-        GT::RecommendationManager.should_receive(:get_mortar_recs_for_user).with(@u1, 6).and_return([])
-        GT::RecommendationManager.should_receive(:get_channel_recs_for_user).with(@u1, @featured_channel_user.id.to_s, 3).and_return([])
-        get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
+      it "should parse the source entries and get the recommendations for the corresponding sources, ignoring invalid entries" do
+        GT::RecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
+          :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:channel_recommendation]],
+          :limits => [3,3]
+        }).and_return([])
+        expect { get '/v1/user/'+@u1.id+'/recommendations?sources=0,31,,,fred,!,34'}.not_to raise_error
       end
 
       it "should pass the right parameters from the api request to the recommendation manager" do
-        GT::RecommendationManager.should_receive(:get_video_graph_recs_for_user).with(@u1, 20, 10, 80.0).and_return([])
-        get '/v1/user/'+@u1.id+'/recommendations?limit=10&min_score=80.0&scan_limit=20&sources=31'
+        GT::RecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
+          :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]],
+          :limits => [3],
+          :video_graph_entries_to_scan => 20,
+          :video_graph_min_score => 80.0
+        }).and_return([])
+        get '/v1/user/'+@u1.id+'/recommendations?min_score=80.0&scan_limit=20&sources=31'
       end
-
-
 
       context "other user" do
         before(:each) do
@@ -586,68 +574,53 @@ describe 'v1/user' do
           Array.any_instance.stub(:shuffle!)
           GT::VideoProviderApi.stub(:get_video_info)
 
-          #create some video graph recs
-          @recommended_vids = []
-          @src_frames = []
+          #create a video graph rec
+          v = Factory.create(:video)
+          @vid_graph_recommended_vid = Factory.create(:video)
+          rec = Factory.create(:recommendation, :recommended_video_id => @vid_graph_recommended_vid.id, :score => 100.0)
+          v.recs << rec
 
-          3.times do
-            v = Factory.create(:video)
-            recommended_vid = Factory.create(:video)
-            @recommended_vids.unshift recommended_vid
-            rec = Factory.create(:recommendation, :recommended_video_id => recommended_vid.id, :score => 100.0)
-            v.recs << rec
+          v.save
 
-            v.save
+          src_frame_creator = Factory.create(:user)
+          @vid_graph_src_frame = Factory.create(:frame, :video => v, :creator => src_frame_creator )
 
-            src_frame_creator = Factory.create(:user)
-            src_frame = Factory.create(:frame, :video => v, :creator => src_frame_creator )
-            @src_frames.unshift src_frame
+          dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @u1, :video_id => v.id)
 
-            dbe = Factory.create(:dashboard_entry, :frame => src_frame, :user => @u1, :video_id => v.id)
+          dbe.save
 
-            dbe.save
-          end
-
-          #create some mortar recs
-          @mortar_recommended_vids = []
-          @src_vids = []
-          mortar_response = []
-
-          3.times do
-            recommended_vid = Factory.create(:video)
-            src_vid = Factory.create(:video)
-            @mortar_recommended_vids.unshift recommended_vid
-            @src_vids.unshift src_vid
-            mortar_response.unshift({"item_id" => recommended_vid.id.to_s, "reason_id" => src_vid.id.to_s})
-          end
+          #create a mortar rec
+          @mortar_recommended_vid = Factory.create(:video)
+          @mortar_src_vid = Factory.create(:video)
+          mortar_response = [{"item_id" => @mortar_recommended_vid.id.to_s, "reason_id" => @mortar_src_vid.id.to_s}]
 
           GT::MortarHarvester.stub(:get_recs_for_user).and_return(mortar_response)
 
-          #create some channel recs
-          @community_channel_dbes = []
-          @channel_recommended_vids = []
-          @community_channel_frames = []
+          #create a channel rec
           @featured_curator = Factory.create(:user)
           @conversation = Factory.create(:conversation)
           @message = Factory.create(:message, :text => "Some interesting text", :user_id => @featured_curator.id)
           @conversation.messages << @message
           @conversation.save
-          3.times do
-            video = Factory.create(:video)
-            @channel_recommended_vids.unshift video
-            frame = Factory.create(:frame, :creator_id => @featured_curator.id, :video_id => video.id, :conversation_id => @conversation.id)
-            @community_channel_frames.unshift frame
-            @community_channel_dbes.unshift Factory.create(:dashboard_entry, :user_id => @featured_channel_user.id, :frame_id => frame.id, :video_id => video.id)
-          end
+          @channel_recommended_vid = Factory.create(:video)
+          @community_channel_frame = Factory.create(:frame, :creator_id => @featured_curator.id, :video_id => @channel_recommended_vid.id, :conversation_id => @conversation.id)
+          @community_channel_dbe = Factory.create(:dashboard_entry, :user_id => @featured_channel_user.id, :frame_id => @community_channel_frame.id, :video_id => @channel_recommended_vid.id)
         end
 
-        it "should return the right number of results" do
+        it "should return the right number of results in the right order" do
           MongoMapper::Plugins::IdentityMap.clear
           get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
 
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result")
-          response.body.should have_json_size(9).at_path("result")
+          response.body.should have_json_size(3).at_path("result")
+
+          parsed_response = parse_json(response.body)
+          parsed_response["result"].map {|dbe| dbe["video_id"]}.should == [
+            @vid_graph_recommended_vid.id.to_s,
+            @mortar_recommended_vid.id.to_s,
+            @channel_recommended_vid.id.to_s
+          ]
         end
 
         it "should return the right attributes and contents for a video graph recommendation" do
@@ -658,6 +631,7 @@ describe 'v1/user' do
           response.body.should have_json_path("result/0/user_id")
           response.body.should have_json_path("result/0/action")
           response.body.should have_json_path("result/0/actor_id")
+          response.body.should have_json_path("result/0/video_id")
 
           response.body.should have_json_path("result/0/frame")
           response.body.should have_json_path("result/0/frame/video")
@@ -674,45 +648,48 @@ describe 'v1/user' do
           parsed_response["result"][0]["user_id"].should eq(@u1.id.to_s)
           parsed_response["result"][0]["action"].should eq(DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
           parsed_response["result"][0]["actor_id"].should eq(nil)
+          parsed_response["result"][0]["video_id"].should eq(@vid_graph_recommended_vid.id.to_s)
 
-          parsed_response["result"][0]["frame"]["video"]["id"].should eq(@recommended_vids[0].id.to_s)
-          parsed_response["result"][0]["frame"]["video"]["provider_name"].should eq(@recommended_vids[0].provider_name)
-          parsed_response["result"][0]["frame"]["video"]["provider_id"].should eq(@recommended_vids[0].provider_id)
+          parsed_response["result"][0]["frame"]["video"]["id"].should eq(@vid_graph_recommended_vid.id.to_s)
+          parsed_response["result"][0]["frame"]["video"]["provider_name"].should eq(@vid_graph_recommended_vid.provider_name)
+          parsed_response["result"][0]["frame"]["video"]["provider_id"].should eq(@vid_graph_recommended_vid.provider_id)
 
-          parsed_response["result"][0]["src_frame"]["id"].should eq(@src_frames[0].id.to_s)
-          parsed_response["result"][0]["src_frame"]["creator_id"].should eq(@src_frames[0].creator.id.to_s)
-          parsed_response["result"][0]["src_frame"]["creator"]["id"].should eq(@src_frames[0].creator.id.to_s)
-          parsed_response["result"][0]["src_frame"]["creator"]["nickname"].should eq(@src_frames[0].creator.nickname)
+          parsed_response["result"][0]["src_frame"]["id"].should eq(@vid_graph_src_frame.id.to_s)
+          parsed_response["result"][0]["src_frame"]["creator_id"].should eq(@vid_graph_src_frame.creator.id.to_s)
+          parsed_response["result"][0]["src_frame"]["creator"]["id"].should eq(@vid_graph_src_frame.creator.id.to_s)
+          parsed_response["result"][0]["src_frame"]["creator"]["nickname"].should eq(@vid_graph_src_frame.creator.nickname)
         end
 
         it "should return the right attributes and contents for a mortar recommendation" do
           MongoMapper::Plugins::IdentityMap.clear
           get '/v1/user/'+@u1.id+'/recommendations?sources=33'
 
-          response.body.should have_json_path("result/2/id")
-          response.body.should have_json_path("result/2/user_id")
-          response.body.should have_json_path("result/2/action")
-          response.body.should have_json_path("result/2/actor_id")
+          response.body.should have_json_path("result/0/id")
+          response.body.should have_json_path("result/0/user_id")
+          response.body.should have_json_path("result/0/action")
+          response.body.should have_json_path("result/0/actor_id")
+          response.body.should have_json_path("result/0/video_id")
 
-          response.body.should have_json_path("result/2/frame")
-          response.body.should have_json_path("result/2/frame/video")
+          response.body.should have_json_path("result/0/frame")
+          response.body.should have_json_path("result/0/frame/video")
 
-          response.body.should have_json_path("result/2/src_video")
-          response.body.should have_json_path("result/2/src_video/id")
-          response.body.should have_json_path("result/2/src_video/title")
+          response.body.should have_json_path("result/0/src_video")
+          response.body.should have_json_path("result/0/src_video/id")
+          response.body.should have_json_path("result/0/src_video/title")
 
           parsed_response = parse_json(response.body)
 
-          parsed_response["result"][2]["user_id"].should eq(@u1.id.to_s)
-          parsed_response["result"][2]["action"].should eq(DashboardEntry::ENTRY_TYPE[:mortar_recommendation])
-          parsed_response["result"][2]["actor_id"].should eq(nil)
+          parsed_response["result"][0]["user_id"].should eq(@u1.id.to_s)
+          parsed_response["result"][0]["action"].should eq(DashboardEntry::ENTRY_TYPE[:mortar_recommendation])
+          parsed_response["result"][0]["actor_id"].should eq(nil)
+          parsed_response["result"][0]["video_id"].should eq(@mortar_recommended_vid.id.to_s)
 
-          parsed_response["result"][2]["frame"]["video"]["id"].should eq(@mortar_recommended_vids.last.id.to_s)
-          parsed_response["result"][2]["frame"]["video"]["provider_name"].should eq(@mortar_recommended_vids.last.provider_name)
-          parsed_response["result"][2]["frame"]["video"]["provider_id"].should eq(@mortar_recommended_vids.last.provider_id)
+          parsed_response["result"][0]["frame"]["video"]["id"].should eq(@mortar_recommended_vid.id.to_s)
+          parsed_response["result"][0]["frame"]["video"]["provider_name"].should eq(@mortar_recommended_vid.provider_name)
+          parsed_response["result"][0]["frame"]["video"]["provider_id"].should eq(@mortar_recommended_vid.provider_id)
 
-          parsed_response["result"][2]["src_video"]["id"].should eq(@src_vids.last.id.to_s)
-          parsed_response["result"][2]["src_video"]["title"].should eq(@src_vids.last.title)
+          parsed_response["result"][0]["src_video"]["id"].should eq(@mortar_src_vid.id.to_s)
+          parsed_response["result"][0]["src_video"]["title"].should eq(@mortar_src_vid.title)
         end
 
         it "should return the right attributes and contents for a channel recommendation" do
@@ -723,6 +700,7 @@ describe 'v1/user' do
           response.body.should have_json_path("result/0/user_id")
           response.body.should have_json_path("result/0/action")
           response.body.should have_json_path("result/0/actor_id")
+          response.body.should have_json_path("result/0/video_id")
 
           response.body.should have_json_path("result/0/frame")
           response.body.should have_json_path("result/0/frame/video")
@@ -742,12 +720,13 @@ describe 'v1/user' do
           parsed_response["result"][0]["user_id"].should eq(@u1.id.to_s)
           parsed_response["result"][0]["action"].should eq(DashboardEntry::ENTRY_TYPE[:channel_recommendation])
           parsed_response["result"][0]["actor_id"].should eq(@featured_curator.id.to_s)
+          parsed_response["result"][0]["video_id"].should eq(@channel_recommended_vid.id.to_s)
 
-          parsed_response["result"][0]["frame"]["video"]["id"].should eq(@channel_recommended_vids[0].id.to_s)
-          parsed_response["result"][0]["frame"]["video"]["provider_name"].should eq(@channel_recommended_vids[0].provider_name)
-          parsed_response["result"][0]["frame"]["video"]["provider_id"].should eq(@channel_recommended_vids[0].provider_id)
+          parsed_response["result"][0]["frame"]["video"]["id"].should eq(@channel_recommended_vid.id.to_s)
+          parsed_response["result"][0]["frame"]["video"]["provider_name"].should eq(@channel_recommended_vid.provider_name)
+          parsed_response["result"][0]["frame"]["video"]["provider_id"].should eq(@channel_recommended_vid.provider_id)
 
-          parsed_response["result"][0]["frame"]["id"].should eq(@community_channel_frames[0].id.to_s)
+          parsed_response["result"][0]["frame"]["id"].should eq(@community_channel_frame.id.to_s)
           parsed_response["result"][0]["frame"]["creator_id"].should eq(@featured_curator.id.to_s)
           parsed_response["result"][0]["frame"]["creator"]["id"].should eq(@featured_curator.id.to_s)
           parsed_response["result"][0]["frame"]["creator"]["nickname"].should eq(@featured_curator.nickname)
@@ -762,6 +741,13 @@ describe 'v1/user' do
             get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
           }.should_not change { "#{DashboardEntry.count},#{Frame.count},#{Conversation.count}" }
         end
+
+        # it "should try to fill in more mortar recommendations if video graph recommendations are not found" do
+        #   GT::RecommendationManager.any_instance.stub(:get_video_graph_recs_for_user).and_return([])
+        #   GT::RecommendationManager.any_instance.should_receive(:get_mortar_recs_for_user).with(6).and_return([])
+        #   GT::RecommendationManager.any_instance.should_receive(:get_channel_recs_for_user).with(@featured_channel_user.id.to_s, 3).and_return([])
+        #   get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
+        # end
 
       end
     end

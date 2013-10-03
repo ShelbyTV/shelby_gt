@@ -1,0 +1,17 @@
+defaults: &defaults
+  video_graph_from_stream : {
+    entries_to_scan : 10,
+    min_score : 40.0
+  }
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+
+arnold:
+  <<: *production

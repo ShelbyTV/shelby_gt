@@ -1,7 +1,7 @@
 collection @results
 
 glue :dashboard_entry do
-  attributes :id, :user_id, :action, :actor_id, :src_frame_id
+  attributes :id, :user_id, :action, :actor_id, :src_frame_id, :video_id
 
   child :src_frame => 'src_frame' do
 

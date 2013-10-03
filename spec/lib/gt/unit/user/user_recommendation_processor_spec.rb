@@ -10,7 +10,7 @@ describe GT::UserRecommendationProcessor do
   before(:each) do
     @user = Factory.create(:user)
     @user.viewed_roll = Factory.create(:roll, :creator => @user)
-    GT::VideoManager.stub(:update_video_info)
+    GT::VideoProviderApi.stub(:get_video_info)
   end
 
   context "send_rec_email" do

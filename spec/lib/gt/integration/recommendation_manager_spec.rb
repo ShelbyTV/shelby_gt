@@ -4,7 +4,7 @@ require 'recommendation_manager'
 # INTEGRATION test
 describe GT::RecommendationManager do
   before(:each) do
-    GT::VideoManager.stub(:update_video_info)
+    GT::VideoProviderApi.stub(:get_video_info)
   end
 
   context "get_video_graph_recs_for_user" do
@@ -38,13 +38,15 @@ describe GT::RecommendationManager do
       end
 
       @recommended_videos.flatten!
+
+      @recommendation_manager = GT::RecommendationManager.new(@user)
     end
 
     it "should return all of the recommendations when there are no restricting limits" do
       Array.any_instance.should_receive(:shuffle!).and_call_original
 
       MongoMapper::Plugins::IdentityMap.clear
-      result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 10)
+      result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
       result_video_ids = result.map{|rec|rec[:recommended_video_id]}
       result_video_ids.length.should == @recommended_videos.length
       (result_video_ids - @recommended_videos.map { |v| v.id }).should == []
@@ -58,7 +60,7 @@ describe GT::RecommendationManager do
 
       it "should return all of the recommendations when there are no restricting limits" do
         MongoMapper::Plugins::IdentityMap.clear
-        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 10)
+        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
         result.length.should == @recommended_videos.length
         result.should == @recommended_videos.each_with_index.map{|vid, i| {:recommended_video_id => vid.id, :src_frame_id => @src_frame_ids[i]}}
       end
@@ -68,7 +70,7 @@ describe GT::RecommendationManager do
         @viewed_roll.frames << @viewed_frame
 
         MongoMapper::Plugins::IdentityMap.clear
-        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 10)
+        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
@@ -79,27 +81,32 @@ describe GT::RecommendationManager do
         @recommended_videos[0].available = false
         @recommended_videos[0].save
 
-        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 10)
+        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
       end
 
-      it "shoud exclude from consideration dashboard entries that are recommendations themselves" do
+      it "should exclude from consideration dashboard entries that are recommendations themselves" do
         MongoMapper::Plugins::IdentityMap.clear
         @dbes[2].action = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
         @dbes[2].save
 
-        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user, 10, 10)
+        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos.last.id, :src_frame_id => @src_frame_ids.last})
         result.should include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
       end
 
-      it "should return only one recommended video by default" do
+      it "returns the proper number of recs based on the limit parameter" do
         MongoMapper::Plugins::IdentityMap.clear
-        result = GT::RecommendationManager.get_video_graph_recs_for_user(@user)
-        result.should == [{:recommended_video_id => @dbes.first.video.recs.first.recommended_video_id, :src_frame_id => @dbes.first.frame_id}]
+        @recommendation_manager.get_video_graph_recs_for_user.should == [
+          {:recommended_video_id => @dbes.first.video.recs.first.recommended_video_id, :src_frame_id => @dbes.first.frame_id}
+        ]
+        @recommendation_manager.get_video_graph_recs_for_user(10, 2).should == [
+          {:recommended_video_id => @dbes.first.video.recs[0].recommended_video_id, :src_frame_id => @dbes[0].frame_id},
+          {:recommended_video_id => @dbes.first.video.recs[1].recommended_video_id, :src_frame_id => @dbes[0].frame_id}
+        ]
       end
 
     end
@@ -364,17 +371,20 @@ describe GT::RecommendationManager do
         {"item_id" => @recommended_videos[1].id.to_s, "reason_id" => @reason_videos[1].id.to_s},
         {"item_id" => @recommended_videos[2].id.to_s, "reason_id" => @reason_videos[2].id.to_s}
       ])
+
+      @recommendation_manager = GT::RecommendationManager.new(@user)
     end
 
     it "should return the recommended videos" do
-      GT::RecommendationManager.get_mortar_recs_for_user(@user).length.should == 1
+      @recommendation_manager.get_mortar_recs_for_user.length.should == 1
+      @recommendation_manager.get_mortar_recs_for_user(2).length.should == 2
     end
 
     it "should skip videos the user has already watched" do
       @viewed_frame = Factory.create(:frame, :video_id => @recommended_videos[0].id, :creator => @user)
       @viewed_roll.frames << @viewed_frame
 
-      GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+      @recommendation_manager.get_mortar_recs_for_user.should ==
         [{
           :recommended_video_id => @recommended_videos[1].id,
           :src_id => @reason_videos[1].id,
@@ -386,7 +396,7 @@ describe GT::RecommendationManager do
       @recommended_videos[0].available = false
       @recommended_videos[0].save
 
-      GT::RecommendationManager.get_mortar_recs_for_user(@user).should ==
+      @recommendation_manager.get_mortar_recs_for_user.should ==
         [{
           :recommended_video_id => @recommended_videos[1].id,
           :src_id => @reason_videos[1].id,
@@ -412,17 +422,20 @@ describe GT::RecommendationManager do
         @frames.unshift frame
         @dbes.unshift Factory.create(:dashboard_entry, :user_id => @channel_user.id, :frame_id => frame.id, :video_id => video.id)
       end
+
+      @recommendation_manager = GT::RecommendationManager.new(@user)
     end
 
     it "should return the recommended videos" do
-      GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).length.should == 1
+      @recommendation_manager.get_channel_recs_for_user(@channel_user.id).length.should == 1
+      @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 2).length.should == 2
     end
 
     it "should skip videos the user has already watched" do
       @viewed_frame = Factory.create(:frame, :video_id => @videos[0].id, :creator => @user)
       @viewed_roll.frames << @viewed_frame
 
-      GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).should ==
+      @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
           :recommended_video_id => @videos[1].id,
           :src_id => @frames[1].id,
@@ -434,7 +447,7 @@ describe GT::RecommendationManager do
       @videos[0].available = false
       @videos[0].save
 
-      GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).should ==
+      @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
           :recommended_video_id => @videos[1].id,
           :src_id => @frames[1].id,
@@ -445,12 +458,79 @@ describe GT::RecommendationManager do
     it "should skip frames that were created by the user for whom recommendations are being generated" do
       @dbes[0].actor_id = @user.id
 
-      GT::RecommendationManager.get_channel_recs_for_user(@user, @channel_user.id).should ==
+      @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
           :recommended_video_id => @videos[1].id,
           :src_id => @frames[1].id,
           :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation]
         }]
+    end
+
+  end
+
+  context "get_recs_for_user" do
+    before(:each) do
+      @user = Factory.create(:user)
+      @featured_channel_user = Factory.create(:user)
+      Settings::Channels['featured_channel_user_id'] = @featured_channel_user.id.to_s
+      @recommendation_manager = GT::RecommendationManager.new(@user)
+
+      Array.any_instance.stub(:shuffle!)
+
+      #create a video graph rec
+      v = Factory.create(:video)
+      @vid_graph_recommended_vid = Factory.create(:video)
+      rec = Factory.create(:recommendation, :recommended_video_id => @vid_graph_recommended_vid.id, :score => 100.0)
+      v.recs << rec
+
+      v.save
+
+      src_frame_creator = Factory.create(:user)
+      @vid_graph_src_frame = Factory.create(:frame, :video => v, :creator => src_frame_creator )
+
+      dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @user, :video_id => v.id)
+
+      dbe.save
+
+      #create a mortar rec
+      @mortar_recommended_vid = Factory.create(:video)
+      @mortar_src_vid = Factory.create(:video)
+      mortar_response = [{"item_id" => @mortar_recommended_vid.id.to_s, "reason_id" => @mortar_src_vid.id.to_s}]
+
+      GT::MortarHarvester.stub(:get_recs_for_user).and_return(mortar_response)
+
+      #create a channel rec
+      @featured_curator = Factory.create(:user)
+      @conversation = Factory.create(:conversation)
+      @message = Factory.create(:message, :text => "Some interesting text", :user_id => @featured_curator.id)
+      @conversation.messages << @message
+      @conversation.save
+
+      @channel_recommended_vid = Factory.create(:video)
+      @community_channel_frame = Factory.create(:frame, :creator_id => @featured_curator.id, :video_id => @channel_recommended_vid.id, :conversation_id => @conversation.id)
+      @community_channel_dbes = Factory.create(:dashboard_entry, :user_id => @featured_channel_user.id, :frame_id => @community_channel_frame.id, :video_id => @channel_recommended_vid.id)
+    end
+
+    it "returns the right results" do
+      MongoMapper::Plugins::IdentityMap.clear
+
+      res = @recommendation_manager.get_recs_for_user({ :sources => [31, 33, 34], :limits => [1, 1, 1] })
+      res.length.should == 3
+      res[0].should == {
+        :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+        :recommended_video_id => @vid_graph_recommended_vid.id,
+        :src_id => @vid_graph_src_frame.id
+      }
+      res[1].should == {
+        :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation],
+        :recommended_video_id => @mortar_recommended_vid.id,
+        :src_id => @mortar_src_vid.id
+      }
+      res[2].should == {
+        :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation],
+        :recommended_video_id => @channel_recommended_vid.id,
+        :src_id => @community_channel_frame.id
+      }
     end
 
   end
@@ -462,17 +542,19 @@ describe GT::RecommendationManager do
 
       @recommended_videos = [Factory.create(:video), Factory.create(:video), Factory.create(:video)]
       @recommendations = @recommended_videos.map {|vid| { :recommended_video_id => vid.id.to_s }}
+
+      @recommendation_manager = GT::RecommendationManager.new(@user)
     end
 
     it "return all recs" do
-      GT::RecommendationManager.filter_recs(@user, @recommendations).should == @recommendations
+      @recommendation_manager.send(:filter_recs, @recommendations).should == @recommendations
     end
 
     it "should skip videos the user has already watched" do
       @viewed_frame = Factory.create(:frame, :video_id => @recommended_videos[0].id, :creator => @user)
       @viewed_roll.frames << @viewed_frame
 
-        GT::RecommendationManager.filter_recs(@user, @recommendations, {:limit => 1}).should == [
+        @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
           @recommendations[1]
         ]
     end
@@ -481,7 +563,7 @@ describe GT::RecommendationManager do
       @recommended_videos[0].available = false
       @recommended_videos[0].save
 
-      GT::RecommendationManager.filter_recs(@user, @recommendations, {:limit => 1}).should == [
+      @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
         @recommendations[1]
       ]
     end
