@@ -7,7 +7,7 @@ require 'api_clients/kiss_metrics_client'
 #
 #
 module GT
-  class UserRecommendationProcessor
+  class RecommendationEmailProcessor
 
     def initialize(should_send_pde_recs=true, should_send_email=false)
       @pdbe_limit = 20 # How far back we are allowing this to search for a pdbe which hasn't been watched
@@ -21,60 +21,6 @@ module GT
       @should_send_pde_recs = should_send_pde_recs
 
       @should_send_email = should_send_email
-    end
-
-    def insert_recommendations_into_users_stream()
-      Rails.logger.info "[GT::UserEmailProcessor] STARTING PROCESS TO INSERT RECOMMENDATIONS"
-
-      found = 0
-      not_found =0
-      error_finding = 0
-      user_sendable = 0
-      user_loaded = 0
-
-      User.collection.find(
-        {:$and => [
-          {:primary_email => {:$ne => ""}},
-          {:primary_email => {:$ne => nil}},
-          {"preferences.email_updates" => true}
-        ]},
-        {
-          :timeout => false,
-          :fields => ["ac", "af", "ag", "primary_email", "preferences", "nickname"]
-        }
-      ) do |cursor|
-        cursor.each do |doc|
-          begin
-            user = User.load(doc)
-            user_loaded += 1
-
-            # check if they are real users that we need to process
-            if is_real?(user)
-              user_sendable += 1
-              # cycle through dashboard entries till a video is found with a recommendation
-              # NOTE: dbe_with_rec.class = DashboardEntry || PrioritizedDashboardEntry
-              if dbe_with_rec = scan_dashboard_entries_for_rec(user)
-                found += 1
-
-                new_dbe = nil
-                friend_users = nil
-                if dbe_with_rec.is_a?(DashboardEntry)
-                  # create new dashboard entry with action type = 31 (video graph rec) based on video
-                  new_dbe = create_new_dashboard_entry(user, dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
-                end
-
-                error_finding += 1 unless new_dbe
-              else
-                not_found += 1
-              end
-            end
-          rescue Exception => e
-            Rails.logger.info "[GT::UserEmailProcessor] EXCEPTION INSERTING RECOMMENDATION: #{e}"
-          end
-        end
-      end
-      Rails.logger.info "[GT::UserEmailProcessor] FINISHED PROCESS TO INSERT RECOMMENDATIONS"
-      Rails.logger.info "[GT::UserEmailProcessor] Users Loaded: #{user_loaded}, Rec Found: #{found} , Not found: #{not_found}, Error: #{error_finding}"
     end
 
     def process_and_send_rec_email(user_nicknames=nil, dont_send_until_address=nil)
