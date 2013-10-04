@@ -287,5 +287,28 @@ module GT
       return nil
     end
 
+    def self.process_and_send_recommendation_email_for_user(user)
+      rec_manager = GT::RecommendationManager.new(user)
+      recs = rec_manager.get_recs_for_user({
+        :limits => [1,1,1],
+        :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:channel_recommendation],  DashboardEntry::ENTRY_TYPE[:mortar_recommendation]],
+        :video_graph_entries_to_scan => 60
+      })
+
+      dbes = recs.map { |rec|
+        res = GT::RecommendationManager.create_recommendation_dbentry(
+          user,
+          rec[:recommended_video_id],
+          rec[:action],
+          {
+            :src_id => rec[:src_id]
+          }
+        )
+        res ? res[:dashboard_entry] : nil
+      }.compact.shuffle
+
+      GT::NotificationManager.send_weekly_recommendation(user, dbes) unless dbes.empty?
+    end
+
   end
 end
