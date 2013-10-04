@@ -202,7 +202,7 @@ describe NotificationMailer do
     #end
   end
 
-describe 'invite accepted notifications' do
+  describe 'invite accepted notifications' do
     before(:all) do
       @inviter = Factory.create(:user)
       @invitee = Factory.create(:user, :name => "bill")
@@ -221,6 +221,31 @@ describe 'invite accepted notifications' do
     end
 
     it 'renders the sender email' do
+      @email.from.should eq([Settings::Email.notification_sender])
+    end
+  end
+
+  describe 'weekly recommendation' do
+    before(:all) do
+      @user = Factory.create(:user)
+      @sharer = Factory.create(:user)
+      @video = Factory.create(:video)
+      @frame = Factory.create(:frame, :creator => @sharer, :video => @video)
+      @dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:channel_recommednation], :frame => @frame, :video => @video)
+    end
+
+    it 'renders the subject' do
+      @email = NotificationMailer.weekly_recommendation(@user, [@dbe])
+      @email.subject.should eq("Weekly recommendation")
+    end
+
+    it 'renders the receiver email' do
+      @email = NotificationMailer.weekly_recommendation(@user, [@dbe])
+      @email.to.should eq([@user.primary_email])
+    end
+
+    it 'renders the sender email' do
+      @email = NotificationMailer.weekly_recommendation(@user, [@dbe])
       @email.from.should eq([Settings::Email.notification_sender])
     end
   end

@@ -153,7 +153,7 @@ class NotificationMailer < ActionMailer::Base
     sendgrid_ganalytics_options(:utm_source => "#{user_to.nickname}", :utm_medium => 'notification', :utm_campaign => "weekly-recommendation")
 
     @dbes = dbes
-    @user_to   = user_to
+    @user_to = user_to
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
          :to => user_to.primary_email,
