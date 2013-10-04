@@ -326,4 +326,26 @@ describe GT::NotificationManager do
     end
   end
 
+  describe "weekly email notification" do
+    before(:each) do
+      @user = Factory.create(:user)
+      @sharer = Factory.create(:user)
+      @video = Factory.create(:video)
+      @frame = Factory.create(:frame, :creator => @sharer, :video => @video)
+      @dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:channel_recommednation], :frame => @frame, :video => @video)
+    end
+
+    it "should queue email to deliver" do
+      lambda {
+        GT::NotificationManager.send_weekly_recommendation(@user, [@dbe])
+      }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+
+    it "should pass through the right parameters to the mailer" do
+      NotificationMailer.should_receive(:weekly_recommendation).with(@user, [@dbe], nil).and_call_original
+
+      GT::NotificationManager.send_weekly_recommendation(@user, [@dbe])
+    end
+  end
+
 end
