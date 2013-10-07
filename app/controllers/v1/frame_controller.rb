@@ -7,7 +7,7 @@ require 'hashtag_processor'
 
 class V1::FrameController < ApplicationController
 
-  before_filter :user_authenticated?, :except => [:show, :watched, :short_link, :like]
+  before_filter :user_authenticated?, :except => [:show, :watched, :short_link, :like, :notify]
   # Assuming we're skipping CSRF for extension... that code needs to be fixed (see https://github.com/ShelbyTV/shelby-gt-web/issues/645)
   # Skipping on watched b/c it works for logged in and logged-out users
   skip_before_filter :verify_authenticity_token, :only => [:create, :watched]
