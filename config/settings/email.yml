@@ -47,7 +47,9 @@ defaults: &defaults
   join_roll_notification:
     category: "Follow Notifications"
     subject: "%{users_name} is following you on Shelby.tv!"
-
+  disqus_comment_notification:
+    category: "Comment Notifications"
+    subject: "Someone commented on the video you shared on Shelby.tv"
   # Deprecated Notifications ---------------------------------------------------
   comment_notification:
     category: "Comment Notifications"

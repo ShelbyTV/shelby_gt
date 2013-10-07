@@ -374,6 +374,26 @@ class V1::FrameController < ApplicationController
     end
   end
 
+##
+# notifies owner of frame that something happened
+#   AUTHENTICATION OPTIONAL
+#
+# [GET] /v1/frame/:id/notify
+#
+# @param [Required, String] id The id of the frame
+# @param [Required, String] type What type of notification should be sent
+def notify
+  StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['notify']) do
+    return render_error(404, "must specify the type of notification to send") unless params[:type]
+    if frame = Frame.find(params[:frame_id])
+      @status = 200
+      ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_comment_notification(frame) if params[:type] == "comment" }
+    else
+      render_error(404, "could not find frame")
+    end
+  end
+end
+
 
   ##
   # Destroys one frame, returning Success/Failure

@@ -44,6 +44,16 @@ if Rails.env.development?
         NotificationMailer.join_roll_notification(user_to, user_from, roll)
       end
 
+      def disqus_comment_notification # frame
+        user_to   = User.all.first
+        roll      = user_to.public_roll
+        video     = Video.all.last
+        user_to.primary_email = "TEST@TEST.COM"
+        frame     = Factory.create(:frame, :roll => roll, :video => video, :creator => user_to)
+
+        NotificationMailer.disqus_comment_notification(frame, user_to)
+      end
+
       def weekly_recommendation_video_graph
         user      = User.first
         frame     = Factory.create(:frame, :video => Video.first)
