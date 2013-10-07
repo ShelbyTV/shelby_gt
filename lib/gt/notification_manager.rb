@@ -77,6 +77,14 @@ module GT
 
     end
 
+    def self.check_and_send_comment_notification(frame)
+      raise ArgumentError, "must supply a Frame" unless frame.is_a?(Frame)
+
+      return unless frame.creator.preferences.comment_notifications
+
+      NotificationMailer.disqus_comment_notification(frame, frame.creator).deliver
+    end
+
     def self.check_and_send_join_roll_notification(user_from, roll)
       raise ArgumentError, "must supply valid user" unless user_from.is_a?(User) and !user_from.blank?
       raise ArgumentError, "must supply valid roll" unless roll.is_a?(Roll) and !roll.blank?

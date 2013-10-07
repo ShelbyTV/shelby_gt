@@ -42,6 +42,7 @@ defaults: &defaults
       destroy: 'frame.destroy'
       share: 'frame.share'
       short_link: 'frame.short_link'
+      notify: 'frame.notify'
     conversation:
       show: 'conversation.show'
       index: 'conversation.index'

@@ -1,0 +1,69 @@
+<% standard_html_email_wrapper do %>
+  <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="margin: 0;padding: 0;background-color: <%= Settings::Email.ui_off_white %>;height: 100%;width: 100%;font-family: <%= Settings::Email.font_family %>; color: <%= Settings::Email.ui_soft_black %>">
+    <tbody>
+      <tr height="0" valign="top">
+        <td>
+          <center>
+            <!-- main -->
+            <table border="0" cellspacing="0" cellpadding="0">
+              <tbody>
+                <%= render :partial => "/objects/summary_text", :locals => { :text => "Someone commented on: #{@frame.video.title}" } %>
+
+                <%= render :partial => "/objects/header" %>
+
+                <tr>
+                  <td>
+                    <table border="0" cellpadding="0" cellspacing="0" height="300" width="100%">
+                      <tr>
+                        <td>&nbsp;</td>
+                        <td style="width: <%= Settings::Email.main_column %>; background-color: <%= Settings::Email.ui_white %>; border: 1px solid <%= Settings::Email.ui_inset %>; font-weight: <%= Settings::Email.font_weight %>">
+                          <center>
+                            <table border="0" cellspacing="0" cellpadding="10">
+                              <tr>
+                                <td>
+                                  <!-- BODY -->
+                                    <center>
+                                      <a href="<%= @frame.permalink %>" style="text-decoration: none;color:#444; font-family: <%= Settings::Email.font_family %>; font-weight: <%= Settings::Email.font_weight %>;">
+                                        <img src="<%= @frame.video.thumbnail_url %>" width="100" height="80">
+                                      </a>
+                                      <br>
+                                      <p style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;">
+                                        Someone commented on: <b><%= @frame.video.title %></b>.
+                                      </p>
+                                    </center>
+                                  <!-- END BODY -->
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>
+                                  <center>
+                                    <div style="width:278px">
+                                      <a href="<%= @frame.permalink %>" style="text-decoration: none;color:#444; font-family: <%= Settings::Email.font_family %>; font-weight: <%= Settings::Email.font_weight %>;">
+                                        <div style="height:27px; background-color: <%= Settings::Email.ui_green %>; color: <%= Settings::Email.ui_white %>;text-align: center;border: 1px solid #056083;padding-top: 9px;">
+                                            Go see the conversation
+                                        </div>
+                                      </a>
+                                    </div>
+                                  </center>
+                                </td>
+                              </tr>
+                            </table>
+                          </center>
+
+                        </td>
+                        <td>&nbsp;</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <%= render :partial => "/objects/footer" %>
+              </tbody>
+            </table>
+            <!-- eo main -->
+          </center>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+<% end %>

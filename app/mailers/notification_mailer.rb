@@ -33,6 +33,18 @@ class NotificationMailer < ActionMailer::Base
       :subject => subject
   end
 
+  def disqus_comment_notification(frame, user_to)
+    sendgrid_category Settings::Email.disqus_comment_notification["category"]
+
+    sendgrid_ganalytics_options(:utm_source => frame.id.to_s, :utm_medium => 'disqus_comment', :utm_campaign => "notification")
+
+    @frame = frame
+
+    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
+      :to => user_to.primary_email,
+      :subject => Settings::Email.disqus_comment_notification['subject']
+  end
+
   def reroll_notification(old_frame, new_frame)
     sendgrid_category Settings::Email.reroll_notification["category"]
 

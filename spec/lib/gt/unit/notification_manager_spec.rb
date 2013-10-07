@@ -197,6 +197,38 @@ describe GT::NotificationManager do
 
   end
 
+  describe "comment notifications" do
+    before(:each) do
+      @frame_creator = Factory.create(:user)
+
+      @frame = Factory.create(:frame,
+        :creator => @frame_creator,
+        :video => Factory.create(:video))
+    end
+
+    it "should raise error with bad frame or type" do
+      lambda {
+        GT::NotificationManager.check_and_send_comment_notification(@frame_creator)
+      }.should raise_error(ArgumentError)
+    end
+
+    it "should not send email if user has chosen to not receive emails" do
+      @frame_creator.preferences.comment_notifications = false
+      @frame_creator.save
+      lambda {
+        GT::NotificationManager.check_and_send_comment_notification(@frame)
+      }.should change(ActionMailer::Base.deliveries,:size).by(0)
+    end
+
+    it "should email Frame creator even if they didn't post a message" do
+      lambda {
+        GT::NotificationManager.check_and_send_comment_notification(@frame)
+      }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+
+
+  end
+
   describe "reroll notifications" do
     before(:each) do
       @old_user = Factory.create(:user, :gt_enabled => true)

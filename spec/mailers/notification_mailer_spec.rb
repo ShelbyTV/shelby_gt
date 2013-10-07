@@ -64,6 +64,28 @@ describe NotificationMailer do
     #end
   end
 
+  describe 'disqus comment notifications' do
+    before(:all) do
+      @user_to = Factory.create(:user)
+      @video = Factory.create(:video, :title => 'ti')
+      @roll = Factory.create(:roll, :creator => @user_to)
+      @frame = Factory.create(:frame, :video => @video, :roll => @roll, :creator=>@user_to)
+      @email = NotificationMailer.disqus_comment_notification(@frame, @user_to)
+    end
+
+    it 'renders the subject' do
+      @email.subject.should eq(Settings::Email.disqus_comment_notification['subject'])
+    end
+
+    it 'renders the receiver email' do
+      @email.to.should eq([@user_to.primary_email])
+    end
+
+    it 'renders the sender email' do
+      @email.from.should eq([Settings::Email.notification_sender])
+    end
+  end
+
   describe 'like notifications' do
     before(:all) do
       @user_to = Factory.create(:user)
