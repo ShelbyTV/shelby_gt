@@ -2,64 +2,71 @@
   avatar = frame_owner.user_image_original || frame_owner.user_image
   userNickname = frame_owner.nickname
   message = frame.conversation.messages.first.text if frame.conversation and frame.conversation.messages and frame.conversation.messages.first
+  fontFamily = "font-family: Helvetica Neue,Helvetica,sans-serif;";
 %>
+
 <tr>
   <td>
-    <table>
-      <tr>
-        <td>
-          <span class="frame-header js-frame-activate">
-            <h1 class="frame-title" title="<%= video.title %>">
-              <%= video.title %>
-            </h1>
-          </span>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <img src="<%= video.thumbnail_url %>" title="<%- video.title %>" alt="<%- video.title %> thumbnail">
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <table>
-            <tr>
-              <td>
-                  <img src="<%= avatar %>">
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <table>
+
+        <table data-frame border="0" cellpadding="0" cellspacing="0" style="-webkit-font-smoothing: antialiased;">
+          <tr>
+            <td>
+
+                <table data-video style="width: 100%;" border="0" cellpadding="0" cellspacing="0">
                   <tr>
-                    <td style="width: 50%;text-align:left;">
-                      <p class="xuser-data">
-                        <a href="#{}" class="js-track-event no-faux-link" data-ga_category="<%= ga_category %>" data-ga_action="Click Username" data-ga_label="<%= signed_in_user['nickname'] || "anonymous" %>" data-user_nickname="<%= userNickname %>"<% if frame_owner.name %> title="<%= frame_owner.name %>"<%end%>><strong><%= userNickname %></strong></a>
-                      </p>
-                    </td>
-                    <td style="width: 50%;text-align:right;">
-                      <span class="xuser-data-timestamp">
-                        <%= frame.created_at %>
-                      </span>
+                    <td data-video_title>
+                      <strong style="<%= raw fontFamily %>font-size: 1.25em; line-height:2;" title="<%= video.title %>">
+                        <%= video.title %>
+                      </strong>
                     </td>
                   </tr>
+
                   <tr>
-                    <td colspan="2">
-                      <table>
-                        <tr>
-                          <td style="width:100%;">
-                            <%= message %>
-                          </td>
-                        </tr>
-                      </table>
+                    <td>
+                      <a href="#">
+                        <img style="width: 100%;" src="<%= video.thumbnail_url %>" title="<%- video.title %>" alt="<%- video.title %> thumbnail" />
+                      </a>
                     </td>
                   </tr>
                 </table>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
+
+            </td>
+          </tr>
+          <tr>
+            <td>
+
+                <table data-frame_footer style="border: 1px solid rgba(0, 0, 0, 0.2); padding: 10px; width: 100%; " border="0" cellpadding="5" cellspacing="0">
+                  <tr>
+                    <td data-avatar style="width: 13%" valign="top">
+                      <img src="<%= avatar %>" style="border-radius: 5px; width: 100%;max-width: 50px;" />
+                    </td>
+
+                    <td data-body valign="top">
+
+                        <table data-frame_comment style="width: 100%"  border="0" cellpadding="5" cellspacing="0">
+                          <tr>
+                            <td data-name>
+                              <a style="color: #666;<%= raw fontFamily %>" href="/<%= userNickname %>" class="js-track-event no-faux-link" data-ga_category="<%= ga_category %>" data-ga_action="Click Username" data-ga_label="<%= signed_in_user['nickname'] || "anonymous" %>" data-user_nickname="<%= userNickname %>"<% if frame_owner.name %> title="<%= frame_owner.name %>"<%end%>><strong><%= userNickname %></strong></a>
+                            </td>
+
+                            <td data-timestamp align="right">
+                              <span style="color: #888;<%= raw fontFamily %>"><%= frame.created_at.strftime("%e %b %y") %></span>
+                            </td>
+                          </tr>
+
+                          <tr colspan="2">
+                            <td data-frame_comment_body style="color: #555;<%= raw fontFamily %>font-size: 1em; line-height: 1.4; " colspan="2">
+                              <%= truncate( message , length: 140, omission: '…') %>
+                            </td>
+                          </tr>
+                        </table>
+
+                    </td>
+                  </tr>
+                </table>
+
+            </td>
+          </tr>
+        </table>
   </td>
 </tr>
