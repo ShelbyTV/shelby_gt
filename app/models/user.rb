@@ -347,6 +347,10 @@ class User
     !self.encrypted_password.blank? and self.encrypted_password.length > 10
   end
 
+  def is_real?
+    self.user_type == User::USER_TYPE[:real] || self.user_type == User::USER_TYPE[:converted]
+  end
+
   #default implementations hit the DB, and that sucks b/c we don't index on these attributes
   def self.remember_token() SecureRandom.uuid; end
   def self.reset_password_token() SecureRandom.uuid; end

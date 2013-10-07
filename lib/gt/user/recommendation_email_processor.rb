@@ -9,49 +9,39 @@ require 'api_clients/kiss_metrics_client'
 module GT
   class RecommendationEmailProcessor
 
-    def initialize(should_send_pde_recs=true, should_send_email=false)
-      @pdbe_limit = 20 # How far back we are allowing this to search for a pdbe which hasn't been watched
-      @dbe_limit = 60  # How far back we are allowing this to search for a dbe with a video with a rec
-      @dbe_skip = 10
+    def self.process_send_weekly_rec_email_for_users(options={})
 
-      # How many recently watched videos will we check to see if the user has watched the video we want to recommend
-      @recent_videos_limit = 2000
+      defaults = {
+        :send_emails => true,
+      }
 
-      # sometimes we might not want to send pdbe recs so...
-      @should_send_pde_recs = should_send_pde_recs
+      options = defaults.merge(options)
 
-      @should_send_email = should_send_email
-    end
+      do_send_emails = options.delete(:send_emails)
+      user_nicknames = options.delete(:user_nicknames)
 
-    def process_and_send_rec_email(user_nicknames=nil, dont_send_until_address=nil)
-      # loop through cursor of all users, primary_email is indexed, use it to filter collection some.
-      #  load them with following attributes: gt_enabled, user_type, primary_email, preferences
-      Rails.logger.info "[GT::UserEmailProcessor] STARTING WEEKLY EMAIL NOTIFICATIONS PROCESS"
+      # loop through cursor of all users, primary_email is indexed, use it to filter collection.
+      Rails.logger.info "[GT::RecommendationsEmailProcessor] STARTING WEEKLY RECOMMENDATION EMAIL PROCESS"
 
-      numSent = 0
-      found = 0
-      found_pdbe = 0
-      pdbe_with_no_friends = 0
-      found_dbe_with_video_rec = 0
-      not_found =0
-      error_finding = 0
-      user_sendable = 0
       user_loaded = 0
+      user_sendable = 0
+      num_sent = 0
+      num_with_no_recs = 0
+      errors = 0
 
       if user_nicknames
         # user_nicknames parameter for testing allows us to send to only a specific set of users
-        # and bypass the check on whether they have opted in to receive emails
         query = {:$and => [
+          {:_id => {:$lte => BSON::ObjectId.from_time(Time.at(Time.now.utc.to_f.ceil))}},
           {:nickname => {:$in => user_nicknames}},
-          {:primary_email => {:$ne => ""}},
-          {:primary_email => {:$ne => nil}}
+          {:primary_email => {:$nin => ["", nil]}},
           ]}
       else
         # under normal circumstances, we want to send to all users who have a valid email
         # and who have opted in to receive email updates
         query = {:$and => [
-          {:primary_email => {:$ne => ""}},
-          {:primary_email => {:$ne => nil}},
+          {:_id => {:$lte => BSON::ObjectId.from_time(Time.at(Time.now.utc.to_f.ceil))}},
+          {:primary_email => {:$nin => ["", nil]}},
           {"preferences.email_updates" => true}
           ]}
       end
@@ -67,224 +57,41 @@ module GT
           begin
             user = User.load(doc)
 
-            if dont_send_until_address
-              if user.primary_email == dont_send_until_address
-                dont_send_until_address = nil
-              else
-                next
-              end
-            end
-
             user_loaded += 1
 
             # check if they are real users that we need to process
-            if is_real?(user)
+            if user.is_real? && user.gt_enabled
               user_sendable += 1
-              # cycle through dashboard entries till a video is found with a recommendation
-              # NOTE: dbe_with_rec.class = DashboardEntry || PrioritizedDashboardEntry
-              if dbe_with_rec = scan_dashboard_entries_for_rec(user)
-                found += 1
-
-                new_dbe = nil
-                friend_users = nil
-                if dbe_with_rec.is_a?(DashboardEntry)
-                  found_dbe_with_video_rec += 1
-                  # create new dashboard entry with action type = 31 (video graph rec) based on video
-                  new_dbe = create_new_dashboard_entry(user, dbe_with_rec, DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
-                elsif dbe_with_rec.is_a?(PrioritizedDashboardEntry)
-                  # check if the dbe has any friends, if not, skip it and make a note of this in the log
-                  friends = dbe_with_rec.friend_sharers_array + dbe_with_rec.friend_viewers_array + dbe_with_rec.friend_likers_array + dbe_with_rec.friend_rollers_array + dbe_with_rec.friend_complete_viewers_array
-                  if friends.length > 0
-                    found_pdbe += 1
-                    # create new dashboard entry with action type = 32 (entertainment graph rec) based on prioritized dashboard entry
-                    new_dbe = create_new_dashboard_entry_from_prioritized(user, dbe_with_rec)
-                    friend_users = new_dbe.all_associated_friends
-                  else
-                    pdbe_with_no_friends += 1
-                    Rails.logger.info "[GT::UserEmailProcessor] PROBLEM!: User #{user.nickname}, pdbe #{dbe_with_rec.id} has no friends in the arrays"
-                  end
-                end
-
-                if new_dbe
-                  # use new dashboard entry to send email
-                  if @should_send_email
-                    numSent += 1 if NotificationManager.send_weekly_recommendation(user, new_dbe, friend_users)
-                    # track that email was sent
-                    APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'])
-                  end
+              if do_send_emails
+                if self.process_and_send_recommendation_email_for_user(user)
+                  num_sent += 1
+                  # track that email was sent
+                  APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'])
                 else
-                  error_finding += 1
+                  num_with_no_recs += 1
                 end
-
-              else
-                not_found += 1
               end
             end
           rescue Exception => e
-            Rails.logger.info "[GT::UserEmailProcessor] EXCEPTION: #{e}"
+            Rails.logger.info "[GT::RecommendationsEmailProcessor] EXCEPTION: #{e}"
+            errors += 1
           end
         end
       end
-      Rails.logger.info "[GT::UserEmailProcessor] SENDING EMAIL: #{@should_send_email}"
-      Rails.logger.info "[GT::UserEmailProcessor] FINISHED WEEKLY EMAIL NOTIFICATIONS PROCESS"
-      Rails.logger.info "[GT::UserEmailProcessor] Users Loaded: #{user_loaded}, Rec Found: #{found} - (#{found_dbe_with_video_rec} video graph, #{found_pdbe} entertainment graph), PDBEs with no friends: #{pdbe_with_no_friends}, Not found: #{not_found}, Error: #{error_finding}"
-      Rails.logger.info "[GT::UserEmailProcessor] #{numSent} emails sent"
+      Rails.logger.info "[GT::RecommendationsEmailProcessor] SENDING EMAIL: #{do_send_emails}"
+      Rails.logger.info "[GT::RecommendationsEmailProcessor] FINISHED WEEKLY EMAIL NOTIFICATIONS PROCESS"
+      Rails.logger.info "[GT::RecommendationsEmailProcessor] Users Loaded: #{user_loaded}"
+      Rails.logger.info "[GT::RecommendationsEmailProcessor] #{num_sent} emails sent"
 
       stats = {
         :users_scanned => user_loaded,
         :user_sendable => user_sendable,
-        :sent_emails => numSent,
-        :video_graph_recs => found_dbe_with_video_rec,
-        :entertainment_graph_recs => found_pdbe,
-        :errors => error_finding,
-        :should_send_pde_recs => @should_send_pde_recs
+        :sent_emails => num_sent,
+        :no_user_recommendations => num_with_no_recs,
+        :errors => errors
       }
 
       return stats
-    end
-
-    # only return real, gt_enabled (ag) users that are not service or faux user_type (ac)
-    def is_real?(user)
-      if user["gt_enabled"] && (user["user_type"] == User::USER_TYPE[:real] || user["user_type"] == User::USER_TYPE[:converted])
-        return true
-      else
-        return false
-      end
-    end
-
-    # look for recommendations in this order
-    # 1) a prioritized dashboard entry for the user, or fall back to
-    # 2) a regular dashboard entry with a video with a recommendation
-    def scan_dashboard_entries_for_rec(user)
-      watched_video_ids = nil
-      # if there's a prioritized dashboard entry not watched recently by the user, use that as the recommendation
-      if @should_send_pde_recs
-        pdbe_cursor = PrioritizedDashboardEntry.for_user_id(user.id).ranked.limit(@pdbe_limit).find_each
-        while (pdbe = pdbe_cursor.next)
-          # once we know that we need to check something against the user's recently watched videos,
-          # load them only once
-          if !watched_video_ids
-            watched_video_ids = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:video_id).limit(@recent_videos_limit).all.map {|f| f.video_id}.compact : []
-          end
-          if !pdbe.watched_by_owner && !watched_video_ids.find_index(pdbe.video_id)
-            # yay, we found an unwatched prioritized dashboard entry
-            # make sure the video is still available at the provider
-            if v = Video.find(pdbe.video_id)
-              GT::VideoManager.update_video_info(v)
-              if v.available
-                # this video is still available, so return immediately and use it as the recommendation
-                pdbe_cursor.close
-                return pdbe
-              end
-            end
-          end
-        end
-        pdbe_cursor.close
-      end
-
-      # if there's no unwatched prioritized dashboard entry
-      # loop through dashboard entries until we find one with a rec,
-      # stop at a predefined limit so as not to go on forever
-      dbe_count = 0
-      while (dbe_count < @dbe_limit)
-        DashboardEntry.collection.find(
-          { :a => user.id },
-          {
-            :limit => 10,
-            :skip => dbe_count
-          }
-        ) do |dbe_cursor|
-          dbe_cursor.each do |doc|
-            dbe = DashboardEntry.load(doc)
-            next if dbe.is_recommendation?
-            # get the video with only the rec key for each dbe
-            video = Video.collection.find_one({ :_id => dbe["video_id"] }, { :fields => ["r"] })
-            dbe_with_rec = dbe if video and video["r"] and !video["r"].empty?
-            # if we find a dbe with a recommendation, return it
-            return dbe_with_rec if dbe_with_rec
-          end
-        end
-        dbe_count += @dbe_skip
-      end
-      # if we dont find a dbe with a rec after passing our limit on how far back to scan, just return nil
-      return nil
-
-    end
-
-    def create_new_dashboard_entry(user, dbe, action)
-      raise ArgumentError, "must supply valid dasboard entry record" unless dbe.is_a?(DashboardEntry)
-
-      if video_rec_id = get_rec_from_video(user, dbe.video.recs)
-        new_dbe = GT::Framer.create_frame(
-          :video_id => video_rec_id,
-          :dashboard_user_id => dbe.user_id,
-          :action => action,
-          :dashboard_entry_options => {
-            :src_frame_id => dbe.frame.id
-          }
-        )
-        if new_dbe[:dashboard_entries] and !new_dbe[:dashboard_entries].empty?
-          return new_dbe[:dashboard_entries].first
-        else
-          return nil
-        end
-      else
-        return nil
-      end
-
-    end
-
-    def create_new_dashboard_entry_from_prioritized(user, pdbe)
-      new_dbe = GT::Framer.create_frame(
-        :video_id => pdbe.video_id,
-        :dashboard_user_id => user.id,
-        :action => DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation],
-        :dashboard_entry_options => {
-          :friend_sharers_array => pdbe.friend_sharers_array,
-          :friend_viewers_array => pdbe.friend_viewers_array,
-          :friend_likers_array => pdbe.friend_likers_array,
-          :friend_rollers_array => pdbe.friend_rollers_array,
-          :friend_complete_viewers_array => pdbe.friend_complete_viewers_array,
-        }
-      )
-      if new_dbe[:dashboard_entries] and !new_dbe[:dashboard_entries].empty?
-        return new_dbe[:dashboard_entries].first
-      else
-        return nil
-      end
-    end
-
-    # Ensure that we aren't sending a video rec that a user has seen in the "recent" past
-    def get_rec_from_video(user, recs)
-      frames = user.viewed_roll_id ? Frame.where(:roll_id => user.viewed_roll_id).fields(:id, :video_id).limit(@recent_videos_limit) : []
-      recs.each do |r|
-        video_watched = false
-        frames.find_each.each do |f|
-          if r['recommended_video_id'] == f.video_id
-            video_watched = true
-            break
-          end
-        end
-
-        if !video_watched
-          video_id = r['recommended_video_id']
-          if v = Video.find(video_id)
-          # make sure the video is still available at the provider before we return it to the user
-            GT::VideoManager.update_video_info(v)
-            if v.available
-              return video_id
-            else
-              next
-            end
-          else
-            next
-          end
-        else
-          next
-        end
-
-      end
-      return nil
     end
 
     def self.process_and_send_recommendation_email_for_user(user)
@@ -307,7 +114,10 @@ module GT
         res ? res[:dashboard_entry] : nil
       }.compact.shuffle
 
-      GT::NotificationManager.send_weekly_recommendation(user, dbes) unless dbes.empty?
+      unless dbes.empty?
+        GT::NotificationManager.send_weekly_recommendation(user, dbes)
+        dbes.length
+      end
     end
 
   end

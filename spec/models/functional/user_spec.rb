@@ -272,4 +272,26 @@ describe User do
     end
   end
 
+  describe "is_real?" do
+    it "should return true if its real user type" do
+      @user.user_type = User::USER_TYPE[:real]
+      @user.is_real?.should eql true
+    end
+
+    it "should return true if its converted user type" do
+      @user.user_type = User::USER_TYPE[:converted]
+      @user.is_real?.should eql true
+    end
+
+    it "should return false if user is faux" do
+      @user.user_type = User::USER_TYPE[:faux]
+      @user.is_real?.should eql false
+    end
+
+    it "should return false if user is service" do
+      @user.user_type = User::USER_TYPE[:service]
+      @user.is_real?.should eql false
+    end
+  end
+
 end
