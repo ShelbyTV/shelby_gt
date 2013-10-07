@@ -3,6 +3,7 @@ namespace :user_emails do
   desc 'Send an email with video recommednations to all real users'
   task :send_weekly_recommendation_email => :environment do
     require "benchmark"
+    require "recommendation_email_processor"
 
     time = Benchmark.measure do
       @stats = GT::RecommendationEmailProcessor.process_send_weekly_rec_email_for_users({
