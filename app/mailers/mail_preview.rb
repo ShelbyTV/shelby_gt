@@ -63,6 +63,8 @@ if Rails.env.development?
 
         db_entry  = Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
 
+
+
         db_entries = []
         3.times.each {|i| db_entries << db_entry }
 
@@ -115,5 +117,58 @@ if Rails.env.development?
         MortarMailer.mortar_recommendation_trial(user, recs, true)
       end
 
+      def weekly_recommendation__video_graph
+        user      = User.first
+        frame     = Factory.create(:frame, :video => Video.first, :creator => user, :conversation => Conversation.first)
+
+        src_user  = User.last #Factory.create(:user)
+        src_frame = Factory.create(:frame, :creator => src_user, :conversation => Conversation.first)
+
+        db_entries = []
+        db_entries.push(Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]))
+
+        NotificationMailer.weekly_recommendation(user, db_entries)
+      end
+      def weekly_recommendation__mortar
+        user      = User.first
+        frame     = Factory.create(:frame, :video => Video.first, :creator => user, :conversation => Conversation.first)
+
+        src_user  = User.last #Factory.create(:user)
+        src_frame = Factory.create(:frame, :creator => src_user, :conversation => Conversation.first)
+
+        db_entries = []
+        db_entries.push(Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]))
+
+        NotificationMailer.weekly_recommendation(user, db_entries)
+      end
+      def weekly_recommendation__channel
+        user      = User.first
+        frame     = Factory.create(:frame, :video => Video.first, :creator => user, :conversation => Conversation.first)
+
+        src_user  = User.last #Factory.create(:user)
+        src_frame = Factory.create(:frame, :creator => src_user, :conversation => Conversation.first)
+
+        db_entries = []
+        db_entries.push(Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]))
+
+        NotificationMailer.weekly_recommendation(user, db_entries)
+      end
+      def weekly_recommendation__array
+        user      = User.first
+        frame     = Factory.create(:frame, :video => Video.first, :creator => user, :conversation => Conversation.first)
+
+        src_user  = User.last #Factory.create(:user)
+        src_frame = Factory.create(:frame, :creator => src_user, :conversation => Conversation.first)
+
+        db_entries = []
+        db_entries.push(Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]))
+        db_entries.push(Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame, :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]))
+        db_entries.push(Factory.create(:dashboard_entry, :frame => frame, :src_frame => src_frame, :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation]))
+
+        #permalinks ≠ state dependent,
+        #relative to user's stream
+
+        NotificationMailer.weekly_recommendation(user, db_entries)
+      end
   end
 end

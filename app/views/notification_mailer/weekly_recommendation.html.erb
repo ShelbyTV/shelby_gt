@@ -31,15 +31,13 @@
 
                                       <%= render :partial => '/notification_mailer/partials/frame',
                                           :locals => {
-                                            :embed_video    => true,
+                                            :dbe            => dbe,
                                             :frame          => dbe.frame,
                                             :frame_owner    => dbe.frame.creator,
                                             :ga_category    => "Email",
-                                            :is_mobile      => false,
-                                            :roll_type      => nil,
                                             :signed_in_user => {},
-                                            :video  => dbe.frame.video,
-                                            :dbe => dbe }
+                                            :video          => dbe.frame.video
+                                          }
                                       %>
 
                                     <% end %>
