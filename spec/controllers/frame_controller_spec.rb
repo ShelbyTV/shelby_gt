@@ -579,6 +579,27 @@ describe V1::FrameController do
     end
   end
 
+  describe "GET notify" do
+    before(:each) do
+      @frame = Factory.create(:frame, :roll => Factory.create(:roll, :creator => @u1), :conversation => Factory.create(:conversation))
+      Frame.stub(:find).and_return(@frame)
+    end
+    it "should return 404 if no frame specified" do
+      get :notify, :frame_id=> 'blah', :format => :json
+      assigns(:status).should eq(404)
+    end
+
+    it "should return 404 if no type specified" do
+      get :notify, :frame_id => @frame.id.to_s, :format => :json
+      assigns(:status).should eq(404)
+    end
+
+    it "should return 200 if frame found and there is a type" do
+      get :notify, :frame_id => @frame.id.to_s, :type=>"blah", :format => :json
+      assigns(:status).should eq(200)
+    end
+  end
+
   describe "GET short_link" do
     before(:each) do
       sign_in @u1

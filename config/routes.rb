@@ -89,6 +89,7 @@ ShelbyGt::Application.routes.draw do
       post 'watched' => 'frame#watched'
       post 'share' => 'frame#share'
       get 'short_link' => 'frame#short_link'
+      get 'notify' => 'frame#notify'
     end
     resources :video, :only => [:show] do
       get 'find_or_create', :on => :collection

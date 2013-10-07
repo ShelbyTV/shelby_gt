@@ -182,6 +182,15 @@ describe V1::FrameController do
       )
     end
 
+    it "route for notifiying user of comment GET " do
+      { :get => "/v1/frame/1/notify" }.should route_to(
+        :controller => "v1/frame",
+        :action => "notify",
+        :format => "json",
+        :frame_id => "1"
+      )
+    end
+
     it "GET INDEX of personal_roll" do
       { :get => "/v1/user/1/rolls/personal/frames" }.should route_to(
         :controller => "v1/frame_metal",

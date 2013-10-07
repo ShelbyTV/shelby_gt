@@ -7,7 +7,7 @@ require 'hashtag_processor'
 
 class V1::FrameController < ApplicationController
 
-  before_filter :user_authenticated?, :except => [:show, :watched, :short_link, :like]
+  before_filter :user_authenticated?, :except => [:show, :watched, :short_link, :like, :notify]
   # Assuming we're skipping CSRF for extension... that code needs to be fixed (see https://github.com/ShelbyTV/shelby-gt-web/issues/645)
   # Skipping on watched b/c it works for logged in and logged-out users
   skip_before_filter :verify_authenticity_token, :only => [:create, :watched]
@@ -373,6 +373,26 @@ class V1::FrameController < ApplicationController
       end
     end
   end
+
+##
+# notifies owner of frame that something happened
+#   AUTHENTICATION OPTIONAL
+#
+# [GET] /v1/frame/:id/notify
+#
+# @param [Required, String] id The id of the frame
+# @param [Required, String] type What type of notification should be sent
+def notify
+  StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['notify']) do
+    return render_error(404, "must specify the type of notification to send") unless params[:type]
+    if frame = Frame.find(params[:frame_id])
+      @status = 200
+      ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_comment_notification(frame) if params[:type] == "comment" }
+    else
+      render_error(404, "could not find frame")
+    end
+  end
+end
 
 
   ##
