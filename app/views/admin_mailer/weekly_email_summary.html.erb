@@ -31,15 +31,11 @@
 
                                     <h2>Users we can send to: <%= @user_sendable %></h2>
 
-                                    <% if @should_send_pde_recs %>
-                                      <h2>Users with Entertainment Graph Recommendations: <%= @entertainment_graph_recs %></h2>
-                                    <% end %>
-
-                                    <h2>Users falling back to Video Graph Recommendations: <%= @video_graph_recs %></h2>
-
                                     <h2>Emails Sent: <%= @sent_emails %></h2>
 
-                                    <h2>Scanning Errors: <%= @errors %></h2>
+                                    <h2>Users with no recommendations: <%= @no_user_recommendations %></h2>
+
+                                    <h2>Other errors: <%= @errors %></h2>
 
                                     <h3>Process took <%= @time %> min to run</h3>
 
