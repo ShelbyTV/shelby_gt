@@ -18,17 +18,18 @@
                         <td>&nbsp;</td>
                         <td style="width: <%= Settings::Email.main_column %>; background-color: <%= Settings::Email.ui_white %>; border: 1px solid <%= Settings::Email.ui_inset %>; font-weight: <%= Settings::Email.font_weight %>; line-height: <%= Settings::Email.line_height %>;">
                           <center>
-                            <table border="0" cellspacing="0" cellpadding="40">
-                              <tr>
-                                <td style="width: 400px;">
-                                    <!-- BODY -->
-
-                                    <h1 style="color: <%= Settings::Email.ui_green %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; margin-top:0; ">
+                            <table border="0" cellspacing="0" cellpadding="5" style="max-width: 500px;">
+                            <!-- BODY -->
+                                <tr>
+                                  <td>
+                                    <h1 style="color: <%= Settings::Email.ui_green %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; margin-top:40px;margin-bottom:20px; ">
                                       Recommended for you:
                                     </h1>
-
-                                    <% @dbes.each do |dbe| %>
-
+                                  </td>
+                                </tr>
+                              <% @dbes.each do |dbe| %>
+                                <tr>
+                                  <td>
                                       <%= render :partial => '/notification_mailer/partials/frame',
                                           :locals => {
                                             :dbe            => dbe,
@@ -39,12 +40,16 @@
                                             :video          => dbe.frame.video
                                           }
                                       %>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    &nbsp;
+                                  </td>
+                                </tr>
+                              <% end %>
 
-                                    <% end %>
-
-                                    <!-- END BODY -->
-                                </td>
-                              </tr>
+                            <!-- END BODY -->
                             </table>
                           </center>
                         </td>

@@ -1,47 +1,43 @@
 <% userNickname = frame_owner.nickname %>
-<tr>
-  <td>
 
-        <table data-frame border="0" cellpadding="0" cellspacing="0" style="-webkit-font-smoothing: antialiased;">
+<table data-frame border="0" cellpadding="0" cellspacing="0" style="-webkit-font-smoothing: antialiased;">
+  <tr>
+    <td>
+
+        <table data-video style="width: 100%;" border="0" cellpadding="0" cellspacing="0">
           <tr>
-            <td>
-
-                <table data-video style="width: 100%;" border="0" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td data-video_title>
-                      <strong style="font-family: <%= Settings::Email.font_family %>;font-size: 1.25em; line-height:2;" title="<%= video.title %>">
-                        <%= video.title %>
-                      </strong>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <a href="#">
-                        <img style="width: 100%;" src="<%= video.thumbnail_url %>" title="<%- video.title %>" alt="<%- video.title %> thumbnail" />
-                      </a>
-                    </td>
-                  </tr>
-                </table>
-
+            <td data-video_title>
+              <strong style="font-family: <%= Settings::Email.font_family %>;font-size: 1.25em; line-height:2;" title="<%= video.title %>">
+                <%= video.title %>
+              </strong>
             </td>
           </tr>
+
           <tr>
             <td>
-              <%= render :partial => '/notification_mailer/partials/frame_footer',
-                         :locals => {
-                            :is_recommendation => dbe.is_recommendation?,
-                            :action         => dbe.action,
-                            :avatar         => frame_footer_avatar(dbe),
-                            :frame          => frame,
-                            :frame_owner    => frame_owner,
-                            :ga_category    => ga_category,
-                            :message        => frame_footer_message(dbe),
-                            :signed_in_user => signed_in_user,
-                            :userNickname   => userNickname
-                         } %>
+              <a href="#">
+                <img style="width: 100%;" src="<%= video.thumbnail_url %>" title="<%- video.title %>" alt="<%- video.title %> thumbnail" />
+              </a>
             </td>
           </tr>
         </table>
-  </td>
-</tr>
+
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <%= render :partial => '/notification_mailer/partials/frame_footer',
+                 :locals => {
+                    :is_recommendation => dbe.is_recommendation?,
+                    :action         => dbe.action,
+                    :avatar         => frame_footer_avatar(dbe),
+                    :frame          => frame,
+                    :frame_owner    => frame_owner,
+                    :ga_category    => ga_category,
+                    :message        => frame_footer_message(dbe),
+                    :signed_in_user => signed_in_user,
+                    :userNickname   => userNickname
+                 } %>
+    </td>
+  </tr>
+</table>
