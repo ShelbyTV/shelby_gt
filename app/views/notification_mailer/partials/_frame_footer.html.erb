@@ -8,7 +8,7 @@
         <table data-frame_comment style="width: 100%"  border="0" cellpadding="5" cellspacing="0">
           <tr>
             <td data-name>
-              <% if action <= DashboardEntry::ENTRY_TYPE[:comment] %>
+              <% if !is_recommendation %>
                 <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>;" class="js-track-event no-faux-link" data-ga_category="<%= ga_category %>" data-ga_action="Click Username" data-ga_label="<%= signed_in_user['nickname'] || "anonymous" %>" data-user_nickname="<%= userNickname %>"<% if frame_owner.name %> title="<%= frame_owner.name %>"<%end%>><strong><%= userNickname %></strong></span>
               <% else %>
                 <% if action == DashboardEntry::ENTRY_TYPE[:channel_recommendation] %>
