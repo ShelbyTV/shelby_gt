@@ -184,9 +184,10 @@ describe 'v1/dashboard' do
           rec = Factory.create(:recommendation, :recommended_video_id => rec_vid.id, :score => 100.0)
           v.recs << rec
 
-          f = Factory.create(:frame, :video => v, :creator => @user )
+          sharer = Factory.create(:user)
+          f = Factory.create(:frame, :video => v, :creator => sharer )
 
-          dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
+          dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
 
           GT::VideoProviderApi.stub(:get_video_info)
 
