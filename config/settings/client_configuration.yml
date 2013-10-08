@@ -2,6 +2,8 @@ defaults: &defaults
   multivariate_tests: [
     {
       name: "retention1.0",
+      # NB: Changing the details of a bucket will NOT update clients that have already been placed in this bucket (on iOS)
+      # Should consider creating new buckets when making significant changes.
       buckets: [
         { 
           name: "A",
@@ -9,7 +11,7 @@ defaults: &defaults
           active: true,
           day: 5,
           time: 1900,
-          message: "Check out video from folks like %@, %@ and %@."
+          message: "Yes! Video from %@, %@, %@, and more!"
         },
         {
           name: "B",
@@ -25,7 +27,7 @@ defaults: &defaults
           active: true,
           day: 1,
           time: 1000,
-          message: "Check out video from folks like %@, %@ and %@."
+          message: "Yes! Video from %@, %@, %@, and more!"
         },
         {
           name: "D",
