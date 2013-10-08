@@ -2,6 +2,7 @@ defaults: &defaults
   title: "Shelby.tv"
   domain: "shelby.tv"
   api_host: "api.shelby.tv"
+  web_host: "shelby.tv"
   override_em_next_tick: false
 
 development:

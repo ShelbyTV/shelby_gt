@@ -1,15 +1,4 @@
-<%
-  avatar = avatar_url_for_user(frame_owner)
-  userNickname = frame_owner.nickname
-  message = frame.conversation.messages.first.text if frame.conversation and frame.conversation.messages and frame.conversation.messages.first
-
-
-  # source frame can be you, call them "you" instead of by nickname
-
-  # demo via mail_view or write specs for mailer
-
-%>
-
+<% userNickname = frame_owner.nickname %>
 <tr>
   <td>
 
@@ -39,44 +28,17 @@
           </tr>
           <tr>
             <td>
-              <% if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation] %>
-                VIDEO GRAPH
-              <% elsif dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation] %>
-                ENT GRAPH
-              <% elsif dbe.action == DashboardEntry::ENTRY_TYPE[:mortar_recommendation] %>
-                MORTAR GRAPH
-              <% elsif dbe.action == DashboardEntry::ENTRY_TYPE[:channel_recommendation] %>
-                CHANNEL
-              <% else %>
-                <table data-frame_footer style="border: 1px solid rgba(0, 0, 0, 0.2); padding: 10px; width: 100%; " border="0" cellpadding="5" cellspacing="0">
-                  <tr>
-                    <td data-avatar style="width: 13%" valign="top">
-                      <img src="<%= avatar %>" style="border-radius: 5px; width: 100%;max-width: 50px;" />
-                    </td>
-
-                    <td data-body valign="top">
-                        <table data-frame_comment style="width: 100%"  border="0" cellpadding="5" cellspacing="0">
-                          <tr>
-                            <td data-name>
-                              <a style="color: #666;font-family: <%= Settings::Email.font_family %>;" href="/<%= userNickname %>" class="js-track-event no-faux-link" data-ga_category="<%= ga_category %>" data-ga_action="Click Username" data-ga_label="<%= signed_in_user['nickname'] || "anonymous" %>" data-user_nickname="<%= userNickname %>"<% if frame_owner.name %> title="<%= frame_owner.name %>"<%end%>><strong><%= userNickname %></strong></a>
-                            </td>
-
-                            <td data-timestamp align="right">
-                              <span style="color: #888;font-family: <%= Settings::Email.font_family %>;"><%= frame.created_at.strftime("%e %b %y") %></span>
-                            </td>
-                          </tr>
-
-                          <tr colspan="2">
-                            <td data-frame_comment_body style="color: #555;font-family: <%= Settings::Email.font_family %>;font-size: 1em; line-height: 1.4; " colspan="2">
-                              <%= truncate( message , length: 140, omission: '…') %>
-                            </td>
-                          </tr>
-                        </table>
-
-                    </td>
-                  </tr>
-                </table>
-              <% end %>
+              <%= render :partial => '/notification_mailer/partials/frame_footer',
+                         :locals => {
+                            :action         => dbe.action,
+                            :avatar         => frame_footer_avatar(dbe),
+                            :frame          => frame,
+                            :frame_owner    => frame_owner,
+                            :ga_category    => ga_category,
+                            :message        => frame_footer_message(dbe),
+                            :signed_in_user => signed_in_user,
+                            :userNickname   => userNickname
+                         } %>
             </td>
           </tr>
         </table>
