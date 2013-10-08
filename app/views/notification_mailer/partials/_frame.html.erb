@@ -30,6 +30,7 @@
             <td>
               <%= render :partial => '/notification_mailer/partials/frame_footer',
                          :locals => {
+                            :is_recommendation => dbe.is_recommendation?,
                             :action         => dbe.action,
                             :avatar         => frame_footer_avatar(dbe),
                             :frame          => frame,
