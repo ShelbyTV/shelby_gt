@@ -1,7 +1,7 @@
 <table data-frame_footer style="border: <%= Settings::Email.ui_outline %>; padding: 10px; width: 100%; " border="0" cellpadding="5" cellspacing="0">
   <tr>
     <td data-avatar style="width: 13%" valign="top">
-      <a href="<%= Settings::Email.web_url_base %>/stream/<%= id %>" style="text-decoration: none;">
+      <a href="<%= Settings::Email.web_url_base %>/stream?entry=<%= id %>" style="text-decoration: none;">
         <img src="<%= avatar %>" style="border-radius: 5px; width: 100%; display: block;" />
       </a>
     </td>
@@ -10,7 +10,7 @@
         <table data-frame_comment style="width: 100%"  border="0" cellpadding="5" cellspacing="0">
           <tr>
             <td data-name>
-              <a href="<%= Settings::Email.web_url_base %>/stream/<%= id %>" style="color: <%= Settings::Email.ui_soft_black %>;text-decoration: none;">
+              <a href="<%= Settings::Email.web_url_base %>/stream?entry=<%= id %>" style="color: <%= Settings::Email.ui_soft_black %>;text-decoration: none;">
                 <% if !is_recommendation %>
                   <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>"<%= " title=\"#{creator.name}\"" if creator.name %>><strong><%= creator.nickname %></strong></span>
                 <% else %>

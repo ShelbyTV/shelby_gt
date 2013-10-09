@@ -5,7 +5,7 @@
         <table data-video style="width: 100%;" border="0" cellpadding="0" cellspacing="0">
           <tr>
             <td data-video_title>
-              <a href="<%= Settings::Email.web_url_base %>/stream/<%= dbe.id %>" style="color: <%= Settings::Email.ui_soft_black %>; text-decoration: none;">
+              <a href="<%= Settings::Email.web_url_base %>/stream?entry=<%= dbe.id %>" style="color: <%= Settings::Email.ui_soft_black %>; text-decoration: none;">
                 <strong style="font-family: <%= Settings::Email.font_family %>;font-size: <%= Settings::Email.font_size_large %>; line-height:2;" title="<%= video.title %>">
                   <%= video.title %>
                 </strong>
@@ -15,7 +15,7 @@
 
           <tr>
             <td>
-              <a href="<%= Settings::Email.web_url_base %>/stream/<%= dbe.id %>">
+              <a href="<%= Settings::Email.web_url_base %>/stream?entry=<%= dbe.id %>" style="display:block;">
                 <img style="width: 100%; display: block;" src="<%= video.thumbnail_url %>" title="<%- video.title %>" alt="<%- video.title %> thumbnail" />
               </a>
             </td>
