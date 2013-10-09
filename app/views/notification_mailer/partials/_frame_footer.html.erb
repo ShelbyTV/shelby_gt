@@ -1,31 +1,35 @@
 <table data-frame_footer style="border: <%= Settings::Email.ui_outline %>; padding: 10px; width: 100%; " border="0" cellpadding="5" cellspacing="0">
   <tr>
     <td data-avatar style="width: 13%" valign="top">
-      <img src="<%= avatar %>" style="border-radius: 5px; width: 100%;max-width: 50px;" />
+      <a href="<%= Settings::Email.web_url_base %>/stream/<%= id %>" style="text-decoration: none;">
+        <img src="<%= avatar %>" style="border-radius: 5px; width: 100%; display: block;" />
+      </a>
     </td>
 
     <td data-body valign="top">
         <table data-frame_comment style="width: 100%"  border="0" cellpadding="5" cellspacing="0">
           <tr>
             <td data-name>
-              <% if !is_recommendation %>
-                <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>;" class="js-track-event no-faux-link" data-ga_category="<%= ga_category %>" data-ga_action="Click Username" data-ga_label="<%= signed_in_user['nickname'] || "anonymous" %>" data-user_nickname="<%= creator.nickname %>"<% if creator.name %> title="<%= creator.name %>"<%end%>><strong><%= creator.nickname %></strong></span>
-              <% else %>
-                <% if action == DashboardEntry::ENTRY_TYPE[:channel_recommendation] %>
-                  <strong style="color: <%= Settings::Email.ui_green %>;font-family: <%= Settings::Email.font_family %>;" class="js-track-event no-faux-link">Featured: <%= creator.nickname %></strong>
+              <a href="<%= Settings::Email.web_url_base %>/stream/<%= id %>" style="color: <%= Settings::Email.ui_soft_black %>;text-decoration: none;">
+                <% if !is_recommendation %>
+                  <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>"<%= " title=\"#{creator.name}\"" if creator.name %>><strong><%= creator.nickname %></strong></span>
                 <% else %>
-                  <strong style="color: <%= Settings::Email.ui_green %>;font-family: <%= Settings::Email.font_family %>;" class="js-track-event no-faux-link">Recommendation:</strong>
+                  <% if action == DashboardEntry::ENTRY_TYPE[:channel_recommendation] %>
+                    <strong style="color: <%= Settings::Email.ui_green %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>">Featured: <%= creator.nickname %></strong>
+                  <% else %>
+                    <strong style="color: <%= Settings::Email.ui_green %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>">Recommendation:</strong>
+                  <% end %>
                 <% end %>
-              <% end %>
+              </a>
             </td>
 
             <td data-timestamp align="right">
-              <span style="color: #888;font-family: <%= Settings::Email.font_family %>;"><%= frame.created_at.strftime("%e %b %y") %></span>
+              <span style="color: #888;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>"><%= frame.created_at.strftime("%e %b %y") %></span>
             </td>
           </tr>
 
           <tr colspan="2">
-            <td data-frame_comment_body style="color: #555;font-family: <%= Settings::Email.font_family %>;font-size: 1em; line-height: 1.4; " colspan="2">
+            <td data-frame_comment_body style="color: #555;font-family: <%= Settings::Email.font_family %>;font-size: <%= Settings::Email.font_size %>; line-height: 1.4; " colspan="2">
               <%= truncate( message , length: 140, omission: '…') %>
             </td>
           </tr>

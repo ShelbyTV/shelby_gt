@@ -18,7 +18,7 @@
                         <td>&nbsp;</td>
                         <td style="width: <%= Settings::Email.main_column %>; background-color: <%= Settings::Email.ui_white %>; border: 1px solid <%= Settings::Email.ui_inset %>; font-weight: <%= Settings::Email.font_weight %>; line-height: <%= Settings::Email.line_height %>;">
                           <center>
-                            <table border="0" cellspacing="0" cellpadding="5" style="max-width: 500px;">
+                            <table border="0" cellspacing="0" cellpadding="5" style="width: 400px;">
                             <!-- BODY -->
                                 <tr>
                                   <td>
@@ -30,6 +30,7 @@
                               <% @dbes.each do |dbe| %>
                                 <tr>
                                   <td>
+                                    <center>
                                       <%= render :partial => '/notification_mailer/partials/frame',
                                           :locals => {
                                             :dbe            => dbe,
@@ -38,6 +39,7 @@
                                             :video          => dbe.frame.video
                                           }
                                       %>
+                                    </center>
                                   </td>
                                 </tr>
                                 <tr>
