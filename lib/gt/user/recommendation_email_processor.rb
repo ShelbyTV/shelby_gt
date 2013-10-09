@@ -76,7 +76,9 @@ module GT
           rescue Exception => e
             Rails.logger.info "[GT::RecommendationsEmailProcessor] EXCEPTION: #{e}"
             Rails.logger.info "[GT::RecommendationsEmailProcessor] BACKTRACE:"
-            Rails.logger.info "#{e.backtrace}"
+            e.backtrace.each do |line|
+              Rails.logger.info line
+            end
             errors += 1
           end
         end
