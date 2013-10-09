@@ -19,7 +19,8 @@ describe GT::RecommendationManager do
       4.times do |i|
         v = Factory.create(:video)
         recs_for_this_video = []
-        f = Factory.create(:frame, :video => v, :creator => @user )
+        sharer = Factory.create(:user)
+        f = Factory.create(:frame, :video => v, :creator => sharer )
 
         i.times do |j|
           rec_vid = Factory.create(:video)
@@ -33,7 +34,7 @@ describe GT::RecommendationManager do
 
         v.save
 
-        dbe = Factory.create(:dashboard_entry, :frame => f, :user => @user, :video_id => v.id)
+        dbe = Factory.create(:dashboard_entry, :frame => f, :user => @user, :video_id => v.id, :actor => sharer)
         @dbes.unshift dbe
       end
 
@@ -68,8 +69,8 @@ describe GT::RecommendationManager do
       it "should exclude videos the user has already watched" do
         @viewed_frame = Factory.create(:frame, :video_id => @recommended_videos[0].id, :creator => @user)
         @viewed_roll.frames << @viewed_frame
-
         MongoMapper::Plugins::IdentityMap.clear
+
         result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
@@ -77,9 +78,9 @@ describe GT::RecommendationManager do
       end
 
       it "should exclude videos that are no longer available at the provider" do
-        MongoMapper::Plugins::IdentityMap.clear
         @recommended_videos[0].available = false
         @recommended_videos[0].save
+        MongoMapper::Plugins::IdentityMap.clear
 
         result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
         result.length.should == @recommended_videos.length - 1
@@ -87,10 +88,10 @@ describe GT::RecommendationManager do
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
       end
 
-      it "should exclude from consideration dashboard entries that are recommendations themselves" do
-        MongoMapper::Plugins::IdentityMap.clear
-        @dbes[2].action = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+      it "should exclude from consideration dashboard entries that have no actor" do
+        @dbes[2].actor_id = nil
         @dbes[2].save
+        MongoMapper::Plugins::IdentityMap.clear
 
         result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
         result.length.should == @recommended_videos.length - 1
@@ -122,9 +123,10 @@ describe GT::RecommendationManager do
       rec = Factory.create(:recommendation, :recommended_video_id => @rec_vid.id, :score => 100.0)
       v.recs << rec
 
-      @f = Factory.create(:frame, :video => v, :creator => @user )
+      sharer = Factory.create(:user)
+      @f = Factory.create(:frame, :video => v, :creator => sharer )
 
-      @dbe = Factory.create(:dashboard_entry, :frame => @f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
+      @dbe = Factory.create(:dashboard_entry, :frame => @f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
     end
 
     context "no recommendations yet within the recent limit number of frames" do
@@ -488,7 +490,7 @@ describe GT::RecommendationManager do
       src_frame_creator = Factory.create(:user)
       @vid_graph_src_frame = Factory.create(:frame, :video => v, :creator => src_frame_creator )
 
-      dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @user, :video_id => v.id)
+      dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @user, :video_id => v.id, :actor => src_frame_creator)
 
       dbe.save
 

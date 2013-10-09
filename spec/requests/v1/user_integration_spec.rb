@@ -481,9 +481,10 @@ describe 'v1/user' do
           rec = Factory.create(:recommendation, :recommended_video_id => rec_vid.id, :score => 100.0)
           v.recs << rec
 
-          f = Factory.create(:frame, :video => v, :creator => @user )
+          sharer = Factory.create(:user)
+          f = Factory.create(:frame, :video => v, :creator => sharer )
 
-          dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
+          dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
 
           lambda {
             get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true'
@@ -585,7 +586,7 @@ describe 'v1/user' do
           src_frame_creator = Factory.create(:user)
           @vid_graph_src_frame = Factory.create(:frame, :video => v, :creator => src_frame_creator )
 
-          dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @u1, :video_id => v.id)
+          dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @u1, :video_id => v.id, :actor => src_frame_creator)
 
           dbe.save
 

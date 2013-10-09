@@ -46,7 +46,8 @@ describe GT::RecommendationManager do
         recs_for_this_video = []
         @video_ids << v.id
 
-        f = Factory.create(:frame, :video => v, :creator => @user )
+        sharer = Factory.create(:user)
+        f = Factory.create(:frame, :video => v, :creator => sharer )
 
         i.times do |j|
           rec_vid = Factory.create(:video)
@@ -60,7 +61,7 @@ describe GT::RecommendationManager do
 
         @recs_per_video << recs_for_this_video
 
-        dbe = Factory.create(:dashboard_entry, :frame => f, :user => @user, :video_id => v.id)
+        dbe = Factory.create(:dashboard_entry, :frame => f, :user => @user, :video_id => v.id, :actor => sharer)
         @dbes << dbe
       end
 
@@ -123,8 +124,8 @@ describe GT::RecommendationManager do
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
 
-        it "shoud exclude from consideration dashboard entries that are recommendations themselves" do
-          @dbes[1].action = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+        it "should exclude from consideration dashboard entries that have no actor" do
+          @dbes[1].actor_id = nil
 
           result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
           result.length.should == @recommended_video_ids.length - 1

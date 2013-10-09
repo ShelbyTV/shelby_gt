@@ -142,6 +142,7 @@
    apply(DASHBOARD_ENTRY , roll_id                       , ROLL_ID                       , OID   , b   ) \
    apply(DASHBOARD_ENTRY , frame_id                      , FRAME_ID                      , OID   , c   ) \
    apply(DASHBOARD_ENTRY , src_frame_id                  , SRC_FRAME_ID                  , OID   , i   ) \
+   apply(DASHBOARD_ENTRY , src_video_id                  , SRC_VIDEO_ID                  , OID   , j   ) \
    apply(DASHBOARD_ENTRY , read                          , READ                          , BOOL  , d   ) \
    apply(DASHBOARD_ENTRY , action                        , ACTION                        , INT   , e   ) \
    apply(DASHBOARD_ENTRY , actor_id                      , ACTOR_ID                      , OID   , f   ) \

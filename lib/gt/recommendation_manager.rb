@@ -194,7 +194,7 @@ module GT
     def get_video_graph_recs_for_user(max_db_entries_to_scan=10, limit=1, min_score=nil, prefetched_dbes=nil)
 
       unless prefetched_dbes
-        dbes = DashboardEntry.where(:user_id => @user.id).order(:_id.desc).limit(max_db_entries_to_scan).fields(:video_id, :frame_id).all
+        dbes = DashboardEntry.where(:user_id => @user.id).order(:_id.desc).limit(max_db_entries_to_scan).fields(:video_id, :frame_id, :actor_id).all
       else
         dbes = prefetched_dbes.slice(0, max_db_entries_to_scan)
       end
@@ -204,9 +204,8 @@ module GT
       watched_videos_loaded = false
 
       dbes.each do |dbe|
-        # don't consider recommendation entries themselves as they don't respresent shares and therefore
-        # won't have as much context for explaining the recommendation
-        next if dbe.is_recommendation?
+        # don't consider dbes that don't have an actor as they won't have enough context for explaining the recommendation
+        next if !dbe.actor_id
 
         recs_for_this_video = Video.where( :id => dbe.video_id ).fields(:recs).map{|v| v.recs}.flatten
 

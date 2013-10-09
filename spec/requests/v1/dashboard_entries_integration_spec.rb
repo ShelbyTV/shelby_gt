@@ -98,9 +98,32 @@ describe 'v1/dashboard' do
           response.body.should have_json_path("result/0/src_frame/creator/id")
           response.body.should have_json_path("result/0/src_frame/creator/nickname")
 
-          parse_json(response.body)["result"][0]["src_frame"]["id"].should eq(src_frame.id.to_s)
-          parse_json(response.body)["result"][0]["src_frame"]["creator"]["id"].should eq(creator.id.to_s)
-          parse_json(response.body)["result"][0]["src_frame"]["creator"]["nickname"].should eq(creator.nickname)
+          parsed_response = parse_json(response.body)
+          parsed_response["result"][0]["src_frame"]["id"].should eq(src_frame.id.to_s)
+          parsed_response["result"][0]["src_frame"]["creator"]["id"].should eq(creator.id.to_s)
+          parsed_response["result"][0]["src_frame"]["creator"]["nickname"].should eq(creator.nickname)
+        end
+
+        it "should not return the src_video when there isn't one" do
+          get '/v1/dashboard'
+
+          response.body.should_not have_json_path("result/0/src_video")
+        end
+
+        it "should return the src_video sub object when there is one" do
+          src_video = Factory.create(:video)
+          @d.src_video = src_video
+          @d.save
+
+          get '/v1/dashboard'
+
+          response.body.should have_json_path("result/0/src_video")
+          response.body.should have_json_path("result/0/src_video/id")
+          response.body.should have_json_path("result/0/src_video/title")
+
+          parsed_response = parse_json(response.body)
+          parsed_response["result"][0]["src_video"]["id"].should eq(src_video.id.to_s)
+          parsed_response["result"][0]["src_video"]["title"].should eq(src_video.title)
         end
 
         it "should return the friend arrays when the entry is an entertainment graph recommendation" do
@@ -184,9 +207,10 @@ describe 'v1/dashboard' do
           rec = Factory.create(:recommendation, :recommended_video_id => rec_vid.id, :score => 100.0)
           v.recs << rec
 
-          f = Factory.create(:frame, :video => v, :creator => @user )
+          sharer = Factory.create(:user)
+          f = Factory.create(:frame, :video => v, :creator => sharer )
 
-          dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
+          dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
 
           GT::VideoProviderApi.stub(:get_video_info)
 

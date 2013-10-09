@@ -462,6 +462,19 @@ void printJsonSourceFrame(sobContext sob, mrjsonContext context, bson *sourceFra
                           &printJsonSourceFrameCreator);
 }
 
+void printJsonSourceVideo(sobContext sob, mrjsonContext context, bson *sourceVideo)
+{
+   static sobField sourceVideoAttributes[] = {
+      SOB_VIDEO_ID,
+      SOB_VIDEO_TITLE
+   };
+
+   sobPrintAttributes(context,
+                      sourceVideo,
+                      sourceVideoAttributes,
+                      sizeof(sourceVideoAttributes) / sizeof(sobField));
+}
+
 void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntry)
 {
    static sobField dashboardEntryAttributes[] = {
@@ -565,6 +578,24 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
                              "src_frame",
                              &printJsonSourceFrame);
    }
+
+   // include the src_video attribute, only if the entry has a source video
+   sobLog("Checking if dashboard entry has src_video");
+   bson_oid_t sourceVideoOid;
+   int hasSourceVideo = sobBsonOidField(SOB_DASHBOARD_ENTRY,
+                                        SOB_DASHBOARD_ENTRY_SRC_VIDEO_ID,
+                                        dbEntry,
+                                        &sourceVideoOid);
+   if (hasSourceVideo) {
+      sobLog("Printing dashboard entry src_video field");
+      sobPrintSubobjectByOid(sob,
+                             context,
+                             dbEntry,
+                             SOB_DASHBOARD_ENTRY_SRC_VIDEO_ID,
+                             SOB_VIDEO,
+                             "src_video",
+                             &printJsonSourceVideo);
+   }
 }
 
 void printJsonOutput(sobContext sob)
@@ -609,6 +640,7 @@ int loadData(sobContext sob)
    bson_oid_t userOid;
    cvector frameOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector srcFrameOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector srcVideoOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector rollOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector userOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector videoOids = cvectorAlloc(sizeof(bson_oid_t));
@@ -646,6 +678,14 @@ int loadData(sobContext sob)
                                   srcFrameOids);
 
    sobLoadAllById(sob, SOB_FRAME, srcFrameOids);
+
+   // and all source videos referenced by the dashboard entries
+   sobGetOidVectorFromObjectField(sob,
+                                  SOB_DASHBOARD_ENTRY,
+                                  SOB_DASHBOARD_ENTRY_SRC_VIDEO_ID,
+                                  srcVideoOids);
+
+   sobLoadAllById(sob, SOB_VIDEO, srcVideoOids);
 
    // and frames have references to everything else, so we load it all up...
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_ROLL_ID, rollOids);
