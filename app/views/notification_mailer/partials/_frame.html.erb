@@ -27,12 +27,12 @@
       <%= render :partial => '/notification_mailer/partials/frame_footer',
                  :locals => {
                     :is_recommendation => dbe.is_recommendation?,
-                    :action         => dbe.action,
-                    :avatar         => frame_footer_avatar(dbe),
-                    :frame          => frame,
-                    :ga_category    => ga_category,
-                    :message        => frame_footer_message(dbe),
-                    :signed_in_user => signed_in_user,
+                    :action            => dbe.action,
+                    :avatar            => frame_footer_avatar(dbe),
+                    :frame             => dbe.frame,
+                    :ga_category       => ga_category,
+                    :message           => frame_footer_message(dbe),
+                    :signed_in_user    => signed_in_user,
                  } %>
     </td>
   </tr>

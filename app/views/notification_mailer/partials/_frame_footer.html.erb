@@ -12,7 +12,7 @@
                 <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>;" class="js-track-event no-faux-link" data-ga_category="<%= ga_category %>" data-ga_action="Click Username" data-ga_label="<%= signed_in_user['nickname'] || "anonymous" %>" data-user_nickname="<%= frame_owner.nickname %>"<% if frame_owner.name %> title="<%= frame_owner.name %>"<%end%>><strong><%= frame_owner.nickname %></strong></span>
               <% else %>
                 <% if action == DashboardEntry::ENTRY_TYPE[:channel_recommendation] %>
-                  <strong style="color: <%= Settings::Email.ui_green %>;font-family: <%= Settings::Email.font_family %>;" class="js-track-event no-faux-link">Featured: <%= userNickname %></strong>
+                  <strong style="color: <%= Settings::Email.ui_green %>;font-family: <%= Settings::Email.font_family %>;" class="js-track-event no-faux-link">Featured: <%= frame_owner.nickname %></strong>
                 <% else %>
                   <strong style="color: <%= Settings::Email.ui_green %>;font-family: <%= Settings::Email.font_family %>;" class="js-track-event no-faux-link">Recommendation:</strong>
                 <% end %>
