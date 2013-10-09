@@ -215,6 +215,28 @@ describe GT::RecommendationEmailProcessor do
     end
 
     it "sends an email if recommendations are available" do
+      #create a video graph rec
+      v = Factory.create(:video)
+      @vid_graph_recommended_vid = Factory.create(:video)
+      rec = Factory.create(:recommendation, :recommended_video_id => @vid_graph_recommended_vid.id, :score => 100.0)
+      v.recs << rec
+
+      v.save
+
+      src_frame_creator = Factory.create(:user)
+      @vid_graph_src_frame = Factory.create(:frame, :video => v, :creator => src_frame_creator )
+
+      dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @user, :video_id => v.id, :actor => src_frame_creator)
+
+      dbe.save
+
+      #create a mortar rec
+      @mortar_recommended_vid = Factory.create(:video)
+      @mortar_src_vid = Factory.create(:video)
+      mortar_response = [{"item_id" => @mortar_recommended_vid.id.to_s, "reason_id" => @mortar_src_vid.id.to_s}]
+
+      GT::MortarHarvester.stub(:get_recs_for_user).and_return(mortar_response)
+
       #create a channel rec
       @featured_curator = Factory.create(:user)
       @conversation = Factory.create(:conversation)
@@ -224,12 +246,12 @@ describe GT::RecommendationEmailProcessor do
       @channel_recommended_vid = Factory.create(:video)
       @community_channel_frame = Factory.create(:frame, :creator_id => @featured_curator.id, :video_id => @channel_recommended_vid.id, :conversation_id => @conversation.id)
       @community_channel_dbe = Factory.create(:dashboard_entry, :user_id => @featured_channel_user.id, :frame_id => @community_channel_frame.id, :video_id => @channel_recommended_vid.id)
-      GT::MortarHarvester.stub(:get_recs_for_user).and_return(nil)
 
+      MongoMapper::Plugins::IdentityMap.clear
       expect {
         @result = GT::RecommendationEmailProcessor.process_and_send_recommendation_email_for_user(@user)
       }.to change(ActionMailer::Base.deliveries,:size).by(1)
-      @result.should == 1
+      @result.should == 3
     end
 
   end
