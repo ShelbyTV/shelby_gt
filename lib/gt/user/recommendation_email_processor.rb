@@ -1,6 +1,7 @@
 # encoding: UTF-8
 require 'framer'
 require 'api_clients/kiss_metrics_client'
+require 'recommendation_manager'
 
 ##############
 # Cycles through users and finds a video to recommend
@@ -74,6 +75,8 @@ module GT
             end
           rescue Exception => e
             Rails.logger.info "[GT::RecommendationsEmailProcessor] EXCEPTION: #{e}"
+            Rails.logger.info "[GT::RecommendationsEmailProcessor] BACKTRACE:"
+            Rails.logger.info "#{e.backtrace}"
             errors += 1
           end
         end
