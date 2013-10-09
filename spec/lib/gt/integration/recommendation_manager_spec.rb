@@ -490,7 +490,7 @@ describe GT::RecommendationManager do
       src_frame_creator = Factory.create(:user)
       @vid_graph_src_frame = Factory.create(:frame, :video => v, :creator => src_frame_creator )
 
-      dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @user, :video_id => v.id)
+      dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @user, :video_id => v.id, :actor => src_frame_creator)
 
       dbe.save
 

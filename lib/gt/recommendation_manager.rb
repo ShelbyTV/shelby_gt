@@ -194,7 +194,7 @@ module GT
     def get_video_graph_recs_for_user(max_db_entries_to_scan=10, limit=1, min_score=nil, prefetched_dbes=nil)
 
       unless prefetched_dbes
-        dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(max_db_entries_to_scan).fields(:video_id, :frame_id, :actor_id).all
+        dbes = DashboardEntry.where(:user_id => @user.id).order(:_id.desc).limit(max_db_entries_to_scan).fields(:video_id, :frame_id, :actor_id).all
       else
         dbes = prefetched_dbes.slice(0, max_db_entries_to_scan)
       end
