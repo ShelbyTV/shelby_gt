@@ -37,13 +37,13 @@ describe WeeklyRecommendationEmailHelper do
     context "message_text" do
 
       it "should return the right message for one friend user" do
-        message_text([@dbe], @dbe.all_associated_friends).should eql("We've discovered that #{@friend_user.nickname} checked out this video.")
+        message_text([@dbe]).should eql("We've discovered that #{@friend_user.nickname} checked out this video.")
       end
 
       it "should return the right message for two friend users" do
         friend_user = Factory.create(:user)
         @dbe.friend_likers_array << friend_user.id
-        message_text([@dbe], @dbe.all_associated_friends).should start_with("#{@friend_user.nickname} and 1 other are")
+        message_text([@dbe]).should start_with("#{@friend_user.nickname} and 1 other are")
       end
 
       it "should return the right message for three or more friend users" do
@@ -51,7 +51,7 @@ describe WeeklyRecommendationEmailHelper do
           friend_user = Factory.create(:user)
           @dbe.friend_likers_array << friend_user.id
         end
-        message_text([@dbe], @dbe.all_associated_friends).should start_with("#{@friend_user.nickname} and 2 others are")
+        message_text([@dbe]).should start_with("#{@friend_user.nickname} and 2 others are")
       end
 
       it "should count friend users from the other friend arrays" do
@@ -59,7 +59,7 @@ describe WeeklyRecommendationEmailHelper do
         @dbe.friend_likers_array << friend_user.id
         friend_user = Factory.create(:user)
         @dbe.friend_viewers_array << friend_user.id
-        message_text([@dbe], @dbe.all_associated_friends).should start_with("#{@friend_user.nickname} and 2 others are")
+        message_text([@dbe]).should start_with("#{@friend_user.nickname} and 2 others are")
       end
 
     end
@@ -67,13 +67,13 @@ describe WeeklyRecommendationEmailHelper do
     context "message_subject" do
 
       it "should return the right subject for one friend user" do
-        message_subject([@dbe], @dbe.all_associated_friends).should eql("Watch this video that #{@friend_user.nickname} watched")
+        message_subject([@dbe]).should eql("Watch this video that #{@friend_user.nickname} watched")
       end
 
       it "should return the right subject for two friend users" do
         friend_user = Factory.create(:user)
         @dbe.friend_likers_array << friend_user.id
-        message_subject([@dbe], @dbe.all_associated_friends).should eql("Watch this video that #{@friend_user.nickname} and 1 other shared, liked, and watched")
+        message_subject([@dbe]).should eql("Watch this video that #{@friend_user.nickname} and 1 other shared, liked, and watched")
       end
 
       it "should return the right message for three or more friend users" do
@@ -81,7 +81,7 @@ describe WeeklyRecommendationEmailHelper do
           friend_user = Factory.create(:user)
           @dbe.friend_likers_array << friend_user.id
         end
-        message_subject([@dbe], @dbe.all_associated_friends).should eql("Watch this video that #{@friend_user.nickname} and 2 others shared, liked, and watched")
+        message_subject([@dbe]).should eql("Watch this video that #{@friend_user.nickname} and 2 others shared, liked, and watched")
       end
 
     end
