@@ -520,7 +520,7 @@ describe 'v1/user' do
         response.body.should have_json_size(0).at_path("result")
       end
 
-      it "should use video graph and mortar as sources by deafault" do
+      it "should use video graph and mortar as sources by default" do
         GT::RecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
           :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]],
           :limits => [3,3]
@@ -622,6 +622,18 @@ describe 'v1/user' do
             @mortar_recommended_vid.id.to_s,
             @channel_recommended_vid.id.to_s
           ]
+        end
+
+        it "should not exclude videos that are missing thumbnails" do
+          @vid_graph_recommended_vid.thumbnail_url = nil
+          @vid_graph_recommended_vid.save
+          MongoMapper::Plugins::IdentityMap.clear
+
+          get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(3).at_path("result")
         end
 
         it "should return the right attributes and contents for a video graph recommendation" do

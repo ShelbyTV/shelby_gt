@@ -125,11 +125,18 @@ module GT
 
     # BEGIN INSTANCE METHODS
 
-    def initialize(user)
+    def initialize(user, options={})
       raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
+
+      defaults = {
+        :exclude_missing_thumbnails => false
+      }
+
+      options = defaults.merge(options)
 
       @user = user
       @watched_videos_loaded = false
+      @exclude_missing_thumbnails = options.delete(:exclude_missing_thumbnails)
     end
 
     def get_recs_for_user(options={})
@@ -237,11 +244,12 @@ module GT
         recs.slice!(limit..-1)
       end
 
-      # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
-      # but we may be calling out to provider APIs for each video here if we don't have the video info recently updated
       recs.select! do |rec|
         vid = Video.find(rec[:recommended_video_id])
-        if vid
+        # if specified by the options, exclude videos that don't have thumbnails
+        if vid && (!@exclude_missing_thumbnails || vid.thumbnail_url)
+          # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
+          # but we may be calling out to provider APIs for each video here if we don't have the video info recently updated
           GT::VideoManager.update_video_info(vid)
           vid.available
         end
@@ -350,16 +358,17 @@ module GT
         if rec_prequalified
           # check if the user has already watched the video
           if !@watched_video_ids.include? rec[options[:recommended_video_key]].to_s
-            # check if the video is still available at the provider
+            # lookup the video to check out some more information about it
             vid = Video.find(rec[options[:recommended_video_key]])
             if vid
-              # if we think the video is available, re-check the provider to
-              # make sure it is
-              # OPTIMIZATION: if we previously thought the video was unavailable,
-              # we won't check if it's become available again;we need a perpetually
-              # running Video Doctor to take care of that or we need a more efficient
-              # idea for how to deal with it here
-              if vid.available
+              # check if the video is still available at the provider and (if specified by the options) whether it has a thumbnail
+              if vid.available && (!@exclude_missing_thumbnails || vid.thumbnail_url)
+                # if we think the video is available, re-check the provider to
+                # make sure it is
+                # OPTIMIZATION: if we previously thought the video was unavailable,
+                # we won't check if it's become available again;we need a perpetually
+                # running Video Doctor to take care of that or we need a more efficient
+                # idea for how to deal with it here
                 GT::VideoManager.update_video_info(vid)
                 valid_recommendations << rec if vid.available
                 # if there's a limited number of recommendations that we need and we've hit it, quit

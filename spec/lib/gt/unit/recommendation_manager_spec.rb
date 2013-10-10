@@ -26,6 +26,10 @@ describe GT::RecommendationManager do
       u.instance_variable_get(:@user).should == @user
       u.instance_variable_get(:@watched_videos_loaded).should == false
       u.instance_variable_get(:@watched_video_ids).should be_nil
+      u.instance_variable_get(:@exclude_missing_thumbnails).should == false
+
+      u = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => true})
+      u.instance_variable_get(:@exclude_missing_thumbnails).should == true
     end
   end
 
@@ -122,6 +126,29 @@ describe GT::RecommendationManager do
           result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
+        end
+
+        it "should exclude videos that are missing their thumbnails when that option is set" do
+          @vid_with_thumbnail = Factory.create(:video)
+          @vid_without_thumbnail = Factory.create(:video, :thumbnail_url => nil)
+
+          Video.should_receive(:find).exactly(@recommended_video_ids.length).times.and_return(@vid_without_thumbnail, @vid_with_thumbnail)
+
+          rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => true})
+          result = rm.get_video_graph_recs_for_user(10, nil)
+          result.length.should == @recommended_video_ids.length - 1
+          result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
+        end
+
+        it "should not exclude videos that are missing their thumbnails when that option is not set" do
+          @vid_with_thumbnail = Factory.create(:video)
+          @vid_without_thumbnail = Factory.create(:video, :thumbnail_url => nil)
+
+          Video.should_receive(:find).exactly(@recommended_video_ids.length).times.and_return(@vid_without_thumbnail, @vid_with_thumbnail)
+
+          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
+          result.length.should == @recommended_video_ids.length
+          result.should == @recommended_video_ids.each_with_index.map{|id, i| {:recommended_video_id => id, :src_frame_id => @src_frame_ids[i]}}
         end
 
         it "should exclude from consideration dashboard entries that have no actor" do
@@ -750,10 +777,8 @@ describe GT::RecommendationManager do
 
       it "should skip videos for which the block returns false" do
         @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_videos[0].id.to_s])
-        Video.should_receive(:find).once().and_return(@recommended_videos[1])
-        GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[1])
-        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[0])
-        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[2])
+        Video.should_receive(:find).once().with(@recommended_videos[1].id.to_s).and_return(@recommended_videos[1])
+        GT::VideoManager.should_receive(:update_video_info).once().with(@recommended_videos[1])
 
         num_calls = 0
 
@@ -764,10 +789,8 @@ describe GT::RecommendationManager do
 
       it "should skip videos the user has already watched" do
         @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_videos[0].id.to_s])
-        Video.should_receive(:find).once().and_return(@recommended_videos[1])
-        GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[1])
-        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[0])
-        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[2])
+        Video.should_receive(:find).once().with(@recommended_videos[1].id.to_s).and_return(@recommended_videos[1])
+        GT::VideoManager.should_receive(:update_video_info).once().with(@recommended_videos[1])
 
         @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
           @recommendations[1]
@@ -776,9 +799,8 @@ describe GT::RecommendationManager do
 
       it "should skip videos that are known to be no longer available at the provider" do
         @recommended_videos[0].available = false
-        GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[1])
-        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[0])
-        GT::VideoManager.should_not_receive(:update_video_info).with(@recommended_videos[2])
+        Video.should_receive(:find).twice().and_return(@recommended_videos[0], @recommended_videos[1])
+        GT::VideoManager.should_receive(:update_video_info).once().with(@recommended_videos[1])
 
         @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
           @recommendations[1]
@@ -786,6 +808,7 @@ describe GT::RecommendationManager do
       end
 
       it "should skip videos that are no longer available at the provider after re-checking" do
+        Video.should_receive(:find).twice().and_return(@recommended_videos[0], @recommended_videos[1])
         GT::VideoManager.should_receive(:update_video_info).with(@recommended_videos[0]) {
           @recommended_videos[0].available = false
           nil
@@ -797,6 +820,30 @@ describe GT::RecommendationManager do
           @recommendations[1]
         ]
       end
+
+      it "should not skip videos that are missing their thumbnails when that option is not set" do
+        @recommended_videos[0].thumbnail_url = nil
+
+        Video.should_receive(:find).once().and_return(@recommended_videos[0])
+        GT::VideoManager.should_receive(:update_video_info).once().with(@recommended_videos[0])
+
+        @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
+          @recommendations[0]
+        ]
+      end
+
+      it "should skip videos that are missing their thumbnails when that option is set" do
+        @recommended_videos[0].thumbnail_url = nil
+
+        Video.should_receive(:find).twice().and_return(@recommended_videos[0], @recommended_videos[1])
+        GT::VideoManager.should_receive(:update_video_info).once().with(@recommended_videos[1])
+
+        rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => true})
+        rm.send(:filter_recs, @recommendations, {:limit => 1}).should == [
+          @recommendations[1]
+        ]
+      end
+
     end
 
   end
