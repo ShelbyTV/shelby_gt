@@ -7,7 +7,7 @@
             <!-- main -->
             <table border="0" cellspacing="0" cellpadding="0">
               <tbody>
-                <%= render :partial => "/objects/summary_text", :locals => { :text => message_subject(@dbes, @friend_users) } %>
+                <%= render :partial => "/objects/summary_text", :locals => { :text => message_subject(@dbes) } %>
 
                 <%= render :partial => "/objects/header" %>
 
@@ -26,7 +26,7 @@
                                       Recommended for you:
                                     </h1>
                                     <p style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>;margin-bottom: 20px;">
-                                      <%= message_subject(@dbes, @friend_users) %>
+                                      <%= message_subject(@dbes) %>
                                     </p>
                                   </td>
                                 </tr>
