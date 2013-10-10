@@ -2,7 +2,7 @@ module WeeklyRecommendationEmailHelper
 
   def message_text(dbes)
     if dbes.count > 1
-      "Your top 3 recommended videos are ready for you to watch!"
+      "Your top #{dbes.count} recommended videos are ready for you to watch!"
     else
       dbe = dbes.first
       if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
@@ -20,7 +20,7 @@ module WeeklyRecommendationEmailHelper
 
   def message_subject(dbes)
     if dbes.count > 1
-      "Today on Shelby.tv: Your top 3 recommended videos"
+      "Today on Shelby.tv: Your top #{dbes.count} recommended videos"
     else
       dbe = dbes.first
       if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
