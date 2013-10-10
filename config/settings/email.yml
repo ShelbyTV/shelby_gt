@@ -4,6 +4,7 @@ defaults: &defaults
   shelby_tagline: "The perfect stream of videos built for you and powered by your friends."
   preferences_link: "http://shelby.tv/preferences"
   notifications_link: "http://shelby.tv/preferences/notifications"
+  unsubscribe_path: "http://shelby.tv/preferences/email/unsubscribe"
   web_url_base: "http://shelby.tv"
   #CSS UI Constants
   font_family: "'Helvetica Neue',Helvetica,sans-serif"

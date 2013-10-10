@@ -7,7 +7,7 @@
         <tr>
           <td>&nbsp;</td>
           <td style="width: <%= Settings::Email.main_column %>;text-align: right; color: <%= Settings::Email.ui_soft_black %>">
-            <p style="margin: 0;padding:0;line-height: 1.5;font-size: 10px;"><a href="<%= Settings::Email.notifications_link %>" style="color: <%= Settings::Email.ui_soft_black %>">Email Settings</a></p>
+            <p style="margin: 0;padding:0;line-height: 1.5;font-size: 10px;"><a href="<%= Settings::Email.unsubscribe_path %>?type=weekly-email" style="color: <%= Settings::Email.ui_soft_black %>">Unsubscribe</a> | <a href="<%= Settings::Email.notifications_link %>" style="color: <%= Settings::Email.ui_soft_black %>">Email Settings</a></p>
             <p style="margin: 0;padding:0;line-height: 1.5;font-size: 10px;"><%= Settings::Email.shelby_address %></p>
           </td>
           <td>&nbsp;</td>
