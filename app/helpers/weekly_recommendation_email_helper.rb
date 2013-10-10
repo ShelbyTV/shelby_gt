@@ -1,29 +1,37 @@
 module WeeklyRecommendationEmailHelper
 
   def message_text(dbes)
-    dbe = dbes.first
-    if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-      "We've discovered that this video is similar to those that #{dbe.src_frame.creator.nickname} is sharing, liking, and watching."
-    elsif dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
-      friend_users = dbe.all_associated_friends
-      if friend_users.count > 1
-        "#{friend_users.first.nickname} and #{pluralize(friend_users.count - 1, 'other')} are sharing, liking, and watching this video."
-      else
-        "We've discovered that #{friend_users.first.nickname} checked out this video."
+    if dbes.count > 1
+      "Your top 3 recommended videos are ready for you to watch!"
+    else
+      dbe = dbes.first
+      if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+        "We've discovered that this video is similar to those that #{dbe.src_frame.creator.nickname} is sharing, liking, and watching."
+      elsif dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
+        friend_users = dbe.all_associated_friends
+        if friend_users.count > 1
+          "#{friend_users.first.nickname} and #{pluralize(friend_users.count - 1, 'other')} are sharing, liking, and watching this video."
+        else
+          "We've discovered that #{friend_users.first.nickname} checked out this video."
+        end
       end
     end
   end
 
   def message_subject(dbes)
-    dbe = dbes.first
-    if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-       "We've discovered that this video is similar to those that #{dbe.src_frame.creator.nickname} is sharing, liking, and watching."
-    elsif dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
-      friend_users = dbe.all_associated_friends
-      if friend_users.count > 1
-        "Watch this video that #{friend_users.first.nickname} and #{pluralize(friend_users.count - 1, 'other')} shared, liked, and watched"
-      else
-        "Watch this video that #{friend_users.first.nickname} watched"
+    if dbes.count > 1
+      "Today on Shelby.tv: Your top 3 recommended videos"
+    else
+      dbe = dbes.first
+      if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+         "We've discovered that this video is similar to those that #{dbe.src_frame.creator.nickname} is sharing, liking, and watching."
+      elsif dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
+        friend_users = dbe.all_associated_friends
+        if friend_users.count > 1
+          "Watch this video that #{friend_users.first.nickname} and #{pluralize(friend_users.count - 1, 'other')} shared, liked, and watched"
+        else
+          "Watch this video that #{friend_users.first.nickname} watched"
+        end
       end
     end
   end
