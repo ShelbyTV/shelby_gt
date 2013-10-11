@@ -593,9 +593,9 @@ describe 'v1/user' do
           #create a mortar rec
           @mortar_recommended_vid = Factory.create(:video)
           @mortar_src_vid = Factory.create(:video)
-          mortar_response = [{"item_id" => @mortar_recommended_vid.id.to_s, "reason_id" => @mortar_src_vid.id.to_s}]
+          @mortar_response = [{"item_id" => @mortar_recommended_vid.id.to_s, "reason_id" => @mortar_src_vid.id.to_s}]
 
-          GT::MortarHarvester.stub(:get_recs_for_user).and_return(mortar_response)
+          GT::MortarHarvester.stub(:get_recs_for_user).and_return(@mortar_response)
 
           #create a channel rec
           @featured_curator = Factory.create(:user)
@@ -622,6 +622,20 @@ describe 'v1/user' do
             @mortar_recommended_vid.id.to_s,
             @channel_recommended_vid.id.to_s
           ]
+        end
+
+        it "should limit the results based on the limits parameter" do
+          #create another mortar rec
+          recommended_vid = Factory.create(:video)
+          src_vid = Factory.create(:video)
+          @mortar_response << {"item_id" => recommended_vid.id.to_s, "reason_id" => src_vid.id.to_s}
+          MongoMapper::Plugins::IdentityMap.clear
+
+          get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34&limits=1,1,1'
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(3).at_path("result") # if limits didn't work it would return 4 results
         end
 
         it "should not exclude videos that are missing thumbnails" do

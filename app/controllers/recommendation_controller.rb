@@ -34,7 +34,11 @@ class V1::RecommendationController < ApplicationController
       else
         sources = [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]]
       end
-      limits = Array.new(sources.length) { 3 }
+      if params[:limits]
+        limits = params[:limits].split(",").map {|limit| limit.to_i }
+      else
+        limits = Array.new(sources.length) { 3 }
+      end
       recs = []
 
       rec_manager = GT::RecommendationManager.new(@user)
