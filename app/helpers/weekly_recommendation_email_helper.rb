@@ -2,11 +2,11 @@ module WeeklyRecommendationEmailHelper
 
   def message_text(dbes)
     if dbes.count > 1
-      "Your top #{dbes.count} recommended videos are ready for you to watch!"
+      "Today's top recommendations, just for you"
     else
       dbe = dbes.first
       if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-        "We've discovered that this video is similar to those that #{dbe.src_frame.creator.nickname} is sharing, liking, and watching."
+        "This video is similar to videos #{dbe.src_frame.creator.nickname} has shared"
       elsif dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
         friend_users = dbe.all_associated_friends
         if friend_users.count > 1
@@ -20,11 +20,11 @@ module WeeklyRecommendationEmailHelper
 
   def message_subject(dbes)
     if dbes.count > 1
-      "Today on Shelby.tv: Your top #{dbes.count} recommended videos"
+      "Have a few minutes?"
     else
       dbe = dbes.first
       if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-         "We've discovered that this video is similar to those that #{dbe.src_frame.creator.nickname} is sharing, liking, and watching."
+         "This video is similar to videos #{dbe.src_frame.creator.nickname} has shared"
       elsif dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
         friend_users = dbe.all_associated_friends
         if friend_users.count > 1
