@@ -9,6 +9,7 @@ defaults: &defaults
   #CSS UI Constants
   font_family: "'Helvetica Neue',Helvetica,sans-serif"
   font_size: "13px"
+  font_size_medium: "15px"
   font_size_large: "18px"
   font_weight: "normal"
   line_height: "1.4"
