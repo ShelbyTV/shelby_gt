@@ -29,6 +29,7 @@ describe GT::RecommendationEmailProcessor do
         :users_scanned => 0,
         :user_sendable => 0,
         :sent_emails => 0,
+        :have_user_recommendations => 0,
         :no_user_recommendations => 0,
         :errors => 0
       }
@@ -41,6 +42,7 @@ describe GT::RecommendationEmailProcessor do
         :users_scanned => 0,
         :user_sendable => 0,
         :sent_emails => 0,
+        :have_user_recommendations => 0,
         :no_user_recommendations => 0,
         :errors => 0
       }
@@ -56,6 +58,7 @@ describe GT::RecommendationEmailProcessor do
         :users_scanned => 0,
         :user_sendable => 0,
         :sent_emails => 0,
+        :have_user_recommendations => 0,
         :no_user_recommendations => 0,
         :errors => 0
       }
@@ -75,6 +78,7 @@ describe GT::RecommendationEmailProcessor do
         :users_scanned => 1,
         :user_sendable => 0,
         :sent_emails => 0,
+        :have_user_recommendations => 0,
         :no_user_recommendations => 0,
         :errors => 0
       }
@@ -97,6 +101,7 @@ describe GT::RecommendationEmailProcessor do
         :users_scanned => 1,
         :user_sendable => 1,
         :sent_emails => 0,
+        :have_user_recommendations => 0,
         :no_user_recommendations => 1,
         :errors => 0
       }
@@ -120,6 +125,7 @@ describe GT::RecommendationEmailProcessor do
         :users_scanned => 1,
         :user_sendable => 1,
         :sent_emails => 0,
+        :have_user_recommendations => 0,
         :no_user_recommendations => 1,
         :errors => 0
       }
@@ -158,6 +164,7 @@ describe GT::RecommendationEmailProcessor do
           :users_scanned => 1,
           :user_sendable => 1,
           :sent_emails => 1,
+          :have_user_recommendations => 1,
           :no_user_recommendations => 0,
           :errors => 0
         }
@@ -175,6 +182,7 @@ describe GT::RecommendationEmailProcessor do
           :users_scanned => 1,
           :user_sendable => 1,
           :sent_emails => 0,
+          :have_user_recommendations => 1,
           :no_user_recommendations => 0,
           :errors => 0
         }
@@ -182,7 +190,7 @@ describe GT::RecommendationEmailProcessor do
       end
 
       it "returns stats on errors" do
-        GT::RecommendationEmailProcessor.stub(:process_and_send_recommendation_email_for_user).and_raise()
+        GT::RecommendationEmailProcessor.stub(:get_recommendations_for_user).and_raise()
 
         APIClients::KissMetrics.should_not_receive(:identify_and_record)
 
@@ -190,6 +198,7 @@ describe GT::RecommendationEmailProcessor do
           :users_scanned => 1,
           :user_sendable => 1,
           :sent_emails => 0,
+          :have_user_recommendations => 0,
           :no_user_recommendations => 0,
           :errors => 1
         }
@@ -200,18 +209,16 @@ describe GT::RecommendationEmailProcessor do
 
   end
 
-  describe "process_and_send_recommendation_email_for_user" do
+  describe "get_recommendations_for_user" do
 
     before(:each) do
+      Array.any_instance.stub(:shuffle!)
       @user = Factory.create(:user)
       @user.viewed_roll = Factory.create(:roll, :creator => @user)
     end
 
-    it "does nothing if no recommendations are available" do
-      expect {
-        @result = GT::RecommendationEmailProcessor.process_and_send_recommendation_email_for_user(@user)
-      }.not_to change(ActionMailer::Base.deliveries,:size)
-      @result.should be_nil
+    it "returns an empty array if no recommendations are available" do
+      GT::RecommendationEmailProcessor.get_recommendations_for_user(@user).should == []
     end
 
     describe "recommendations available" do
@@ -250,16 +257,20 @@ describe GT::RecommendationEmailProcessor do
         @community_channel_dbe = Factory.create(:dashboard_entry, :user_id => @featured_channel_user.id, :frame_id => @community_channel_frame.id, :video_id => @channel_recommended_vid.id)
       end
 
-      it "sends an email if recommendations are available" do
+      it "returns recommendations if they are available" do
         MongoMapper::Plugins::IdentityMap.clear
 
-        expect {
-          @result = GT::RecommendationEmailProcessor.process_and_send_recommendation_email_for_user(@user)
-        }.to change(ActionMailer::Base.deliveries,:size).by(1)
-        @result.should == 3
+        res = GT::RecommendationEmailProcessor.get_recommendations_for_user(@user)
+        res.length.should == 3
+        res[0].action.should == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+        res[0].video.id == @vid_graph_recommended_vid.id
+        res[1].action.should == DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+        res[1].video.id == @channel_recommended_vid.id
+        res[2].action.should == DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+        res[2].video.id == @mortar_recommended_vid.id
       end
 
-      it "does not send an email if the only available recommendations had no thumbnails" do
+      it "returns an empty array if the only available recommendations had no thumbnails" do
         @vid_graph_recommended_vid.thumbnail_url = nil
         @vid_graph_recommended_vid.save
         @mortar_recommended_vid.thumbnail_url = nil
@@ -268,10 +279,7 @@ describe GT::RecommendationEmailProcessor do
         @channel_recommended_vid.save
         MongoMapper::Plugins::IdentityMap.clear
 
-        expect {
-          @result = GT::RecommendationEmailProcessor.process_and_send_recommendation_email_for_user(@user)
-        }.not_to change(ActionMailer::Base.deliveries,:size)
-        @result.should be_nil
+        GT::RecommendationEmailProcessor.get_recommendations_for_user(@user).should == []
       end
 
     end
