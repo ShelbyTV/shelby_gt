@@ -12,7 +12,7 @@ describe WeeklyRecommendationEmailHelper do
     context "message_text" do
 
       it "should return the right message" do
-        message_text([@dbe]).should eql "We've discovered that this video is similar to those that #{@sharing_user.nickname} is sharing, liking, and watching."
+        message_text([@dbe]).should eql "This video is similar to videos #{@sharing_user.nickname} has shared"
       end
 
     end
@@ -20,7 +20,7 @@ describe WeeklyRecommendationEmailHelper do
     context "message_subject" do
 
       it "should return the right subject" do
-        message_subject([@dbe]).should eql "We've discovered that this video is similar to those that #{@sharing_user.nickname} is sharing, liking, and watching."
+        message_subject([@dbe]).should eql "This video is similar to videos #{@sharing_user.nickname} has shared"
       end
 
     end
