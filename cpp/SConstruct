@@ -6,7 +6,7 @@ defaultDebugEnv = env.Clone()
 defaultOptEnv = env.Clone()
 
 defaultDebugEnv.MergeFlags('-ggdb')
-defaultOptEnv.MergeFlags('-O6')
+defaultOptEnv.MergeFlags('-O3')
 
 defaultOptEnv['LINKFLAGS'] = '-s'
 
@@ -25,7 +25,7 @@ else:
    SConscript('source/userRollFollowings/SConscript', variant_dir='build/userRollFollowings/', duplicate=0)
    SConscript('source/conversationIndex/SConscript', variant_dir='build/conversationIndex/', duplicate=0)
 
-   # libs 
+   # libs
    SConscript('lib/mrjson/SConscript', variant_dir='build/mrjson/', duplicate=0)
    SConscript('lib/mrbson/SConscript', variant_dir='build/mrbson/', duplicate=0)
    SConscript('lib/cvector/SConscript', variant_dir='build/cvector/', duplicate=0)
