@@ -20,5 +20,8 @@ production: &production
   app_secret: "416ce973e4a78ca6a99227731946b27b"
   should_send_post: true
 
+staging:
+  <<: *production
+
 arnold:
   <<: *production

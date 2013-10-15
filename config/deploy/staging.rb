@@ -1,20 +1,25 @@
-set :deploy_to, "/home/gt/email"
+require 'capistrano-unicorn'
+
+set :deploy_to, "/home/gt/api"
 
 #############################################################
-#	Servers
+# Servers
 #############################################################
 
-role :app, "162.209.91.72"
+role :app, "166.78.255.147"
 
 #############################################################
-#	Git
+# Git
 #############################################################
 
 set :repository,  "git@github.com:ShelbyTV/shelby_gt.git"
 set :branch, fetch(:branch, "master")
 
-set :rails_env, "production"
-set :app_env,   "production"
+set :rails_env, "staging"
+set :unicorn_env, "staging"
+set :app_env,     "staging"
+
+after 'deploy:restart', 'unicorn:duplicate'
 
 namespace :deploy do
   desc "Deploy the currently checked out branch"

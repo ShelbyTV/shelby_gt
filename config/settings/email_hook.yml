@@ -15,5 +15,8 @@ test:
 production:
   <<: *defaults
 
+staging:
+  <<: *defaults
+
 arnold:
   <<: *defaults

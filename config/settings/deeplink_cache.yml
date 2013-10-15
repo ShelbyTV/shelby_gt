@@ -20,6 +20,9 @@ production: &production
   db_replSetName: 'gtDeeplinkCache'
   db_username: "gt_user"
   db_password: "GT/us3r!!!"
-  
+
+staging:
+  <<: *production
+
 arnold:
   <<: *production

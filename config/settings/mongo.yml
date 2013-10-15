@@ -13,7 +13,10 @@ production: &production
   <<: *defaults
   db_options:
    :pool_size: 5
-  
+
+staging:
+  <<: *production
+
 arnold:
   <<: *production
   db_options:

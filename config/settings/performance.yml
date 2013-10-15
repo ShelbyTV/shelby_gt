@@ -13,6 +13,9 @@ test:
 production: &production
   <<: *defaults
 
+staging:
+  <<: *production
+
 arnold:
   <<: *production
   validate_uniqueness_user_nickname: false

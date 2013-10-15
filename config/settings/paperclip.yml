@@ -17,6 +17,9 @@ production: &production
   user_avatar_bucket: "shelby-gt-user-avatars"
   roll_images_bucket: "shelby-gt-roll-images"
 
+staging:
+  <<: *production
+
 arnold:
   <<: *production
-  
+

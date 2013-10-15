@@ -8,7 +8,7 @@ defaults: &defaults
     link_processing_high: "link_processing_high_gt"
     facebook_add_user: "fb_add_user"
     tumblr_add_user: "tumblr_add_user"
-  
+
 development:
   <<: *defaults
 
@@ -24,6 +24,9 @@ production: &production
   url: '10.181.132.217:11300'
   host: '10.181.132.217'
   port: '11300'
-  
+
+staging:
+  <<: *production
+
 arnold:
   <<: *production

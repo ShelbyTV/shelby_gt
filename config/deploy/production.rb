@@ -16,6 +16,24 @@ role :db,  "108.166.56.26", :primary => true
 
 set :repository,  "git@github.com:ShelbyTV/shelby_gt.git"
 set :branch, "master"
+
+set :rails_env, "production"
+set :app_env,   "production"
+
+namespace :passenger do
+  desc "Restart Application"
+  task :restart do
+    run "touch #{current_path}/tmp/restart.txt"
+    #run 'curl -sL -w "I just tapped %{url_effective}: %{http_code}\\n" "http://shelby.tv" -o /dev/null'
+  end
+end
+
+namespace :deploy do
+  desc "Restart passenger"
+  task :restart do
+    passenger.restart
+  end
+end
 #set :git_enable_submodules, 1
 
 #############################################################

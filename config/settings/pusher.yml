@@ -11,8 +11,10 @@ test:
 
 production: &production
   <<: *defaults
-  
+
+staging:
+  <<: *production
 
 arnold:
   <<: *production
-  
+
