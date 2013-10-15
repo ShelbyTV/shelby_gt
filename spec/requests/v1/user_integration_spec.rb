@@ -599,12 +599,13 @@ describe 'v1/user' do
 
           #create a channel rec
           @featured_curator = Factory.create(:user)
+          @upvoter = Factory.create(:user)
           @conversation = Factory.create(:conversation)
           @message = Factory.create(:message, :text => "Some interesting text", :user_id => @featured_curator.id)
           @conversation.messages << @message
           @conversation.save
           @channel_recommended_vid = Factory.create(:video)
-          @community_channel_frame = Factory.create(:frame, :creator_id => @featured_curator.id, :video_id => @channel_recommended_vid.id, :conversation_id => @conversation.id)
+          @community_channel_frame = Factory.create(:frame, :creator_id => @featured_curator.id, :video_id => @channel_recommended_vid.id, :conversation_id => @conversation.id, :upvoters => [@upvoter.id])
           @community_channel_dbe = Factory.create(:dashboard_entry, :user_id => @featured_channel_user.id, :frame_id => @community_channel_frame.id, :video_id => @channel_recommended_vid.id)
         end
 
@@ -662,6 +663,8 @@ describe 'v1/user' do
 
           response.body.should have_json_path("result/0/frame")
           response.body.should have_json_path("result/0/frame/video")
+          response.body.should have_json_type(Array).at_path("result/0/frame/upvoters")
+          response.body.should have_json_size(0).at_path("result/0/frame/upvoters")
 
           response.body.should have_json_path("result/0/src_frame")
           response.body.should have_json_path("result/0/src_frame/id")
@@ -699,6 +702,8 @@ describe 'v1/user' do
 
           response.body.should have_json_path("result/0/frame")
           response.body.should have_json_path("result/0/frame/video")
+          response.body.should have_json_type(Array).at_path("result/0/frame/upvoters")
+          response.body.should have_json_size(0).at_path("result/0/frame/upvoters")
 
           response.body.should have_json_path("result/0/src_video")
           response.body.should have_json_path("result/0/src_video/id")
@@ -731,6 +736,8 @@ describe 'v1/user' do
 
           response.body.should have_json_path("result/0/frame")
           response.body.should have_json_path("result/0/frame/video")
+          response.body.should have_json_type(Array).at_path("result/0/frame/upvoters")
+          response.body.should have_json_size(1).at_path("result/0/frame/upvoters")
           response.body.should have_json_path("result/0/frame/creator_id")
           response.body.should have_json_path("result/0/frame/creator")
           response.body.should have_json_path("result/0/frame/creator/id")
@@ -752,6 +759,8 @@ describe 'v1/user' do
           parsed_response["result"][0]["frame"]["video"]["id"].should eq(@channel_recommended_vid.id.to_s)
           parsed_response["result"][0]["frame"]["video"]["provider_name"].should eq(@channel_recommended_vid.provider_name)
           parsed_response["result"][0]["frame"]["video"]["provider_id"].should eq(@channel_recommended_vid.provider_id)
+
+          parsed_response["result"][0]["frame"]["upvoters"][0].should eq(@upvoter.id.to_s)
 
           parsed_response["result"][0]["frame"]["id"].should eq(@community_channel_frame.id.to_s)
           parsed_response["result"][0]["frame"]["creator_id"].should eq(@featured_curator.id.to_s)

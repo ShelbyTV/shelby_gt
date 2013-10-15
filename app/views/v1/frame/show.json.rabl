@@ -10,7 +10,7 @@ end
 
 if @include_frame_children
 
-  attributes :id, :score, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id, :like_count
+  attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id, :like_count
 
   node :created_at do |f|
     concise_time_ago_in_words(f.created_at) if f.created_at
@@ -35,10 +35,6 @@ if @include_frame_children
     child :authentications do
       attributes :uid, :provider, :nickname
     end
-  end
-
-  child @upvoters => :upvoters do
-    attributes :id, :name, :nickname, :user_image_original, :user_image, :has_shelby_avatar, :public_roll_id
   end
 
   child :video => "video" do
