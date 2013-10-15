@@ -5,9 +5,14 @@ module WeeklyRecommendationEmailHelper
       "Today's top recommendations, just for you"
     else
       dbe = dbes.first
-      if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+      case dbe.action
+      when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
         "This video is similar to videos #{dbe.src_frame.creator.nickname} has shared"
-      elsif dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
+      when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+        "This video is similar to \"#{dbe.src_video.title}\""
+      when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+        "This featured video was shared by #{dbe.frame.creator.nickname}"
+      when DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
         friend_users = dbe.all_associated_friends
         if friend_users.count > 1
           "#{friend_users.first.nickname} and #{pluralize(friend_users.count - 1, 'other')} are sharing, liking, and watching this video."
@@ -23,9 +28,14 @@ module WeeklyRecommendationEmailHelper
       "Have a few minutes?"
     else
       dbe = dbes.first
-      if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+      case dbe.action
+      when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
          "This video is similar to videos #{dbe.src_frame.creator.nickname} has shared"
-      elsif dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
+      when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+        "This video is similar to \"#{dbe.src_video.title}\""
+      when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+        "This featured video was shared by #{dbe.frame.creator.nickname}"
+      when DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
         friend_users = dbe.all_associated_friends
         if friend_users.count > 1
           "Watch this video that #{friend_users.first.nickname} and #{pluralize(friend_users.count - 1, 'other')} shared, liked, and watched"
