@@ -66,9 +66,11 @@ describe 'v1/video' do
       get '/v1/video/viewed'
       response.body.should be_json_eql(200).at_path("status")
       response.body.should have_json_size(3).at_path("result")
-      parse_json(response.body)["result"][0]["id"].should == v1.id.to_s
-      parse_json(response.body)["result"][1]["id"].should == v2.id.to_s
-      parse_json(response.body)["result"][2]["id"].should == v3.id.to_s
+
+      viewed_video_ids = parse_json(response.body)["result"].map {|vid| vid["id"]}
+      expect(viewed_video_ids).to include(v1.id.to_s)
+      expect(viewed_video_ids).to include(v2.id.to_s)
+      expect(viewed_video_ids).to include(v3.id.to_s)
     end
 
     it "should only return unique video ids" do
