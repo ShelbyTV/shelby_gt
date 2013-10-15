@@ -10,17 +10,13 @@ role :web, "108.166.56.26"
 role :app, "108.166.56.26"
 role :db,  "108.166.56.26", :primary => true
 
-set :user, "gt"
-
 #############################################################
 #	Git
 #############################################################
 
-set :scm, :git
 set :repository,  "git@github.com:ShelbyTV/shelby_gt.git"
 set :branch, "master"
 #set :git_enable_submodules, 1
-set :deploy_via, :remote_cache #keep a local cache to speed up deploys
 
 #############################################################
 #	Copy our error pages to nginx
