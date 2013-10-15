@@ -2,32 +2,74 @@ require 'spec_helper'
 
 describe WeeklyRecommendationEmailHelper do
 
-  context "video graph recommendations" do
+  context "multiple recommendations" do
+    before(:each) do
+      dbe1 = Factory.create(:dashboard_entry)
+      dbe2 = Factory.create(:dashboard_entry)
+      @dbes = [dbe1, dbe2]
+    end
+
+    it "returns the right message_text" do
+      message_text(@dbes).should eql "Today's top recommendations, just for you"
+    end
+
+    it "returns the right message_subject" do
+      message_subject(@dbes).should eql "Have a few minutes?"
+    end
+
+  end
+
+  context "single video graph recommendation" do
     before(:each) do
       @sharing_user = Factory.create(:user)
       @src_frame = Factory.create(:frame, :creator => @sharing_user)
       @dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], :src_frame => @src_frame)
     end
 
-    context "message_text" do
-
-      it "should return the right message" do
-        message_text([@dbe]).should eql "This video is similar to videos #{@sharing_user.nickname} has shared"
-      end
-
+    it "returns the right message_text" do
+      message_text([@dbe]).should eql "This video is similar to videos #{@sharing_user.nickname} has shared"
     end
 
-    context "message_subject" do
-
-      it "should return the right subject" do
-        message_subject([@dbe]).should eql "This video is similar to videos #{@sharing_user.nickname} has shared"
-      end
-
+    it "returns the right message_subject" do
+      message_subject([@dbe]).should eql "This video is similar to videos #{@sharing_user.nickname} has shared"
     end
 
   end
 
-  context "entertainment graph recommendations" do
+  context "single mortar recommendation" do
+    before(:each) do
+      @src_video = Factory.create(:video)
+      @dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation], :src_video => @src_video)
+    end
+
+    it "returns the right message_text" do
+      message_text([@dbe]).should eql "This video is similar to \"#{@src_video.title}\""
+    end
+
+    it "returns the right message_subject" do
+      message_subject([@dbe]).should eql "This video is similar to \"#{@src_video.title}\""
+    end
+
+  end
+
+  context "single channel recommendation" do
+    before(:each) do
+      @sharer = Factory.create(:user)
+      @frame = Factory.create(:frame, :creator => @sharer)
+      @dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation], :frame => @frame)
+    end
+
+    it "returns the right message_text" do
+      message_text([@dbe]).should eql "This featured video was shared by #{@sharer.nickname}"
+    end
+
+    it "returns the right message_subject" do
+      message_subject([@dbe]).should eql "This featured video was shared by #{@sharer.nickname}"
+    end
+
+  end
+
+  context "single entertainment graph recommendations" do
     before(:each) do
       @friend_user = Factory.create(:user)
       @dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation])
