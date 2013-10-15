@@ -66,11 +66,11 @@ module WeeklyRecommendationEmailHelper
 
   def frame_footer_avatar(dbe)
     if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-      return "//#{Settings::Global.web_host}/images/recommendations/share-2.jpg"
+      return "http://#{Settings::Global.web_host}/images/recommendations/share-2.jpg"
     elsif dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
-      return "//#{Settings::Global.web_host}/images/recommendations/share-1.jpg"
+      return "http://#{Settings::Global.web_host}/images/recommendations/share-1.jpg"
     elsif dbe.action == DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-      return "//#{Settings::Global.web_host}/images/recommendations/share-2.jpg"
+      return "http://#{Settings::Global.web_host}/images/recommendations/share-2.jpg"
     elsif dbe.action == DashboardEntry::ENTRY_TYPE[:channel_recommendation]
       return avatar_url_for_user(dbe.frame.creator)
     else
