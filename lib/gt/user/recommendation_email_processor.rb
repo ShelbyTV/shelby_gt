@@ -27,6 +27,7 @@ module GT
       user_loaded = 0
       user_sendable = 0
       num_sent = 0
+      num_with_recs = 0
       num_with_no_recs = 0
       errors = 0
 
@@ -63,14 +64,16 @@ module GT
             # check if they are real users that we need to process
             if user.is_real? && user.gt_enabled
               user_sendable += 1
-              if do_send_emails
-                if self.process_and_send_recommendation_email_for_user(user)
+              dbes = self.get_recommendations_for_user(user)
+              unless dbes.empty?
+                num_with_recs += 1
+                if do_send_emails && GT::NotificationManager.send_weekly_recommendation(user, dbes)
                   num_sent += 1
                   # track that email was sent
                   APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'])
-                else
-                  num_with_no_recs += 1
                 end
+              else
+                num_with_no_recs += 1
               end
             end
           rescue Exception => e
@@ -92,6 +95,7 @@ module GT
         :users_scanned => user_loaded,
         :user_sendable => user_sendable,
         :sent_emails => num_sent,
+        :have_user_recommendations => num_with_recs,
         :no_user_recommendations => num_with_no_recs,
         :errors => errors
       }
@@ -99,7 +103,7 @@ module GT
       return stats
     end
 
-    def self.process_and_send_recommendation_email_for_user(user)
+    def self.get_recommendations_for_user(user)
       rec_manager = GT::RecommendationManager.new(user, {:exclude_missing_thumbnails => true})
       recs = rec_manager.get_recs_for_user({
         :limits => [1,1,1],
@@ -117,12 +121,11 @@ module GT
           }
         )
         res ? res[:dashboard_entry] : nil
-      }.compact.shuffle
+      }.compact
 
-      unless dbes.empty?
-        GT::NotificationManager.send_weekly_recommendation(user, dbes)
-        dbes.length
-      end
+      dbes.shuffle!
+
+      return dbes
     end
 
   end
