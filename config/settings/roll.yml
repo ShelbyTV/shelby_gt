@@ -322,6 +322,13 @@ defaults: &defaults
         description: "The latest scoop on celebs, fashion, beauty, sex & relationships and health news",
         display_thumbnail_src: "https://lh6.googleusercontent.com/-rgrooeRabA4/AAAAAAAAAAI/AAAAAAAAAAA/KqSexgQLt4E/s100-c-k/photo.jpg",
         include_in: {onboarding: true}
+      },
+      {
+        display_title: "Super Duper Secret Video",
+        id: "50fd9b11b415cc6ab503e3ce",
+        description: "Seriously, there is secret stuff in here.",
+        display_thumbnail_src: "http://s3.amazonaws.com/shelby-gt-user-avatars/sq192x192/50fd9b10b415cc6ab503e3c8",
+        include_in: {onboarding: true}
       }
       ]
     },
