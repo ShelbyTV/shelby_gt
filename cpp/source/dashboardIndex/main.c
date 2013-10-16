@@ -33,7 +33,7 @@ void printHelpText()
    printf("   -l --limit          Limit to this number of dashboard entries\n");
    printf("   -s --skip           Skip this number of dashboard entries\n");
    printf("   -i --sinceid        Dashboard entries since this one (inclusive)\n");
-   printf("   -e --environment    Specify environment: production, test, or development\n");
+   printf("   -e --environment    Specify environment: production, staging, test, or development\n");
 }
 
 void parseUserOptions(int argc, char **argv)
@@ -606,7 +606,8 @@ void printJsonOutput(sobContext sob)
    sobGetBsonVector(sob, SOB_DASHBOARD_ENTRY, dashboardEntries);
 
    // allocate context; match Ruby API "status" and "result" response syntax
-   mrjsonContext context = mrjsonAllocContext(sobGetEnvironment(sob) != SOB_PRODUCTION);
+   sobEnvironment environment = sobGetEnvironment(sob);
+   mrjsonContext context = mrjsonAllocContext(environment != SOB_PRODUCTION && environment != SOB_STAGING);
    mrjsonStartResponse(context);
    mrjsonIntAttribute(context, "status", 200);
 

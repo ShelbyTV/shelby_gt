@@ -25,17 +25,17 @@ struct timeval beginTime;
 
 void printHelpText()
 {
-   printf("conversationIndex usage:\n"); 
+   printf("conversationIndex usage:\n");
    printf("   -h --help           Print this help message\n");
    printf("   -v --video          String representation of video mongo ID\n");
    printf("   -l --limit          Limit number of returned conversations\n");
-   printf("   -e --environment    Specify environment: production, test, or development\n");
+   printf("   -e --environment    Specify environment: production, staging, test, or development\n");
 }
 
 void parseUserOptions(int argc, char **argv)
 {
    int c;
-     
+
    while (1) {
       static struct option long_options[] =
       {
@@ -45,20 +45,20 @@ void parseUserOptions(int argc, char **argv)
          {"environment", required_argument, 0, 'e'},
          {0, 0, 0, 0}
       };
-      
+
       int option_index = 0;
       c = getopt_long(argc, argv, "hv:l:e:", long_options, &option_index);
-   
+
       /* Detect the end of the options. */
       if (c == -1) {
          break;
       }
-   
+
       switch (c)
       {
          case 'v':
             options.videoString = optarg;
-            bson_oid_from_string(&options.video, optarg); 
+            bson_oid_from_string(&options.video, optarg);
             break;
 
          case 'l':
@@ -69,7 +69,7 @@ void parseUserOptions(int argc, char **argv)
             options.environment = optarg;
             break;
 
-         case 'h': 
+         case 'h':
          case '?':
          default:
             printHelpText();
@@ -82,7 +82,7 @@ void parseUserOptions(int argc, char **argv)
       printHelpText();
       exit(1);
    }
-   
+
    if (strcmp(options.videoString, "") == 0) {
       printf("Specifying -v or --video is required.\n");
       printHelpText();
@@ -105,7 +105,7 @@ unsigned int timeSinceMS(struct timeval begin)
    struct timeval difference;
    timersub(&currentTime, &begin, &difference);
 
-   return difference.tv_sec * 1000 + (difference.tv_usec / 1000); 
+   return difference.tv_sec * 1000 + (difference.tv_usec / 1000);
 }
 
 void printJsonMessage(sobContext sob, mrjsonContext context, bson *message)
@@ -163,8 +163,9 @@ void printJsonOutput(sobContext sob)
    sobGetBsonVector(sob, SOB_CONVERSATION, conversations);
 
    // allocate context; match Ruby API "status" and "result" response syntax
-   mrjsonContext context = mrjsonAllocContext(sobGetEnvironment(sob) != SOB_PRODUCTION);
-   mrjsonStartResponse(context); 
+   sobEnvironment environment = sobGetEnvironment(sob);
+   mrjsonContext context = mrjsonAllocContext(environment != SOB_PRODUCTION && environment != SOB_STAGING);
+   mrjsonStartResponse(context);
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartArray(context, "result");
 
@@ -194,7 +195,7 @@ void printJsonOutput(sobContext sob)
 int loadData(sobContext sob)
 {
    sobLoadAllByOidField(sob,
-                        SOB_CONVERSATION, 
+                        SOB_CONVERSATION,
                         SOB_CONVERSATION_VIDEO_ID,
                         options.video,
                         options.limit,
@@ -213,7 +214,7 @@ int main(int argc, char **argv)
    setDefaultOptions();
    parseUserOptions(argc, argv);
 
-   sobEnvironment env = sobEnvironmentFromString(options.environment); 
+   sobEnvironment env = sobEnvironmentFromString(options.environment);
    sobContext sob = sobAllocContext(env);
 
    if (!loadData(sob)) {

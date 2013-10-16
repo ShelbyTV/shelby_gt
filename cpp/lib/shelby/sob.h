@@ -38,6 +38,7 @@ typedef enum sobEnvironment
 {
    SOB_DEVELOPMENT = 0,
    SOB_TEST,
+   SOB_STAGING,
    SOB_PRODUCTION,
 
    // one final entry to make it easy to calculate number for arrays
