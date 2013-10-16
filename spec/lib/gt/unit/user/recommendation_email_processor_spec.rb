@@ -17,7 +17,7 @@ describe GT::RecommendationEmailProcessor do
 
     before(:each) do
       @rmDouble = double("rm")
-      GT::RecommendationManager.should_receive(:new).with(@user, {:exclude_missing_thumbnails => true}).and_return(@rmDouble)
+      GT::RecommendationManager.should_receive(:new).with(@user).and_return(@rmDouble)
       Array.any_instance.should_receive(:shuffle!)
     end
 

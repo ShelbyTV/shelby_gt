@@ -475,20 +475,33 @@ describe 'v1/user' do
           get '/v1/user/'+other_user.id+'/dashboard?trigger_recs=true'
         end
 
-        it "should create a new dashboard entry" do
-          v = Factory.create(:video)
-          rec_vid = Factory.create(:video)
-          rec = Factory.create(:recommendation, :recommended_video_id => rec_vid.id, :score => 100.0)
-          v.recs << rec
+        context "recs exist" do
+          before(:each) do
+            v = Factory.create(:video)
+            @rec_vid = Factory.create(:video)
+            rec = Factory.create(:recommendation, :recommended_video_id => @rec_vid.id, :score => 100.0)
+            v.recs << rec
 
-          sharer = Factory.create(:user)
-          f = Factory.create(:frame, :video => v, :creator => sharer )
+            sharer = Factory.create(:user)
+            f = Factory.create(:frame, :video => v, :creator => sharer )
 
-          dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
+            dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
+          end
 
-          lambda {
-            get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true'
-          }.should change { DashboardEntry.count }
+          it "creates a new dashboard entry" do
+            expect {
+              get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true'
+            }.to change(DashboardEntry, :count)
+          end
+
+          it "doesn't create a new dashboard entry if the video has no thumbnail" do
+            @rec_vid.thumbnail_url = nil
+            @rec_vid.save
+
+            expect {
+              get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true'
+            }.not_to change(DashboardEntry, :count)
+          end
         end
 
         it "should not do a check for inserting recommendations when a since_id is included" do
@@ -639,16 +652,20 @@ describe 'v1/user' do
           response.body.should have_json_size(3).at_path("result") # if limits didn't work it would return 4 results
         end
 
-        it "should not exclude videos that are missing thumbnails" do
+        it "should exclude videos that are missing thumbnails" do
           @vid_graph_recommended_vid.thumbnail_url = nil
           @vid_graph_recommended_vid.save
+          @mortar_recommended_vid.thumbnail_url = nil
+          @mortar_recommended_vid.save
+          @channel_recommended_vid.thumbnail_url = nil
+          @channel_recommended_vid.save
           MongoMapper::Plugins::IdentityMap.clear
 
           get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
 
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result")
-          response.body.should have_json_size(3).at_path("result")
+          response.body.should have_json_size(0).at_path("result")
         end
 
         it "should return the right attributes and contents for a video graph recommendation" do
