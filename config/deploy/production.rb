@@ -28,12 +28,7 @@ namespace :passenger do
   end
 end
 
-namespace :deploy do
-  desc "Restart passenger"
-  task :restart do
-    passenger.restart
-  end
-end
+after 'deploy:restart', 'passenger:restart'
 #set :git_enable_submodules, 1
 
 #############################################################
