@@ -60,6 +60,11 @@ class V1::FrameMetalController < MetalController
           f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] ---------RUBY SAYS: HANDLE v1/roll/#{params[:roll_id]}/frames START---------"
           f.puts log_text
           f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] STATUS: #{fast_status == 0 ? 'SUCCESS' : 'ERROR'}"
+          if fast_status != 0
+            f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] -------------------C OUTPUT FOR DEBUGGING START-----------------------------"
+            f.puts fast_stdout
+            f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] -------------------C OUTPUT FOR DEBUGGING END-------------------------------"
+          end
           f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] ---------RUBY SAYS: HANDLE v1/roll/#{params[:roll_id]}/frames END-----------"
         end
       }
