@@ -204,6 +204,11 @@ ShelbyGt::Application.routes.draw do
     mount MailPreview => 'mail_view'
   end
 
+  # for blitz.io verification
+  get '/mu-4a3bea60-210d9ed2-38279c19-649e9064' do
+    '42'
+  end
+
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
 
   root :to => redirect(Settings::ShelbyAPI.web_root)
