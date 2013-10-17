@@ -35,7 +35,7 @@ void printHelpText()
    printf("   -u --user           User downcase nickname\n");
    printf("   -p --postable       Only return postable rolls\n");
    printf("   -i --include-faux   Include faux user rolls\n");
-   printf("   -e --environment    Specify environment: production, test, or development\n");
+   printf("   -e --environment    Specify environment: production, staging, test, or development\n");
 }
 
 void parseUserOptions(int argc, char **argv)
@@ -330,7 +330,8 @@ void printJsonOutput(sobContext sob)
    sobGetBsonVector(sob, SOB_ROLL, rolls);
 
    // allocate context; match Ruby API "status" and "result" response syntax
-   mrjsonContext context = mrjsonAllocContext(sobGetEnvironment(sob) != SOB_PRODUCTION);
+   sobEnvironment environment = sobGetEnvironment(sob);
+   mrjsonContext context = mrjsonAllocContext(environment != SOB_PRODUCTION && environment != SOB_STAGING);
    mrjsonStartResponse(context);
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartArray(context, "result");

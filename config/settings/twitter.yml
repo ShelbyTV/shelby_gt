@@ -17,5 +17,8 @@ production: &production
   <<: *defaults
   should_send_tweet: true
 
+staging:
+  <<: *production
+
 arnold:
   <<: *production

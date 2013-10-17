@@ -85,11 +85,13 @@ sobEnvironment sobEnvironmentFromString(char *env)
       return SOB_DEVELOPMENT;
    } else if (strcmp("test", env) == 0) {
       return SOB_TEST;
+   } else if (strcmp("staging", env) == 0) {
+      return SOB_STAGING;
    } else if (strcmp("production", env) == 0) {
       return SOB_PRODUCTION;
    } else {
       printf("Not a known environment type: %s\n", env);
-      printf("Acceptable options are: development, test, production\n");
+      printf("Acceptable options are: development, test, staging, production\n");
       exit(1);
    }
 }

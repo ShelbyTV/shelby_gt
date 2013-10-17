@@ -104,7 +104,7 @@ module GT
     end
 
     def self.get_recommendations_for_user(user)
-      rec_manager = GT::RecommendationManager.new(user, {:exclude_missing_thumbnails => true})
+      rec_manager = GT::RecommendationManager.new(user)
       recs = rec_manager.get_recs_for_user({
         :limits => [1,1,1],
         :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:channel_recommendation],  DashboardEntry::ENTRY_TYPE[:mortar_recommendation]],

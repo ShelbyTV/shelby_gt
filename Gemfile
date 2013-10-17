@@ -182,6 +182,14 @@ gem 'formatted_rails_logger'
 # Deploy with Capistrano
 gem 'capistrano', '2.15.2'
 gem 'rvm-capistrano'
+gem 'capistrano-unicorn', :require => false
+
+#
+# ----------- Web Server
+#
+group :production, :staging do
+  gem 'unicorn'
+end
 
 # To use debugger
 # gem 'ruby-debug19', :require => 'ruby-debug'

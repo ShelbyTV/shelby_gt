@@ -49,16 +49,9 @@ describe 'v1/frame' do
             @f.save
 
             get '/v1/frame/'+@f.id+'?include_children=true'
+            response.body.should have_json_type(Array).at_path("result/upvoters")
             response.body.should have_json_size(1).at_path("result/upvoters")
-            response.body.should have_json_type(Object).at_path("result/upvoters/0")
-            response.body.should have_json_path("result/upvoters/0/id")
-            response.body.should have_json_path("result/upvoters/0/name")
-            response.body.should have_json_path("result/upvoters/0/nickname")
-            response.body.should have_json_path("result/upvoters/0/user_image_original")
-            response.body.should have_json_path("result/upvoters/0/user_image")
-            response.body.should have_json_path("result/upvoters/0/has_shelby_avatar")
-            response.body.should have_json_path("result/upvoters/0/public_roll_id")
-            parse_json(response.body)["result"]["upvoters"][0]["id"].should eq(upvote_user.id.to_s)
+            parse_json(response.body)["result"]["upvoters"][0].should eq(upvote_user.id.to_s)
           end
 
         end

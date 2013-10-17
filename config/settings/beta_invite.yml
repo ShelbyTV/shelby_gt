@@ -19,7 +19,10 @@ production: &production
   db_replSetName: 'gtUserAction'
   db_username: "gt_user"
   db_password: "GT/us3r!!!"
-  
+
+staging:
+  <<: *production
+
 arnold:
   <<: *production
   db_options:

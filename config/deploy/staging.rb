@@ -1,17 +1,24 @@
-set :deploy_to, "/home/gt/shelby_gt"
+load 'deploy/assets'
+require 'capistrano-unicorn'
+
+set :deploy_to, "/home/gt/api"
 
 #############################################################
-#	Servers
+# Servers
 #############################################################
 
-role :app, "50.57.227.76"
+role :web, "166.78.255.147"
+role :app, "166.78.255.147"
 
 #############################################################
-#	Git
+# Git
 #############################################################
 
 set :repository,  "git@github.com:ShelbyTV/shelby_gt.git"
-set :branch, "master"
+set :branch, "staging"
 
-#TODO: copy lib/etc/arnold_gt.conf to /etc/init/arnold_gt.conf
-#TODO: print message about NOT restarting pump_iron and how to do so w/ upstart
+set :rails_env, "staging"
+set :unicorn_env, "staging"
+set :app_env,     "staging"
+
+after 'deploy:restart', 'unicorn:duplicate'

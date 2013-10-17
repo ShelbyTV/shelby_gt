@@ -19,10 +19,13 @@ production: &production
   db_replSetName: 'gtDashboard'
   db_username: "gt_user"
   db_password: "GT/us3r!!!"
-  
+
+staging:
+  <<: *production
+
 arnold:
   <<: *production
   mm_use_identity_map: false
   db_options:
    :read: :secondary
- 
+

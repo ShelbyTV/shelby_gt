@@ -18,8 +18,11 @@ production: &production
   db_host: '10.176.67.200'
   db_username: "gt_user"
   db_password: "GT/us3r!!!"
-  
+
+staging:
+  <<: *production
+
 arnold:
   <<: *production
   mm_use_identity_map: false
- 
+

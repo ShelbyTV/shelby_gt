@@ -10,17 +10,26 @@ role :web, "108.166.56.26"
 role :app, "108.166.56.26"
 role :db,  "108.166.56.26", :primary => true
 
-set :user, "gt"
-
 #############################################################
 #	Git
 #############################################################
 
-set :scm, :git
 set :repository,  "git@github.com:ShelbyTV/shelby_gt.git"
 set :branch, "master"
+
+set :rails_env, "production"
+set :app_env,   "production"
+
+namespace :passenger do
+  desc "Restart Application"
+  task :restart do
+    run "touch #{current_path}/tmp/restart.txt"
+    #run 'curl -sL -w "I just tapped %{url_effective}: %{http_code}\\n" "http://shelby.tv" -o /dev/null'
+  end
+end
+
+after 'deploy:restart', 'passenger:restart'
 #set :git_enable_submodules, 1
-set :deploy_via, :remote_cache #keep a local cache to speed up deploys
 
 #############################################################
 #	Copy our error pages to nginx

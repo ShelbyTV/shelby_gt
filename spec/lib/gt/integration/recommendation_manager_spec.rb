@@ -93,8 +93,7 @@ describe GT::RecommendationManager do
         @recommended_videos[0].save
         MongoMapper::Plugins::IdentityMap.clear
 
-        rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => true})
-        result = rm.get_video_graph_recs_for_user(10, 10)
+        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
@@ -105,7 +104,8 @@ describe GT::RecommendationManager do
         @recommended_videos[0].save
         MongoMapper::Plugins::IdentityMap.clear
 
-        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
+        rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
+        result = rm.get_video_graph_recs_for_user(10, 10)
         result.length.should == @recommended_videos.length
         result.should == @recommended_videos.each_with_index.map{|vid, i| {:recommended_video_id => vid.id, :src_frame_id => @src_frame_ids[i]}}
       end
@@ -159,6 +159,15 @@ describe GT::RecommendationManager do
         result.src_frame.should == @f
         result.video_id.should == @rec_vid.id
         result.action.should == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+      end
+
+      it "doesnt return a recommendation if the video doesn't have a thumbnail" do
+        @rec_vid.thumbnail_url = nil
+        @rec_vid.save
+        expect {
+          @result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+        }.to_not change(DashboardEntry, :count)
+        @result.should be_nil
       end
 
       it "should create the newest entry in the dashboard by default" do
@@ -428,27 +437,27 @@ describe GT::RecommendationManager do
         }]
     end
 
-    it "should not skip videos that are missing their thumbnails when that option is not set" do
+    it "should skip videos that are missing their thumbnails when that option is set" do
       @recommended_videos[0].thumbnail_url = nil
       @recommended_videos[0].save
 
       @recommendation_manager.get_mortar_recs_for_user.should ==
         [{
-          :recommended_video_id => @recommended_videos[0].id,
-          :src_id => @reason_videos[0].id,
+          :recommended_video_id => @recommended_videos[1].id,
+          :src_id => @reason_videos[1].id,
           :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
         }]
     end
 
-    it "should skip videos that are missing their thumbnails when that option is set" do
+    it "should not skip videos that are missing their thumbnails when that option is not set" do
       @recommended_videos[0].thumbnail_url = nil
       @recommended_videos[0].save
 
-      rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => true})
+      rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
       rm.get_mortar_recs_for_user.should ==
         [{
-          :recommended_video_id => @recommended_videos[1].id,
-          :src_id => @reason_videos[1].id,
+          :recommended_video_id => @recommended_videos[0].id,
+          :src_id => @reason_videos[0].id,
           :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
         }]
     end
@@ -515,27 +524,27 @@ describe GT::RecommendationManager do
         }]
     end
 
-    it "should not skip videos that are missing their thumbnails when that option is not set" do
+    it "should skip videos that are missing their thumbnails when that option is set" do
       @videos[0].thumbnail_url = nil
       @videos[0].save
 
       @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
-          :recommended_video_id => @videos[0].id,
-          :src_id => @frames[0].id,
+          :recommended_video_id => @videos[1].id,
+          :src_id => @frames[1].id,
           :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation]
         }]
     end
 
-    it "should skip videos that are missing their thumbnails when that option is set" do
+    it "should not skip videos that are missing their thumbnails when that option is not set" do
       @videos[0].thumbnail_url = nil
       @videos[0].save
 
-      rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => true})
+      rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
       rm.get_channel_recs_for_user(@channel_user.id).should ==
         [{
-          :recommended_video_id => @videos[1].id,
-          :src_id => @frames[1].id,
+          :recommended_video_id => @videos[0].id,
+          :src_id => @frames[0].id,
           :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation]
         }]
     end

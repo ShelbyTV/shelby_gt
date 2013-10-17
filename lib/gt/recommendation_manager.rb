@@ -129,7 +129,7 @@ module GT
       raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
 
       defaults = {
-        :exclude_missing_thumbnails => false
+        :exclude_missing_thumbnails => true
       }
 
       options = defaults.merge(options)

@@ -40,7 +40,7 @@ void printHelpText()
    printf("   -s --skip                 Skip this number of frames\n");
    printf("   -i --sinceid              Frames since this one (inclusive)\n");
    printf("   -p --permissionGranted    Return the frames without checking Roll permission (takes no argument)\n");
-   printf("   -e --environment          Specify environment: production, test, or development\n");
+   printf("   -e --environment          Specify environment: production, staging, test, or development\n");
 }
 
 void parseUserOptions(int argc, char **argv)
@@ -662,7 +662,8 @@ void printJsonOutput(sobContext sob)
    sobGetBsonByOid(sob, SOB_ROLL, options.roll, &roll);
 
    // allocate context; match Ruby API "status" and "result" response syntax
-   mrjsonContext context = mrjsonAllocContext(sobGetEnvironment(sob) != SOB_PRODUCTION);
+   sobEnvironment environment = sobGetEnvironment(sob);
+   mrjsonContext context = mrjsonAllocContext(environment != SOB_PRODUCTION && environment != SOB_STAGING);
    mrjsonStartResponse(context);
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartObject(context, "result");

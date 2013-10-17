@@ -16,6 +16,9 @@ test:
 production: &production
   <<: *defaults
 
+staging:
+  <<: *production
+
 arnold:
   <<: *production
   override_em_next_tick: true

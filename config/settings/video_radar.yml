@@ -1,5 +1,5 @@
 defaults: &defaults
-  domain: 'localhost:3000'  
+  domain: 'localhost:3000'
 
 development:
   <<: *defaults
@@ -10,6 +10,9 @@ test:
 production: &production
   <<: *defaults
   domain: 'api.gt.shelby.tv'
-  
+
+staging:
+  <<: *production
+
 arnold:
   <<: *production
