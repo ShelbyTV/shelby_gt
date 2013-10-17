@@ -3,12 +3,12 @@ defaults: &defaults
     {
       name: "retention1.0",
       # NB: Changing the details of a bucket will NOT update clients that have already been placed in this bucket (on iOS)
-      # Should consider creating new buckets when making significant changes.
+      # Should consider creating new buckets when making important/significant changes.
       buckets: [
         {
           name: "A",
           description: "Thursday Evening, Copy v1",
-          active: true,
+          active: false,
           day: 5,
           time: 1900,
           message: "Yes! Video from %@, %@, %@, and more!"
@@ -16,7 +16,7 @@ defaults: &defaults
         {
           name: "B",
           description: "Thursday Evening, Copy v2",
-          active: true,
+          active: false,
           day: 5,
           time: 1900,
           message: "You've got a bunch of interesting video waiting for you!"
@@ -24,7 +24,7 @@ defaults: &defaults
         {
           name: "C",
           description: "Sunday Morning, Copy v1",
-          active: true,
+          active: false,
           day: 1,
           time: 1000,
           message: "Yes! Video from %@, %@, %@, and more!"
@@ -32,10 +32,26 @@ defaults: &defaults
         {
           name: "D",
           description: "Sunday Morning, Copy v2",
-          active: true,
+          active: false,
           day: 1,
           time: 1000,
           message: "You've got a bunch of interesting video waiting for you!"
+        },
+        {
+          name: "E",
+          description: "Thursday 909pm / copy1",
+          active: true,
+          day: 5,
+          time: 2109,
+          message: "%@ and %@ shared interesting videos. Not sure about %@..."
+        },
+        {
+          name: "F",
+          description: "Thursday 909pm / copy2",
+          active: true,
+          day: 5,
+          time: 2109,
+          message: "It's Thursday night.  Watch Shelby while your shows DVR!"
         }
       ]
     }
