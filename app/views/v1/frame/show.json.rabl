@@ -37,6 +37,10 @@ if @include_frame_children
     end
   end
 
+  child @upvoters => :likers do
+    attributes :id, :name, :nickname, :user_image_original, :user_image, :has_shelby_avatar, :public_roll_id
+  end
+
   child :video => "video" do
     attributes :id, :provider_name, :provider_id, :title, :description,
       :duration, :author, :thumbnail_url, :tags, :categories, :source_url, :embed_url, :view_count, :like_count
