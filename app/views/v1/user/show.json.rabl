@@ -23,7 +23,7 @@ end
 
 if current_user == @user
 
-	attributes :authentication_token, :autocomplete, :rolled_since_last_notification
+	attributes :authentication_token, :autocomplete, :rolled_since_last_notification, :session_count
 
 	child :preferences => "preferences" do
 		attributes :email_updates, :like_notifications, :watched_notifications, :comment_notifications, :upvote_notifications, :reroll_notifications, :roll_activity_notifications, :open_graph_posting
