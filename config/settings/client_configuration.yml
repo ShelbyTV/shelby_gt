@@ -39,18 +39,18 @@ defaults: &defaults
         },
         {
           name: "E",
-          description: "Thursday 909pm / copy1",
+          description: "Thursday 509pm / copy1",
           active: true,
           day: 5,
-          time: 2109,
+          time: 1709,
           message: "%@ and %@ shared interesting videos. Not sure about %@..."
         },
         {
           name: "F",
-          description: "Thursday 909pm / copy2",
+          description: "Thursday 509pm / copy2",
           active: true,
           day: 5,
-          time: 2109,
+          time: 1709,
           message: "It's Thursday night.  Watch Shelby while your shows DVR!"
         }
       ]
