@@ -3,7 +3,7 @@ app_path = "/home/gt/api/current"
 
 # Set unicorn options
 worker_processes 4
-preload_app true
+preload_app false
 timeout 60
 listen "/tmp/shelby-gt-api.socket", :backlog => 64
 #listen 8080, :tcp_nopush => true
