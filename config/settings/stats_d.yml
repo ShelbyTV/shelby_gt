@@ -14,7 +14,7 @@ production: &production
   statsd_port: 8125
 
 staging:
-  <<: *production
+  <<: *defaults
 
 arnold:
   <<: *production
