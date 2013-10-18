@@ -40,7 +40,7 @@ defaults: &defaults
         {
           name: "E",
           description: "Thursday 509pm / copy1",
-          active: true,
+          active: false,
           day: 5,
           time: 1709,
           message: "%@ and %@ shared interesting videos. Not sure about %@..."
@@ -48,10 +48,26 @@ defaults: &defaults
         {
           name: "F",
           description: "Thursday 509pm / copy2",
-          active: true,
+          active: false,
           day: 5,
           time: 1709,
           message: "It's Thursday night.  Watch Shelby while your shows DVR!"
+        },
+        {
+          name: "G",
+          description: "Friday 1010am / copy1",
+          active: true,
+          day: 6,
+          time: 1010,
+          message: "%@ and %@ shared interesting videos! Not sure about %@..."
+        },
+        {
+          name: "H",
+          description: "Friday 1010am / copy2",
+          active: true,
+          day: 6,
+          time: 1010,
+          message: "It's Friday!  Watch Shelby and get ready for the weekend!"
         }
       ]
     }
