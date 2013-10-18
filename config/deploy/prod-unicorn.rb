@@ -15,7 +15,7 @@ role :app, "198.61.235.104"
 #############################################################
 
 set :repository,  "git@github.com:ShelbyTV/shelby_gt.git"
-set :branch, "production"
+set :branch, "master"
 
 set :rails_env, "production"
 set :unicorn_env, "production"
