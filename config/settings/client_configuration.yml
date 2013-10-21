@@ -7,67 +7,35 @@ defaults: &defaults
       buckets: [
         {
           name: "A",
-          description: "Thursday Evening, Copy v1",
-          active: false,
+          description: "Thursday Afternoon, Copy v1",
+          active: true,
           day: 5,
-          time: 1900,
-          message: "Yes! Video from %@, %@, %@, and more!"
+          time: 1612,
+          message: "%@, %@, and %@ shared videos with you.  Nice!"
         },
         {
           name: "B",
-          description: "Thursday Evening, Copy v2",
-          active: false,
+          description: "Thursday Afternoon, Copy v2",
+          active: true,
           day: 5,
-          time: 1900,
-          message: "You've got a bunch of interesting video waiting for you!"
+          time: 1612,
+          message: "It's Thursday, check out video while you check out from work. ;-)"
         },
         {
           name: "C",
           description: "Sunday Morning, Copy v1",
-          active: false,
+          active: true,
           day: 1,
-          time: 1000,
-          message: "Yes! Video from %@, %@, %@, and more!"
+          time: 0958,
+          message: "%@, %@, and %@ shared videos with you.  Awesome!"
         },
         {
           name: "D",
           description: "Sunday Morning, Copy v2",
-          active: false,
+          active: true,
           day: 1,
-          time: 1000,
-          message: "You've got a bunch of interesting video waiting for you!"
-        },
-        {
-          name: "E",
-          description: "Thursday 509pm / copy1",
-          active: false,
-          day: 5,
-          time: 1709,
-          message: "%@ and %@ shared interesting videos. Not sure about %@..."
-        },
-        {
-          name: "F",
-          description: "Thursday 509pm / copy2",
-          active: false,
-          day: 5,
-          time: 1709,
-          message: "It's Thursday night.  Watch Shelby while your shows DVR!"
-        },
-        {
-          name: "G",
-          description: "Friday 1010am / copy1",
-          active: true,
-          day: 6,
-          time: 1010,
-          message: "%@ and %@ shared interesting videos! Not sure about %@..."
-        },
-        {
-          name: "H",
-          description: "Friday 1010am / copy2",
-          active: true,
-          day: 6,
-          time: 1010,
-          message: "It's Friday!  Watch Shelby and get ready for the weekend!"
+          time: 0958,
+          message: "Sunday morning Shelby!  Better than mowing the lawn."
         }
       ]
     }
