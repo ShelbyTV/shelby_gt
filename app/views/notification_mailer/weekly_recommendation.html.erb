@@ -7,7 +7,7 @@
             <!-- main -->
             <table border="0" cellspacing="0" cellpadding="0">
               <tbody>
-                <%= render :partial => "/objects/summary_text", :locals => { :text => "This is a collection of video based on what you've watched, liked and shared and the best of the Shelby community on Shelby.tv." } %>
+                <%= render :partial => "/objects/summary_text", :locals => { :text => "This is your weekly collection of video based on what you've watched, liked and shared and the best of the Shelby community on Shelby.tv." } %>
 
                 <%= render :partial => "/objects/header" %>
 
@@ -22,7 +22,7 @@
                             <!-- BODY -->
                                 <tr>
                                   <td>
-                                    <h1 style="color: <%= Settings::Email.ui_green %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; margin-top:30px;margin-bottom:10px; ">
+                                    <h1 style="color: <%= Settings::Email.ui_green %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; margin:30px 0;">
                                       <%= message_text(@dbes) %>
                                     </h1>
                                   </td>
@@ -48,13 +48,6 @@
                                   </td>
                                 </tr>
                               <% end %>
-                              <tr>
-                                <td>
-                                  <p style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_medium %>;margin-bottom: 10px;">
-                                      This is a collection of video based on the best of the Shelby community and what you've watched, liked and shared on Shelby.tv.
-                                  </p>
-                                </td>
-                              </tr>
                             <!-- END BODY -->
                             </table>
                           </center>
