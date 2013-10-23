@@ -16,7 +16,7 @@ module Dev
 
     def tweet_urls
       setup_for_user(@user)
-      sitemap_file_location = "/home/gt/#{@box ? @box : 'api'}/current/public/system/sitemap#{@sitemap_number}.xml.gz"
+      sitemap_file_location = "/home/gt/#{@box ? @box : 'api'}/current/public/system/onshelby/sitemap#{@sitemap_number}.xml.gz"
       i = 0
       begin
         Zlib::GzipReader.open(sitemap_file_location) { |gz|
@@ -35,10 +35,9 @@ module Dev
         video_id = url_frag[5]
         # get video from shelby
         if video_provider and video_id and shelby_video = Video.first(:provider_name => video_provider, :provider_id => video_id)
-          video_permalink = shelby_video.permalink
           video_title = shelby_video.title
           # tweet from offshelby about video
-          tweet_text = video_title + " ▶ " + video_permalink
+          tweet_text = video_title + " ▶ " + url
           begin
             tweet = twitter_client.statuses.update! :status => tweet_text
             puts tweet_text if tweet
