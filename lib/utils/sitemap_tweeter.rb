@@ -9,8 +9,9 @@ module Dev
     def initialize(user, sitemap_number, options)
       @sitemap_number = sitemap_number
       @user = user #off shelby is: 4e55654cf6db241c220003c2
-      @limit = options.limit if options.has_key? :limit
-      @box = options.box if options.has_key? :box
+      @sleep_time = options.has_key? :sleep_time ? options['sleep_time'] : 10
+      @limit = options['limit'] if options.has_key? :limit
+      @box = options['box'] if options.has_key? :box
     end
 
     def tweet_urls
@@ -33,9 +34,8 @@ module Dev
         video_provider = url_frag[4]
         video_id = url_frag[5]
         # get video from shelby
-        if video_provider and video_id
-          shelby_video = Video.first(:provider_name => video_provider, :provider_id => video_id)
-          video_permalink = shelby_video.video_permalink
+        if video_provider and video_id and shelby_video = Video.first(:provider_name => video_provider, :provider_id => video_id)
+          video_permalink = shelby_video.permalink
           video_title = shelby_video.title
           # tweet from offshelby about video
           tweet_text = video_title + " ▶ " + video_permalink
@@ -46,7 +46,7 @@ module Dev
             Rails.logger.error "[SitemapTweeter] Error posting to Twitter. #{e}"
           end
         end
-        sleep 5
+        sleep @sleep_time
         i += 1
       end
     end
