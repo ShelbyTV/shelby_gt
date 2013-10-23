@@ -6,8 +6,9 @@ namespace :utils do
 
     u = User.find_by_nickname 'hermanoshelby'
     d = Dev::SitemapTweeter.new(u, 1, {'sleep_time' => 10, 'box' => 'api'})
+    d.tweet_urls
 
-    AdminMailer.sitemap_tweeter_summary.deliver
+    #AdminMailer.sitemap_tweeter_summary.deliver
 
   end
 end

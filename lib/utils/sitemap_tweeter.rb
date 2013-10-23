@@ -9,7 +9,7 @@ module Dev
     def initialize(user, sitemap_number, options)
       @sitemap_number = sitemap_number
       @user = user #off shelby is: 4e55654cf6db241c220003c2
-      @sleep_time = options.has_key? :sleep_time ? options['sleep_time'] : 10
+      @sleep_time = 20
       @limit = options['limit'] if options.has_key? :limit
       @box = options['box'] if options.has_key? :box
     end
