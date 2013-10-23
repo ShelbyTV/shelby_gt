@@ -41,7 +41,7 @@ module GT
       unless recent_dbes.any? { |dbe| dbe.is_recommendation? }
         # if we don't find any recommendations within the recency limit, generate a new recommendation
         rec_manager = GT::RecommendationManager.new(user)
-        recs = rec_manager.get_video_graph_recs_for_user(10, 1, 100.0, dbes)
+        recs = rec_manager.get_video_graph_recs_for_user(Settings::Recommendations.video_graph[:entries_to_scan], 1, Settings::Recommendations.video_graph[:min_score], dbes)
         unless recs.empty?
           # wrap the recommended video in a dashboard entry
           rec = recs[0]
@@ -145,8 +145,8 @@ module GT
         :fill_in_with_final_type => true,
         :limits => [3, 3],
         :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]],
-        :video_graph_entries_to_scan => 10,
-        :video_graph_min_score => 40.0
+        :video_graph_entries_to_scan => Settings::Recommendations.video_graph[:entries_to_scan],
+        :video_graph_min_score => Settings::Recommendations.video_graph[:min_score]
       }
 
       options = defaults.merge(options)
