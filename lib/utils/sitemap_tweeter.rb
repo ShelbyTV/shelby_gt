@@ -44,6 +44,7 @@ module Dev
             Rails.logger.error "[SitemapTweeter] Error posting to Twitter. #{e}"
           end
         end
+        sleep 5
         i += 1
       end
     end
