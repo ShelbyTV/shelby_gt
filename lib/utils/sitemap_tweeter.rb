@@ -1,19 +1,21 @@
-require "twitter_client"
+# encoding: utf-8
+require "api_clients/twitter_client"
 require "nokogiri"
 require "zlib"
 
 module Dev
-  class SitemapTweeter < TwitterClient
+  class SitemapTweeter < APIClients::TwitterClient
 
     def initialize(user, sitemap_number, options)
       @sitemap_number = sitemap_number
       @user = user #off shelby is: 4e55654cf6db241c220003c2
       @limit = options.limit if options.has_key? :limit
+      @box = options.box if options.has_key? :box
     end
 
     def tweet_urls
       setup_for_user(@user)
-      sitemap_file_location = "/home/gt/api/current/public/system/sitemap#{@sitemap_number}.xml.gz"
+      sitemap_file_location = "/home/gt/#{@box ? @box : 'api'}/current/public/system/sitemap#{@sitemap_number}.xml.gz"
       i = 0
       begin
         Zlib::GzipReader.open(sitemap_file_location) { |gz|
