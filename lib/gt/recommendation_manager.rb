@@ -32,7 +32,7 @@ module GT
 
       # we're looking ahead to using these dbentries to look for some video graph recommendations,
       # so get as many we need for that and to check for recent recommendations
-      max_db_entries_to_scan_for_videograph = 10
+      max_db_entries_to_scan_for_videograph = Settings::Recommendations.video_graph[:entries_to_scan]
       num_dbes_to_fetch = [options[:num_recents_to_check], max_db_entries_to_scan_for_videograph].max
 
       dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(num_dbes_to_fetch).fields(:video_id, :frame_id, :action).all
@@ -41,7 +41,7 @@ module GT
       unless recent_dbes.any? { |dbe| dbe.is_recommendation? }
         # if we don't find any recommendations within the recency limit, generate a new recommendation
         rec_manager = GT::RecommendationManager.new(user)
-        recs = rec_manager.get_video_graph_recs_for_user(Settings::Recommendations.video_graph[:entries_to_scan], 1, Settings::Recommendations.video_graph[:min_score], dbes)
+        recs = rec_manager.get_video_graph_recs_for_user(max_db_entries_to_scan_for_videograph, 1, Settings::Recommendations.video_graph[:min_score], dbes)
         unless recs.empty?
           # wrap the recommended video in a dashboard entry
           rec = recs[0]

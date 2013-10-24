@@ -230,14 +230,38 @@ describe GT::RecommendationManager do
       GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
     end
 
-    it "should limit the search for recent recs according to the num_recents_to_check_parameter" do
+    it "limits the search for recent recs according to the num_recents_to_check_parameter when it's greater than num_entries_to_scan" do
+      Settings::Recommendations.video_graph[:entries_to_scan] = 1
+
       dbe_social = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
       dbe_rec = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
       dbes = [dbe_social, dbe_rec]
-      DashboardEntry.stub_chain(:where, :order, :limit, :fields, :all).and_return(dbes)
-      GT::RecommendationManager.any_instance.should_receive(:get_video_graph_recs_for_user).with(Settings::Recommendations.video_graph[:entries_to_scan], 1, Settings::Recommendations.video_graph[:min_score], dbes).and_return([])
 
-      GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:num_recents_to_check => 1})
+      @limit_query = double("limit_query")
+      @limit_query.stub_chain(:fields, :all).and_return(dbes)
+
+      @order_query = double("order_query")
+      @order_query.should_receive(:limit).with(3).and_return(@limit_query)
+      DashboardEntry.stub_chain(:where, :order).and_return(@order_query)
+
+      GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:num_recents_to_check => 3})
+    end
+
+    it "limits the search for recent recs according to the num_rentries_to_scan when it's greater than num_recents_to_check_parameter" do
+      Settings::Recommendations.video_graph[:entries_to_scan] = 5
+
+      dbe_social = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
+      dbe_rec = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation])
+      dbes = [dbe_social, dbe_rec]
+
+      @limit_query = double("limit_query")
+      @limit_query.stub_chain(:fields, :all).and_return(dbes)
+
+      @order_query = double("order_query")
+      @order_query.should_receive(:limit).with(5).and_return(@limit_query)
+      DashboardEntry.stub_chain(:where, :order).and_return(@order_query)
+
+      GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:num_recents_to_check => 2})
     end
 
     it "should return nil if no video graph recommendations are available within the given search parameters" do
