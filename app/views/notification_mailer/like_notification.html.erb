@@ -9,7 +9,7 @@
               <tbody>
                 <%=
                   render  :partial => "/objects/summary_text",
-                          :locals => { :text => "Someone liked #{@frame_title}" }
+                          :locals => { :text => "#{@user_from_name} liked #{@frame_title}" }
                 %>
 
                 <%= render :partial => "/objects/header" %>
