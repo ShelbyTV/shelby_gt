@@ -154,11 +154,15 @@ describe GT::RecommendationManager do
       @rec_vid = Factory.create(:video)
       rec = Factory.create(:recommendation, :recommended_video_id => @rec_vid.id, :score => 100.0)
       v.recs << rec
+      v.save
 
       sharer = Factory.create(:user)
       @f = Factory.create(:frame, :video => v, :creator => sharer )
 
       @dbe = Factory.create(:dashboard_entry, :frame => @f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
+      @dbe.save
+
+      MongoMapper::Plugins::IdentityMap.clear
     end
 
     context "no recommendations yet within the recent limit number of frames" do

@@ -35,7 +35,7 @@ module GT
       max_db_entries_to_scan_for_videograph = Settings::Recommendations.video_graph[:entries_to_scan]
       num_dbes_to_fetch = [options[:num_recents_to_check], max_db_entries_to_scan_for_videograph].max
 
-      dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(num_dbes_to_fetch).fields(:video_id, :frame_id, :action).all
+      dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(num_dbes_to_fetch).fields(:video_id, :frame_id, :action, :actor_id).all
       recent_dbes = dbes.first(options[:num_recents_to_check])
 
       unless recent_dbes.any? { |dbe| dbe.is_recommendation? }
