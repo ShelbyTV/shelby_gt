@@ -1,5 +1,5 @@
 defaults: &defaults
-  video_graph_from_stream : {
+  video_graph: {
     entries_to_scan : 10,
     min_score : 40.0
   }

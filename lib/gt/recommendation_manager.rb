@@ -32,7 +32,7 @@ module GT
 
       # we're looking ahead to using these dbentries to look for some video graph recommendations,
       # so get as many we need for that and to check for recent recommendations
-      max_db_entries_to_scan_for_videograph = 10
+      max_db_entries_to_scan_for_videograph = Settings::Recommendations.video_graph[:entries_to_scan]
       num_dbes_to_fetch = [options[:num_recents_to_check], max_db_entries_to_scan_for_videograph].max
 
       dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(num_dbes_to_fetch).fields(:video_id, :frame_id, :action).all
@@ -41,7 +41,7 @@ module GT
       unless recent_dbes.any? { |dbe| dbe.is_recommendation? }
         # if we don't find any recommendations within the recency limit, generate a new recommendation
         rec_manager = GT::RecommendationManager.new(user)
-        recs = rec_manager.get_video_graph_recs_for_user(10, 1, 100.0, dbes)
+        recs = rec_manager.get_video_graph_recs_for_user(max_db_entries_to_scan_for_videograph, 1, Settings::Recommendations.video_graph[:min_score], dbes)
         unless recs.empty?
           # wrap the recommended video in a dashboard entry
           rec = recs[0]
@@ -145,8 +145,8 @@ module GT
         :fill_in_with_final_type => true,
         :limits => [3, 3],
         :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]],
-        :video_graph_entries_to_scan => 10,
-        :video_graph_min_score => 40.0
+        :video_graph_entries_to_scan => Settings::Recommendations.video_graph[:entries_to_scan],
+        :video_graph_min_score => Settings::Recommendations.video_graph[:min_score]
       }
 
       options = defaults.merge(options)
@@ -240,22 +240,22 @@ module GT
       # recs with a certain minimum score
       recs.shuffle!
 
-      if limit
-        recs.slice!(limit..-1)
-      end
-
-      recs.select! do |rec|
+      valid_recommendations = []
+      # process the recs and remove ones that we don't want to show the user because they
+      # are not available
+      recs.each do |rec|
         vid = Video.find(rec[:recommended_video_id])
         # if specified by the options, exclude videos that don't have thumbnails
         if vid && (!@exclude_missing_thumbnails || vid.thumbnail_url)
           # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
           # but we may be calling out to provider APIs for each video here if we don't have the video info recently updated
           GT::VideoManager.update_video_info(vid)
-          vid.available
+          valid_recommendations << rec if vid.available
+          break if limit && valid_recommendations.count == limit
         end
       end
 
-      return recs
+      return valid_recommendations
     end
 
     # Returns an array of recommended video ids and source video ids for a user from our Mortar recommendation engine
