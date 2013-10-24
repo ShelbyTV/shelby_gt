@@ -88,6 +88,16 @@ describe GT::RecommendationManager do
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
       end
 
+      it "moves on to find more videos after skipping ones that are not available at the provider" do
+        @recommended_videos[0].available = false
+        @recommended_videos[0].save
+        MongoMapper::Plugins::IdentityMap.clear
+
+        result = @recommendation_manager.get_video_graph_recs_for_user(10, 1)
+        result.length.should == 1
+        result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
+      end
+
       it "should exclude videos that are missing their thumbnails when that option is set" do
         @recommended_videos[0].thumbnail_url = nil
         @recommended_videos[0].save

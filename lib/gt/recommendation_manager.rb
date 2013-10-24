@@ -240,22 +240,22 @@ module GT
       # recs with a certain minimum score
       recs.shuffle!
 
-      if limit
-        recs.slice!(limit..-1)
-      end
-
-      recs.select! do |rec|
+      valid_recommendations = []
+      # process the recs and remove ones that we don't want to show the user because they
+      # are not available
+      recs.each do |rec|
         vid = Video.find(rec[:recommended_video_id])
         # if specified by the options, exclude videos that don't have thumbnails
         if vid && (!@exclude_missing_thumbnails || vid.thumbnail_url)
           # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
           # but we may be calling out to provider APIs for each video here if we don't have the video info recently updated
           GT::VideoManager.update_video_info(vid)
-          vid.available
+          valid_recommendations << rec if vid.available
+          break if limit && valid_recommendations.count == limit
         end
       end
 
-      return recs
+      return valid_recommendations
     end
 
     # Returns an array of recommended video ids and source video ids for a user from our Mortar recommendation engine
