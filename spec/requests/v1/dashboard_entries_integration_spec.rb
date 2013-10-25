@@ -71,6 +71,7 @@ describe 'v1/dashboard' do
           @r = Factory.create(:recommendation, :recommended_video_id => @rv.id)
           @v.recs << @r
           @v.save
+          MongoMapper::Plugins::IdentityMap.clear
 
           get '/v1/dashboard'
           response.body.should be_json_eql(200).at_path("status")
@@ -206,13 +207,17 @@ describe 'v1/dashboard' do
           rec_vid = Factory.create(:video)
           rec = Factory.create(:recommendation, :recommended_video_id => rec_vid.id, :score => 100.0)
           v.recs << rec
+          v.save
 
           sharer = Factory.create(:user)
           f = Factory.create(:frame, :video => v, :creator => sharer )
 
           dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
+          dbe.save
 
           GT::VideoProviderApi.stub(:get_video_info)
+
+          MongoMapper::Plugins::IdentityMap.clear
 
           lambda {
               get '/v1/dashboard?trigger_recs=true'

@@ -481,14 +481,18 @@ describe 'v1/user' do
             @rec_vid = Factory.create(:video)
             rec = Factory.create(:recommendation, :recommended_video_id => @rec_vid.id, :score => 100.0)
             v.recs << rec
+            v.save
 
             sharer = Factory.create(:user)
             f = Factory.create(:frame, :video => v, :creator => sharer )
 
             dbe = Factory.create(:dashboard_entry, :frame => f, :user => @u1, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
+            dbe.save
           end
 
           it "creates a new dashboard entry" do
+            MongoMapper::Plugins::IdentityMap.clear
+
             expect {
               get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true'
             }.to change(DashboardEntry, :count)
@@ -497,6 +501,7 @@ describe 'v1/user' do
           it "doesn't create a new dashboard entry if the video has no thumbnail" do
             @rec_vid.thumbnail_url = nil
             @rec_vid.save
+            MongoMapper::Plugins::IdentityMap.clear
 
             expect {
               get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true'
@@ -624,6 +629,7 @@ describe 'v1/user' do
 
         it "should return the right number of results in the right order" do
           MongoMapper::Plugins::IdentityMap.clear
+
           get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
 
           response.body.should be_json_eql(200).at_path("status")
@@ -670,6 +676,7 @@ describe 'v1/user' do
 
         it "should return the right attributes and contents for a video graph recommendation" do
           MongoMapper::Plugins::IdentityMap.clear
+
           get '/v1/user/'+@u1.id+'/recommendations?sources=31'
 
           response.body.should have_json_path("result/0/id")
@@ -709,6 +716,7 @@ describe 'v1/user' do
 
         it "should return the right attributes and contents for a mortar recommendation" do
           MongoMapper::Plugins::IdentityMap.clear
+
           get '/v1/user/'+@u1.id+'/recommendations?sources=33'
 
           response.body.should have_json_path("result/0/id")
@@ -743,6 +751,7 @@ describe 'v1/user' do
 
         it "should return the right attributes and contents for a channel recommendation" do
           MongoMapper::Plugins::IdentityMap.clear
+
           get '/v1/user/'+@u1.id+'/recommendations?sources=34'
 
           response.body.should have_json_path("result/0/id")
@@ -790,6 +799,7 @@ describe 'v1/user' do
 
         it "should not persist any new dashboard entries, frames, or conversations to the database" do
           MongoMapper::Plugins::IdentityMap.clear
+
           lambda {
             get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
           }.should_not change { "#{DashboardEntry.count},#{Frame.count},#{Conversation.count}" }

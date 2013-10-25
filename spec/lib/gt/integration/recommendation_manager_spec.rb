@@ -44,9 +44,9 @@ describe GT::RecommendationManager do
     end
 
     it "should return all of the recommendations when there are no restricting limits" do
+      MongoMapper::Plugins::IdentityMap.clear
       Array.any_instance.should_receive(:shuffle!).and_call_original
 
-      MongoMapper::Plugins::IdentityMap.clear
       result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
       result_video_ids = result.map{|rec|rec[:recommended_video_id]}
       result_video_ids.length.should == @recommended_videos.length
@@ -61,6 +61,7 @@ describe GT::RecommendationManager do
 
       it "should return all of the recommendations when there are no restricting limits" do
         MongoMapper::Plugins::IdentityMap.clear
+
         result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
         result.length.should == @recommended_videos.length
         result.should == @recommended_videos.each_with_index.map{|vid, i| {:recommended_video_id => vid.id, :src_frame_id => @src_frame_ids[i]}}
@@ -133,6 +134,7 @@ describe GT::RecommendationManager do
 
       it "returns the proper number of recs based on the limit parameter" do
         MongoMapper::Plugins::IdentityMap.clear
+
         @recommendation_manager.get_video_graph_recs_for_user.should == [
           {:recommended_video_id => @dbes.first.video.recs.first.recommended_video_id, :src_frame_id => @dbes.first.frame_id}
         ]
@@ -161,13 +163,13 @@ describe GT::RecommendationManager do
 
       @dbe = Factory.create(:dashboard_entry, :frame => @f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
       @dbe.save
-
-      MongoMapper::Plugins::IdentityMap.clear
     end
 
     context "no recommendations yet within the recent limit number of frames" do
 
       it "should return a new dashboard entry with a video graph recommendation if any are available" do
+        MongoMapper::Plugins::IdentityMap.clear
+
         result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
         result.should be_an_instance_of(DashboardEntry)
         result.src_frame.should == @f
@@ -178,6 +180,8 @@ describe GT::RecommendationManager do
       it "doesnt return a recommendation if the video doesn't have a thumbnail" do
         @rec_vid.thumbnail_url = nil
         @rec_vid.save
+        MongoMapper::Plugins::IdentityMap.clear
+
         expect {
           @result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
         }.to_not change(DashboardEntry, :count)
@@ -185,11 +189,15 @@ describe GT::RecommendationManager do
       end
 
       it "should create the newest entry in the dashboard by default" do
+        MongoMapper::Plugins::IdentityMap.clear
+
         result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
         result.should == DashboardEntry.sort(:id.desc).first
       end
 
       it "should insert the newest entry just after a randomly selected dbentry if options[:insert_at_random_locations] is specified" do
+        MongoMapper::Plugins::IdentityMap.clear
+
         Array.any_instance.stub(:sample).and_return(@dbe)
         result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:insert_at_random_location => true})
         result.id.generation_time.to_i.should == @dbe.id.generation_time.to_i - 1
@@ -197,6 +205,8 @@ describe GT::RecommendationManager do
 
       context "database peristence" do
         before(:each) do
+          MongoMapper::Plugins::IdentityMap.clear
+
           @lambda = lambda {
             GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
           }
@@ -221,6 +231,8 @@ describe GT::RecommendationManager do
     context "recommendations exist within the recent limit number of frames" do
 
       it "should return nil because no new dashboard entries need to be created" do
+        MongoMapper::Plugins::IdentityMap.clear
+
         # put a recommendation in the dashboard
         GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
         # check if we need to put another one
@@ -230,6 +242,8 @@ describe GT::RecommendationManager do
       end
 
       it "should not persist any new dashboard entries, frames, or conversations to the database" do
+        MongoMapper::Plugins::IdentityMap.clear
+
         # put a recommendation in the dashboard
         GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
 
@@ -252,6 +266,7 @@ describe GT::RecommendationManager do
 
     it "should create a db entry for a video graph recommendation with the corresponding video, action, and src_frame" do
       src_frame = Factory.create(:frame)
+      MongoMapper::Plugins::IdentityMap.clear
 
       result = GT::RecommendationManager.create_recommendation_dbentry(
         @user,
@@ -276,6 +291,8 @@ describe GT::RecommendationManager do
 
       context "persist by default" do
         before(:each) do
+          MongoMapper::Plugins::IdentityMap.clear
+
           @lambda = lambda {
             GT::RecommendationManager.create_recommendation_dbentry(
               @user,
@@ -302,6 +319,8 @@ describe GT::RecommendationManager do
       end
 
       it "should not persist when persist false option is passed" do
+        MongoMapper::Plugins::IdentityMap.clear
+
         lambda {
           GT::RecommendationManager.create_recommendation_dbentry(
             @user,
@@ -319,6 +338,8 @@ describe GT::RecommendationManager do
         context "persist by default" do
           before(:each) do
             src_frame = Factory.create(:frame)
+            MongoMapper::Plugins::IdentityMap.clear
+
             @lambda = lambda {
               GT::RecommendationManager.create_recommendation_dbentry(
                 @user,
@@ -346,6 +367,8 @@ describe GT::RecommendationManager do
 
         it "should not persist when persist false option is passed" do
           src_frame = Factory.create(:frame)
+          MongoMapper::Plugins::IdentityMap.clear
+
           lambda {
             GT::RecommendationManager.create_recommendation_dbentry(
               @user,
@@ -364,6 +387,7 @@ describe GT::RecommendationManager do
 
     it "should create a db entry for a mortar recommendation with the corresponding video, action, and src_video" do
       src_video = Factory.create(:video)
+      MongoMapper::Plugins::IdentityMap.clear
 
       result = GT::RecommendationManager.create_recommendation_dbentry(
         @user,
@@ -386,6 +410,7 @@ describe GT::RecommendationManager do
 
     it "should create a db entry for a channel recommendation with the corresponding frame, video, and action" do
       src_frame = Factory.create(:frame, :video => @rec_vid)
+      MongoMapper::Plugins::IdentityMap.clear
 
       result = GT::RecommendationManager.create_recommendation_dbentry(
         @user,
@@ -423,6 +448,8 @@ describe GT::RecommendationManager do
     end
 
     it "should return the recommended videos" do
+      MongoMapper::Plugins::IdentityMap.clear
+
       @recommendation_manager.get_mortar_recs_for_user.length.should == 1
       @recommendation_manager.get_mortar_recs_for_user(2).length.should == 2
     end
@@ -430,6 +457,7 @@ describe GT::RecommendationManager do
     it "should skip videos the user has already watched" do
       @viewed_frame = Factory.create(:frame, :video_id => @recommended_videos[0].id, :creator => @user)
       @viewed_roll.frames << @viewed_frame
+      MongoMapper::Plugins::IdentityMap.clear
 
       @recommendation_manager.get_mortar_recs_for_user.should ==
         [{
@@ -442,6 +470,7 @@ describe GT::RecommendationManager do
     it "should skip videos that are no longer available at the provider" do
       @recommended_videos[0].available = false
       @recommended_videos[0].save
+      MongoMapper::Plugins::IdentityMap.clear
 
       @recommendation_manager.get_mortar_recs_for_user.should ==
         [{
@@ -454,6 +483,7 @@ describe GT::RecommendationManager do
     it "should skip videos that are missing their thumbnails when that option is set" do
       @recommended_videos[0].thumbnail_url = nil
       @recommended_videos[0].save
+      MongoMapper::Plugins::IdentityMap.clear
 
       @recommendation_manager.get_mortar_recs_for_user.should ==
         [{
@@ -466,6 +496,7 @@ describe GT::RecommendationManager do
     it "should not skip videos that are missing their thumbnails when that option is not set" do
       @recommended_videos[0].thumbnail_url = nil
       @recommended_videos[0].save
+      MongoMapper::Plugins::IdentityMap.clear
 
       rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
       rm.get_mortar_recs_for_user.should ==
@@ -483,6 +514,7 @@ describe GT::RecommendationManager do
       @viewed_roll = Factory.create(:roll)
       @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
       @channel_user = Factory.create(:user)
+      Settings::Channels['featured_channel_user_id'] = @channel_user.id.to_s
 
       @dbes = []
       @videos = []
@@ -499,6 +531,8 @@ describe GT::RecommendationManager do
     end
 
     it "should return the recommended videos" do
+      MongoMapper::Plugins::IdentityMap.clear
+
       @recommendation_manager.get_channel_recs_for_user(@channel_user.id).length.should == 1
       @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 2).length.should == 2
     end
@@ -506,6 +540,7 @@ describe GT::RecommendationManager do
     it "should skip videos the user has already watched" do
       @viewed_frame = Factory.create(:frame, :video_id => @videos[0].id, :creator => @user)
       @viewed_roll.frames << @viewed_frame
+      MongoMapper::Plugins::IdentityMap.clear
 
       @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
@@ -518,6 +553,7 @@ describe GT::RecommendationManager do
     it "should skip videos that are no longer available at the provider" do
       @videos[0].available = false
       @videos[0].save
+      MongoMapper::Plugins::IdentityMap.clear
 
       @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
@@ -529,6 +565,8 @@ describe GT::RecommendationManager do
 
     it "should skip frames that were created by the user for whom recommendations are being generated" do
       @dbes[0].actor_id = @user.id
+      @dbes[0].save
+      MongoMapper::Plugins::IdentityMap.clear
 
       @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
@@ -541,6 +579,7 @@ describe GT::RecommendationManager do
     it "should skip videos that are missing their thumbnails when that option is set" do
       @videos[0].thumbnail_url = nil
       @videos[0].save
+      MongoMapper::Plugins::IdentityMap.clear
 
       @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
@@ -553,6 +592,7 @@ describe GT::RecommendationManager do
     it "should not skip videos that are missing their thumbnails when that option is not set" do
       @videos[0].thumbnail_url = nil
       @videos[0].save
+      MongoMapper::Plugins::IdentityMap.clear
 
       rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
       rm.get_channel_recs_for_user(@channel_user.id).should ==
@@ -644,21 +684,25 @@ describe GT::RecommendationManager do
     end
 
     it "return all recs" do
+      MongoMapper::Plugins::IdentityMap.clear
+
       @recommendation_manager.send(:filter_recs, @recommendations).should == @recommendations
     end
 
     it "should skip videos the user has already watched" do
       @viewed_frame = Factory.create(:frame, :video_id => @recommended_videos[0].id, :creator => @user)
       @viewed_roll.frames << @viewed_frame
+      MongoMapper::Plugins::IdentityMap.clear
 
-        @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
-          @recommendations[1]
-        ]
+      @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
+        @recommendations[1]
+      ]
     end
 
     it "should skip videos that are no longer available at the provider" do
       @recommended_videos[0].available = false
       @recommended_videos[0].save
+      MongoMapper::Plugins::IdentityMap.clear
 
       @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
         @recommendations[1]
