@@ -519,13 +519,18 @@ describe GT::RecommendationManager do
       @dbes = []
       @videos = []
       @frames = []
+      @sharers = []
       3.times do
         video = Factory.create(:video)
         @videos.unshift video
-        frame = Factory.create(:frame, :video_id => video.id)
+        sharer = Factory.create(:user)
+        frame = Factory.create(:frame, :video_id => video.id, :creator_id => sharer.id)
         @frames.unshift frame
-        @dbes.unshift Factory.create(:dashboard_entry, :user_id => @channel_user.id, :frame_id => frame.id, :video_id => video.id)
+        @sharers.unshift sharer
+        @dbes.unshift Factory.create(:dashboard_entry, :user_id => @channel_user.id, :frame_id => frame.id, :video_id => video.id, :actor_id => sharer.id)
       end
+
+      Array.any_instance.stub(:shuffle!)
 
       @recommendation_manager = GT::RecommendationManager.new(@user)
     end
@@ -602,6 +607,27 @@ describe GT::RecommendationManager do
           :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation]
         }]
     end
+
+    it "should return a maximum of one video from a given sharer, by default" do
+      @dbes[1].actor_id = @dbes[0].actor_id
+      @dbes[1].save
+      MongoMapper::Plugins::IdentityMap.clear
+
+      result = @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 3)
+      result.length.should == 2
+      result.map {|rec| rec[:recommended_video_id]}.should_not include @videos[1].id
+    end
+
+    it "should not limit the number of videos from a given sharer if :unique_sharers_only is false" do
+      @dbes[1].actor_id = @dbes[0].actor_id
+      @dbes[1].save
+      MongoMapper::Plugins::IdentityMap.clear
+
+      result = @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 3, {:unique_sharers_only => false})
+      result.length.should == 3
+      result.map {|rec| rec[:recommended_video_id]}.should include @videos[1].id
+    end
+
 
   end
 

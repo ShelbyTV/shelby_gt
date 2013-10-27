@@ -464,7 +464,7 @@ describe GT::RecommendationManager do
 
     it "should fetch dbes from the specified user channel" do
       dbe_query = double("dbe_query")
-      dbe_query.stub_chain(:order, :limit, :fields).and_return([])
+      dbe_query.stub_chain(:order, :limit, :fields, :all, :shuffle!).and_return([])
       DashboardEntry.should_receive(:where).with(:user_id => @channel_user.id).and_return(dbe_query)
 
       @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should == []
@@ -483,6 +483,9 @@ describe GT::RecommendationManager do
           @dbes << Factory.create(:dashboard_entry, :user_id => @channel_user.id, :frame_id => frame.id, :video_id => video.id)
         end
 
+        @dbes.stub(:all).and_return(@dbes)
+        @dbes.stub(:shuffle!).and_return(@dbes)
+
         dbe_query = double("dbe_query")
         dbe_query.stub_chain(:order, :limit, :fields).and_return(@dbes)
         DashboardEntry.stub(:where).with(:user_id => @channel_user.id).and_return(dbe_query)
@@ -498,7 +501,21 @@ describe GT::RecommendationManager do
           }]
       end
 
-      it "should filter the recs" do
+      it "shuffles the recommendations before filtering them, by default" do
+        @dbes.should_receive(:all)
+        @dbes.should_receive(:shuffle!)
+
+        @recommendation_manager.get_channel_recs_for_user(@channel_user.id)
+      end
+
+      it "does not shuffle the recommendations if that option is not set" do
+        @dbes.should_not_receive(:all)
+        @dbes.should_not_receive(:shuffle!)
+
+        @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 1, {:shuffle => false})
+      end
+
+      it "filters the recs" do
         @recommendation_manager.should_receive(:filter_recs).with(
           @dbes,
           {:limit => 1, :recommended_video_key => "video_id"}

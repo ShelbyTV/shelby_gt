@@ -280,7 +280,11 @@ module GT
     end
 
     # Returns an array of recommended video ids for a user from another user's channel/dashboard
-    def get_channel_recs_for_user(channel_user_id, limit=1)
+    # --options--
+    #
+    # :shuffle => Boolean --- OPTIONAL if true, shuffle the recommendations before selecting some, default true
+    # :unique_sharers_only => Boolean --- OPTIONAL if true, select a maximum of one recommendation from a given sharer, default true
+    def get_channel_recs_for_user(channel_user_id, limit=1, options={})
       unless channel_user_id.is_a?(BSON::ObjectId)
         channel_user_id_string = channel_user_id.to_s
         if BSON::ObjectId.legal?(channel_user_id_string)
@@ -291,10 +295,29 @@ module GT
       end
       raise ArgumentError, "must supply a limit > 0" unless limit.respond_to?(:to_i) && ((limit = limit.to_i) > 0)
 
+      defaults = {
+        :shuffle => true,
+        :unique_sharers_only => true
+      }
+      options = defaults.merge(options)
+      shuffle = options.delete(:shuffle)
+      unique_sharers_only = options.delete(:unique_sharers_only)
+
       # get more recs than the caller asked for because some of them might be eliminated and we want to
       # have the chance to still recommend something
-      recs = DashboardEntry.where(:user_id => channel_user_id).order(:_id.desc).limit(limit + 49).fields(:video_id, :frame_id, :actor_id)
-      recs = filter_recs(recs, {:limit => limit, :recommended_video_key => "video_id"}) { |rec| rec.actor_id != @user.id }
+      recs = DashboardEntry.where(:user_id => channel_user_id).order(:_id.desc).limit(limit + 9).fields(:video_id, :frame_id, :actor_id)
+      if shuffle
+        recs = recs.all
+        recs.shuffle!
+      end
+      sharer_ids = []
+      recs = filter_recs(recs, {:limit => limit, :recommended_video_key => "video_id"}) do |rec|
+        # only include recs shared by people other than the current user, and from unique sharers (if specified in the options)
+        include_rec = (rec.actor_id != @user.id && (!unique_sharers_only || !sharer_ids.include?(rec.actor_id)))
+        # if the option is specified, keep track of the sharers we've already seen so we don't duplicate them
+        sharer_ids << rec.actor_id if unique_sharers_only && include_rec
+        include_rec
+      end
       recs.map! do |rec|
         {
           :recommended_video_id => rec.video_id,
