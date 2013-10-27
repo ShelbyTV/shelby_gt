@@ -137,6 +137,7 @@ module GT
       @user = user
       @watched_videos_loaded = false
       @exclude_missing_thumbnails = options.delete(:exclude_missing_thumbnails)
+      @recommended_sharer_ids = []
     end
 
     def get_recs_for_user(options={})
@@ -207,8 +208,6 @@ module GT
       end
 
       recs = []
-      watched_video_ids = []
-      watched_videos_loaded = false
 
       dbes.each do |dbe|
         # don't consider dbes that don't have an actor as they won't have enough context for explaining the recommendation
@@ -222,13 +221,14 @@ module GT
 
         # remove any videos that the user has already watched
         if recs_for_this_video.length > 0 && @user.viewed_roll_id
-          # once we know we need them, load the ids of the videos the user has watched - only do this once
-          if !watched_videos_loaded
-            watched_video_ids = Frame.where(:roll_id => @user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id}.compact.uniq
-            watched_videos_loaded = true
+          # we're only going to look up the watched videos once per instance of the class
+          # by the time more videos have been watched, we'll probably be creating a new instance
+          if !@watched_videos_loaded
+            @watched_video_ids = @user.viewed_roll_id ? Frame.where(:roll_id => @user.viewed_roll_id).fields(:video_id).limit(2000).all.map {|f| f.video_id}.compact.uniq : []
+            @watched_videos_loaded = true
           end
 
-          recs_for_this_video.reject!{|rec| watched_video_ids.include? rec.recommended_video_id}
+          recs_for_this_video.reject!{|rec| @watched_video_ids.include? rec.recommended_video_id}
         end
 
         recs_for_this_video.each do |rec|
@@ -310,12 +310,11 @@ module GT
         recs = recs.all
         recs.shuffle!
       end
-      sharer_ids = []
       recs = filter_recs(recs, {:limit => limit, :recommended_video_key => "video_id"}) do |rec|
         # only include recs shared by people other than the current user, and from unique sharers (if specified in the options)
-        include_rec = (rec.actor_id != @user.id && (!unique_sharers_only || !sharer_ids.include?(rec.actor_id)))
+        include_rec = (rec.actor_id != @user.id && (!unique_sharers_only || !@recommended_sharer_ids.include?(rec.actor_id)))
         # if the option is specified, keep track of the sharers we've already seen so we don't duplicate them
-        sharer_ids << rec.actor_id if unique_sharers_only && include_rec
+        @recommended_sharer_ids << rec.actor_id if unique_sharers_only && include_rec
         include_rec
       end
       recs.map! do |rec|

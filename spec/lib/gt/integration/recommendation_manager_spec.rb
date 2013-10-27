@@ -628,7 +628,6 @@ describe GT::RecommendationManager do
       result.map {|rec| rec[:recommended_video_id]}.should include @videos[1].id
     end
 
-
   end
 
   context "get_recs_for_user" do
@@ -733,6 +732,45 @@ describe GT::RecommendationManager do
       @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
         @recommendations[1]
       ]
+    end
+
+  end
+
+  context "instance state" do
+
+    context "excluding watched videos" do
+
+      it "only loads watched videos once across multiple calls to a recommendation manager instance" do
+        @viewed_roll = Factory.create(:roll)
+        @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
+        @featured_channel_user = Factory.create(:user)
+        Settings::Channels['featured_channel_user_id'] = @featured_channel_user.id.to_s
+
+        # create a video graph recommendation
+        v = Factory.create(:video)
+
+        sharer = Factory.create(:user)
+        f = Factory.create(:frame, :video => v, :creator => sharer )
+
+        rec_vid = Factory.create(:video)
+        rec = Factory.create(:recommendation, :recommended_video_id => rec_vid.id)
+        v.recs << rec
+        v.save
+
+        dbe = Factory.create(:dashboard_entry, :frame => f, :user => @user, :video_id => v.id, :actor => sharer)
+        dbe.save
+
+        @frame_query = double("frame_query")
+        @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([])
+        Frame.should_receive(:where).with(:roll_id => @viewed_roll.id).exactly(1).times.and_call_original
+
+        MongoMapper::Plugins::IdentityMap.clear
+
+        rm = GT::RecommendationManager.new(@user)
+        rm.get_video_graph_recs_for_user(10, nil)
+        rm.get_channel_recs_for_user(@featured_channel_user.id)
+      end
+
     end
 
   end

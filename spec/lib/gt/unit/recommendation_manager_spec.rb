@@ -27,6 +27,7 @@ describe GT::RecommendationManager do
       u.instance_variable_get(:@watched_videos_loaded).should == false
       u.instance_variable_get(:@watched_video_ids).should be_nil
       u.instance_variable_get(:@exclude_missing_thumbnails).should == true
+      u.instance_variable_get(:@recommended_sharer_ids).should == []
 
       u = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
       u.instance_variable_get(:@exclude_missing_thumbnails).should == false
@@ -70,7 +71,7 @@ describe GT::RecommendationManager do
       end
 
       # don't actually do any shuffling so we can predict and compare results
-      Array.any_instance.should_receive(:shuffle!)
+      Array.any_instance.stub(:shuffle!)
 
       @available_vid = Factory.create(:video)
       Video.stub(:find).and_return(@available_vid)
@@ -80,9 +81,9 @@ describe GT::RecommendationManager do
 
     context "no prefetched dbes" do
       before(:each) do
-        dbe_query = double("dbe_query")
-        dbe_query.stub_chain(:order, :limit, :fields, :all).and_return(@dbes)
-        DashboardEntry.should_receive(:where).with(:user_id => @user.id).and_return(dbe_query)
+        @dbe_query = double("dbe_query")
+        @dbe_query.stub_chain(:order, :limit, :fields, :all).and_return(@dbes)
+        DashboardEntry.stub(:where).with(:user_id => @user.id).and_return(@dbe_query)
 
         @video_ids.each_with_index do |id, j|
           video_query = double("video_query")
@@ -95,11 +96,12 @@ describe GT::RecommendationManager do
         before(:each) do
           @frame_query = double("frame_query")
           @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([])
-          # only needs to load the user's viewed videos once
-          Frame.should_receive(:where).with(:roll_id => @viewed_roll.id).exactly(1).times.and_return(@frame_query)
+          Frame.stub(:where).with(:roll_id => @viewed_roll.id).and_return(@frame_query)
         end
 
         it "should return all the recommended videos when there is no limit parameter" do
+          Array.any_instance.should_receive(:shuffle!)
+          DashboardEntry.should_receive(:where).with(:user_id => @user.id).and_return(@dbe_query)
           result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
           result.length.should == @recommended_video_ids.length
           result.should == @recommended_video_ids.each_with_index.map{|id, i| {:recommended_video_id => id, :src_frame_id => @src_frame_ids[i]}}
@@ -115,6 +117,17 @@ describe GT::RecommendationManager do
           result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
+        end
+
+        it "looks up the user's viewed frames only once, caching the results for future invocations" do
+          Frame.should_receive(:where).with(:roll_id => @viewed_roll.id).exactly(1).times.and_return(@frame_query)
+
+          @recommendation_manager.instance_variable_get(:@watched_video_ids).should be_nil
+          @recommendation_manager.instance_variable_get(:@watched_videos_loaded).should == false
+          @recommendation_manager.get_video_graph_recs_for_user(10, nil)
+          @recommendation_manager.instance_variable_get(:@watched_video_ids).should == []
+          @recommendation_manager.instance_variable_get(:@watched_videos_loaded).should == true
+          @recommendation_manager.get_video_graph_recs_for_user(10, nil)
         end
 
         it "should exclude videos that are no longer available at the provider" do
@@ -193,6 +206,7 @@ describe GT::RecommendationManager do
       end
 
       it "should use the prefetched_dbes the same way it would if it looked them up itself" do
+        Array.any_instance.should_receive(:shuffle!)
         result = @recommendation_manager.get_video_graph_recs_for_user(10, 1, nil, @dbes)
         result.should be_an_instance_of(Array)
         result.should == [{:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]}]
@@ -611,6 +625,7 @@ describe GT::RecommendationManager do
       end
 
     end
+
   end
 
   context "get_recs_for_user" do
@@ -744,7 +759,6 @@ describe GT::RecommendationManager do
 
         @frame_query = double("frame_query")
         @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([])
-        # only needs to load the user's viewed videos once
         Frame.stub(:where).with(:roll_id => @viewed_roll.id).and_return(@frame_query)
       end
 
@@ -756,8 +770,10 @@ describe GT::RecommendationManager do
         Frame.should_receive(:where).exactly(1).times.and_return(@frame_query)
 
         @recommendation_manager.instance_variable_get(:@watched_video_ids).should be_nil
+        @recommendation_manager.instance_variable_get(:@watched_videos_loaded).should == false
         @recommendation_manager.send(:filter_recs, @recommendations)
         @recommendation_manager.instance_variable_get(:@watched_video_ids).should == []
+        @recommendation_manager.instance_variable_get(:@watched_videos_loaded).should == true
         @recommendation_manager.send(:filter_recs, @recommendations)
       end
 
