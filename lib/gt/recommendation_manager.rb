@@ -30,10 +30,16 @@ module GT
 
       options = defaults.merge(options)
 
-      # we're looking ahead to using these dbentries to look for some video graph recommendations,
-      # so get as many we need for that and to check for recent recommendations
-      max_db_entries_to_scan_for_videograph = Settings::Recommendations.video_graph[:entries_to_scan]
-      num_dbes_to_fetch = [options[:num_recents_to_check], max_db_entries_to_scan_for_videograph].max
+      get_mortar_rec = Random::rand < Settings::Recommendations.triggered_ios_recs[:mortar_recs_weight]
+
+      if get_mortar_rec
+        num_dbes_to_fetch = options[:num_recents_to_check]
+      else
+        # we're looking ahead to using these dbentries to look for some video graph recommendations,
+        # so get as many we need for that and to check for recent recommendations
+        max_db_entries_to_scan_for_videograph = Settings::Recommendations.video_graph[:entries_to_scan]
+        num_dbes_to_fetch = [options[:num_recents_to_check], max_db_entries_to_scan_for_videograph].max
+      end
 
       dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(num_dbes_to_fetch).fields(:video_id, :frame_id, :action, :actor_id).all
       recent_dbes = dbes.first(options[:num_recents_to_check])
@@ -41,11 +47,24 @@ module GT
       unless recent_dbes.any? { |dbe| dbe.is_recommendation? }
         # if we don't find any recommendations within the recency limit, generate a new recommendation
         rec_manager = GT::RecommendationManager.new(user)
-        recs = rec_manager.get_video_graph_recs_for_user(max_db_entries_to_scan_for_videograph, 1, Settings::Recommendations.video_graph[:min_score], dbes)
+        # choose randomly between a mortar recommendation and a video_graph recommendation
+        if (get_mortar_rec)
+          recs = rec_manager.get_recs_for_user({
+            :limits => [1,0],
+            :sources => [DashboardEntry::ENTRY_TYPE[:mortar_recommendation], DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]]
+          })
+        else
+          recs = rec_manager.get_recs_for_user({
+            :limits => [1,0],
+            :prefetched_dbes => dbes,
+            :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]]
+          })
+        end
+
         unless recs.empty?
-          # wrap the recommended video in a dashboard entry
+          # wrap the recommendation in a dashboard entry and save it to the user's stream
           rec = recs[0]
-          creation_options = {:src_id => rec[:src_frame_id]}
+          creation_options = {:src_id => rec[:src_id]}
           if options[:insert_at_random_location]
             # if requested, set the new dashboard entry's creation time to be just earlier
             # than a randomly selected recent entry, so it will appear just before that entry
@@ -54,15 +73,16 @@ module GT
             creation_options[:dashboard_entry_options] = {}
             creation_options[:dashboard_entry_options][:creation_time] = insert_before_entry.id.generation_time - 1
           end
-
-          res = self.create_recommendation_dbentry(user,
+          res = self.create_recommendation_dbentry(
+            user,
             rec[:recommended_video_id],
-            DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+            rec[:action],
             creation_options
           )
           return res && res[:dashboard_entry]
         end
       end
+
     end
 
     # Returns:
@@ -145,6 +165,7 @@ module GT
       defaults = {
         :fill_in_with_final_type => true,
         :limits => [3, 3],
+        :prefetched_dbes => nil,
         :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]],
         :video_graph_entries_to_scan => Settings::Recommendations.video_graph[:entries_to_scan],
         :video_graph_min_score => Settings::Recommendations.video_graph[:min_score]
@@ -156,6 +177,7 @@ module GT
       sources = options.delete(:sources)
       raise ArgumentError, ":sources and :limits options must be Arrays of the same length" unless limits.is_a?(Array) && sources.is_a?(Array) && (limits.length == sources.length)
       fill_in_with_final_type = options.delete(:fill_in_with_final_type)
+      prefetched_dbes = options.delete(:prefetched_dbes)
       video_graph_entries_to_scan = options.delete(:video_graph_entries_to_scan)
       video_graph_min_score = options.delete(:video_graph_min_score)
 
@@ -174,22 +196,24 @@ module GT
           limit = limits[i]
         end
 
-        case source
-        when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-          # get some video graph recommendations
-          video_graph_recommendations = self.get_video_graph_recs_for_user(video_graph_entries_to_scan, limit, video_graph_min_score)
-          video_graph_recommendations.each do |rec|
-            # remap the name of the src key so that we can process all the recommendations together
-            rec[:src_id] = rec.delete(:src_frame_id)
-            rec[:action] = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+        if limit > 0
+          case source
+          when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+            # get some video graph recommendations
+            video_graph_recommendations = self.get_video_graph_recs_for_user(video_graph_entries_to_scan, limit, video_graph_min_score, prefetched_dbes)
+            video_graph_recommendations.each do |rec|
+              # remap the name of the src key so that we can process all the recommendations together
+              rec[:src_id] = rec.delete(:src_frame_id)
+              rec[:action] = DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+            end
+            recs.concat(video_graph_recommendations)
+          when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+            mortar_recommendations = self.get_mortar_recs_for_user(limit)
+            recs.concat(mortar_recommendations)
+          when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
+            channel_recommendations = self.get_channel_recs_for_user(Settings::Channels.featured_channel_user_id, limit)
+            recs.concat(channel_recommendations)
           end
-          recs.concat(video_graph_recommendations)
-        when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-          mortar_recommendations = self.get_mortar_recs_for_user(limit)
-          recs.concat(mortar_recommendations)
-        when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
-          channel_recommendations = self.get_channel_recs_for_user(Settings::Channels.featured_channel_user_id, limit)
-          recs.concat(channel_recommendations)
         end
       end
 

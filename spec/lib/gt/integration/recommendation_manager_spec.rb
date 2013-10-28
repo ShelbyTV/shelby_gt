@@ -159,79 +159,196 @@ describe GT::RecommendationManager do
   end
 
   context "if_no_recent_recs_generate_rec" do
+
     before(:each) do
       @user = Factory.create(:user)
-
-      v = Factory.create(:video)
-      @rec_vid = Factory.create(:video)
-      rec = Factory.create(:recommendation, :recommended_video_id => @rec_vid.id, :score => 100.0)
-      v.recs << rec
-      v.save
-
-      sharer = Factory.create(:user)
-      @f = Factory.create(:frame, :video => v, :creator => sharer )
-
-      @dbe = Factory.create(:dashboard_entry, :frame => @f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
-      @dbe.save
     end
 
     context "no recommendations yet within the recent limit number of frames" do
 
-      it "should return a new dashboard entry with a video graph recommendation if any are available" do
-        MongoMapper::Plugins::IdentityMap.clear
+      context "video graph wins random choice" do
 
-        result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
-        result.should be_an_instance_of(DashboardEntry)
-        result.src_frame.should == @f
-        result.video_id.should == @rec_vid.id
-        result.action.should == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-      end
-
-      it "doesnt return a recommendation if the video doesn't have a thumbnail" do
-        @rec_vid.thumbnail_url = nil
-        @rec_vid.save
-        MongoMapper::Plugins::IdentityMap.clear
-
-        expect {
-          @result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
-        }.to_not change(DashboardEntry, :count)
-        @result.should be_nil
-      end
-
-      it "should create the newest entry in the dashboard by default" do
-        MongoMapper::Plugins::IdentityMap.clear
-
-        result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
-        result.should == DashboardEntry.sort(:id.desc).first
-      end
-
-      it "should insert the newest entry just after a randomly selected dbentry if options[:insert_at_random_locations] is specified" do
-        MongoMapper::Plugins::IdentityMap.clear
-
-        Array.any_instance.stub(:sample).and_return(@dbe)
-        result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:insert_at_random_location => true})
-        result.id.generation_time.to_i.should == @dbe.id.generation_time.to_i - 1
-      end
-
-      context "database peristence" do
         before(:each) do
-          MongoMapper::Plugins::IdentityMap.clear
-
-          @lambda = lambda {
-            GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
-          }
+          Random.stub(:rand).and_return(Settings::Recommendations.triggered_ios_recs[:mortar_recs_weight])
         end
 
-        it "should persist a new dashboard entry to the database" do
-          @lambda.should change { DashboardEntry.count }
+        context "no recommendations avaialable" do
+
+          it "returns nil and creates no dashboard entries" do
+            expect {
+              @result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            }.to_not change(DashboardEntry, :count)
+            @result.should be_nil
+          end
+
         end
 
-        it "should persist a new frame to the database" do
-          @lambda.should change { Frame.count }
+        context "video graph recommendations available" do
+
+          before(:each) do
+            v = Factory.create(:video)
+            @rec_vid = Factory.create(:video)
+            rec = Factory.create(:recommendation, :recommended_video_id => @rec_vid.id, :score => 100.0)
+            v.recs << rec
+            v.save
+
+            sharer = Factory.create(:user)
+            @f = Factory.create(:frame, :video => v, :creator => sharer )
+
+            @dbe = Factory.create(:dashboard_entry, :frame => @f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
+            @dbe.save
+          end
+
+          it "should return a new dashboard entry with a video graph recommendation" do
+            MongoMapper::Plugins::IdentityMap.clear
+
+            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            result.should be_an_instance_of(DashboardEntry)
+            result.src_frame.should == @f
+            result.video_id.should == @rec_vid.id
+            result.action.should == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+          end
+
+          it "doesnt return a recommendation if the video doesn't have a thumbnail" do
+            @rec_vid.thumbnail_url = nil
+            @rec_vid.save
+            MongoMapper::Plugins::IdentityMap.clear
+
+            expect {
+              @result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            }.to_not change(DashboardEntry, :count)
+            @result.should be_nil
+          end
+
+          it "should create the newest entry in the dashboard by default" do
+            MongoMapper::Plugins::IdentityMap.clear
+
+            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            result.should == DashboardEntry.sort(:id.desc).first
+          end
+
+          it "should insert the newest entry just after a randomly selected dbentry if options[:insert_at_random_locations] is specified" do
+            MongoMapper::Plugins::IdentityMap.clear
+
+            Array.any_instance.stub(:sample).and_return(@dbe)
+            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:insert_at_random_location => true})
+            result.id.generation_time.to_i.should == @dbe.id.generation_time.to_i - 1
+          end
+
+          context "database peristence" do
+            before(:each) do
+              MongoMapper::Plugins::IdentityMap.clear
+
+              @lambda = lambda {
+                GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+              }
+            end
+
+            it "should persist a new dashboard entry to the database" do
+              @lambda.should change { DashboardEntry.count }
+            end
+
+            it "should persist a new frame to the database" do
+              @lambda.should change { Frame.count }
+            end
+
+            it "should persist a conversation because the frame is being persisted" do
+              @lambda.should change { Conversation.count }
+            end
+
+          end
+
         end
 
-        it "should persist a conversation because the frame is being persisted" do
-          @lambda.should change { Conversation.count }
+        context "mortar recommendations available but no video graph recs available" do
+
+          it "fills in and returns a new dashboard entry with a mortar recommendation" do
+            @recommended_video = Factory.create(:video)
+            @reason_video = Factory.create(:video)
+
+            @mortar_recommendations = [
+              {"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
+            ]
+            @mortar_recommendations.stub(:shuffle!)
+            GT::MortarHarvester.stub(:get_recs_for_user).and_return(@mortar_recommendations)
+
+            MongoMapper::Plugins::IdentityMap.clear
+
+            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            result.should be_an_instance_of(DashboardEntry)
+            result.src_video.should == @reason_video
+            result.video_id.should == @recommended_video.id
+            result.action.should == DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          end
+
+        end
+
+      end
+
+      context "mortar wins random choice" do
+
+        before(:each) do
+          Random.stub(:rand).and_return(Settings::Recommendations.triggered_ios_recs[:mortar_recs_weight] - 0.01)
+        end
+
+        context "no recommendations avaialable" do
+
+          it "returns nil and creates no dashboard entries" do
+            expect {
+              @result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            }.to_not change(DashboardEntry, :count)
+            @result.should be_nil
+          end
+
+        end
+
+        context "mortar recommendations available" do
+
+          it "returns a new dashboard entry with a mortar recommendation" do
+            @recommended_video = Factory.create(:video)
+            @reason_video = Factory.create(:video)
+
+            @mortar_recommendations = [
+              {"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
+            ]
+            @mortar_recommendations.stub(:shuffle!)
+            GT::MortarHarvester.stub(:get_recs_for_user).and_return(@mortar_recommendations)
+
+            MongoMapper::Plugins::IdentityMap.clear
+
+            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            result.should be_an_instance_of(DashboardEntry)
+            result.src_video.should == @reason_video
+            result.video_id.should == @recommended_video.id
+            result.action.should == DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          end
+
+        end
+
+        context "video graph recommendations available but no mortar recs available" do
+
+          it "fills in and returns a new dashboard entry with a video graph recommendation" do
+            v = Factory.create(:video)
+            @rec_vid = Factory.create(:video)
+            rec = Factory.create(:recommendation, :recommended_video_id => @rec_vid.id, :score => 100.0)
+            v.recs << rec
+            v.save
+
+            sharer = Factory.create(:user)
+            @f = Factory.create(:frame, :video => v, :creator => sharer )
+
+            @dbe = Factory.create(:dashboard_entry, :frame => @f, :user => @user, :video_id => v.id, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame], :actor => sharer)
+            @dbe.save
+
+            MongoMapper::Plugins::IdentityMap.clear
+
+            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            result.should be_an_instance_of(DashboardEntry)
+            result.src_frame.should == @f
+            result.video_id.should == @rec_vid.id
+            result.action.should == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
+          end
+
         end
 
       end
@@ -704,6 +821,23 @@ describe GT::RecommendationManager do
         :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation],
         :recommended_video_id => @channel_recommended_vid.id,
         :src_id => @community_channel_frame.id
+      }
+    end
+
+    it "fills in from a source with limit zero" do
+      MongoMapper::Plugins::IdentityMap.clear
+
+      res = @recommendation_manager.get_recs_for_user({ :sources => [31, 33], :limits => [2, 0] })
+      res.length.should == 2
+      res[0].should == {
+        :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+        :recommended_video_id => @vid_graph_recommended_vid.id,
+        :src_id => @vid_graph_src_frame.id
+      }
+      res[1].should == {
+        :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation],
+        :recommended_video_id => @mortar_recommended_vid.id,
+        :src_id => @mortar_src_vid.id
       }
     end
 
