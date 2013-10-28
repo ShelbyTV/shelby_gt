@@ -199,7 +199,16 @@ module GT
     # Returns an array of recommended video ids and source frame ids for a user based on the criteria supplied as params
     # NB: This is a slow thing to be doing - ideally we'd want to run this periodically in the background and store
     # the results somewhere to then be loaded instantaneously when asked for
-    def get_video_graph_recs_for_user(max_db_entries_to_scan=10, limit=1, min_score=nil, prefetched_dbes=nil)
+    # --options--
+    #
+    # :unique_sharers_only => Boolean --- OPTIONAL if true, select a maximum of one recommendation from a given sharer, default true
+    def get_video_graph_recs_for_user(max_db_entries_to_scan=10, limit=1, min_score=nil, prefetched_dbes=nil, options={})
+
+      defaults = {
+        :unique_sharers_only => true
+      }
+      options = defaults.merge(options)
+      unique_sharers_only = options.delete(:unique_sharers_only)
 
       unless prefetched_dbes
         dbes = DashboardEntry.where(:user_id => @user.id).order(:_id.desc).limit(max_db_entries_to_scan).fields(:video_id, :frame_id, :actor_id).all
@@ -232,7 +241,7 @@ module GT
         end
 
         recs_for_this_video.each do |rec|
-          recs << { :recommended_video_id => rec.recommended_video_id, :src_frame_id => dbe.frame_id}
+          recs << { :recommended_video_id => rec.recommended_video_id, :src_frame_id => dbe.frame_id, :source_sharer_id => dbe.actor_id}
         end
       end
 
@@ -244,18 +253,25 @@ module GT
       # process the recs and remove ones that we don't want to show the user because they
       # are not available
       recs.each do |rec|
-        vid = Video.find(rec[:recommended_video_id])
-        # if specified by the options, exclude videos that don't have thumbnails
-        if vid && (!@exclude_missing_thumbnails || vid.thumbnail_url)
-          # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
-          # but we may be calling out to provider APIs for each video here if we don't have the video info recently updated
-          GT::VideoManager.update_video_info(vid)
-          valid_recommendations << rec if vid.available
-          break if limit && valid_recommendations.count == limit
+        # if specified by the options, exclude videos based on sharers that we've already included recommendations from
+        if !unique_sharers_only || !@recommended_sharer_ids.include?(rec[:source_sharer_id])
+          vid = Video.find(rec[:recommended_video_id])
+          # if specified by the options, exclude videos that don't have thumbnails
+          if vid && (!@exclude_missing_thumbnails || vid.thumbnail_url)
+            # THE SLOWEST PART?: we want to only include videos that are still available at their provider,
+            # but we may be calling out to provider APIs for each video here if we don't have the video info recently updated
+            GT::VideoManager.update_video_info(vid)
+            if vid.available
+              valid_recommendations << rec
+              # if the option is specified, keep track of the sharers we've already seen so we don't duplicate them
+              @recommended_sharer_ids << rec[:source_sharer_id] if unique_sharers_only
+            end
+            break if limit && valid_recommendations.count == limit
+          end
         end
       end
 
-      return valid_recommendations
+      return valid_recommendations.map! {|rec| rec.delete_if {|k, v| k == :source_sharer_id}}
     end
 
     # Returns an array of recommended video ids and source video ids for a user from our Mortar recommendation engine

@@ -102,7 +102,7 @@ describe GT::RecommendationManager do
         it "should return all the recommended videos when there is no limit parameter" do
           Array.any_instance.should_receive(:shuffle!)
           DashboardEntry.should_receive(:where).with(:user_id => @user.id).and_return(@dbe_query)
-          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
+          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil, nil, nil, {:unique_sharers_only => false})
           result.length.should == @recommended_video_ids.length
           result.should == @recommended_video_ids.each_with_index.map{|id, i| {:recommended_video_id => id, :src_frame_id => @src_frame_ids[i]}}
         end
@@ -114,7 +114,7 @@ describe GT::RecommendationManager do
         it "should exclude videos the user has already watched" do
           @frame_query.stub_chain(:fields, :limit, :all, :map).and_return([@recommended_video_ids[0]])
 
-          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
+          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil, nil, nil, {:unique_sharers_only => false})
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
@@ -136,7 +136,7 @@ describe GT::RecommendationManager do
           Video.should_receive(:find).exactly(@recommended_video_ids.length).times.and_return(@unavailable_vid, @available_vid)
           GT::VideoManager.should_receive(:update_video_info).exactly(@recommended_video_ids.length).times
 
-          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
+          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil, nil, nil, {:unique_sharers_only => false})
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
@@ -147,7 +147,7 @@ describe GT::RecommendationManager do
 
           Video.should_receive(:find).exactly(@recommended_video_ids.length).times.and_return(@vid_without_thumbnail, @vid_with_thumbnail)
 
-          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
+          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil, nil, nil, {:unique_sharers_only => false})
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
@@ -159,7 +159,7 @@ describe GT::RecommendationManager do
           Video.should_receive(:find).exactly(@recommended_video_ids.length).times.and_return(@vid_without_thumbnail, @vid_with_thumbnail)
 
           rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
-          result = rm.get_video_graph_recs_for_user(10, nil)
+          result = rm.get_video_graph_recs_for_user(10, nil, nil, nil, {:unique_sharers_only => false})
           result.length.should == @recommended_video_ids.length
           result.should == @recommended_video_ids.each_with_index.map{|id, i| {:recommended_video_id => id, :src_frame_id => @src_frame_ids[i]}}
         end
@@ -167,7 +167,7 @@ describe GT::RecommendationManager do
         it "should exclude from consideration dashboard entries that have no actor" do
           @dbes[1].actor_id = nil
 
-          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil)
+          result = @recommendation_manager.get_video_graph_recs_for_user(10, nil, nil, nil, {:unique_sharers_only => false})
           result.length.should == @recommended_video_ids.length - 1
           result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
@@ -492,9 +492,10 @@ describe GT::RecommendationManager do
         3.times do
           video = Factory.create(:video)
           @videos << video
-          frame = Factory.create(:frame, :video_id => video.id)
+          sharer = Factory.create(:user)
+          frame = Factory.create(:frame, :video_id => video.id, :creator_id => sharer.id)
           @frames << frame
-          @dbes << Factory.create(:dashboard_entry, :user_id => @channel_user.id, :frame_id => frame.id, :video_id => video.id)
+          @dbes << Factory.create(:dashboard_entry, :user_id => @channel_user.id, :frame_id => frame.id, :video_id => video.id, :actor_id => sharer.id)
         end
 
         @dbes.stub(:all).and_return(@dbes)
