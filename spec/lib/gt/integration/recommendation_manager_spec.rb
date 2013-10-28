@@ -448,11 +448,13 @@ describe GT::RecommendationManager do
       @recommended_videos = [Factory.create(:video), Factory.create(:video), Factory.create(:video)]
       @reason_videos = [Factory.create(:video), Factory.create(:video), Factory.create(:video)]
 
-      GT::MortarHarvester.stub(:get_recs_for_user).and_return([
+      @mortar_recommendations = [
         {"item_id" => @recommended_videos[0].id.to_s, "reason_id" => @reason_videos[0].id.to_s},
         {"item_id" => @recommended_videos[1].id.to_s, "reason_id" => @reason_videos[1].id.to_s},
         {"item_id" => @recommended_videos[2].id.to_s, "reason_id" => @reason_videos[2].id.to_s}
-      ])
+      ]
+      @mortar_recommendations.stub(:shuffle!)
+      GT::MortarHarvester.stub(:get_recs_for_user).and_return(@mortar_recommendations)
 
       @recommendation_manager = GT::RecommendationManager.new(@user)
     end

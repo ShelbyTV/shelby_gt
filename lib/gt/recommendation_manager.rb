@@ -275,13 +275,23 @@ module GT
     end
 
     # Returns an array of recommended video ids and source video ids for a user from our Mortar recommendation engine
-    def get_mortar_recs_for_user(limit=1)
+    # --options--
+    #
+    # :shuffle => Boolean --- OPTIONAL if true, shuffle the recommendations before selecting some, default true
+    def get_mortar_recs_for_user(limit=1, options={})
       raise ArgumentError, "must supply a limit > 0" unless limit.respond_to?(:to_i) && ((limit = limit.to_i) > 0)
+
+      defaults = {
+        :shuffle => true,
+      }
+      options = defaults.merge(options)
+      shuffle = options.delete(:shuffle)
 
       # get more recs than the caller asked for because some of them might be eliminated and we want to
       # have the chance to still recommend something
       recs = GT::MortarHarvester.get_recs_for_user(@user, limit + 49)
       if recs && recs.length > 0
+        recs.shuffle! if shuffle
         recs = filter_recs(recs, {:limit => limit, :recommended_video_key => "item_id"})
         recs.map! do |rec|
           {

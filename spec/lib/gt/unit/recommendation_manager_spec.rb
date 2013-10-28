@@ -600,6 +600,18 @@ describe GT::RecommendationManager do
         GT::MortarHarvester.stub(:get_recs_for_user).and_return(@mortar_recs)
       end
 
+      it "shuffles the recommendations before filtering them, by default" do
+        @mortar_recs.should_receive(:shuffle!)
+
+        @recommendation_manager.get_mortar_recs_for_user
+      end
+
+      it "does not shuffle the recommendations if that option is not set" do
+        @mortar_recs.should_not_receive(:shuffle!)
+
+        @recommendation_manager.get_mortar_recs_for_user(1, {:shuffle => false})
+      end
+
       it "should map the key names correctly" do
         @recommendation_manager.should_receive(:filter_recs).and_return([@mortar_recs[0]])
         @recommendation_manager.get_mortar_recs_for_user.should ==
