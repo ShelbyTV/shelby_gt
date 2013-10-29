@@ -165,7 +165,7 @@ class NotificationMailer < ActionMailer::Base
     when "option_a"
       view_context.message_subject(dbes)
     when "option_b"
-      name = (@user_to.name.first if @user_to.name) || @user_to.nickname
+      name = (@user_to.name.split.first if @user_to.name) || @user_to.nickname
       "#{name.titlecase}, #{view_context.message_subject(dbes).downcase}"
     else
       view_context.message_subject(dbes)
