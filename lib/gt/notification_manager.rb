@@ -151,8 +151,8 @@ module GT
       end
     end
 
-    def self.send_weekly_recommendation(user, dbes)
-      mail_message = NotificationMailer.weekly_recommendation(user, dbes)
+    def self.send_weekly_recommendation(user, dbes, options=nil)
+      mail_message = NotificationMailer.weekly_recommendation(user, dbes, options)
       # override the smtp settings to relay this through Shelby's onboard postfix server
       mail_message.delivery_method.settings = {
         :address => Settings::Email.postfix["server_address"],

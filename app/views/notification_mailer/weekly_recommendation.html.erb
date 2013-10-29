@@ -36,7 +36,9 @@
                                             :dbe            => dbe,
                                             :ga_category    => "Email",
                                             :signed_in_user => {},
-                                            :video          => dbe.frame.video
+                                            :video          => dbe.frame.video,
+                                            :user_to => @user_to,
+                                            :ab_bucket => @ab_bucket
                                           }
                                       %>
                                     </center>
@@ -67,5 +69,5 @@
       </tr>
     </tbody>
   </table>
-  <img src="http://trk.kissmetrics.com/e?_k=<%= Settings::KissMetrics.api_key %>&_n=<%= Settings::KissMetrics.metric['open_email']['weekly_rec_email'] %>&_p=<%= @user_to.nickname %>" />
+  <img src="http://trk.kissmetrics.com/e?_k=<%= Settings::KissMetrics.api_key %>&_n=<%= Settings::KissMetrics.metric['open_email']['weekly_rec_email'] %>&_p=<%= @user_to.nickname %><%= "&bucket="+@ab_bucket if @ab_bucket %>" />
 <% end %>

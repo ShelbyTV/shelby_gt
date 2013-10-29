@@ -374,7 +374,7 @@ describe GT::NotificationManager do
     end
 
     it "should pass through the right parameters to the mailer" do
-      NotificationMailer.should_receive(:weekly_recommendation).with(@user, [@dbe]).and_call_original
+      NotificationMailer.should_receive(:weekly_recommendation).with(@user, [@dbe], nil).and_call_original
 
       GT::NotificationManager.send_weekly_recommendation(@user, [@dbe])
     end

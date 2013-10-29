@@ -67,10 +67,11 @@ module GT
               dbes = self.get_recommendations_for_user(user)
               unless dbes.empty?
                 num_with_recs += 1
-                if do_send_emails && GT::NotificationManager.send_weekly_recommendation(user, dbes)
+                ab_bucket = ["option_a", "option_b"].sample
+                if do_send_emails && GT::NotificationManager.send_weekly_recommendation(user, dbes, {:bucket => ab_bucket})
                   num_sent += 1
                   # track that email was sent
-                  APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'])
+                  APIClients::KissMetrics.identify_and_record(user, Settings::KissMetrics.metric['send_email']['weekly_rec_email'], {:bucket => ab_bucket})
                 end
               else
                 num_with_no_recs += 1
