@@ -152,11 +152,11 @@ class NotificationMailer < ActionMailer::Base
 
     @ab_bucket = options[:bucket] if options
     if @ab_bucket
-      utm_campaign = "weekly-recommendation-#{@ab_bucket}"
+      utm_medium = "notification-#{@ab_bucket}"
     else
-      utm_campaign = "weekly-recommendation"
+      utm_medium = "notification"
     end
-    sendgrid_ganalytics_options(:utm_source => "#{user_to.nickname}", :utm_medium => 'notification', :utm_campaign => utm_campaign)
+    sendgrid_ganalytics_options(:utm_source => "#{user_to.nickname}", :utm_medium => utm_medium, :utm_campaign => 'weekly-recommendation')
 
     @dbes = dbes
     @user_to = user_to
