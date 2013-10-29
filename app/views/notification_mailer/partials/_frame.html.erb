@@ -5,7 +5,7 @@
         <table data-video style="width: 100%;" border="0" cellpadding="0" cellspacing="0">
           <tr>
             <td data-video_title>
-              <% extra_params = @ab_bucket ? "&kmi=#{user_to.nickname}&km_bucket=#{@ab_bucket}" : '' %>
+              <% extra_params = ab_bucket ? "&kmi=#{user_to.nickname}&km_bucket=#{@ab_bucket}" : '' %>
               <a href="<%= Settings::Email.web_url_base %>/stream?entry=<%= dbe.id %><%= extra_params %>" style="color: <%= Settings::Email.ui_soft_black %>; text-decoration: none;">
                 <strong style="display: block; font-family: <%= Settings::Email.font_family %>;font-size: <%= Settings::Email.font_size_large %>; line-height:1.3; margin-bottom: 5px;" title="<%= video.title %>">
                   <%= video.title %>
