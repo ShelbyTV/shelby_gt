@@ -167,6 +167,8 @@ class NotificationMailer < ActionMailer::Base
     when "option_b"
       name = (@user_to.name.first if @user_to.name) || @user_to.nickname
       "#{name.titlecase}, #{view_context.message_subject(dbes).downcase}"
+    else
+      view_context.message_subject(dbes)
     end
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",

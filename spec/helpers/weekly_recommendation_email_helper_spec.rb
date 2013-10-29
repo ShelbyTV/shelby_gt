@@ -14,7 +14,7 @@ describe WeeklyRecommendationEmailHelper do
     end
 
     it "returns the right message_subject" do
-      message_subject(@dbes).should eql "Have a few minutes?"
+      message_subject(@dbes).should eql "One of these videos was handpicked just for you."
     end
 
   end
