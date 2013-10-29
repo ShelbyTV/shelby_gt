@@ -25,7 +25,7 @@ module WeeklyRecommendationEmailHelper
 
   def message_subject(dbes)
     if dbes.count > 1
-      "Have a few minutes?"
+      "One of these videos was handpicked just for you."
     else
       dbe = dbes.first
       case dbe.action
