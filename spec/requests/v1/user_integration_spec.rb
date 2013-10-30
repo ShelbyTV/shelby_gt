@@ -465,8 +465,18 @@ describe 'v1/user' do
         end
 
         it "should do a check for inserting recommendations when trigger_recs param is included" do
-          GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec)
+          GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true, :include_mortar_recs => false})
           get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true'
+        end
+
+        it "should do a check for inserting recommendations when trigger_recs param is included and recs_version param is 1" do
+          GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true, :include_mortar_recs => false})
+          get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true&recs_version=1'
+        end
+
+        it "also includes mortar recommendations when trigger_recs param is included and recs_version param is greater than 1" do
+          GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true})
+          get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true&recs_version=2'
         end
 
         it "should not do a check for inserting recommendation when the user is not the current logged in user" do
@@ -507,6 +517,37 @@ describe 'v1/user' do
               get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true'
             }.not_to change(DashboardEntry, :count)
           end
+        end
+
+        context "mortar recommendation available" do
+
+          before(:each) do
+            @recommended_video = Factory.create(:video)
+            @reason_video = Factory.create(:video)
+
+            @mortar_recommendations = [
+              {"item_id" => @recommended_video.id.to_s, "reason_id" => @reason_video.id.to_s},
+            ]
+            @mortar_recommendations.stub(:shuffle!)
+            GT::MortarHarvester.stub(:get_recs_for_user).and_return(@mortar_recommendations)
+
+            MongoMapper::Plugins::IdentityMap.clear
+
+            Random.stub(:rand).and_return(Settings::Recommendations.triggered_ios_recs[:mortar_recs_weight] - 0.01)
+          end
+
+          it "creates a new dashboard entry from a mortar recommendation" do
+            expect {
+                get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true&recs_version=2'
+            }.to change(DashboardEntry, :count)
+          end
+
+          it "does not create a new dashboard entry from a mortar recommendation when recs_version < 2" do
+            expect {
+                get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true'
+            }.not_to change(DashboardEntry, :count)
+          end
+
         end
 
         it "should not do a check for inserting recommendations when a since_id is included" do

@@ -16,6 +16,8 @@ class V1::DashboardEntriesMetalController < MetalController
   # @param [Optional, Integer] skip The number of entries to skip (default 0)
   # @param [Optional, String]  since_id the id of the dashboard entry to start from (inclusive)
   # @param [Optional, Boolean] trigger_recs if true, after responding, check if new recommendations are needed and if so, insert
+  # @param [Optional, Integer] recs_version an integer representing the version of the recommendation selection algorithm to use if
+  # => triggering recs, default is 1 (video graph recs only), 2 (random choice between video graph and mortar) is also supported
   def index
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['index']) do
       # default params
@@ -54,8 +56,11 @@ class V1::DashboardEntriesMetalController < MetalController
 
       if !sinceId && params[:trigger_recs]
         ShelbyGT_EM.next_tick {
+          recs_version = (params[:recs_version] && params[:recs_version].to_i) || 1
+          recs_options = {:insert_at_random_location => true}
+          recs_options[:include_mortar_recs] = false if recs_version <= 1
           # check if we need new recommendations, and if so, insert them into the stream
-          GT::RecommendationManager.if_no_recent_recs_generate_rec(current_user, { :insert_at_random_location => true })
+          GT::RecommendationManager.if_no_recent_recs_generate_rec(current_user, recs_options)
         }
       end
 
@@ -81,8 +86,11 @@ class V1::DashboardEntriesMetalController < MetalController
   # @param [Optional, String]  since_id the id of the dashboard entry to start from (inclusive)
   # @param [Optional, Boolean] trigger_recs if true and the user_id is the id of the currently logged in user,
   #   after responding, check if new recommendations are needed and if so, insert
+  # @param [Optional, Integer] recs_version an integer representing the version of the recommendation selection algorithm to use if
+  # => triggering recs, default is 1 (video graph recs only), 2 (random choice between video graph and mortar) is also supported
   def index_for_user
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['index_for_user']) do
+
       # default params
       limit = params[:limit] ? params[:limit].to_i : 20
       # put an upper limit on the number of entries returned
@@ -135,8 +143,11 @@ class V1::DashboardEntriesMetalController < MetalController
       # only for the currently logged in user's dashboard
       if !sinceId && params[:trigger_recs] && user == current_user
         ShelbyGT_EM.next_tick {
+          recs_version = (params[:recs_version] && params[:recs_version].to_i) || 1
+          recs_options = {:insert_at_random_location => true}
+          recs_options[:include_mortar_recs] = false if recs_version <= 1
           # check if we need new recommendations, and if so, insert them into the stream
-          GT::RecommendationManager.if_no_recent_recs_generate_rec(current_user, { :insert_at_random_location => true })
+          GT::RecommendationManager.if_no_recent_recs_generate_rec(current_user, recs_options)
         }
       end
 

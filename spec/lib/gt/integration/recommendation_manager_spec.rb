@@ -262,7 +262,7 @@ describe GT::RecommendationManager do
 
         context "mortar recommendations available but no video graph recs available" do
 
-          it "fills in and returns a new dashboard entry with a mortar recommendation" do
+          before(:each) do
             @recommended_video = Factory.create(:video)
             @reason_video = Factory.create(:video)
 
@@ -273,12 +273,18 @@ describe GT::RecommendationManager do
             GT::MortarHarvester.stub(:get_recs_for_user).and_return(@mortar_recommendations)
 
             MongoMapper::Plugins::IdentityMap.clear
+          end
 
+          it "fills in and returns a new dashboard entry with a mortar recommendation" do
             result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
             result.should be_an_instance_of(DashboardEntry)
             result.src_video.should == @reason_video
             result.video_id.should == @recommended_video.id
             result.action.should == DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          end
+
+          it "does not fill in mortar recommendations if {:include_mortar_recs => false} is passed" do
+            GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:include_mortar_recs => false}).should be_nil
           end
 
         end
@@ -304,7 +310,7 @@ describe GT::RecommendationManager do
 
         context "mortar recommendations available" do
 
-          it "returns a new dashboard entry with a mortar recommendation" do
+          before(:each) do
             @recommended_video = Factory.create(:video)
             @reason_video = Factory.create(:video)
 
@@ -315,12 +321,18 @@ describe GT::RecommendationManager do
             GT::MortarHarvester.stub(:get_recs_for_user).and_return(@mortar_recommendations)
 
             MongoMapper::Plugins::IdentityMap.clear
+          end
 
+          it "returns a new dashboard entry with a mortar recommendation" do
             result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
             result.should be_an_instance_of(DashboardEntry)
             result.src_video.should == @reason_video
             result.video_id.should == @recommended_video.id
             result.action.should == DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+          end
+
+          it "ignores the random chance and tries to return a video graph rec if {:include_mortar_recs => false} is passed" do
+            GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:include_mortar_recs => false}).should be_nil
           end
 
         end

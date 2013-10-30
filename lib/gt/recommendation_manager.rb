@@ -19,18 +19,22 @@ module GT
     #
     # :num_recents_to_check => Integer --- if there is already a recommendation within this many stream entries,
     #   this function will not insert a new one (default 5)
+    # :include_mortar_recs => Bool --- set to false to only consider video graph recommendations, default true
     # :insert_at_random_location => Bool --- set to false to insert the new recommendation as the most recent
     #   in the stream, set to true to insert just after a randomly selected entry within the num_recents_to_check range
     def self.if_no_recent_recs_generate_rec(user, options={})
 
       defaults = {
         :num_recents_to_check => 5,
+        :include_mortar_recs => true,
         :insert_at_random_location => false
       }
 
       options = defaults.merge(options)
 
-      get_mortar_rec = Random::rand < Settings::Recommendations.triggered_ios_recs[:mortar_recs_weight]
+      include_mortar_recs = options.delete(:include_mortar_recs)
+
+      get_mortar_rec = include_mortar_recs ? Random::rand < Settings::Recommendations.triggered_ios_recs[:mortar_recs_weight] : false
 
       if get_mortar_rec
         num_dbes_to_fetch = options[:num_recents_to_check]
@@ -55,9 +59,9 @@ module GT
           })
         else
           recs = rec_manager.get_recs_for_user({
-            :limits => [1,0],
+            :limits => include_mortar_recs ? [1,0] : [1],
             :prefetched_dbes => dbes,
-            :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]]
+            :sources => include_mortar_recs ? [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]] : [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]]
           })
         end
 
@@ -65,7 +69,7 @@ module GT
           # wrap the recommendation in a dashboard entry and save it to the user's stream
           rec = recs[0]
           creation_options = {:src_id => rec[:src_id]}
-          if options[:insert_at_random_location]
+          if options[:insert_at_random_location] && !recent_dbes.empty?
             # if requested, set the new dashboard entry's creation time to be just earlier
             # than a randomly selected recent entry, so it will appear just before that entry
             # in the stream

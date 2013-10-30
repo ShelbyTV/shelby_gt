@@ -241,10 +241,24 @@ describe GT::RecommendationManager do
       GT::RecommendationManager.if_no_recent_recs_generate_rec(@user).should be_nil
     end
 
+    it "tries to generate only video graph recs if {:include_mortar_recs => false} option is passed" do
+      Random.should_not_receive(:rand)
+
+      dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
+      dbes = [dbe]
+      @rm.should_receive(:get_recs_for_user).with({
+          :limits => [1],
+          :prefetched_dbes => dbes,
+          :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]]
+        }).and_return([])
+
+      GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:include_mortar_recs => false}).should be_nil
+    end
+
     context "tries to generates video graph recs" do
 
       before(:each) do
-        Random.stub(:rand).and_return(Settings::Recommendations.triggered_ios_recs[:mortar_recs_weight])
+        Random.should_receive(:rand).and_return(Settings::Recommendations.triggered_ios_recs[:mortar_recs_weight])
       end
 
       it "tries to generates recs if there are no recommendations within num_recents_to_check dbes" do
@@ -357,7 +371,7 @@ describe GT::RecommendationManager do
     context "generates mortar recs" do
 
       before(:each) do
-        Random.stub(:rand).and_return(Settings::Recommendations.triggered_ios_recs[:mortar_recs_weight] - 0.01)
+        Random.should_receive(:rand).and_return(Settings::Recommendations.triggered_ios_recs[:mortar_recs_weight] - 0.01)
       end
 
       it "tries to generates recs if there are no recommendations within num_recents_to_check dbes" do
@@ -400,10 +414,14 @@ describe GT::RecommendationManager do
         end
 
         it "selects a random location for the new dashboard entry when that option is set" do
-          creation_time = Time.now
-          dbe_to_insert_before = double("dbe")
-          dbe_to_insert_before.stub_chain(:id, :generation_time).and_return(creation_time)
-          Array.any_instance.stub(:sample).and_return(dbe_to_insert_before)
+          dbe = Factory.create(:dashboard_entry, :user => @user, :action => DashboardEntry::ENTRY_TYPE[:new_social_frame])
+
+          @limit_query = double("limit_query")
+          @limit_query.stub_chain(:fields, :all).and_return([dbe])
+
+          @order_query = double("order_query")
+          @order_query.stub(:limit).and_return(@limit_query)
+          DashboardEntry.stub_chain(:where, :order).and_return(@order_query)
 
           GT::RecommendationManager.should_receive(:create_recommendation_dbentry).with(
             @user,
@@ -412,14 +430,14 @@ describe GT::RecommendationManager do
             {
               :src_id => @reason_video.id,
               :dashboard_entry_options => {
-                :creation_time => creation_time - 1
+                :creation_time => dbe.id.generation_time - 1
               }
             }
           ).and_call_original
 
           result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:insert_at_random_location => true})
           result.should be_an_instance_of(DashboardEntry)
-          result.id.generation_time.to_i.should == (creation_time - 1).to_i
+          result.id.generation_time.to_i.should == (dbe.id.generation_time - 1).to_i
         end
 
         it "limits the search for recent recs according to the num_recents_to_check parameter" do
