@@ -153,15 +153,31 @@ module GT
       raise ArgumentError, "must supply valid User Object" unless user.is_a?(User)
 
       defaults = {
-        :exclude_missing_thumbnails => true
+        :exclude_missing_thumbnails => true,
+        :excluded_sharer_ids => [],
+        :excluded_video_ids => []
       }
 
       options = defaults.merge(options)
 
       @user = user
-      @watched_videos_loaded = false
       @exclude_missing_thumbnails = options.delete(:exclude_missing_thumbnails)
+      @excluded_sharer_ids = options.delete(:excluded_sharer_ids).compact.map { |id|
+        unless id.is_a?(BSON::ObjectId)
+          BSON::ObjectId.from_string(id.to_s)
+        else
+          id
+        end
+      }.uniq
+      @excluded_video_ids = options.delete(:excluded_video_ids).compact.map { |id|
+        unless id.is_a?(BSON::ObjectId)
+          BSON::ObjectId.from_string(id.to_s)
+        else
+          id
+        end
+      }.uniq
       @recommended_sharer_ids = []
+      @watched_videos_loaded = false
     end
 
     def get_recs_for_user(options={})
@@ -252,9 +268,10 @@ module GT
 
         recs_for_this_video = Video.where( :id => dbe.video_id ).fields(:recs).map{|v| v.recs}.flatten
 
-        if min_score
-          recs_for_this_video.select!{|r| r.score >= min_score}
-        end
+        # filter based on various criteria:
+        # => if the options is specified, require a min score for inclusion
+        # => don't include videos on the @excluded_video_ids list
+        recs_for_this_video.select!{|r| (!min_score || r.score >= min_score) && (!@excluded_video_ids.any? { |id| id.to_s == r.recommended_video_id.to_s })}
 
         # remove any videos that the user has already watched
         if recs_for_this_video.length > 0 && @user.viewed_roll_id
@@ -282,7 +299,8 @@ module GT
       # are not available
       recs.each do |rec|
         # if specified by the options, exclude videos based on sharers that we've already included recommendations from
-        if !unique_sharers_only || !@recommended_sharer_ids.include?(rec[:source_sharer_id])
+        excluded_sharers = unique_sharers_only ? @recommended_sharer_ids | @excluded_sharer_ids : @excluded_sharer_ids
+        if !excluded_sharers.include?(rec[:source_sharer_id])
           vid = Video.find(rec[:recommended_video_id])
           # if specified by the options, exclude videos that don't have thumbnails
           if vid && (!@exclude_missing_thumbnails || vid.thumbnail_url)
@@ -366,7 +384,8 @@ module GT
       end
       recs = filter_recs(recs, {:limit => limit, :recommended_video_key => "video_id"}) do |rec|
         # only include recs shared by people other than the current user, and from unique sharers (if specified in the options)
-        include_rec = (rec.actor_id != @user.id && (!unique_sharers_only || !@recommended_sharer_ids.include?(rec.actor_id)))
+        excluded_sharers = unique_sharers_only ? @recommended_sharer_ids | @excluded_sharer_ids : @excluded_sharer_ids
+        include_rec = (rec.actor_id != @user.id && (!excluded_sharers.include?(rec.actor_id)))
         # if the option is specified, keep track of the sharers we've already seen so we don't duplicate them
         @recommended_sharer_ids << rec.actor_id if unique_sharers_only && include_rec
         include_rec
@@ -426,6 +445,9 @@ module GT
       # process the recs and remove ones that we don't want to show the user because they
       # are not available or because the user has already watched them
       recs.each do |rec|
+        recommended_video_id = rec[options[:recommended_video_key]]
+        # we have an explicit list of videos we don't want to consider
+        next if @excluded_video_ids.any? { |excluded_video_id| excluded_video_id.to_s == recommended_video_id.to_s }
         rec_prequalified = true
         # rec can optionally be filtered based on a block before going to the default tests
         if block_given?
@@ -433,9 +455,9 @@ module GT
         end
         if rec_prequalified
           # check if the user has already watched the video
-          if !@watched_video_ids.include? rec[options[:recommended_video_key]].to_s
+          if !@watched_video_ids.include? recommended_video_id.to_s
             # lookup the video to check out some more information about it
-            vid = Video.find(rec[options[:recommended_video_key]])
+            vid = Video.find(recommended_video_id)
             if vid
               # check if the video is still available at the provider and (if specified by the options) whether it has a thumbnail
               if vid.available && (!@exclude_missing_thumbnails || vid.thumbnail_url)

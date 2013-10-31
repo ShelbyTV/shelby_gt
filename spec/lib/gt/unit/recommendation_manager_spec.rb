@@ -28,9 +28,35 @@ describe GT::RecommendationManager do
       u.instance_variable_get(:@watched_video_ids).should be_nil
       u.instance_variable_get(:@exclude_missing_thumbnails).should == true
       u.instance_variable_get(:@recommended_sharer_ids).should == []
+      u.instance_variable_get(:@excluded_sharer_ids).should == []
+      u.instance_variable_get(:@excluded_video_ids).should == []
 
-      u = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
-      u.instance_variable_get(:@exclude_missing_thumbnails).should == false
+      excluded_sharer_id = BSON::ObjectId.new
+      excluded_video_id = BSON::ObjectId.new
+      rm = GT::RecommendationManager.new(@user, {
+        :exclude_missing_thumbnails => false,
+        :excluded_sharer_ids => [excluded_sharer_id],
+        :excluded_video_ids => [excluded_video_id]
+      })
+      rm.instance_variable_get(:@exclude_missing_thumbnails).should == false
+      rm.instance_variable_get(:@excluded_sharer_ids).should == [excluded_sharer_id]
+      rm.instance_variable_get(:@excluded_video_ids).should == [excluded_video_id]
+    end
+
+    it "cleans up the excluded_sharer_ids and converts them to BSON Ids if necessary" do
+      bson_id = BSON::ObjectId.new
+      bson_id2 = BSON::ObjectId.new
+      bson_id3 = BSON::ObjectId.new
+      u = GT::RecommendationManager.new(@user, {:excluded_sharer_ids => [bson_id, nil, bson_id, bson_id2, bson_id3.to_s]})
+      u.instance_variable_get(:@excluded_sharer_ids).should == [bson_id, bson_id2, bson_id3]
+    end
+
+    it "cleans up the excluded_video_ids and converts them to BSON Ids if necessary" do
+      bson_id = BSON::ObjectId.new
+      bson_id2 = BSON::ObjectId.new
+      bson_id3 = BSON::ObjectId.new
+      u = GT::RecommendationManager.new(@user, {:excluded_video_ids => [bson_id, nil, bson_id, bson_id2, bson_id3.to_s]})
+      u.instance_variable_get(:@excluded_video_ids).should == [bson_id, bson_id2, bson_id3]
     end
   end
 
@@ -162,6 +188,18 @@ describe GT::RecommendationManager do
           result = rm.get_video_graph_recs_for_user(10, nil, nil, nil, {:unique_sharers_only => false})
           result.length.should == @recommended_video_ids.length
           result.should == @recommended_video_ids.each_with_index.map{|id, i| {:recommended_video_id => id, :src_frame_id => @src_frame_ids[i]}}
+        end
+
+        it "excludes videos with specified excluded ids" do
+          rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@recommended_video_ids[0]]})
+          result = rm.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+          result.length.should == @recommended_video_ids.length - 1
+          result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
+
+          rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@recommended_video_ids[0].to_s]})
+          result = rm.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+          result.length.should == @recommended_video_ids.length - 1
+          result.should_not include({:recommended_video_id => @recommended_video_ids[0], :src_frame_id => @src_frame_ids[0]})
         end
 
         it "should exclude from consideration dashboard entries that have no actor" do
@@ -1086,6 +1124,17 @@ describe GT::RecommendationManager do
         rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
         rm.send(:filter_recs, @recommendations, {:limit => 1}).should == [
           @recommendations[0]
+        ]
+      end
+
+      it "should skip videos that are on the specified list of excluded videos" do
+        Video.should_receive(:find).once().and_return(@recommended_videos[1])
+        GT::VideoManager.should_receive(:update_video_info).once().with(@recommended_videos[1])
+
+        rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id]})
+
+        rm.send(:filter_recs, @recommendations, {:limit => 1}).should == [
+          @recommendations[1]
         ]
       end
 

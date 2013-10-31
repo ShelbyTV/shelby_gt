@@ -132,7 +132,7 @@ describe GT::RecommendationManager do
         result.should include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
       end
 
-      it "should return a maximum of one video from a given sharer, by default" do
+      it "should return a maximum of one video from a given source sharer, by default" do
         MongoMapper::Plugins::IdentityMap.clear
 
         result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
@@ -152,6 +152,40 @@ describe GT::RecommendationManager do
           {:recommended_video_id => @dbes.first.video.recs[0].recommended_video_id, :src_frame_id => @dbes[0].frame_id},
           {:recommended_video_id => @dbes.first.video.recs[1].recommended_video_id, :src_frame_id => @dbes[0].frame_id}
         ]
+      end
+
+      it "excludes videos from specified excluded sharers" do
+        MongoMapper::Plugins::IdentityMap.clear
+
+        rm = GT::RecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id]})
+        result = rm.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+        result.length.should == @recommended_videos.length - 3
+        result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
+        result.should_not include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
+        result.should_not include({:recommended_video_id => @recommended_videos[2].id, :src_frame_id => @src_frame_ids[2]})
+        result.should include({:recommended_video_id => @recommended_videos.last.id, :src_frame_id => @src_frame_ids.last})
+
+        rm = GT::RecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id.to_s]})
+        result = rm.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+        result.length.should == @recommended_videos.length - 3
+        result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
+        result.should_not include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
+        result.should_not include({:recommended_video_id => @recommended_videos[2].id, :src_frame_id => @src_frame_ids[2]})
+        result.should include({:recommended_video_id => @recommended_videos.last.id, :src_frame_id => @src_frame_ids.last})
+      end
+
+      it "excludes videos with specified excluded ids" do
+        MongoMapper::Plugins::IdentityMap.clear
+
+        rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id]})
+        result = rm.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+        result.length.should == @recommended_videos.length - 1
+        result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
+
+        rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id.to_s]})
+        result = rm.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+        result.length.should == @recommended_videos.length - 1
+        result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
       end
 
     end
@@ -648,6 +682,26 @@ describe GT::RecommendationManager do
         }]
     end
 
+    it "excludes videos with specified excluded ids" do
+      MongoMapper::Plugins::IdentityMap.clear
+
+      rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id]})
+      rm.get_mortar_recs_for_user.should ==
+        [{
+          :recommended_video_id => @recommended_videos[1].id,
+          :src_id => @reason_videos[1].id,
+          :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+        }]
+
+      rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id.to_s]})
+      rm.get_mortar_recs_for_user.should ==
+        [{
+          :recommended_video_id => @recommended_videos[1].id,
+          :src_id => @reason_videos[1].id,
+          :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
+        }]
+    end
+
   end
 
   context "get_channel_recs_for_user" do
@@ -769,6 +823,34 @@ describe GT::RecommendationManager do
       result.map {|rec| rec[:recommended_video_id]}.should include @videos[1].id
     end
 
+    it "excludes videos from specified excluded sharers" do
+      MongoMapper::Plugins::IdentityMap.clear
+
+      rm = GT::RecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id]})
+      result = rm.get_channel_recs_for_user(@channel_user.id, 3)
+      result.length.should == 2
+      result.map {|rec| rec[:recommended_video_id]}.should_not include @videos[0].id
+
+      rm = GT::RecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id.to_s]})
+      result = rm.get_channel_recs_for_user(@channel_user.id, 3)
+      result.length.should == 2
+      result.map {|rec| rec[:recommended_video_id]}.should_not include @videos[0].id
+    end
+
+    it "excludes videos with specified excluded ids" do
+      MongoMapper::Plugins::IdentityMap.clear
+
+      rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@videos[0].id]})
+      result = rm.get_channel_recs_for_user(@channel_user.id, 3)
+      result.length.should == 2
+      result.map {|rec| rec[:recommended_video_id]}.should_not include @videos[0].id
+
+      rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@videos[0].id.to_s]})
+      result = rm.get_channel_recs_for_user(@channel_user.id, 3)
+      result.length.should == 2
+      result.map {|rec| rec[:recommended_video_id]}.should_not include @videos[0].id
+    end
+
   end
 
   context "get_recs_for_user" do
@@ -788,10 +870,10 @@ describe GT::RecommendationManager do
 
       v.save
 
-      src_frame_creator = Factory.create(:user)
-      @vid_graph_src_frame = Factory.create(:frame, :video => v, :creator => src_frame_creator )
+      @vid_graph_src_frame_creator = Factory.create(:user)
+      @vid_graph_src_frame = Factory.create(:frame, :video => v, :creator => @vid_graph_src_frame_creator )
 
-      dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @user, :video_id => v.id, :actor => src_frame_creator)
+      dbe = Factory.create(:dashboard_entry, :frame => @vid_graph_src_frame, :user => @user, :video_id => v.id, :actor => @vid_graph_src_frame_creator)
 
       dbe.save
 
@@ -811,7 +893,7 @@ describe GT::RecommendationManager do
 
       @channel_recommended_vid = Factory.create(:video)
       @community_channel_frame = Factory.create(:frame, :creator_id => @featured_curator.id, :video_id => @channel_recommended_vid.id, :conversation_id => @conversation.id)
-      @community_channel_dbes = Factory.create(:dashboard_entry, :user_id => @featured_channel_user.id, :frame_id => @community_channel_frame.id, :video_id => @channel_recommended_vid.id)
+      @community_channel_dbes = Factory.create(:dashboard_entry, :user_id => @featured_channel_user.id, :frame_id => @community_channel_frame.id, :video_id => @channel_recommended_vid.id, :actor_id => @featured_curator.id)
     end
 
     it "returns the right results" do
@@ -851,6 +933,20 @@ describe GT::RecommendationManager do
         :recommended_video_id => @mortar_recommended_vid.id,
         :src_id => @mortar_src_vid.id
       }
+    end
+
+    it "does not make recommendations based on the specified excluded source sharers" do
+      MongoMapper::Plugins::IdentityMap.clear
+
+      rm = GT::RecommendationManager.new(@user, {:excluded_sharer_ids => [@vid_graph_src_frame_creator.id, @featured_curator.id]})
+      rm.get_recs_for_user({ :sources => [31, 33, 34], :limits => [1, 1, 1] }).length.should == 1
+    end
+
+    it "excludes videos from the specified list of excluded video ids" do
+      MongoMapper::Plugins::IdentityMap.clear
+
+      rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@vid_graph_recommended_vid.id, @mortar_recommended_vid.id, @channel_recommended_vid.id]})
+      rm.get_recs_for_user({ :sources => [31, 33, 34], :limits => [1, 1, 1] }).length.should == 0
     end
 
   end
