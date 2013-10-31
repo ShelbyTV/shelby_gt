@@ -15,9 +15,9 @@
           </tr>
 
           <tr>
-            <td>
+            <td style="background-image: url(<%= video.thumbnail_url %>); width: 100%;">
               <a href="<%= Settings::Email.web_url_base %>/stream?entry=<%= dbe.id %>" style="border: 3px solid <%= Settings::Email.ui_green %>;display:block;">
-                <img style="width: 100%; display: block;" src="<%= video.thumbnail_url %>" title="<%- video.title %>" alt="<%- video.title %> thumbnail" />
+                <img style="display: block;padding:0px;margin:0px;width:480px;min-height:360px;" src="http://cf1.imgobject.com/fanhattan/p/email/email_template/1376685701073/081620133/large-play.png" title="<%- video.title %>" alt="<%- video.title %> thumbnail" />
               </a>
             </td>
           </tr>
