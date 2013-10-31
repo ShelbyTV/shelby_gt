@@ -25,12 +25,13 @@ class V1::TokenController < ApplicationController
   # for the parameter auth_token.  For example: http://api.gt.shelby.tv/v1/dashboard?auth_token=sF7waBf8jBMqsxeskPp2
   #
   # [POST] /v1/token
-  #
+  #  
   # All following third party credentials are Optional if you're using email/password
   #   @param [Required, String] provider_name The name of the 3rd party provider the user is authorized with (ie. "twitter")
   #   @param [Required, String] uid The id of the User at the 3rd party
   #   @param [Required, String] token The oAuth token of this User at said provider
   #   @param [Optional, String] secret The oAuth secret of this User at said provider (if used by the provider)
+  #   @param [Optional, String] client_identifier Used by iOS to update user appropriately (ie. add cohort, don't repeat onboarding on web)
   #
   # Email/password are both Optional if you're using third party credentials
   #   @param [Required, String] email The email address (or username) associated with a user (used in conjuction with password)
@@ -150,6 +151,10 @@ class V1::TokenController < ApplicationController
 
       unless @user.valid?
         return render_error(404, "Failed to create new user.")
+      end
+      
+      if params[:client_identifier]
+        @user.update_for_signup_client_identifier!(params[:client_identifier])
       end
 
     elsif password
