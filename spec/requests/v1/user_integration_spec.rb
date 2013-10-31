@@ -572,6 +572,8 @@ describe 'v1/user' do
       end
 
       it "should return user recommendations on success" do
+        GT::RecommendationManager.should_receive(:new).with(@u1, {}).and_call_original
+
         get '/v1/user/'+@u1.id+'/recommendations'
 
         response.body.should be_json_eql(200).at_path("status")
@@ -593,6 +595,14 @@ describe 'v1/user' do
           :limits => [3,3]
         }).and_return([])
         expect { get '/v1/user/'+@u1.id+'/recommendations?sources=0,31,,,fred,!,34'}.not_to raise_error
+      end
+
+      it "should parse the excluded_video_ids parameter and pass it to the RecommendationManager on creation" do
+        bson_id_str = BSON::ObjectId.new.to_s
+        bson_id_str2 = BSON::ObjectId.new.to_s
+        GT::RecommendationManager.should_receive(:new).with(@u1, { :excluded_video_ids => [bson_id_str, bson_id_str2]}).and_call_original
+
+        get '/v1/user/'+@u1.id+'/recommendations?excluded_video_ids='+bson_id_str+','+bson_id_str2
       end
 
       it "should pass the right parameters from the api request to the recommendation manager" do
@@ -709,6 +719,17 @@ describe 'v1/user' do
           MongoMapper::Plugins::IdentityMap.clear
 
           get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result")
+          response.body.should have_json_size(0).at_path("result")
+        end
+
+        it "excludes videos whose ids are passed in the exclude_video_ids_parameter" do
+          MongoMapper::Plugins::IdentityMap.clear
+
+          excluded_ids_string = [@vid_graph_recommended_vid.id.to_s, @mortar_recommended_vid.id.to_s, @channel_recommended_vid.id.to_s].join(",")
+          get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34&limits=1,1,1&excluded_video_ids='+excluded_ids_string
 
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result")

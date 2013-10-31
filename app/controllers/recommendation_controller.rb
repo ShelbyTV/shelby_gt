@@ -41,7 +41,9 @@ class V1::RecommendationController < ApplicationController
       end
       recs = []
 
-      rec_manager = GT::RecommendationManager.new(@user)
+      rec_manager_options = {}
+      rec_manager_options[:excluded_video_ids] = params[:excluded_video_ids].split(",") if params[:excluded_video_ids]
+      rec_manager = GT::RecommendationManager.new(@user, rec_manager_options)
       rec_options = {
         :limits => limits,
         :sources => sources
