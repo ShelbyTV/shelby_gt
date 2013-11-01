@@ -364,7 +364,7 @@ describe GT::NotificationManager do
       @sharer = Factory.create(:user)
       @video = Factory.create(:video)
       @frame = Factory.create(:frame, :creator => @sharer, :video => @video)
-      @dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:channel_recommednation], :frame => @frame, :video => @video)
+      @dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation], :frame => @frame, :video => @video)
     end
 
     it "should queue email to deliver" do
