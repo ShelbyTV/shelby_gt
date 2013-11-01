@@ -215,6 +215,21 @@ describe 'v1/token' do
 
             u.destroy
           end
+          
+          it "should update app_progress for client: iOS" do
+            GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
+
+            lambda {
+              post "/v1/token?provider_name=twitter&uid=#{@uid}&token=#{@oauth_token}&secret=#{@oauth_secret}&client_identifier=iOS_iPhone"
+              response.body.should be_json_eql(200).at_path("status")
+              response.body.should have_json_path("result/authentication_token")
+            }.should change { User.count } .by(1)
+
+            u = User.find_by_nickname(@nickname)
+            u.app_progress['onboarding'].should == "iOS_iPhone"
+
+            u.destroy
+          end
 
           it "should not create a new user if action is login" do
             lambda {
