@@ -161,15 +161,8 @@ class NotificationMailer < ActionMailer::Base
     @dbes = dbes
     @user_to = user_to
 
-    subject_line = case @ab_bucket
-    when "option_a"
-      view_context.message_subject(dbes)
-    when "option_b"
-      name = (@user_to.name.split.first if @user_to.name) || @user_to.nickname
-      "#{name.titlecase}, #{view_context.message_subject(dbes).downcase}"
-    else
-      view_context.message_subject(dbes)
-    end
+    first_name = (@user_to.name.split.first if @user_to.name) || @user_to.nickname
+    subject_line = "#{first_name.titlecase}, #{view_context.message_subject(dbes).downcase}"
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
          :to => user_to.primary_email,

@@ -134,7 +134,7 @@ if Rails.env.development?
         #permalinks ≠ state dependent,
         #relative to user's stream
 
-        NotificationMailer.weekly_recommendation(user, db_entries)
+        NotificationMailer.weekly_recommendation(user, db_entries, {:bucket => ["option_a","option_b"].sample})
       end
   end
 end
