@@ -22,6 +22,7 @@ describe 'v1/video' do
       it "should return video info on success" do
         get 'v1/video/find_or_create', {:provider_id=>@v.provider_id, :provider_name=>"youtube"}
         response.body.should be_json_eql(200).at_path("status");
+        response.body.should have_json_path("result/available")
       end
 
       it "should create video info on success when video is not in db and url param is passed" do

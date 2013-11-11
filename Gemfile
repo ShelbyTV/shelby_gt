@@ -180,7 +180,7 @@ end
 gem 'formatted_rails_logger'
 
 # Deploy with Capistrano
-gem 'capistrano', '2.15.2'
+gem 'capistrano', '2.15.3'
 gem 'rvm-capistrano'
 gem 'capistrano-unicorn', :require => false
 
