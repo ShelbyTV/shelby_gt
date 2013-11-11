@@ -2,8 +2,10 @@
 require 'user_manager'
 require 'user_merger'
 require 'rack/utils'
+require 'new_relic/agent/method_tracer'
 
 class AuthenticationsController < ApplicationController
+  include ::NewRelic::Agent::MethodTracer
 
   before_filter :authenticate_user!, :only => [:should_merge_accounts, :do_merge_accounts, :remove_all_authentications]
 
