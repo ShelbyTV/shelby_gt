@@ -22,8 +22,15 @@ class AuthenticationsController < ApplicationController
   # @param [Required, String] username May be the username or the primary email address of the user
   # @param [Required, String] password The plaintext password
   def login
-    u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s)) if params[:username]
-    if u and u.has_password? and u.valid_password?(params[:password])
+    self.class.trace_execution_scoped(['AuthenticationsController/login/user_finding']) do
+      u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s)) if params[:username]
+    end
+
+    self.class.trace_execution_scoped(['AuthenticationsController/login/checking_password']) do
+      valid_password = u.valid_password?(params[:password]) if u
+    end
+
+    if u and u.has_password? and valid_password
       user = u
     else
       query = {:auth_failure => 1, :auth_strategy => "that username/password"}
@@ -33,7 +40,9 @@ class AuthenticationsController < ApplicationController
 
     # any user with valid email/password is a valid Shelby user
     # this sets up redirect
-    sign_in_current_user(user)
+    self.class.trace_execution_scoped(['AuthenticationsController/login/sign_in_current_user']) do
+      sign_in_current_user(user)
+    end
     redirect_to clean_query_params(@opener_location) and return
   end
 
