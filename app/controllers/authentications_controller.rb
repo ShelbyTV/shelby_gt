@@ -23,15 +23,15 @@ class AuthenticationsController < ApplicationController
   # @param [Required, String] password The plaintext password
   def login
     self.class.trace_execution_scoped(['AuthenticationsController/login/user_finding']) do
-      u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s)) if params[:username]
+      @u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s)) if params[:username]
     end
 
     self.class.trace_execution_scoped(['AuthenticationsController/login/checking_password']) do
-      valid_password = u.valid_password?(params[:password]) if u
+      @valid_password = @u.valid_password?(params[:password]) if @u
     end
 
-    if u and u.has_password? and valid_password
-      user = u
+    if @u and @u.has_password? and @valid_password
+      user = @u
     else
       query = {:auth_failure => 1, :auth_strategy => "that username/password"}
       query[:redir] = params[:redir] if params[:redir]
