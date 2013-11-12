@@ -357,7 +357,7 @@ describe V1::FrameController do
       end
 
       it "should create a new frame if given valid source, video_url and text params" do
-        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame], :async_dashboard_entries => true ).and_return({:frame => @f1})
         GT::UserActionManager.should_receive(:frame_rolled!)
 
         post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmarklet", :format => :json
@@ -366,7 +366,7 @@ describe V1::FrameController do
       end
 
       it "should process the new frame message for hashtags" do
-        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame], :async_dashboard_entries => true ).and_return({:frame => @f1})
         GT::HashtagProcessor.should_receive(:process_frame_message_hashtags_for_channels).with(@f1)
         GT::HashtagProcessor.should_receive(:process_frame_message_hashtags_send_to_google_analytics).with(@f1)
         GT::UserActionManager.should_receive(:frame_rolled!)
@@ -376,14 +376,14 @@ describe V1::FrameController do
 
       it "should not send Google Analytics events for hashtags if the roller is a service user" do
         @u1.user_type = User::USER_TYPE[:service]
-        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame], :async_dashboard_entries => true ).and_return({:frame => @f1})
         GT::HashtagProcessor.should_not_receive(:process_frame_message_hashtags_send_to_google_analytics)
 
         post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :source => "bookmarklet", :format => :json
       end
 
       it "should create a new frame if given video_url and text params" do
-        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+        GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame], :async_dashboard_entries => true ).and_return({:frame => @f1})
         GT::UserActionManager.should_receive(:frame_rolled!)
 
         post :create, :roll_id => @r2.id, :url => @video_url, :text => @message_text, :format => :json
@@ -407,7 +407,7 @@ describe V1::FrameController do
           Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
           @r2.roll_type = Roll::TYPES[:special_public_real_user]
 
-          GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame] ).and_return({:frame => @f1})
+          GT::Framer.stub(:create_frame).with(:creator => @u1, :roll => @r2, :video => @video, :message => @message, :action => DashboardEntry::ENTRY_TYPE[:new_bookmark_frame], :async_dashboard_entries => true ).and_return({:frame => @f1})
         end
 
         it "should add the frame to the community channel, also" do
