@@ -15,10 +15,9 @@
           </tr>
 
           <tr>
-            <td style="background-image: url(<%= video.thumbnail_url %>); width: 100%;">
+            <td>
               <a href="<%= Settings::Email.web_url_base %>/stream?entry=<%= dbe.id %>" style="border: 3px solid <%= Settings::Email.ui_green %>;display:block;">
-                <% play_button_image = (ab_bucket == "option_a") ? "http://media.sailthru.com/zk/1jx/b/1/5273eb449f03a.png" : "http://media.sailthru.com/zk/1jx/b/1/5273e62350fd6.png" %>
-                <img style="display: block;padding:0px;margin:0px;width:480px;min-height:360px;" src="<%= play_button_image %>" title="<%= video.title %>" alt="<%= video.title %>" />
+                <img style="width: 100%; display: block;" src="<%= video.thumbnail_url %>" title="<%- video.title %>" alt="<%- video.title %> thumbnail" />
               </a>
             </td>
           </tr>
