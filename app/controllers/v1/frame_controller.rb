@@ -102,6 +102,8 @@ class V1::FrameController < ApplicationController
         # only allow roll creation if user is authorized to access the given roll
         if roll.postable_by?(current_user)
           # and finally create the frame
+          # creating dashboard entries async.
+          frame_options[:async_dashboard_entries] = true
           r = frame_options[:video] ? GT::Framer.create_frame(frame_options) : {}
 
           if @frame = r[:frame]
