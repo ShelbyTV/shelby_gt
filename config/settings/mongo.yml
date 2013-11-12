@@ -12,7 +12,7 @@ test:
 production: &production
   <<: *defaults
   db_options:
-   :pool_size: 5
+   :pool_size: 10
 
 staging:
   <<: *production
