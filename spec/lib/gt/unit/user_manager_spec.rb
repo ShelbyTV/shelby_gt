@@ -791,6 +791,26 @@ describe GT::UserManager do
         u.nickname.start_with?("the-name").should == true
       end
 
+      it 'should handle facebook user with no name or nickname' do
+        omniauth_hash = {
+          'credentials' => {
+            'token' => "somelongtoken",
+            'secret' => 'foreskin',
+            'garbage' => 'truck'
+          },
+          'info' => {
+            'email' => "blahblah@test.com",
+            'garbage' => 99
+          },
+          'more_garbage' => Date.new
+        }
+
+        u = GT::UserManager.create_new_user_from_omniauth(omniauth_hash)
+
+        u.valid?.should eql(true)
+        u.nickname.start_with?("blahblah").should == true
+      end
+
       it "should copy nickname downcased" do
         @omniauth_hash["info"]["nickname"] = "SomeInCAPS"
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)

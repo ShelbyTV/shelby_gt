@@ -426,6 +426,7 @@ module GT
 
         u.nickname = omniauth['info']['nickname']
         u.nickname = omniauth['info']['name'] if u.nickname.blank? or u.nickname.match(/\.php\?/)
+        u.nickname = omniauth['info']['email'].split('@').first if u.nickname.blank? and omniauth['info']['email']
 
         u.name = omniauth['info']['name']
 
