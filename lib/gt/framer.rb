@@ -186,14 +186,16 @@ module GT
       dupe.destroy if dupe
     end
 
-    def self.backfill_dashboard_entries(user, roll, frame_count=5)
+    def self.backfill_dashboard_entries(user, roll, frame_count=5, options={})
       raise ArgumentError, "must supply a User" unless user.is_a? User
       raise ArgumentError, "must supply a Roll" unless roll.is_a? Roll
       raise ArgumentError, "count must be >= 0" if frame_count < 0
 
       res = []
+      dbe_options = {:backdate => true}
+      dbe_options[:safe] = options[:safe]
       roll.frames.sort(:score.desc).limit(frame_count).all.reverse.each do |frame|
-        res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user, :backdate => true)
+        res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user, dbe_options)
       end
 
       return res.flatten
@@ -278,7 +280,9 @@ module GT
           dbe.video = frame.video
           dbe.actor = frame.creator
           dbe.action = action
-          dbe.save if persist
+          save_options = {}
+          save_options[:safe] = true if options[:safe]
+          dbe.save(save_options) if persist
           entries << dbe
         end
         return entries
