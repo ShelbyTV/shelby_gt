@@ -149,8 +149,10 @@ module GT
       res[:frame] = basic_re_roll(orig_frame, user_id, roll_id)
 
       unless skip_dashboard_entries
-        #create dashboard entries for all roll followers *except* the user who just re-rolled
-        res[:dashboard_entries] = create_dashboard_entries(res[:frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
+        ShelbyGT_EM.next_tick {
+          #create dashboard entries for all roll followers *except* the user who just re-rolled
+          res[:dashboard_entries] = create_dashboard_entries(res[:frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
+        }
       end
 
       # Roll - set its thumbnail if missing
