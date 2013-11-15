@@ -202,7 +202,7 @@ module GT
         res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user, dbe_options, !dbe_options[:batch])
       end
 
-      if dbe_options[:batch]
+      if dbe_options[:batch] && res && !res.empty?
         DashboardEntry.collection.insert(  res.flatten.map {|r| r.to_mongo } )
       end
 

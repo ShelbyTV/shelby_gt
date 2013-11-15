@@ -739,6 +739,18 @@ describe GT::Framer do
       @user.dashboard_entries[1].frame_id.should == @frame1.id
     end
 
+    it "skips persisting in batch mode if there are no entries to backfill" do
+      new_user = Factory.create(:user)
+      empty_roll = Factory.create(:roll, :creator => new_user)
+
+      collection = double(:collection)
+      DashboardEntry.stub(:collection).and_return(collection)
+
+      collection.should_not_receive(:insert)
+
+      GT::Framer.backfill_dashboard_entries(@user, empty_roll, 1, {:batch => true})
+    end
+
     it "should backfill User's dashboard with 2 frames in the correct order" do
       GT::Framer.backfill_dashboard_entries(@user, @roll, 2)
       @user.dashboard_entries.count.should == 2
