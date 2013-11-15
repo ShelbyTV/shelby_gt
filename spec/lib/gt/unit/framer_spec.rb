@@ -726,6 +726,12 @@ describe GT::Framer do
       }.should change { @user.dashboard_entries.count } .by 2
     end
 
+    it "should backfill User's dashboard with 2 frames if in batch mode" do
+      lambda {
+        res = GT::Framer.backfill_dashboard_entries(@user, @roll, 2, {:batch => true})
+      }.should change { @user.dashboard_entries.count } .by 2
+    end
+
     it "should backfill User's dashboard with 2 frames in the correct order" do
       GT::Framer.backfill_dashboard_entries(@user, @roll, 2)
       @user.dashboard_entries.count.should == 2
