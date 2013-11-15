@@ -194,8 +194,13 @@ module GT
       res = []
       dbe_options = {:backdate => true}
       dbe_options[:safe] = options[:safe]
+      dbe_options[:batch] = options[:batch]
       roll.frames.sort(:score.desc).limit(frame_count).all.reverse.each do |frame|
-        res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user, dbe_options)
+        res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user, dbe_options, dbe_options[:batch])
+      end
+
+      if dbe_options[:batch]
+        DashboardEntry.collection.insert( res.map {|r| r.to_mongo } )
       end
 
       return res.flatten
