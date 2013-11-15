@@ -732,6 +732,13 @@ describe GT::Framer do
       }.should change { @user.dashboard_entries.count } .by 2
     end
 
+    it "gives the new DashboardEntries valid attributes when in batch mode" do
+      GT::Framer.backfill_dashboard_entries(@user, @roll, 2, {:batch => true})
+      MongoMapper::Plugins::IdentityMap.clear
+      @user.dashboard_entries[0].frame_id.should == @frame0.id
+      @user.dashboard_entries[1].frame_id.should == @frame1.id
+    end
+
     it "should backfill User's dashboard with 2 frames in the correct order" do
       GT::Framer.backfill_dashboard_entries(@user, @roll, 2)
       @user.dashboard_entries.count.should == 2
