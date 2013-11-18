@@ -1,4 +1,5 @@
 require "yui/compressor"
+require 'unicorn/worker_killer'
 
 ShelbyGt::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb
@@ -66,5 +67,19 @@ ShelbyGt::Application.configure do
 
   # Send deprecation notices to registered listeners
   config.active_support.deprecation = :notify
+
+  # --- Start of unicorn-worker-killer code ---
+  max_request_min =  3072
+  max_request_max =  4096
+
+  # Max requests per worker
+  config.middleware.use Unicorn::WorkerKiller::MaxRequests, max_request_min, max_request_max, true
+
+  oom_min = (240) * (1024**2)
+  oom_max = (260) * (1024**2)
+
+  # Max memory size (RSS) per worker
+  config.middleware.use Unicorn::WorkerKiller::Oom, oom_min, oom_max, 16, true
+  # --- End of unicorn worker-killer-code ---
 
 end
