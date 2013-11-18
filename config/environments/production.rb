@@ -73,13 +73,13 @@ ShelbyGt::Application.configure do
   max_request_max =  4096
 
   # Max requests per worker
-  config.middleware.use Unicorn::WorkerKiller::MaxRequests, max_request_min, max_request_max, true
+  config.middleware.use Unicorn::WorkerKiller::MaxRequests, max_request_min, max_request_max
 
   oom_min = (240) * (1024**2)
   oom_max = (260) * (1024**2)
 
   # Max memory size (RSS) per worker
-  config.middleware.use Unicorn::WorkerKiller::Oom, oom_min, oom_max, 16, true
+  config.middleware.use Unicorn::WorkerKiller::Oom, oom_min, oom_max
   # --- End of unicorn worker-killer-code ---
 
 end
