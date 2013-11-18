@@ -373,6 +373,8 @@ GEM
       kgio (~> 2.6)
       rack
       raindrops (~> 0.7)
+    unicorn-worker-killer (0.4.2)
+      unicorn (~> 4)
     uuidtools (2.1.3)
     vimeo (1.5.3)
       httparty (>= 0.4.5)
@@ -462,6 +464,7 @@ DEPENDENCIES
   thin
   uglifier
   unicorn
+  unicorn-worker-killer
   vimeo
   whenever
   yajl-ruby

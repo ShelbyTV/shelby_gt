@@ -190,6 +190,7 @@ gem 'capistrano-unicorn', :require => false
 #
 group :production, :staging do
   gem 'unicorn'
+  gem 'unicorn-worker-killer'
 end
 
 # To use debugger
