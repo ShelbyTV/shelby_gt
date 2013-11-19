@@ -38,6 +38,8 @@ defaults: &defaults
       upvote: 'frame.upvote'
       add_to_watch_later: 'frame.add_to_wl'
       like: 'frame.like'
+      partial_watch: 'frame.watch.partial'
+      complete_watch: 'frame.watch.complete'
       watched: 'frame.watched'
       destroy: 'frame.destroy'
       share: 'frame.share'

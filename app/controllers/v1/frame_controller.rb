@@ -339,6 +339,7 @@ class V1::FrameController < ApplicationController
           @frame.reload # to update view_count
 
           if @view_recorded and user_signed_in?
+            StatsManager::StatsD.increment(Settings::StatsConstants.api['frame']['partial_watch'])
             GT::UserActionManager.view!(current_user.id, @frame.id, @frame.video_id, params[:start_time], params[:end_time])
           end
         end
@@ -346,6 +347,7 @@ class V1::FrameController < ApplicationController
         # The 'complete' action is only sent by the front end when video plays through completely
         # Currently counting it every time, which is probably/hopefully good enough
         if user_signed_in? and params[:complete]
+          StatsManager::StatsD.increment(Settings::StatsConstants.api['frame']['complete_watch'])
           GT::UserActionManager.complete_view!(current_user.id, @frame.id, @frame.video_id)
         end
 
