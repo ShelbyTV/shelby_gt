@@ -25,16 +25,16 @@ module WeeklyRecommendationEmailHelper
 
   def message_subject(dbes)
     if dbes.count > 1
-      "One of these videos was handpicked just for you."
+      "If you only have time to watch one thing tonight..."
     else
       dbe = dbes.first
       case dbe.action
       when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-         "This video is similar to videos #{dbe.src_frame.creator.nickname} has shared"
+         "Watch this, it's similar to videos #{dbe.src_frame.creator.nickname} has shared"
       when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-        "This video is similar to \"#{dbe.src_video.title}\""
+        "A video because you shared: \"#{dbe.src_video.title}\""
       when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
-        "This featured video was shared by #{dbe.frame.creator.nickname}"
+        "This video was shared by #{dbe.frame.creator.nickname}. Check it out."
       when DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
         friend_users = dbe.all_associated_friends
         if friend_users.count > 1
