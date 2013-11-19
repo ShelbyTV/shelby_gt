@@ -62,6 +62,7 @@ module GT
       raise ArgumentError, ":message must be a Message" if message and !message.is_a?(Message)
       persist = options.delete(:persist)
       persist = true if persist.nil?
+      dashboard_entry_options[:persist] = persist
 
       # Try to safely create conversation
       if genius || !persist
@@ -116,11 +117,11 @@ module GT
         if async_dashboard_entries
           StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_frame'])
           ShelbyGT_EM.next_tick {
-            create_dashboard_entries(f, action, user_ids, dashboard_entry_options, persist)
+            create_dashboard_entries(f, action, user_ids, dashboard_entry_options)
             StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_following_dbes'])
           }
         else
-          res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids, dashboard_entry_options, persist)
+          res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids, dashboard_entry_options)
         end
       end
 
@@ -203,9 +204,10 @@ module GT
 
       # dont persist dbes until we get them all back if in batch mode
       dbe_options[:batch] = options[:batch]
+      dbe_options[:persist] = !dbe_options[:batch]
 
       roll.frames.sort(:score.desc).limit(frame_count).all.reverse.each do |frame|
-        res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user, dbe_options, !dbe_options[:batch])
+        res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user, dbe_options)
       end
 
       if dbe_options[:batch] && res && !res.empty?
@@ -215,11 +217,18 @@ module GT
       return res.flatten
     end
 
-    def self.create_dashboard_entry(frame, action, user, options={}, persist=true)
+    def self.create_dashboard_entry(frame, action, user, options={})
       raise ArgumentError, "must supply a Frame" unless frame.is_a? Frame
       raise ArgumentError, "must supply an action" unless action
       raise ArgumentError, "must supply a User" unless user.is_a? User
-      self.create_dashboard_entries(frame, action, [user.id], options, persist)
+
+      defaults = {
+        :persist => true,
+      }
+
+      options = defaults.merge(options)
+
+      self.create_dashboard_entries(frame, action, [user.id], options)
     end
 
     private
@@ -272,7 +281,13 @@ module GT
         return new_frame
       end
 
-      def self.create_dashboard_entries(frame, action, user_ids, options={}, persist=true)
+      def self.create_dashboard_entries(frame, action, user_ids, options={})
+        defaults = {
+          :persist => true,
+        }
+
+        options = defaults.merge(options)
+
         entries = []
         user_ids.uniq.each do |user_id|
           dbe = DashboardEntry.new
@@ -296,7 +311,7 @@ module GT
           dbe.action = action
           save_options = {}
           save_options[:safe] = true if options[:safe]
-          dbe.save(save_options) if persist
+          dbe.save(save_options) if options[:persist]
           entries << dbe
         end
         return entries

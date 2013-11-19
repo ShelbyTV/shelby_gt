@@ -683,19 +683,19 @@ describe GT::Framer do
     end
 
     it "should pass persist parameter through to create_dashboard_entries" do
-      GT::Framer.should_receive(:create_dashboard_entries).with(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {}, true).ordered
-      GT::Framer.should_receive(:create_dashboard_entries).with(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {}, true).ordered
-      GT::Framer.should_receive(:create_dashboard_entries).with(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {}, false).ordered
+      GT::Framer.should_receive(:create_dashboard_entries).with(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {:persist => true}).ordered
+      GT::Framer.should_receive(:create_dashboard_entries).with(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {:persist => true}).ordered
+      GT::Framer.should_receive(:create_dashboard_entries).with(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {:persist => false}).ordered
 
       GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer)
-      GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {}, true)
-      GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {}, false)
+      GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {:persist => true})
+      GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {:persist => false})
     end
 
     it "should not persist anything when persist option is set to false" do
       d = nil
       lambda {
-        d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {}, false)
+        d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {:persist => false})
       }.should_not change { DashboardEntry.count }
 
       d[0].persisted?.should_not == true

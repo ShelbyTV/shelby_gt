@@ -617,7 +617,7 @@ describe GT::RecommendationManager do
       Frame.stub(:find).and_return(src_frame)
 
       new_dbe = Factory.create(:dashboard_entry, :frame => src_frame)
-      GT::Framer.should_receive(:create_dashboard_entry).with(src_frame, DashboardEntry::ENTRY_TYPE[:channel_recommendation], @user, {}, false).and_return([new_dbe])
+      GT::Framer.should_receive(:create_dashboard_entry).with(src_frame, DashboardEntry::ENTRY_TYPE[:channel_recommendation], @user, {:persist => false}).and_return([new_dbe])
 
       GT::Framer.should_not_receive(:create_frame)
 
