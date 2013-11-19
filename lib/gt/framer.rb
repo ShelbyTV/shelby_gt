@@ -114,7 +114,11 @@ module GT
 
         # Run dashboard entry creation async. if asked too
         if async_dashboard_entries
-          ShelbyGT_EM.next_tick { create_dashboard_entries(f, action, user_ids, dashboard_entry_options, persist) }
+          StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_frame'])
+          ShelbyGT_EM.next_tick {
+            create_dashboard_entries(f, action, user_ids, dashboard_entry_options, persist)
+            StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_following_dbes'])
+          }
         else
           res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids, dashboard_entry_options, persist)
         end
