@@ -33,6 +33,8 @@ module GT
     # :genius => Bool --- OPTIONAL indicates if the frame is a genius frame; genius frames don't create conversations
     # :skip_dashboard_entries => Bool -- OPTIONAL set to true if you don't want any dashboard entries created
     # :async_dashboard_entries => Bool -- OPTIONAL set to true if you want dashboard entries created async.
+    #                            - N.B. return value will not include :dashboard_entries if this is set to true
+    #                            - N.B. it does not make sense to turn this option on if :persist is set to false
     # :dashboard_entry_options => Hash -- OPTIONAL if dashboard entries are created, this will be passed as the options parameter
     # :persist => Bool -- OPTIONAL if set to false, the created frames and/or dashboard entries will not be saved to the DB
     #                        - For the moment, non-persistent frames will not support conversations, so :message param will be ignored
@@ -62,6 +64,7 @@ module GT
       raise ArgumentError, ":message must be a Message" if message and !message.is_a?(Message)
       persist = options.delete(:persist)
       persist = true if persist.nil?
+      raise ArgumentError, ":persist must be true if :async_dashboard_entries is true" if async_dashboard_entries && !persist
       dashboard_entry_options[:persist] = persist
 
       # Try to safely create conversation
@@ -239,8 +242,14 @@ module GT
       return entries
     end
 
-    def self.create_dashboard_entries_async(frame, action, user_ids, options={}, persist=true)
-      Resque.enqueue(DashboardEntryCreator, frame.id, action, user_ids, options, persist)
+    def self.create_dashboard_entries_async(frames, action, user_ids, options={})
+      defaults = {
+        :persist => true,
+      }
+
+      options = defaults.merge(options)
+
+      Resque.enqueue(DashboardEntryCreator, frames.map{ |f| f.id }, action, user_ids, options)
     end
 
     private
