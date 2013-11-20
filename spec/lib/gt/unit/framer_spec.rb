@@ -700,6 +700,19 @@ describe GT::Framer do
 
       d[0].persisted?.should_not == true
     end
+
+    context "asynchronous" do
+      before(:each) do
+        ResqueSpec.reset!
+      end
+
+      it "adds a DashboardEntryCreator job to the queue" do
+        GT::Framer.create_dashboard_entries_async(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id])
+        DashboardEntryCreator.should have_queue_size_of(1)
+        DashboardEntryCreator.should have_queued(@frame.id, DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {}, true)
+      end
+    end
+
   end
 
   context "backfilling DashboardEntries" do
