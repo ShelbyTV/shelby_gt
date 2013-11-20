@@ -30,7 +30,7 @@ module WeeklyRecommendationEmailHelper
       dbe = dbes.first
       case dbe.action
       when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-         "Watch this, it's similar to videos #{dbe.src_frame.creator.nickname} has shared"
+        "Watch this, it's similar to videos #{dbe.src_frame.creator.nickname} has shared"
       when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
         "A video because you shared: \"#{dbe.src_video.title}\""
       when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
