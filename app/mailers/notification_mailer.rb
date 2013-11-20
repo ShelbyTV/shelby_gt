@@ -162,7 +162,8 @@ class NotificationMailer < ActionMailer::Base
     @user_to = user_to
 
     first_name = (@user_to.name.split.first if @user_to.name) || @user_to.nickname
-    subject_line = "#{first_name.titlecase}, #{view_context.message_subject(dbes).downcase}"
+    message_subject = view_context.message_subject(dbes)
+    subject_line = "#{first_name.titlecase}, #{message_subject[0].downcase + message_subject[1..-1]}"
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
          :to => user_to.primary_email,

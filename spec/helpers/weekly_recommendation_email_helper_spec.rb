@@ -14,7 +14,7 @@ describe WeeklyRecommendationEmailHelper do
     end
 
     it "returns the right message_subject" do
-      message_subject(@dbes).should eql "One of these videos was handpicked just for you."
+      message_subject(@dbes).should eql "If you only have time to watch one thing tonight..."
     end
 
   end
@@ -31,7 +31,7 @@ describe WeeklyRecommendationEmailHelper do
     end
 
     it "returns the right message_subject" do
-      message_subject([@dbe]).should eql "This video is similar to videos #{@sharing_user.nickname} has shared"
+      message_subject([@dbe]).should eql "Watch this, it's similar to videos #{@sharing_user.nickname} has shared"
     end
 
   end
@@ -47,7 +47,7 @@ describe WeeklyRecommendationEmailHelper do
     end
 
     it "returns the right message_subject" do
-      message_subject([@dbe]).should eql "This video is similar to \"#{@src_video.title}\""
+      message_subject([@dbe]).should eql "A video because you shared: \"#{@src_video.title}\""
     end
 
   end
@@ -64,7 +64,7 @@ describe WeeklyRecommendationEmailHelper do
     end
 
     it "returns the right message_subject" do
-      message_subject([@dbe]).should eql "This featured video was shared by #{@sharer.nickname}"
+      message_subject([@dbe]).should eql "This video was shared by #{@sharer.nickname}. Check it out."
     end
 
   end
