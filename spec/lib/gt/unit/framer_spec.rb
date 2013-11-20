@@ -780,6 +780,12 @@ describe GT::Framer do
       }.should change { @user.dashboard_entries.count } .by 2
     end
 
+    it "creates 2 new DashboardEntries" do
+      lambda {
+        res = GT::Framer.backfill_dashboard_entries(@user, @roll, 2)
+      }.should change { DashboardEntry.count } .by 2
+    end
+
     it "gives the new DashboardEntries valid attributes" do
       GT::Framer.backfill_dashboard_entries(@user, @roll, 2)
       MongoMapper::Plugins::IdentityMap.clear
