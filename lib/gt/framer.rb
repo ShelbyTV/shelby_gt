@@ -116,10 +116,7 @@ module GT
         # Run dashboard entry creation async. if asked too
         if async_dashboard_entries
           StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_frame'])
-          ShelbyGT_EM.next_tick {
-            create_dashboard_entries([f], action, user_ids, dashboard_entry_options)
-            StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_following_dbes'])
-          }
+          create_dashboard_entries_async(f, action, user_ids, dashboard_entry_options, persist)
         else
           res[:dashboard_entries] = create_dashboard_entries([f], action, user_ids, dashboard_entry_options)
         end
@@ -242,6 +239,10 @@ module GT
       return entries
     end
 
+    def self.create_dashboard_entries_async(frame, action, user_ids, options={}, persist=true)
+      Resque.enqueue(DashboardEntryCreator, frame.id, action, user_ids, options, persist)
+    end
+
     private
 
       def self.basic_dupe!(orig_frame, user_id, roll_id)
@@ -316,6 +317,7 @@ module GT
 
         return dbe
       end
+
 
       def self.ensure_roll_metadata!(roll, frame)
         if roll and frame
