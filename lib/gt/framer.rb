@@ -62,6 +62,7 @@ module GT
       raise ArgumentError, ":message must be a Message" if message and !message.is_a?(Message)
       persist = options.delete(:persist)
       persist = true if persist.nil?
+      dashboard_entry_options[:persist] = persist
 
       # Try to safely create conversation
       if genius || !persist
@@ -116,11 +117,11 @@ module GT
         if async_dashboard_entries
           StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_frame'])
           ShelbyGT_EM.next_tick {
-            create_dashboard_entries(f, action, user_ids, dashboard_entry_options, persist)
+            create_dashboard_entries([f], action, user_ids, dashboard_entry_options)
             StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_following_dbes'])
           }
         else
-          res[:dashboard_entries] = create_dashboard_entries(f, action, user_ids, dashboard_entry_options, persist)
+          res[:dashboard_entries] = create_dashboard_entries([f], action, user_ids, dashboard_entry_options)
         end
       end
 
@@ -155,7 +156,7 @@ module GT
       unless skip_dashboard_entries
         ShelbyGT_EM.next_tick {
           #create dashboard entries for all roll followers *except* the user who just re-rolled
-          res[:dashboard_entries] = create_dashboard_entries(res[:frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
+          res[:dashboard_entries] = create_dashboard_entries([res[:frame]], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
         }
       end
 
@@ -197,29 +198,48 @@ module GT
       raise ArgumentError, "must supply a Roll" unless roll.is_a? Roll
       raise ArgumentError, "count must be >= 0" if frame_count < 0
 
-      res = []
       dbe_options = {:backdate => true}
-      dbe_options[:safe] = options[:safe]
 
-      # dont persist dbes until we get them all back if in batch mode
-      dbe_options[:batch] = options[:batch]
-
-      roll.frames.sort(:score.desc).limit(frame_count).all.reverse.each do |frame|
-        res << create_dashboard_entry(frame, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], user, dbe_options, !dbe_options[:batch])
-      end
-
-      if dbe_options[:batch] && res && !res.empty?
-        DashboardEntry.collection.insert(  res.flatten.map {|r| r.to_mongo } )
-      end
-
-      return res.flatten
+      return create_dashboard_entries(roll.frames.sort(:score.desc).limit(frame_count).all.reverse, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], [user.id], dbe_options)
     end
 
-    def self.create_dashboard_entry(frame, action, user, options={}, persist=true)
+    def self.create_dashboard_entry(frame, action, user, options={})
       raise ArgumentError, "must supply a Frame" unless frame.is_a? Frame
       raise ArgumentError, "must supply an action" unless action
       raise ArgumentError, "must supply a User" unless user.is_a? User
-      self.create_dashboard_entries(frame, action, [user.id], options, persist)
+
+      defaults = {
+        :persist => true,
+      }
+
+      options = defaults.merge(options)
+
+      dbe = self.initialize_dashboard_entry(frame, action, user.id, options)
+      dbe.save if options[:persist]
+      return [dbe]
+    end
+
+    def self.create_dashboard_entries(frames, action, user_ids, options={})
+      defaults = {
+        :persist => true,
+      }
+
+      options = defaults.merge(options)
+
+      entries = []
+      frames.each do |frame|
+        user_ids.uniq.each do |user_id|
+          dbe = self.initialize_dashboard_entry(frame, action, user_id, options)
+          entries << dbe
+        end
+      end
+
+      # if persisting, do it all in one operation so that it only checks out one socket
+      if options[:persist] && !entries.empty?
+        DashboardEntry.collection.insert(  entries.map {|dbe| dbe.to_mongo } )
+      end
+
+      return entries
     end
 
     private
@@ -272,34 +292,29 @@ module GT
         return new_frame
       end
 
-      def self.create_dashboard_entries(frame, action, user_ids, options={}, persist=true)
-        entries = []
-        user_ids.uniq.each do |user_id|
-          dbe = DashboardEntry.new
-          if options[:creation_time]
-            dbe.id = BSON::ObjectId.from_time(options[:creation_time], :unique => true)
-          elsif options[:backdate]
-            dbe.id = BSON::ObjectId.from_time(frame.created_at, :unique => true)
-          end
-          dbe.user_id = user_id
-          dbe.roll = frame.roll
-          dbe.frame_id = frame.id
-          dbe.src_frame_id = options[:src_frame_id]
-          dbe.src_video_id = options[:src_video_id]
-          dbe.friend_sharers_array = options[:friend_sharers_array] if options[:friend_sharers_array]
-          dbe.friend_viewers_array = options[:friend_viewers_array] if options[:friend_viewers_array]
-          dbe.friend_likers_array = options[:friend_likers_array] if options[:friend_likers_array]
-          dbe.friend_rollers_array = options[:friend_rollers_array] if options[:friend_rollers_array]
-          dbe.friend_complete_viewers_array = options[:friend_complete_viewers_array] if options[:friend_complete_viewers_array]
-          dbe.video = frame.video
-          dbe.actor = frame.creator
-          dbe.action = action
-          save_options = {}
-          save_options[:safe] = true if options[:safe]
-          dbe.save(save_options) if persist
-          entries << dbe
+
+      def self.initialize_dashboard_entry(frame, action, user_id, options={})
+        dbe = DashboardEntry.new
+        if options[:creation_time]
+          dbe.id = BSON::ObjectId.from_time(options[:creation_time], :unique => true)
+        elsif options[:backdate]
+          dbe.id = BSON::ObjectId.from_time(frame.created_at, :unique => true)
         end
-        return entries
+        dbe.user_id = user_id
+        dbe.roll = frame.roll
+        dbe.frame_id = frame.id
+        dbe.src_frame_id = options[:src_frame_id]
+        dbe.src_video_id = options[:src_video_id]
+        dbe.friend_sharers_array = options[:friend_sharers_array] if options[:friend_sharers_array]
+        dbe.friend_viewers_array = options[:friend_viewers_array] if options[:friend_viewers_array]
+        dbe.friend_likers_array = options[:friend_likers_array] if options[:friend_likers_array]
+        dbe.friend_rollers_array = options[:friend_rollers_array] if options[:friend_rollers_array]
+        dbe.friend_complete_viewers_array = options[:friend_complete_viewers_array] if options[:friend_complete_viewers_array]
+        dbe.video = frame.video
+        dbe.actor = frame.creator
+        dbe.action = action
+
+        return dbe
       end
 
       def self.ensure_roll_metadata!(roll, frame)

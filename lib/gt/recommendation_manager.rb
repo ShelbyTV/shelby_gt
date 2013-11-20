@@ -138,7 +138,7 @@ module GT
         end
       else
         frame = Frame.find(options[:src_id])
-        res = GT::Framer.create_dashboard_entry(frame, dbe_action, user, {}, options[:persist])
+        res = GT::Framer.create_dashboard_entry(frame, dbe_action, user, {:persist => options[:persist]})
         if res && !res.empty?
           return {:dashboard_entry => res[0], :frame => res[0].frame}
         end
