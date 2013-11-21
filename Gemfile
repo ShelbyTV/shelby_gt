@@ -184,6 +184,7 @@ gem 'formatted_rails_logger'
 gem 'capistrano', '2.15.3'
 gem 'rvm-capistrano'
 gem 'capistrano-unicorn', :require => false
+gem 'capistrano-resque', :require => false
 
 #
 # ----------- Web Server
