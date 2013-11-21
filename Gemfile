@@ -184,6 +184,7 @@ gem 'formatted_rails_logger'
 gem 'capistrano', '2.15.3'
 gem 'rvm-capistrano'
 gem 'capistrano-unicorn', :require => false
+gem 'capistrano-resque', :require => false
 
 #
 # ----------- Web Server
@@ -222,6 +223,8 @@ group :test, :development do
 
 	# if we have to fuck with time, this looks nice:
 	# gem 'timecop'
+
+  gem 'resque_spec'
 end
 
 #
@@ -230,3 +233,5 @@ end
 gem "sitemap_generator", "~> 3.2.1"
 
 gem "therubyracer", :require => 'v8'
+
+gem "resque", "~> 1.0"

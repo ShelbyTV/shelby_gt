@@ -211,4 +211,9 @@ ShelbyGt::Application.routes.draw do
 
   root :to => redirect(Settings::ShelbyAPI.web_root)
 
+  # resque web interface for checking on jobs
+  if Rails.env.development? || Rails.env.staging?
+     mount Resque::Server, :at => "/resque"
+  end
+
 end

@@ -33,6 +33,8 @@ module GT
     # :genius => Bool --- OPTIONAL indicates if the frame is a genius frame; genius frames don't create conversations
     # :skip_dashboard_entries => Bool -- OPTIONAL set to true if you don't want any dashboard entries created
     # :async_dashboard_entries => Bool -- OPTIONAL set to true if you want dashboard entries created async.
+    #                            - N.B. return value will not include :dashboard_entries if this is set to true
+    #                            - N.B. it does not make sense to turn this option on if :persist is set to false
     # :dashboard_entry_options => Hash -- OPTIONAL if dashboard entries are created, this will be passed as the options parameter
     # :persist => Bool -- OPTIONAL if set to false, the created frames and/or dashboard entries will not be saved to the DB
     #                        - For the moment, non-persistent frames will not support conversations, so :message param will be ignored
@@ -62,6 +64,7 @@ module GT
       raise ArgumentError, ":message must be a Message" if message and !message.is_a?(Message)
       persist = options.delete(:persist)
       persist = true if persist.nil?
+      raise ArgumentError, ":persist must be true if :async_dashboard_entries is true" if async_dashboard_entries && !persist
       dashboard_entry_options[:persist] = persist
 
       # Try to safely create conversation
@@ -116,10 +119,7 @@ module GT
         # Run dashboard entry creation async. if asked too
         if async_dashboard_entries
           StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_frame'])
-          ShelbyGT_EM.next_tick {
-            create_dashboard_entries([f], action, user_ids, dashboard_entry_options)
-            StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_following_dbes'])
-          }
+          create_dashboard_entries_async([f], action, user_ids, dashboard_entry_options)
         else
           res[:dashboard_entries] = create_dashboard_entries([f], action, user_ids, dashboard_entry_options)
         end
@@ -154,10 +154,8 @@ module GT
       res[:frame] = basic_re_roll(orig_frame, user_id, roll_id)
 
       unless skip_dashboard_entries
-        ShelbyGT_EM.next_tick {
-          #create dashboard entries for all roll followers *except* the user who just re-rolled
-          res[:dashboard_entries] = create_dashboard_entries([res[:frame]], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
-        }
+        #create dashboard entries for all roll followers *except* the user who just re-rolled
+        create_dashboard_entries_async([res[:frame]], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
       end
 
       # Roll - set its thumbnail if missing
@@ -242,6 +240,16 @@ module GT
       return entries
     end
 
+    def self.create_dashboard_entries_async(frames, action, user_ids, options={})
+      defaults = {
+        :persist => true,
+      }
+
+      options = defaults.merge(options)
+
+      Resque.enqueue(DashboardEntryCreator, frames.map{ |f| f.id }, action, user_ids, options)
+    end
+
     private
 
       def self.basic_dupe!(orig_frame, user_id, roll_id)
@@ -316,6 +324,7 @@ module GT
 
         return dbe
       end
+
 
       def self.ensure_roll_metadata!(roll, frame)
         if roll and frame
