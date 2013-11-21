@@ -8,7 +8,7 @@ defaults: &defaults
         {
           name: "A",
           description: "Thursday Afternoon, Copy v1",
-          active: true,
+          active: false,
           day: 5,
           time: 1612,
           message: "%@, %@, and %@ shared videos with you.  Nice!"
@@ -16,7 +16,7 @@ defaults: &defaults
         {
           name: "B",
           description: "Thursday Afternoon, Copy v2",
-          active: true,
+          active: false,
           day: 5,
           time: 1612,
           message: "It's Thursday, check out video while you check out from work. ;-)"
@@ -24,7 +24,7 @@ defaults: &defaults
         {
           name: "C",
           description: "Sunday Morning, Copy v1",
-          active: true,
+          active: false,
           day: 1,
           time: 0958,
           message: "%@, %@, and %@ shared videos with you.  Awesome!"
@@ -32,9 +32,41 @@ defaults: &defaults
         {
           name: "D",
           description: "Sunday Morning, Copy v2",
-          active: true,
+          active: false,
           day: 1,
           time: 0958,
+          message: "Sunday morning Shelby!  Better than mowing the lawn."
+        },
+        {
+          name: "E",
+          description: "Thursday Afternoon, Copy v1",
+          active: true,
+          day: 5,
+          time: 1600,
+          message: "%@, %@, and %@ shared videos with you.  Nice!"
+        },
+        {
+          name: "F",
+          description: "Thursday Afternoon, Copy v2",
+          active: true,
+          day: 5,
+          time: 1600,
+          message: "It's Thursday, check out video while you check out from work. ;-)"
+        },
+        {
+          name: "G",
+          description: "Sunday Morning, Copy v1",
+          active: true,
+          day: 1,
+          time: 1000,
+          message: "%@, %@, and %@ shared videos with you.  Awesome!"
+        },
+        {
+          name: "H",
+          description: "Sunday Morning, Copy v2",
+          active: true,
+          day: 1,
+          time: 1000,
           message: "Sunday morning Shelby!  Better than mowing the lawn."
         }
       ]
