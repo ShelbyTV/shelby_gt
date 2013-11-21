@@ -657,33 +657,42 @@ describe GT::Framer do
 
   context "re-rolling" do
     before(:each) do
+      MongoMapper::Helper.drop_all_dbs
+      MongoMapper::Helper.ensure_all_indexes
+
       @video = Factory.create(:video, :thumbnail_url => "thum_url")
       @f1 = Factory.create(:frame, :video => @video)
 
       @roll_creator = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @roll_creator)
       @roll.save
+
+      ResqueSpec.reset!
     end
 
     it "should set the DashboardEntry metadata correctly" do
       @roll.add_follower(@roll_creator)
-      res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
+      expect {
+        @res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
+      }.not_to change { DashboardEntry.count}
 
-      res[:dashboard_entries].size.should == 1
-      res[:dashboard_entries][0].user.should == @roll_creator
-      res[:dashboard_entries][0].action.should == DashboardEntry::ENTRY_TYPE[:re_roll]
-      res[:dashboard_entries][0].frame.should == res[:frame]
-      res[:dashboard_entries][0].src_frame.should be_nil
-      res[:dashboard_entries][0].src_frame_id.should be_nil
-      res[:dashboard_entries][0].src_video.should be_nil
-      res[:dashboard_entries][0].src_video_id.should be_nil
-      res[:dashboard_entries][0].friend_sharers_array.should == []
-      res[:dashboard_entries][0].friend_viewers_array.should == []
-      res[:dashboard_entries][0].friend_likers_array.should == []
-      res[:dashboard_entries][0].friend_rollers_array.should == []
-      res[:dashboard_entries][0].friend_complete_viewers_array.should == []
-      res[:dashboard_entries][0].roll.should == @roll
-      res[:dashboard_entries][0].roll.should == res[:frame].roll
+      expect { ResqueSpec.perform_next(:dashboard_entries_queue) }.to change { DashboardEntry.count }.by 1
+
+      dbe = DashboardEntry.last
+      dbe.user.should == @roll_creator
+      dbe.action.should == DashboardEntry::ENTRY_TYPE[:re_roll]
+      dbe.frame.should == @res[:frame]
+      dbe.src_frame.should be_nil
+      dbe.src_frame_id.should be_nil
+      dbe.src_video.should be_nil
+      dbe.src_video_id.should be_nil
+      dbe.friend_sharers_array.should == []
+      dbe.friend_viewers_array.should == []
+      dbe.friend_likers_array.should == []
+      dbe.friend_rollers_array.should == []
+      dbe.friend_complete_viewers_array.should == []
+      dbe.roll.should == @roll
+      dbe.roll.should == @res[:frame].roll
     end
 
     it "should create DashboardEntries for all users (except the re-reroller) following the Roll a Frame is re-rolled to" do
@@ -694,17 +703,29 @@ describe GT::Framer do
       user_ids = [@roll_creator.id, u1.id, u2.id, u3.id]
 
       # Re-roll some random frame on the roll this user created
-      res = GT::Framer.re_roll(@f1, @roll_creator, @roll)
+      expect {
+        @res = GT::Framer.re_roll(@f1, @roll_creator, @roll)
+      }.not_to change { DashboardEntry.count}
 
-      # all roll followers should have a DashboardEntry
-      res[:dashboard_entries].size.should == 3
-      res[:dashboard_entries].each do |dbe|
-        dbe.reload
-        dbe.persisted?.should == true
-      end
-      user_ids = res[:dashboard_entries].map { |dbe| dbe.user_id }
-      user_ids.should == [u1.id, u2.id, u3.id]
+      expect { ResqueSpec.perform_next(:dashboard_entries_queue) }.to change { DashboardEntry.count }.by 3
+
+      dbes = DashboardEntry.sort(["_id", -1]).all
+      user_ids = dbes.map { |dbe| dbe.user_id }
+      user_ids.should == [u3.id, u2.id, u1.id]
       user_ids.should_not include(@roll_creator.id)
+    end
+
+    it "adds a DashboardEntryCreator job to the queue to create DashboardEntries for followers" do
+      @roll.add_follower(@roll_creator)
+      @roll.add_follower(u1 = Factory.create(:user))
+      @roll.add_follower(u2 = Factory.create(:user))
+      @roll.add_follower(u3 = Factory.create(:user))
+
+      new_frame = Factory.create(:frame)
+      GT::Framer.should_receive(:basic_re_roll).with(@f1, @roll_creator.id, @roll.id).and_return(new_frame)
+      GT::Framer.should_receive(:create_dashboard_entries_async).with([new_frame], DashboardEntry::ENTRY_TYPE[:re_roll], [u1.id, u2.id, u3.id])
+
+      GT::Framer.re_roll(@f1, @roll_creator, @roll)
     end
 
     it "should set the frame's roll's thumbnail_url if it's nil" do
