@@ -1,3 +1,5 @@
+require "resque_web"
+
 ShelbyGt::Application.routes.draw do
 
   # The priority is based upon order of creation:
@@ -212,8 +214,8 @@ ShelbyGt::Application.routes.draw do
   root :to => redirect(Settings::ShelbyAPI.web_root)
 
   # resque web interface for checking on jobs
-  if Rails.env.development? || Rails.env.staging?
-     mount Resque::Server, :at => "/resque"
+  if (Rails.env != 'test')
+    mount ResqueWeb::Engine, :at => "/resque_web"
   end
 
 end

@@ -235,3 +235,4 @@ gem "sitemap_generator", "~> 3.2.1"
 gem "therubyracer", :require => 'v8'
 
 gem "resque", "~> 1.0"
+gem "resque-web", require: "resque_web"
