@@ -58,7 +58,7 @@ class Frame
   # Total number of likes - both by upvoters (logged in likers) and logged out likers
   key :like_count, Integer, :abbr => :n, :default => 0
 
-   # What does this entry represent (re-roll, watch, comment)?
+   # What does this entry represent (light_weight, heavy_weight)?
   # [using integers instead of strings to keep the size as small as possible]
   FRAME_TYPE = {
     :heavy_weight => 0,
@@ -140,9 +140,10 @@ class Frame
       Video.collection.update({:_id => self.video_id}, {:$inc => {:v => 1}})
       Video.find(self.video_id).reload
 
+      #TODO: Add liker of video to NEW COLLECTION tracking likers of videos
+
       # send email notification in a non-blocking manor
       ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self, u) }
-
 
       return GT::Framer.dupe_frame!(self, u.id, u.public_roll_id, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
     end

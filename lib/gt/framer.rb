@@ -142,7 +142,7 @@ module GT
     #
     # { :frame => newly_created_frame, :dashboard_entries => [1 or more DashboardEntry, ...] }
     #
-    def self.re_roll(orig_frame, for_user, to_roll, skip_dashboard_entries=false)
+    def self.re_roll(orig_frame, for_user, to_roll, options={})
       raise ArgumentError, "must supply user or user_id" unless for_user
       user_id = (for_user.is_a?(User) ? for_user.id : for_user)
 
@@ -153,7 +153,7 @@ module GT
 
       res[:frame] = basic_re_roll(orig_frame, user_id, roll_id)
 
-      unless skip_dashboard_entries
+      unless options[:skip_dashboard_entries]
         ShelbyGT_EM.next_tick {
           #create dashboard entries for all roll followers *except* the user who just re-rolled
           res[:dashboard_entries] = create_dashboard_entries([res[:frame]], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
@@ -175,7 +175,7 @@ module GT
       raise ArgumentError, "must supply roll or roll_id" unless to_roll
       roll_id = (to_roll.is_a?(Roll) ? to_roll.id : to_roll)
 
-      return basic_dupe!(orig_frame, user_id, roll_id, options )
+      return basic_dupe!(orig_frame, user_id, roll_id, options)
     end
 
     def self.remove_dupe_of_frame_from_roll!(frame, roll)
