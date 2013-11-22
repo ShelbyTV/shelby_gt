@@ -11,7 +11,6 @@ set :deploy_to, "/home/gt/api"
 role :web, "166.78.255.147"
 role :app, "166.78.255.147"
 role :resque_worker, "166.78.255.147"
-role :resque_scheduler, "166.78.255.147"
 
 #############################################################
 # Git
@@ -30,9 +29,9 @@ set :app_env,     "staging"
 
 set :workers, { "*" => 4 }
 set :resque_environment_task, true
+after "deploy:restart", "resque:restart"
 
 after 'deploy:restart', 'unicorn:duplicate'
-after "deploy:restart", "resque:restart"
 
 namespace :deploy do
   desc "Deploy the currently checked out branch"
