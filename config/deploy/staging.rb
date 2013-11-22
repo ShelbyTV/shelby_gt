@@ -11,7 +11,6 @@ set :deploy_to, "/home/gt/api"
 role :web, "166.78.255.147"
 role :app, "166.78.255.147"
 role :resque_worker, "166.78.255.147"
-role :resque_scheduler, "166.78.255.147"
 
 #############################################################
 # Git
