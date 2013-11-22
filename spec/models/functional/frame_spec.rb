@@ -12,6 +12,7 @@ describe Frame do
     it "should abbreviate roll_id as :a, rank as :e" do
       Frame.keys["roll_id"].abbr.should == :a
       Frame.keys["score"].abbr.should == :e
+      Frame.keys["type"].abbr.should == :o
     end
   end
 
@@ -275,7 +276,7 @@ describe Frame do
       @frame = Factory.create(:frame, :video => @video)
 
       @u1 = Factory.create(:user)
-      @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
+      @u1.public_roll = Factory.create(:roll, :creator => @u1)
     end
 
     it "should require full User model, not just id" do
@@ -284,14 +285,23 @@ describe Frame do
       }.should raise_error(ArgumentError)
     end
 
-    it "should dupe the frame into the users watch_later_roll, persisted" do
+    it "should dupe the frame into the users public_roll, persisted" do
       f = nil
       lambda {
         f = @frame.add_to_watch_later!(@u1)
       }.should change { Frame.count } .by 1
 
       f.persisted?.should == true
-      f.roll.should == @u1.watch_later_roll
+      f.roll.should == @u1.public_roll
+    end
+
+    it "should dupe the frame with a light weight frame type" do
+      f = nil
+      lambda {
+        f = @frame.add_to_watch_later!(@u1)
+      }.should change { Frame.count } .by 1
+
+      f.type.should == Frame::FRAME_TYPE[:light_weight]
     end
 
     it "should add the user to the frame being watch_latered's upvoters array if it's not there already" do
@@ -308,9 +318,9 @@ describe Frame do
       }.should change { @frame.like_count } .by 1
 
       u2 = Factory.create(:user)
-      u2.watch_later_roll = Factory.create(:roll, :creator => u2)
+      u2.public_roll = Factory.create(:roll, :creator => u2)
       u3 = Factory.create(:user)
-      u3.watch_later_roll = Factory.create(:roll, :creator => u3)
+      u3.public_roll = Factory.create(:roll, :creator => u3)
 
       lambda {
         @frame.add_to_watch_later!(u2)
@@ -344,27 +354,6 @@ describe Frame do
       @frame.score.should > score_before
     end
 
-    context "also add to community channel" do
-
-      before(:each) do
-        @community_channel_user = Factory.create(:user)
-        Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
-      end
-
-      it "should add the frame to the community channel" do
-        lambda {
-          @frame.add_to_watch_later!(@u1)
-        }.should change { DashboardEntry.count } .by(1)
-      end
-
-      it "should create the channel db entry with the correct parameters" do
-        GT::Framer.should_receive(:create_dashboard_entry).with(@frame, ::DashboardEntry::ENTRY_TYPE[:new_community_frame], @community_channel_user)
-
-        @frame.add_to_watch_later!(@u1)
-      end
-
-    end
-
     it "should set metadata correctly" do
       f = nil
       lambda {
@@ -391,10 +380,9 @@ describe Frame do
   context "like" do
     before(:each) do
       @video = Factory.create(:video)
-      @frame = Factory.create(:frame, :video => @video)
-
-      @community_channel_user = Factory.create(:user)
-      Settings::Channels['community_channel_user_id'] = @community_channel_user.id.to_s
+      @user = Factory.create(:user)
+      @roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public_real_user], :creator => @user)
+      @frame = Factory.create(:frame, :roll => @roll, :creator => @user, :video => @video)
     end
 
     it "should increment the like count" do
@@ -407,18 +395,6 @@ describe Frame do
       lambda {
         @frame.like!
       }.should change { @video.like_count } .by 1
-    end
-
-    it "should add the frame to the community channel" do
-      lambda {
-        @frame.like!
-      }.should change { DashboardEntry.count } .by(1)
-    end
-
-    it "should create the channel db entry with the correct parameters" do
-      GT::Framer.should_receive(:create_dashboard_entry).with(@frame, ::DashboardEntry::ENTRY_TYPE[:new_community_frame], @community_channel_user)
-
-      @frame.like!
     end
   end
 
@@ -606,18 +582,18 @@ describe Frame do
 
     context "frame on watch later roll" do
         before(:each) do
-          @stranger_watch_later_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_watch_later])
-          @stranger.watch_later_roll = @stranger_watch_later_roll
+          @stranger_public_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_watch_later])
+          @stranger.public_roll = @stranger_public_roll
 
-          @stranger2_watch_later_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_watch_later])
-          @stranger2.watch_later_roll = @stranger2_watch_later_roll
+          @stranger2_public_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_watch_later])
+          @stranger2.public_roll = @stranger2_public_roll
 
           @frame.add_to_watch_later!(@stranger)
           @frame.add_to_watch_later!(@stranger2)
         end
 
         it "should remove the user as an upvoter of the frame's ancestor (original upvoted frame)" do
-          @stranger_watch_later_roll.frames.first.destroy
+          @stranger_public_roll.frames.first.destroy
           @frame.reload
           @frame.upvoters.should_not include(@stranger.id)
           @frame.upvoters.should include(@stranger2.id)
@@ -626,21 +602,21 @@ describe Frame do
 
         it "should decrement the number of likes of the frame's ancestor (original upvoted frame)" do
           lambda {
-            @stranger_watch_later_roll.frames.first.destroy
+            @stranger_public_roll.frames.first.destroy
             @frame.reload
           }.should change { @frame.like_count } .by(-1)
         end
 
         it "should decrement the number of likes of the video of the frame's ancestor (original upvoted frame)" do
           lambda {
-            @stranger_watch_later_roll.frames.first.destroy
+            @stranger_public_roll.frames.first.destroy
             @video.reload
           }.should change { @video.like_count } .by(-1)
         end
 
         it "should decrease score of the frame's ancestor (original upvoted frame)" do
           score_before = @frame.score
-          @stranger_watch_later_roll.frames.first.destroy
+          @stranger_public_roll.frames.first.destroy
           @frame.reload
           @frame.score.should < score_before
         end

@@ -228,6 +228,8 @@ class V1::FrameController < ApplicationController
     end
   end
 
+
+  # DEPRECATED -- replaced by like
   ##
   # Upvotes a frame and returns the frame back w new score
   #   REQUIRES AUTHENTICATION
@@ -266,6 +268,8 @@ class V1::FrameController < ApplicationController
     end
   end
 
+
+  # DEPRECATED -- replaced by like
   ##
   # Adds a dupe of the given Frame to the logged in users watch_later_roll and returns the dupe Frame
   #   REQUIRES AUTHENTICATION
@@ -274,7 +278,6 @@ class V1::FrameController < ApplicationController
   #
   # @param [Required, String] id The id of the frame
   #
-  # DEPRECATED -- replaced by like
   def add_to_watch_later
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['add_to_watch_later']) do
         @frame = Frame.find(params[:frame_id])

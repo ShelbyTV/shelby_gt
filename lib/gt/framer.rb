@@ -166,7 +166,7 @@ module GT
       return res
     end
 
-    def self.dupe_frame!(orig_frame, for_user, to_roll)
+    def self.dupe_frame!(orig_frame, for_user, to_roll, options={} )
       raise ArgumentError, "must supply original Frame" unless orig_frame and orig_frame.is_a? Frame
 
       raise ArgumentError, "must supply user or user_id" unless for_user
@@ -175,7 +175,7 @@ module GT
       raise ArgumentError, "must supply roll or roll_id" unless to_roll
       roll_id = (to_roll.is_a?(Roll) ? to_roll.id : to_roll)
 
-      return basic_dupe!(orig_frame, user_id, roll_id)
+      return basic_dupe!(orig_frame, user_id, roll_id, options )
     end
 
     def self.remove_dupe_of_frame_from_roll!(frame, roll)
@@ -244,12 +244,16 @@ module GT
 
     private
 
-      def self.basic_dupe!(orig_frame, user_id, roll_id)
+      def self.basic_dupe!(orig_frame, user_id, roll_id, options={})
         # Dupe it
         new_frame = Frame.new
         new_frame.creator_id = orig_frame.creator_id
         new_frame.roll_id = roll_id
         new_frame.video_id = orig_frame.video_id
+
+        if options[:frame_type]
+          new_frame.type = options[:frame_type]
+        end
 
         #copy convo
         new_frame.conversation_id = orig_frame.conversation_id
