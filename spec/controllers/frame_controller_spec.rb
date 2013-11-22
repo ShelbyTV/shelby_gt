@@ -8,6 +8,7 @@ describe V1::FrameController do
     @u1 = Factory.create(:user)
     @u1.upvoted_roll = Factory.create(:roll, :creator => @u1)
     @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
+    @u1.public_roll = Factory.create(:roll, :creator => @u1)
     @u1.viewed_roll = Factory.create(:roll, :creator => @u1)
     @u1.save
     sign_in @u1
