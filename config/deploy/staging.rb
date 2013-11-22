@@ -18,7 +18,7 @@ role :resque_scheduler, "166.78.255.147"
 #############################################################
 
 set :repository,  "git@github.com:ShelbyTV/shelby_gt.git"
-set :branch, "staging"
+set :branch, fetch(:branch, "staging")
 
 set :rails_env, "staging"
 set :unicorn_env, "staging"
@@ -33,3 +33,11 @@ set :resque_environment_task, true
 
 after 'deploy:restart', 'unicorn:duplicate'
 after "deploy:restart", "resque:restart"
+
+namespace :deploy do
+  desc "Deploy the currently checked out branch"
+  task :current_branch do
+    set :branch, `git rev-parse --abbrev-ref HEAD`.rstrip
+    deploy.default
+  end
+end
