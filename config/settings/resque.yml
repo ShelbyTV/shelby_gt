@@ -1,6 +1,8 @@
 defaults: &defaults
   resque_web_username: "resque"
   resque_web_password: "overtime"
+  redis_host: "localhost"
+  redis_port: "6379"
 
 development:
   <<: *defaults
@@ -10,6 +12,8 @@ test:
 
 production:
   <<: *defaults
+  redis_host: "gt-api-b"
+  redis_port: "6379"
 
 staging:
   <<: *defaults
