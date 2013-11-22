@@ -1,0 +1,18 @@
+defaults: &defaults
+  resque_web_username: "resque"
+  resque_web_password: "overtime"
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults
+
+staging:
+  <<: *defaults
+
+arnold:
+  <<: *defaults

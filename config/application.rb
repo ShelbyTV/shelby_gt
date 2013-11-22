@@ -87,6 +87,10 @@ module ShelbyGt
     # Config stuff that relieson Settings object can go in here
     config.after_initialize do
 
+      #setup basic authentication for resque web
+      ENV['RESQUE_WEB_HTTP_BASIC_AUTH_USER'] = Settings::Resque.resque_web_username
+      ENV['RESQUE_WEB_HTTP_BASIC_AUTH_PASSWORD'] = Settings::Resque.resque_web_password
+
       # OAuth Server
       settings = Settings::OauthServer
 
