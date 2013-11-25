@@ -267,6 +267,12 @@ describe 'v1/frame' do
             post '/v1/roll/'+roll.id+'/frames?frame_id='+@f.id+'&text='+CGI::escape(message_text)
           }.should change { DashboardEntry.count } .by(1)
         end
+
+        it "should have frame_type added for light_weight share on re-roll" do
+          post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?frame_id='+@f.id
+          response.body.should be_json_eql(200).at_path("status")
+          parse_json(response.body)["result"]["type"].should == Frame::FRAME_TYPE[:light_weight]
+        end
       end
 
       context 'frame creation from url' do
@@ -340,6 +346,17 @@ describe 'v1/frame' do
           post '/v1/roll/'+u2.watch_later_roll_id+'/frames?url='+CGI::escape(video_url)+'&text='+CGI::escape(message_text)
 
           response.body.should be_json_eql(403).at_path("status")
+        end
+
+        it "should have frame_type added for light_weight share on add via url" do
+          message_text = "awesome video!"
+          video_url = "http://some.video.url.com/of_a_movie_i_like"
+          video = Factory.create(:video, :source_url => video_url)
+          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return({:videos=> [video]})
+          roll = Factory.create(:roll, :creator_id => @u1.id)
+          post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?url='+CGI::escape(video_url)+'&text='+CGI::escape(message_text)
+          response.body.should be_json_eql(200).at_path("status")
+          parse_json(response.body)["result"]["type"].should == Frame::FRAME_TYPE[:light_weight]
         end
 
       end

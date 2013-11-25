@@ -35,6 +35,7 @@ module GT
     # :async_dashboard_entries => Bool -- OPTIONAL set to true if you want dashboard entries created async.
     #                            - N.B. return value will not include :dashboard_entries if this is set to true
     #                            - N.B. it does not make sense to turn this option on if :persist is set to false
+    # :frame_type => is this a heavy_weight or light_weight frame type
     # :dashboard_entry_options => Hash -- OPTIONAL if dashboard entries are created, this will be passed as the options parameter
     # :persist => Bool -- OPTIONAL if set to false, the created frames and/or dashboard entries will not be saved to the DB
     #                        - For the moment, non-persistent frames will not support conversations, so :message param will be ignored
@@ -51,6 +52,7 @@ module GT
       video = options.delete(:video)
       video_id = options.delete(:video_id)
       genius = options.delete(:genius)
+      frame_type = options.delete(:frame_type)
       skip_dashboard_entries = options.delete(:skip_dashboard_entries)
       async_dashboard_entries = options.delete(:async_dashboard_entries)
       dashboard_entry_options = options.delete(:dashboard_entry_options) || {}
@@ -99,6 +101,7 @@ module GT
       f.conversation = convo
       f.score = score
       f.order = order
+      f.type = frame_type if frame_type
 
       f.save if persist
 
@@ -151,7 +154,11 @@ module GT
 
       res = { :frame => nil, :dashboard_entries => [] }
 
-      res[:frame] = basic_re_roll(orig_frame, user_id, roll_id)
+      if for_user.watch_later_roll == to_roll
+        options[:frame_type] = Frame::FRAME_TYPE[:light_weight]
+      end
+
+      res[:frame] = basic_re_roll(orig_frame, user_id, roll_id, options)
 
       unless options[:skip_dashboard_entries]
         #create dashboard entries for all roll followers *except* the user who just re-rolled
@@ -289,12 +296,16 @@ module GT
         return new_frame
       end
 
-      def self.basic_re_roll(orig_frame, user_id, roll_id)
+      def self.basic_re_roll(orig_frame, user_id, roll_id, options={})
         # Set up the basics
         new_frame = Frame.new
         new_frame.creator_id = user_id
         new_frame.roll_id = roll_id
         new_frame.video_id = orig_frame.video_id
+
+        if options[:frame_type]
+          new_frame.type = options[:frame_type]
+        end
 
         # Create a new conversation
         convo = Conversation.new

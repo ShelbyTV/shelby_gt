@@ -722,7 +722,7 @@ describe GT::Framer do
       @roll.add_follower(u3 = Factory.create(:user))
 
       new_frame = Factory.create(:frame)
-      GT::Framer.should_receive(:basic_re_roll).with(@f1, @roll_creator.id, @roll.id).and_return(new_frame)
+      GT::Framer.should_receive(:basic_re_roll).with(@f1, @roll_creator.id, @roll.id, {}).and_return(new_frame)
       GT::Framer.should_receive(:create_dashboard_entries_async).with([new_frame], DashboardEntry::ENTRY_TYPE[:re_roll], [u1.id, u2.id, u3.id])
 
       GT::Framer.re_roll(@f1, @roll_creator, @roll)

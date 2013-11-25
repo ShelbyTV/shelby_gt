@@ -104,6 +104,9 @@ class V1::FrameController < ApplicationController
           # and finally create the frame
           # creating dashboard entries async.
           frame_options[:async_dashboard_entries] = true
+
+          frame_options[:frame_type] = Frame::FRAME_TYPE[:light_weight] if current_user.watch_later_roll == roll
+
           r = frame_options[:video] ? GT::Framer.create_frame(frame_options) : {}
 
           if @frame = r[:frame]
