@@ -154,6 +154,7 @@ module GT
 
       res = { :frame => nil, :dashboard_entries => [] }
 
+      # ensure that a frame created on a users watch_later roll has an appropriate frame_type
       if for_user.watch_later_roll == to_roll
         options[:frame_type] = Frame::FRAME_TYPE[:light_weight]
       end
