@@ -119,7 +119,7 @@ module GT
         # Run dashboard entry creation async. if asked too
         if async_dashboard_entries
           StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_frame'])
-          create_dashboard_entries_async(f, action, user_ids, dashboard_entry_options, persist)
+          create_dashboard_entries_async([f], action, user_ids, dashboard_entry_options)
         else
           res[:dashboard_entries] = create_dashboard_entries([f], action, user_ids, dashboard_entry_options)
         end
