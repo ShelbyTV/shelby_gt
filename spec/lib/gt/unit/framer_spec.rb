@@ -1006,7 +1006,6 @@ describe GT::Framer do
         DashboardEntryCreator.should have_queued([@frame.id], DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {:persist => true})
       end
     end
-
   end
 
   context "backfilling DashboardEntries" do
