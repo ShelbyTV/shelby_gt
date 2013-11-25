@@ -276,6 +276,12 @@ describe V1::RollController do
       assigns(:status).should eq(200)
     end
 
+    it "backfills user dashboard entries asynchronously for the newly joined roll" do
+      @r.following_users=[]; @r.save
+      GT::Framer.should_receive(:backfill_dashboard_entries).with(@u1, @r, 5, {:async_dashboard_entries => true})
+      post :join, :roll_id => @r.id, :format => :json
+    end
+
     it "should return 200 if the user leaves a roll succesfully" do
       post :leave, :roll_id => @r.id, :format => :json
       assigns(:status).should eq(200)
