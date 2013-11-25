@@ -1010,6 +1010,9 @@ describe GT::Framer do
 
   context "backfilling DashboardEntries" do
     before(:each) do
+      MongoMapper::Helper.drop_all_dbs
+      MongoMapper::Helper.ensure_all_indexes
+
       @roll_creator = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @roll_creator)
 
@@ -1072,6 +1075,48 @@ describe GT::Framer do
       lambda {
         res = GT::Framer.backfill_dashboard_entries(@user, empty_roll, 20)
       }.should change { @user.dashboard_entries.count } .by 0
+    end
+
+    it "doesn't call the asynchronous creation method by default" do
+      GT::Framer.should_not_receive(:create_dashboard_entries_async)
+
+      GT::Framer.backfill_dashboard_entries(@user, @roll, 2)
+    end
+
+    context "asynchronous" do
+      before(:each) do
+        ResqueSpec.reset!
+      end
+
+      it "adds a DashboardEntryCreator job to the queue" do
+        MongoMapper::Plugins::IdentityMap.clear
+        GT::Framer.should_receive(:create_dashboard_entries_async).with([@frame1, @frame0], DashboardEntry::ENTRY_TYPE[:new_in_app_frame], [@user.id], {:backdate => true})
+
+        GT::Framer.backfill_dashboard_entries(@user, @roll, 2, {:async_dashboard_entries => true})
+      end
+
+      it "backfills the User's dashboard with frames asynchronously" do
+        MongoMapper::Plugins::IdentityMap.clear
+
+        expect {
+          @res = GT::Framer.backfill_dashboard_entries(@user, @roll, 2, {:async_dashboard_entries => true})
+        }.not_to change { DashboardEntry.count }
+
+        @res.should be_nil
+        @user.reload
+        @user.dashboard_entries.length.should == 0
+
+        expect { ResqueSpec.perform_next(:dashboard_entries_queue) }.to change { DashboardEntry.count }.by 2
+
+        @user.reload
+        dbes = @user.dashboard_entries
+        dbes.length.should == 2
+        dbes[0].frame_id.should == @frame0.id
+        dbes[1].frame_id.should == @frame1.id
+        dbes[0].created_at.should == @frame0.created_at
+        dbes[1].created_at.should == @frame1.created_at
+      end
+
     end
   end
 

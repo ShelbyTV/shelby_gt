@@ -197,8 +197,17 @@ module GT
       raise ArgumentError, "count must be >= 0" if frame_count < 0
 
       dbe_options = {:backdate => true}
+      frames_to_backfill = roll.frames.sort(:score.desc).limit(frame_count).all.reverse
 
-      return create_dashboard_entries(roll.frames.sort(:score.desc).limit(frame_count).all.reverse, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], [user.id], dbe_options)
+      async_dashboard_entries = options.delete(:async_dashboard_entries)
+
+      if async_dashboard_entries
+        StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_frame'])
+        create_dashboard_entries_async(frames_to_backfill, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], [user.id], dbe_options)
+        return nil
+      else
+        return create_dashboard_entries(frames_to_backfill, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], [user.id], dbe_options)
+      end
     end
 
     def self.create_dashboard_entry(frame, action, user, options={})
