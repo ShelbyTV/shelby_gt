@@ -269,11 +269,6 @@ describe 'v1/frame' do
           }.should change { DashboardEntry.count } .by(1)
         end
 
-        it "should have frame_type added for light_weight share on re-roll" do
-          post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?frame_id='+@f.id
-          response.body.should be_json_eql(200).at_path("status")
-          parse_json(response.body)["result"]["type"].should == Frame::FRAME_TYPE[:light_weight]
-        end
       end
 
       context 'frame creation from url' do
