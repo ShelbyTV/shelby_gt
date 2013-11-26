@@ -244,6 +244,7 @@ describe 'v1/frame' do
           response.body.should have_json_path("result/conversation")
           response.body.should have_json_path("result/originator_id")
           response.body.should have_json_path("result/originator")
+          parse_json(response.body)["result"]["type"].should == Frame::FRAME_TYPE[:heavy_weight]
         end
 
         it "should add text to the conversation of the newly rolled frame" do
@@ -286,6 +287,7 @@ describe 'v1/frame' do
 
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/video_id")
+          parse_json(response.body)["result"]["type"].should == Frame::FRAME_TYPE[:heavy_weight]
         end
 
         it "should add text to the conversation of the newly created frame" do
