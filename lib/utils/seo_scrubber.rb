@@ -21,6 +21,11 @@ module Dev
 
       nick = u.authentications[0].nickname
       convos = Conversation.where(:video_id => Video.where(:provider_name => video_provider, :provider_id => video_id).first.id, 'messages.e' => nick).all
+      
+      # try searching convos by user id if nickname failed
+      if convos.count == 0
+        convos = Conversation.where(:video_id => Video.where(:provider_name => video_provider, :provider_id => video_id).first.id, 'messages.d' => u.id).all
+      end
 
       if convos.count > 0
         puts "Found #{convos.count} conversations..."
