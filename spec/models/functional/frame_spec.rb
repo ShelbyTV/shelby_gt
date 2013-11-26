@@ -286,22 +286,20 @@ describe Frame do
     end
 
     it "should dupe the frame into the users public_roll, persisted" do
-      f = nil
       lambda {
-        f = @frame.add_to_watch_later!(@u1)
+        @f = @frame.add_to_watch_later!(@u1)
       }.should change { Frame.count } .by 1
 
-      f.persisted?.should == true
-      f.roll.should == @u1.public_roll
+      @f.persisted?.should == true
+      @f.roll.should == @u1.public_roll
     end
 
     it "should dupe the frame with a light weight frame type" do
-      f = nil
       lambda {
-        f = @frame.add_to_watch_later!(@u1)
+        @f = @frame.add_to_watch_later!(@u1)
       }.should change { Frame.count } .by 1
 
-      f.type.should == Frame::FRAME_TYPE[:light_weight]
+      @f.type.should == Frame::FRAME_TYPE[:light_weight]
     end
 
     it "should add the user to the frame being watch_latered's upvoters array if it's not there already" do
