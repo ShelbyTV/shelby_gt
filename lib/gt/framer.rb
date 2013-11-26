@@ -121,7 +121,6 @@ module GT
 
         # Run dashboard entry creation async. if asked too
         if async_dashboard_entries
-          StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_frame'])
           create_dashboard_entries_async([f], action, user_ids, dashboard_entry_options)
         else
           res[:dashboard_entries] = create_dashboard_entries([f], action, user_ids, dashboard_entry_options)
@@ -205,7 +204,6 @@ module GT
       async_dashboard_entries = options.delete(:async_dashboard_entries)
 
       if async_dashboard_entries
-        StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_frame'])
         create_dashboard_entries_async(frames_to_backfill, DashboardEntry::ENTRY_TYPE[:new_in_app_frame], [user.id], dbe_options)
         return nil
       else

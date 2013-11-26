@@ -133,11 +133,6 @@ defaults: &defaults
     delete: "oauth.delete"
     create: "oauth.create"
 
-  framer:
-    create_frame: "framer.create_frame"
-    create_following_dbes: "framer.create_following_dbes"
-
-
 development:
   <<: *defaults
 
