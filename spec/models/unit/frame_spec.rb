@@ -26,7 +26,7 @@ describe Frame do
       @f2.conversation.should_not == @f1.conversation
       @f2.creator_id.should == @u.id
       @f2.roll_id.should == @r2.id
-      @f2.type.should == Frame::FRAME_TYPE[:heavy_weight]
+      @f2.frame_type.should == Frame::FRAME_TYPE[:heavy_weight]
     end
 
     it "F1 should have F2 as its only child" do

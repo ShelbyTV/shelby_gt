@@ -35,7 +35,7 @@ describe GT::Framer do
       res[:frame].conversation.messages[0].should == @message
       res[:frame].conversation.messages[0].persisted?.should == true
       res[:frame].roll.should == @roll
-      res[:frame].type.should == Frame::FRAME_TYPE[:heavy_weight]
+      res[:frame].frame_type.should == Frame::FRAME_TYPE[:heavy_weight]
     end
 
     it "should not persist anything if persist option is set to false" do
@@ -825,7 +825,7 @@ describe GT::Framer do
     it "should be a heavy_weight frame by default" do
       @f2 = GT::Framer.dupe_frame!(@f1, @u, @r2)
 
-      @f2.type.should == Frame::FRAME_TYPE[:heavy_weight]
+      @f2.frame_type.should == Frame::FRAME_TYPE[:heavy_weight]
     end
 
   end

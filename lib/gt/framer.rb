@@ -101,7 +101,7 @@ module GT
       f.conversation = convo
       f.score = score
       f.order = order
-      f.type = frame_type if frame_type
+      f.frame_type = frame_type if frame_type
 
       f.save if persist
 
@@ -270,10 +270,7 @@ module GT
         new_frame.creator_id = orig_frame.creator_id
         new_frame.roll_id = roll_id
         new_frame.video_id = orig_frame.video_id
-
-        if options[:frame_type]
-          new_frame.type = options[:frame_type]
-        end
+        new_frame.frame_type = options[:frame_type] if options[:frame_type]
 
         #copy convo
         new_frame.conversation_id = orig_frame.conversation_id
@@ -298,10 +295,7 @@ module GT
         new_frame.creator_id = user_id
         new_frame.roll_id = roll_id
         new_frame.video_id = orig_frame.video_id
-
-        if options[:frame_type]
-          new_frame.type = options[:frame_type]
-        end
+        new_frame.frame_type = options[:frame_type] if options[:frame_type]
 
         # Create a new conversation
         convo = Conversation.new

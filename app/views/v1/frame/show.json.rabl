@@ -10,7 +10,7 @@ end
 
 if @include_frame_children
 
-  attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id, :like_count, :type
+  attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id, :like_count, :frame_type
 
   node :created_at do |f|
     concise_time_ago_in_words(f.created_at) if f.created_at
@@ -62,7 +62,7 @@ if @include_frame_children
   end
 
 else
-  attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id, :like_count
+  attributes :id, :score, :upvoters, :view_count, :frame_ancestors, :frame_children, :creator_id, :conversation_id, :roll_id, :video_id, :like_count, :frame_type
 
   node :created_at do |c|
     concise_time_ago_in_words(c.created_at) if c.created_at

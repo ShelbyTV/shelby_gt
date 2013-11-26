@@ -12,7 +12,7 @@ describe Frame do
     it "should abbreviate roll_id as :a, rank as :e" do
       Frame.keys["roll_id"].abbr.should == :a
       Frame.keys["score"].abbr.should == :e
-      Frame.keys["type"].abbr.should == :o
+      Frame.keys["frame_type"].abbr.should == :o
     end
   end
 
@@ -27,7 +27,7 @@ describe Frame do
     it "should be a heavy_weight share by default" do
       roll = Factory.create(:roll)
       frame = Factory.create(:frame, :roll => roll)
-      frame.type.should == Frame::FRAME_TYPE[:heavy_weight]
+      frame.frame_type.should == Frame::FRAME_TYPE[:heavy_weight]
     end
   end
 
@@ -305,7 +305,7 @@ describe Frame do
         @f = @frame.add_to_watch_later!(@u1)
       }.should change { Frame.count } .by 1
 
-      @f.type.should == Frame::FRAME_TYPE[:light_weight]
+      @f.frame_type.should == Frame::FRAME_TYPE[:light_weight]
     end
 
     it "should add the user to the frame being watch_latered's upvoters array if it's not there already" do

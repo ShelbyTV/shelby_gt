@@ -64,7 +64,7 @@ class Frame
     :heavy_weight => 0,
     :light_weight => 1
   }.freeze
-  key :type, Integer, :abbr => :o, :default => FRAME_TYPE[:heavy_weight]
+  key :frame_type, Integer, :abbr => :o, :default => FRAME_TYPE[:heavy_weight]
 
   #nothing needs to be mass-assigned (yet?)
   attr_accessible

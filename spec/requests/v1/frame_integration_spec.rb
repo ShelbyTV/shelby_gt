@@ -244,7 +244,7 @@ describe 'v1/frame' do
           response.body.should have_json_path("result/conversation")
           response.body.should have_json_path("result/originator_id")
           response.body.should have_json_path("result/originator")
-          parse_json(response.body)["result"]["type"].should == Frame::FRAME_TYPE[:heavy_weight]
+          parse_json(response.body)["result"]["frame_type"].should == Frame::FRAME_TYPE[:heavy_weight]
         end
 
         it "should add text to the conversation of the newly rolled frame" do
@@ -282,7 +282,7 @@ describe 'v1/frame' do
 
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/video_id")
-          parse_json(response.body)["result"]["type"].should == Frame::FRAME_TYPE[:heavy_weight]
+          parse_json(response.body)["result"]["frame_type"].should == Frame::FRAME_TYPE[:heavy_weight]
         end
 
         it "should add text to the conversation of the newly created frame" do
@@ -353,7 +353,7 @@ describe 'v1/frame' do
           roll = Factory.create(:roll, :creator_id => @u1.id)
           post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?url='+CGI::escape(video_url)+'&text='+CGI::escape(message_text)
           response.body.should be_json_eql(200).at_path("status")
-          parse_json(response.body)["result"]["type"].should == Frame::FRAME_TYPE[:light_weight]
+          parse_json(response.body)["result"]["frame_type"].should == Frame::FRAME_TYPE[:light_weight]
         end
 
       end
