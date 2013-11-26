@@ -10,6 +10,5 @@ class DashboardEntryCreator
 
     frames = Frame.find(frame_ids)
     GT::Framer.create_dashboard_entries(frames, action, user_ids, options)
-    StatsManager::StatsD.increment(Settings::StatsConstants.framer['create_following_dbes'])
   end
 end
