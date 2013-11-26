@@ -107,7 +107,7 @@ class V1::FrameController < ApplicationController
 
           if current_user.watch_later_roll == roll
             # old client trying to do a like.
-            # set roll to public_roll
+            roll = current_user.public_roll
             frame_options[:frame_type] = Frame::FRAME_TYPE[:light_weight]
           end
 
