@@ -86,7 +86,7 @@ class V1::VideoController < ApplicationController
       if user = current_user
         # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
         GT::UserManager.ensure_users_special_rolls(user, true) unless GT::UserManager.user_has_all_special_roll_ids?(user)
-        @video_ids = video_ids_on_roll(user.watch_later_roll.id)
+        @video_ids = video_ids_on_roll(user.public_roll.id)
       else
         @video_ids = []
       end
