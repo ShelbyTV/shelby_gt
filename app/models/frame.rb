@@ -58,6 +58,14 @@ class Frame
   # Total number of likes - both by upvoters (logged in likers) and logged out likers
   key :like_count, Integer, :abbr => :n, :default => 0
 
+   # What does this entry represent (light_weight, heavy_weight)?
+  # [using integers instead of strings to keep the size as small as possible]
+  FRAME_TYPE = {
+    :heavy_weight => 0,
+    :light_weight => 1
+  }.freeze
+  key :type, Integer, :abbr => :o, :default => FRAME_TYPE[:heavy_weight]
+
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
 
@@ -112,33 +120,29 @@ class Frame
   end
 
   #------ Watch Later ------
-
+  # this is what our Like api route actually calls
   def add_to_watch_later!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
 
-    #if it's already in this user's watch later, just return that
-    if prev_dupe = Frame.get_ancestor_of_frame(u.watch_later_roll_id, self.id)
-      return prev_dupe
-    else
-      Frame.collection.update({:_id => self.id}, {
-        :$addToSet => {:f => u.id},
-        :$inc => {:n => 1}
-      })
-      self.reload
-      self.update_score
-      self.save
 
-      Video.collection.update({:_id => self.video_id}, {:$inc => {:v => 1}})
-      Video.find(self.video_id).reload
+    # add liker to upvoters array & inc frame liker count
+    Frame.collection.update({:_id => self.id}, {
+      :$addToSet => {:f => u.id},
+      :$inc => {:n => 1}
+    })
+    self.reload
+    self.update_score
+    self.save
 
-      # send email notification in a non-blocking manor
-      ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self, u) }
+    Video.collection.update({:_id => self.video_id}, {:$inc => {:v => 1}})
+    Video.find(self.video_id).reload
 
-      # add this frame to the community channel in a non-blocking manner
-      ShelbyGT_EM.next_tick { add_to_community_channel }
+    #TODO: Add liker of video to NEW COLLECTION tracking likers of videos
 
-      return GT::Framer.dupe_frame!(self, u.id, u.watch_later_roll_id)
-    end
+    # send email notification in a non-blocking manor
+    ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self, u) }
+
+    return GT::Framer.dupe_frame!(self, u.id, u.public_roll_id, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
   end
 
   #------ Like ------

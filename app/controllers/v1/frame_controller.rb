@@ -104,6 +104,13 @@ class V1::FrameController < ApplicationController
           # and finally create the frame
           # creating dashboard entries async.
           frame_options[:async_dashboard_entries] = true
+
+          if current_user.watch_later_roll == roll
+            # old client trying to do a like.
+            roll = current_user.public_roll
+            frame_options[:frame_type] = Frame::FRAME_TYPE[:light_weight]
+          end
+
           r = frame_options[:video] ? GT::Framer.create_frame(frame_options) : {}
 
           if @frame = r[:frame]
@@ -228,6 +235,8 @@ class V1::FrameController < ApplicationController
     end
   end
 
+
+  # DEPRECATED -- replaced by like
   ##
   # Upvotes a frame and returns the frame back w new score
   #   REQUIRES AUTHENTICATION
@@ -266,6 +275,8 @@ class V1::FrameController < ApplicationController
     end
   end
 
+
+  # DEPRECATED -- replaced by like
   ##
   # Adds a dupe of the given Frame to the logged in users watch_later_roll and returns the dupe Frame
   #   REQUIRES AUTHENTICATION
@@ -274,7 +285,6 @@ class V1::FrameController < ApplicationController
   #
   # @param [Required, String] id The id of the frame
   #
-  # DEPRECATED -- replaced by like
   def add_to_watch_later
     StatsManager::StatsD.time(Settings::StatsConstants.api['frame']['add_to_watch_later']) do
         @frame = Frame.find(params[:frame_id])

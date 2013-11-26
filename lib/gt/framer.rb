@@ -35,6 +35,7 @@ module GT
     # :async_dashboard_entries => Bool -- OPTIONAL set to true if you want dashboard entries created async.
     #                            - N.B. return value will not include :dashboard_entries if this is set to true
     #                            - N.B. it does not make sense to turn this option on if :persist is set to false
+    # :frame_type => is this a heavy_weight or light_weight frame type
     # :dashboard_entry_options => Hash -- OPTIONAL if dashboard entries are created, this will be passed as the options parameter
     # :persist => Bool -- OPTIONAL if set to false, the created frames and/or dashboard entries will not be saved to the DB
     #                        - For the moment, non-persistent frames will not support conversations, so :message param will be ignored
@@ -51,6 +52,7 @@ module GT
       video = options.delete(:video)
       video_id = options.delete(:video_id)
       genius = options.delete(:genius)
+      frame_type = options.delete(:frame_type)
       skip_dashboard_entries = options.delete(:skip_dashboard_entries)
       async_dashboard_entries = options.delete(:async_dashboard_entries)
       dashboard_entry_options = options.delete(:dashboard_entry_options) || {}
@@ -99,6 +101,7 @@ module GT
       f.conversation = convo
       f.score = score
       f.order = order
+      f.type = frame_type if frame_type
 
       f.save if persist
 
@@ -141,7 +144,7 @@ module GT
     #
     # { :frame => newly_created_frame, :dashboard_entries => [1 or more DashboardEntry, ...] }
     #
-    def self.re_roll(orig_frame, for_user, to_roll, skip_dashboard_entries=false)
+    def self.re_roll(orig_frame, for_user, to_roll, options={})
       raise ArgumentError, "must supply user or user_id" unless for_user
       user_id = (for_user.is_a?(User) ? for_user.id : for_user)
 
@@ -150,9 +153,9 @@ module GT
 
       res = { :frame => nil, :dashboard_entries => [] }
 
-      res[:frame] = basic_re_roll(orig_frame, user_id, roll_id)
+      res[:frame] = basic_re_roll(orig_frame, user_id, roll_id, options)
 
-      unless skip_dashboard_entries
+      unless options[:skip_dashboard_entries]
         #create dashboard entries for all roll followers *except* the user who just re-rolled
         create_dashboard_entries_async([res[:frame]], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
       end
@@ -163,7 +166,7 @@ module GT
       return res
     end
 
-    def self.dupe_frame!(orig_frame, for_user, to_roll)
+    def self.dupe_frame!(orig_frame, for_user, to_roll, options={} )
       raise ArgumentError, "must supply original Frame" unless orig_frame and orig_frame.is_a? Frame
 
       raise ArgumentError, "must supply user or user_id" unless for_user
@@ -172,7 +175,7 @@ module GT
       raise ArgumentError, "must supply roll or roll_id" unless to_roll
       roll_id = (to_roll.is_a?(Roll) ? to_roll.id : to_roll)
 
-      return basic_dupe!(orig_frame, user_id, roll_id)
+      return basic_dupe!(orig_frame, user_id, roll_id, options)
     end
 
     def self.remove_dupe_of_frame_from_roll!(frame, roll)
@@ -259,12 +262,16 @@ module GT
 
     private
 
-      def self.basic_dupe!(orig_frame, user_id, roll_id)
+      def self.basic_dupe!(orig_frame, user_id, roll_id, options={})
         # Dupe it
         new_frame = Frame.new
         new_frame.creator_id = orig_frame.creator_id
         new_frame.roll_id = roll_id
         new_frame.video_id = orig_frame.video_id
+
+        if options[:frame_type]
+          new_frame.type = options[:frame_type]
+        end
 
         #copy convo
         new_frame.conversation_id = orig_frame.conversation_id
@@ -283,12 +290,16 @@ module GT
         return new_frame
       end
 
-      def self.basic_re_roll(orig_frame, user_id, roll_id)
+      def self.basic_re_roll(orig_frame, user_id, roll_id, options={})
         # Set up the basics
         new_frame = Frame.new
         new_frame.creator_id = user_id
         new_frame.roll_id = roll_id
         new_frame.video_id = orig_frame.video_id
+
+        if options[:frame_type]
+          new_frame.type = options[:frame_type]
+        end
 
         # Create a new conversation
         convo = Conversation.new

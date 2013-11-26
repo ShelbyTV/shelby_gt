@@ -83,7 +83,7 @@ describe 'v1/discussion_roll' do
       it "should create a new message and return the conversation" do
         emails = [Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries =>true})
 
         lambda {
           post "/v1/discussion_roll/#{roll.id}/messages?message=msg"
@@ -99,7 +99,7 @@ describe 'v1/discussion_roll' do
       it "should send emails to everybody but message creator" do
         emails = [Factory.next(:primary_email), Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries=>true})
 
         lambda {
           post "/v1/discussion_roll/#{roll.id}/messages?message=msg"
@@ -112,7 +112,7 @@ describe 'v1/discussion_roll' do
       it "should post the message with correct info for actual shelby user" do
         emails = [Factory.next(:primary_email), Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries => true})
 
         lambda {
           post "/v1/discussion_roll/#{roll.id}/messages?message=themsg"
@@ -127,7 +127,7 @@ describe 'v1/discussion_roll' do
         msg_poster_email = Factory.next(:primary_email)
         emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries => true})
 
         token = GT::DiscussionRollUtils.encrypt_roll_user_identification(roll, msg_poster_email)
         post "/v1/discussion_roll/#{roll.id}/messages?message=msg&token=#{CGI.escape token}"
@@ -145,7 +145,7 @@ describe 'v1/discussion_roll' do
         msg = "themessage"
         emails = [Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries => true})
 
         #make sure a video is found
         v1 = Factory.create(:video)
@@ -170,7 +170,7 @@ describe 'v1/discussion_roll' do
         msg = "themessage"
         emails = [Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries => true})
 
         #make sure a video is found via videos[]
         v1 = Factory.create(:video)
@@ -194,7 +194,7 @@ describe 'v1/discussion_roll' do
       it "should create and return a new Frame when videos[] param has valid URL and there is no message" do
         emails = [Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries => true})
 
         #make sure a video is found via videos[]
         v1 = Factory.create(:video)
@@ -263,7 +263,7 @@ describe 'v1/discussion_roll' do
         msg_poster_email = Factory.next(:primary_email)
         emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        res = GT::Framer.re_roll(@frame, @u1, roll, true)
+        res = GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries => true})
         roll.reload.content_updated_at.to_i.should be_within(5).of(res[:frame].created_at.to_i)
 
         #change it to make sure we update later
@@ -288,7 +288,7 @@ describe 'v1/discussion_roll' do
         msg_poster_email = Factory.next(:primary_email)
         emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries => true})
 
         lambda {
           token = GT::DiscussionRollUtils.encrypt_roll_user_identification(roll, msg_poster_email)
@@ -303,7 +303,7 @@ describe 'v1/discussion_roll' do
         msg_poster_email = Factory.next(:primary_email)
         emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries => true})
 
         lambda {
           token = GT::DiscussionRollUtils.encrypt_roll_user_identification(roll, msg_poster_email)
@@ -321,7 +321,7 @@ describe 'v1/discussion_roll' do
         msg_poster_email = Factory.next(:primary_email)
         emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries => true})
 
         #make sure a video is found
         v1 = Factory.create(:video)
@@ -350,7 +350,7 @@ describe 'v1/discussion_roll' do
         msg_poster_email = Factory.next(:primary_email)
         emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
-        GT::Framer.re_roll(@frame, @u1, roll, true)
+        GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries => true})
 
         #make sure a video is found
         v1 = Factory.create(:video)
