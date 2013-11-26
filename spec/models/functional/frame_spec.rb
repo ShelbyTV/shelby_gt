@@ -23,6 +23,12 @@ describe Frame do
         frame = Factory.create(:frame, :roll => roll)
       }.should change { roll.reload.frame_count }.by(1)
     end
+
+    it "should be a heavy_weight share by default" do
+      roll = Factory.create(:roll)
+      frame = Factory.create(:frame, :roll => roll)
+      frame.type.should == Frame::FRAME_TYPE[:heavy_weight]
+    end
   end
 
   # We're testing a private method here, but it's a pretty fucking important/tricky one and has to be correct
