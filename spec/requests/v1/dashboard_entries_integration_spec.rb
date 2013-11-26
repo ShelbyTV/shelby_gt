@@ -44,6 +44,14 @@ describe 'v1/dashboard' do
           parse_json(response.body)["result"][0]["frame"]["upvoters"][0].should eq(upvoter1.id.to_s)
         end
 
+        it "contains the frame frame_type attribute" do
+          get '/v1/dashboard'
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/0/frame/frame_type")
+          parse_json(response.body)["result"][0]["frame"]["frame_type"].should eq(Frame::FRAME_TYPE[:heavy_weight])
+        end
+
         it "should contain frame like_count" do
           get '/v1/dashboard'
           response.body.should have_json_path("result/0/frame/like_count")

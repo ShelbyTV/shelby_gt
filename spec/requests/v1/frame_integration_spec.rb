@@ -32,7 +32,10 @@ describe 'v1/frame' do
           get '/v1/frame/'+@f.id+'?include_children=true'
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/score")
-          parse_json(response.body)["result"]["roll"]["roll_type"].should eq(@f.roll.roll_type)
+          response.body.should have_json_path("result/frame_type")
+          parsed_response = parse_json(response.body)
+          parsed_response["result"]["frame_type"].should == Frame::FRAME_TYPE[:heavy_weight]
+          parsed_response["result"]["roll"]["roll_type"].should eq(@f.roll.roll_type)
         end
 
         context "upvote_users" do
@@ -115,6 +118,14 @@ describe 'v1/frame' do
           response.body.should be_json_eql(200).at_path("status")
           response.body.should have_json_path("result/frames/0/creator/user_type")
           parse_json(response.body)["result"]["frames"][0]["creator"]["user_type"].should eq(@u1.user_type)
+        end
+
+        it "contains the frame_type attribute" do
+          get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
+
+          response.body.should be_json_eql(200).at_path("status")
+          response.body.should have_json_path("result/frames/0/frame_type")
+          parse_json(response.body)["result"]["frames"][0]["frame_type"].should eq(Frame::FRAME_TYPE[:heavy_weight])
         end
 
         it "should populate frame upvoters with correct data" do

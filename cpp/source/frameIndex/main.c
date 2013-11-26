@@ -398,7 +398,8 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
       SOB_FRAME_ROLL_ID,
       SOB_FRAME_VIDEO_ID,
       SOB_FRAME_UPVOTERS,
-      SOB_FRAME_LIKE_COUNT
+      SOB_FRAME_LIKE_COUNT,
+      SOB_FRAME_FRAME_TYPE
    };
    bson_oid_t frameOid;
    bson_oid_t originatorFrameOid;
