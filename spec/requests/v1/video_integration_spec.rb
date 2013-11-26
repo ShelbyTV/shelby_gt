@@ -89,7 +89,7 @@ describe 'v1/video' do
   describe "GET queued" do
     before(:each) do
       @u1 = Factory.create(:user)
-      @u1.watch_later_roll = Factory.create(:roll, :creator => @u1)
+      @u1.public_roll = Factory.create(:roll, :creator => @u1)
       @u1.save
 
       #sign that user in
@@ -104,9 +104,9 @@ describe 'v1/video' do
     end
 
     it "should return an array of video ids from the viewed roll" do
-      f1 = Factory.create(:frame, :creator => @u1, :roll => @u1.watch_later_roll, :video => Factory.create(:video))
-      f2 = Factory.create(:frame, :creator => @u1, :roll => @u1.watch_later_roll, :video => Factory.create(:video))
-      f3 = Factory.create(:frame, :creator => @u1, :roll => @u1.watch_later_roll, :video => Factory.create(:video))
+      f1 = Factory.create(:frame, :creator => @u1, :roll => @u1.public_roll, :video => Factory.create(:video))
+      f2 = Factory.create(:frame, :creator => @u1, :roll => @u1.public_roll, :video => Factory.create(:video))
+      f3 = Factory.create(:frame, :creator => @u1, :roll => @u1.public_roll, :video => Factory.create(:video))
 
       get '/v1/video/queued'
       response.body.should be_json_eql(200).at_path("status")
@@ -119,8 +119,8 @@ describe 'v1/video' do
 
     it "should only return unique video ids" do
       v = Factory.create(:video)
-      f1 = Factory.create(:frame, :creator => @u1, :roll => @u1.watch_later_roll, :video => v)
-      f2 = Factory.create(:frame, :creator => @u1, :roll => @u1.watch_later_roll, :video => v)
+      f1 = Factory.create(:frame, :creator => @u1, :roll => @u1.public_roll, :video => v)
+      f2 = Factory.create(:frame, :creator => @u1, :roll => @u1.public_roll, :video => v)
 
       get '/v1/video/queued'
       response.body.should be_json_eql(200).at_path("status")

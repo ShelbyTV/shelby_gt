@@ -303,7 +303,6 @@ describe V1::FrameController do
     end
 
     it "creates a new Frame" do
-      Frame.should_receive(:get_ancestor_of_frame).and_return(nil)
 
       lambda {
         post :add_to_watch_later, :frame_id => @f2.id, :format => :json

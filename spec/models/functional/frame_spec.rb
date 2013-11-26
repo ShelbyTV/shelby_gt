@@ -338,14 +338,14 @@ describe Frame do
       lambda {
         @frame.add_to_watch_later!(@u1)
         @frame.add_to_watch_later!(@u1)
-      }.should change { @frame.like_count } .by 1
+      }.should change { @frame.like_count } .by 2
     end
 
     it "should increment the number of video likes once for each user" do
       lambda {
         @frame.add_to_watch_later!(@u1)
         @frame.add_to_watch_later!(@u1)
-      }.should change { @video.like_count } .by 1
+      }.should change { @video.like_count } .by 2
     end
 
     it "should increase the score" do
@@ -371,9 +371,9 @@ describe Frame do
       lambda {
         f1 = @frame.add_to_watch_later!(@u1)
         f2 = @frame.add_to_watch_later!(@u1)
-      }.should change { Frame.count } .by 1
+      }.should change { Frame.count } .by 2
 
-      f1.should == f2
+      f1.should_not == f2
     end
   end
 
