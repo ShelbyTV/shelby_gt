@@ -86,7 +86,7 @@ class V1::VideoController < ApplicationController
       if user = current_user
         # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
         GT::UserManager.ensure_users_special_rolls(user, true) unless GT::UserManager.user_has_all_special_roll_ids?(user)
-        @video_ids = video_ids_on_roll(user.public_roll.id)
+        @video_ids = video_ids_on_roll(user.public_roll.id, 1000, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
       else
         @video_ids = []
       end
@@ -213,14 +213,15 @@ class V1::VideoController < ApplicationController
 
   private
 
-    def video_ids_on_roll(roll_id, limit=1000)
+    def video_ids_on_roll(roll_id, limit=1000, query={})
       # This stuff works, but it's slower than using distinct
       #Only return the video_id (abbreviated as :b) for the first 1,000 frames
       #frames = Frame.where(:roll_id => roll_id).limit(1000).fields(:b).all
       #return frames.collect { |f| f.video_id }.compact.uniq
 
       # Since distinct doesn't support limit, we impose some artificial limit via time to keep the query reasonable
-      video_ids = Frame.where(:roll_id => roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}).distinct(:b)
+      query = {:roll_id => roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}}.merge(query)
+      video_ids = Frame.where(query).distinct(:b)
       # and then limit the results array
       return video_ids[0..limit]
     end
