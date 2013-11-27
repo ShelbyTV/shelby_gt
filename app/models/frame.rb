@@ -142,7 +142,8 @@ class Frame
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self, u) }
 
-    return GT::Framer.dupe_frame!(self, u.id, u.public_roll_id, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
+    res = GT::Framer.re_roll(self, u.id, u.public_roll, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
+    return res[:frame]
   end
 
   #------ Like ------

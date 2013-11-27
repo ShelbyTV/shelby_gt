@@ -279,7 +279,8 @@ describe Frame do
   context "watch later" do
     before(:each) do
       @video = Factory.create(:video)
-      @frame = Factory.create(:frame, :video => @video)
+      @originator = Factory.create(:user)
+      @frame = Factory.create(:frame, :creator => @originator, :video => @video)
 
       @u1 = Factory.create(:user)
       @u1.public_roll = Factory.create(:roll, :creator => @u1)
@@ -364,10 +365,11 @@ describe Frame do
         f = @frame.add_to_watch_later!(@u1)
       }.should change { Frame.count } .by 1
 
-      f.creator_id.should == @frame.creator_id
+      f.creator_id.should == @u1.id
       f.video_id.should == @frame.video_id
-      f.conversation_id.should == @frame.conversation_id
-      f.frame_ancestors.include?(@frame.id).should == true
+      f.conversation_id.should_not eql(@frame.conversation_id)
+      f.frame_ancestors.last.should == @frame.id
+      f.frame_ancestors.length.should == @frame.frame_ancestors.length + 1
     end
 
     it "should be idempotent" do

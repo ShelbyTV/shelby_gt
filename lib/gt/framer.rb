@@ -148,8 +148,8 @@ module GT
       raise ArgumentError, "must supply user or user_id" unless for_user
       user_id = (for_user.is_a?(User) ? for_user.id : for_user)
 
-      raise ArgumentError, "must supply roll or roll_id" unless to_roll
-      roll_id = (to_roll.is_a?(Roll) ? to_roll.id : to_roll)
+      raise ArgumentError, "must supply roll" unless to_roll && to_roll.is_a?(Roll)
+      roll_id = to_roll.id
 
       res = { :frame => nil, :dashboard_entries => [] }
 
