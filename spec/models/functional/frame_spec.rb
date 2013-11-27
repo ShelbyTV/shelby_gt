@@ -284,6 +284,8 @@ describe Frame do
 
       @u1 = Factory.create(:user)
       @u1.public_roll = Factory.create(:roll, :creator => @u1)
+
+      ResqueSpec.reset!
     end
 
     it "should require full User model, not just id" do
@@ -307,6 +309,16 @@ describe Frame do
       }.should change { Frame.count } .by 1
 
       @f.frame_type.should == Frame::FRAME_TYPE[:light_weight]
+    end
+
+    it "creates dashboard entries for followers of the liker's public roll" do
+      @u1.public_roll.add_follower(Factory.create(:user))
+      @frame.add_to_watch_later!(@u1)
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
     end
 
     it "should add the user to the frame being watch_latered's upvoters array if it's not there already" do
