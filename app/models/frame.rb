@@ -291,8 +291,8 @@ class Frame
     Roll.decrement(self.deleted_from_roll_id, :j => -1) if self.deleted_from_roll_id
     roll.frame_count -= 1 if roll
 
-    #if this frame is on a watch later roll, undo the upvote that resulted from its addition to the roll
-    if roll.roll_type == Roll::TYPES[:special_watch_later]
+    #if this frame is a lightweight_share, undo the upvote that resulted from its "liking"
+    if self.frame_type == Frame::FRAME_TYPE[:light_weight]
       # the original frame that was upvoted when this frame was created on the watch later roll is this frame's
       # direct (last) ancestor
       if upvoted_frame_id = self.frame_ancestors.last
