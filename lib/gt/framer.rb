@@ -3,9 +3,9 @@
 # If the user re-rolls a Frame, that goes through us.
 # If Arnold 2, the bookmarklet, or a dev script needs to create a Frame, that goes through us.
 #
+require 'new_relic/agent/method_tracer'
 module GT
   class Framer
-
     # Creates a Frame with Conversation & associated DashboardEntries.
     #  If adding to a Roll, create DashboardEntries for all followers of Roll.
     #  If not adding to a Roll, create single DashboardEntry for the given dashboard owner.
@@ -248,6 +248,11 @@ module GT
       end
 
       return entries
+    end
+
+    class << self
+      include ::NewRelic::Agent::MethodTracer
+      add_method_tracer :create_dashboard_entries, 'Custom/Framer/create_dashboard_entries'
     end
 
     def self.create_dashboard_entries_async(frames, action, user_ids, options={})
