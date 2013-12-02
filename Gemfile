@@ -181,10 +181,12 @@ end
 gem 'formatted_rails_logger'
 
 # Deploy with Capistrano
-gem 'capistrano', '2.15.3'
-gem 'rvm-capistrano'
-gem 'capistrano-unicorn', :require => false
-gem 'capistrano-resque', :require => false
+group :development do
+  gem 'capistrano', '~>2.15.3'
+  gem 'rvm-capistrano'
+  gem 'capistrano-unicorn', :require => false
+  gem 'capistrano-foreman', :git => "git://github.com/iceberg901/capistrano-foreman", :branch => "fix-foreman-sudo-password-input", :require => false
+end
 
 #
 # ----------- Web Server
@@ -236,3 +238,5 @@ gem "therubyracer", :require => 'v8'
 
 gem "resque", "~> 1.0"
 gem "resque-web", require: "resque_web"
+
+gem "foreman"

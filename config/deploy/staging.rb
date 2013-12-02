@@ -1,6 +1,6 @@
 load 'deploy/assets'
 require 'capistrano-unicorn'
-require 'capistrano-resque'
+require 'capistrano/foreman'
 
 set :deploy_to, "/home/gt/api"
 
@@ -24,13 +24,19 @@ set :unicorn_env, "staging"
 set :app_env,     "staging"
 
 #############################################################
-# resque
+# resque via foreman/upstart
 #############################################################
 
-set :workers, { "*" => 4 }
-set :interval, 1
-set :resque_environment_task, true
-after "deploy:restart", "resque:restart"
+set :foreman_sudo, 'rvmsudo'
+set :foreman_upstart_path, '/etc/init/'
+set :foreman_options, {
+  app: 'shelby-gt',
+  log: "#{shared_path}/log",
+  procfile: "#{release_path}/Procfile.production",
+  user: fetch(:user, "gt")
+}
+after "deploy:update", "foreman:export"
+after 'deploy:restart', 'foreman:restart'
 
 after 'deploy:restart', 'unicorn:duplicate'
 

@@ -1,0 +1,2 @@
+#default options to be used by foreman
+concurrency: worker=4

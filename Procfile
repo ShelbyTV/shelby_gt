@@ -1,0 +1,1 @@
+worker: env QUEUE=\"*\" INTERVAL=1 VERBOSE=1 bundle exec rake environment resque:work
