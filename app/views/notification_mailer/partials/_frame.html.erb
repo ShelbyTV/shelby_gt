@@ -6,7 +6,7 @@
           <tr>
             <td data-video_title>
               <% extra_params = ab_bucket ? "&kmi=#{user_to.nickname}&km_bucket=#{@ab_bucket}" : '' %>
-              <a href="<%= Settings::Email.web_url_base %>/stream?entry=<%= dbe.id %><%= extra_params %>" style="color: <%= Settings::Email.ui_soft_black %>; text-decoration: none;">
+              <a href="<%= video.permalink %>?source=email<%= extra_params %>" style="color: <%= Settings::Email.ui_soft_black %>; text-decoration: none;">
                 <strong style="display: block; font-family: <%= Settings::Email.font_family %>;font-size: <%= Settings::Email.font_size_large %>; line-height:1.3; margin-bottom: 5px;" title="<%= video.title %>">
                   <%= video.title %>
                 </strong>
@@ -16,7 +16,7 @@
 
           <tr>
             <td>
-              <a href="<%= Settings::Email.web_url_base %>/stream?entry=<%= dbe.id %>" style="border: 3px solid <%= Settings::Email.ui_green %>;display:block;">
+              <a href="<%= video.permalink %>?source=email<%= extra_params %>" style="border: 3px solid <%= Settings::Email.ui_green %>;display:block;">
                 <img style="width: 100%; display: block;" src="<%= video.thumbnail_url %>" title="<%- video.title %>" alt="<%- video.title %> thumbnail" />
               </a>
             </td>
