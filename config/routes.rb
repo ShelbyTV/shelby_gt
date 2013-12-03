@@ -1,3 +1,5 @@
+require "resque_web"
+
 ShelbyGt::Application.routes.draw do
 
   # The priority is based upon order of creation:
@@ -210,5 +212,10 @@ ShelbyGt::Application.routes.draw do
   # looking for web_root_url?  You should use Settings::ShelbyAPI.web_root
 
   root :to => redirect(Settings::ShelbyAPI.web_root)
+
+  # resque web interface for checking on jobs
+  if (Rails.env != 'test')
+    mount ResqueWeb::Engine, :at => "/resque_web"
+  end
 
 end

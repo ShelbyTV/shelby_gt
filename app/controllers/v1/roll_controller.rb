@@ -268,7 +268,7 @@ class V1::RollController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['roll']['join']) do
       if @roll = Roll.find(params[:roll_id])
         @roll.add_follower(current_user)
-        GT::Framer.backfill_dashboard_entries(current_user, @roll, 5)
+        GT::Framer.backfill_dashboard_entries(current_user, @roll, 5, {:async_dashboard_entries => true})
         @status = 200
         StatsManager::StatsD.increment(Settings::StatsConstants.roll['join'])
       else
