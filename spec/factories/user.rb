@@ -11,6 +11,14 @@ Factory.sequence :primary_email do |n|
   "email#{n}@gmail.com"
 end
 
+Factory.sequence :user_image do |n|
+  "image-#{n}.png"
+end
+
+Factory.sequence :user_image_original do |n|
+  "image-original-#{n}.png"
+end
+
 Factory.define :authentication do |a|
   a.name          "name"
   a.nickname      "nickname"
@@ -25,6 +33,8 @@ Factory.define :user do |user|
   user.downcase_nickname        { self.nickname }
   user.authentications          { [FactoryGirl.create(:authentication)] }
   user.primary_email            { Factory.next :primary_email }
+  user.user_image               { Factory.next :user_image }
+  user.user_image_original      { Factory.next :user_image_original }
   user.gt_enabled true
   user.preferences  Preferences.new
 end

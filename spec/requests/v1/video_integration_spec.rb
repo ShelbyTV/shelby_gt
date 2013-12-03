@@ -42,6 +42,79 @@ describe 'v1/video' do
     end
   end
 
+  describe "GET likers" do
+    it "returns status 200 and base level information on success" do
+      get '/v1/video/'+@v.id+'/likers'
+      puts response.body
+      response.body.should be_json_eql(200).at_path("status")
+      response.body.should have_json_path("result/video")
+      response.body.should have_json_path("result/video/id")
+      response.body.should have_json_path("result/video/provider_name")
+      response.body.should have_json_path("result/video/provider_id")
+      response.body.should have_json_path("result/likers")
+      response.body.should have_json_type(Array).at_path("result/likers")
+      response.body.should have_json_size(0).at_path("result/likers")
+
+      parsed_response = parse_json(response.body)
+      parsed_response["result"]["video"]["id"].should == @v.id.to_s
+      parsed_response["result"]["video"]["provider_name"].should == @v.provider_name
+      parsed_response["result"]["video"]["provider_id"].should == @v.provider_id
+    end
+
+    it "returns info on the likers if there are any, across buckets" do
+      likers = []
+      buckets = []
+      2.times do |i|
+        buckets << Factory.create(:video_liker_bucket, :provider_name => @v.provider_name, :provider_id => @v.provider_id, :sequence => i)
+        2.times do
+          public_roll = Factory.create(:roll)
+          liker = Factory.create(:user, :public_roll => public_roll)
+          likers << liker
+          buckets[i].likers << Factory.create(:video_liker, {
+            :user_id => liker.id,
+            :nickname => liker.nickname,
+            :name => liker.name,
+            :public_roll => liker.public_roll,
+            :user_image => liker.user_image,
+            :user_image_original => liker.user_image_original,
+            :has_shelby_avatar => liker.has_shelby_avatar
+          })
+        end
+        buckets[i].save
+      end
+      MongoMapper::Plugins::IdentityMap.clear
+
+      get '/v1/video/'+@v.id+'/likers'
+
+      response.body.should have_json_size(4).at_path("result/likers")
+      response.body.should have_json_path("result/likers/0/user_id")
+      response.body.should have_json_path("result/likers/0/name")
+      response.body.should have_json_path("result/likers/0/nickname")
+      response.body.should have_json_path("result/likers/0/personal_roll_id")
+      response.body.should have_json_path("result/likers/0/user_image")
+      response.body.should have_json_path("result/likers/0/user_image_original")
+      response.body.should have_json_path("result/likers/0/has_shelby_avatar")
+
+      parsed_response = parse_json(response.body)
+      parsed_response["result"]["likers"][0]["user_id"].should == likers[0].id.to_s
+      parsed_response["result"]["likers"][0]["name"].should == likers[0].name
+      parsed_response["result"]["likers"][0]["nickname"].should == likers[0].nickname
+      parsed_response["result"]["likers"][0]["personal_roll_id"].should == likers[0].public_roll_id.to_s
+      parsed_response["result"]["likers"][0]["user_image"].should == likers[0].user_image
+      parsed_response["result"]["likers"][0]["user_image_original"].should == likers[0].user_image_original
+      parsed_response["result"]["likers"][0]["has_shelby_avatar"].should == likers[0].has_shelby_avatar
+
+      parsed_response["result"]["likers"][1]["user_id"].should == likers[1].id.to_s
+      parsed_response["result"]["likers"][2]["user_id"].should == likers[2].id.to_s
+      parsed_response["result"]["likers"][3]["user_id"].should == likers[3].id.to_s
+    end
+
+    it "returns error message if video doesnt exist" do
+      get '/v1/video/'+@v.id+'xxx/likers'
+      response.body.should be_json_eql(404).at_path("status")
+    end
+  end
+
   describe "GET viewed" do
     before(:each) do
       @u1 = Factory.create(:user)

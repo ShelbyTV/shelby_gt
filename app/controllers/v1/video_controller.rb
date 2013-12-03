@@ -8,7 +8,7 @@ class V1::VideoController < ApplicationController
   require 'api_clients/dailymotion_client'
   require 'api_clients/webscraper_client'
 
-  before_filter :user_authenticated?, :except => [:show, :find_or_create, :search, :fix_if_necessary, :watched]
+  before_filter :user_authenticated?, :except => [:show, :likers, :find_or_create, :search, :fix_if_necessary, :watched]
 
   ##
   # Returns one video, with the given parameters.
@@ -19,10 +19,33 @@ class V1::VideoController < ApplicationController
   # @todo return error if id not present w/ params.has_key?(:id)
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['video']['show']) do
-      if @video = Video.find(params[:id])
-        @status =  200
+      video_id = params.delete(:id)
+      if @video = Video.find(video_id)
+        @status = 200
       else
-        render_error(404, "could not video with id #{params[:id]}")
+        render_error(404, "could not find video with id #{video_id}")
+      end
+    end
+  end
+
+  ##
+  # Returns the likers for a given video.
+  #
+  # [GET] /v1/video/:id/likers
+  #
+  # @param [Required, String] id The id of the video
+  def likers
+    StatsManager::StatsD.time(Settings::StatsConstants.api['video']['likers']) do
+      video_id = params.delete(:id)
+      if @video = Video.find(video_id)
+        # look up the likers for this video
+        @likers = []
+        VideoLikerBucket.where({:provider_name => @video.provider_name, :provider_id => @video.provider_id}).each do |vlb|
+          @likers.concat vlb.likers
+        end
+        @status = 200
+      else
+        render_error(404, "could not find video with id #{video_id}")
       end
     end
   end

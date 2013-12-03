@@ -53,6 +53,8 @@ class Video
   # the last time the video info was refreshed from the provider
   key :info_updated_at, Time, :abbr => :x
 
+  # Total number of likers tracked in the video-likers collection for this video
+  key :liker_count, Integer, :abbr => :y, :default => 0
 
   # Arnold does a *shit ton* of Video creation, which runs this validation, which turns out to be very expensive
   # This validations is technically unnecessary because there is a unique index on [provider_id, provider_name] in the database.
