@@ -1,12 +1,12 @@
 require 'user_manager'
+require 'video_liker_manager'
+require 'utils/search_combiner'
+require 'api_clients/vimeo_client'
+require 'api_clients/youtube_client'
+require 'api_clients/dailymotion_client'
+require 'api_clients/webscraper_client'
 
 class V1::VideoController < ApplicationController
-  require 'user_manager'
-  require 'utils/search_combiner'
-  require 'api_clients/vimeo_client'
-  require 'api_clients/youtube_client'
-  require 'api_clients/dailymotion_client'
-  require 'api_clients/webscraper_client'
 
   before_filter :user_authenticated?, :except => [:show, :likers, :find_or_create, :search, :fix_if_necessary, :watched]
 
@@ -34,15 +34,17 @@ class V1::VideoController < ApplicationController
   # [GET] /v1/video/:id/likers
   #
   # @param [Required, String] id The id of the video
+  # @param [Optional, Integer] limit The maximum number of likers to return
   def likers
     StatsManager::StatsD.time(Settings::StatsConstants.api['video']['likers']) do
+
+      limit_string = params.delete(:limit)
+      limit = limit_string ? limit_string.to_i : Settings::VideoLiker.bucket_size
+
       video_id = params.delete(:id)
       if @video = Video.find(video_id)
         # look up the likers for this video
-        @likers = []
-        VideoLikerBucket.where({:provider_name => @video.provider_name, :provider_id => @video.provider_id}).each do |vlb|
-          @likers.concat vlb.likers
-        end
+        @likers = GT::VideoLikerManager.get_likers_for_video(@video, {:limit => limit})
         @status = 200
       else
         render_error(404, "could not find video with id #{video_id}")

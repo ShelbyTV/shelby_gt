@@ -10,6 +10,8 @@ describe GT::AuthenticationBuilder do
   before(:each) do
     @u = Factory.create(:user)
     @u.primary_email = nil
+    @u.user_image = nil
+    @u.user_image_original = nil
     @nickname = "nick-#{rand.to_s}"
     @omniauth_hash = {
       'provider' => "twitter",
