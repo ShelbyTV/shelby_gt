@@ -14,13 +14,13 @@ describe GT::VideoLikerManager do
     @limit_query = double("limit_query")
 
     VideoLikerBucket.should_receive(:where).with({:provider_name => @v.provider_name, :provider_id => @v.provider_id}).and_return(where_query)
-    where_query.should_receive(:sort).with(:sequence).and_return(@sort_query)
+    where_query.should_receive(:sort).with(:sequence.desc).and_return(@sort_query)
     @sort_query.stub(:limit).and_return(@limit_query)
-    @limit_query.stub(:all).and_return([])
+    @limit_query.stub(:each)
   end
 
-  it "fetches one bucket of likers by default" do
-    @sort_query.should_receive(:limit).with(1).and_return(@limit_query)
+  it "fetches two buckets of likers by default" do
+    @sort_query.should_receive(:limit).with(2).and_return(@limit_query)
 
     GT::VideoLikerManager.get_likers_for_video(@v)
   end
@@ -28,7 +28,7 @@ describe GT::VideoLikerManager do
   it "fetches the correct number of buckets when a limit is specified and matches an exact number of buckets" do
     limit = Settings::VideoLiker.bucket_size * 2
 
-    @sort_query.should_receive(:limit).with(2).and_return(@limit_query)
+    @sort_query.should_receive(:limit).with(3).and_return(@limit_query)
 
     GT::VideoLikerManager.get_likers_for_video(@v, {:limit => limit})
   end
@@ -47,7 +47,7 @@ describe GT::VideoLikerManager do
     video_liker_bucket = Factory.create(:video_liker_bucket)
     video_liker_bucket.likers << video_liker
 
-    @limit_query.should_receive(:all).and_return([video_liker_bucket])
+    @limit_query.should_receive(:each).and_yield(video_liker_bucket)
 
     expect(GT::VideoLikerManager.get_likers_for_video(@v)).to eql [video_liker]
   end
@@ -74,26 +74,32 @@ describe GT::VideoLikerManager do
           @buckets[i].likers << video_liker
         end
       end
+
+      each_expectation = @limit_query.should_receive(:each)
+      @buckets.reverse.each do |bucket|
+        each_expectation = each_expectation.and_yield(bucket)
+      end
     end
 
-    it "returns the correct results for a limit midway through the first bucket" do
-      @limit_query.should_receive(:all).and_return(@buckets.first(1))
-      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 2})).to eql [@video_likers[0], @video_likers[1]]
+    it "returns the likers in order of recency for a limit less than the bucket size" do
+      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 2})).to eql [@video_likers[-1], @video_likers[-2]]
     end
 
-    it "returns the correct results for a limit exactly containing the first bucket" do
-      @limit_query.should_receive(:all).and_return(@buckets.first(1))
-      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 3})).to eql [@video_likers[0], @video_likers[1], @video_likers[2]]
+    it "returns the likers in order of recency for a limit exactly equal to the bucket size" do
+      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 3})).to eql [@video_likers[-1], @video_likers[-2], @video_likers[-3]]
     end
 
-    it "returns the correct results for a limit midway through the second bucket" do
-      @limit_query.should_receive(:all).and_return(@buckets.first(2))
-      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 5})).to eql [@video_likers[0], @video_likers[1], @video_likers[2], @video_likers[3], @video_likers[4]]
+    it "returns the likers in order of recency for a limit midway through the second bucket" do
+      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 5})).to eql [@video_likers[-1], @video_likers[-2], @video_likers[-3], @video_likers[-4], @video_likers[-5]]
     end
 
-    it "returns the correct results for a limit that exceeds the number of existing buckets" do
-      @limit_query.should_receive(:all).and_return(@buckets)
-      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => Settings::VideoLiker.bucket_size * 3})).to eql @video_likers
+    it "returns the likers in order of recency for a limit that exceeds the current number of likers" do
+      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => Settings::VideoLiker.bucket_size * 3})).to eql @video_likers.reverse
+    end
+
+    it "returns the right results when the most recent bucket is not full" do
+      @buckets.last.likers.slice!(-1)
+      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 3})).to eql [@video_likers[-2], @video_likers[-3], @video_likers[-4]]
     end
   end
 

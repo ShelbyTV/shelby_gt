@@ -17,21 +17,23 @@ module GT
       limit = options.delete(:limit)
 
       limit_bucket_values = self.calculate_bucket_values(limit)
-      get_partial_bucket = limit_bucket_values[:remainder] > 0
-      bucket_limit = get_partial_bucket ? limit_bucket_values[:buckets] + 1 : limit_bucket_values[:buckets]
+      bucket_limit = limit_bucket_values[:buckets] + 1
 
       buckets = VideoLikerBucket.where({
         :provider_name => video.provider_name,
         :provider_id => video.provider_id
-        }).sort(:sequence).limit(bucket_limit).all
+        }).sort(:sequence.desc).limit(bucket_limit)
 
       likers = []
-      buckets.each_with_index do |bucket, i|
-        unless (i == bucket_limit - 1) && (get_partial_bucket)
-          likers.concat bucket.likers
+      buckets.each do |bucket|
+        bucket_likers = bucket.likers.reverse
+        likers_left = limit - likers.length
+        unless bucket_likers.length > likers_left
+          likers.concat bucket_likers
         else
-          likers.concat bucket.likers.first(limit_bucket_values[:remainder])
+          likers.concat bucket_likers.first(likers_left)
         end
+        break if bucket_likers == limit
       end
 
       return likers

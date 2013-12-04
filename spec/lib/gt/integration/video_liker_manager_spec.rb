@@ -58,20 +58,33 @@ describe GT::VideoLikerManager do
       MongoMapper::Plugins::IdentityMap.clear
     end
 
-    it "returns the correct results for a limit midway through the first bucket" do
-      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 2})).to eql [@video_likers[0], @video_likers[1]]
+    it "returns the likers in order of recency for a limit less than the bucket size" do
+      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 2})).to eql [@video_likers[-1], @video_likers[-2]]
     end
 
-    it "returns the correct results for a limit exactly containing the first bucket" do
-      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 3})).to eql [@video_likers[0], @video_likers[1], @video_likers[2]]
+    it "returns the likers in order of recency for a limit exactly equal to the bucket size" do
+      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 3})).to eql [@video_likers[-1], @video_likers[-2], @video_likers[-3]]
     end
 
-    it "returns the correct results for a limit midway through the second bucket" do
-      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 5})).to eql [@video_likers[0], @video_likers[1], @video_likers[2], @video_likers[3], @video_likers[4]]
+    it "returns the likers in order of recency for a limit midway through the second bucket" do
+      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 5})).to eql [@video_likers[-1], @video_likers[-2], @video_likers[-3], @video_likers[-4], @video_likers[-5]]
     end
 
-    it "returns the correct results for a limit that exceeds the number of existing buckets" do
-      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => Settings::VideoLiker.bucket_size * 3})).to eql @video_likers
+    it "returns the likers in order of recency for a limit that exceeds the current number of likers" do
+      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => Settings::VideoLiker.bucket_size * 3})).to eql @video_likers.reverse
+    end
+
+    it "returns the right results when the most recent bucket is not full" do
+      @buckets.last.likers.slice!(-1)
+      @buckets.last.save
+      MongoMapper::Plugins::IdentityMap.clear
+      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 3})).to eql [@video_likers[-2], @video_likers[-3], @video_likers[-4]]
+    end
+
+    it "returns the right results when there is only one bucket" do
+      @buckets.last.destroy
+      MongoMapper::Plugins::IdentityMap.clear
+      expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 3})).to eql [@video_likers[-4], @video_likers[-5], @video_likers[-6]]
     end
   end
 

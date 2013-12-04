@@ -64,7 +64,7 @@ module MongoMapper
       Video.ensure_index([[:a, 1], [:b, 1]], :background => true, :unique => true)
 
       # Ordered sequence of VideoLikerBuckets for each video
-      VideoLikerBucket.ensure_index([[:a, 1], [:b, 1], [:c, 1]], :unique => true)
+      VideoLikerBucket.ensure_index([[:a, 1], [:b, 1], [:c, -1]], :unique => true)
     end
 
   end

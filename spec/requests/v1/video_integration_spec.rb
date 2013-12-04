@@ -88,7 +88,7 @@ describe 'v1/video' do
         MongoMapper::Plugins::IdentityMap.clear
       end
 
-      it "returns info on a full bucket of likers by default" do
+      it "returns info on a full bucket of likers in order of recency by default" do
 
         get '/v1/video/'+@v.id+'/likers'
 
@@ -102,16 +102,16 @@ describe 'v1/video' do
         response.body.should have_json_path("result/likers/0/has_shelby_avatar")
 
         parsed_response = parse_json(response.body)
-        parsed_response["result"]["likers"][0]["user_id"].should == @likers[0].id.to_s
-        parsed_response["result"]["likers"][0]["name"].should == @likers[0].name
-        parsed_response["result"]["likers"][0]["nickname"].should == @likers[0].nickname
-        parsed_response["result"]["likers"][0]["personal_roll_id"].should == @likers[0].public_roll_id.to_s
-        parsed_response["result"]["likers"][0]["user_image"].should == @likers[0].user_image
-        parsed_response["result"]["likers"][0]["user_image_original"].should == @likers[0].user_image_original
-        parsed_response["result"]["likers"][0]["has_shelby_avatar"].should == @likers[0].has_shelby_avatar
+        parsed_response["result"]["likers"][0]["user_id"].should == @likers[-1].id.to_s
+        parsed_response["result"]["likers"][0]["name"].should == @likers[-1].name
+        parsed_response["result"]["likers"][0]["nickname"].should == @likers[-1].nickname
+        parsed_response["result"]["likers"][0]["personal_roll_id"].should == @likers[-1].public_roll_id.to_s
+        parsed_response["result"]["likers"][0]["user_image"].should == @likers[-1].user_image
+        parsed_response["result"]["likers"][0]["user_image_original"].should == @likers[-1].user_image_original
+        parsed_response["result"]["likers"][0]["has_shelby_avatar"].should == @likers[-1].has_shelby_avatar
 
-        parsed_response["result"]["likers"][1]["user_id"].should == @likers[1].id.to_s
-        parsed_response["result"]["likers"][2]["user_id"].should == @likers[2].id.to_s
+        parsed_response["result"]["likers"][1]["user_id"].should == @likers[-2].id.to_s
+        parsed_response["result"]["likers"][2]["user_id"].should == @likers[-3].id.to_s
       end
 
       it "respects the limit parameter when it's midway into a bucket" do
@@ -120,10 +120,10 @@ describe 'v1/video' do
         response.body.should have_json_size(4).at_path("result/likers")
 
         parsed_response = parse_json(response.body)
-        parsed_response["result"]["likers"][0]["user_id"].should == @likers[0].id.to_s
-        parsed_response["result"]["likers"][1]["user_id"].should == @likers[1].id.to_s
-        parsed_response["result"]["likers"][2]["user_id"].should == @likers[2].id.to_s
-        parsed_response["result"]["likers"][3]["user_id"].should == @likers[3].id.to_s
+        parsed_response["result"]["likers"][0]["user_id"].should == @likers[-1].id.to_s
+        parsed_response["result"]["likers"][1]["user_id"].should == @likers[-2].id.to_s
+        parsed_response["result"]["likers"][2]["user_id"].should == @likers[-3].id.to_s
+        parsed_response["result"]["likers"][3]["user_id"].should == @likers[-4].id.to_s
       end
 
        it "respects the limit parameter when it's greater than the number of likers that can be found" do
