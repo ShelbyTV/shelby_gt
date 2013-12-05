@@ -3,6 +3,45 @@
 # => is bucketed in the DB and this manager abstracts away the complexity of the bucketing calculations
 module GT
   class VideoLikerManager
+    # Given a video and a user who is liking it, create and persist a VideoLiker document
+    # -- params --
+    # video -- video for which to add a tracked liker
+    # liker -- user who is liking the video
+    def self.add_liker_for_video(video, liker)
+      # atomically increment the video's liker count to reserve our bucket position
+      new_video_document = Video.collection.find_and_modify({
+        :query => {:_id => video.id},
+        :update => {:$inc => {:y => 1}},
+        :new => true
+      })
+      new_liker_count = new_video_document["y"]
+
+      # create the new VideoLiker document
+      video_liker = VideoLiker.new({
+        :user => liker,
+        :name => liker.name,
+        :nickname => liker.nickname,
+        :user_image => liker.user_image,
+        :user_image_original => liker.user_image_original,
+        :has_shelby_avatar => liker.has_shelby_avatar,
+        :public_roll => liker.public_roll
+      })
+
+      # upsert a VideoLikerBucket and push this VideoLiker onto its array of likers
+      bucket_sequence_no = self.calculate_bucket_values(new_liker_count - 1)[:buckets]
+
+      VideoLikerBucket.collection.update({
+        :a => video.provider_name,
+        :b => video.provider_id,
+        :c => bucket_sequence_no
+      }, {
+        :$push => {:likers => video_liker.to_mongo}
+      }, {
+        :upsert => true
+      })
+
+    end
+
     # Given a video, return all the VideoLikers associated with it
     # -- params --
     # video -- video for which to find likers
