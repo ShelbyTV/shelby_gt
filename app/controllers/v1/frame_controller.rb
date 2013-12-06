@@ -70,7 +70,18 @@ class V1::FrameController < ApplicationController
 
       # create frame from a video url
       if video_url = params[:url]
-        frame_options = { :creator => current_user, :roll => roll }
+
+        frame_options = {}
+
+        if is_implict_like = (current_user.watch_later_roll == roll)
+          # old client trying to do a like. this should now be a light_weight share on the user's public roll
+          roll = current_user.public_roll
+          frame_options[:frame_type] = Frame::FRAME_TYPE[:light_weight]
+        end
+
+        frame_options[:creator] = current_user
+        frame_options[:roll] = roll
+
         # get or create video from url
         video = frame_options[:video] = GT::VideoManager.get_or_create_videos_for_url(video_url)[:videos][0]
 
@@ -104,12 +115,6 @@ class V1::FrameController < ApplicationController
           # and finally create the frame
           # creating dashboard entries async.
           frame_options[:async_dashboard_entries] = true
-
-          if is_implict_like = (current_user.watch_later_roll == roll)
-            # old client trying to do a like.
-            roll = current_user.public_roll
-            frame_options[:frame_type] = Frame::FRAME_TYPE[:light_weight]
-          end
 
           r = frame_options[:video] ? GT::Framer.create_frame(frame_options) : {}
 

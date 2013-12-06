@@ -375,13 +375,18 @@ describe 'v1/frame' do
             @video_url = "http://some.video.url.com/of_a_movie_i_like"
             @video = Factory.create(:video, :source_url => @video_url)
             GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return({:videos=> [@video]})
-            @roll = Factory.create(:roll, :creator_id => @u1.id)
           end
 
           it "adds correct frame_type of light_weight" do
             post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?url='+CGI::escape(@video_url)+'&text='+CGI::escape(@message_text)
             response.body.should be_json_eql(200).at_path("status")
             parse_json(response.body)["result"]["frame_type"].should == Frame::FRAME_TYPE[:light_weight]
+          end
+
+          it "adds the frame to the user's personal roll" do
+            post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?url='+CGI::escape(@video_url)+'&text='+CGI::escape(@message_text)
+            response.body.should be_json_eql(200).at_path("status")
+            parse_json(response.body)["result"]["roll_id"].should == @u1.public_roll.id.to_s
           end
 
           it "updates like_count" do
