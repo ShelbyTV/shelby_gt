@@ -74,6 +74,16 @@ describe GT::VideoLikerManager do
       expect(video_liker.public_roll_id).to eq liker.public_roll_id
     end
 
+    it "will not insert the same liker into the same bucket twice" do
+      liker = Factory.create(:user)
+
+      GT::VideoLikerManager.add_liker_for_video(@v, liker)
+      GT::VideoLikerManager.add_liker_for_video(@v, liker)
+
+      bucket = VideoLikerBucket.where(:provider_name => @v.provider_name, :provider_id => @v.provider_id).first
+      expect(bucket.likers.count).to eq 1
+    end
+
   end
 
   describe "get_likers_for_video" do

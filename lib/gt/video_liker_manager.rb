@@ -10,6 +10,13 @@ module GT
     # video -- video for which to add a tracked liker
     # liker -- user who is liking the video
     def self.add_liker_for_video(video, liker)
+      # check if this liker is already in the most recent bucket
+      bucket = VideoLikerBucket.where(:provider_name => video.provider_name, :provider_id => video.provider_id).sort(:sequence.desc).first
+      if bucket && bucket.likers.any? {|bucketed_liker| bucketed_liker.user_id == liker.id}
+          # alredy have this liker, just return
+          return
+      end
+
       # atomically increment the video's liker count to reserve our bucket position
       new_video_document = Video.collection.find_and_modify({
         :query => {:_id => video.id},

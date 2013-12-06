@@ -157,25 +157,26 @@ describe Video do
   context "like!" do
 
     before(:each) do
-      @liker = Factory.create(:user)
+      @liker1 = Factory.create(:user)
+      @liker2 = Factory.create(:user)
       @video.save
       MongoMapper::Plugins::IdentityMap.clear
     end
 
     it "updates like and liker counts" do
-      expect{@video.like!(@liker)}.to change(@video, :like_count).by(1)
-      expect{@video.like!(@liker)}.to change(@video, :liker_count).by(1)
+      expect{@video.like!(@liker1)}.to change(@video, :like_count).by(1)
+      expect{@video.like!(@liker2)}.to change(@video, :liker_count).by(1)
     end
 
     it "creates a VideoLikerBucket and inserts a VideoLiker document" do
-      expect{@video.like!(@liker)}.to change(VideoLikerBucket, :count).by(1)
+      expect{@video.like!(@liker1)}.to change(VideoLikerBucket, :count).by(1)
 
       video_liker_bucket = VideoLikerBucket.last
       expect(video_liker_bucket.provider_name).to eq @video.provider_name
       expect(video_liker_bucket.provider_id).to eq @video.provider_id
 
       video_liker = video_liker_bucket.likers.last
-      expect(video_liker.user_id).to eq @liker.id
+      expect(video_liker.user_id).to eq @liker1.id
     end
 
   end

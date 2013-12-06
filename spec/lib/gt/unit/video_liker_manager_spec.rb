@@ -13,12 +13,12 @@ describe GT::VideoLikerManager do
     before(:each) do
       @liker_public_roll = Factory.create(:roll)
       @liker = Factory.create(:user, :public_roll => @liker_public_roll)
-      @video_liker = double("video_liker")
+      @video_liker = Factory.create(:video_liker, :user => @liker, :nickname => @liker.nickname, :has_shelby_avatar => @liker.has_shelby_avatar)
       @video_liker.stub(:to_mongo).and_return(@video_liker)
       @updated_video_document = {"y" => 1}
       Video.stub_chain(:collection, :find_and_modify).and_return(@updated_video_document)
-      VideoLiker.stub(:new).and_return(@video_liker)
       VideoLikerBucket.stub_chain(:collection, :update)
+      VideoLikerBucket.stub_chain(:where, :sort, :first)
     end
 
     it "increments the video's number of likers" do
@@ -29,6 +29,17 @@ describe GT::VideoLikerManager do
         :update => {:$inc => {:y => 1}},
         :new => true
       }).and_return(@updated_video_document)
+
+      GT::VideoLikerManager.add_liker_for_video(@v, @liker)
+    end
+
+    it "doesn't do anything if the liker is already in the current bucket" do
+      existing_video_liker_bucket = double("video_liker_bucket", :likers => [@video_liker])
+      VideoLikerBucket.stub_chain(:where, :sort, :first).and_return(existing_video_liker_bucket)
+
+      Video.should_not_receive(:collection)
+      VideoLiker.should_not_receive(:new)
+      VideoLikerBucket.should_not_receive(:collection)
 
       GT::VideoLikerManager.add_liker_for_video(@v, @liker)
     end
@@ -67,6 +78,7 @@ describe GT::VideoLikerManager do
       end
 
       it "upserts into the next bucket when there are already bucket_size likers in the first one" do
+        VideoLiker.stub(:new).and_return(@video_liker)
         @updated_video_document["y"] = 2
 
         @video_liker_bucket_collection.should_receive(:update).with({
