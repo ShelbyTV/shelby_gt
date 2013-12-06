@@ -351,6 +351,14 @@ describe Frame do
       }.should change { @video.like_count } .by 1
     end
 
+    it "increments the number of video likers" do
+      expect{@frame.add_to_watch_later!(@u1)}.to change(@video, :liker_count).by(1)
+    end
+
+    it "inserts a VideoLiker record in a VideoLikerBucket" do
+      expect{@frame.add_to_watch_later!(@u1)}.to change(VideoLikerBucket, :count).by(1)
+    end
+
     it "should increment the number of likes once for each user" do
       lambda {
         @frame.add_to_watch_later!(@u1)

@@ -117,4 +117,16 @@ class Video
     return self
   end
 
+  #------ Like ------
+
+  # increment the like_count and liker_count of this video
+  # record a VideoLiker record for this user and video
+  # then reload so that the atomic updates on the db side are reflected in this model
+  def like!(liker)
+    # increment like_count atomically, abbreviation is :v
+    self.increment({:v => 1})
+    GT::VideoLikerManager.add_liker_for_video(self, liker)
+    self.reload
+  end
+
 end

@@ -124,7 +124,6 @@ class Frame
   def add_to_watch_later!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
 
-
     # add liker to upvoters array & inc frame liker count
     Frame.collection.update({:_id => self.id}, {
       :$addToSet => {:f => u.id},
@@ -134,10 +133,9 @@ class Frame
     self.update_score
     self.save
 
-    Video.collection.update({:_id => self.video_id}, {:$inc => {:v => 1}})
-    Video.find(self.video_id).reload
-
-    #TODO: Add liker of video to NEW COLLECTION tracking likers of videos
+    # perform all like operations on our video, too
+    v = Video.find(self.video_id)
+    v.like!(u)
 
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self, u) }

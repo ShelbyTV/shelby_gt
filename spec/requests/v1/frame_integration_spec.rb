@@ -310,6 +310,18 @@ describe 'v1/frame' do
           parse_json(response.body)["result"]["conversation"]["messages"][0]["text"].should == message_text
         end
 
+        it "doesn't change any liker information if it's not an implicit like" do
+          message_text = "awesome video!"
+          video_url = "http://some.video.url.com/of_a_movie_i_like"
+          video = Factory.create(:video, :source_url => video_url)
+          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return({:videos=> [video]})
+          roll = Factory.create(:roll, :creator_id => @u1.id)
+
+          expect {
+            post '/v1/roll/'+roll.id+'/frames?url='+CGI::escape(video_url)+'&text='+CGI::escape(message_text)
+          }.not_to change {video.like_count + video.liker_count + VideoLikerBucket.count}
+        end
+
         it "should find hashtags and add the frame to the user dashboard" do
           message_text = "this is a #test"
           video_url = "http://some.video.url.com/of_a_movie_i_like"
@@ -356,15 +368,47 @@ describe 'v1/frame' do
           response.body.should be_json_eql(403).at_path("status")
         end
 
-        it "should have frame_type added for light_weight share on add via url" do
-          message_text = "awesome video!"
-          video_url = "http://some.video.url.com/of_a_movie_i_like"
-          video = Factory.create(:video, :source_url => video_url)
-          GT::VideoManager.stub(:get_or_create_videos_for_url).with(video_url).and_return({:videos=> [video]})
-          roll = Factory.create(:roll, :creator_id => @u1.id)
-          post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?url='+CGI::escape(video_url)+'&text='+CGI::escape(message_text)
-          response.body.should be_json_eql(200).at_path("status")
-          parse_json(response.body)["result"]["frame_type"].should == Frame::FRAME_TYPE[:light_weight]
+        context "light_weight share/implicit like" do
+
+          before(:each) do
+            @message_text = "awesome video!"
+            @video_url = "http://some.video.url.com/of_a_movie_i_like"
+            @video = Factory.create(:video, :source_url => @video_url)
+            GT::VideoManager.stub(:get_or_create_videos_for_url).with(@video_url).and_return({:videos=> [@video]})
+            @roll = Factory.create(:roll, :creator_id => @u1.id)
+          end
+
+          it "adds correct frame_type of light_weight" do
+            post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?url='+CGI::escape(@video_url)+'&text='+CGI::escape(@message_text)
+            response.body.should be_json_eql(200).at_path("status")
+            parse_json(response.body)["result"]["frame_type"].should == Frame::FRAME_TYPE[:light_weight]
+          end
+
+          it "updates like_count" do
+            expect {
+              post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?url='+CGI::escape(@video_url)+'&text='+CGI::escape(@message_text)
+            }.to change(@video, :like_count).by(1)
+          end
+
+          it "updates liker_count" do
+            expect {
+              post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?url='+CGI::escape(@video_url)+'&text='+CGI::escape(@message_text)
+            }.to change(@video, :liker_count).by(1)
+          end
+
+          it "records a VideoLiker" do
+            expect {
+              post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?url='+CGI::escape(@video_url)+'&text='+CGI::escape(@message_text)
+            }.to change(VideoLikerBucket, :count).by(1)
+
+            video_liker_bucket = VideoLikerBucket.last
+            expect(video_liker_bucket.provider_name).to eq @video.provider_name
+            expect(video_liker_bucket.provider_id).to eq @video.provider_id
+
+            video_liker = video_liker_bucket.likers.last
+            expect(video_liker.user_id).to eq @u1.id
+          end
+
         end
 
       end
