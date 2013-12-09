@@ -40,7 +40,7 @@ defaults: &defaults
     subject: "%{re_rollers_name} shared your video on Shelby.tv"
   like_notification:
     category: "Like Notifications"
-    subject: "%{likers_name} saw the video you shared on Shelby.tv..."
+    subject: "%{likers_name} saw a video you liked on Shelby.tv..."
     second_lines:
       any_liker: [ "Is this the beginning of a great relationship?",
                    "You were always the popular one, weren't you?",
