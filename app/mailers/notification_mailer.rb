@@ -81,6 +81,7 @@ class NotificationMailer < ActionMailer::Base
       # liked by a logged in user
       @user_from = user_from
       @user_from_name = (@user_from.name || @user_from.nickname)
+      @user_from_first_name = @user_from_name.split(' ').first
       @user_permalink = @user_from.permalink
     else
       # liked anonymously by a logged out user
