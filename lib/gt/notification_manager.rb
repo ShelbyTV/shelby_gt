@@ -26,9 +26,6 @@ module GT
       user_to = frame.creator
       return if !user_to or (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "")
 
-      # Temp: for now only send emails to gt_enabled users
-      return unless user_to.gt_enabled
-
       return unless user_to.preferences.like_notifications
 
       NotificationMailer.like_notification(user_to, frame, user_from).deliver

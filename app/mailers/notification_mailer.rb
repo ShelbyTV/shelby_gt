@@ -69,7 +69,10 @@ class NotificationMailer < ActionMailer::Base
   def like_notification(user_to, frame, user_from=nil)
     sendgrid_category Settings::Email.like_notification["category"]
 
-    sendgrid_ganalytics_options(:utm_source => 'like', :utm_medium => 'notification', :utm_campaign => "frame_#{frame.id.to_s}")
+    @ab_bucket = [""].sample
+    utm_medium = "notification#{@ab_bucket}"
+
+    sendgrid_ganalytics_options(:utm_source => 'like', :utm_medium => utm_medium, :utm_campaign => "frame_#{frame.id.to_s}")
 
 
     @user_to = user_to
