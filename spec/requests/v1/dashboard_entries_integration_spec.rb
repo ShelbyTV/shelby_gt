@@ -67,6 +67,13 @@ describe 'v1/dashboard' do
           parse_json(response.body)["result"][0]["frame"]["like_count"].should eq(2)
         end
 
+        it "contains the frame's video's tracked_liker_count" do
+          get '/v1/dashboard'
+          response.body.should have_json_path("result/0/frame/video/tracked_liker_count")
+          response.body.should have_json_type(Integer).at_path("result/0/frame/video/tracked_liker_count")
+          parse_json(response.body)["result"][0]["frame"]["video"]["tracked_liker_count"].should eq(0)
+        end
+
         it "should return an empty array when there are no video recommendations" do
           get '/v1/dashboard'
           response.body.should be_json_eql(200).at_path("status")

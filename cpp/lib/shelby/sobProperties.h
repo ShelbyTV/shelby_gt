@@ -135,7 +135,8 @@
    apply(VIDEO , recs                , RECS                , ARRAY     , r   ) \
    apply(VIDEO , first_unplayable_at , FIRST_UNPLAYABLE_AT , DATE      , s   ) \
    apply(VIDEO , last_unplayable_at  , LAST_UNPLAYABLE_AT  , DATE      , t   ) \
-   apply(VIDEO , like_count          , LIKE_COUNT          , INT       , v   )
+   apply(VIDEO , like_count          , LIKE_COUNT          , INT       , v   ) \
+   apply(VIDEO , tracked_liker_count , TRACKED_LIKER_COUNT , INT       , y   )
 
 #define DASHBOARD_ENTRY_PROPERTIES(apply)                                                                \
    apply(DASHBOARD_ENTRY , id                            , ID                            , OID   , _id ) \

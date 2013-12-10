@@ -4,7 +4,7 @@
 module GT
   class VideoLikerManager
     # Given a video and a user who is liking it, create and persist a VideoLiker document
-    # NB: This does not update the liker_count in the local Video model - callers must
+    # NB: This does not update the tracked_liker_count in the local Video model - callers must
     #   call reload on the video model after this method to accomplish that
     # -- params --
     # video -- video for which to add a tracked liker

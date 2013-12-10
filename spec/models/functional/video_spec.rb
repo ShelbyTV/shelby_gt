@@ -165,7 +165,7 @@ describe Video do
 
     it "updates like and liker counts" do
       expect{@video.like!(@liker1)}.to change(@video, :like_count).by(1)
-      expect{@video.like!(@liker2)}.to change(@video, :liker_count).by(1)
+      expect{@video.like!(@liker2)}.to change(@video, :tracked_liker_count).by(1)
     end
 
     it "creates a VideoLikerBucket and inserts a VideoLiker document" do

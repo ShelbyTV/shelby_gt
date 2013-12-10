@@ -10,6 +10,10 @@ describe 'v1/video' do
       get '/v1/video/'+@v.id
       response.body.should be_json_eql(200).at_path("status")
       response.body.should have_json_path("result/title")
+      response.body.should have_json_path("result/tracked_liker_count")
+
+      parsed_response = parse_json(response.body)
+      parsed_response["result"]["tracked_liker_count"].should == @v.tracked_liker_count
     end
 
     it "should return error message if video doesnt exist" do
@@ -23,6 +27,12 @@ describe 'v1/video' do
         get 'v1/video/find_or_create', {:provider_id=>@v.provider_id, :provider_name=>"youtube"}
         response.body.should be_json_eql(200).at_path("status");
         response.body.should have_json_path("result/available")
+        response.body.should have_json_path("result/like_count")
+        response.body.should have_json_path("result/tracked_liker_count")
+
+        parsed_response = parse_json(response.body)
+        parsed_response["result"]["like_count"].should == @v.like_count
+        parsed_response["result"]["tracked_liker_count"].should == @v.tracked_liker_count
       end
 
       it "should create video info on success when video is not in db and url param is passed" do
@@ -50,6 +60,7 @@ describe 'v1/video' do
       response.body.should have_json_path("result/video/id")
       response.body.should have_json_path("result/video/provider_name")
       response.body.should have_json_path("result/video/provider_id")
+      response.body.should have_json_path("result/video/tracked_liker_count")
       response.body.should have_json_path("result/likers")
       response.body.should have_json_type(Array).at_path("result/likers")
       response.body.should have_json_size(0).at_path("result/likers")
@@ -58,6 +69,7 @@ describe 'v1/video' do
       parsed_response["result"]["video"]["id"].should == @v.id.to_s
       parsed_response["result"]["video"]["provider_name"].should == @v.provider_name
       parsed_response["result"]["video"]["provider_id"].should == @v.provider_id
+      parsed_response["result"]["video"]["tracked_liker_count"].should == @v.tracked_liker_count
     end
 
     context "some likers available for the video" do

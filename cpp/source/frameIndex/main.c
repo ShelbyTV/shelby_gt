@@ -218,6 +218,7 @@ void printJsonVideo(sobContext sob, mrjsonContext context, bson *video)
       SOB_VIDEO_EMBED_URL,
       SOB_VIDEO_VIEW_COUNT,
       SOB_VIDEO_LIKE_COUNT,
+      SOB_VIDEO_TRACKED_LIKER_COUNT,
       SOB_VIDEO_TAGS,
       SOB_VIDEO_CATEGORIES,
       SOB_VIDEO_FIRST_UNPLAYABLE_AT,

@@ -65,6 +65,12 @@ describe 'v1/frame' do
           response.body.should have_json_path("result/like_count")
         end
 
+        it "contains video's tracked_liker_count attribute" do
+          get '/v1/frame/'+@f.id+'?include_children=true'
+          response.body.should have_json_path("result/video/tracked_liker_count")
+          parse_json(response.body)["result"]["video"]["tracked_liker_count"].should eq(@v.tracked_liker_count)
+        end
+
         it "should return error message if frame doesnt exist" do
           get '/v1/frame/'+@f.id+'xxx'
           response.body.should be_json_eql(404).at_path("status")
@@ -154,6 +160,14 @@ describe 'v1/frame' do
 
           get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
           parse_json(response.body)["result"]["frames"][0]["like_count"].should eq(2)
+        end
+
+        it "contains video's tracked_liker_count attribute" do
+          get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
+
+          response.body.should have_json_path("result/frames/0/video/tracked_liker_count")
+          response.body.should have_json_type(Integer).at_path("result/frames/0/video/tracked_liker_count")
+          parse_json(response.body)["result"]["frames"][0]["video"]["tracked_liker_count"].should eq(0)
         end
 
         it "should return an empty array when there are no video recommendations" do
@@ -319,7 +333,7 @@ describe 'v1/frame' do
 
           expect {
             post '/v1/roll/'+roll.id+'/frames?url='+CGI::escape(video_url)+'&text='+CGI::escape(message_text)
-          }.not_to change {video.like_count + video.liker_count + VideoLikerBucket.count}
+          }.not_to change {video.like_count + video.tracked_liker_count + VideoLikerBucket.count}
         end
 
         it "should find hashtags and add the frame to the user dashboard" do
@@ -395,10 +409,10 @@ describe 'v1/frame' do
             }.to change(@video, :like_count).by(1)
           end
 
-          it "updates liker_count" do
+          it "updates tracked_liker_count" do
             expect {
               post '/v1/roll/'+@u1.watch_later_roll.id+'/frames?url='+CGI::escape(@video_url)+'&text='+CGI::escape(@message_text)
-            }.to change(@video, :liker_count).by(1)
+            }.to change(@video, :tracked_liker_count).by(1)
           end
 
           it "records a VideoLiker" do

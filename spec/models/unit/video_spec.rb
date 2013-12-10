@@ -10,10 +10,10 @@ describe Video do
     @video.database.name.should =~ /.*video/
   end
 
-  it "should have the key liker_count with abbreviation y and default value 0" do
-    Video.keys.keys.should include("liker_count")
-    Video.keys["liker_count"].abbr.should == :y
-    @video.liker_count.should == 0
+  it "should have the key tracked_liker_count with abbreviation y and default value 0" do
+    Video.keys.keys.should include("tracked_liker_count")
+    Video.keys["tracked_liker_count"].abbr.should == :y
+    @video.tracked_liker_count.should == 0
   end
 
 end

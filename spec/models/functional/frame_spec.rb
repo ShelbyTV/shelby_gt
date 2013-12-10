@@ -352,7 +352,7 @@ describe Frame do
     end
 
     it "increments the number of video likers" do
-      expect{@frame.add_to_watch_later!(@u1)}.to change(@video, :liker_count).by(1)
+      expect{@frame.add_to_watch_later!(@u1)}.to change(@video, :tracked_liker_count).by(1)
     end
 
     it "inserts a VideoLiker record in a VideoLikerBucket" do

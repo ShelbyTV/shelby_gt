@@ -18,7 +18,7 @@ describe GT::VideoLikerManager do
     it "increments the video's number of likers" do
       GT::VideoLikerManager.add_liker_for_video(@v, @liker)
 
-      expect{@v.reload}.to change{@v.liker_count}.by(1)
+      expect{@v.reload}.to change(@v, :tracked_liker_count).by(1)
     end
 
     it "only creates a new bucket if there is no room left in the last one" do
@@ -30,7 +30,7 @@ describe GT::VideoLikerManager do
       # first bucket is full so need to create a new one again
       expect{GT::VideoLikerManager.add_liker_for_video(@v, likers[2])}.to change{VideoLikerBucket.count}.by(1)
 
-      expect(@v.reload.liker_count).to eq 3
+      expect(@v.reload.tracked_liker_count).to eq 3
     end
 
     it "adds VideoLikers one by one to VideoLikerBuckets with correct sequence numbers" do
