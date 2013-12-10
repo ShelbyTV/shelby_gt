@@ -58,6 +58,15 @@ defaults: &defaults
       queued: 'video.queued'
       watched: 'video.watched'
       likers: 'video.likers'
+  notification:
+    sent:
+      like: "notification.sent.like"
+      share: "notification.sent.share"
+      follow: "notification.sent.follow"
+    not_sent:
+      like: "notification.not_sent.like"
+      share: "notification.not_sent.share"
+      follow: "notification.not_sent.follow"
   user:
     new:
       faux: "user.new.faux"
