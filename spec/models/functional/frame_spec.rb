@@ -12,7 +12,7 @@ describe Frame do
     it "should abbreviate roll_id as :a, rank as :e" do
       Frame.keys["roll_id"].abbr.should == :a
       Frame.keys["score"].abbr.should == :e
-      Frame.keys["type"].abbr.should == :o
+      Frame.keys["frame_type"].abbr.should == :o
     end
   end
 
@@ -27,7 +27,7 @@ describe Frame do
     it "should be a heavy_weight share by default" do
       roll = Factory.create(:roll)
       frame = Factory.create(:frame, :roll => roll)
-      frame.type.should == Frame::FRAME_TYPE[:heavy_weight]
+      frame.frame_type.should == Frame::FRAME_TYPE[:heavy_weight]
     end
   end
 
@@ -279,10 +279,13 @@ describe Frame do
   context "watch later" do
     before(:each) do
       @video = Factory.create(:video)
-      @frame = Factory.create(:frame, :video => @video)
+      @originator = Factory.create(:user)
+      @frame = Factory.create(:frame, :creator => @originator, :video => @video)
 
       @u1 = Factory.create(:user)
       @u1.public_roll = Factory.create(:roll, :creator => @u1)
+
+      ResqueSpec.reset!
     end
 
     it "should require full User model, not just id" do
@@ -291,7 +294,7 @@ describe Frame do
       }.should raise_error(ArgumentError)
     end
 
-    it "should dupe the frame into the users public_roll, persisted" do
+    it "should reroll the frame into the users public_roll, persisted" do
       lambda {
         @f = @frame.add_to_watch_later!(@u1)
       }.should change { Frame.count } .by 1
@@ -300,12 +303,22 @@ describe Frame do
       @f.roll.should == @u1.public_roll
     end
 
-    it "should dupe the frame with a light weight frame type" do
+    it "should reroll the frame with a light weight frame type" do
       lambda {
         @f = @frame.add_to_watch_later!(@u1)
       }.should change { Frame.count } .by 1
 
-      @f.type.should == Frame::FRAME_TYPE[:light_weight]
+      @f.frame_type.should == Frame::FRAME_TYPE[:light_weight]
+    end
+
+    it "creates dashboard entries for followers of the liker's public roll" do
+      @u1.public_roll.add_follower(Factory.create(:user))
+      @frame.add_to_watch_later!(@u1)
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
     end
 
     it "should add the user to the frame being watch_latered's upvoters array if it's not there already" do
@@ -338,6 +351,14 @@ describe Frame do
       }.should change { @video.like_count } .by 1
     end
 
+    it "increments the number of video likers" do
+      expect{@frame.add_to_watch_later!(@u1)}.to change(@video, :tracked_liker_count).by(1)
+    end
+
+    it "inserts a VideoLiker record in a VideoLikerBucket" do
+      expect{@frame.add_to_watch_later!(@u1)}.to change(VideoLikerBucket, :count).by(1)
+    end
+
     it "should increment the number of likes once for each user" do
       lambda {
         @frame.add_to_watch_later!(@u1)
@@ -364,10 +385,11 @@ describe Frame do
         f = @frame.add_to_watch_later!(@u1)
       }.should change { Frame.count } .by 1
 
-      f.creator_id.should == @frame.creator_id
+      f.creator_id.should == @u1.id
       f.video_id.should == @frame.video_id
-      f.conversation_id.should == @frame.conversation_id
-      f.frame_ancestors.include?(@frame.id).should == true
+      f.conversation_id.should_not eql(@frame.conversation_id)
+      f.frame_ancestors.last.should == @frame.id
+      f.frame_ancestors.length.should == @frame.frame_ancestors.length + 1
     end
 
     it "should be idempotent" do
@@ -584,12 +606,12 @@ describe Frame do
       Frame.find(@frame_id).virtually_destroyed?.should == true
     end
 
-    context "frame on watch later roll" do
+    context "frame is a light_weight share/like" do
         before(:each) do
-          @stranger_public_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_watch_later])
+          @stranger_public_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_public_real_user])
           @stranger.public_roll = @stranger_public_roll
 
-          @stranger2_public_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_watch_later])
+          @stranger2_public_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_public_real_user])
           @stranger2.public_roll = @stranger2_public_roll
 
           @frame.add_to_watch_later!(@stranger)
@@ -624,6 +646,94 @@ describe Frame do
           @frame.reload
           @frame.score.should < score_before
         end
+
+
+    end
+
+    context "frame is a heavy_weight share" do
+      it "does not change the number of upvoters of the frame's ancestor" do
+        @stranger_public_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_public_real_user])
+        @stranger.public_roll = @stranger_public_roll
+
+        expect {
+          @frame.re_roll(@stranger, @stranger.public_roll)
+        }.not_to change { @frame.upvoters.length }
+
+        @stranger2_public_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_public_real_user])
+        @stranger2.public_roll = @stranger2_public_roll
+
+        expect {
+          @frame.add_to_watch_later!(@stranger2)
+        }.to change { @frame.upvoters.length }
+
+        expect {
+          @stranger_public_roll.frames.first.destroy
+          @frame.reload
+        }.not_to change { @frame.upvoters.length }
+      end
+
+      it "does not change the number of likes of the frame's ancestor" do
+        @stranger_public_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_public_real_user])
+        @stranger.public_roll = @stranger_public_roll
+
+        expect {
+          @frame.re_roll(@stranger, @stranger.public_roll)
+        }.not_to change { @frame.like_count }
+
+        @stranger2_public_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_public_real_user])
+        @stranger2.public_roll = @stranger2_public_roll
+
+        expect {
+          @frame.add_to_watch_later!(@stranger2)
+        }.to change { @frame.like_count }
+
+        expect {
+          @stranger_public_roll.frames.first.destroy
+          @frame.reload
+        }.not_to change { @frame.like_count }
+      end
+
+      it "does not change the number of likes of the video of the frame's ancestor" do
+        @stranger_public_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_public_real_user])
+        @stranger.public_roll = @stranger_public_roll
+
+        expect {
+          @frame.re_roll(@stranger, @stranger.public_roll)
+        }.not_to change { @video.like_count }
+
+        @stranger2_public_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_public_real_user])
+        @stranger2.public_roll = @stranger2_public_roll
+
+        expect {
+          @frame.add_to_watch_later!(@stranger2)
+        }.to change { @video.like_count }
+
+        expect {
+          @stranger_public_roll.frames.first.destroy
+          @video.reload
+        }.not_to change { @frame.like_count }
+      end
+
+      it "does not change the score of the frame's ancestor" do
+        @stranger_public_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_public_real_user])
+        @stranger.public_roll = @stranger_public_roll
+
+        expect {
+          @frame.re_roll(@stranger, @stranger.public_roll)
+        }.not_to change { @frame.score }
+
+        @stranger2_public_roll = Factory.create(:roll, :creator => @stranger2, :roll_type => Roll::TYPES[:special_public_real_user])
+        @stranger2.public_roll = @stranger2_public_roll
+
+        expect {
+          @frame.add_to_watch_later!(@stranger2)
+        }.to change { @frame.score }
+
+        expect {
+          @stranger_public_roll.frames.first.destroy
+          @frame.reload
+        }.not_to change { @frame.score }
+      end
     end
 
   end

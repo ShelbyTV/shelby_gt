@@ -3,7 +3,7 @@ require 'spec_helper'
 #Functional: hit the database, treat model as black box
 describe Video do
   before(:each) do
-    @video = Video.new
+    @video = Factory.create(:video)
   end
 
   context "database" do
@@ -25,9 +25,6 @@ describe Video do
   end
 
   context "validations" do
-    before(:each) do
-      @video = Factory.create(:video)
-    end
 
     it "should validate uniqueness of provider_name and provider_id (when arnold performance settings aren't on)" do
       v = Video.new
@@ -65,7 +62,7 @@ describe Video do
 
   context "permalinks" do
     before(:each) do
-      @video = Factory.create(:video, :title => 'Title with spaces')
+      @video.title = 'Title with spaces'
     end
 
     it "should generate a permalink" do
@@ -84,8 +81,6 @@ describe Video do
 
   context "viewed" do
     before(:each) do
-      @video = Factory.create(:video)
-
       @user = Factory.create(:user)
       @user.viewed_roll = Factory.create(:roll, :creator => @user)
       @user.save
@@ -155,6 +150,33 @@ describe Video do
       lambda {
         @video.view!(@user)
       }.should_not change { Frame.count }
+    end
+
+  end
+
+  context "like!" do
+
+    before(:each) do
+      @liker1 = Factory.create(:user)
+      @liker2 = Factory.create(:user)
+      @video.save
+      MongoMapper::Plugins::IdentityMap.clear
+    end
+
+    it "updates like and liker counts" do
+      expect{@video.like!(@liker1)}.to change(@video, :like_count).by(1)
+      expect{@video.like!(@liker2)}.to change(@video, :tracked_liker_count).by(1)
+    end
+
+    it "creates a VideoLikerBucket and inserts a VideoLiker document" do
+      expect{@video.like!(@liker1)}.to change(VideoLikerBucket, :count).by(1)
+
+      video_liker_bucket = VideoLikerBucket.last
+      expect(video_liker_bucket.provider_name).to eq @video.provider_name
+      expect(video_liker_bucket.provider_id).to eq @video.provider_id
+
+      video_liker = video_liker_bucket.likers.last
+      expect(video_liker.user_id).to eq @liker1.id
     end
 
   end

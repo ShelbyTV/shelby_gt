@@ -836,6 +836,7 @@ describe 'v1/user' do
           response.body.should have_json_size(1).at_path("result/0/frame/conversation/messages")
           response.body.should have_json_path("result/0/frame/conversation/messages/0")
           response.body.should have_json_path("result/0/frame/conversation/messages/0/text")
+          response.body.should have_json_path("result/0/frame/frame_type")
 
           parsed_response = parse_json(response.body)
 
@@ -857,6 +858,8 @@ describe 'v1/user' do
           parsed_response["result"][0]["frame"]["creator"]["name"].should eq(@featured_curator.name)
 
           parsed_response["result"][0]["frame"]["conversation"]["messages"][0]["text"].should eq(@message.text)
+
+          parsed_response["result"][0]["frame"]["frame_type"].should eq(Frame::FRAME_TYPE[:heavy_weight])
         end
 
         it "should not persist any new dashboard entries, frames, or conversations to the database" do

@@ -1,14 +1,14 @@
 require 'user_manager'
+require 'video_liker_manager'
+require 'utils/search_combiner'
+require 'api_clients/vimeo_client'
+require 'api_clients/youtube_client'
+require 'api_clients/dailymotion_client'
+require 'api_clients/webscraper_client'
 
 class V1::VideoController < ApplicationController
-  require 'user_manager'
-  require 'utils/search_combiner'
-  require 'api_clients/vimeo_client'
-  require 'api_clients/youtube_client'
-  require 'api_clients/dailymotion_client'
-  require 'api_clients/webscraper_client'
 
-  before_filter :user_authenticated?, :except => [:show, :find_or_create, :search, :fix_if_necessary, :watched]
+  before_filter :user_authenticated?, :except => [:show, :likers, :find_or_create, :search, :fix_if_necessary, :watched]
 
   ##
   # Returns one video, with the given parameters.
@@ -19,10 +19,35 @@ class V1::VideoController < ApplicationController
   # @todo return error if id not present w/ params.has_key?(:id)
   def show
     StatsManager::StatsD.time(Settings::StatsConstants.api['video']['show']) do
-      if @video = Video.find(params[:id])
-        @status =  200
+      video_id = params.delete(:id)
+      if @video = Video.find(video_id)
+        @status = 200
       else
-        render_error(404, "could not video with id #{params[:id]}")
+        render_error(404, "could not find video with id #{video_id}")
+      end
+    end
+  end
+
+  ##
+  # Returns the likers for a given video.
+  #
+  # [GET] /v1/video/:id/likers
+  #
+  # @param [Required, String] id The id of the video
+  # @param [Optional, Integer] limit The maximum number of likers to return
+  def likers
+    StatsManager::StatsD.time(Settings::StatsConstants.api['video']['likers']) do
+
+      limit_string = params.delete(:limit)
+      limit = limit_string ? limit_string.to_i : Settings::VideoLiker.bucket_size
+
+      video_id = params.delete(:id)
+      if @video = Video.find(video_id)
+        # look up the likers for this video
+        @likers = GT::VideoLikerManager.get_likers_for_video(@video, {:limit => limit})
+        @status = 200
+      else
+        render_error(404, "could not find video with id #{video_id}")
       end
     end
   end
@@ -86,7 +111,7 @@ class V1::VideoController < ApplicationController
       if user = current_user
         # some old users have slipped thru the cracks and are missing rolls, fix that before it's an issue
         GT::UserManager.ensure_users_special_rolls(user, true) unless GT::UserManager.user_has_all_special_roll_ids?(user)
-        @video_ids = video_ids_on_roll(user.public_roll.id)
+        @video_ids = video_ids_on_roll(user.public_roll.id, 1000, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
       else
         @video_ids = []
       end
@@ -213,14 +238,15 @@ class V1::VideoController < ApplicationController
 
   private
 
-    def video_ids_on_roll(roll_id, limit=1000)
+    def video_ids_on_roll(roll_id, limit=1000, query={})
       # This stuff works, but it's slower than using distinct
       #Only return the video_id (abbreviated as :b) for the first 1,000 frames
       #frames = Frame.where(:roll_id => roll_id).limit(1000).fields(:b).all
       #return frames.collect { |f| f.video_id }.compact.uniq
 
       # Since distinct doesn't support limit, we impose some artificial limit via time to keep the query reasonable
-      video_ids = Frame.where(:roll_id => roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}).distinct(:b)
+      query = {:roll_id => roll_id, :id => {"$gt" => BSON::ObjectId.from_time(6.months.ago)}}.merge(query)
+      video_ids = Frame.where(query).distinct(:b)
       # and then limit the results array
       return video_ids[0..limit]
     end

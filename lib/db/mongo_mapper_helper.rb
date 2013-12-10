@@ -2,7 +2,7 @@ module MongoMapper
   class Helper
 
     def self.drop_all_dbs
-      [DashboardEntry, DeeplinkCache, Frame, Conversation, Roll, User, Video, GtInterest].each do |model|
+      [DashboardEntry, DeeplinkCache, Frame, Conversation, Roll, User, Video, VideoLikerBucket, GtInterest].each do |model|
         model.database.collections.select {|c| c.name !~ /system/ }.each(&:drop)
       end
     end
@@ -62,6 +62,9 @@ module MongoMapper
 
       # Get a video from a provider (ie youtube video 123xyz), make sure they're unique (a == provider_name, b == provider_id)
       Video.ensure_index([[:a, 1], [:b, 1]], :background => true, :unique => true)
+
+      # Ordered sequence of VideoLikerBuckets for each video
+      VideoLikerBucket.ensure_index([[:a, 1], [:b, 1], [:c, -1]], :unique => true)
     end
 
   end

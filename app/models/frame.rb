@@ -64,7 +64,7 @@ class Frame
     :heavy_weight => 0,
     :light_weight => 1
   }.freeze
-  key :type, Integer, :abbr => :o, :default => FRAME_TYPE[:heavy_weight]
+  key :frame_type, Integer, :abbr => :o, :default => FRAME_TYPE[:heavy_weight]
 
   #nothing needs to be mass-assigned (yet?)
   attr_accessible
@@ -124,7 +124,6 @@ class Frame
   def add_to_watch_later!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
 
-
     # add liker to upvoters array & inc frame liker count
     Frame.collection.update({:_id => self.id}, {
       :$addToSet => {:f => u.id},
@@ -134,15 +133,15 @@ class Frame
     self.update_score
     self.save
 
-    Video.collection.update({:_id => self.video_id}, {:$inc => {:v => 1}})
-    Video.find(self.video_id).reload
-
-    #TODO: Add liker of video to NEW COLLECTION tracking likers of videos
+    # perform all like operations on our video, too
+    v = Video.find(self.video_id)
+    v.like!(u)
 
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self, u) }
 
-    return GT::Framer.dupe_frame!(self, u.id, u.public_roll_id, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
+    res = GT::Framer.re_roll(self, u.id, u.public_roll, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
+    return res[:frame]
   end
 
   #------ Like ------
@@ -290,8 +289,8 @@ class Frame
     Roll.decrement(self.deleted_from_roll_id, :j => -1) if self.deleted_from_roll_id
     roll.frame_count -= 1 if roll
 
-    #if this frame is on a watch later roll, undo the upvote that resulted from its addition to the roll
-    if roll.roll_type == Roll::TYPES[:special_watch_later]
+    #if this frame is a lightweight_share, undo the upvote that resulted from its "liking"
+    if self.frame_type == Frame::FRAME_TYPE[:light_weight]
       # the original frame that was upvoted when this frame was created on the watch later roll is this frame's
       # direct (last) ancestor
       if upvoted_frame_id = self.frame_ancestors.last

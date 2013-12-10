@@ -101,7 +101,7 @@ module GT
       f.conversation = convo
       f.score = score
       f.order = order
-      f.type = frame_type if frame_type
+      f.frame_type = frame_type if frame_type
 
       f.save if persist
 
@@ -148,8 +148,8 @@ module GT
       raise ArgumentError, "must supply user or user_id" unless for_user
       user_id = (for_user.is_a?(User) ? for_user.id : for_user)
 
-      raise ArgumentError, "must supply roll or roll_id" unless to_roll
-      roll_id = (to_roll.is_a?(Roll) ? to_roll.id : to_roll)
+      raise ArgumentError, "must supply roll" unless to_roll && to_roll.is_a?(Roll)
+      roll_id = to_roll.id
 
       res = { :frame => nil, :dashboard_entries => [] }
 
@@ -166,7 +166,7 @@ module GT
       return res
     end
 
-    def self.dupe_frame!(orig_frame, for_user, to_roll, options={} )
+    def self.dupe_frame!(orig_frame, for_user, to_roll)
       raise ArgumentError, "must supply original Frame" unless orig_frame and orig_frame.is_a? Frame
 
       raise ArgumentError, "must supply user or user_id" unless for_user
@@ -175,7 +175,7 @@ module GT
       raise ArgumentError, "must supply roll or roll_id" unless to_roll
       roll_id = (to_roll.is_a?(Roll) ? to_roll.id : to_roll)
 
-      return basic_dupe!(orig_frame, user_id, roll_id, options)
+      return basic_dupe!(orig_frame, user_id, roll_id)
     end
 
     def self.remove_dupe_of_frame_from_roll!(frame, roll)
@@ -267,16 +267,12 @@ module GT
 
     private
 
-      def self.basic_dupe!(orig_frame, user_id, roll_id, options={})
+      def self.basic_dupe!(orig_frame, user_id, roll_id)
         # Dupe it
         new_frame = Frame.new
         new_frame.creator_id = orig_frame.creator_id
         new_frame.roll_id = roll_id
         new_frame.video_id = orig_frame.video_id
-
-        if options[:frame_type]
-          new_frame.type = options[:frame_type]
-        end
 
         #copy convo
         new_frame.conversation_id = orig_frame.conversation_id
@@ -301,10 +297,7 @@ module GT
         new_frame.creator_id = user_id
         new_frame.roll_id = roll_id
         new_frame.video_id = orig_frame.video_id
-
-        if options[:frame_type]
-          new_frame.type = options[:frame_type]
-        end
+        new_frame.frame_type = options[:frame_type] if options[:frame_type]
 
         # Create a new conversation
         convo = Conversation.new

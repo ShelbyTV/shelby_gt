@@ -380,6 +380,15 @@ describe V1::VideoController do
       )
     end
 
+    it "routes for GET likers" do
+      { :get => "/v1/video/1/likers" }.should route_to(
+        :controller => "v1/video",
+        :action => "likers",
+        :id => "1",
+        :format => "json"
+      )
+    end
+
     it "routes for GET viewed" do
       { :get => "/v1/video/viewed" }.should route_to(
         :controller => "v1/video",

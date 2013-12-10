@@ -53,6 +53,8 @@ class Video
   # the last time the video info was refreshed from the provider
   key :info_updated_at, Time, :abbr => :x
 
+  # Total number of likers tracked in the video-likers collection for this video
+  key :tracked_liker_count, Integer, :abbr => :y, :default => 0
 
   # Arnold does a *shit ton* of Video creation, which runs this validation, which turns out to be very expensive
   # This validations is technically unnecessary because there is a unique index on [provider_id, provider_name] in the database.
@@ -113,6 +115,18 @@ class Video
     end
 
     return self
+  end
+
+  #------ Like ------
+
+  # increment the like_count and tracked_liker_count of this video
+  # record a VideoLiker record for this user and video
+  # then reload so that the atomic updates on the db side are reflected in this model
+  def like!(liker)
+    # increment like_count atomically, abbreviation is :v
+    self.increment({:v => 1})
+    GT::VideoLikerManager.add_liker_for_video(self, liker)
+    self.reload
   end
 
 end

@@ -94,6 +94,7 @@ ShelbyGt::Application.routes.draw do
       get 'notify' => 'frame#notify'
     end
     resources :video, :only => [:show] do
+      get 'likers' => 'video#likers', :on => :member
       get 'find_or_create', :on => :collection
       get 'conversations' => 'conversation_metal#index'
       get 'viewed', :on => :collection

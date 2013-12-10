@@ -57,6 +57,7 @@ defaults: &defaults
       viewed: 'video.viewed'
       queued: 'video.queued'
       watched: 'video.watched'
+      likers: 'video.likers'
   user:
     new:
       faux: "user.new.faux"

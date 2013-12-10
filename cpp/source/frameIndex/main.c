@@ -218,6 +218,7 @@ void printJsonVideo(sobContext sob, mrjsonContext context, bson *video)
       SOB_VIDEO_EMBED_URL,
       SOB_VIDEO_VIEW_COUNT,
       SOB_VIDEO_LIKE_COUNT,
+      SOB_VIDEO_TRACKED_LIKER_COUNT,
       SOB_VIDEO_TAGS,
       SOB_VIDEO_CATEGORIES,
       SOB_VIDEO_FIRST_UNPLAYABLE_AT,
@@ -398,7 +399,8 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
       SOB_FRAME_ROLL_ID,
       SOB_FRAME_VIDEO_ID,
       SOB_FRAME_UPVOTERS,
-      SOB_FRAME_LIKE_COUNT
+      SOB_FRAME_LIKE_COUNT,
+      SOB_FRAME_FRAME_TYPE
    };
    bson_oid_t frameOid;
    bson_oid_t originatorFrameOid;

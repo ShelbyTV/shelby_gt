@@ -70,9 +70,20 @@ class V1::FrameController < ApplicationController
 
       # create frame from a video url
       if video_url = params[:url]
-        frame_options = { :creator => current_user, :roll => roll }
+
+        frame_options = {}
+
+        if is_implict_like = (current_user.watch_later_roll == roll)
+          # old client trying to do a like. this should now be a light_weight share on the user's public roll
+          roll = current_user.public_roll
+          frame_options[:frame_type] = Frame::FRAME_TYPE[:light_weight]
+        end
+
+        frame_options[:creator] = current_user
+        frame_options[:roll] = roll
+
         # get or create video from url
-        frame_options[:video] = GT::VideoManager.get_or_create_videos_for_url(video_url)[:videos][0]
+        video = frame_options[:video] = GT::VideoManager.get_or_create_videos_for_url(video_url)[:videos][0]
 
         # create message
         if params[:text]
@@ -105,15 +116,14 @@ class V1::FrameController < ApplicationController
           # creating dashboard entries async.
           frame_options[:async_dashboard_entries] = true
 
-          if current_user.watch_later_roll == roll
-            # old client trying to do a like.
-            roll = current_user.public_roll
-            frame_options[:frame_type] = Frame::FRAME_TYPE[:light_weight]
-          end
-
           r = frame_options[:video] ? GT::Framer.create_frame(frame_options) : {}
 
           if @frame = r[:frame]
+            # increment like counts and record VideoLiker if this was an implicit like/ligh_weight share
+            if is_implict_like
+              video.like!(current_user)
+            end
+
             # process frame message hashtags in a non-blocking manor
             ShelbyGT_EM.next_tick { GT::HashtagProcessor.process_frame_message_hashtags_for_channels(@frame) }
 
