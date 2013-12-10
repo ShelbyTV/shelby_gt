@@ -35,6 +35,17 @@ if Rails.env.development?
         #frame.delete
       end
 
+      def anonymous_like_notification #(user_to, frame, user_from=nil)
+        user_to   = User.all.first
+        roll      = user_to.public_roll
+        video     = Video.all.last
+        frame     = Factory.create(:frame, :roll => roll, :video => video, :creator => user_to)
+
+        NotificationMailer.like_notification(user_to, frame)
+
+        #frame.delete
+      end
+
       def join_roll_notification # user_to, user_from, roll
         user_to               = User.all.first
         user_to.primary_email = "test@test.com"
