@@ -241,19 +241,27 @@ describe NotificationMailer do
       @email = NotificationMailer.weekly_recommendation(@user, [@dbe])
       @email.subject.should eq("#{@user.nickname.titlecase}, this video was shared by #{@sharer.nickname}. Check it out.")
 
+      @frame.frame_type = Frame::FRAME_TYPE[:light_weight]
+      @email = NotificationMailer.weekly_recommendation(@user, [@dbe])
+      @email.subject.should eq("#{@user.nickname.titlecase}, this video was liked by #{@sharer.nickname}. Check it out.")
+
       mortar_src_video = Factory.create(:video)
       recommended_video = Factory.create(:video)
       frame = Factory.create(:frame, :video => recommended_video)
       mortar_dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation], :frame => frame, :src_video => mortar_src_video)
 
       @email = NotificationMailer.weekly_recommendation(@user, [mortar_dbe])
-      @email.subject.should eq("#{@user.nickname.titlecase}, a video because you shared: \"#{mortar_src_video.title}\"")
+      @email.subject.should eq("#{@user.nickname.titlecase}, a video because you liked: \"#{mortar_src_video.title}\"")
 
       src_frame = Factory.create(:frame, :creator => @sharer)
       video_graph_dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], :frame => frame, :src_frame => src_frame)
 
       @email = NotificationMailer.weekly_recommendation(@user, [video_graph_dbe])
       @email.subject.should eq("#{@user.nickname.titlecase}, watch this, it's similar to videos #{@sharer.nickname} has shared")
+
+      src_frame.frame_type = Frame::FRAME_TYPE[:light_weight]
+      @email = NotificationMailer.weekly_recommendation(@user, [video_graph_dbe])
+      @email.subject.should eq("#{@user.nickname.titlecase}, watch this, it's similar to videos #{@sharer.nickname} has liked")
     end
 
     it 'renders the receiver email' do

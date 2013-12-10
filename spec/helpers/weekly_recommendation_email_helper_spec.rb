@@ -26,12 +26,32 @@ describe WeeklyRecommendationEmailHelper do
       @dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], :src_frame => @src_frame)
     end
 
-    it "returns the right message_text" do
-      message_text([@dbe]).should eql "This video is similar to videos #{@sharing_user.nickname} has shared"
+    context "share (heavy_weight)" do
+
+      it "returns the right message_text" do
+        message_text([@dbe]).should eql "This video is similar to videos #{@sharing_user.nickname} has shared"
+      end
+
+      it "returns the right message_subject" do
+        message_subject([@dbe]).should eql "Watch this, it's similar to videos #{@sharing_user.nickname} has shared"
+      end
+
     end
 
-    it "returns the right message_subject" do
-      message_subject([@dbe]).should eql "Watch this, it's similar to videos #{@sharing_user.nickname} has shared"
+    context "like (light_weight)" do
+
+      before(:each) do
+        @src_frame.frame_type = Frame::FRAME_TYPE[:light_weight]
+      end
+
+      it "returns the right message_text" do
+        message_text([@dbe]).should eql "This video is similar to videos #{@sharing_user.nickname} has liked"
+      end
+
+      it "returns the right message_subject" do
+        message_subject([@dbe]).should eql "Watch this, it's similar to videos #{@sharing_user.nickname} has liked"
+      end
+
     end
 
   end
@@ -47,7 +67,7 @@ describe WeeklyRecommendationEmailHelper do
     end
 
     it "returns the right message_subject" do
-      message_subject([@dbe]).should eql "A video because you shared: \"#{@src_video.title}\""
+      message_subject([@dbe]).should eql "A video because you liked: \"#{@src_video.title}\""
     end
 
   end
@@ -59,12 +79,32 @@ describe WeeklyRecommendationEmailHelper do
       @dbe = Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:channel_recommendation], :frame => @frame)
     end
 
-    it "returns the right message_text" do
-      message_text([@dbe]).should eql "This featured video was shared by #{@sharer.nickname}"
+    context "share (heavy_weight)" do
+
+      it "returns the right message_text" do
+        message_text([@dbe]).should eql "This featured video was shared by #{@sharer.nickname}"
+      end
+
+      it "returns the right message_subject" do
+        message_subject([@dbe]).should eql "This video was shared by #{@sharer.nickname}. Check it out."
+      end
+
     end
 
-    it "returns the right message_subject" do
-      message_subject([@dbe]).should eql "This video was shared by #{@sharer.nickname}. Check it out."
+    context "like (light_weight)" do
+
+      before(:each) do
+        @frame.frame_type = Frame::FRAME_TYPE[:light_weight]
+      end
+
+      it "returns the right message_text" do
+        message_text([@dbe]).should eql "This featured video was liked by #{@sharer.nickname}"
+      end
+
+      it "returns the right message_subject" do
+        message_subject([@dbe]).should eql "This video was liked by #{@sharer.nickname}. Check it out."
+      end
+
     end
 
   end

@@ -7,11 +7,13 @@ module WeeklyRecommendationEmailHelper
       dbe = dbes.first
       case dbe.action
       when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-        "This video is similar to videos #{dbe.src_frame.creator.nickname} has shared"
+        verb = frame_action_string(dbe.src_frame)
+        "This video is similar to videos #{dbe.src_frame.creator.nickname} has #{verb}"
       when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
         "This video is similar to \"#{dbe.src_video.title}\""
       when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
-        "This featured video was shared by #{dbe.frame.creator.nickname}"
+        verb = frame_action_string(dbe.frame)
+        "This featured video was #{verb} by #{dbe.frame.creator.nickname}"
       when DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
         friend_users = dbe.all_associated_friends
         if friend_users.count > 1
@@ -30,11 +32,13 @@ module WeeklyRecommendationEmailHelper
       dbe = dbes.first
       case dbe.action
       when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
-        "Watch this, it's similar to videos #{dbe.src_frame.creator.nickname} has shared"
+        verb = frame_action_string(dbe.src_frame)
+        "Watch this, it's similar to videos #{dbe.src_frame.creator.nickname} has #{verb}"
       when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
-        "A video because you shared: \"#{dbe.src_video.title}\""
+        "A video because you liked: \"#{dbe.src_video.title}\""
       when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
-        "This video was shared by #{dbe.frame.creator.nickname}. Check it out."
+        verb = frame_action_string(dbe.frame)
+        "This video was #{verb} by #{dbe.frame.creator.nickname}. Check it out."
       when DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
         friend_users = dbe.all_associated_friends
         if friend_users.count > 1
@@ -50,7 +54,8 @@ module WeeklyRecommendationEmailHelper
     if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
       # VIDEO GRAPH
       if dbe.src_frame && dbe.src_frame.creator
-        return "This video is similar to videos #{dbe.src_frame.creator.nickname} has shared"
+        verb = frame_action_string(dbe.src_frame)
+        return "This video is similar to videos #{dbe.src_frame.creator.nickname} has #{verb}"
       else
         return "Check out this video"
       end
@@ -61,9 +66,9 @@ module WeeklyRecommendationEmailHelper
     elsif dbe.action == DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
       # MORTAR GRAPH
       if dbe.src_video && dbe.src_video.title
-        return "Because you shared #{dbe.src_video.title}"
+        return "Because you liked #{dbe.src_video.title}"
       else
-        return "This video is similar to videos you have shared"
+        return "This video is similar to videos you have liked"
       end
 
     elsif dbe.action == DashboardEntry::ENTRY_TYPE[:channel_recommendation]
@@ -87,5 +92,11 @@ module WeeklyRecommendationEmailHelper
       return avatar_url_for_user(dbe.frame.creator)
     end
   end
+
+  private
+
+    def frame_action_string(frame)
+      (frame.frame_type == Frame::FRAME_TYPE[:light_weight]) ? "liked" : "shared"
+    end
 
 end
