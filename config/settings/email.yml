@@ -1,7 +1,7 @@
 defaults: &defaults
   shelby_address: "110 E 23rd, 10th Floor, New York NY 10010"
   shelby_logo: "http://api.shelby.tv/images/logo@2x.png"
-  shelby_tagline: "The perfect stream of videos built for you and powered by your friends."
+  shelby_tagline: "Discover videos you and you'll friends will love."
   preferences_link: "http://shelby.tv/preferences"
   notifications_link: "http://shelby.tv/preferences/notifications"
   unsubscribe_path: "http://shelby.tv/preferences/email/unsubscribe"
@@ -40,7 +40,7 @@ defaults: &defaults
     subject: "%{re_rollers_name} shared your video on Shelby.tv"
   like_notification:
     category: "Like Notifications"
-    subject: "%{likers_name} liked a video you shared on Shelby.tv"
+    subject: "%{likers_name} saw a video you liked on Shelby.tv..."
     second_lines:
       any_liker: [ "Is this the beginning of a great relationship?",
                    "You were always the popular one, weren't you?",

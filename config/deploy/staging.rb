@@ -28,6 +28,7 @@ set :app_env,     "staging"
 #############################################################
 
 set :workers, { "*" => 4 }
+set :interval, 1
 set :resque_environment_task, true
 after "deploy:restart", "resque:restart"
 

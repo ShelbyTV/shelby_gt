@@ -69,7 +69,10 @@ class NotificationMailer < ActionMailer::Base
   def like_notification(user_to, frame, user_from=nil)
     sendgrid_category Settings::Email.like_notification["category"]
 
-    sendgrid_ganalytics_options(:utm_source => 'like', :utm_medium => 'notification', :utm_campaign => "frame_#{frame.id.to_s}")
+    @ab_bucket = [""].sample
+    utm_medium = "notification#{@ab_bucket}"
+
+    sendgrid_ganalytics_options(:utm_source => 'like', :utm_medium => utm_medium, :utm_campaign => "frame_#{frame.id.to_s}")
 
 
     @user_to = user_to
@@ -78,6 +81,7 @@ class NotificationMailer < ActionMailer::Base
       # liked by a logged in user
       @user_from = user_from
       @user_from_name = (@user_from.name || @user_from.nickname)
+      @user_from_first_name = @user_from_name.split(' ').first
       @user_permalink = @user_from.permalink
     else
       # liked anonymously by a logged out user
@@ -163,7 +167,11 @@ class NotificationMailer < ActionMailer::Base
 
     first_name = (@user_to.name.split.first if @user_to.name) || @user_to.nickname
     message_subject = view_context.message_subject(dbes)
-    subject_line = "#{first_name.titlecase}, #{message_subject[0].downcase + message_subject[1..-1]}"
+    if first_name.include?("cobra") or first_name.include?("@")
+      subject_line = message_subject
+    else
+      subject_line = "#{first_name.titlecase}, #{message_subject[0].downcase + message_subject[1..-1]}"
+    end
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
          :to => user_to.primary_email,

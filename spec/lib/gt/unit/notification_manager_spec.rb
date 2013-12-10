@@ -61,16 +61,6 @@ describe GT::NotificationManager do
       }.should change(ActionMailer::Base.deliveries,:size).by(1)
     end
 
-    it "should not send email to any non-gt_enabled users" do
-      @f_creator.gt_enabled = false
-      lambda {
-        GT::NotificationManager.check_and_send_like_notification(@frame, @user)
-      }.should change(ActionMailer::Base.deliveries,:size).by(0)
-      lambda {
-        GT::NotificationManager.check_and_send_like_notification(@frame)
-      }.should change(ActionMailer::Base.deliveries,:size).by(0)
-    end
-
     it "should not send email to user with like_notifications disabled" do
       @f_creator.preferences.like_notifications = false
       lambda {
