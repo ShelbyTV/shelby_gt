@@ -9,6 +9,7 @@ defaults: &defaults
     user:
       index: 'user.index'
       show: 'user.show'
+      roll_following: 'user.roll_following'
       update: 'user.update'
       rolls: 'user.rolls'
       valid_token: 'user.valid_token'

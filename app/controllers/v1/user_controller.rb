@@ -167,6 +167,32 @@ class V1::UserController < ApplicationController
   end
 
   ####################################
+  # If the user is following the specified roll, returns a RollFollowing structure with information about the roll
+  # If the user is not following the specified roll, returns a 404
+  #   REQUIRES AUTHENTICATION
+  #
+  # [GET] /v1/user/:id/roll/:roll_id/following
+  #
+  # @param [Required, String] id The id of the user
+  # @param [Required, String] roll_id The id of the roll to check whether the user is following
+  def roll_following
+    StatsManager::StatsD.time(Settings::StatsConstants.api['user']['show']) do
+      @user = current_user
+      if @user && @user.id.to_s == params[:id]
+        @roll_following = @user.roll_following_for(params[:roll_id])
+        if @roll_following
+          @roll = Roll.find(@roll_following.roll_id)
+          @status = 200
+        else
+          @status = 404
+        end
+      else
+        @status = 403
+      end
+    end
+  end
+
+  ####################################
   # Updates and returns one user, with the given parameters.
   #   REQUIRES AUTHENTICATION
   #

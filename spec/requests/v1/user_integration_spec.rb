@@ -284,6 +284,74 @@ describe 'v1/user' do
         end
       end
 
+      context "roll/:id/following" do
+
+        before (:each) do
+          @roll_creator = Factory.create(:user)
+          @roll = Factory.create(:roll, :creator => @roll_creator)
+        end
+
+        context "user follows the roll" do
+
+          before(:each) do
+            @u1.roll_followings << Factory.create(:roll_following, :roll => @roll)
+          end
+
+          it "returns info for the logged in user" do
+            get '/v1/user/'+@u1.id+'/roll/'+@roll.id+'/following'
+            response.body.should be_json_eql(200).at_path("status")
+          end
+
+          it "returns all of the appropriate info for a roll following" do
+            get '/v1/user/'+@u1.id+'/roll/'+@roll.id+'/following'
+            response.body.should have_json_path("result/id")
+            response.body.should have_json_path("result/collaborative")
+            response.body.should have_json_path("result/public")
+            response.body.should have_json_path("result/creator_id")
+            response.body.should have_json_path("result/origin_network")
+            response.body.should have_json_path("result/genius")
+            response.body.should have_json_path("result/frame_count")
+            response.body.should have_json_path("result/first_frame_thumbnail_url")
+            response.body.should have_json_path("result/header_image_file_name")
+            response.body.should have_json_path("result/title")
+            response.body.should have_json_path("result/roll_type")
+            response.body.should_not have_json_path("result/discussion_roll_participants")
+            response.body.should have_json_path("result/creator_nickname")
+            response.body.should have_json_path("result/creator_name")
+            response.body.should have_json_path("result/creator_has_shelby_avatar")
+            response.body.should have_json_path("result/creator_avatar_updated_at")
+            response.body.should have_json_path("result/creator_image_original")
+            response.body.should have_json_path("result/creator_image")
+            response.body.should have_json_path("result/creator_authentications")
+            response.body.should have_json_size(1).at_path("result/creator_authentications")
+            response.body.should have_json_path("result/thumbnail_url")
+            response.body.should have_json_path("result/following_user_count")
+            response.body.should have_json_path("result/followed_at")
+
+            parsed_response = parse_json(response.body)
+            parsed_response["result"]["creator_authentications"][0]["uid"].should == @roll_creator.authentications[0].uid
+          end
+
+        end
+
+        it "returns 404 if the user is not following the roll" do
+          get '/v1/user/'+@u1.id+'/roll/'+@roll.id+'/following'
+          response.body.should be_json_eql(404).at_path("status")
+        end
+
+        it "returns 403 if trying to look up a user other than the current_user" do
+          u2 = Factory.create(:user)
+          get '/v1/user/'+u2.id+'/roll/'+@roll.id+'/following'
+          response.body.should be_json_eql(403).at_path("status")
+        end
+
+        it "returns 401 if not authenticated" do
+          get "/signout"
+          get '/v1/user/'+@u1.id+'/roll/'+@roll.id+'/following'
+          response.body.should be_json_eql(401).at_path("status")
+        end
+      end
+
       context "rolls/personal" do
         before(:each) do
           @r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user], :title => 'title')

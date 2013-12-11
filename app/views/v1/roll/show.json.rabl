@@ -3,52 +3,30 @@ object @roll
 attributes :id, :collaborative, :public, :creator_id, :origin_network, :genius, :frame_count, :first_frame_thumbnail_url, :title, :roll_type, :header_image_file_name, :content_updated_at, :creator_thumbnail_url => :thumbnail_url
 attributes :display_thumbnail_url => :thumbnail_url
 
-code :subdomain do |r|
-  r.subdomain if r.subdomain_active
-end
-
-node(:creator_nickname, :if => lambda { |r| r.creator != nil }) do |r|
-  if r.creator.user_type == 1 && r.creator.authentications && !r.creator.authentications.empty?
-    r.creator.authentications[0].nickname
-  else
-    r.creator.nickname
+node do |r|
+  creator = r.creator
+  result = {}
+  if creator
+    if creator.user_type == 1 && creator.authentications && !creator.authentications.empty?
+      result[:creator_nickname] = creator.authentications[0].nickname
+      result[:creator_name] = creator.authentications[0].name
+    else
+      result[:creator_nickname] = creator.nickname
+      result[:creator_name] = creator.name
+    end
+    result[:creator_has_shelby_avatar] = (creator.avatar_file_name && (creator.avatar_file_name.length > 0))
+    result[:creator_image_original] = creator.user_image_original
+    result[:creator_image] = creator.user_image
+    result[:creator_avatar_updated_at] = creator.avatar_updated_at
+    child creator.authentications => :creator_authentications do
+      attributes :uid, :provider, :nickname, :name
+    end
   end
-end
+  result[:discussion_roll_participants] = r.discussion_roll_participants if r.roll_type == Roll::TYPES[:user_discussion_roll]
+  result[:following_user_count] = r.following_users.count
+  result[:subdomain] = r.subdomain if r.subdomain_active
 
-node(:creator_name, :if => lambda { |r| r.creator != nil }) do |r|
-  if r.creator.user_type == 1 && r.creator.authentications && !r.creator.authentications.empty?
-    r.creator.authentications[0].name
-  else
-    r.creator.name
-  end
-end
-
-node(:creator_has_shelby_avatar, :if => lambda { |r| r.creator != nil }) do |r|
-  if r.creator.avatar_file_name && (r.creator.avatar_file_name.length > 0)
-    true
-  else
-    false
-  end
-end
-
-node(:creator_image_original, :if => lambda { |r| r.creator != nil }) do |r|
-  r.creator.user_image_original
-end
-
-node(:creator_image, :if => lambda { |r| r.creator != nil }) do |r|
-  r.creator.user_image
-end
-
-node(:creator_avatar_updated_at, :if => lambda { |r| r.creator != nil }) do |r|
-  r.creator.avatar_updated_at
-end
-
-node(:discussion_roll_participants, :if =>  lambda { |r| r.roll_type == Roll::TYPES[:user_discussion_roll]}) do |r|
-  r.discussion_roll_participants
-end
-
-code :following_user_count do |r|
-	r.following_users.count
+  result
 end
 
 # not too slow b/c we're only dealing with a single roll

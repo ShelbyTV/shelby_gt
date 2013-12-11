@@ -285,8 +285,14 @@ class User
 
   def roll_following_for(r)
     raise ArgumentError, "must supply roll or roll_id" unless r
-    roll_id = (r.is_a?(Roll) ? r.id : r)
-    roll_followings.select { |rf| rf.roll_id == roll_id } [0]
+    if r.is_a?(Roll)
+      roll_id = r.id
+    elsif r.is_a?(BSON::ObjectId)
+      roll_id = r
+    else
+      roll_id = BSON::ObjectId.from_string(r.to_s)
+    end
+    roll_followings.to_ary.find { |rf| rf.roll_id == roll_id }
   end
 
   def permalink() "#{Settings::ShelbyAPI.web_root}/#{self.id.to_s}"; end
