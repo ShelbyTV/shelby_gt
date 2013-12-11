@@ -616,6 +616,7 @@ describe Frame do
 
           @frame.add_to_watch_later!(@stranger)
           @frame.add_to_watch_later!(@stranger2)
+          MongoMapper::Plugins::IdentityMap.clear
         end
 
         it "should remove the user as an upvoter of the frame's ancestor (original upvoted frame)" do
