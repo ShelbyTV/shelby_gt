@@ -92,7 +92,7 @@ module GT
 
       # don't email the creator if they are the user joining or they dont have an email address!
       user_to = roll.creator
-      if (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.roll_activity_notifications
+      if (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.roll_activity_notifications or !user_to.is_real?
         StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['follow'])
         return
       else
