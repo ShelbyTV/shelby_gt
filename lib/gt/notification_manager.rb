@@ -24,11 +24,13 @@ module GT
 
       # don't email the creator if they are the liking user or they dont have an email address!
       user_to = frame.creator
-      return if !user_to or (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "")
-
-      return unless user_to.preferences.like_notifications
-
-      NotificationMailer.like_notification(user_to, frame, user_from).deliver
+      if !user_to or (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.like_notifications
+        StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['like'])
+        return
+      else
+        StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['like'])
+        NotificationMailer.like_notification(user_to, frame, user_from).deliver
+      end
     end
 
     def self.check_and_send_reroll_notification(old_frame, new_frame)
@@ -37,14 +39,13 @@ module GT
 
       # don't email the creator if they are the upvoting user or they dont have an email address!
       return unless (user_to = old_frame.creator)
-      return if (new_frame.creator_id == old_frame.creator_id) or user_to.primary_email.blank?
-
-      # Temp: for now only send emails to gt_enabled users
-      return unless user_to.gt_enabled
-
-      return unless user_to.preferences.reroll_notifications
-
-      NotificationMailer.reroll_notification(old_frame, new_frame).deliver
+      if (new_frame.creator_id == old_frame.creator_id) or user_to.primary_email.blank? or !user_to.preferences.reroll_notifications or !user_to.gt_enabled
+        StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['share'])
+        return
+      else
+        StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['share'])
+        NotificationMailer.reroll_notification(old_frame, new_frame).deliver
+      end
     end
 
     def self.send_new_message_notifications(c, new_message, user)
@@ -91,11 +92,13 @@ module GT
 
       # don't email the creator if they are the user joining or they dont have an email address!
       user_to = roll.creator
-      return if (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "")
-
-      return unless user_to.preferences.roll_activity_notifications
-
-      NotificationMailer.join_roll_notification(user_to, user_from, roll).deliver
+      if (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.roll_activity_notifications or !user_to.is_real?
+        StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['follow'])
+        return
+      else
+        StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['follow'])
+        NotificationMailer.join_roll_notification(user_to, user_from, roll).deliver
+      end
     end
 
     def self.check_and_send_invite_accepted_notification(inviter, invitee)
