@@ -6,6 +6,7 @@
 require 'new_relic/agent/method_tracer'
 module GT
   class Framer
+    include ::NewRelic::Agent::MethodTracer
     # Creates a Frame with Conversation & associated DashboardEntries.
     #  If adding to a Roll, create DashboardEntries for all followers of Roll.
     #  If not adding to a Roll, create single DashboardEntry for the given dashboard owner.
@@ -228,17 +229,28 @@ module GT
     end
 
     def self.create_dashboard_entries(frames, action, user_ids, options={})
-      defaults = {
-        :persist => true,
-      }
+      self.class.trace_execution_scoped(['Custom/create_dashboard_entries/processing_options']) do
+        defaults = {
+          :persist => true,
+        }
 
-      options = defaults.merge(options)
+        options = defaults.merge(options)
+      end
 
       entries = []
-      frames.each do |frame|
-        user_ids.uniq.each do |user_id|
-          dbe = self.initialize_dashboard_entry(frame, action, user_id, options)
-          entries << dbe
+      self.class.trace_execution_scoped(['Custom/create_dashboard_entries/loop_frames']) do
+        frames.each do |frame|
+          self.class.trace_execution_scoped(['Custom/create_dashboard_entries/loop_users']) do
+            user_ids.uniq.each do |user_id|
+              dbe = nil
+              self.class.trace_execution_scoped(['Custom/create_dashboard_entries/create_dbe_model']) do
+                dbe = self.initialize_dashboard_entry(frame, action, user_id, options)
+              end
+              self.class.trace_execution_scoped(['Custom/create_dashboard_entries/append_dbe_model_to_array']) do
+                entries << dbe
+              end
+            end
+          end
         end
       end
 
