@@ -142,6 +142,15 @@ describe V1::DashboardEntriesController do
       )
     end
 
+    it "routes for GETing one dbe" do
+      { :get => "/v1/dashboard/1" }.should route_to(
+        :controller => "v1/dashboard_entries",
+        :id => "1",
+        :format => "json",
+        :action => "show"
+      )
+    end
+
     it "routes for GET" do
       { :get => "/v1/user/1/dashboard" }.should route_to(
         :controller => "v1/dashboard_entries_metal",
