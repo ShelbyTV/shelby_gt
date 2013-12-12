@@ -60,7 +60,7 @@ class V1::DashboardEntriesMetalController < MetalController
           recs_options = {:insert_at_random_location => true}
           recs_options[:include_mortar_recs] = false if recs_version <= 1
           # check if we need new recommendations, and if so, insert them into the stream
-          GT::RecommendationManager.if_no_recent_recs_generate_rec(current_user, recs_options)
+          GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(current_user, recs_options)
         }
       end
 
@@ -147,7 +147,7 @@ class V1::DashboardEntriesMetalController < MetalController
           recs_options = {:insert_at_random_location => true}
           recs_options[:include_mortar_recs] = false if recs_version <= 1
           # check if we need new recommendations, and if so, insert them into the stream
-          GT::RecommendationManager.if_no_recent_recs_generate_rec(current_user, recs_options)
+          GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(current_user, recs_options)
         }
       end
 

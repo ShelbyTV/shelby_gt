@@ -533,23 +533,23 @@ describe 'v1/user' do
         end
 
         it "should do a check for inserting recommendations when trigger_recs param is included" do
-          GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true, :include_mortar_recs => false})
+          GT::VideoRecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true, :include_mortar_recs => false})
           get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true'
         end
 
         it "should do a check for inserting recommendations when trigger_recs param is included and recs_version param is 1" do
-          GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true, :include_mortar_recs => false})
+          GT::VideoRecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true, :include_mortar_recs => false})
           get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true&recs_version=1'
         end
 
         it "also includes mortar recommendations when trigger_recs param is included and recs_version param is greater than 1" do
-          GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true})
+          GT::VideoRecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true})
           get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true&recs_version=2'
         end
 
         it "should not do a check for inserting recommendation when the user is not the current logged in user" do
           other_user = Factory.create(:user, :public_dashboard => true)
-          GT::RecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
+          GT::VideoRecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
           get '/v1/user/'+other_user.id+'/dashboard?trigger_recs=true'
         end
 
@@ -619,12 +619,12 @@ describe 'v1/user' do
         end
 
         it "should not do a check for inserting recommendations when a since_id is included" do
-          GT::RecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
+          GT::VideoRecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
           get '/v1/user/'+@u1.id+'/dashboard?trigger_recs=true&since_id=someid'
         end
 
         it "should not do a check for inserting recommendations when trigger_recs param is not included" do
-          GT::RecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
+          GT::VideoRecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
           get '/v1/user/'+@u1.id+'/dashboard'
         end
 
@@ -640,7 +640,7 @@ describe 'v1/user' do
       end
 
       it "should return user recommendations on success" do
-        GT::RecommendationManager.should_receive(:new).with(@u1, {}).and_call_original
+        GT::VideoRecommendationManager.should_receive(:new).with(@u1, {}).and_call_original
 
         get '/v1/user/'+@u1.id+'/recommendations'
 
@@ -650,7 +650,7 @@ describe 'v1/user' do
       end
 
       it "should use video graph and mortar as sources by default" do
-        GT::RecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
+        GT::VideoRecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
           :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:mortar_recommendation]],
           :limits => [3,3]
         }).and_return([])
@@ -658,23 +658,23 @@ describe 'v1/user' do
       end
 
       it "should parse the source entries and get the recommendations for the corresponding sources, ignoring invalid entries" do
-        GT::RecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
+        GT::VideoRecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
           :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation], DashboardEntry::ENTRY_TYPE[:channel_recommendation]],
           :limits => [3,3]
         }).and_return([])
         expect { get '/v1/user/'+@u1.id+'/recommendations?sources=0,31,,,fred,!,34'}.not_to raise_error
       end
 
-      it "should parse the excluded_video_ids parameter and pass it to the RecommendationManager on creation" do
+      it "should parse the excluded_video_ids parameter and pass it to the VideoRecommendationManager on creation" do
         bson_id_str = BSON::ObjectId.new.to_s
         bson_id_str2 = BSON::ObjectId.new.to_s
-        GT::RecommendationManager.should_receive(:new).with(@u1, { :excluded_video_ids => [bson_id_str, bson_id_str2]}).and_call_original
+        GT::VideoRecommendationManager.should_receive(:new).with(@u1, { :excluded_video_ids => [bson_id_str, bson_id_str2]}).and_call_original
 
         get '/v1/user/'+@u1.id+'/recommendations?excluded_video_ids='+bson_id_str+','+bson_id_str2
       end
 
       it "should pass the right parameters from the api request to the recommendation manager" do
-        GT::RecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
+        GT::VideoRecommendationManager.any_instance.should_receive(:get_recs_for_user).with({
           :sources => [DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]],
           :limits => [3],
           :video_graph_entries_to_scan => 20,
@@ -939,9 +939,9 @@ describe 'v1/user' do
         end
 
         # it "should try to fill in more mortar recommendations if video graph recommendations are not found" do
-        #   GT::RecommendationManager.any_instance.stub(:get_video_graph_recs_for_user).and_return([])
-        #   GT::RecommendationManager.any_instance.should_receive(:get_mortar_recs_for_user).with(6).and_return([])
-        #   GT::RecommendationManager.any_instance.should_receive(:get_channel_recs_for_user).with(@featured_channel_user.id.to_s, 3).and_return([])
+        #   GT::VideoRecommendationManager.any_instance.stub(:get_video_graph_recs_for_user).and_return([])
+        #   GT::VideoRecommendationManager.any_instance.should_receive(:get_mortar_recs_for_user).with(6).and_return([])
+        #   GT::VideoRecommendationManager.any_instance.should_receive(:get_channel_recs_for_user).with(@featured_channel_user.id.to_s, 3).and_return([])
         #   get '/v1/user/'+@u1.id+'/recommendations?sources=31,33,34'
         # end
 
