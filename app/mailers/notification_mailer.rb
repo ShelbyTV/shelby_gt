@@ -70,7 +70,7 @@ class NotificationMailer < ActionMailer::Base
     sendgrid_category Settings::Email.like_notification["category"]
 
     @ab_bucket = [""].sample
-    utm_medium = "notification#{@ab_bucket}"
+    utm_medium = "notification" #{@ab_bucket}"
 
     sendgrid_ganalytics_options(:utm_source => 'like', :utm_medium => utm_medium, :utm_campaign => "frame_#{frame.id.to_s}")
 
@@ -83,6 +83,10 @@ class NotificationMailer < ActionMailer::Base
       @user_from_name = (@user_from.name || @user_from.nickname)
       @user_from_first_name = @user_from_name.split(' ').first
       @user_permalink = @user_from.permalink
+
+      # recommend content in this notification
+      @people_recommendation = [@user_from, @user_from]
+      #@video_recommendation = []
     else
       # liked anonymously by a logged out user
       @user_from_name = "Someone"

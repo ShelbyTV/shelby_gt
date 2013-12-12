@@ -38,21 +38,12 @@
                                         </p>
 
                                         <a href="<%= @user_permalink %>" style="text-decoration:none;color: <%= Settings::Email.ui_soft_black %>">
-                                          <div style="color: <%= Settings::Email.ui_off_white %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-radius:5px;border:<%= Settings::Email.ui_outline %>;padding: 7px 10px; background-color: <%= Settings::Email.ui_green %>; margin: 20px 10px;">
+                                          <div style="color: <%= Settings::Email.ui_off_white %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-radius:5px;border:<%= Settings::Email.ui_outline %>;padding: 7px 10px; background-color: <%= Settings::Email.ui_green %>; margin: 40px 10px;">
 
                                               See what else <%= @user_from_first_name %> likes
 
                                           </div>
                                         </a>
-
-
-
-                                        <div style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-top: 1px solid #D7D7D7;margin: 80px 0 0;padding: 0.8em 0 0;text-align: left;">
-                                          Check out someone sharing video in <%= @user_from_first_name %>'s network:
-                                        </div>
-                                        <div id="user">
-                                          <%= render :partial => "/notification_mailer/partials/user_card", :locals => {:username => @user_from.nickname, :realname => @user_from.name, :avatar=> avatar_url_for_user(@user_from)} %>
-                                        </div>
 
                                       <% else %>
 
@@ -66,6 +57,16 @@
                                           </p>
                                         </a>
                                       <% end %>
+
+                                      <% # Recommended Content %>
+                                      <% if @people_recommendation %>
+                                          <%= render :partial => "/notification_mailer/partials/recommendation_area", :locals => {:type => :people, :people => @people_recommendation} %>
+                                      <% end %>
+
+                                      <% if @video_recommendation %>
+                                          <%= render :partial => "/notification_mailer/partials/recommendation_area", :locals => {:type => :video, :video => @video_recommendation} %>
+                                      <% end %>
+
                                     </center>
 
                                     <!-- END BODY -->
