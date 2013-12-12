@@ -25,7 +25,24 @@ describe GT::PeopleRecommendationManager do
 
     it "returns the user ids of users who are followed by other_user but not by user" do
       MongoMapper::Plugins::IdentityMap.clear
-      expect(@rm.recommend_other_users_followings(@other_user)).to eql @creators[0..-2].map { |u| u.id }
+      expect(@rm.recommend_other_users_followings(@other_user, {:min_frames => nil})).to eql @creators[0..-2].map { |u| u.id }
+    end
+
+    it "returns at most :limit users when a limit option is passed in" do
+      MongoMapper::Plugins::IdentityMap.clear
+      expect(@rm.recommend_other_users_followings(@other_user, {:limit => 1, :min_frames => nil}).length).to eql 1
+    end
+
+    it "does not return users whose rolls do not have the :min_frames number of frames when that param is specified" do
+      @followed_rolls[0].frame_count = 0
+      @followed_rolls[0].save
+      @followed_rolls[1].frame_count = 1
+      @followed_rolls[1].save
+      @followed_rolls[2].frame_count = 2
+      @followed_rolls[2].save
+      MongoMapper::Plugins::IdentityMap.clear
+
+      expect(@rm.recommend_other_users_followings(@other_user, {:min_frames => 2})).to eql [@creators[2].id]
     end
 
     it "only considers user public rolls and promoted faux user public rolls" do
@@ -35,14 +52,14 @@ describe GT::PeopleRecommendationManager do
       @followed_rolls[2].roll_type = Roll::TYPES[:special_public]
       @followed_rolls[2].save
       MongoMapper::Plugins::IdentityMap.clear
-      expect(@rm.recommend_other_users_followings(@other_user)).to eql @creators[0..1].map { |u| u.id }
+      expect(@rm.recommend_other_users_followings(@other_user, {:min_frames => nil})).to eql @creators[0..1].map { |u| u.id }
     end
 
     it "does not recommend service users" do
       @creators[0].user_type = User::USER_TYPE[:service]
       @creators[0].save
       MongoMapper::Plugins::IdentityMap.clear
-      res = @rm.recommend_other_users_followings(@other_user)
+      res = @rm.recommend_other_users_followings(@other_user, {:min_frames => nil})
       expect(res).not_to include @creators[0].id
       expect(res.length).to eql 2
     end
@@ -51,7 +68,7 @@ describe GT::PeopleRecommendationManager do
       @followed_rolls[0].creator = @other_user
       @followed_rolls[0].save
       MongoMapper::Plugins::IdentityMap.clear
-      res = @rm.recommend_other_users_followings(@other_user)
+      res = @rm.recommend_other_users_followings(@other_user, {:min_frames => nil})
       expect(res).not_to include @creators[0].id
       expect(res).not_to include @other_user.id
       expect(res.length).to eql 2
@@ -62,7 +79,7 @@ describe GT::PeopleRecommendationManager do
       @other_user.roll_followings << Factory.create(:roll_following, :roll => new_roll)
       MongoMapper::Plugins::IdentityMap.clear
 
-      expect(@rm.recommend_other_users_followings(@other_user).count).to eql 3
+      expect(@rm.recommend_other_users_followings(@other_user, {:min_frames => nil}).count).to eql 3
     end
 
   end

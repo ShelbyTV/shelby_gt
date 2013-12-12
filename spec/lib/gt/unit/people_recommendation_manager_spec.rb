@@ -59,7 +59,7 @@ describe GT::PeopleRecommendationManager do
 
         @where_query = double("where_query")
         Roll.should_receive(:where).twice().and_return(@where_query)
-        @where_query.should_receive(:fields).with(:roll_type, :creator_id).ordered().and_return(@followed_rolls)
+        @where_query.should_receive(:fields).with(:roll_type, :creator_id, :frame_count).ordered().and_return(@followed_rolls)
         @where_query.should_receive(:fields).with(:creator_id).ordered().and_return([@followed_rolls[0]])
 
         fields_query = double("fields_query")
@@ -68,13 +68,40 @@ describe GT::PeopleRecommendationManager do
       end
 
       it "returns the user ids of users who are followed by other_user but not by user" do
-        expect(@rm.recommend_other_users_followings(@other_user)).to eql [@creators[1].id]
+        expect(@rm.recommend_other_users_followings(@other_user, {:min_frames => nil})).to eql [@creators[1].id]
       end
 
       it "does not recommend service users" do
         @creators[1].user_type = User::USER_TYPE[:service]
 
-        expect(@rm.recommend_other_users_followings(@other_user).length).to eql 0
+        expect(@rm.recommend_other_users_followings(@other_user, {:min_frames => nil}).length).to eql 0
+      end
+
+      it "uses sample to pick a random set of users to return when :shuffle => true and a limit is passed as an option" do
+        Array.any_instance.should_receive(:sample).with(1).and_call_original
+
+        expect(@rm.recommend_other_users_followings(@other_user, {:limit => 1, :shuffle => true, :min_frames => nil}).length).to eql 1
+      end
+
+      it "uses shuffle to pick a random set of users to return when :shuffle => true and no limit is passed as an option" do
+        Array.any_instance.should_receive(:shuffle).and_call_original
+
+        expect(@rm.recommend_other_users_followings(@other_user, {:shuffle => true, :min_frames => nil}).length).to eql 1
+      end
+
+      context "doesn't call shuffle or sample" do
+        before(:each) do
+          Array.any_instance.should_not_receive(:sample)
+          Array.any_instance.should_not_receive(:shuffle)
+        end
+
+        it "when :shuffle is false and no limit is passed" do
+          @rm.recommend_other_users_followings(@other_user, {:min_frames => nil})
+        end
+
+        it "when :shuffle is false and a limit is passed" do
+          @rm.recommend_other_users_followings(@other_user, {:limit => 1, :min_frames => nil})
+        end
       end
 
     end
