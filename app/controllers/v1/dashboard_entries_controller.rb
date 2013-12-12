@@ -12,6 +12,7 @@ class V1::DashboardEntriesController < ApplicationController
     StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['show']) do
       if params[:id]
         if @dashboard_entry = DashboardEntry.find(params[:id])
+          @include_frame_children = true
           @status = 200
         else
           render_error(404, "could not find dashboard_entry with id #{params[:id]}")
