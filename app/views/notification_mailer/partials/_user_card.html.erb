@@ -1,0 +1,26 @@
+<div class="user" style="font-size: 0.8em;">
+  <div class="media_module user__lining clearfix" style="border-bottom: 1px solid #D7D7D7;margin: 0;padding: 0.8em;position: relative;">
+
+    <a href="<%= Settings::Email.web_url_base %>/<%= username %>" class="user__link" style="color: inherit;text-decoration: none;">
+      <span class="media_image image_module avatar avatar--small user__avatar" role="img" style="background-image:url(<%= avatar %>);display: inline-block;margin-right: 1em;border-radius: 5px;background-color: #F1F1F1;border: 1px solid #DDD;margin: 0 auto;float: left;display: inline-block;margin-right: 1em;">
+        <img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;height: 45px;line-height: 1;outline: none;text-decoration: none;display: inline-block;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>"/>
+      </span><!-- eo media_image -->
+
+      <div class="media_body" style="white-space: nowrap;overflow: hidden;-ms-text-overflow: ellipsis;-o-text-overflow: ellipsis;text-overflow: ellipsis;text-align: left;">
+        <h3 class="user__h1" style="line-height: 1.4;white-space: nowrap;overflow: hidden;-ms-text-overflow: ellipsis;-o-text-overflow: ellipsis;text-overflow: ellipsis;margin: 0;">
+          <%= username %>
+        </h3>
+
+        <h4 class="user__h2" style="font-family: 'Helvetica Neue',Helvetica,sans-serif;font-weight: normal;line-height: 1.4;margin: 10px 0;">
+          <%= realname %>
+        </h4>
+      </div><!-- eo media_body -->
+    </a>
+    <div class="media_image--rev" style="float: right;margin-left: 10px;margin-right: 0;">
+      <a href="<%= Settings::Email.web_url_base %>/<%= username %>" class="button_primer button_command button_command--flexible button_green user__button" style="display: block;margin-right: .8em;position: absolute;right: 0;top: 18px;z-index: 1;background-color: #63AE3D;background-image: none;padding: 0.5em 0.8em;border: 1px solid #559635;color: #FFF;border-radius: 2px;text-align: center;text-decoration:none;">
+        <span class="button_label">Watch now...</span>
+      </a>
+    </div><!-- eo media_image--rev -->
+
+  </div><!-- eo media_module -->
+</div><!-- eo user -->

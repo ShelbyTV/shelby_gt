@@ -23,25 +23,36 @@
                           <center>
                             <table border="0" cellspacing="0" cellpadding="40">
                               <tr>
-                                <td>
+                                <td width="350">
                                     <!-- BODY -->
 
                                     <center>
-                                      <p style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;">
-                                        ...and they liked it too!
-                                      </p>
+
+                                      <h1 style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;">
+                                        ...and they liked it!
+                                      </h1>
 
                                       <% if @user_from %>
 
-                                        “<a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>"><%= @frame_title %></a>”
+                                        “<a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>"><%= @frame_title %> <%= @frame_title %></a>”
 
                                         <a href="<%= @user_permalink %>" style="text-decoration:none;color: <%= Settings::Email.ui_soft_black %>">
-                                          <p style="color: <%= Settings::Email.ui_off_white %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>;padding: 7px 10px; background-color: <%= Settings::Email.ui_green %>">
+                                          <div style="color: <%= Settings::Email.ui_off_white %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>;padding: 7px 10px; background-color: <%= Settings::Email.ui_green %>; margin: 20px 10px;">
 
                                               See what else <%= @user_from_first_name %> likes
 
-                                          </p>
+                                          </div>
                                         </a>
+
+
+
+                                        <div style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-top: 1px solid #D7D7D7;margin: 40px 0 0;padding: 0.8em 0.8em 0">
+                                          Check out someone sharing video in <%= @user_from_first_name %>'s network:
+                                        </div>
+                                        <div id="user">
+                                          <%= render :partial => "/notification_mailer/partials/user_card", :locals => {:username => @user_from.nickname, :realname => @user_from.name, :avatar=> avatar_url_for_user(@user_from)} %>
+                                        </div>
+
                                       <% else %>
 
                                         “<a href="<%= @frame_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>"><%= @frame_title %></a>”
