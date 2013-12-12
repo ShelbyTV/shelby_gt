@@ -106,7 +106,7 @@ defaults: &defaults
 
 development:
   <<: *defaults
-  shelby_logo: "http://localhost.shelby.tv:4000/images/logo@2x.png"
+  shelby_logo: "http://api.shelby.tv/images/logo@2x.png"
 
 test:
   <<: *defaults

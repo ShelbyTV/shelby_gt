@@ -29,15 +29,16 @@
                                     <center>
 
                                       <h1 style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;">
-                                        ...and they liked it!
+                                        ...and they liked it too!
                                       </h1>
 
                                       <% if @user_from %>
-
-                                        “<a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>"><%= @frame_title %> <%= @frame_title %></a>”
+                                        <p style="margin: 25px 0;">
+                                          <a href="<%= @user_permalink %>" style="font-size: <%= Settings::Email.font_size_large %>;color: <%= Settings::Email.ui_soft_black %>">“<%= @frame_title %>”</a>
+                                        </p>
 
                                         <a href="<%= @user_permalink %>" style="text-decoration:none;color: <%= Settings::Email.ui_soft_black %>">
-                                          <div style="color: <%= Settings::Email.ui_off_white %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>;padding: 7px 10px; background-color: <%= Settings::Email.ui_green %>; margin: 20px 10px;">
+                                          <div style="color: <%= Settings::Email.ui_off_white %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-radius:5px;border:<%= Settings::Email.ui_outline %>;padding: 7px 10px; background-color: <%= Settings::Email.ui_green %>; margin: 20px 10px;">
 
                                               See what else <%= @user_from_first_name %> likes
 
@@ -46,7 +47,7 @@
 
 
 
-                                        <div style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-top: 1px solid #D7D7D7;margin: 40px 0 0;padding: 0.8em 0.8em 0">
+                                        <div style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-top: 1px solid #D7D7D7;margin: 80px 0 0;padding: 0.8em 0 0;text-align: left;">
                                           Check out someone sharing video in <%= @user_from_first_name %>'s network:
                                         </div>
                                         <div id="user">
@@ -58,7 +59,7 @@
                                         “<a href="<%= @frame_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>"><%= @frame_title %></a>”
 
                                         <a href="<%= Settings::Email.web_url_base %>" style="text-decoration:none;color: <%= Settings::Email.ui_soft_black %>">
-                                          <p style="color: <%= Settings::Email.ui_off_white %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>;padding: 7px; background-color: <%= Settings::Email.ui_green %>">
+                                          <p style="color: <%= Settings::Email.ui_off_white %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-radius:5px;border:<%= Settings::Email.ui_outline %>;padding: 7px; background-color: <%= Settings::Email.ui_green %>">
 
                                               Find more awesome video
 
