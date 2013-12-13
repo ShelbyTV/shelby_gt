@@ -105,7 +105,7 @@ ShelbyGt::Application.routes.draw do
       put 'unplayable'
       put 'fix_if_necessary'
     end
-    resources :dashboard_entries, :path => "dashboard", :only => [:update] do
+    resources :dashboard_entries, :path => "dashboard", :only => [:update, :show] do
       get 'find_entries_with_video' => 'dashboard_entries#find_entries_with_video', :on => :collection
       get 'short_link' => 'dashboard_entries#short_link', :on => :member
     end

@@ -1,6 +1,27 @@
 class V1::DashboardEntriesController < ApplicationController
 
-  before_filter :authenticate_user!, :except => [:short_link]
+  before_filter :authenticate_user!, :except => [:short_link, :show]
+
+  ##
+  # Returns a single dashboard entrie
+  #
+  # [GET] v1/dashboard/:id
+  #
+  #
+  def show
+    StatsManager::StatsD.time(Settings::StatsConstants.api['dashboard']['show']) do
+      if params[:id]
+        if @dashboard_entry = DashboardEntry.find(params[:id])
+          @include_frame_children = true
+          @status = 200
+        else
+          render_error(404, "could not find dashboard_entry with id #{params[:id]}")
+        end
+      else
+        render_error(404, "must specify an id.")
+      end
+    end
+  end
 
   ##
   # Returns frames of the videos fo the parameters
