@@ -213,17 +213,17 @@ describe 'v1/dashboard' do
 
       context 'trigger_recs param' do
         it "should do a check for inserting recommendations when trigger_recs param is included" do
-          GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true, :include_mortar_recs => false})
+          GT::VideoRecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true, :include_mortar_recs => false})
           get '/v1/dashboard?trigger_recs=true'
         end
 
         it "should do a check for inserting recommendations when trigger_recs param is included and recs_version param is 1" do
-          GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true, :include_mortar_recs => false})
+          GT::VideoRecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true, :include_mortar_recs => false})
           get '/v1/dashboard?trigger_recs=true&recs_version=1'
         end
 
         it "also includes mortar recommendations when trigger_recs param is included and recs_version param is greater than 1" do
-          GT::RecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true})
+          GT::VideoRecommendationManager.should_receive(:if_no_recent_recs_generate_rec).with(@u1, {:insert_at_random_location => true})
           get '/v1/dashboard?trigger_recs=true&recs_version=2'
         end
 
@@ -281,12 +281,12 @@ describe 'v1/dashboard' do
         end
 
         it "should not do a check for inserting recommendations when a since_id is included" do
-          GT::RecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
+          GT::VideoRecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
           get '/v1/dashboard?trigger_recs=true&since_id=someid'
         end
 
         it "should not do a check for inserting recommendations when trigger_recs param is not included" do
-          GT::RecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
+          GT::VideoRecommendationManager.should_not_receive(:if_no_recent_recs_generate_rec)
           get '/v1/dashboard'
         end
       end

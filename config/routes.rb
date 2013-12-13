@@ -62,6 +62,7 @@ ShelbyGt::Application.routes.draw do
       get ':id' => 'user#show', :as => :show, :on => :collection, :constraints => { :id => /[^\/]+/ }
       get 'is_token_valid' => 'user#valid_token', :on => :member
       get 'rolls/following' => 'user_metal#roll_followings', :on => :member
+      get 'roll/:roll_id/following/' => 'user#roll_following', :on => :member
       get 'rolls/postable' => 'user_metal#roll_followings', :on => :member, :defaults => { :postable => true }
       get 'rolls/personal' => 'roll#show_users_public_roll', :constraints => { :user_id => /[^\/]+/ }
       get 'rolls/personal/frames' => 'frame_metal#index_for_users_public_roll'
@@ -104,7 +105,7 @@ ShelbyGt::Application.routes.draw do
       put 'unplayable'
       put 'fix_if_necessary'
     end
-    resources :dashboard_entries, :path => "dashboard", :only => [:update] do
+    resources :dashboard_entries, :path => "dashboard", :only => [:update, :show] do
       get 'find_entries_with_video' => 'dashboard_entries#find_entries_with_video', :on => :collection
       get 'short_link' => 'dashboard_entries#short_link', :on => :member
     end

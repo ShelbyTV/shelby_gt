@@ -17,7 +17,7 @@ describe GT::RecommendationEmailProcessor do
 
     before(:each) do
       @rmDouble = double("rm")
-      GT::RecommendationManager.should_receive(:new).with(@user).and_return(@rmDouble)
+      GT::VideoRecommendationManager.should_receive(:new).with(@user).and_return(@rmDouble)
       Array.any_instance.should_receive(:shuffle!)
     end
 
@@ -41,7 +41,7 @@ describe GT::RecommendationEmailProcessor do
         :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
         :src_id => src_frame.id
       }])
-      GT::RecommendationManager.should_receive(:create_recommendation_dbentry).with(
+      GT::VideoRecommendationManager.should_receive(:create_recommendation_dbentry).with(
         @user,
         video.id,
         DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
@@ -60,7 +60,7 @@ describe GT::RecommendationEmailProcessor do
         :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
         :src_id => src_frame.id
       }])
-      GT::RecommendationManager.stub(:create_recommendation_dbentry).and_return({:dashboard_entry => dbe})
+      GT::VideoRecommendationManager.stub(:create_recommendation_dbentry).and_return({:dashboard_entry => dbe})
 
       GT::RecommendationEmailProcessor.get_recommendations_for_user(@user).should == [dbe]
     end

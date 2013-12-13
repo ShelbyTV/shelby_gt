@@ -1,4 +1,4 @@
-require 'recommendation_manager'
+require 'video_recommendation_manager'
 
 class V1::RecommendationController < ApplicationController
 
@@ -43,7 +43,7 @@ class V1::RecommendationController < ApplicationController
 
       rec_manager_options = {}
       rec_manager_options[:excluded_video_ids] = params[:excluded_video_ids].split(",") if params[:excluded_video_ids]
-      rec_manager = GT::RecommendationManager.new(@user, rec_manager_options)
+      rec_manager = GT::VideoRecommendationManager.new(@user, rec_manager_options)
       rec_options = {
         :limits => limits,
         :sources => sources
@@ -61,7 +61,7 @@ class V1::RecommendationController < ApplicationController
       @results = []
       # wrap the recommended videos in 'phantom' frames and dbentries that are not persisted to the db
       recs.each do |rec|
-        res = GT::RecommendationManager.create_recommendation_dbentry(
+        res = GT::VideoRecommendationManager.create_recommendation_dbentry(
           @user,
           rec[:recommended_video_id],
           rec[:action],

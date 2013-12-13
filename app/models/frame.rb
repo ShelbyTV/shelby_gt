@@ -278,7 +278,7 @@ class Frame
   # but we allow other API calls that reference the frame by ID to continue working.
   # (ie. Commenting, DashboardEntries, upvoting, watched, etc.)
   def destroy
-    roll = self.roll
+    roll_deleted_from = self.roll
 
     # move roll_id into deleted_from_roll_id and save
     self.deleted_from_roll_id = self.roll_id
@@ -287,7 +287,7 @@ class Frame
 
     #update the roll (on DB and in memory if loaded)
     Roll.decrement(self.deleted_from_roll_id, :j => -1) if self.deleted_from_roll_id
-    roll.frame_count -= 1 if roll
+    roll_deleted_from.frame_count -= 1 if roll
 
     #if this frame is a lightweight_share, undo the upvote that resulted from its "liking"
     if self.frame_type == Frame::FRAME_TYPE[:light_weight]
@@ -298,7 +298,7 @@ class Frame
         # 1) remove him/her from the ancestor frame's upvoters array
         # 2) update (decrement) the ancestor frame's like_count accordingly
         Frame.collection.update({:_id => upvoted_frame_id}, {
-          :$pull => {:f => roll.creator.id},
+          :$pull => {:f => roll_deleted_from.creator.id},
           :$inc => {:n => -1}
         })
         # 3) recalculate the ancestor frame's score and decrement its video like_count

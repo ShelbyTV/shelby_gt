@@ -5,9 +5,9 @@ module GT
 
   # This manager gets video recommendations of various types from our different recommendation
   # sources.  Most of the operations need context around a specific user to find valid recommendations,
-  # so they require instatiating an instance of the RecommendationManager class with a user passed in
+  # so they require instatiating an instance of the VideoRecommendationManager class with a user passed in
   # as a parameter.  Other utility methods that don't need stored state are defined as class methods.
-  class RecommendationManager
+  class VideoRecommendationManager
 
     # BEGIN CLASS METHODS
 
@@ -50,7 +50,7 @@ module GT
 
       unless recent_dbes.any? { |dbe| dbe.is_recommendation? }
         # if we don't find any recommendations within the recency limit, generate a new recommendation
-        rec_manager = GT::RecommendationManager.new(user)
+        rec_manager = GT::VideoRecommendationManager.new(user)
         # choose randomly between a mortar recommendation and a video_graph recommendation
         if (get_mortar_rec)
           recs = rec_manager.get_recs_for_user({

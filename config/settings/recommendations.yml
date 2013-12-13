@@ -6,6 +6,9 @@ defaults: &defaults
   triggered_ios_recs: {
     mortar_recs_weight : 0.7
   }
+  people: {
+    min_followed_roll_frames : 2
+  }
 
 development:
   <<: *defaults

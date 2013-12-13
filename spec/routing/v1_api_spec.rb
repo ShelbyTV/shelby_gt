@@ -93,6 +93,16 @@ describe V1::UserController do
       )
     end
 
+    it "routes for GET users single roll following" do
+      { :get => "/v1/user/1/roll/2/following" }.should route_to(
+        :controller => "v1/user",
+        :action => "roll_following",
+        :format => "json",
+        :id => "1",
+        :roll_id => "2"
+      )
+    end
+
     it "routes for GET users rolls collaborating" do
       { :get => "/v1/user/1/rolls/postable" }.should route_to(
         :controller => "v1/user_metal",
@@ -139,6 +149,15 @@ describe V1::DashboardEntriesController do
         :controller => "v1/dashboard_entries_metal",
         :format => "json",
         :action => "index"
+      )
+    end
+
+    it "routes for GETing one dbe" do
+      { :get => "/v1/dashboard/1" }.should route_to(
+        :controller => "v1/dashboard_entries",
+        :id => "1",
+        :format => "json",
+        :action => "show"
       )
     end
 

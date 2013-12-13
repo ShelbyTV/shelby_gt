@@ -1,8 +1,8 @@
 require 'spec_helper'
-require 'recommendation_manager'
+require 'video_recommendation_manager'
 
 # INTEGRATION test
-describe GT::RecommendationManager do
+describe GT::VideoRecommendationManager do
   before(:each) do
     GT::VideoProviderApi.stub(:get_video_info)
   end
@@ -40,14 +40,14 @@ describe GT::RecommendationManager do
 
       @recommended_videos.flatten!
 
-      @recommendation_manager = GT::RecommendationManager.new(@user)
+      @video_recommendation_manager = GT::VideoRecommendationManager.new(@user)
     end
 
     it "should return all of the recommendations when there are no restricting limits" do
       MongoMapper::Plugins::IdentityMap.clear
       Array.any_instance.should_receive(:shuffle!).and_call_original
 
-      result = @recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+      result = @video_recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
       result_video_ids = result.map{|rec|rec[:recommended_video_id]}
       result_video_ids.length.should == @recommended_videos.length
       (result_video_ids - @recommended_videos.map { |v| v.id }).should == []
@@ -62,7 +62,7 @@ describe GT::RecommendationManager do
       it "should return all of the recommendations when there are no restricting limits" do
         MongoMapper::Plugins::IdentityMap.clear
 
-        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+        result = @video_recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
         result.length.should == @recommended_videos.length
         result.should == @recommended_videos.each_with_index.map{|vid, i| {:recommended_video_id => vid.id, :src_frame_id => @src_frame_ids[i]}}
       end
@@ -72,7 +72,7 @@ describe GT::RecommendationManager do
         @viewed_roll.frames << @viewed_frame
         MongoMapper::Plugins::IdentityMap.clear
 
-        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+        result = @video_recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
@@ -83,7 +83,7 @@ describe GT::RecommendationManager do
         @recommended_videos[0].save
         MongoMapper::Plugins::IdentityMap.clear
 
-        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+        result = @video_recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
@@ -94,7 +94,7 @@ describe GT::RecommendationManager do
         @recommended_videos[0].save
         MongoMapper::Plugins::IdentityMap.clear
 
-        result = @recommendation_manager.get_video_graph_recs_for_user(10, 1, nil, nil, {:unique_sharers_only => false})
+        result = @video_recommendation_manager.get_video_graph_recs_for_user(10, 1, nil, nil, {:unique_sharers_only => false})
         result.length.should == 1
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
       end
@@ -104,7 +104,7 @@ describe GT::RecommendationManager do
         @recommended_videos[0].save
         MongoMapper::Plugins::IdentityMap.clear
 
-        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+        result = @video_recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
         result.should include({:recommended_video_id => @recommended_videos[1].id, :src_frame_id => @src_frame_ids[1]})
@@ -115,7 +115,7 @@ describe GT::RecommendationManager do
         @recommended_videos[0].save
         MongoMapper::Plugins::IdentityMap.clear
 
-        rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
+        rm = GT::VideoRecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
         result = rm.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
         result.length.should == @recommended_videos.length
         result.should == @recommended_videos.each_with_index.map{|vid, i| {:recommended_video_id => vid.id, :src_frame_id => @src_frame_ids[i]}}
@@ -126,7 +126,7 @@ describe GT::RecommendationManager do
         @dbes[2].save
         MongoMapper::Plugins::IdentityMap.clear
 
-        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
+        result = @video_recommendation_manager.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos.last.id, :src_frame_id => @src_frame_ids.last})
         result.should include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
@@ -135,7 +135,7 @@ describe GT::RecommendationManager do
       it "should return a maximum of one video from a given source sharer, by default" do
         MongoMapper::Plugins::IdentityMap.clear
 
-        result = @recommendation_manager.get_video_graph_recs_for_user(10, 10)
+        result = @video_recommendation_manager.get_video_graph_recs_for_user(10, 10)
         result.length.should == 3
         result.should include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
         result.should include({:recommended_video_id => @recommended_videos[3].id, :src_frame_id => @src_frame_ids[3]})
@@ -145,10 +145,10 @@ describe GT::RecommendationManager do
       it "returns the proper number of recs based on the limit parameter" do
         MongoMapper::Plugins::IdentityMap.clear
 
-        @recommendation_manager.get_video_graph_recs_for_user(10, 1, nil, nil, {:unique_sharers_only => false}).should == [
+        @video_recommendation_manager.get_video_graph_recs_for_user(10, 1, nil, nil, {:unique_sharers_only => false}).should == [
           {:recommended_video_id => @dbes.first.video.recs.first.recommended_video_id, :src_frame_id => @dbes.first.frame_id}
         ]
-        @recommendation_manager.get_video_graph_recs_for_user(10, 2, nil, nil, {:unique_sharers_only => false}).should == [
+        @video_recommendation_manager.get_video_graph_recs_for_user(10, 2, nil, nil, {:unique_sharers_only => false}).should == [
           {:recommended_video_id => @dbes.first.video.recs[0].recommended_video_id, :src_frame_id => @dbes[0].frame_id},
           {:recommended_video_id => @dbes.first.video.recs[1].recommended_video_id, :src_frame_id => @dbes[0].frame_id}
         ]
@@ -157,7 +157,7 @@ describe GT::RecommendationManager do
       it "excludes videos from specified excluded sharers" do
         MongoMapper::Plugins::IdentityMap.clear
 
-        rm = GT::RecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id]})
+        rm = GT::VideoRecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id]})
         result = rm.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
         result.length.should == @recommended_videos.length - 3
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
@@ -165,7 +165,7 @@ describe GT::RecommendationManager do
         result.should_not include({:recommended_video_id => @recommended_videos[2].id, :src_frame_id => @src_frame_ids[2]})
         result.should include({:recommended_video_id => @recommended_videos.last.id, :src_frame_id => @src_frame_ids.last})
 
-        rm = GT::RecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id.to_s]})
+        rm = GT::VideoRecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id.to_s]})
         result = rm.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
         result.length.should == @recommended_videos.length - 3
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
@@ -177,12 +177,12 @@ describe GT::RecommendationManager do
       it "excludes videos with specified excluded ids" do
         MongoMapper::Plugins::IdentityMap.clear
 
-        rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id]})
+        rm = GT::VideoRecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id]})
         result = rm.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
 
-        rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id.to_s]})
+        rm = GT::VideoRecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id.to_s]})
         result = rm.get_video_graph_recs_for_user(10, 10, nil, nil, {:unique_sharers_only => false})
         result.length.should == @recommended_videos.length - 1
         result.should_not include({:recommended_video_id => @recommended_videos[0].id, :src_frame_id => @src_frame_ids[0]})
@@ -210,7 +210,7 @@ describe GT::RecommendationManager do
 
           it "returns nil and creates no dashboard entries" do
             expect {
-              @result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+              @result = GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
             }.to_not change(DashboardEntry, :count)
             @result.should be_nil
           end
@@ -236,7 +236,7 @@ describe GT::RecommendationManager do
           it "should return a new dashboard entry with a video graph recommendation" do
             MongoMapper::Plugins::IdentityMap.clear
 
-            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            result = GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
             result.should be_an_instance_of(DashboardEntry)
             result.src_frame.should == @f
             result.video_id.should == @rec_vid.id
@@ -249,7 +249,7 @@ describe GT::RecommendationManager do
             MongoMapper::Plugins::IdentityMap.clear
 
             expect {
-              @result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+              @result = GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
             }.to_not change(DashboardEntry, :count)
             @result.should be_nil
           end
@@ -257,7 +257,7 @@ describe GT::RecommendationManager do
           it "should create the newest entry in the dashboard by default" do
             MongoMapper::Plugins::IdentityMap.clear
 
-            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            result = GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
             result.should == DashboardEntry.sort(:id.desc).first
           end
 
@@ -265,7 +265,7 @@ describe GT::RecommendationManager do
             MongoMapper::Plugins::IdentityMap.clear
 
             Array.any_instance.stub(:sample).and_return(@dbe)
-            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:insert_at_random_location => true})
+            result = GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user, {:insert_at_random_location => true})
             result.id.generation_time.to_i.should == @dbe.id.generation_time.to_i - 1
           end
 
@@ -274,7 +274,7 @@ describe GT::RecommendationManager do
               MongoMapper::Plugins::IdentityMap.clear
 
               @lambda = lambda {
-                GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+                GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
               }
             end
 
@@ -310,7 +310,7 @@ describe GT::RecommendationManager do
           end
 
           it "fills in and returns a new dashboard entry with a mortar recommendation" do
-            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            result = GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
             result.should be_an_instance_of(DashboardEntry)
             result.src_video.should == @reason_video
             result.video_id.should == @recommended_video.id
@@ -318,7 +318,7 @@ describe GT::RecommendationManager do
           end
 
           it "does not fill in mortar recommendations if {:include_mortar_recs => false} is passed" do
-            GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:include_mortar_recs => false}).should be_nil
+            GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user, {:include_mortar_recs => false}).should be_nil
           end
 
         end
@@ -335,7 +335,7 @@ describe GT::RecommendationManager do
 
           it "returns nil and creates no dashboard entries" do
             expect {
-              @result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+              @result = GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
             }.to_not change(DashboardEntry, :count)
             @result.should be_nil
           end
@@ -358,7 +358,7 @@ describe GT::RecommendationManager do
           end
 
           it "returns a new dashboard entry with a mortar recommendation" do
-            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            result = GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
             result.should be_an_instance_of(DashboardEntry)
             result.src_video.should == @reason_video
             result.video_id.should == @recommended_video.id
@@ -366,7 +366,7 @@ describe GT::RecommendationManager do
           end
 
           it "ignores the random chance and tries to return a video graph rec if {:include_mortar_recs => false} is passed" do
-            GT::RecommendationManager.if_no_recent_recs_generate_rec(@user, {:include_mortar_recs => false}).should be_nil
+            GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user, {:include_mortar_recs => false}).should be_nil
           end
 
         end
@@ -388,7 +388,7 @@ describe GT::RecommendationManager do
 
             MongoMapper::Plugins::IdentityMap.clear
 
-            result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+            result = GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
             result.should be_an_instance_of(DashboardEntry)
             result.src_frame.should == @f
             result.video_id.should == @rec_vid.id
@@ -407,9 +407,9 @@ describe GT::RecommendationManager do
         MongoMapper::Plugins::IdentityMap.clear
 
         # put a recommendation in the dashboard
-        GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+        GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
         # check if we need to put another one
-        result = GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+        result = GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
         # since there's already a recommendation in the last five (the one we just created), we shouldn't put another
         result.should be_nil
       end
@@ -418,11 +418,11 @@ describe GT::RecommendationManager do
         MongoMapper::Plugins::IdentityMap.clear
 
         # put a recommendation in the dashboard
-        GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+        GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
 
         lambda {
           # check if we need to put another one
-          GT::RecommendationManager.if_no_recent_recs_generate_rec(@user)
+          GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
           # since there's already a recommendation in the last five (the one we just created), we shouldn't put another
         }.should_not change {"#{DashboardEntry.count},#{Frame.count},#{Conversation.count}"}
       end
@@ -441,7 +441,7 @@ describe GT::RecommendationManager do
       src_frame = Factory.create(:frame)
       MongoMapper::Plugins::IdentityMap.clear
 
-      result = GT::RecommendationManager.create_recommendation_dbentry(
+      result = GT::VideoRecommendationManager.create_recommendation_dbentry(
         @user,
         @rec_vid.id,
         DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
@@ -467,7 +467,7 @@ describe GT::RecommendationManager do
           MongoMapper::Plugins::IdentityMap.clear
 
           @lambda = lambda {
-            GT::RecommendationManager.create_recommendation_dbentry(
+            GT::VideoRecommendationManager.create_recommendation_dbentry(
               @user,
               @rec_vid.id,
               DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
@@ -495,7 +495,7 @@ describe GT::RecommendationManager do
         MongoMapper::Plugins::IdentityMap.clear
 
         lambda {
-          GT::RecommendationManager.create_recommendation_dbentry(
+          GT::VideoRecommendationManager.create_recommendation_dbentry(
             @user,
             @rec_vid.id,
             DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
@@ -514,7 +514,7 @@ describe GT::RecommendationManager do
             MongoMapper::Plugins::IdentityMap.clear
 
             @lambda = lambda {
-              GT::RecommendationManager.create_recommendation_dbentry(
+              GT::VideoRecommendationManager.create_recommendation_dbentry(
                 @user,
                 @rec_vid.id,
                 DashboardEntry::ENTRY_TYPE[:channel_recommendation],
@@ -543,7 +543,7 @@ describe GT::RecommendationManager do
           MongoMapper::Plugins::IdentityMap.clear
 
           lambda {
-            GT::RecommendationManager.create_recommendation_dbentry(
+            GT::VideoRecommendationManager.create_recommendation_dbentry(
               @user,
               @rec_vid.id,
               DashboardEntry::ENTRY_TYPE[:channel_recommendation],
@@ -562,7 +562,7 @@ describe GT::RecommendationManager do
       src_video = Factory.create(:video)
       MongoMapper::Plugins::IdentityMap.clear
 
-      result = GT::RecommendationManager.create_recommendation_dbentry(
+      result = GT::VideoRecommendationManager.create_recommendation_dbentry(
         @user,
         @rec_vid.id,
         DashboardEntry::ENTRY_TYPE[:mortar_recommendation],
@@ -585,7 +585,7 @@ describe GT::RecommendationManager do
       src_frame = Factory.create(:frame, :video => @rec_vid)
       MongoMapper::Plugins::IdentityMap.clear
 
-      result = GT::RecommendationManager.create_recommendation_dbentry(
+      result = GT::VideoRecommendationManager.create_recommendation_dbentry(
         @user,
         @rec_vid.id,
         DashboardEntry::ENTRY_TYPE[:channel_recommendation],
@@ -619,14 +619,14 @@ describe GT::RecommendationManager do
       @mortar_recommendations.stub(:shuffle!)
       GT::MortarHarvester.stub(:get_recs_for_user).and_return(@mortar_recommendations)
 
-      @recommendation_manager = GT::RecommendationManager.new(@user)
+      @video_recommendation_manager = GT::VideoRecommendationManager.new(@user)
     end
 
     it "should return the recommended videos" do
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.get_mortar_recs_for_user.length.should == 1
-      @recommendation_manager.get_mortar_recs_for_user(2).length.should == 2
+      @video_recommendation_manager.get_mortar_recs_for_user.length.should == 1
+      @video_recommendation_manager.get_mortar_recs_for_user(2).length.should == 2
     end
 
     it "should skip videos the user has already watched" do
@@ -634,7 +634,7 @@ describe GT::RecommendationManager do
       @viewed_roll.frames << @viewed_frame
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.get_mortar_recs_for_user.should ==
+      @video_recommendation_manager.get_mortar_recs_for_user.should ==
         [{
           :recommended_video_id => @recommended_videos[1].id,
           :src_id => @reason_videos[1].id,
@@ -647,7 +647,7 @@ describe GT::RecommendationManager do
       @recommended_videos[0].save
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.get_mortar_recs_for_user.should ==
+      @video_recommendation_manager.get_mortar_recs_for_user.should ==
         [{
           :recommended_video_id => @recommended_videos[1].id,
           :src_id => @reason_videos[1].id,
@@ -660,7 +660,7 @@ describe GT::RecommendationManager do
       @recommended_videos[0].save
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.get_mortar_recs_for_user.should ==
+      @video_recommendation_manager.get_mortar_recs_for_user.should ==
         [{
           :recommended_video_id => @recommended_videos[1].id,
           :src_id => @reason_videos[1].id,
@@ -673,7 +673,7 @@ describe GT::RecommendationManager do
       @recommended_videos[0].save
       MongoMapper::Plugins::IdentityMap.clear
 
-      rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
+      rm = GT::VideoRecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
       rm.get_mortar_recs_for_user.should ==
         [{
           :recommended_video_id => @recommended_videos[0].id,
@@ -685,7 +685,7 @@ describe GT::RecommendationManager do
     it "excludes videos with specified excluded ids" do
       MongoMapper::Plugins::IdentityMap.clear
 
-      rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id]})
+      rm = GT::VideoRecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id]})
       rm.get_mortar_recs_for_user.should ==
         [{
           :recommended_video_id => @recommended_videos[1].id,
@@ -693,7 +693,7 @@ describe GT::RecommendationManager do
           :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
         }]
 
-      rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id.to_s]})
+      rm = GT::VideoRecommendationManager.new(@user, {:excluded_video_ids => [@recommended_videos[0].id.to_s]})
       rm.get_mortar_recs_for_user.should ==
         [{
           :recommended_video_id => @recommended_videos[1].id,
@@ -727,14 +727,14 @@ describe GT::RecommendationManager do
 
       Array.any_instance.stub(:shuffle!)
 
-      @recommendation_manager = GT::RecommendationManager.new(@user)
+      @video_recommendation_manager = GT::VideoRecommendationManager.new(@user)
     end
 
     it "should return the recommended videos" do
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.get_channel_recs_for_user(@channel_user.id).length.should == 1
-      @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 2).length.should == 2
+      @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id).length.should == 1
+      @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id, 2).length.should == 2
     end
 
     it "should skip videos the user has already watched" do
@@ -742,7 +742,7 @@ describe GT::RecommendationManager do
       @viewed_roll.frames << @viewed_frame
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
+      @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
           :recommended_video_id => @videos[1].id,
           :src_id => @frames[1].id,
@@ -755,7 +755,7 @@ describe GT::RecommendationManager do
       @videos[0].save
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
+      @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
           :recommended_video_id => @videos[1].id,
           :src_id => @frames[1].id,
@@ -768,7 +768,7 @@ describe GT::RecommendationManager do
       @dbes[0].save
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
+      @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
           :recommended_video_id => @videos[1].id,
           :src_id => @frames[1].id,
@@ -781,7 +781,7 @@ describe GT::RecommendationManager do
       @videos[0].save
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
+      @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id).should ==
         [{
           :recommended_video_id => @videos[1].id,
           :src_id => @frames[1].id,
@@ -794,7 +794,7 @@ describe GT::RecommendationManager do
       @videos[0].save
       MongoMapper::Plugins::IdentityMap.clear
 
-      rm = GT::RecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
+      rm = GT::VideoRecommendationManager.new(@user, {:exclude_missing_thumbnails => false})
       rm.get_channel_recs_for_user(@channel_user.id).should ==
         [{
           :recommended_video_id => @videos[0].id,
@@ -808,7 +808,7 @@ describe GT::RecommendationManager do
       @dbes[1].save
       MongoMapper::Plugins::IdentityMap.clear
 
-      result = @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 3)
+      result = @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id, 3)
       result.length.should == 2
       result.map {|rec| rec[:recommended_video_id]}.should_not include @videos[1].id
     end
@@ -818,7 +818,7 @@ describe GT::RecommendationManager do
       @dbes[1].save
       MongoMapper::Plugins::IdentityMap.clear
 
-      result = @recommendation_manager.get_channel_recs_for_user(@channel_user.id, 3, {:unique_sharers_only => false})
+      result = @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id, 3, {:unique_sharers_only => false})
       result.length.should == 3
       result.map {|rec| rec[:recommended_video_id]}.should include @videos[1].id
     end
@@ -826,12 +826,12 @@ describe GT::RecommendationManager do
     it "excludes videos from specified excluded sharers" do
       MongoMapper::Plugins::IdentityMap.clear
 
-      rm = GT::RecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id]})
+      rm = GT::VideoRecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id]})
       result = rm.get_channel_recs_for_user(@channel_user.id, 3)
       result.length.should == 2
       result.map {|rec| rec[:recommended_video_id]}.should_not include @videos[0].id
 
-      rm = GT::RecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id.to_s]})
+      rm = GT::VideoRecommendationManager.new(@user, {:excluded_sharer_ids => [@dbes[0].actor_id.to_s]})
       result = rm.get_channel_recs_for_user(@channel_user.id, 3)
       result.length.should == 2
       result.map {|rec| rec[:recommended_video_id]}.should_not include @videos[0].id
@@ -840,12 +840,12 @@ describe GT::RecommendationManager do
     it "excludes videos with specified excluded ids" do
       MongoMapper::Plugins::IdentityMap.clear
 
-      rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@videos[0].id]})
+      rm = GT::VideoRecommendationManager.new(@user, {:excluded_video_ids => [@videos[0].id]})
       result = rm.get_channel_recs_for_user(@channel_user.id, 3)
       result.length.should == 2
       result.map {|rec| rec[:recommended_video_id]}.should_not include @videos[0].id
 
-      rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@videos[0].id.to_s]})
+      rm = GT::VideoRecommendationManager.new(@user, {:excluded_video_ids => [@videos[0].id.to_s]})
       result = rm.get_channel_recs_for_user(@channel_user.id, 3)
       result.length.should == 2
       result.map {|rec| rec[:recommended_video_id]}.should_not include @videos[0].id
@@ -858,7 +858,7 @@ describe GT::RecommendationManager do
       @user = Factory.create(:user)
       @featured_channel_user = Factory.create(:user)
       Settings::Channels['featured_channel_user_id'] = @featured_channel_user.id.to_s
-      @recommendation_manager = GT::RecommendationManager.new(@user)
+      @video_recommendation_manager = GT::VideoRecommendationManager.new(@user)
 
       Array.any_instance.stub(:shuffle!)
 
@@ -899,7 +899,7 @@ describe GT::RecommendationManager do
     it "returns the right results" do
       MongoMapper::Plugins::IdentityMap.clear
 
-      res = @recommendation_manager.get_recs_for_user({ :sources => [31, 33, 34], :limits => [1, 1, 1] })
+      res = @video_recommendation_manager.get_recs_for_user({ :sources => [31, 33, 34], :limits => [1, 1, 1] })
       res.length.should == 3
       res[0].should == {
         :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
@@ -921,7 +921,7 @@ describe GT::RecommendationManager do
     it "fills in from a source with limit zero" do
       MongoMapper::Plugins::IdentityMap.clear
 
-      res = @recommendation_manager.get_recs_for_user({ :sources => [31, 33], :limits => [2, 0] })
+      res = @video_recommendation_manager.get_recs_for_user({ :sources => [31, 33], :limits => [2, 0] })
       res.length.should == 2
       res[0].should == {
         :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
@@ -938,14 +938,14 @@ describe GT::RecommendationManager do
     it "does not make recommendations based on the specified excluded source sharers" do
       MongoMapper::Plugins::IdentityMap.clear
 
-      rm = GT::RecommendationManager.new(@user, {:excluded_sharer_ids => [@vid_graph_src_frame_creator.id, @featured_curator.id]})
+      rm = GT::VideoRecommendationManager.new(@user, {:excluded_sharer_ids => [@vid_graph_src_frame_creator.id, @featured_curator.id]})
       rm.get_recs_for_user({ :sources => [31, 33, 34], :limits => [1, 1, 1] }).length.should == 1
     end
 
     it "excludes videos from the specified list of excluded video ids" do
       MongoMapper::Plugins::IdentityMap.clear
 
-      rm = GT::RecommendationManager.new(@user, {:excluded_video_ids => [@vid_graph_recommended_vid.id, @mortar_recommended_vid.id, @channel_recommended_vid.id]})
+      rm = GT::VideoRecommendationManager.new(@user, {:excluded_video_ids => [@vid_graph_recommended_vid.id, @mortar_recommended_vid.id, @channel_recommended_vid.id]})
       rm.get_recs_for_user({ :sources => [31, 33, 34], :limits => [1, 1, 1] }).length.should == 0
     end
 
@@ -959,13 +959,13 @@ describe GT::RecommendationManager do
       @recommended_videos = [Factory.create(:video), Factory.create(:video), Factory.create(:video)]
       @recommendations = @recommended_videos.map {|vid| { :recommended_video_id => vid.id.to_s }}
 
-      @recommendation_manager = GT::RecommendationManager.new(@user)
+      @video_recommendation_manager = GT::VideoRecommendationManager.new(@user)
     end
 
     it "return all recs" do
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.send(:filter_recs, @recommendations).should == @recommendations
+      @video_recommendation_manager.send(:filter_recs, @recommendations).should == @recommendations
     end
 
     it "should skip videos the user has already watched" do
@@ -973,7 +973,7 @@ describe GT::RecommendationManager do
       @viewed_roll.frames << @viewed_frame
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
+      @video_recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
         @recommendations[1]
       ]
     end
@@ -983,7 +983,7 @@ describe GT::RecommendationManager do
       @recommended_videos[0].save
       MongoMapper::Plugins::IdentityMap.clear
 
-      @recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
+      @video_recommendation_manager.send(:filter_recs, @recommendations, {:limit => 1}).should == [
         @recommendations[1]
       ]
     end
@@ -994,7 +994,7 @@ describe GT::RecommendationManager do
 
     context "excluding watched videos" do
 
-      it "only loads watched videos once across multiple calls to a RecommendationManager instance" do
+      it "only loads watched videos once across multiple calls to a VideoRecommendationManager instance" do
         @viewed_roll = Factory.create(:roll)
         @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
         @featured_channel_user = Factory.create(:user)
@@ -1020,7 +1020,7 @@ describe GT::RecommendationManager do
 
         MongoMapper::Plugins::IdentityMap.clear
 
-        rm = GT::RecommendationManager.new(@user)
+        rm = GT::VideoRecommendationManager.new(@user)
         rm.get_video_graph_recs_for_user(10, nil)
         rm.get_channel_recs_for_user(@featured_channel_user.id)
       end
@@ -1031,7 +1031,7 @@ describe GT::RecommendationManager do
 
   context "excluding duplicate source sharer" do
 
-    it "only returns one recommendation from a given source sharer per RecommendationManager instance, when that option is set" do
+    it "only returns one recommendation from a given source sharer per VideoRecommendationManager instance, when that option is set" do
         @viewed_roll = Factory.create(:roll)
         @user = Factory.create(:user, :viewed_roll_id => @viewed_roll.id)
         @featured_channel_user = Factory.create(:user)
@@ -1058,7 +1058,7 @@ describe GT::RecommendationManager do
 
         MongoMapper::Plugins::IdentityMap.clear
 
-        rm = GT::RecommendationManager.new(@user)
+        rm = GT::VideoRecommendationManager.new(@user)
         rm.get_video_graph_recs_for_user(1).length.should == 1
         # by default, we don't allow multiple recs from the same source sharer
         rm.get_channel_recs_for_user(@featured_channel_user.id, 1).length.should == 0

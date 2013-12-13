@@ -86,4 +86,33 @@ describe V1::DashboardEntriesController do
     end
   end
 
+  describe "GET show" do
+    before(:each) do
+      @u = Factory.create(:user)
+      @d = Factory.create(:dashboard_entry)
+    end
+
+    it "should return the dashboard entry to @dashboard and return 200 with user signed in" do
+      sign_in @u
+      DashboardEntry.stub(:find) { @d }
+      get :show, :id => @d.id, :format => :json
+      assigns(:dashboard_entry).should eq(@d)
+      assigns(:status).should eq(200)
+    end
+
+    it "should return the dashboard entry to @dashboard and return 200 with user NOT signed in" do
+      DashboardEntry.stub(:find) { @d }
+      get :show, :id => @d.id, :format => :json
+      assigns(:dashboard_entry).should eq(@d)
+      assigns(:status).should eq(200)
+    end
+
+    it "should return error if could not find dashboard entry" do
+      DashboardEntry.stub(:find) { nil }
+      get :show, :id => @d.id, :format => :json
+      assigns(:status).should eq(404)
+      assigns(:message).should eq("could not find dashboard_entry with id #{@d.id}")
+    end
+  end
+
 end
