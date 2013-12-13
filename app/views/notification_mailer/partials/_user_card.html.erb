@@ -2,18 +2,18 @@
   <tr>
     <td width="50">
       <a href="<%= Settings::Email.web_url_base %>/<%= username %>" class="user__link" style="color: inherit;text-decoration: none;">
-        <img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;height: 45px;line-height: 1;outline: none;text-decoration: none;display: inline-block;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>"/>
+        <img class="image_fix" src="<%= avatar %>" alt="<%= username %>" title="<%= username %>" width="45" height="45" style="border: 0;height: 45px;line-height: 1;outline: none;text-decoration: none;display: inline-block;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>"/>
       </a>
     </td>
     <td width="150" style="padding-left: 10px;">
       <a href="<%= Settings::Email.web_url_base %>/<%= username %>" class="user__link" style="color: inherit;text-decoration: none;">
-        <div class="media_body" style="white-space: nowrap;overflow: hidden;-ms-text-overflow: ellipsis;-o-text-overflow: ellipsis;text-overflow: ellipsis;text-align: left;">
+        <div class="media_body" style="white-space: nowrap;overflow: hidden;-ms-text-overflow: ellipsis;-o-text-overflow: ellipsis;text-overflow: ellipsis;text-align: left;margin-right: 10px;">
           <h3 class="user__h1" style="font-size: <%= Settings::Email.font_size_large %>;line-height: 1.4;white-space: nowrap;overflow: hidden;-ms-text-overflow: ellipsis;-o-text-overflow: ellipsis;text-overflow: ellipsis;margin: 0;">
-            <%= username %>
+            <%= realname %>
           </h3>
 
           <h4 class="user__h2" style="font-size: <%= Settings::Email.font_size %>;font-family: 'Helvetica Neue',Helvetica,sans-serif;font-weight: normal;line-height: 1.4;margin: 5px 0;">
-            <%= realname %>
+            <%= username %>
           </h4>
         </div>
       </a>

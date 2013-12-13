@@ -34,7 +34,7 @@
 
                                       <% if @user_from %>
                                         <p style="margin: 25px 0;">
-                                          <a href="<%= @user_permalink %>" style="font-size: <%= Settings::Email.font_size_large %>;color: <%= Settings::Email.ui_soft_black %>">“<%= @frame_title %>”</a>
+                                          <a href="<%= @frame_permalink %>" style="font-size: <%= Settings::Email.font_size_large %>;color: <%= Settings::Email.ui_soft_black %>">“<%= @frame_title %>”</a>
                                         </p>
 
                                         <a href="<%= @user_permalink %>" style="text-decoration:none;color: <%= Settings::Email.ui_soft_black %>">
@@ -47,7 +47,7 @@
 
                                       <% else %>
 
-                                        “<a href="<%= @frame_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>"><%= @frame_title %></a>”
+                                        <a href="<%= @frame_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>">“<%= @frame_title %>”</a>
 
                                         <a href="<%= Settings::Email.web_url_base %>" style="text-decoration:none;color: <%= Settings::Email.ui_soft_black %>">
                                           <p style="color: <%= Settings::Email.ui_off_white %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-radius:5px;border:<%= Settings::Email.ui_outline %>;padding: 7px; background-color: <%= Settings::Email.ui_green %>">
@@ -59,7 +59,7 @@
                                       <% end %>
 
                                       <% # Recommended Content %>
-                                      <% if @people_recommendation %>
+                                      <% if @people_recommendation and !@people_recommendation.empty? %>
                                           <%= render :partial => "/notification_mailer/partials/recommendation_area", :locals => {:type => :people, :people => @people_recommendation, :user_from_first_name => @user_from_first_name} %>
                                       <% end %>
                                     </center>

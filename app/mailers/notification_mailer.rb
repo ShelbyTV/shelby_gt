@@ -76,7 +76,6 @@ class NotificationMailer < ActionMailer::Base
 
     sendgrid_ganalytics_options(:utm_source => 'like', :utm_medium => utm_medium, :utm_campaign => "frame_#{frame.id.to_s}")
 
-
     @user_to = user_to
 
     if user_from
@@ -87,9 +86,9 @@ class NotificationMailer < ActionMailer::Base
       @user_permalink = @user_from.permalink
 
       # recommend content in this notification
-      #r = GT::PeopleRecommendationManager.new(@user_from)
-      #ru = r.recommend_other_users_followings(@user_to, {:limit => 2, :shuffle => true, :min_frames => 2})
-      #@people_recommendation = User.find(ru)
+      r = GT::PeopleRecommendationManager.new(@user_from)
+      ru = r.recommend_other_users_followings(@user_to, {:limit => 2, :shuffle => true, :min_frames => 2})
+      @people_recommendation = User.find(ru)
       #@video_recommendation = []
     else
       # liked anonymously by a logged out user
