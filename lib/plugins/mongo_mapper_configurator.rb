@@ -1,7 +1,7 @@
 module Plugins
   module MongoMapperConfigurator
     extend ActiveSupport::Concern
-    
+
     module ClassMethods
       def configure_mongomapper(settings)
         if settings['db_hosts']
@@ -16,6 +16,6 @@ module Plugins
         plugin MongoMapper::Plugins::IdentityMap if settings.mm_use_identity_map
       end
     end
-    
+
   end
 end

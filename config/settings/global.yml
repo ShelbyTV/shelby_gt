@@ -19,6 +19,9 @@ production: &production
 staging:
   <<: *production
 
+email:
+  <<: *production
+
 arnold:
   <<: *production
   override_em_next_tick: true

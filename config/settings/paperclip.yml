@@ -20,6 +20,8 @@ production: &production
 staging:
   <<: *production
 
-arnold:
+email:
   <<: *production
 
+arnold:
+  <<: *production

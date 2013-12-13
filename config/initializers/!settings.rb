@@ -6,7 +6,7 @@
 #      along with default blocks.
 #
 module Settings
-  
+
   Dir.glob("#{Rails.root}/config/settings/*.yml").each do |filename|
     klass = Class.new(Settingslogic) do
       source filename

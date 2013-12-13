@@ -16,5 +16,8 @@ production: &production
 staging:
   <<: *defaults
 
+email:
+  <<: *production
+
 arnold:
   <<: *production

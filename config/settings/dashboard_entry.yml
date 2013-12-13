@@ -23,9 +23,11 @@ production: &production
 staging:
   <<: *production
 
+email:
+  <<: *production
+
 arnold:
   <<: *production
   mm_use_identity_map: false
   db_options:
    :read: :secondary
-
