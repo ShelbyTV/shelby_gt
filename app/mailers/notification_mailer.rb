@@ -1,3 +1,5 @@
+require 'people_recommendation_manager'
+
 class NotificationMailer < ActionMailer::Base
   include SendGrid
   sendgrid_enable   :opentrack, :clicktrack, :ganalytics
@@ -85,7 +87,9 @@ class NotificationMailer < ActionMailer::Base
       @user_permalink = @user_from.permalink
 
       # recommend content in this notification
-      @people_recommendation = [@user_from, @user_from]
+      r = GT::PeopleRecommendationManager.new(@user_from)
+      ru = r.recommend_other_users_followings(@user_to, {:limit => 2, :shuffle => true, :min_frames => 2})
+      @people_recommendation = User.find(ru)
       #@video_recommendation = []
     else
       # liked anonymously by a logged out user

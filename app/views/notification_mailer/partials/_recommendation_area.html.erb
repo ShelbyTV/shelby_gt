@@ -1,6 +1,6 @@
 <% if type == :people %>
   <div style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-top: 1px solid #D7D7D7;margin: 50px 0 0;padding: 0.8em 0 0;text-align: left;">
-    Check out someone sharing video in <%= @user_from_first_name %>'s network:
+    Check out someone sharing video in <%= user_from_first_name %>'s network:
   </div>
 
   <% people.each do |u|  %>
@@ -10,7 +10,7 @@
 
 <% if type == :video %>
   <div style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-top: 1px solid #D7D7D7;margin: 50px 0 0;padding: 0.8em 0 0;text-align: left;">
-    Check out a video similar to what <%= @user_from_first_name %>'s likes:
+    Check out a video similar to what <%= user_from_first_name %>'s likes:
   </div>
 
   <% video.each do |v|  %>

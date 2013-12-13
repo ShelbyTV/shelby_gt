@@ -60,13 +60,8 @@
 
                                       <% # Recommended Content %>
                                       <% if @people_recommendation %>
-                                          <%= render :partial => "/notification_mailer/partials/recommendation_area", :locals => {:type => :people, :people => @people_recommendation} %>
+                                          <%= render :partial => "/notification_mailer/partials/recommendation_area", :locals => {:type => :people, :people => @people_recommendation, :user_from_first_name => @user_from_first_name} %>
                                       <% end %>
-
-                                      <% if @video_recommendation %>
-                                          <%= render :partial => "/notification_mailer/partials/recommendation_area", :locals => {:type => :video, :video => @video_recommendation} %>
-                                      <% end %>
-
                                     </center>
 
                                     <!-- END BODY -->
