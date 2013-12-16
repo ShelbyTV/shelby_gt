@@ -312,13 +312,35 @@ describe Frame do
     end
 
     it "creates dashboard entries for followers of the liker's public roll" do
-      @u1.public_roll.add_follower(Factory.create(:user))
+      @follower = Factory.create(:user)
+      @u1.public_roll.add_follower(@follower)
+      @frame.add_to_watch_later!(@u1)
+
+      DashboardEntryCreator.should have_queue_size_of(2)
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(2)
+    end
+
+    it "creates a like_notification dbe for the frame's creator" do
       @frame.add_to_watch_later!(@u1)
 
       DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:like_notification],
+        [@originator.id],
+        {:persist => true, :actor_id => @u1.id}
+      )
       expect {
         ResqueSpec.perform_next(:dashboard_entries_queue)
       }.to change { DashboardEntry.count }.by(1)
+
+      dbe = DashboardEntry.last
+      expect(dbe.actor).to eql @u1
+      expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:like_notification]
+      expect(dbe.frame).to eql @frame
     end
 
     it "should add the user to the frame being watch_latered's upvoters array if it's not there already" do

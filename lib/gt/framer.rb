@@ -268,6 +268,9 @@ module GT
     end
 
     def self.create_dashboard_entries_async(frames, action, user_ids, options={})
+      # no point queueing up the job if no user_ids are passed in
+      return if user_ids.empty?
+
       defaults = {
         :persist => true,
       }
@@ -347,7 +350,15 @@ module GT
         dbe.friend_rollers_array = options[:friend_rollers_array] if options[:friend_rollers_array]
         dbe.friend_complete_viewers_array = options[:friend_complete_viewers_array] if options[:friend_complete_viewers_array]
         dbe.video = frame.video
-        dbe.actor = frame.creator
+
+        actor_id = options.delete(:actor_id)
+        if actor_id
+          actor_id = BSON::ObjectId.from_string(actor_id) if !actor_id.is_a?(BSON::ObjectId)
+        else
+          actor_id = frame.creator_id
+        end
+        dbe.actor_id = actor_id
+
         dbe.action = action
 
         return dbe

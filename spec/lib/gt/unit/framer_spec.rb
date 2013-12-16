@@ -979,6 +979,18 @@ describe GT::Framer do
         @observer = Factory.create(:user)
       end
 
+      it "sets the dashboard entries' actor_id based on the :actor_id option if it is passed in" do
+        liking_user = Factory.create(:user)
+
+        # accepts a BSON::ObjectId
+        res = GT::Framer.create_dashboard_entries([@frame1], DashboardEntry::ENTRY_TYPE[:like_notification], [@observer.id], {:actor_id => liking_user.id, :return_dbes => true})
+        expect(res[0].actor_id).to eql liking_user.id
+
+        # accepts a String
+        res = GT::Framer.create_dashboard_entries([@frame1], DashboardEntry::ENTRY_TYPE[:like_notification], [@observer.id], {:actor_id => liking_user.id.to_s, :return_dbes => true})
+        expect(res[0].actor_id).to eql liking_user.id
+      end
+
       context "persistence" do
         before(:each) do
           @collection = double(:collection)
@@ -1011,6 +1023,11 @@ describe GT::Framer do
         GT::Framer.create_dashboard_entries_async([@frame], DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id])
         DashboardEntryCreator.should have_queue_size_of(1)
         DashboardEntryCreator.should have_queued([@frame.id], DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {:persist => true})
+      end
+
+      it "does nothing if no user ids are passed" do
+        GT::Framer.create_dashboard_entries_async([@frame], DashboardEntry::ENTRY_TYPE[:new_social_frame], [])
+        DashboardEntryCreator.should have_queue_size_of(0)
       end
     end
   end

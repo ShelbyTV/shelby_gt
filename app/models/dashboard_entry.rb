@@ -66,6 +66,7 @@ class DashboardEntry
     :re_roll => 8,
     :watch => 9,
     :comment => 10,
+    :like_notification => 11,
     :prioritized_frame => 30,
     :video_graph_recommendation => 31,
     :entertainment_graph_recommendation => 32,
