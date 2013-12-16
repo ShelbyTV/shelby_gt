@@ -53,16 +53,26 @@ describe GT::SocialSorter do
       @existing_user.user_type = User::USER_TYPE[:real]
       @existing_user.save
 
-      lambda {
-        res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
-        res.should_not == false
-        res[:frame].roll.should ==  @existing_user.public_roll
-        res[:dashboard_entries].count.should == 2
-        res[:dashboard_entries][1].user.should == @observer
-        res[:dashboard_entries][1].roll.should ==  @existing_user.public_roll
-        res[:dashboard_entries][1].action.should == DashboardEntry::ENTRY_TYPE[:new_social_frame]
-        res[:dashboard_entries][1].frame.should == res[:frame]
-      }.should change { @existing_user.public_roll.reload.frames.count }.by(1)
+      expect {
+        @res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
+        @res.should_not == false
+        @res[:frame].roll.should ==  @existing_user.public_roll
+      }.to change(@existing_user.public_roll.reload.frames, :count).by(1)
+    end
+
+    it "creates dashboard entries" do
+      @existing_user.user_type = User::USER_TYPE[:real]
+      @existing_user.save
+
+      expect {
+        @res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
+      }.to change(DashboardEntry, :count).by(2)
+
+      dbe = DashboardEntry.last
+      dbe.user.should == @observer
+      dbe.roll.should ==  @existing_user.public_roll
+      dbe.action.should == DashboardEntry::ENTRY_TYPE[:new_social_frame]
+      dbe.frame.should == @res[:frame]
     end
 
     it "should set existing User on the Message" do
@@ -247,7 +257,6 @@ describe GT::SocialSorter do
 
       lambda {
         res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
-        res[:dashboard_entries].size.should satisfy { |n| n >= 4 }
       }.should change { DashboardEntry.count }.by_at_least(4)
     end
 
@@ -370,8 +379,6 @@ describe GT::SocialSorter do
       lambda {
         res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res.should_not == false
-        res[:dashboard_entries].size.should == 1
-        res[:dashboard_entries][0].user.should == @observer
       }.should change { DashboardEntry.count }.by(1)
     end
 
@@ -384,9 +391,9 @@ describe GT::SocialSorter do
       lambda {
         res = GT::SocialSorter.sort(@existing_user_random_msg, {:video => @video, :from_deep => false}, @observer)
         res.should_not == false
-        res[:dashboard_entries].size.should == 1
-        res[:dashboard_entries][0].user.should == @observer
       }.should change { DashboardEntry.count }.by(1)
+
+      DashboardEntry.last.user.should == @observer
     end
 
     it "should create appropriate Frame (owned by existing User, no Roll)" do
