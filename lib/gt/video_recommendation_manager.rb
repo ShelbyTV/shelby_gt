@@ -118,7 +118,8 @@ module GT
           :video_id => video_id,
           :dashboard_user_id => user.id,
           :action => dbe_action,
-          :persist => options[:persist]
+          :persist => options[:persist],
+          :return_dbe_models => true
         }
 
         case dbe_action

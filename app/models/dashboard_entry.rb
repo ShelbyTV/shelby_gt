@@ -51,7 +51,7 @@ class DashboardEntry
   end
 
   # Has the user read this entry?
-  key :read, Boolean, :abbr => :d
+  key :read, Boolean, :abbr => :d, :default => false
 
   # What does this entry represent (re-roll, watch, comment)?
   # [using integers instead of strings to keep the size as small as possible]
