@@ -928,7 +928,9 @@ describe GT::Framer do
           d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {:persist => false})
         }.should_not change { DashboardEntry.count }
 
-        d[0].persisted?.should_not == true
+        # can't trust the persisted? method because of our internal use of from_mongo,
+        # so verify that reloading causes an error as an alternate way of checking that this dbe is not persisted
+        expect{d[0].reload}.to raise_error
       end
     end
 

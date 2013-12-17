@@ -236,8 +236,7 @@ module GT
       options = defaults.merge(options)
 
       dbe = self.initialize_dashboard_entry(frame, action, user.id, options)
-      dbe_model = DashboardEntry.new
-      dbe.each{|k, v| dbe_model[k] = v}
+      dbe_model = DashboardEntry.from_mongo(dbe)
       dbe_model.save if options[:persist]
       return [dbe_model]
     end
@@ -257,28 +256,29 @@ module GT
       dbe_models = [] # used to collect MongoMapper DashboardEntry models if returning anything
       frames.each do |frame|
         user_ids.uniq.each do |user_id|
+          # have to declare these variables outside the scope of the tracing blocks
           dbe = nil
           dbe_model = nil
           self.class.trace_execution_scoped(['Custom/create_dashboard_entries/create_dbe_model']) do
-            # we definitely need a hash representing the DashboardEntry
+            # we start with a hash representing the DashboardEntry
             dbe = self.initialize_dashboard_entry(frame, action, user_id, options)
             if return_dbe_models
               # if we're going to be returning DashboardEntry models, convert the hash into a model
-              dbe_model = DashboardEntry.new
-              dbe.each{|k, v| dbe_model[k] = v}
+              dbe_model = DashboardEntry.from_mongo(dbe)
             end
           end
           self.class.trace_execution_scoped(['Custom/create_dashboard_entries/append_dbes_to_array']) do
-            unless return_dbe_models
-              # the hashes are only used for persistence, so only work on them if persist == true
+            if return_dbe_models
+              # the MongoMapper models are only used if return_dbe_models == true
+              dbe_models << dbe_model if return_dbe_models
+            else
+              # from this point on, the hashes are only used for persistence,
+              # so only perform more work on them if persist == true
               if persist
                 # map the keys to their abbreviations before using the Ruby Driver directly to insert the documents
                 dbe.keys.each {|k, v| dbe[DashboardEntry.abbr_for_key_name(k)] = dbe.delete(k)}
                 dbes << dbe
               end
-            else
-              # likewise, the MongoMapper models are only used if return_dbe_models == true
-              dbe_models << dbe_model if return_dbe_models
             end
           end
         end
@@ -286,11 +286,13 @@ module GT
 
       # if persisting, do it all in one operation so that it only checks out one socket
       if persist
-          if return_dbe_models && !dbe_models.empty?
-            # if we have MongoMapper models, convert them to hashes and insert
-            DashboardEntry.collection.insert(dbe_models.map {|dbe| dbe.to_mongo })
+          if return_dbe_models
+            if !dbe_models.empty?
+              # if we've created MongoMapper models, convert them to hashes and insert
+              DashboardEntry.collection.insert(dbe_models.map {|dbe| dbe.to_mongo })
+            end
           elsif !dbes.empty?
-            # if we have hashes already, just pass them through
+            # if we have hashes already, just pass them through to insert
             DashboardEntry.collection.insert(dbes)
           end
       end
