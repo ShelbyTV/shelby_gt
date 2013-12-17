@@ -552,6 +552,7 @@ describe GT::VideoRecommendationManager do
         :dashboard_user_id => @user.id,
         :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
         :persist => true,
+        :return_dbe_models => true,
         :dashboard_entry_options => {
           :src_frame_id => src_frame.id
         }
@@ -574,6 +575,7 @@ describe GT::VideoRecommendationManager do
         :dashboard_user_id => @user.id,
         :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
         :persist => false,
+        :return_dbe_models => true,
         :dashboard_entry_options => {
           :src_frame_id => src_frame.id
         }
@@ -597,6 +599,7 @@ describe GT::VideoRecommendationManager do
         :dashboard_user_id => @user.id,
         :action => DashboardEntry::ENTRY_TYPE[:mortar_recommendation],
         :persist => true,
+        :return_dbe_models => true,
         :dashboard_entry_options => {
           :src_video_id => src_video.id
         }
