@@ -547,7 +547,7 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
                           SOB_DASHBOARD_ENTRY_ACTOR_ID,
                           SOB_USER,
                           "actor",
-                          &printJsonUser);
+                          &printJsonActor);
 
    // include the friend arrays, only if the entry is an entertainment graph recommendation
    sobLog("Checking if dashboard entry is an entertainment graph recommendation");
