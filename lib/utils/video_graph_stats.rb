@@ -17,8 +17,8 @@ module Dev
         end
 
         if user_object
-          dashboard_video_ids = DashboardEntry.where(:user_id => user_object.id).limit(head_size).find_each.map{|dbe| dbe.frame.video.id.to_s}.uniq
-          prioritized_dashboard_video_ids = PrioritizedDashboardEntry.for_user_id(user_object.id).ranked.possibly_not_watched.possibly_not_rolled.limit(head_size).find_each.map{|dbe| dbe.frame.video.id.to_s}.uniq
+          dashboard_video_ids = DashboardEntry.where(:user_id => user_object.id).limit(head_size).find_each.map{|dbe| dbe.frame && dbe.frame.video.id.to_s}.compact.uniq
+          prioritized_dashboard_video_ids = PrioritizedDashboardEntry.for_user_id(user_object.id).ranked.possibly_not_watched.possibly_not_rolled.limit(head_size).find_each.map{|dbe| dbe.frame && dbe.frame.video.id.to_s}.compact.uniq
           {
             :user => {
               :id => user_object.id,

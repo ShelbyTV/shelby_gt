@@ -443,12 +443,10 @@ describe GT::Framer do
     end
 
     context "asynchronous DashboardEntry creation" do
-      before(:each) do
-        ResqueSpec.reset!
-      end
 
       it "creates and returns a frame the same as in normal mode" do
         @roll.add_follower(@roll_creator)
+        ResqueSpec.reset!
         MongoMapper::Plugins::IdentityMap.clear
 
         expect {
@@ -467,6 +465,7 @@ describe GT::Framer do
 
       it "should create a DashboardEntry for the Roll's single follower" do
           @roll.add_follower(@roll_creator)
+          ResqueSpec.reset!
           MongoMapper::Plugins::IdentityMap.clear
 
           expect {
@@ -506,6 +505,8 @@ describe GT::Framer do
         end
 
         it "raises an Exception if persist option is set to false" do
+          ResqueSpec.reset!
+
           expect {
             res = GT::Framer.create_frame(
               :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
@@ -524,6 +525,7 @@ describe GT::Framer do
           @roll.add_follower(u2 = Factory.create(:user))
           @roll.add_follower(u3 = Factory.create(:user))
           user_ids = [u1.id, u2.id, u3.id]
+          ResqueSpec.reset!
 
           expect {
             @res = GT::Framer.create_frame(
@@ -547,6 +549,7 @@ describe GT::Framer do
 
         it "should create DashboardEntry for given :dashboard_user_id" do
           u = Factory.create(:user)
+          ResqueSpec.reset!
 
           expect {
             @res = GT::Framer.create_frame(
@@ -584,6 +587,7 @@ describe GT::Framer do
           friend_user = Factory.create(:user)
           friend_user_id_string = friend_user.id.to_s
           f = Factory.create(:frame)
+          ResqueSpec.reset!
 
           creation_time = 10.years.from_now
 
@@ -638,12 +642,12 @@ describe GT::Framer do
       @roll_creator = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @roll_creator)
       @roll.save
-
-      ResqueSpec.reset!
     end
 
     it "should set the DashboardEntry metadata correctly" do
       @roll.add_follower(@roll_creator)
+      ResqueSpec.reset!
+
       expect {
         @res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
       }.not_to change { DashboardEntry.count}
@@ -673,6 +677,7 @@ describe GT::Framer do
       @roll.add_follower(u2 = Factory.create(:user))
       @roll.add_follower(u3 = Factory.create(:user))
       user_ids = [@roll_creator.id, u1.id, u2.id, u3.id]
+      ResqueSpec.reset!
 
       # Re-roll some random frame on the roll this user created
       expect {
@@ -943,6 +948,31 @@ describe GT::Framer do
         # so verify that reloading causes an error as an alternate way of checking that this dbe is not persisted
         expect{d[0].reload}.to raise_error
       end
+
+      it "works without a frame" do
+        followed_user = Factory.create(:user)
+        following_user = Factory.create(:user)
+
+        expect {
+          @res = GT::Framer.create_dashboard_entry(nil, DashboardEntry::ENTRY_TYPE[:follow_notification], followed_user, {:actor_id => following_user.id})
+        }.to change(DashboardEntry, :count).by(1)
+
+        dbe = @res[0]
+        expect(dbe.frame_id).to be_nil
+        expect(dbe.roll_id).to be_nil
+        expect(dbe.video_id).to be_nil
+        expect(dbe.user_id).to eql followed_user.id
+        expect(dbe.actor_id).to eql following_user.id
+        expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:follow_notification]
+      end
+
+      it "raises an error when neither a frame nor an actor are specified" do
+        user = Factory.create(:user)
+
+        expect {
+          GT::Framer.create_dashboard_entry(nil, DashboardEntry::ENTRY_TYPE[:follow_notification], user)
+        }.to raise_error(ArgumentError, 'must supply a Frame, an Actor, or both')
+      end
     end
 
     context "creating mutiple DashboardEntries" do
@@ -972,6 +1002,31 @@ describe GT::Framer do
         # accepts a String
         res = GT::Framer.create_dashboard_entries([@frame1], DashboardEntry::ENTRY_TYPE[:like_notification], [@observer.id], {:actor_id => liking_user.id.to_s, :return_dbe_models => true})
         expect(res[0].actor_id).to eql liking_user.id
+      end
+
+      it "works without a frame" do
+        followed_user = Factory.create(:user)
+        following_user = Factory.create(:user)
+
+        expect {
+          @res = GT::Framer.create_dashboard_entries([nil], DashboardEntry::ENTRY_TYPE[:follow_notification], [followed_user.id], {:actor_id => following_user.id, :return_dbe_models => true})
+        }.to change(DashboardEntry, :count).by(1)
+
+        dbe = @res[0]
+        expect(dbe.frame_id).to be_nil
+        expect(dbe.roll_id).to be_nil
+        expect(dbe.video_id).to be_nil
+        expect(dbe.user_id).to eql followed_user.id
+        expect(dbe.actor_id).to eql following_user.id
+        expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:follow_notification]
+      end
+
+      it "raises an error when neither a frame nor an actor are specified" do
+        followed_user = Factory.create(:user)
+
+        expect {
+          GT::Framer.create_dashboard_entries([nil], DashboardEntry::ENTRY_TYPE[:follow_notification], [followed_user.id])
+        }.to raise_error(ArgumentError, 'must supply a Frame, an Actor, or both')
       end
 
       context "persistence" do

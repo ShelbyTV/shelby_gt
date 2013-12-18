@@ -104,6 +104,37 @@ describe Roll do
         }.should change(ActionMailer::Base.deliveries,:size).by(0)
       end
 
+      it "creates a follow_notification dbe for the followee" do
+        ResqueSpec.reset!
+
+        @roll.add_follower(@user)
+
+        DashboardEntryCreator.should have_queue_size_of(1)
+        DashboardEntryCreator.should have_queued(
+          [nil],
+          DashboardEntry::ENTRY_TYPE[:follow_notification],
+          [@creator.id],
+          {:persist => true, :actor_id => @user.id}
+        )
+        expect {
+          ResqueSpec.perform_next(:dashboard_entries_queue)
+        }.to change { DashboardEntry.count }.by(1)
+
+        dbe = DashboardEntry.last
+        expect(dbe.user).to eql @creator
+        expect(dbe.actor).to eql @user
+        expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:follow_notification]
+        expect(dbe.frame).to be_nil
+      end
+
+      it "does not create a follow_notification dbe if send_notification=false" do
+        ResqueSpec.reset!
+
+        @roll.add_follower(@user, false)
+
+        DashboardEntryCreator.should have_queue_size_of(0)
+      end
+
       it "should not add follower if they're already following" do
         lambda {
           @roll.add_follower(@user)

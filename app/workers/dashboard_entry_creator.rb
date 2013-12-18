@@ -10,7 +10,16 @@ class DashboardEntryCreator
     # user_ids are serialized into strings, we need to turn them back into BSON IDs
     user_ids.map! { |uid| BSON::ObjectId.from_string(uid) }
 
-    frames = Frame.find(frame_ids)
+    unless (frame_ids.length == 1) && (frame_ids[0].nil?)
+      frames = Frame.find(frame_ids)
+    else
+      # sometimes the frame_ids array will contain a single nil entry,
+      # which is used for creating notification dbentries, like follow_notifications,
+      # that don't have a frame
+      # in that case, we skip looking up the frames by id in the db and simply pass through
+      # the nil
+      frames = frame_ids
+    end
     GT::Framer.create_dashboard_entries(frames, action, user_ids, options)
   end
 

@@ -228,7 +228,7 @@ module GT
     end
 
     def self.create_dashboard_entry(frame, action, user, options={})
-      raise ArgumentError, "must supply a Frame" unless frame.is_a? Frame
+      raise ArgumentError, "must supply a Frame, an Actor, or both" unless frame.is_a?(Frame) || options[:actor_id]
       raise ArgumentError, "must supply an action" unless action
       raise ArgumentError, "must supply a User" unless user.is_a? User
 
@@ -245,6 +245,7 @@ module GT
     end
 
     def self.create_dashboard_entries(frames, action, user_ids, options={})
+      raise ArgumentError, "must supply a Frame, an Actor, or both" if frames.include?(nil) && !options[:actor_id]
       defaults = {
         :persist => true,
         :return_dbe_models => false
@@ -318,7 +319,7 @@ module GT
 
       options = defaults.merge(options)
 
-      Resque.enqueue(DashboardEntryCreator, frames.map{ |f| f.id }, action, user_ids, options)
+      Resque.enqueue(DashboardEntryCreator, frames.map{ |f| f && f.id }, action, user_ids, options)
     end
 
     private
@@ -382,8 +383,8 @@ module GT
         end
 
         dbe[:user_id] = user_id
-        dbe[:roll_id] = frame.roll_id
-        dbe[:frame_id] = frame.id
+        dbe[:roll_id] = frame && frame.roll_id
+        dbe[:frame_id] = frame && frame.id
         dbe[:src_frame_id] = options[:src_frame_id]
         dbe[:src_video_id] = options[:src_video_id]
         dbe[:friend_sharers_array] = options[:friend_sharers_array] if options[:friend_sharers_array]
@@ -391,7 +392,7 @@ module GT
         dbe[:friend_likers_array] = options[:friend_likers_array] if options[:friend_likers_array]
         dbe[:friend_rollers_array] = options[:friend_rollers_array] if options[:friend_rollers_array]
         dbe[:friend_complete_viewers_array] = options[:friend_complete_viewers_array] if options[:friend_complete_viewers_array]
-        dbe[:video_id] = frame.video_id
+        dbe[:video_id] = frame && frame.video_id
 
         actor_id = options.delete(:actor_id)
         if actor_id

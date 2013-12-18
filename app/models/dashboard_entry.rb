@@ -13,10 +13,10 @@ class DashboardEntry
   key :user_id, ObjectId, :abbr => :a
 
   # N.B. Roll is also self.frame.roll, but we keep it here for easy access
-  belongs_to :roll, :required => true
+  belongs_to :roll
   key :roll_id, ObjectId, :abbr => :b
 
-  belongs_to :frame, :required => true
+  belongs_to :frame
   key :frame_id, ObjectId, :abbr => :c
 
   # if part of the contents of the entry or the action originated from some other
@@ -97,6 +97,9 @@ class DashboardEntry
   # Returns a link to the entry at '/community/entry_id' if the entry is on the community channel
   # Otherwise return a link to the frame contained in the DashboardEntry
   def permalink()
+    # notifications don't have permalinks (yet?)
+    return if self.is_notification?
+
     if channel_info = Settings::Channels.channels.find { |channel| channel["channel_user_id"] == self.user_id.to_s}
       if channel_info['channel_route'] == 'community'
         return "#{Settings::ShelbyAPI.web_root}/community/#{self.id}"
@@ -109,6 +112,11 @@ class DashboardEntry
   # @return [Boolean] Whether the entry is a video recommendation
   def is_recommendation?()
     self.action && (self.action >= ENTRY_TYPE[:video_graph_recommendation]) && (self.action <= ENTRY_TYPE[:channel_recommendation])
+  end
+
+  # @return [Boolean] Whether the entry is a notification
+  def is_notification?()
+    self.action && (self.action >= ENTRY_TYPE[:like_notification]) && (self.action <= ENTRY_TYPE[:follow_notification])
   end
 
 end
