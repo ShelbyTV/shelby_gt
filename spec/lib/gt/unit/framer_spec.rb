@@ -145,20 +145,56 @@ describe GT::Framer do
         res1[:frame].roll.first_frame_thumbnail_url.should == vid2.thumbnail_url
     end
 
-
     it "should create no DashboardEntries if the roll has no followers" do
-      res = GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => @frame_creator,
-        :video => @video,
-        :message => @message,
-        :roll => @roll
-        )
-
-      res[:dashboard_entries].size.should == 0
+      expect {
+        res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :roll => @roll
+          )
+      }.not_to change(DashboardEntry, :count)
     end
 
     it "should create a DashboardEntry for the Roll's single follower" do
+      @roll.add_follower(@roll_creator)
+
+      #only the rolls creator should have a DashboardEntry
+      expect {
+        @res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :roll => @roll
+          )
+      }.to change(DashboardEntry, :count).by(1)
+
+      #by default doesn't return the dashboard_entries
+      @res.should_not have_key(:dashboard_entries)
+
+      dbe = DashboardEntry.last
+      dbe.user_id.should == @roll_creator.id
+      dbe.user.should == @roll_creator
+      dbe.roll.should == @roll
+      dbe.frame.should == @res[:frame]
+      dbe.src_frame.should be_nil
+      dbe.src_frame_id.should be_nil
+      dbe.src_video.should be_nil
+      dbe.src_video_id.should be_nil
+      dbe.friend_sharers_array.should == []
+      dbe.friend_viewers_array.should == []
+      dbe.friend_likers_array.should == []
+      dbe.friend_rollers_array.should == []
+      dbe.friend_complete_viewers_array.should == []
+      dbe.video.should == @video
+      dbe.actor.should == @frame_creator
+      dbe.read?.should == false
+      dbe.action.should == DashboardEntry::ENTRY_TYPE[:new_social_frame]
+    end
+
+    it "returns the created dashboard_entries if :return_dbe_models option is true" do
       @roll.add_follower(@roll_creator)
 
       res = GT::Framer.create_frame(
@@ -166,11 +202,11 @@ describe GT::Framer do
         :creator => @frame_creator,
         :video => @video,
         :message => @message,
-        :roll => @roll
+        :roll => @roll,
+        :return_dbe_models => true
         )
 
-      #only the rolls creator should have a DashboardEntry
-      res[:dashboard_entries].size.should == 1
+      res[:dashboard_entries].length.should == 1
 
       dbe = res[:dashboard_entries][0]
       dbe.user_id.should == @roll_creator.id
@@ -198,16 +234,16 @@ describe GT::Framer do
     it "should not create a DashboardEntry for the Roll's single follower if persist option is set to false" do
       @roll.add_follower(@roll_creator)
 
-      res = GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => @frame_creator,
-        :video => @video,
-        :message => @message,
-        :roll => @roll,
-        :persist => false
-        )
-
-      res[:dashboard_entries].size.should == 0
+      expect {
+        GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :roll => @roll,
+          :persist => false
+          )
+      }.not_to change(DashboardEntry, :count)
     end
 
     it "should create DashboardEntries for all followers of Roll" do
@@ -216,39 +252,36 @@ describe GT::Framer do
       @roll.add_follower(u3 = Factory.create(:user))
       user_ids = [u1.id, u2.id, u3.id]
 
-      res = GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => @frame_creator,
-        :video => @video,
-        :message => @message,
-        :roll => @roll
-        )
+      expect {
+        GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :roll => @roll
+          )
+      }.to change(DashboardEntry, :count).by(3)
 
-      # all roll followers should have a DashboardEntry
-      res[:dashboard_entries].size.should == 3
-      res[:dashboard_entries].each do |dbe|
-        dbe.reload
-        dbe.persisted?.should == true
-      end
-      res[:dashboard_entries].map { |dbe| dbe.user_id }.should == [u1.id, u2.id, u3.id]
+      DashboardEntry.sort(:_id.desc).limit(3).map { |dbe| dbe.user_id }.should == user_ids.reverse
     end
 
     it "should create DashboardEntry for given :dashboard_user_id" do
       u = Factory.create(:user)
 
-      res = GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => @frame_creator,
-        :video => @video,
-        :message => @message,
-        :dashboard_user_id => u.id
-        )
+      expect {
+        @res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :dashboard_user_id => u.id
+          )
+      }.to change(DashboardEntry, :count).by(1)
 
       #only the given dashboard_user_id should have a DashboardEntry
-      res[:dashboard_entries].size.should == 1
-      dbe = res[:dashboard_entries][0]
+      dbe = DashboardEntry.last
       dbe.user_id.should == u.id
-      dbe.frame.should == res[:frame]
+      dbe.frame.should == @res[:frame]
       dbe.frame.persisted?.should == true
       dbe.src_frame.should be_nil
       dbe.src_frame_id.should be_nil
@@ -259,47 +292,26 @@ describe GT::Framer do
       dbe.friend_likers_array.should == []
       dbe.friend_rollers_array.should == []
       dbe.friend_complete_viewers_array.should == []
-
-      dbe.reload
-      dbe.persisted?.should == true
     end
 
     it "should not persist anything for given :dashboard_user_id if persist option is set to false" do
       u = Factory.create(:user)
 
-      res = GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => @frame_creator,
-        :video => @video,
-        :message => @message,
-        :dashboard_user_id => u.id,
-        :persist => false
-        )
-
-      #only the given dashboard_user_id should have a DashboardEntry
-      res[:dashboard_entries].size.should == 1
-      dbe = res[:dashboard_entries][0]
-      dbe.user_id.should == u.id
-      dbe.frame.should be_nil
-      dbe.frame_id.should == res[:frame].id
-      dbe.src_frame.should be_nil
-      dbe.src_frame_id.should be_nil
-      dbe.src_video.should be_nil
-      dbe.src_video_id.should be_nil
-      dbe.friend_sharers_array.should == []
-      dbe.friend_viewers_array.should == []
-      dbe.friend_likers_array.should == []
-      dbe.friend_rollers_array.should == []
-      dbe.friend_complete_viewers_array.should == []
-
       expect {
-        dbe.reload
-      }.to raise_error MongoMapper::DocumentNotFound
+        @res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :dashboard_user_id => u.id,
+          :persist => false
+          )
+      }.not_to change(DashboardEntry, :count)
 
-      res[:frame].persisted?.should_not == true
-      res[:frame].creator.should == @frame_creator
-      res[:frame].video.should == @video
-      res[:frame].conversation.should be_nil
+      @res[:frame].persisted?.should_not == true
+      @res[:frame].creator.should == @frame_creator
+      @res[:frame].video.should == @video
+      @res[:frame].conversation.should be_nil
     end
 
     it "should pass through options for DashboardEntry creation" do
@@ -308,24 +320,25 @@ describe GT::Framer do
       friend_user_id_string = friend_user.id.to_s
       f = Factory.create(:frame)
 
-      res = GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
-        :creator => @frame_creator,
-        :video => @video,
-        :message => @message,
-        :dashboard_user_id => u.id,
-        :dashboard_entry_options => {
-          :src_frame_id => f.id,
-          :friend_sharers_array => [friend_user_id_string],
-          :friend_viewers_array => [friend_user_id_string],
-          :friend_likers_array => [friend_user_id_string],
-          :friend_rollers_array => [friend_user_id_string],
-          :friend_complete_viewers_array => [friend_user_id_string]
-        }
-        )
+      expect {
+        GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:video_graph_recommendation],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :dashboard_user_id => u.id,
+          :dashboard_entry_options => {
+            :src_frame_id => f.id,
+            :friend_sharers_array => [friend_user_id_string],
+            :friend_viewers_array => [friend_user_id_string],
+            :friend_likers_array => [friend_user_id_string],
+            :friend_rollers_array => [friend_user_id_string],
+            :friend_complete_viewers_array => [friend_user_id_string]
+          }
+          )
+      }.to change(DashboardEntry, :count).by(1)
 
-      res[:dashboard_entries].size.should == 1
-      dbe = res[:dashboard_entries][0]
+      dbe = DashboardEntry.last
       dbe.src_frame.should == f
       dbe.src_frame_id.should == f.id
       dbe.friend_sharers_array.should == [friend_user_id_string]
@@ -333,32 +346,27 @@ describe GT::Framer do
       dbe.friend_likers_array.should == [friend_user_id_string]
       dbe.friend_rollers_array.should == [friend_user_id_string]
       dbe.friend_complete_viewers_array.should == [friend_user_id_string]
-
-      dbe.reload
-      dbe.persisted?.should == true
     end
 
     it "should set the DashboardEntry's id when creation_time is specified in :dashboard_entry_options" do
       u = Factory.create(:user)
       creation_time = 4.minutes.ago
 
-      res = GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => @frame_creator,
-        :video => @video,
-        :message => @message,
-        :dashboard_user_id => u.id,
-        :dashboard_entry_options => {
-          :creation_time => creation_time
-        }
-        )
+      expect {
+        @res = GT::Framer.create_frame(
+          :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
+          :creator => @frame_creator,
+          :video => @video,
+          :message => @message,
+          :dashboard_user_id => u.id,
+          :dashboard_entry_options => {
+            :creation_time => creation_time
+          },
+          :return_dbe_models => true
+          )
+      }.to change(DashboardEntry, :count).by(1)
 
-      res[:dashboard_entries].size.should == 1
-      dbe = res[:dashboard_entries][0]
-      dbe.id.generation_time.to_i.should == creation_time.to_i
-
-      dbe.reload
-      dbe.persisted?.should == true
+      @res[:dashboard_entries][0].id.generation_time.to_i.should == creation_time.to_i
     end
 
     it "should create a Frame with a public Message" do
@@ -473,7 +481,7 @@ describe GT::Framer do
           }.not_to change { DashboardEntry.count }
 
           # since the creation is asynchronous, no dbes should be returned
-          @res[:dashboard_entries].size.should == 0
+          @res.should_not have_key(:dashboard_entries)
 
           expect { ResqueSpec.perform_next(:dashboard_entries_queue) }.to change { DashboardEntry.count }.by 1
 
@@ -529,7 +537,7 @@ describe GT::Framer do
           }.not_to change { DashboardEntry.count }
 
           # since the creation is asynchronous, no dbes should be returned
-          @res[:dashboard_entries].size.should == 0
+          @res.should_not have_key(:dashboard_entries)
 
           expect { ResqueSpec.perform_next(:dashboard_entries_queue) }.to change { DashboardEntry.count }.by 3
 
@@ -552,7 +560,7 @@ describe GT::Framer do
           }.not_to change { DashboardEntry.count }
 
           # since the creation is asynchronous, no dbes should be returned
-          @res[:dashboard_entries].size.should == 0
+          @res.should_not have_key(:dashboard_entries)
 
           expect { ResqueSpec.perform_next(:dashboard_entries_queue) }.to change { DashboardEntry.count }.by 1
 
@@ -569,44 +577,6 @@ describe GT::Framer do
           dbe.friend_likers_array.should == []
           dbe.friend_rollers_array.should == []
           dbe.friend_complete_viewers_array.should == []
-        end
-
-        it "should not persist anything for given :dashboard_user_id if persist option is set to false" do
-          u = Factory.create(:user)
-
-          res = GT::Framer.create_frame(
-            :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-            :creator => @frame_creator,
-            :video => @video,
-            :message => @message,
-            :dashboard_user_id => u.id,
-            :persist => false
-            )
-
-          #only the given dashboard_user_id should have a DashboardEntry
-          res[:dashboard_entries].size.should == 1
-          dbe = res[:dashboard_entries][0]
-          dbe.user_id.should == u.id
-          dbe.frame.should be_nil
-          dbe.frame_id.should == res[:frame].id
-          dbe.src_frame.should be_nil
-          dbe.src_frame_id.should be_nil
-          dbe.src_video.should be_nil
-          dbe.src_video_id.should be_nil
-          dbe.friend_sharers_array.should == []
-          dbe.friend_viewers_array.should == []
-          dbe.friend_likers_array.should == []
-          dbe.friend_rollers_array.should == []
-          dbe.friend_complete_viewers_array.should == []
-
-          expect {
-            dbe.reload
-          }.to raise_error MongoMapper::DocumentNotFound
-
-          res[:frame].persisted?.should_not == true
-          res[:frame].creator.should == @frame_creator
-          res[:frame].video.should == @video
-          res[:frame].conversation.should be_nil
         end
 
         it "should pass through options for DashboardEntry creation" do
@@ -638,7 +608,7 @@ describe GT::Framer do
           }.not_to change { DashboardEntry.count }
 
           # since the creation is asynchronous, no dbes should be returned
-          @res[:dashboard_entries].size.should == 0
+          @res.should_not have_key(:dashboard_entries)
 
           expect { ResqueSpec.perform_next(:dashboard_entries_queue) }.to change { DashboardEntry.count }.by 1
 
@@ -958,7 +928,9 @@ describe GT::Framer do
           d = GT::Framer.create_dashboard_entry(@frame, DashboardEntry::ENTRY_TYPE[:new_social_frame], @observer, {:persist => false})
         }.should_not change { DashboardEntry.count }
 
-        d[0].persisted?.should_not == true
+        # can't trust the persisted? method because of our internal use of from_mongo,
+        # so verify that reloading causes an error as an alternate way of checking that this dbe is not persisted
+        expect{d[0].reload}.to raise_error
       end
     end
 
@@ -1017,9 +989,6 @@ describe GT::Framer do
 
   context "backfilling DashboardEntries" do
     before(:each) do
-      MongoMapper::Helper.drop_all_dbs
-      MongoMapper::Helper.ensure_all_indexes
-
       @roll_creator = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @roll_creator)
 
