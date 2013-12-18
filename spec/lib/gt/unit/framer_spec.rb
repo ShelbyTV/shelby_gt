@@ -632,7 +632,8 @@ describe GT::Framer do
       MongoMapper::Helper.ensure_all_indexes
 
       @video = Factory.create(:video, :thumbnail_url => "thum_url")
-      @f1 = Factory.create(:frame, :video => @video)
+      @frame_creator = Factory.create(:user)
+      @f1 = Factory.create(:frame, :video => @video, :creator => @frame_creator)
 
       @roll_creator = Factory.create(:user)
       @roll = Factory.create(:roll, :creator => @roll_creator)
@@ -694,9 +695,19 @@ describe GT::Framer do
 
       new_frame = Factory.create(:frame)
       GT::Framer.should_receive(:basic_re_roll).with(@f1, @roll_creator.id, @roll.id, {}).and_return(new_frame)
-      GT::Framer.should_receive(:create_dashboard_entries_async).with([new_frame], DashboardEntry::ENTRY_TYPE[:re_roll], [u1.id, u2.id, u3.id])
+      GT::Framer.should_receive(:create_dashboard_entries_async).ordered().with([new_frame], DashboardEntry::ENTRY_TYPE[:re_roll], [u1.id, u2.id, u3.id])
+      GT::Framer.should_receive(:create_dashboard_entries_async).ordered().with([@f1], DashboardEntry::ENTRY_TYPE[:share_notification], [@frame_creator.id], {:actor_id => @roll_creator.id})
 
       GT::Framer.re_roll(@f1, @roll_creator, @roll)
+    end
+
+    it "adds a DashboardEntryCreator job to the queue to create :like_notifications for followers if the frame_type is light_weight" do
+      new_frame = Factory.create(:frame)
+      GT::Framer.should_receive(:basic_re_roll).with(@f1, @roll_creator.id, @roll.id, {:frame_type => Frame::FRAME_TYPE[:light_weight]}).and_return(new_frame)
+      GT::Framer.should_receive(:create_dashboard_entries_async).ordered().with([new_frame], DashboardEntry::ENTRY_TYPE[:re_roll], [])
+      GT::Framer.should_receive(:create_dashboard_entries_async).ordered().with([@f1], DashboardEntry::ENTRY_TYPE[:like_notification], [@frame_creator.id], {:actor_id => @roll_creator.id})
+
+      GT::Framer.re_roll(@f1, @roll_creator, @roll, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
     end
 
     it "should set the frame's roll's thumbnail_url if it's nil" do

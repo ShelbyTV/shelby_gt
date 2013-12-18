@@ -276,6 +276,39 @@ describe Frame do
     end
   end
 
+  context "re_roll" do
+
+    it "creates a share_notification dbe for the frame's creator" do
+      ResqueSpec.reset!
+
+      @creator = Factory.create(:user)
+      @frame = Factory.create(:frame, :creator => @creator)
+      @stranger = Factory.create(:user)
+      @stranger_public_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_public_real_user])
+      @stranger.public_roll = @stranger_public_roll
+
+      @frame.re_roll(@stranger, @stranger.public_roll)
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:share_notification],
+        [@creator.id],
+        {:persist => true, :actor_id => @stranger.id}
+      )
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      dbe = DashboardEntry.last
+      expect(dbe.user).to eql @creator
+      expect(dbe.actor).to eql @stranger
+      expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:share_notification]
+      expect(dbe.frame).to eql @frame
+    end
+
+  end
+
   context "watch later" do
     before(:each) do
       @video = Factory.create(:video)
@@ -669,7 +702,6 @@ describe Frame do
           @frame.reload
           @frame.score.should < score_before
         end
-
 
     end
 

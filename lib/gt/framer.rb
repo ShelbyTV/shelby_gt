@@ -170,6 +170,9 @@ module GT
       unless options[:skip_dashboard_entries]
         #create dashboard entries for all roll followers *except* the user who just re-rolled
         create_dashboard_entries_async([res[:frame]], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
+        # create dbe for iOS Push and Notification Center notifications, asynchronously
+        dbe_type = (options[:frame_type] == Frame::FRAME_TYPE[:light_weight]) ? DashboardEntry::ENTRY_TYPE[:like_notification] :  DashboardEntry::ENTRY_TYPE[:share_notification]
+        create_dashboard_entries_async([orig_frame], dbe_type, [orig_frame.creator_id], {:actor_id => user_id})
       end
 
       # Roll - set its thumbnail if missing

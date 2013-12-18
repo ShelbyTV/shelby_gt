@@ -140,9 +140,6 @@ class Frame
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self, u) }
 
-    # create dbe for iOS Push and Notification Center notifications, asynchronously
-    GT::Framer.create_dashboard_entries_async([self], DashboardEntry::ENTRY_TYPE[:like_notification], [self.creator_id], {:actor_id => u.id})
-
     res = GT::Framer.re_roll(self, u.id, u.public_roll, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
     return res[:frame]
   end
