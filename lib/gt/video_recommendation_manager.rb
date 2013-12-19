@@ -25,7 +25,7 @@ module GT
     def self.if_no_recent_recs_generate_rec(user, options={})
 
       defaults = {
-        :num_recents_to_check => 5,
+        :num_recents_to_check => Settings::Recommendations.triggered_ios_recs[:num_recents_to_check],
         :include_mortar_recs => true,
         :insert_at_random_location => false
       }
@@ -45,7 +45,19 @@ module GT
         num_dbes_to_fetch = [options[:num_recents_to_check], max_db_entries_to_scan_for_videograph].max
       end
 
-      dbes = DashboardEntry.where(:user_id => user.id).order(:_id.desc).limit(num_dbes_to_fetch).fields(:video_id, :frame_id, :action, :actor_id).all
+      dbes = DashboardEntry.where(
+        :user_id => user.id,
+        # look at all dbes except Notifications, since the user can't see them in their stream
+        :action => {
+          :$nin => [
+            DashboardEntry::ENTRY_TYPE[:like_notification],
+            DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+            DashboardEntry::ENTRY_TYPE[:share_notification],
+            DashboardEntry::ENTRY_TYPE[:follow_notification]
+          ]
+        }
+      ).order(:_id.desc).limit(num_dbes_to_fetch).fields(:video_id, :frame_id, :action, :actor_id).all
+
       recent_dbes = dbes.first(options[:num_recents_to_check])
 
       unless recent_dbes.any? { |dbe| dbe.is_recommendation? }
@@ -378,7 +390,18 @@ module GT
 
       # get more recs than the caller asked for because some of them might be eliminated and we want to
       # have the chance to still recommend something
-      recs = DashboardEntry.where(:user_id => channel_user_id).order(:_id.desc).limit(limit + 9).fields(:video_id, :frame_id, :actor_id)
+      recs = DashboardEntry.where(
+        :user_id => channel_user_id,
+        # don't include Notification dbes, since they're only intended for the receiving user to see
+        :action => {
+          :$nin => [
+            DashboardEntry::ENTRY_TYPE[:like_notification],
+            DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+            DashboardEntry::ENTRY_TYPE[:share_notification],
+            DashboardEntry::ENTRY_TYPE[:follow_notification]
+          ]
+        }
+      ).order(:_id.desc).limit(limit + 9).fields(:video_id, :frame_id, :actor_id)
       if shuffle
         recs = recs.all
         recs.shuffle!

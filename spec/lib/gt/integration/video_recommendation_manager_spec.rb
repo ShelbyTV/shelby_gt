@@ -243,6 +243,32 @@ describe GT::VideoRecommendationManager do
             result.action.should == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
           end
 
+          it "doesn't consider notification dbes when scanning back to see if a rec is needed" do
+            MongoMapper::Plugins::IdentityMap.clear
+
+            # put a recommendation in the dashboard
+            GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user, {:insert_at_random_location => false})
+            # space it out from the current location with enough intervening notification entries to put
+            # the recommendation entry outide of the slice that we normally look at
+            Settings::Recommendations.triggered_ios_recs[:num_recents_to_check].times do |i|
+              action = (i % 4) + DashboardEntry::ENTRY_TYPE[:like_notification]
+              Factory.create(
+                :dashboard_entry,
+                :user => @user,
+                :action => action
+              ).save
+            end
+            MongoMapper::Plugins::IdentityMap.clear
+
+            # since notification entries aren't visible in the stream,
+            # the next visible Recommendation entry is one entry behind the head, so we shouldn't put another one
+            expect {
+              @result = GT::VideoRecommendationManager.if_no_recent_recs_generate_rec(@user)
+            }.not_to change {"#{DashboardEntry.count},#{Frame.count},#{Conversation.count}"}
+
+            @result.should be_nil
+          end
+
           it "doesnt return a recommendation if the video doesn't have a thumbnail" do
             @rec_vid.thumbnail_url = nil
             @rec_vid.save
@@ -735,6 +761,18 @@ describe GT::VideoRecommendationManager do
 
       @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id).length.should == 1
       @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id, 2).length.should == 2
+    end
+
+    it "doesn't consider notification dbes" do
+      video = Factory.create(:video)
+      frame = Factory.create(:frame, :video_id => video.id, :creator_id => @channel_user.id)
+      liker = Factory.create(:user)
+      Factory.create(:dashboard_entry, :action => DashboardEntry::ENTRY_TYPE[:like_notification], :user_id => @channel_user.id, :frame_id => frame.id, :video_id => video.id, :actor_id => liker.id)
+      MongoMapper::Plugins::IdentityMap.clear
+
+      result = @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id, 4)
+      result.length.should == 3
+      result.map {|rec| rec[:recommended_video_id]}.should_not include video.id
     end
 
     it "should skip videos the user has already watched" do
