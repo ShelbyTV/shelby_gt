@@ -157,28 +157,29 @@ module GT
     # { :frame => newly_created_frame }
     #
     def self.re_roll(orig_frame, for_user, to_roll, options={})
-      raise ArgumentError, "must supply user or user_id" unless for_user
-      user_id = (for_user.is_a?(User) ? for_user.id : for_user)
+      raise ArgumentError, "must supply user" unless for_user.is_a?(User)
+      user_id = for_user.id
 
       raise ArgumentError, "must supply roll" unless to_roll && to_roll.is_a?(Roll)
       roll_id = to_roll.id
 
-      res = { :frame => nil }
-
-      res[:frame] = basic_re_roll(orig_frame, user_id, roll_id, options)
+      new_frame = basic_re_roll(orig_frame, user_id, roll_id, options)
 
       unless options[:skip_dashboard_entries]
         #create dashboard entries for all roll followers *except* the user who just re-rolled
-        create_dashboard_entries_async([res[:frame]], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
+        create_dashboard_entries_async([new_frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
         # create dbe for iOS Push and Notification Center notifications, asynchronously
-        dbe_type = (options[:frame_type] == Frame::FRAME_TYPE[:light_weight]) ? DashboardEntry::ENTRY_TYPE[:like_notification] :  DashboardEntry::ENTRY_TYPE[:share_notification]
-        create_dashboard_entries_async([orig_frame], dbe_type, [orig_frame.creator_id], {:actor_id => user_id})
+        if options[:frame_type] == Frame::FRAME_TYPE[:light_weight]
+          GT::NotificationManager.check_and_send_like_notification(orig_frame, for_user, [:notification_center])
+        else
+          GT::NotificationManager.check_and_send_reroll_notification(orig_frame, new_frame, [:notification_center])
+        end
       end
 
       # Roll - set its thumbnail if missing
-      ensure_roll_metadata!(Roll.find(roll_id), res[:frame])
+      ensure_roll_metadata!(Roll.find(roll_id), new_frame)
 
-      return res
+      return { :frame => new_frame }
     end
 
     def self.dupe_frame!(orig_frame, for_user, to_roll)

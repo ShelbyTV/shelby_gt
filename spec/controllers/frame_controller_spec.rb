@@ -291,7 +291,8 @@ describe V1::FrameController do
 
   describe "POST add_to_watch_later" do
     before(:each) do
-      @f2 = Factory.create(:frame)
+      @creator = Factory.create(:user)
+      @f2 = Factory.create(:frame, :creator => @creator)
       @f2.video = Factory.create(:video)
       @f2.save
     end
@@ -316,7 +317,8 @@ describe V1::FrameController do
 
   describe "POST like" do
     before(:each) do
-      @f2 = Factory.create(:frame)
+      @creator = Factory.create(:user)
+      @f2 = Factory.create(:frame, :creator => @creator)
       @f2.video = Factory.create(:video)
       @f2.save
     end

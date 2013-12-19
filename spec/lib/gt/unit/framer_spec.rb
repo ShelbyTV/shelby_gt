@@ -446,7 +446,6 @@ describe GT::Framer do
 
       it "creates and returns a frame the same as in normal mode" do
         @roll.add_follower(@roll_creator)
-        ResqueSpec.reset!
         MongoMapper::Plugins::IdentityMap.clear
 
         expect {
@@ -505,8 +504,6 @@ describe GT::Framer do
         end
 
         it "raises an Exception if persist option is set to false" do
-          ResqueSpec.reset!
-
           expect {
             res = GT::Framer.create_frame(
               :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
@@ -698,7 +695,7 @@ describe GT::Framer do
       @roll.add_follower(u2 = Factory.create(:user))
       @roll.add_follower(u3 = Factory.create(:user))
 
-      new_frame = Factory.create(:frame)
+      new_frame = Factory.create(:frame, :creator => @roll_creator)
       GT::Framer.should_receive(:basic_re_roll).with(@f1, @roll_creator.id, @roll.id, {}).and_return(new_frame)
       GT::Framer.should_receive(:create_dashboard_entries_async).ordered().with([new_frame], DashboardEntry::ENTRY_TYPE[:re_roll], [u1.id, u2.id, u3.id])
       GT::Framer.should_receive(:create_dashboard_entries_async).ordered().with([@f1], DashboardEntry::ENTRY_TYPE[:share_notification], [@frame_creator.id], {:actor_id => @roll_creator.id})
@@ -706,13 +703,22 @@ describe GT::Framer do
       GT::Framer.re_roll(@f1, @roll_creator, @roll)
     end
 
-    it "adds a DashboardEntryCreator job to the queue to create :like_notifications for followers if the frame_type is light_weight" do
+    it "checks and sends a :like_notification for the likee if the frame_type is light_weight" do
       new_frame = Factory.create(:frame)
       GT::Framer.should_receive(:basic_re_roll).with(@f1, @roll_creator.id, @roll.id, {:frame_type => Frame::FRAME_TYPE[:light_weight]}).and_return(new_frame)
-      GT::Framer.should_receive(:create_dashboard_entries_async).ordered().with([new_frame], DashboardEntry::ENTRY_TYPE[:re_roll], [])
-      GT::Framer.should_receive(:create_dashboard_entries_async).ordered().with([@f1], DashboardEntry::ENTRY_TYPE[:like_notification], [@frame_creator.id], {:actor_id => @roll_creator.id})
+      GT::Framer.should_receive(:create_dashboard_entries_async).once().with([new_frame], DashboardEntry::ENTRY_TYPE[:re_roll], [])
+      GT::NotificationManager.should_receive(:check_and_send_like_notification).with(@f1, @roll_creator, [:notification_center])
 
       GT::Framer.re_roll(@f1, @roll_creator, @roll, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
+    end
+
+    it "checks and sends a :share_notification for the origin frame's creator if the frame_type is heavy_weight" do
+      new_frame = Factory.create(:frame)
+      GT::Framer.should_receive(:basic_re_roll).with(@f1, @roll_creator.id, @roll.id, {}).and_return(new_frame)
+      GT::Framer.should_receive(:create_dashboard_entries_async).once().with([new_frame], DashboardEntry::ENTRY_TYPE[:re_roll], [])
+      GT::NotificationManager.should_receive(:check_and_send_reroll_notification).with(@f1, new_frame, [:notification_center])
+
+      GT::Framer.re_roll(@f1, @roll_creator, @roll)
     end
 
     it "should set the frame's roll's thumbnail_url if it's nil" do

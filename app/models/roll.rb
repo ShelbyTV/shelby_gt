@@ -180,7 +180,7 @@ class Roll
 
     if send_notification
       # create dbe for iOS Push and Notification Center notifications, asynchronously
-      GT::Framer.create_dashboard_entries_async([nil], DashboardEntry::ENTRY_TYPE[:follow_notification], [self.creator_id], {:actor_id => u.id})
+      GT::NotificationManager.check_and_send_join_roll_notification(u, self, [:notification_center])
       # send email notification in a non-blocking manor
       ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_join_roll_notification(u, self) }
     end

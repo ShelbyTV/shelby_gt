@@ -19,32 +19,47 @@ module GT
       NotificationMailer.upvote_notification(user_to, user, frame).deliver
     end
 
-    def self.check_and_send_like_notification(frame, user_from=nil)
+    def self.check_and_send_like_notification(frame, user_from=nil, destinations=[:email])
       raise ArgumentError, "must supply valid frame" unless frame.is_a?(Frame) and !frame.blank?
 
-      # don't email the creator if they are the liking user or they dont have an email address!
       user_to = frame.creator
-      if !user_to or (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.like_notifications
-        StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['like'])
-        return
-      else
-        StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['like'])
-        NotificationMailer.like_notification(user_to, frame, user_from).deliver
+
+      if destinations.include? :email
+        # don't email the creator if they are the liking user or they dont have an email address!
+        if !user_to or (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.like_notifications
+          StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['like'])
+          return
+        else
+          StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['like'])
+          NotificationMailer.like_notification(user_to, frame, user_from).deliver
+        end
+      end
+      if (destinations.include? :notification_center) && (user_from != user_to)
+        # create dbe for iOS Push and Notification Center notifications, asynchronously
+        GT::Framer.create_dashboard_entries_async([frame], DashboardEntry::ENTRY_TYPE[:like_notification], [user_to.id], {:actor_id => user_from.id})
       end
     end
 
-    def self.check_and_send_reroll_notification(old_frame, new_frame)
+    def self.check_and_send_reroll_notification(old_frame, new_frame, destinations=[:email])
       raise ArgumentError, "must supply valid new frame" unless new_frame.is_a?(Frame) and !new_frame.blank?
       raise ArgumentError, "must supply valid old frame" unless old_frame.is_a?(Frame) and !old_frame.blank?
 
-      # don't email the creator if they are the upvoting user or they dont have an email address!
       return unless (user_to = old_frame.creator)
-      if (new_frame.creator_id == old_frame.creator_id) or user_to.primary_email.blank? or !user_to.preferences.reroll_notifications or !user_to.gt_enabled
-        StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['share'])
-        return
-      else
-        StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['share'])
-        NotificationMailer.reroll_notification(old_frame, new_frame).deliver
+      user_from_id = new_frame.creator_id
+
+      if destinations.include? :email
+        # don't email the creator if they are the upvoting user or they dont have an email address!
+        if (user_from_id == user_to.id) or user_to.primary_email.blank? or !user_to.preferences.reroll_notifications or !user_to.gt_enabled
+          StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['share'])
+          return
+        else
+          StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['share'])
+          NotificationMailer.reroll_notification(old_frame, new_frame).deliver
+        end
+      end
+      if (destinations.include? :notification_center) && (user_from_id != user_to.id)
+        # create dbe for iOS Push and Notification Center notifications, asynchronously
+        GT::Framer.create_dashboard_entries_async([old_frame], DashboardEntry::ENTRY_TYPE[:share_notification], [user_to.id], {:actor_id => user_from_id})
       end
     end
 
@@ -83,21 +98,28 @@ module GT
       NotificationMailer.disqus_comment_notification(frame, frame.creator).deliver
     end
 
-    def self.check_and_send_join_roll_notification(user_from, roll)
+    def self.check_and_send_join_roll_notification(user_from, roll, destinations=[:email])
       raise ArgumentError, "must supply valid user" unless user_from.is_a?(User) and !user_from.blank?
       raise ArgumentError, "must supply valid roll" unless roll.is_a?(Roll) and !roll.blank?
 
-      # for now only send emails to gt_enabled users
-      return unless roll.creator and roll.creator.gt_enabled
-
-      # don't email the creator if they are the user joining or they dont have an email address!
       user_to = roll.creator
-      if (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.roll_activity_notifications or !user_to.is_real?
-        StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['follow'])
-        return
-      else
-        StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['follow'])
-        NotificationMailer.join_roll_notification(user_to, user_from, roll).deliver
+
+      # for now only send notifications to gt_enabled users
+      return unless user_to and user_to.gt_enabled
+
+      if destinations.include? :email
+        # don't email the creator if they are the user joining or they dont have an email address!
+        if (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.roll_activity_notifications or !user_to.is_real?
+          StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['follow'])
+          return
+        else
+          StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['follow'])
+          NotificationMailer.join_roll_notification(user_to, user_from, roll).deliver
+        end
+      end
+      if (destinations.include? :notification_center) && (user_from != user_to)
+        # create dbe for iOS Push and Notification Center notifications, asynchronously
+        GT::Framer.create_dashboard_entries_async([nil], DashboardEntry::ENTRY_TYPE[:follow_notification], [user_to.id], {:actor_id => user_from.id})
       end
     end
 
