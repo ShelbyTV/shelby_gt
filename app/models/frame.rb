@@ -154,6 +154,8 @@ class Frame
     self.reload
     Video.collection.update({:_id => self.video_id}, {:$inc => {:v => 1}})
     Video.find(self.video_id).reload
+    # create dbe for iOS Push and Notification Center notifications, asynchronously
+    GT::NotificationManager.check_and_send_like_notification(self, nil, [:notification_center])
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self) }
     # add this frame to the community channel in a non-blocking manner

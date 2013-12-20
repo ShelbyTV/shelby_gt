@@ -116,10 +116,35 @@ describe GT::NotificationManager do
       expect(dbe.video).to eql @video
     end
 
-    it "doesn't create a like_notification dbe for the frame creator when destinations doesn't include :notification_center" do
+    it "creates an anonymous_like_notification dbe when there is no user_from" do
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_like_notification(@frame, nil, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+        [@f_creator.id],
+        {:persist => true, :actor_id => nil}
+      )
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      dbe = DashboardEntry.last
+      expect(dbe.user).to eql @f_creator
+      expect(dbe.actor).to be_nil
+      expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
+      expect(dbe.frame).to eql @frame
+      expect(dbe.video).to eql @video
+    end
+
+    it "doesn't create a notification dbe for the frame creator when destinations doesn't include :notification_center" do
       ResqueSpec.reset!
 
       GT::NotificationManager.check_and_send_like_notification(@frame, @user)
+      GT::NotificationManager.check_and_send_like_notification(@frame, nil)
 
       DashboardEntryCreator.should have_queue_size_of(0)
     end

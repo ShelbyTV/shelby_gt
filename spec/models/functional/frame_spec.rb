@@ -477,6 +477,30 @@ describe Frame do
         @frame.like!
       }.should change { @video.like_count } .by 1
     end
+
+    it "creates an anonymous_like_notification dbe" do
+      ResqueSpec.reset!
+
+      @frame.like!
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+        [@user.id],
+        {:persist => true, :actor_id => nil}
+      )
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      dbe = DashboardEntry.last
+      expect(dbe.user).to eql @user
+      expect(dbe.actor).to be_nil
+      expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
+      expect(dbe.frame).to eql @frame
+      expect(dbe.video).to eql @video
+    end
   end
 
   context "permalinks" do

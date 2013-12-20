@@ -36,7 +36,8 @@ module GT
       end
       if (destinations.include? :notification_center) && (user_from != user_to)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
-        GT::Framer.create_dashboard_entries_async([frame], DashboardEntry::ENTRY_TYPE[:like_notification], [user_to.id], {:actor_id => user_from.id})
+        dbe_type = user_from ? DashboardEntry::ENTRY_TYPE[:like_notification] : DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
+        GT::Framer.create_dashboard_entries_async([frame], dbe_type, [user_to.id], {:actor_id => user_from && user_from.id})
       end
     end
 

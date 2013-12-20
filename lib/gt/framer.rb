@@ -395,9 +395,11 @@ module GT
         dbe[:friend_complete_viewers_array] = options[:friend_complete_viewers_array] if options[:friend_complete_viewers_array]
         dbe[:video_id] = frame && frame.video_id
 
-        actor_id = options.delete(:actor_id)
-        if actor_id
-          actor_id = BSON::ObjectId.from_string(actor_id) if !actor_id.is_a?(BSON::ObjectId)
+        if options.has_key?(:actor_id)
+          actor_id = options.delete(:actor_id)
+          if actor_id && !actor_id.is_a?(BSON::ObjectId)
+            actor_id = BSON::ObjectId.from_string(actor_id)
+          end
         else
           actor_id = frame.creator_id
         end
