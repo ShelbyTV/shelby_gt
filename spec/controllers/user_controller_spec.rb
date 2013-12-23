@@ -61,9 +61,9 @@ describe V1::UserController do
       assigns(:status).should eq(409)
       response.content_type.should == "application/json"
     end
-    
+
     context "without username, password" do
-      
+
       it "can generate temporary username and password for JSON" do
         post :create, :format => :json, :generate_temporary_nickname_and_password => "1",
                                         :user => { :name => "some name",
@@ -74,7 +74,7 @@ describe V1::UserController do
         assigns(:user).authentication_token.should_not be_nil
         response.content_type.should == "application/json"
       end
-      
+
       it "can generate temporary username and password for HTML" do
         post :create, :format => :html, :generate_temporary_nickname_and_password => "1",
                                         :user => { :name => "some name",
@@ -84,7 +84,7 @@ describe V1::UserController do
         response.should be_redirect
         response.should redirect_to("/")
       end
-      
+
       it "updates with client info (for JSON)" do
         client_string = "iOS_iPhone"
         post :create, :format => :json, :generate_temporary_nickname_and_password => "1",
@@ -97,9 +97,9 @@ describe V1::UserController do
         assigns(:user).authentication_token.should_not be_nil
         response.content_type.should == "application/json"
       end
-        
+
     end
-    
+
   end
 
   describe "POST create dashboard entry for user" do
@@ -247,6 +247,56 @@ describe V1::UserController do
       get :valid_token, :id => @u1.id.to_s, :provider => "facebook", :format => :json
       assigns(:status).should == 200
       assigns(:token_valid).should == false
+    end
+  end
+
+  describe "POST apn_token" do
+    it "returns 200 on success" do
+      sign_in @u1
+      post :add_apn_token, :id => @u1.id.to_s, :token => '123', :format => :json
+      assigns(:status).should == 200
+    end
+
+    it "returns 401 if the user is not authenticated" do
+      post :add_apn_token, :id => @u1.id.to_s, :token => '123', :format => :json
+      assigns(:status).should == 401
+    end
+
+    it "returns 401 if trying to access a user other than herself" do
+      sign_in @u1
+      post :add_apn_token, :id => BSON::ObjectId.new, :token => '123', :format => :json
+      assigns(:status).should == 401
+    end
+
+    it "returns 500 if no token parameter is specified" do
+      sign_in @u1
+      post :add_apn_token, :id => @u1.id.to_s, :format => :json
+      assigns(:status).should == 500
+    end
+  end
+
+  describe "DELETE apn_token" do
+    it "returns 200 on success" do
+      sign_in @u1
+      post :delete_apn_token, :id => @u1.id.to_s, :token => '123', :format => :json
+      assigns(:status).should == 200
+    end
+
+    it "returns 401 if the user is not authenticated" do
+      post :delete_apn_token, :id => @u1.id.to_s, :token => '123', :format => :json
+      assigns(:status).should == 401
+    end
+
+    it "returns 401 if trying to access a user other than herself" do
+      sign_in @u1
+      post :delete_apn_token, :id => BSON::ObjectId.new, :token => '123', :format => :json
+      assigns(:status).should == 401
+    end
+
+    it "returns 500 if no token parameter is specified" do
+      sign_in @u1
+      post :delete_apn_token, :id => @u1.id.to_s, :format => :json
+      assigns(:status).should == 500
     end
   end
 
