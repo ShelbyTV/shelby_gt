@@ -339,6 +339,54 @@ class V1::UserController < ApplicationController
     end
   end
 
+  ##
+  # Adds a new apn token for the user with the specified id
+  # =>   REQUIRES AUTHENTICATION
+  #
+  # [POST] /v1/user/:id/apn_token?token=:token
+  #
+  # @param [Required, String] id The id of the user
+  # @param [Required, String] token The apn token to add for the user
+  #
+  def add_apn_token
+    if params[:id] == current_user.id.to_s
+      # A user can add tokens for themself
+      @user = current_user
+      return render_error(500, "must specify a token to add") unless token = params.delete(:token)
+
+      # add the token to the user's collection if it's not already there
+      current_user.push_uniq(:bh => token)
+
+      @status = 200
+    else
+      @status = 401
+    end
+  end
+
+  ##
+  # Deletes an apn token for the user with the specified id
+  # =>   REQUIRES AUTHENTICATION
+  #
+  # [DELETE] /v1/user/:id/apn_token?token=:token
+  #
+  # @param [Required, String] id The id of the user
+  # @param [Required, String] token The apn token to delete for the user
+  #
+  def delete_apn_token
+    if params[:id] == current_user.id.to_s
+      # A user can delete tokens for themself
+      @user = current_user
+      return render_error(500, "must specify a token to remove") unless token = params.delete(:token)
+
+      # remove the token from the user's collection
+      current_user.pull(:bh => token)
+
+      @status = 200
+    else
+      @status = 401
+    end
+  end
+
   private
 
     def self.move_roll(roll_array, target_roll, pos)

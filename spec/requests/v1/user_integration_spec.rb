@@ -1232,6 +1232,52 @@ describe 'v1/user' do
       end
 
     end
+
+    context "POST apn_token" do
+      it "returns 200 on success" do
+        post "/v1/user/#{@u1.id}/apn_token?token=123"
+        response.body.should be_json_eql(200).at_path("status")
+      end
+
+      it "adds the token to the user's apn_tokens array" do
+        post "/v1/user/#{@u1.id}/apn_token?token=123"
+
+        @u1.reload
+        expect(@u1.apn_tokens.length).to eql 1
+        expect(@u1.apn_tokens).to include "123"
+      end
+
+      it "only adds a given token once" do
+        post "/v1/user/#{@u1.id}/apn_token?token=123"
+        post "/v1/user/#{@u1.id}/apn_token?token=123"
+
+        @u1.reload
+        expect(@u1.apn_tokens.length).to eql 1
+
+        post "/v1/user/#{@u1.id}/apn_token?token=456"
+
+        @u1.reload
+        expect(@u1.apn_tokens.length).to eql 2
+      end
+    end
+
+    context "DELETE apn_token" do
+      it "returns 200 on success" do
+        delete "/v1/user/#{@u1.id}/apn_token?token=123"
+        response.body.should be_json_eql(200).at_path("status")
+      end
+
+      it "removes the token from the user's apn_tokens array" do
+        @u1.apn_tokens = ['123']
+        @u1.save
+        expect(@u1.apn_tokens.length).to eql 1
+
+        delete "/v1/user/#{@u1.id}/apn_token?token=123"
+
+        @u1.reload
+        expect(@u1.apn_tokens.length).to eql 0
+      end
+    end
   end
 
   context "not logged in" do

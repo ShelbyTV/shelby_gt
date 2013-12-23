@@ -34,4 +34,10 @@ describe User do
     @user.rolled_since_last_notification.should == {"email" => 0}
   end
 
+  it "has the key apn_tokens with abbreviation bh" do
+    User.keys.keys.should include("apn_tokens")
+    User.keys["apn_tokens"].abbr.should == :bh
+    expect(@user.apn_tokens).to be_empty
+  end
+
 end
