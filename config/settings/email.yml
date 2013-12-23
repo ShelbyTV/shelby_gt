@@ -39,6 +39,8 @@ defaults: &defaults
     category: "Share Notifications"
     subject: "%{re_rollers_name} shared your video on Shelby.tv"
   like_notification:
+    header: …and they liked it too!
+    find_more_video: Find more awesome video
     category: "Like Notifications"
     subject: "%{likers_name} saw a video you liked on Shelby.tv..."
     second_lines:
