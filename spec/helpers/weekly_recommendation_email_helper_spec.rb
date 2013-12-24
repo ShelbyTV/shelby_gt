@@ -10,11 +10,11 @@ describe WeeklyRecommendationEmailHelper do
     end
 
     it "returns the right message_text" do
-      message_text(@dbes).should eql "Today's top recommendations, just for you"
+      message_text(@dbes).should eql "Some video to share with friends and family..."
     end
 
     it "returns the right message_subject" do
-      message_subject(@dbes).should eql "If you only have time to watch one thing tonight..."
+      message_subject(@dbes).should eql "From us to you. Enjoy!"
     end
 
   end
