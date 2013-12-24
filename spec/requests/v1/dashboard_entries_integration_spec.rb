@@ -191,6 +191,36 @@ describe 'v1/dashboard' do
           response.body.should_not have_json_path("result/0/friend_complete_viewers")
         end
 
+        it "returns information about the actor" do
+          actor_public_roll = Factory.create(:roll)
+          actor = Factory.create(:user, :public_roll => actor_public_roll)
+          @d.actor = actor
+          @d.save
+
+          get '/v1/dashboard'
+          response.body.should have_json_path("result/0/actor_id")
+          response.body.should have_json_path("result/0/actor")
+          response.body.should have_json_path("result/0/actor/has_shelby_avatar")
+          response.body.should have_json_path("result/0/actor/id")
+          response.body.should have_json_path("result/0/actor/name")
+          response.body.should have_json_path("result/0/actor/nickname")
+          response.body.should have_json_path("result/0/actor/user_image_original")
+          response.body.should have_json_path("result/0/actor/user_image")
+          response.body.should have_json_path("result/0/actor/user_type")
+          response.body.should have_json_path("result/0/actor/public_roll_id")
+
+          parsed_response = parse_json(response.body)
+          parsed_response["result"][0]["actor_id"].should == actor.id.to_s
+          parsed_response["result"][0]["actor"]["has_shelby_avatar"].should == actor.has_shelby_avatar
+          parsed_response["result"][0]["actor"]["id"].should == actor.id.to_s
+          parsed_response["result"][0]["actor"]["name"].should == actor.name
+          parsed_response["result"][0]["actor"]["nickname"].should == actor.nickname
+          parsed_response["result"][0]["actor"]["user_image_original"].should == actor.user_image_original
+          parsed_response["result"][0]["actor"]["user_image"].should == actor.user_image
+          parsed_response["result"][0]["actor"]["user_type"].should == actor.user_type
+          parsed_response["result"][0]["actor"]["public_roll_id"].should == actor_public_roll.id.to_s
+        end
+
       end
 
       it "should return 200 if no entries exist" do

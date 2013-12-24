@@ -71,6 +71,8 @@ ShelbyGt::Application.routes.draw do
       get 'stats' => 'user#stats', :as => :stats, :on => :member
       post 'dashboard_entry' => 'user#add_dashboard_entry', :on => :member
       put 'visit' => 'user#log_session', :on => :member
+      post 'apn_token' => 'user#add_apn_token', :on => :member
+      delete 'apn_token' => 'user#delete_apn_token', :on => :member
     end
     resources :roll, :only => [:index, :show, :create, :update, :destroy] do
       get 'frames' => 'frame_metal#index'

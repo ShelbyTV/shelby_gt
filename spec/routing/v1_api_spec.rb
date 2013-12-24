@@ -139,6 +139,24 @@ describe V1::UserController do
         :id => "1"
       )
     end
+
+    it "routes for POST apn_token" do
+      { :post => "/v1/user/1/apn_token" }.should route_to(
+        :controller => "v1/user",
+        :action => "add_apn_token",
+        :format => "json",
+        :id => "1"
+      )
+    end
+
+    it "routes for DELETE apn_token" do
+      { :delete => "/v1/user/1/apn_token" }.should route_to(
+        :controller => "v1/user",
+        :action => "delete_apn_token",
+        :format => "json",
+        :id => "1"
+      )
+    end
   end
 end
 
