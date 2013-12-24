@@ -173,7 +173,7 @@ class NotificationMailer < ActionMailer::Base
     @user_to = user_to
 
     first_name = (@user_to.name.split.first if @user_to.name) || @user_to.nickname
-    message_subject = "From us to you. Enjoy." #view_context.message_subject(dbes)
+    message_subject = view_context.message_subject(dbes)
     if first_name.include?("cobra") or first_name.include?("@")
       subject_line = message_subject
     else

@@ -27,7 +27,7 @@ module WeeklyRecommendationEmailHelper
 
   def message_subject(dbes)
     if dbes.count > 1
-      "If you only have time to watch one thing tonight..."
+      "From us to you. Enjoy!"
     else
       dbe = dbes.first
       case dbe.action
