@@ -236,7 +236,7 @@ describe NotificationMailer do
 
     it 'renders the subjects' do
       @email = NotificationMailer.weekly_recommendation(@user, [@dbe, @dbe])
-      @email.subject.should eq("#{@user.nickname.titlecase}, if you only have time to watch one thing tonight...")
+      @email.subject.should eq("#{@user.nickname.titlecase}, from us to you. Enjoy!")
 
       @email = NotificationMailer.weekly_recommendation(@user, [@dbe])
       @email.subject.should eq("#{@user.nickname.titlecase}, this video was shared by #{@sharer.nickname}. Check it out.")

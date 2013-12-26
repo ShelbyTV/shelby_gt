@@ -181,6 +181,9 @@ class User
   # since the last time we told them about it
   key :rolled_since_last_notification, Hash, :abbr => :bf, :default => {"email" => 0}
 
+  # Apple apn device tokens for sending push notifications to the user
+  key :apn_tokens, Array, :typecast => 'String', :abbr => :bh, :default => []
+
   attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original, :avatar,
                   :google_analytics_client_id, :rolled_since_last_notification
 
