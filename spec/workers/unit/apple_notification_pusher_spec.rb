@@ -12,6 +12,9 @@ describe AppleNotificationPusher do
     Houston::Notification.stub(:new).and_return(@houston_notification)
 
     @options = {:device => "some token", :alert => "Here's a notification from Shelby.tv"}
+
+    AppleNotificationPusher.instance_variable_set(:@apn_connection, nil)
+
     ResqueSpec.reset!
   end
 

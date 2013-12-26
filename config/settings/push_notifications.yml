@@ -1,0 +1,21 @@
+defaults: &defaults
+  like_notification:
+    alert: "%{likers_name} liked your video on Shelby.tv"
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+
+staging:
+  <<: *production
+
+email:
+  <<: *production
+
+arnold:
+  <<: *production

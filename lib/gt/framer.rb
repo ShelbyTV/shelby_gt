@@ -248,17 +248,22 @@ module GT
     def self.create_dashboard_entries(frames, action, user_ids, options={})
       raise ArgumentError, "must supply a Frame, an Actor, or both" if frames.include?(nil) && !options[:actor_id]
       defaults = {
+        :acknowledge_write => false,
         :persist => true,
-        :return_dbe_models => false
+        :return_dbe_ids => false,
+        :return_dbe_models => false,
       }
 
       options = defaults.merge(options)
 
       persist = options.delete(:persist)
+      return_dbe_ids = options.delete(:return_dbe_ids)
       return_dbe_models = options.delete(:return_dbe_models)
+      acknowledge_write = options.delete(:acknowledge_write)
 
       dbes = [] # used to collect hashes to pass directly to the Ruby driver if persisting
-      dbe_models = [] # used to collect MongoMapper DashboardEntry models if returning anything
+      dbe_models = [] # used to collect MongoMapper DashboardEntry models if returning models
+      dbe_ids = [] # used to collect DashboardEntry ids if returning ids
       frames.each do |frame|
         user_ids.uniq.each do |user_id|
           # have to declare these variables outside the scope of the tracing blocks
@@ -291,18 +296,25 @@ module GT
 
       # if persisting, do it all in one operation so that it only checks out one socket
       if persist
+          db_options = acknowledge_write ? {:w => 1} : {}
           if return_dbe_models
             if !dbe_models.empty?
               # if we've created MongoMapper models, convert them to hashes and insert
-              DashboardEntry.collection.insert(dbe_models.map {|dbe| dbe.to_mongo })
+              dbe_ids = DashboardEntry.collection.insert(dbe_models.map {|dbe| dbe.to_mongo }, db_options)
             end
           elsif !dbes.empty?
             # if we have hashes already, just pass them through to insert
-            DashboardEntry.collection.insert(dbes)
+            dbe_ids = DashboardEntry.collection.insert(dbes, db_options)
           end
       end
 
-      return return_dbe_models ? dbe_models : nil
+      if return_dbe_models
+        return dbe_models
+      elsif return_dbe_ids
+        return dbe_ids.kind_of?(Array) ? dbe_ids : [dbe_ids]
+      else
+        return nil
+      end
     end
 
     class << self

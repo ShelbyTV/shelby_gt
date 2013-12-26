@@ -1010,6 +1010,14 @@ describe GT::Framer do
         expect(res[0].actor_id).to eql liking_user.id
       end
 
+      it "returns the created dashboard_entries' ids when :return_dbe_ids option is passed" do
+        @dbe_id = BSON::ObjectId.new
+        DashboardEntry.stub_chain(:collection, :insert).and_return(@dbe_id)
+        res = GT::Framer.create_dashboard_entries([@frame1], DashboardEntry::ENTRY_TYPE[:like_notification], [@observer.id], {:return_dbe_ids => true})
+        expect(res.length).to eql 1
+        expect(res).to include @dbe_id
+      end
+
       it "works without a frame" do
         followed_user = Factory.create(:user)
         following_user = Factory.create(:user)
@@ -1042,8 +1050,13 @@ describe GT::Framer do
         end
 
         it "persists using a single insert" do
-          @collection.should_receive(:insert).once
+          @collection.should_receive(:insert).with(kind_of(Array), {}).once
           GT::Framer.create_dashboard_entries([@frame1, @frame2], DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id])
+        end
+
+        it "persists using write acknowledgement if that option is set" do
+          @collection.should_receive(:insert).with(kind_of(Array), {:w => 1}).once
+          GT::Framer.create_dashboard_entries([@frame1, @frame2], DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {:acknowledge_write => true})
         end
 
         it "does not persist if the persist option is set to false" do

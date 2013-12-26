@@ -1,4 +1,5 @@
 require 'discussion_roll_utils'
+require 'apple_ios_push_notifier'
 
 module GT
   class NotificationManager
@@ -37,7 +38,16 @@ module GT
       if (destinations.include? :notification_center) && (user_from != user_to)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
         dbe_type = user_from ? DashboardEntry::ENTRY_TYPE[:like_notification] : DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
-        GT::Framer.create_dashboard_entries_async([frame], dbe_type, [user_to.id], {:actor_id => user_from && user_from.id})
+        options = {:actor_id => user_from && user_from.id}
+        # if the user is eligible, also do an ios push notification
+        if user_to.preferences.like_notifications_ios && !user_to.apn_tokens.empty?
+          user_from_name = user_from.name || user_from.nickname
+          options[:push_notification_options] = {
+            :devices => user_to.apn_tokens,
+            :alert => Settings::PushNotifications.like_notification['alert'] % { :likers_name => user_from_name }
+          }
+        end
+        GT::Framer.create_dashboard_entries_async([frame], dbe_type, [user_to.id], options)
       end
     end
 
@@ -122,6 +132,11 @@ module GT
         # create dbe for iOS Push and Notification Center notifications, asynchronously
         GT::Framer.create_dashboard_entries_async([nil], DashboardEntry::ENTRY_TYPE[:follow_notification], [user_to.id], {:actor_id => user_from.id})
       end
+      # TODO: REUSE THIS CODE FOR FOLLOW PUSH NOTIFICATIONS
+      # if (destinations.include? :ios) && user_to.preferences.like_notifications_ios && (user_from != user_to) && !user_to.apn_tokens.empty?
+      #   user_from_name = user_from.name || user_from.nickname
+      #   GT::AppleIOSPushNotifier.push_notification_to_user_devices_async(user_to, Settings::PushNotifications.like_notification['alert'] % { :likers_name => user_from_name })
+      # end
     end
 
     def self.check_and_send_invite_accepted_notification(inviter, invitee)

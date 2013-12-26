@@ -116,6 +116,55 @@ describe GT::NotificationManager do
       expect(dbe.video).to eql @video
     end
 
+    it "creates a like_notification dbe and queues up a push notification if user is eligible" do
+      @f_creator.apn_tokens = ['token']
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_like_notification(@frame, @user, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:like_notification],
+        [@f_creator.id],
+        {
+          :persist => true,
+          :actor_id => @user.id,
+          :push_notification_options => {
+            :devices => ['token'],
+            :alert => "#{@user.nickname} liked your video on Shelby.tv"
+          }
+        }
+      )
+      AppleNotificationPusher.should have_queue_size_of(0)
+
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      AppleNotificationPusher.should have_queue_size_of(1)
+      AppleNotificationPusher.should have_queued({
+        :device => 'token',
+        :alert => "#{@user.nickname} liked your video on Shelby.tv",
+        :dashboard_entry_id => DashboardEntry.last.id
+      })
+    end
+
+    it "does not push a like notification to iOS if user has that preference turned off" do
+      @f_creator.preferences.like_notifications_ios = false
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_like_notification(@frame, @user, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:like_notification],
+        [@f_creator.id],
+        { :persist => true, :actor_id => @user.id }
+      )
+    end
+
     it "creates an anonymous_like_notification dbe when there is no user_from" do
       ResqueSpec.reset!
 
