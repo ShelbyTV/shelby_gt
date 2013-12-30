@@ -542,6 +542,8 @@ describe GT::NotificationManager do
         [@roll_owner.id],
         {:persist => true, :actor_id => @user_joined.id}
       )
+      AppleNotificationPusher.should have_queue_size_of(0)
+
       expect {
         ResqueSpec.perform_next(:dashboard_entries_queue)
       }.to change { DashboardEntry.count }.by(1)
@@ -551,6 +553,30 @@ describe GT::NotificationManager do
       expect(dbe.actor).to eql @user_joined
       expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:follow_notification]
       expect(dbe.frame).to be_nil
+    end
+
+    it "queues up a push notification if user is eligible" do
+      @roll_owner.apn_tokens = ['token']
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll, [:notification_center])
+
+      AppleNotificationPusher.should have_queue_size_of(1)
+      AppleNotificationPusher.should have_queued({
+        :device => 'token',
+        :alert => "#{@user_joined.nickname} is following you on Shelby.tv",
+        :user_id => @user_joined.id
+      })
+    end
+
+    it "does not push a share notification to iOS if user has that preference turned off" do
+      @roll_owner.apn_tokens = ['token']
+      @roll_owner.preferences.roll_activity_notifications_ios = false
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll, [:notification_center])
+
+      AppleNotificationPusher.should have_queue_size_of(0)
     end
 
     it "doesn't create a follow_notification dbe for the roll owner when destinations does not include :notification_center" do

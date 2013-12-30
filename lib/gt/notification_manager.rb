@@ -77,7 +77,7 @@ module GT
           user_from_name = user_from.name || user_from.nickname
           options[:push_notification_options] = {
             :devices => user_to.apn_tokens,
-            :alert => Settings::PushNotifications.reroll_notification['alert'] % { :likers_name => user_from_name }
+            :alert => Settings::PushNotifications.reroll_notification['alert'] % { :re_rollers_name => user_from_name }
           }
         end
         GT::Framer.create_dashboard_entries_async([old_frame], DashboardEntry::ENTRY_TYPE[:share_notification], [user_to.id], options)
@@ -141,12 +141,12 @@ module GT
       if (destinations.include? :notification_center) && (user_from != user_to)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
         GT::Framer.create_dashboard_entries_async([nil], DashboardEntry::ENTRY_TYPE[:follow_notification], [user_to.id], {:actor_id => user_from.id})
+        # if the user is eligible, also do an ios push notification
+        if user_to.preferences.roll_activity_notifications_ios && !user_to.apn_tokens.empty?
+          user_from_name = user_from.name || user_from.nickname
+          GT::AppleIOSPushNotifier.push_notification_to_user_devices_async(user_to, Settings::PushNotifications.follow_notification['alert'] % { :followers_name => user_from_name }, {:user_id => user_from.id})
+        end
       end
-      # TODO: REUSE THIS CODE FOR FOLLOW PUSH NOTIFICATIONS
-      # if (destinations.include? :ios) && user_to.preferences.like_notifications_ios && (user_from != user_to) && !user_to.apn_tokens.empty?
-      #   user_from_name = user_from.name || user_from.nickname
-      #   GT::AppleIOSPushNotifier.push_notification_to_user_devices_async(user_to, Settings::PushNotifications.like_notification['alert'] % { :likers_name => user_from_name })
-      # end
     end
 
     def self.check_and_send_invite_accepted_notification(inviter, invitee)
