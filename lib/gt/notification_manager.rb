@@ -24,8 +24,9 @@ module GT
       raise ArgumentError, "must supply valid frame" unless frame.is_a?(Frame) and !frame.blank?
 
       user_to = frame.creator
+      user_to_gets_push_notification = (user_to && user_to.preferences.like_notifications_ios && !user_to.apn_tokens.empty?)
 
-      if destinations.include? :email
+      if destinations.include?(:email) && !user_to_gets_push_notification
         # don't email the creator if they are the liking user or they dont have an email address!
         if !user_to or (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.like_notifications
           StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['like'])
@@ -35,12 +36,12 @@ module GT
           NotificationMailer.like_notification(user_to, frame, user_from).deliver
         end
       end
-      if (destinations.include? :notification_center) && (user_from != user_to)
+      if destinations.include?(:notification_center) && user_to && (user_from != user_to)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
         dbe_type = user_from ? DashboardEntry::ENTRY_TYPE[:like_notification] : DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
         options = {:actor_id => user_from && user_from.id}
         # if the user is eligible, also do an ios push notification
-        if user_to.preferences.like_notifications_ios && !user_to.apn_tokens.empty?
+        if user_to_gets_push_notification
           user_from_name = user_from ? (user_from.name || user_from.nickname) : "Someone"
           options[:push_notification_options] = {
             :devices => user_to.apn_tokens,
@@ -56,9 +57,10 @@ module GT
       raise ArgumentError, "must supply valid old frame" unless old_frame.is_a?(Frame) and !old_frame.blank?
 
       return unless (user_to = old_frame.creator)
+      user_to_gets_push_notification = (user_to.preferences.reroll_notifications_ios && !user_to.apn_tokens.empty?)
       user_from_id = new_frame.creator_id
 
-      if destinations.include? :email
+      if destinations.include?(:email) && !user_to_gets_push_notification
         # don't email the creator if they are the upvoting user or they dont have an email address!
         if (user_from_id == user_to.id) or user_to.primary_email.blank? or !user_to.preferences.reroll_notifications or !user_to.gt_enabled
           StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['share'])
@@ -68,11 +70,11 @@ module GT
           NotificationMailer.reroll_notification(old_frame, new_frame).deliver
         end
       end
-      if (destinations.include? :notification_center) && (user_from_id != user_to.id)
+      if destinations.include?(:notification_center) && (user_from_id != user_to.id)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
         options = {:actor_id => user_from_id}
         # if the user is eligible, also do an ios push notification
-        if user_to.preferences.reroll_notifications_ios && !user_to.apn_tokens.empty?
+        if user_to_gets_push_notification
           user_from = new_frame.creator
           user_from_name = user_from.name || user_from.nickname
           options[:push_notification_options] = {
@@ -127,8 +129,9 @@ module GT
 
       # for now only send notifications to gt_enabled users
       return unless user_to and user_to.gt_enabled
+      user_to_gets_push_notification = user_to.preferences.roll_activity_notifications_ios && !user_to.apn_tokens.empty?
 
-      if destinations.include? :email
+      if destinations.include?(:email) && !user_to_gets_push_notification
         # don't email the creator if they are the user joining or they dont have an email address!
         if (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.roll_activity_notifications or !user_to.is_real?
           StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['follow'])
@@ -138,11 +141,11 @@ module GT
           NotificationMailer.join_roll_notification(user_to, user_from, roll).deliver
         end
       end
-      if (destinations.include? :notification_center) && (user_from != user_to)
+      if destinations.include?(:notification_center) && (user_from != user_to)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
         GT::Framer.create_dashboard_entries_async([nil], DashboardEntry::ENTRY_TYPE[:follow_notification], [user_to.id], {:actor_id => user_from.id})
         # if the user is eligible, also do an ios push notification
-        if user_to.preferences.roll_activity_notifications_ios && !user_to.apn_tokens.empty?
+        if user_to_gets_push_notification
           user_from_name = user_from.name || user_from.nickname
           GT::AppleIOSPushNotifier.push_notification_to_user_devices_async(user_to, Settings::PushNotifications.follow_notification['alert'] % { :followers_name => user_from_name }, {:user_id => user_from.id})
         end
