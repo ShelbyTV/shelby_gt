@@ -11,6 +11,7 @@ class Preferences
   key :upvote_notifications,          Boolean, :default => true
   key :comment_notifications,         Boolean, :default => true
   key :reroll_notifications,          Boolean, :default => true
+  key :reroll_notifications_ios,      Boolean, :default => true, :abbr => :b
   key :roll_activity_notifications,   Boolean, :default => true
   key :open_graph_posting,            Boolean
   key :discussion_roll_notifications, Boolean, :default => true

@@ -70,7 +70,17 @@ module GT
       end
       if (destinations.include? :notification_center) && (user_from_id != user_to.id)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
-        GT::Framer.create_dashboard_entries_async([old_frame], DashboardEntry::ENTRY_TYPE[:share_notification], [user_to.id], {:actor_id => user_from_id})
+        options = {:actor_id => user_from_id}
+        # if the user is eligible, also do an ios push notification
+        if user_to.preferences.reroll_notifications_ios && !user_to.apn_tokens.empty?
+          user_from = new_frame.creator
+          user_from_name = user_from.name || user_from.nickname
+          options[:push_notification_options] = {
+            :devices => user_to.apn_tokens,
+            :alert => Settings::PushNotifications.reroll_notification['alert'] % { :likers_name => user_from_name }
+          }
+        end
+        GT::Framer.create_dashboard_entries_async([old_frame], DashboardEntry::ENTRY_TYPE[:share_notification], [user_to.id], options)
       end
     end
 
