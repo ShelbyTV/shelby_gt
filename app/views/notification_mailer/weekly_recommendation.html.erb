@@ -54,7 +54,9 @@
                             </table>
                           </center>
                         </td>
-                        <td>&nbsp;</td>
+                        <td>
+                          &nbsp;
+                        </td>
                       </tr>
                     </table>
                   </td>
@@ -71,3 +73,4 @@
   </table>
   <img src="http://trk.kissmetrics.com/e?_k=<%= Settings::KissMetrics.api_key %>&_n=<%= Settings::KissMetrics.metric['open_email']['weekly_rec_email'] %>&_p=<%= @user_to.nickname %><%= "&bucket="+@ab_bucket if @ab_bucket %>" />
 <% end %>
+

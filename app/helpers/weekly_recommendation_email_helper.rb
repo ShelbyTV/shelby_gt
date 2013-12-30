@@ -2,7 +2,7 @@ module WeeklyRecommendationEmailHelper
 
   def message_text(dbes)
     if dbes.count > 1
-      "Today's top recommendations, just for you"
+      "Some video to share with friends and family..." #"Today's top recommendations, just for you"
     else
       dbe = dbes.first
       case dbe.action
@@ -27,7 +27,7 @@ module WeeklyRecommendationEmailHelper
 
   def message_subject(dbes)
     if dbes.count > 1
-      "If you only have time to watch one thing tonight..."
+      "From us to you. Enjoy!"
     else
       dbe = dbes.first
       case dbe.action
