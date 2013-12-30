@@ -81,6 +81,7 @@ class NotificationMailer < ActionMailer::Base
     if user_from
       # liked by a logged in user
       @user_from = user_from
+      @user_from_name_and_alias = (@user_from.name && @user_from.nickname) ? "#{@user_from.name} (#{@user_from.nickname})" : (@user_from.name || @user_from.nickname)
       @user_from_name = (@user_from.name || @user_from.nickname)
       @user_from_first_name = @user_from_name.split(' ').first
       @user_permalink = @user_from.permalink
@@ -101,7 +102,7 @@ class NotificationMailer < ActionMailer::Base
 
     mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
       :to => user_to.primary_email,
-      :subject => Settings::Email.like_notification['subject'] % { :likers_name => @user_from_name }
+      :subject => Settings::Email.like_notification['subject'] % { :likers_name => @user_from_name, :video_title => @frame_title }
   end
 
   def join_roll_notification(user_to, user_from, roll)

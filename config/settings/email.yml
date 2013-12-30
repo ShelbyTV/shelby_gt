@@ -42,7 +42,7 @@ defaults: &defaults
     header: …and they liked it too!
     find_more_video: Find more awesome video
     category: "Like Notifications"
-    subject: "%{likers_name} saw a video you liked on Shelby.tv..."
+    subject: "%{likers_name} liked %{video_title}"
     second_lines:
       any_liker: [ "Is this the beginning of a great relationship?",
                    "You were always the popular one, weren't you?",

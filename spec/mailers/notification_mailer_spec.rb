@@ -101,7 +101,7 @@ describe NotificationMailer do
       end
 
       it 'renders the subject' do
-        @email.subject.should eq(Settings::Email.like_notification['subject'] % {:likers_name => @user_from.nickname} )
+        @email.subject.should eq(Settings::Email.like_notification['subject'] % {:likers_name => @user_from.nickname, :video_title => @frame.video.title } )
       end
 
       it 'renders the receiver email' do
@@ -123,7 +123,7 @@ describe NotificationMailer do
       end
 
       it 'renders the subject' do
-        @email.subject.should eq(Settings::Email.like_notification['subject'] % {:likers_name => 'Someone'} )
+        @email.subject.should eq(Settings::Email.like_notification['subject'] % {:likers_name => 'Someone', :video_title => @frame.video.title} )
       end
 
       it 'renders the receiver email' do
