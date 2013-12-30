@@ -92,7 +92,7 @@ describe NotificationMailer do
       @user_from = Factory.create(:user)
       @video = Factory.create(:video, :title => 'ti')
       @roll = Factory.create(:roll, :creator => @user_to)
-      @frame = Factory.create(:frame, :video => @video, :roll => @roll)
+      @frame = Factory.create(:frame, :video => @video, :roll => @roll, :creator => @user_from)
     end
 
     context "shelby user liker" do
@@ -139,7 +139,7 @@ describe NotificationMailer do
       end
 
       it 'should contain the like message' do
-        @email.body.encoded.should match("and they liked it too")
+        @email.body.encoded.should match(@frame.video.title)
       end
     end
   end
