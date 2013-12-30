@@ -1,7 +1,9 @@
-<table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 20px;">
+<table border="0" cellpadding="0" cellspacing="10" width="100%" style="margin-top: 20px;">
   <tr>
     <th colspan="2" style="text-align: left;">
-      <strong style="display: block; margin: 0 0 10px;">Liked by:</strong>
+      <strong style="<%= "display: block; margin: 0 0 10px; font-size: #{Settings::Email.font_size_large}; " %>">
+        Liked by:
+      </strong>
     </th>
   </tr>
 
@@ -12,7 +14,9 @@
                   :avatar   => avatar_url_for_user(user),
                   :name     => user.name,
                   :nickname => user.nickname,
-                  :url      => user.permalink
+                  :button   => false,
+                  :url      => user.permalink,
+                  :size     => Settings::Email.user_item.default
                  }
       %>
     </td>
@@ -20,7 +24,9 @@
 
   <tr>
     <td>
-      <p style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: 12px; ">See what else mfeldz1980 likes</p>
+      <p style="<%= "color: #{Settings::Email.ui_light_black}; font-family: #{Settings::Email.font_family}; font-size: #{Settings::Email.font_size_micro};" %>">
+        See what else mfeldz1980 likes
+      </p>
     </td>
     <td>
       <%= render :partial => '/notification_mailer/partials/green_button',

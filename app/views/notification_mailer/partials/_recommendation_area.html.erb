@@ -1,16 +1,32 @@
 <% if type == :people %>
-  <div style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-top: 1px solid #D7D7D7;margin: 50px 0 0;padding: 0.8em 0 0;text-align: left;">
-    Check out someone sharing video in <%= user_from_first_name %>'s network:
-  </div>
 
-  <% people.each do |user|  %>
-    <%= render :partial => "/notification_mailer/partials/user_item", :locals => {
-      :avatar   => avatar_url_for_user(user),
-      :name     => user.name,
-      :nickname => user.nickname
-    } %>
+  <table border="0" cellpadding="0" cellspacing="10" width="100%" style="margin-top: 20px;">
+    <tr>
+      <td>
+        <strong style="<%= "display: block; margin: 0 0 10px; font-size: #{Settings::Email.font_size_large}; " %>">
+          Similar people you may want to follow:
+        </strong>
+      </td>
+    </tr>
+
+    <% people.each do |user|  %>
+      <tr>
+        <td>
+          <%= render :partial => "/notification_mailer/partials/user_item", :locals => {
+            :avatar   => avatar_url_for_user(user),
+            :button   => true,
+            :name     => user.name,
+            :nickname => user.nickname,
+            :url      => user.id,
+            :size     => Settings::Email.user_item.smaller
+          } %>
+        </td>
+      </tr>
+    <% end %>
+
+  </table>
+
   <% end %>
-<% end %>
 
 <% if type == :video %>
   <div style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-top: 1px solid #D7D7D7;margin: 50px 0 0;padding: 0.8em 0 0;text-align: left;">
