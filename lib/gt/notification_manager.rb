@@ -41,7 +41,7 @@ module GT
         options = {:actor_id => user_from && user_from.id}
         # if the user is eligible, also do an ios push notification
         if user_to.preferences.like_notifications_ios && !user_to.apn_tokens.empty?
-          user_from_name = user_from.name || user_from.nickname
+          user_from_name = user_from ? (user_from.name || user_from.nickname) : "Someone"
           options[:push_notification_options] = {
             :devices => user_to.apn_tokens,
             :alert => Settings::PushNotifications.like_notification['alert'] % { :likers_name => user_from_name }
