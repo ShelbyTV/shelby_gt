@@ -57,9 +57,8 @@
                                         </a>
                                       <% end %>
 
-                                      <% # Recommended Content
-                                      # @people_recommendation << @user_to
-                                      %>
+                                      <% # Recommended Content %>
+
                                       <% if @people_recommendation and !@people_recommendation.empty? %>
                                           <%= render :partial => "/notification_mailer/partials/recommendation_area",
                                                      :locals => {
