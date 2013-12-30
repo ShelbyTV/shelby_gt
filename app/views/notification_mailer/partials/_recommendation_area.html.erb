@@ -3,8 +3,12 @@
     Check out someone sharing video in <%= user_from_first_name %>'s network:
   </div>
 
-  <% people.each do |u|  %>
-    <%= render :partial => "/notification_mailer/partials/user_card", :locals => {:username => u.nickname, :realname => u.name, :avatar=> avatar_url_for_user(u)} %>
+  <% people.each do |user|  %>
+    <%= render :partial => "/notification_mailer/partials/user_item", :locals => {
+      :avatar   => avatar_url_for_user(user),
+      :name     => user.name,
+      :nickname => user.nickname
+    } %>
   <% end %>
 <% end %>
 

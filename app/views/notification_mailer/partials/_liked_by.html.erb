@@ -1,0 +1,35 @@
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 20px;">
+  <tr>
+    <th colspan="2" style="text-align: left;">
+      <strong style="display: block; margin: 0 0 10px;">Liked by:</strong>
+    </th>
+  </tr>
+
+  <tr>
+    <td colspan="2">
+      <%= render :partial => '/notification_mailer/partials/user_item',
+                 :locals => {
+                  :avatar   => avatar_url_for_user(user),
+                  :name     => user.name,
+                  :nickname => user.nickname,
+                  :url      => user.permalink
+                 }
+      %>
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <p style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: 12px; ">See what else mfeldz1980 likes</p>
+    </td>
+    <td>
+      <%= render :partial => '/notification_mailer/partials/green_button',
+                 :locals => {
+                    :text => "See Profile",
+                    :url => user.permalink,
+                    :width => "auto"
+                 }
+       %>
+    </td>
+  </tr>
+</table>

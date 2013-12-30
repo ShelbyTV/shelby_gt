@@ -10,7 +10,7 @@
         <table data-frame_comment style="width: 100%"  border="0" cellpadding="5" cellspacing="0">
           <tr>
             <td data-name>
-              <a href="<%= video.permalink %>?dbe_id=<%= dbe.id.to_s %>&source=email" style="color: <%= Settings::Email.ui_soft_black %>;text-decoration: none;">
+              <a href="<%= video.permalink %>?source=email" style="color: <%= Settings::Email.ui_soft_black %>;text-decoration: none;">
                 <% if !is_recommendation %>
                   <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>"<%= " title=\"#{creator.name}\"" if creator.name %>><strong><%= creator.nickname %></strong></span>
                 <% else %>

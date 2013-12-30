@@ -50,7 +50,11 @@ module WeeklyRecommendationEmailHelper
     end
   end
 
-  def frame_footer_message(dbe)
+  def frame_footer_message(frame)
+    frame.conversation.messages.first.text if frame.conversation and frame.conversation.messages and frame.conversation.messages.first
+  end
+
+  def dashboard_entry_footer_message(dbe)
     if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
       # VIDEO GRAPH
       if dbe.src_frame && dbe.src_frame.creator
@@ -79,7 +83,7 @@ module WeeklyRecommendationEmailHelper
     end
   end
 
-  def frame_footer_avatar(dbe)
+  def dashboard_entry_footer_avatar(dbe)
     if dbe.action == DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
       return "http://#{Settings::Global.web_host}/images/recommendations/share-2.jpg"
     elsif dbe.action == DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
