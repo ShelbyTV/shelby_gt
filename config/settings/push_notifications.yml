@@ -5,7 +5,7 @@ defaults: &defaults
     alert: "%{likers_name} liked your video on Shelby.tv"
   reroll_notification:
     alert: "%{re_rollers_name} shared your video on Shelby.tv"
-  notification_users_whitelist: ['martha', 'keren', 'maxwell', 'iceberg901', 'abe_feldstein', 'reece', 'matyus', 'henry', 'spinosa', 'chris']
+  notification_users_whitelist: ['martha', 'keren', 'maxwell', 'iceberg901', 'abe_feldstein', 'reece', 'matyus', 'henry', 'spinosa', 'chris', 'homestar']
 
 development:
   <<: *defaults
