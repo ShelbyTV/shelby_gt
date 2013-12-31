@@ -144,7 +144,12 @@ describe GT::NotificationManager do
           :actor_id => @user.id,
           :push_notification_options => {
             :devices => ['token'],
-            :alert => "#{@user.nickname} liked your video on Shelby.tv"
+            :alert => "#{@user.nickname} liked your video on Shelby.tv",
+            :ga_event => {
+              :category => "Push Notification",
+              :action => "Send Like Notification",
+              :label => @f_creator.id
+            }
           }
         }
       )
@@ -158,7 +163,12 @@ describe GT::NotificationManager do
       AppleNotificationPusher.should have_queued({
         :device => 'token',
         :alert => "#{@user.nickname} liked your video on Shelby.tv",
-        :dashboard_entry_id => DashboardEntry.last.id
+        :dashboard_entry_id => DashboardEntry.last.id,
+        :ga_event => {
+          :category => "Push Notification",
+          :action => "Send Like Notification",
+          :label => @f_creator.id.to_s
+        }
       })
     end
 
@@ -225,7 +235,12 @@ describe GT::NotificationManager do
           :actor_id => nil,
           :push_notification_options => {
             :devices => ['token'],
-            :alert => "Someone liked your video on Shelby.tv"
+            :alert => "Someone liked your video on Shelby.tv",
+            :ga_event => {
+              :category => "Push Notification",
+              :action => "Send Like Notification",
+              :label => @f_creator.id
+            }
           }
         }
       )
@@ -239,7 +254,12 @@ describe GT::NotificationManager do
       AppleNotificationPusher.should have_queued({
         :device => 'token',
         :alert => "Someone liked your video on Shelby.tv",
-        :dashboard_entry_id => DashboardEntry.last.id
+        :dashboard_entry_id => DashboardEntry.last.id,
+        :ga_event => {
+          :category => "Push Notification",
+          :action => "Send Like Notification",
+          :label => @f_creator.id.to_s
+        }
       })
     end
 

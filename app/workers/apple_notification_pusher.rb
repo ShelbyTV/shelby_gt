@@ -8,8 +8,22 @@ class AppleNotificationPusher
     # so, we change them back to symbols because that's what our code is expecting
     options = options.symbolize_keys
 
+    ga_event = options.delete(:ga_event)
+
     notification = Houston::Notification.new(options)
     @apn_connection.write(notification.message)
+
+    if ga_event
+      APIClients::GoogleAnalyticsClient.track_event(
+        ga_event["category"],
+        ga_event["action"],
+        ga_event["label"],
+        {
+          :account_id => Settings::GoogleAnalytics.web_account_id,
+          :domain => Settings::Global.domain
+        }
+      )
+    end
   end
 
   # before performing a job, check if we have a connection to APNs in a good state, otherwise create one

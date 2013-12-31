@@ -32,10 +32,12 @@ class DashboardEntryCreator
     res = GT::Framer.create_dashboard_entries(frames, action, user_ids, options)
     # if specified, send a push notification based on this dashboard entry, asynchronously
     if push_notification
+      custom_options = {:dashboard_entry_id => res[0]}
+      custom_options[:ga_event] = push_notification["ga_event"].symbolize_keys if push_notification["ga_event"]
       GT::AppleIOSPushNotifier.push_notification_to_devices_async(
         push_notification["devices"],
         push_notification["alert"],
-        {:dashboard_entry_id => res[0]}
+        custom_options
       )
     end
   end

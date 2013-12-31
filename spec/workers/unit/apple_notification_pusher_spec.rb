@@ -39,6 +39,24 @@ describe AppleNotificationPusher do
   it "pushes a notification" do
     Houston::Notification.should_receive(:new).with(@options).and_return(@houston_notification)
     @houston_connection.should_receive(:write).with(@houston_notification_message)
+    APIClients::GoogleAnalyticsClient.should_not_receive(:track_event)
+
+    Resque.enqueue(AppleNotificationPusher, @options)
+    ResqueSpec.perform_next(:apple_push_notifications_queue)
+  end
+
+  it "tracks an event with Google Analytics if requested" do
+    @options[:ga_event] = {:category => "Category", :action => "Action", :label => "Label"}
+
+    APIClients::GoogleAnalyticsClient.should_receive(:track_event).with(
+      "Category",
+      "Action",
+      "Label",
+      {
+        :account_id => Settings::GoogleAnalytics.web_account_id,
+        :domain => Settings::Global.domain
+      }
+    )
 
     Resque.enqueue(AppleNotificationPusher, @options)
     ResqueSpec.perform_next(:apple_push_notifications_queue)

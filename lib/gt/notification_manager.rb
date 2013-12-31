@@ -45,7 +45,12 @@ module GT
           user_from_name = user_from ? (user_from.name || user_from.nickname) : "Someone"
           options[:push_notification_options] = {
             :devices => user_to.apn_tokens,
-            :alert => Settings::PushNotifications.like_notification['alert'] % { :likers_name => user_from_name }
+            :alert => Settings::PushNotifications.like_notification['alert'] % { :likers_name => user_from_name },
+            :ga_event => {
+              :category => "Push Notification",
+              :action => "Send Like Notification",
+              :label => user_to.id
+            }
           }
         end
         GT::Framer.create_dashboard_entries_async([frame], dbe_type, [user_to.id], options)
