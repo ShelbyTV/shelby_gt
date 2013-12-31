@@ -1,20 +1,28 @@
 module APIClients
   class GoogleAnalyticsClient
 
-   def self.track_event(category, action, label, value=nil)
+   def self.track_event(category, action, label, options={})
 
-     return if !["production", "test"].include?(Rails.env)
+     return if !["production", "staging", "test"].include?(Rails.env)
 
-     init_ga
+      defaults = {
+        :account_id => Settings::GoogleAnalytics.web_account_id,
+        :domain => Settings::Global.domain,
+        :value => nil
+      }
 
-     @gabba_client.event(category, action, label, value)
+     options = defaults.merge(options)
+
+     client = get_client(options[:account_id], options[:domain])
+     client.event(category, action, label, options[:value])
    end
 
    private
 
-    @gabba_client = nil
-    def self.init_ga()
-      @gabba_client = Gabba::Gabba.new(Settings::GoogleAnalytics.account_id, Settings::Global.domain) unless @gabba_client
+    @gabba_clients = {}
+    def self.get_client(account_id, domain)
+      client_string = "#{account_id}::#{domain}"
+      @gabba_clients[client_string] || (@gabba_clients[client_string] = Gabba::Gabba.new(account_id, domain))
     end
 
   end

@@ -9,7 +9,7 @@ module StatsManager
 
       time_to_nth_session = (Time.zone.now - user.created_at).to_i / 1.day
       category, action, label = "Sessions", "Reached #{n.ordinalize} Session", user.nickname
-      APIClients::GoogleAnalyticsClient.track_event(category, action, label, time_to_nth_session)
+      APIClients::GoogleAnalyticsClient.track_event(category, action, label, {:value => time_to_nth_session})
     end
 
   end
