@@ -1,12 +1,8 @@
-<table border="0" cellpadding="0" cellspacing="10" width="100%" style="margin-top: 10px;">
-  <tr>
-    <th colspan="2" style="text-align: left;">
-      <strong style="<%= "display: block; margin: 0 0 10px; font-size: #{Settings::Email.font_size_large}; " %>">
-        Liked by:
-      </strong>
-    </th>
-  </tr>
+<strong style="<%= "display: block; font-size: #{Settings::Email.font_size_large}; margin: 20px 0 10px; text-align: left; " %>">
+  Liked by:
+</strong>
 
+<table border="0" cellpadding="0" cellspacing="10" width="100%" style="border: 1px solid #cdcdcd; margin: 0;">
   <tr>
     <td colspan="2">
       <%= render :partial => '/notification_mailer/partials/user_item',
@@ -25,7 +21,7 @@
   <tr>
     <td>
       <p style="<%= "color: #{Settings::Email.ui_light_black}; font-family: #{Settings::Email.font_family}; font-size: #{Settings::Email.font_size_micro};" %>">
-        See what else mfeldz1980 likes
+        See what else <%= user.nickname || user.name %> likes
       </p>
     </td>
     <td>

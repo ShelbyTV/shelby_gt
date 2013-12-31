@@ -1,13 +1,9 @@
 <% if type == :people %>
+<strong style="<%= "display: block; font-size: #{Settings::Email.font_size_large}; margin: 20px 0 10px; text-align: left;" %>">
+  Similar people you may want to follow:
+</strong>
 
-  <table border="0" cellpadding="0" cellspacing="10" width="100%" style="margin-top: 20px;">
-    <tr>
-      <td>
-        <strong style="<%= "display: block; margin: 0 0 10px; font-size: #{Settings::Email.font_size_large}; " %>">
-          Similar people you may want to follow:
-        </strong>
-      </td>
-    </tr>
+  <table border="0" cellpadding="0" cellspacing="10" width="100%" style="border: 1px solid #cdcdcd; margin: 10 0px;">
 
     <% people.each do |user|  %>
       <tr>

@@ -91,6 +91,7 @@ class NotificationMailer < ActionMailer::Base
       ru = r.recommend_other_users_followings(@user_from, {:limit => 2, :shuffle => true, :min_frames => 2})
       @people_recommendation = User.find(ru)
       #@video_recommendation = []
+      @people_recommendation << @user_to
     else
       # liked anonymously by a logged out user
       @user_from_name = "Someone"
