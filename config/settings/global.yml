@@ -18,6 +18,7 @@ production: &production
 
 staging:
   <<: *production
+  domain: "staging.shelby.tv"
 
 email:
   <<: *production
