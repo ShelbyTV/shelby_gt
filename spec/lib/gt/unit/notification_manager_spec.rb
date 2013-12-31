@@ -524,7 +524,12 @@ describe GT::NotificationManager do
           :actor_id => @new_user.id,
           :push_notification_options => {
             :devices => ['token'],
-            :alert => "#{@new_user.nickname} shared your video on Shelby.tv"
+            :alert => "#{@new_user.nickname} shared your video on Shelby.tv",
+            :ga_event => {
+              :category => "Push Notification",
+              :action => "Send Share Notification",
+              :label => @old_user.id
+            }
           }
         }
       )
@@ -538,7 +543,12 @@ describe GT::NotificationManager do
       AppleNotificationPusher.should have_queued({
         :device => 'token',
         :alert => "#{@new_user.nickname} shared your video on Shelby.tv",
-        :dashboard_entry_id => DashboardEntry.last.id
+        :dashboard_entry_id => DashboardEntry.last.id,
+        :ga_event => {
+          :category => "Push Notification",
+          :action => "Send Share Notification",
+          :label => @old_user.id.to_s
+        }
       })
     end
 
@@ -669,7 +679,12 @@ describe GT::NotificationManager do
       AppleNotificationPusher.should have_queued({
         :device => 'token',
         :alert => "#{@user_joined.nickname} is following you on Shelby.tv",
-        :user_id => @user_joined.id
+        :user_id => @user_joined.id,
+        :ga_event => {
+          :category => "Push Notification",
+          :action => "Send Follow Notification",
+          :label => @roll_owner.id
+        }
       })
     end
 

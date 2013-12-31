@@ -84,7 +84,12 @@ module GT
           user_from_name = user_from.name || user_from.nickname
           options[:push_notification_options] = {
             :devices => user_to.apn_tokens,
-            :alert => Settings::PushNotifications.reroll_notification['alert'] % { :re_rollers_name => user_from_name }
+            :alert => Settings::PushNotifications.reroll_notification['alert'] % { :re_rollers_name => user_from_name },
+            :ga_event => {
+              :category => "Push Notification",
+              :action => "Send Share Notification",
+              :label => user_to.id
+            }
           }
         end
         GT::Framer.create_dashboard_entries_async([old_frame], DashboardEntry::ENTRY_TYPE[:share_notification], [user_to.id], options)
@@ -152,7 +157,18 @@ module GT
         # if the user is eligible, also do an ios push notification
         if user_to_gets_push_notification
           user_from_name = user_from.name || user_from.nickname
-          GT::AppleIOSPushNotifier.push_notification_to_user_devices_async(user_to, Settings::PushNotifications.follow_notification['alert'] % { :followers_name => user_from_name }, {:user_id => user_from.id})
+          GT::AppleIOSPushNotifier.push_notification_to_user_devices_async(
+            user_to,
+            Settings::PushNotifications.follow_notification['alert'] % { :followers_name => user_from_name },
+            {
+              :user_id => user_from.id,
+              :ga_event => {
+                :category => "Push Notification",
+                :action => "Send Follow Notification",
+                :label => user_to.id
+              }
+            }
+          )
         end
       end
     end
