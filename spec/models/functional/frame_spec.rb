@@ -282,6 +282,7 @@ describe Frame do
       ResqueSpec.reset!
 
       @creator = Factory.create(:user)
+      Settings::PushNotifications.notification_users_whitelist << @creator.nickname
       @frame = Factory.create(:frame, :creator => @creator)
       @stranger = Factory.create(:user)
       @stranger_public_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_public_real_user])
@@ -305,6 +306,8 @@ describe Frame do
       expect(dbe.actor).to eql @stranger
       expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:share_notification]
       expect(dbe.frame).to eql @frame
+
+      Settings::PushNotifications.notification_users_whitelist.clear
     end
 
   end
@@ -313,10 +316,15 @@ describe Frame do
     before(:each) do
       @video = Factory.create(:video)
       @originator = Factory.create(:user)
+      Settings::PushNotifications.notification_users_whitelist << @originator.nickname
       @frame = Factory.create(:frame, :creator => @originator, :video => @video)
 
       @u1 = Factory.create(:user)
       @u1.public_roll = Factory.create(:roll, :creator => @u1)
+    end
+
+    after(:each) do
+      Settings::PushNotifications.notification_users_whitelist.clear
     end
 
     it "should require full User model, not just id" do
@@ -479,6 +487,7 @@ describe Frame do
     end
 
     it "creates an anonymous_like_notification dbe" do
+      Settings::PushNotifications.notification_users_whitelist << @user.nickname
       ResqueSpec.reset!
 
       @frame.like!
@@ -500,6 +509,8 @@ describe Frame do
       expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
       expect(dbe.frame).to eql @frame
       expect(dbe.video).to eql @video
+
+      Settings::PushNotifications.notification_users_whitelist.clear
     end
   end
 

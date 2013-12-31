@@ -105,6 +105,7 @@ describe Roll do
       end
 
       it "creates a follow_notification dbe for the followee" do
+        Settings::PushNotifications.notification_users_whitelist << @creator.nickname
         ResqueSpec.reset!
 
         @roll.add_follower(@user)
@@ -125,6 +126,8 @@ describe Roll do
         expect(dbe.actor).to eql @user
         expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:follow_notification]
         expect(dbe.frame).to be_nil
+
+        Settings::PushNotifications.notification_users_whitelist.clear
       end
 
       it "does not create a follow_notification dbe if send_notification=false" do

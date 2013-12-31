@@ -694,6 +694,7 @@ describe GT::Framer do
       @roll.add_follower(u1 = Factory.create(:user))
       @roll.add_follower(u2 = Factory.create(:user))
       @roll.add_follower(u3 = Factory.create(:user))
+      Settings::PushNotifications.notification_users_whitelist << @frame_creator.nickname
 
       new_frame = Factory.create(:frame, :creator => @roll_creator)
       GT::Framer.should_receive(:basic_re_roll).with(@f1, @roll_creator.id, @roll.id, {}).and_return(new_frame)
@@ -701,6 +702,8 @@ describe GT::Framer do
       GT::Framer.should_receive(:create_dashboard_entries_async).ordered().with([@f1], DashboardEntry::ENTRY_TYPE[:share_notification], [@frame_creator.id], {:actor_id => @roll_creator.id})
 
       GT::Framer.re_roll(@f1, @roll_creator, @roll)
+
+      Settings::PushNotifications.notification_users_whitelist.clear
     end
 
     it "checks and sends a :like_notification for the likee if the frame_type is light_weight" do
