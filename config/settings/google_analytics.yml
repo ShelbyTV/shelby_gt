@@ -1,5 +1,6 @@
 defaults: &defaults
-  account_id: "UA-21191360-6"
+  web_account_id: "UA-21191360-6"
+  ios_account_id: "UA-21191360-12"
 
 development:
   <<: *defaults
@@ -12,6 +13,7 @@ production: &production
 
 staging:
   <<: *production
+  web_account_id: "UA-21191360-8"
 
 email:
   <<: *production
