@@ -1,6 +1,6 @@
 <% if type == :people %>
 <strong style="<%= "display: block; font-size: #{Settings::Email.font_size_large}; margin: 20px 0 10px; text-align: left;" %>">
-  Similar people you may want to follow:
+  Follow people similar to <%= user_from_first_name %>
 </strong>
 
   <table border="0" cellpadding="0" cellspacing="10" width="100%" style="border: 1px solid #cdcdcd; margin: 10 0px;">
@@ -26,7 +26,7 @@
 
 <% if type == :video %>
   <div style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-top: 1px solid #D7D7D7;margin: 50px 0 0;padding: 0.8em 0 0;text-align: left;">
-    Check out a video similar to what <%= user_from_first_name %>'s likes:
+    Check out a video similar to what <%= user_from_first_name %> likes:
   </div>
 
   <% video.each do |v|  %>

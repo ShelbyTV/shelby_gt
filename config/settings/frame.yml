@@ -3,6 +3,9 @@ defaults: &defaults
   db_port: '27017'
   db_options: {}
   mm_use_identity_map: true
+  frame_type:
+    heavy_weight: 0
+    light_weight: 1
 
 development:
   <<: *defaults

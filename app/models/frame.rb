@@ -58,8 +58,9 @@ class Frame
   # Total number of likes - both by upvoters (logged in likers) and logged out likers
   key :like_count, Integer, :abbr => :n, :default => 0
 
-   # What does this entry represent (light_weight, heavy_weight)?
+  # What does this entry represent (light_weight, heavy_weight)?
   # [using integers instead of strings to keep the size as small as possible]
+  # heavy_weight ~= Share, light_weight ~= Like
   FRAME_TYPE = {
     :heavy_weight => 0,
     :light_weight => 1
