@@ -1,10 +1,10 @@
 defaults: &defaults
   follow_notification:
-    alert: "%{followers_name} is following you on Shelby.tv"
+    alert: "%{followers_name} is following you"
   like_notification:
-    alert: "%{likers_name} liked your video on Shelby.tv"
+    alert: "%{likers_name} liked your video"
   reroll_notification:
-    alert: "%{re_rollers_name} shared your video on Shelby.tv"
+    alert: "%{re_rollers_name} shared your video"
   notification_users_whitelist: ['martha', 'keren', 'maxwell', 'iceberg901', 'abe_feldstein', 'reece', 'matyus', 'henry', 'spinosa', 'chris', 'homestar', 'nevspins']
 
 development:

@@ -17,7 +17,7 @@ describe GT::AppleIOSPushNotifier do
       GT::AppleIOSPushNotifier.push_notification_to_user_devices_async(@user, "Here is your message")
 
       expect(AppleNotificationPusher).to have_queue_size_of(1)
-      expect(AppleNotificationPusher).to have_queued({:device => 'token1', :alert => "Here is your message"})
+      expect(AppleNotificationPusher).to have_queued({:device => 'token1', :alert => "Here is your message", :sound => 'default'})
     end
 
     it "adds a custom data to the notification if specified" do
@@ -27,6 +27,7 @@ describe GT::AppleIOSPushNotifier do
       expect(AppleNotificationPusher).to have_queued({
         :device => 'token1',
         :alert => "Here is your message",
+        :sound => 'default',
         :dashboard_entry_id => '123'
       })
     end
@@ -54,7 +55,7 @@ describe GT::AppleIOSPushNotifier do
       GT::AppleIOSPushNotifier.push_notification_to_devices_async(['token1'], "Here is your message")
 
       expect(AppleNotificationPusher).to have_queue_size_of(1)
-      expect(AppleNotificationPusher).to have_queued({:device => 'token1', :alert => "Here is your message"})
+      expect(AppleNotificationPusher).to have_queued({:device => 'token1', :alert => "Here is your message", :sound => 'default'})
     end
   end
 
