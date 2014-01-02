@@ -1242,9 +1242,32 @@ describe 'v1/user' do
       it "adds the token to the user's apn_tokens array" do
         post "/v1/user/#{@u1.id}/apn_token?token=123"
 
-        @u1.reload
         expect(@u1.apn_tokens.length).to eql 1
         expect(@u1.apn_tokens).to include "123"
+      end
+
+      it "marks that the user accepted push notifications" do
+        post "/v1/user/#{@u1.id}/apn_token?token=123"
+
+        expect(@u1.accepted_ios_push).to be_true
+      end
+
+      it "disables the user's email notifications if they are accepting push notifications for the first time" do
+        post "/v1/user/#{@u1.id}/apn_token?token=123"
+
+        expect(@u1.preferences.like_notifications).to be_false
+        expect(@u1.preferences.reroll_notifications).to be_false
+        expect(@u1.preferences.roll_activity_notifications).to be_false
+      end
+
+      it "doesn't disable the user's email notifications if they've already accepted push notifications before" do
+        @u1.accepted_ios_push = true
+
+        post "/v1/user/#{@u1.id}/apn_token?token=123"
+
+        expect(@u1.preferences.like_notifications).to be_true
+        expect(@u1.preferences.reroll_notifications).to be_true
+        expect(@u1.preferences.roll_activity_notifications).to be_true
       end
 
       it "only adds a given token once" do

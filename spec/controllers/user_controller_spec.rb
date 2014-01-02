@@ -257,6 +257,31 @@ describe V1::UserController do
       assigns(:status).should == 200
     end
 
+    context "update user.accepted_ios_push" do
+
+      before(:each) do
+        User.any_instance.stub(:push_uniq)
+        @user_collection = User.collection
+        User.stub(:collection).and_return(@user_collection)
+      end
+
+      it "marks that the user accepted push notifications if it has not already done so" do
+        @user_collection.should_receive(:update)
+
+        sign_in @u1
+        post :add_apn_token, :id => @u1.id.to_s, :token => '123', :format => :json
+      end
+
+      it "does not mark that the user accepted push notifications if it has already done so" do
+        @u1.accepted_ios_push = true
+        @user_collection.should_not_receive(:update)
+
+        sign_in @u1
+        post :add_apn_token, :id => @u1.id.to_s, :token => '123', :format => :json
+      end
+
+    end
+
     it "returns 401 if the user is not authenticated" do
       post :add_apn_token, :id => @u1.id.to_s, :token => '123', :format => :json
       assigns(:status).should == 401

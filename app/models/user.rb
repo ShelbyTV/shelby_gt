@@ -184,6 +184,9 @@ class User
   # Apple apn device tokens for sending push notifications to the user
   key :apn_tokens, Array, :typecast => 'String', :abbr => :bh, :default => []
 
+  # Whether or not the user accepted iOS push notifications
+  key :accepted_ios_push, Boolean, :abbr => :bi, :default => false
+
   attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original, :avatar,
                   :google_analytics_client_id, :rolled_since_last_notification
 

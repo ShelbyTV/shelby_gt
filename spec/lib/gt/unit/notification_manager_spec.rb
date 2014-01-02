@@ -97,17 +97,6 @@ describe GT::NotificationManager do
       }.should change(ActionMailer::Base.deliveries,:size).by(1)
     end
 
-    it "does not send email if the user will receive a push notification" do
-      @f_creator.apn_tokens = ['token']
-      @f_creator.preferences.like_notifications_ios = true
-      expect {
-        GT::NotificationManager.check_and_send_like_notification(@frame, @user)
-      }.not_to change(ActionMailer::Base.deliveries,:size)
-      expect {
-        GT::NotificationManager.check_and_send_like_notification(@frame)
-      }.not_to change(ActionMailer::Base.deliveries,:size)
-    end
-
     it "creates a like_notification dbe for the frame creator when destinations includes :notification_center" do
       ResqueSpec.reset!
 
@@ -480,14 +469,6 @@ describe GT::NotificationManager do
       }.should change(ActionMailer::Base.deliveries,:size).by(0)
     end
 
-    it "does not send email if the user will receive a push notification" do
-      @old_user.apn_tokens = ['token']
-      @old_user.preferences.reroll_notifications_ios = true
-      expect {
-        GT::NotificationManager.check_and_send_reroll_notification(@old_frame, @new_frame)
-      }.not_to change(ActionMailer::Base.deliveries,:size)
-    end
-
     it "should not shit the bed if frames creator is nil" do
       @old_user.gt_enabled = false; @old_user.save
       @old_frame = Factory.create(:frame, :creator => nil, :video => @video, :roll => @old_roll)
@@ -661,14 +642,6 @@ describe GT::NotificationManager do
       lambda {
         GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll)
       }.should change(ActionMailer::Base.deliveries,:size).by(1)
-    end
-
-    it "does not send email if the user will receive a push notification" do
-      @roll_owner.apn_tokens = ['token']
-      @roll_owner.preferences.roll_activity_notifications_ios = true
-      expect {
-        GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll)
-      }.not_to change(ActionMailer::Base.deliveries,:size)
     end
 
     it "should return nil if user is creator of the roll" do
