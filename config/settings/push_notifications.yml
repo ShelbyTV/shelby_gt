@@ -5,6 +5,8 @@ defaults: &defaults
     alert: "%{likers_name} liked your video"
   reroll_notification:
     alert: "%{re_rollers_name} shared your video"
+  certificate_file: "certificates/iOS/NightlyProd.pem"
+  houston_client_environment_method: :development
 
 development:
   <<: *defaults
@@ -14,6 +16,8 @@ test:
 
 production: &production
   <<: *defaults
+  certificate_file: "certificates/iOS/LiveProd.pem"
+  houston_client_environment_method: :production
 
 staging:
   <<: *production

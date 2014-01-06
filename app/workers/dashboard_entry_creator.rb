@@ -34,7 +34,7 @@ class DashboardEntryCreator
     if push_notification
       custom_options = {:dashboard_entry_id => res[0]}
       custom_options[:ga_event] = push_notification["ga_event"].symbolize_keys if push_notification["ga_event"]
-      GT::AppleIOSPushNotifier.push_notification_to_devices_async(
+      GT::ApplePushNotificationServicesManager.push_notification_to_devices_async(
         push_notification["devices"],
         push_notification["alert"],
         custom_options

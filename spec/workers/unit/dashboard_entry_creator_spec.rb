@@ -10,7 +10,7 @@ describe DashboardEntryCreator do
   it "calls the Framer to create a dashboard entry with the proper params" do
     Frame.should_receive(:find).with([@frame1.id.to_s, @frame2.id.to_s]).and_return([@frame1, @frame2])
     GT::Framer.should_receive(:create_dashboard_entries).with([@frame1, @frame2], DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id], {})
-    GT::AppleIOSPushNotifier.should_not_receive(:push_notification_to_devices_async)
+    GT::ApplePushNotificationServicesManager.should_not_receive(:push_notification_to_devices_async)
 
     DashboardEntryCreator.perform([@frame1.id.to_s, @frame2.id.to_s], DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id.to_s], {})
   end
@@ -18,7 +18,7 @@ describe DashboardEntryCreator do
   context "when a push notification will be generated" do
 
     before(:each) do
-      GT::AppleIOSPushNotifier.stub(:push_notification_to_devices_async)
+      GT::ApplePushNotificationServicesManager.stub(:push_notification_to_devices_async)
       @dbe_id = BSON::ObjectId.new
     end
 
@@ -35,7 +35,7 @@ describe DashboardEntryCreator do
       Frame.stub(:find).with([@frame1.id.to_s]).and_return([@frame1])
       GT::Framer.stub(:create_dashboard_entries).and_return([@dbe_id])
 
-      GT::AppleIOSPushNotifier.should_receive(:push_notification_to_devices_async).with(devices, alert, {:dashboard_entry_id => @dbe_id})
+      GT::ApplePushNotificationServicesManager.should_receive(:push_notification_to_devices_async).with(devices, alert, {:dashboard_entry_id => @dbe_id})
 
       DashboardEntryCreator.perform([@frame1.id.to_s], DashboardEntry::ENTRY_TYPE[:new_social_frame], [@observer.id.to_s], {"push_notification_options" => {"devices" => devices, "alert" => alert}})
     end

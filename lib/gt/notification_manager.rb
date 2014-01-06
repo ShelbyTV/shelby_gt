@@ -1,5 +1,5 @@
 require 'discussion_roll_utils'
-require 'apple_ios_push_notifier'
+require 'apple_push_notification_services_manager'
 
 module GT
   class NotificationManager
@@ -154,7 +154,7 @@ module GT
         # if the user is eligible, also do an ios push notification
         if user_to.preferences.roll_activity_notifications_ios && !user_to.apn_tokens.empty?
           user_from_name = user_from.name || user_from.nickname
-          GT::AppleIOSPushNotifier.push_notification_to_user_devices_async(
+          GT::ApplePushNotificationServicesManager.push_notification_to_user_devices_async(
             user_to,
             Settings::PushNotifications.follow_notification['alert'] % { :followers_name => user_from_name },
             {

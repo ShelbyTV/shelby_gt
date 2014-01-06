@@ -29,10 +29,9 @@ class AppleNotificationPusher
   # before performing a job, check if we have a connection to APNs in a good state, otherwise create one
   def self.before_perform_check_connection(*args)
     unless @apn_connection
-      certificate_path = (ENV['RAILS_ENV'] == 'production' ? "certificates/iOS/LiveProd.pem" : "certificates/iOS/NightlyProd.pem")
       @apn_connection = Houston::Connection.new(
         Houston::APPLE_PRODUCTION_GATEWAY_URI,
-        File.read(File.join(Dir.pwd, certificate_path)),
+        File.read(File.join(Dir.pwd, Settings::PushNotifications.certificate_file)),
         nil
       )
       @apn_connection.open
