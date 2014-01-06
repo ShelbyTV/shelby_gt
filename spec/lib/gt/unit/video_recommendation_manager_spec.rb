@@ -667,7 +667,17 @@ describe GT::VideoRecommendationManager do
     it "should fetch dbes from the specified user channel" do
       dbe_query = double("dbe_query")
       dbe_query.stub_chain(:order, :limit, :fields, :all, :shuffle!).and_return([])
-      DashboardEntry.should_receive(:where).with(:user_id => @channel_user.id).and_return(dbe_query)
+      DashboardEntry.should_receive(:where).with(
+        :user_id => @channel_user.id,
+        :action => {
+          :$nin => [
+            DashboardEntry::ENTRY_TYPE[:like_notification],
+            DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+            DashboardEntry::ENTRY_TYPE[:share_notification],
+            DashboardEntry::ENTRY_TYPE[:follow_notification]
+          ]
+        }
+      ).and_return(dbe_query)
 
       @video_recommendation_manager.get_channel_recs_for_user(@channel_user.id).should == []
     end
@@ -691,7 +701,17 @@ describe GT::VideoRecommendationManager do
 
         dbe_query = double("dbe_query")
         dbe_query.stub_chain(:order, :limit, :fields).and_return(@dbes)
-        DashboardEntry.stub(:where).with(:user_id => @channel_user.id).and_return(dbe_query)
+        DashboardEntry.stub(:where).with(
+          :user_id => @channel_user.id,
+          :action => {
+            :$nin => [
+              DashboardEntry::ENTRY_TYPE[:like_notification],
+              DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+              DashboardEntry::ENTRY_TYPE[:share_notification],
+              DashboardEntry::ENTRY_TYPE[:follow_notification]
+            ]
+          }
+        ).and_return(dbe_query)
       end
 
       it "should map the key names correctly" do

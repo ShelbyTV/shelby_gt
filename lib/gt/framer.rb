@@ -157,25 +157,29 @@ module GT
     # { :frame => newly_created_frame }
     #
     def self.re_roll(orig_frame, for_user, to_roll, options={})
-      raise ArgumentError, "must supply user or user_id" unless for_user
-      user_id = (for_user.is_a?(User) ? for_user.id : for_user)
+      raise ArgumentError, "must supply user" unless for_user.is_a?(User)
+      user_id = for_user.id
 
       raise ArgumentError, "must supply roll" unless to_roll && to_roll.is_a?(Roll)
       roll_id = to_roll.id
 
-      res = { :frame => nil }
-
-      res[:frame] = basic_re_roll(orig_frame, user_id, roll_id, options)
+      new_frame = basic_re_roll(orig_frame, user_id, roll_id, options)
 
       unless options[:skip_dashboard_entries]
         #create dashboard entries for all roll followers *except* the user who just re-rolled
-        create_dashboard_entries_async([res[:frame]], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
+        create_dashboard_entries_async([new_frame], DashboardEntry::ENTRY_TYPE[:re_roll], to_roll.following_users_ids - [user_id])
+        # create dbe for iOS Push and Notification Center notifications, asynchronously
+        if options[:frame_type] == Frame::FRAME_TYPE[:light_weight]
+          GT::NotificationManager.check_and_send_like_notification(orig_frame, for_user, [:notification_center])
+        else
+          GT::NotificationManager.check_and_send_reroll_notification(orig_frame, new_frame, [:notification_center])
+        end
       end
 
       # Roll - set its thumbnail if missing
-      ensure_roll_metadata!(Roll.find(roll_id), res[:frame])
+      ensure_roll_metadata!(Roll.find(roll_id), new_frame)
 
-      return res
+      return { :frame => new_frame }
     end
 
     def self.dupe_frame!(orig_frame, for_user, to_roll)
@@ -225,7 +229,7 @@ module GT
     end
 
     def self.create_dashboard_entry(frame, action, user, options={})
-      raise ArgumentError, "must supply a Frame" unless frame.is_a? Frame
+      raise ArgumentError, "must supply a Frame, an Actor, or both" unless frame.is_a?(Frame) || options[:actor_id]
       raise ArgumentError, "must supply an action" unless action
       raise ArgumentError, "must supply a User" unless user.is_a? User
 
@@ -242,18 +246,24 @@ module GT
     end
 
     def self.create_dashboard_entries(frames, action, user_ids, options={})
+      raise ArgumentError, "must supply a Frame, an Actor, or both" if frames.include?(nil) && !options[:actor_id]
       defaults = {
+        :acknowledge_write => false,
         :persist => true,
-        :return_dbe_models => false
+        :return_dbe_ids => false,
+        :return_dbe_models => false,
       }
 
       options = defaults.merge(options)
 
       persist = options.delete(:persist)
+      return_dbe_ids = options.delete(:return_dbe_ids)
       return_dbe_models = options.delete(:return_dbe_models)
+      acknowledge_write = options.delete(:acknowledge_write)
 
       dbes = [] # used to collect hashes to pass directly to the Ruby driver if persisting
-      dbe_models = [] # used to collect MongoMapper DashboardEntry models if returning anything
+      dbe_models = [] # used to collect MongoMapper DashboardEntry models if returning models
+      dbe_ids = [] # used to collect DashboardEntry ids if returning ids
       frames.each do |frame|
         user_ids.uniq.each do |user_id|
           # have to declare these variables outside the scope of the tracing blocks
@@ -286,18 +296,25 @@ module GT
 
       # if persisting, do it all in one operation so that it only checks out one socket
       if persist
+          db_options = acknowledge_write ? {:w => 1} : {}
           if return_dbe_models
             if !dbe_models.empty?
               # if we've created MongoMapper models, convert them to hashes and insert
-              DashboardEntry.collection.insert(dbe_models.map {|dbe| dbe.to_mongo })
+              dbe_ids = DashboardEntry.collection.insert(dbe_models.map {|dbe| dbe.to_mongo }, db_options)
             end
           elsif !dbes.empty?
             # if we have hashes already, just pass them through to insert
-            DashboardEntry.collection.insert(dbes)
+            dbe_ids = DashboardEntry.collection.insert(dbes, db_options)
           end
       end
 
-      return return_dbe_models ? dbe_models : nil
+      if return_dbe_models
+        return dbe_models
+      elsif return_dbe_ids
+        return dbe_ids.kind_of?(Array) ? dbe_ids : [dbe_ids]
+      else
+        return nil
+      end
     end
 
     class << self
@@ -306,13 +323,16 @@ module GT
     end
 
     def self.create_dashboard_entries_async(frames, action, user_ids, options={})
+      # no point queueing up the job if no user_ids are passed in
+      return if user_ids.empty?
+
       defaults = {
         :persist => true,
       }
 
       options = defaults.merge(options)
 
-      Resque.enqueue(DashboardEntryCreator, frames.map{ |f| f.id }, action, user_ids, options)
+      Resque.enqueue(DashboardEntryCreator, frames.map{ |f| f && f.id }, action, user_ids, options)
     end
 
     private
@@ -374,9 +394,10 @@ module GT
         elsif options[:backdate]
           dbe[:_id] = BSON::ObjectId.from_time(frame.created_at, :unique => true)
         end
+
         dbe[:user_id] = user_id
-        dbe[:roll_id] = frame.roll_id
-        dbe[:frame_id] = frame.id
+        dbe[:roll_id] = frame && frame.roll_id
+        dbe[:frame_id] = frame && frame.id
         dbe[:src_frame_id] = options[:src_frame_id]
         dbe[:src_video_id] = options[:src_video_id]
         dbe[:friend_sharers_array] = options[:friend_sharers_array] if options[:friend_sharers_array]
@@ -384,8 +405,18 @@ module GT
         dbe[:friend_likers_array] = options[:friend_likers_array] if options[:friend_likers_array]
         dbe[:friend_rollers_array] = options[:friend_rollers_array] if options[:friend_rollers_array]
         dbe[:friend_complete_viewers_array] = options[:friend_complete_viewers_array] if options[:friend_complete_viewers_array]
-        dbe[:video_id] = frame.video_id
-        dbe[:actor_id] = frame.creator_id
+        dbe[:video_id] = frame && frame.video_id
+
+        if options.has_key?(:actor_id)
+          actor_id = options.delete(:actor_id)
+          if actor_id && !actor_id.is_a?(BSON::ObjectId)
+            actor_id = BSON::ObjectId.from_string(actor_id)
+          end
+        else
+          actor_id = frame.creator_id
+        end
+        dbe[:actor_id] = actor_id
+
         dbe[:action] = action
 
         return dbe

@@ -4,7 +4,8 @@ defaults: &defaults
     min_score : 40.0
   }
   triggered_ios_recs: {
-    mortar_recs_weight : 0.7
+    mortar_recs_weight : 0.7,
+    num_recents_to_check : 5
   }
   people: {
     min_followed_roll_frames : 2

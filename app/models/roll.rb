@@ -179,6 +179,8 @@ class Roll
     u.reload
 
     if send_notification
+      # create dbe for iOS Push and Notification Center notifications, asynchronously
+      GT::NotificationManager.check_and_send_join_roll_notification(u, self, [:notification_center])
       # send email notification in a non-blocking manor
       ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_join_roll_notification(u, self) }
     end

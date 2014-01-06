@@ -26,7 +26,7 @@ if current_user == @user
 	attributes :authentication_token, :autocomplete, :rolled_since_last_notification, :session_count
 
 	child :preferences => "preferences" do
-		attributes :email_updates, :like_notifications, :watched_notifications, :comment_notifications, :upvote_notifications, :reroll_notifications, :roll_activity_notifications, :open_graph_posting
+		attributes :email_updates, :like_notifications, :like_notifications_ios, :watched_notifications, :comment_notifications, :upvote_notifications, :reroll_notifications, :reroll_notifications_ios, :roll_activity_notifications, :roll_activity_notifications_ios, :open_graph_posting
 	end
 
 	node "watch_later_roll_id" do

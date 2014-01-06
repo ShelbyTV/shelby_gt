@@ -276,6 +276,39 @@ describe Frame do
     end
   end
 
+  context "re_roll" do
+
+    it "creates a share_notification dbe for the frame's creator" do
+      ResqueSpec.reset!
+
+      @creator = Factory.create(:user)
+      @frame = Factory.create(:frame, :creator => @creator)
+      @stranger = Factory.create(:user)
+      @stranger_public_roll = Factory.create(:roll, :creator => @stranger, :roll_type => Roll::TYPES[:special_public_real_user])
+      @stranger.public_roll = @stranger_public_roll
+
+      @frame.re_roll(@stranger, @stranger.public_roll)
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:share_notification],
+        [@creator.id],
+        {:persist => true, :actor_id => @stranger.id}
+      )
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      dbe = DashboardEntry.last
+      expect(dbe.user).to eql @creator
+      expect(dbe.actor).to eql @stranger
+      expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:share_notification]
+      expect(dbe.frame).to eql @frame
+    end
+
+  end
+
   context "watch later" do
     before(:each) do
       @video = Factory.create(:video)
@@ -284,8 +317,6 @@ describe Frame do
 
       @u1 = Factory.create(:user)
       @u1.public_roll = Factory.create(:roll, :creator => @u1)
-
-      ResqueSpec.reset!
     end
 
     it "should require full User model, not just id" do
@@ -312,13 +343,37 @@ describe Frame do
     end
 
     it "creates dashboard entries for followers of the liker's public roll" do
-      @u1.public_roll.add_follower(Factory.create(:user))
+      @follower = Factory.create(:user)
+      @u1.public_roll.add_follower(@follower)
+      ResqueSpec.reset!
+
+      @frame.add_to_watch_later!(@u1)
+
+      DashboardEntryCreator.should have_queue_size_of(2)
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(2)
+    end
+
+    it "creates a like_notification dbe for the frame's creator" do
       @frame.add_to_watch_later!(@u1)
 
       DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:like_notification],
+        [@originator.id],
+        {:persist => true, :actor_id => @u1.id}
+      )
       expect {
         ResqueSpec.perform_next(:dashboard_entries_queue)
       }.to change { DashboardEntry.count }.by(1)
+
+      dbe = DashboardEntry.last
+      expect(dbe.actor).to eql @u1
+      expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:like_notification]
+      expect(dbe.frame).to eql @frame
     end
 
     it "should add the user to the frame being watch_latered's upvoters array if it's not there already" do
@@ -421,6 +476,30 @@ describe Frame do
       lambda {
         @frame.like!
       }.should change { @video.like_count } .by 1
+    end
+
+    it "creates an anonymous_like_notification dbe" do
+      ResqueSpec.reset!
+
+      @frame.like!
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+        [@user.id],
+        {:persist => true, :actor_id => nil}
+      )
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      dbe = DashboardEntry.last
+      expect(dbe.user).to eql @user
+      expect(dbe.actor).to be_nil
+      expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
+      expect(dbe.frame).to eql @frame
+      expect(dbe.video).to eql @video
     end
   end
 
@@ -647,7 +726,6 @@ describe Frame do
           @frame.reload
           @frame.score.should < score_before
         end
-
 
     end
 

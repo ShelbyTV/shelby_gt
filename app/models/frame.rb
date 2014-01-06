@@ -141,7 +141,7 @@ class Frame
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self, u) }
 
-    res = GT::Framer.re_roll(self, u.id, u.public_roll, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
+    res = GT::Framer.re_roll(self, u, u.public_roll, {:frame_type => Frame::FRAME_TYPE[:light_weight]})
     return res[:frame]
   end
 
@@ -155,6 +155,8 @@ class Frame
     self.reload
     Video.collection.update({:_id => self.video_id}, {:$inc => {:v => 1}})
     Video.find(self.video_id).reload
+    # create dbe for iOS Push and Notification Center notifications, asynchronously
+    GT::NotificationManager.check_and_send_like_notification(self, nil, [:notification_center])
     # send email notification in a non-blocking manor
     ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_like_notification(self) }
     # add this frame to the community channel in a non-blocking manner

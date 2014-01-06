@@ -27,7 +27,7 @@ set :app_env,     "staging"
 # resque
 #############################################################
 
-set :workers, { "*" => 4 }
+set :workers, { "dashboard_entries_queue" => 4, "apple_push_notifications_queue" => 4 }
 set :interval, 1
 set :resque_environment_task, true
 after "deploy:restart", "resque:restart"

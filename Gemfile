@@ -135,6 +135,12 @@ gem 'highline'
 gem 'gabba'
 
 #
+# ---------- Apple Push Notifications
+#
+
+gem 'houston'
+
+#
 # ---------- TODO: explain what yard is and why it's here
 #
 group :development do
@@ -223,7 +229,9 @@ group :test, :development do
 
 	# if we have to fuck with time, this looks nice:
 	# gem 'timecop'
+end
 
+group :test do
   gem 'resque_spec'
 end
 

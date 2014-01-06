@@ -1,0 +1,25 @@
+defaults: &defaults
+  follow_notification:
+    alert: "%{followers_name} is following you"
+  like_notification:
+    alert: "%{likers_name} liked your video"
+  reroll_notification:
+    alert: "%{re_rollers_name} shared your video"
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production: &production
+  <<: *defaults
+
+staging:
+  <<: *production
+
+email:
+  <<: *production
+
+arnold:
+  <<: *production

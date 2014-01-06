@@ -222,7 +222,7 @@ module GT
 
       # Vimeo
       def self.parse_url_for_vimeo_provider_info(url)
-        match_data = url.match( /vimeo.+(\/|hd#|videos\/|clip_id=)(\d+)(\z|\D)/i )
+        match_data = url.match( /vimeo[.].+?(\/|hd#|videos\/|clip_id=)(\d+)(\z|\D)/i )
         if match_data and match_data.size == 4
           return {:provider_name => "vimeo", :provider_id => match_data[2]}
         end

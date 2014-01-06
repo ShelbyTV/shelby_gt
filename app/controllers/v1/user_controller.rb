@@ -355,7 +355,21 @@ class V1::UserController < ApplicationController
       return render_error(500, "must specify a token to add") unless token = params.delete(:token)
 
       # add the token to the user's collection if it's not already there
-      current_user.push_uniq(:bh => token)
+      @user.push_uniq(:bh => token)
+
+      # the first time we add a token to the user, we mark them as having accepted ios push notifications
+      # and disable their email notifications
+      unless @user.accepted_ios_push
+        User.collection.update({:_id => @user.id}, {
+          :$set => {
+            :bi => true,
+            "preferences.like_notifications" => false,
+            "preferences.reroll_notifications" => false,
+            "preferences.roll_activity_notifications" => false
+          }
+        })
+        @user.reload
+      end
 
       @status = 200
     else
@@ -379,7 +393,7 @@ class V1::UserController < ApplicationController
       return render_error(500, "must specify a token to remove") unless token = params.delete(:token)
 
       # remove the token from the user's collection
-      current_user.pull(:bh => token)
+      @user.pull(:bh => token)
 
       @status = 200
     else

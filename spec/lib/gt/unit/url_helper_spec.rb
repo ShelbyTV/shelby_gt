@@ -146,6 +146,12 @@ describe GT::UrlHelper do
         GT::UrlHelper.parse_url_for_provider_info('<iframe src="http://player.vimeo.com/video/19799531" width="1280" height="720" frameborder="0"></iframe>').should ==
           {:provider_name => "vimeo", :provider_id => "19799531"}
       end
+
+      it "parses (stupid) embedly iframe embeds" do
+        expect(GT::UrlHelper.parse_url_for_provider_info("<iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=https://player.vimeo.com/video/79902085&src_secure=1&url=http://vimeo.com/79902085&image=http://b.vimeocdn.com/ts/455/697/455697295_1280.jpg&key=8f495a84af0c11e083e34040d3dc5c07&type=text/html&schema=vimeo\" width=\"1280\" height=\"720\" scrolling=\"no\" frameborder=\"0\" allowfullscreen></iframe>")).to eql(
+          {:provider_name => "vimeo", :provider_id => "79902085"}
+        )
+      end
     end
 
     context "dailymotion" do

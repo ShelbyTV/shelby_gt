@@ -80,6 +80,12 @@ describe DashboardEntry do
       @dashboard_entry.permalink.should == frame_permalink
     end
 
+    it "does not generate permalinks for a notification dashboard entry" do
+      @dashboard_entry.action = DashboardEntry::ENTRY_TYPE[:like_notification]
+
+      expect(@dashboard_entry.permalink).to be_nil
+    end
+
   end
 
   context "is_recommendation?" do
@@ -100,6 +106,28 @@ describe DashboardEntry do
 
       @dashboard_entry.action = DashboardEntry::ENTRY_TYPE[:channel_recommendation]
       @dashboard_entry.is_recommendation?.should == true
+    end
+
+  end
+
+  context "is_notification?" do
+
+    it "should return false if it is not a notification" do
+      @dashboard_entry.is_notification?.should == false
+    end
+
+    it "should return true if it is a notification" do
+      @dashboard_entry.action = DashboardEntry::ENTRY_TYPE[:like_notification]
+      @dashboard_entry.is_notification?.should == true
+
+      @dashboard_entry.action = DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
+      @dashboard_entry.is_notification?.should == true
+
+      @dashboard_entry.action = DashboardEntry::ENTRY_TYPE[:share_notification]
+      @dashboard_entry.is_notification?.should == true
+
+      @dashboard_entry.action = DashboardEntry::ENTRY_TYPE[:follow_notification]
+      @dashboard_entry.is_notification?.should == true
     end
 
   end

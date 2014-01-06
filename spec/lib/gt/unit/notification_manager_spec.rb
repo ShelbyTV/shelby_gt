@@ -49,7 +49,8 @@ describe GT::NotificationManager do
       @user = Factory.create(:user)
       @f_creator = Factory.create(:user, :gt_enabled => true)
       @roll = Factory.create(:roll, :creator => @f_creator)
-      @frame = Factory.create(:frame, :creator => @f_creator,  :video=>Factory.create(:video), :roll => @roll)
+      @video = Factory.create(:video)
+      @frame = Factory.create(:frame, :creator => @f_creator, :video=> @video, :roll => @roll)
     end
 
     it "should queue email to deliver" do
@@ -89,6 +90,207 @@ describe GT::NotificationManager do
       lambda {
         GT::NotificationManager.check_and_send_like_notification(@frame)
       }.should change(ActionMailer::Base.deliveries,:size).by(1)
+    end
+
+    it "creates a like_notification dbe for the frame creator when destinations includes :notification_center" do
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_like_notification(@frame, @user, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:like_notification],
+        [@f_creator.id],
+        {:persist => true, :actor_id => @user.id}
+      )
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+      AppleNotificationPusher.should have_queue_size_of(0)
+
+      dbe = DashboardEntry.last
+      expect(dbe.user).to eql @f_creator
+      expect(dbe.actor).to eql @user
+      expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:like_notification]
+      expect(dbe.frame).to eql @frame
+      expect(dbe.video).to eql @video
+    end
+
+    it "creates a like_notification dbe and queues up a push notification if user is eligible" do
+      @f_creator.apn_tokens = ['token']
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_like_notification(@frame, @user, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:like_notification],
+        [@f_creator.id],
+        {
+          :persist => true,
+          :actor_id => @user.id,
+          :push_notification_options => {
+            :devices => ['token'],
+            :alert => "#{@user.nickname} liked your video",
+            :ga_event => {
+              :category => "Push Notification",
+              :action => "Send Like Notification",
+              :label => @f_creator.id
+            }
+          }
+        }
+      )
+      AppleNotificationPusher.should have_queue_size_of(0)
+
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      AppleNotificationPusher.should have_queue_size_of(1)
+      AppleNotificationPusher.should have_queued({
+        :device => 'token',
+        :alert => "#{@user.nickname} liked your video",
+        :sound => 'default',
+        :dashboard_entry_id => DashboardEntry.last.id,
+        :ga_event => {
+          :category => "Push Notification",
+          :action => "Send Like Notification",
+          :label => @f_creator.id.to_s
+        }
+      })
+    end
+
+    it "does not push a like notification to iOS if user has that preference turned off" do
+      @f_creator.apn_tokens = ['token']
+      @f_creator.preferences.like_notifications_ios = false
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_like_notification(@frame, @user, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:like_notification],
+        [@f_creator.id],
+        { :persist => true, :actor_id => @user.id }
+      )
+
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      AppleNotificationPusher.should have_queue_size_of(0)
+    end
+
+    it "creates an anonymous_like_notification dbe when there is no user_from" do
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_like_notification(@frame, nil, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+        [@f_creator.id],
+        {:persist => true, :actor_id => nil}
+      )
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+      AppleNotificationPusher.should have_queue_size_of(0)
+
+      dbe = DashboardEntry.last
+      expect(dbe.user).to eql @f_creator
+      expect(dbe.actor).to be_nil
+      expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
+      expect(dbe.frame).to eql @frame
+      expect(dbe.video).to eql @video
+    end
+
+    it "creates an anonymous_like_notification dbe and queues up a push notification if user is eligible" do
+      @f_creator.apn_tokens = ['token']
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_like_notification(@frame, nil, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+        [@f_creator.id],
+        {
+          :persist => true,
+          :actor_id => nil,
+          :push_notification_options => {
+            :devices => ['token'],
+            :alert => "Someone liked your video",
+            :ga_event => {
+              :category => "Push Notification",
+              :action => "Send Like Notification",
+              :label => @f_creator.id
+            }
+          }
+        }
+      )
+      AppleNotificationPusher.should have_queue_size_of(0)
+
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      AppleNotificationPusher.should have_queue_size_of(1)
+      AppleNotificationPusher.should have_queued({
+        :device => 'token',
+        :alert => "Someone liked your video",
+        :sound => 'default',
+        :dashboard_entry_id => DashboardEntry.last.id,
+        :ga_event => {
+          :category => "Push Notification",
+          :action => "Send Like Notification",
+          :label => @f_creator.id.to_s
+        }
+      })
+    end
+
+    it "does not push an anonymous_like notification to iOS if user has that preference turned off" do
+      @f_creator.apn_tokens = ['token']
+      @f_creator.preferences.like_notifications_ios = false
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_like_notification(@frame, nil, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@frame.id],
+        DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+        [@f_creator.id],
+        {:persist => true, :actor_id => nil}
+      )
+
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      AppleNotificationPusher.should have_queue_size_of(0)
+    end
+
+    it "doesn't create a notification dbe for the frame creator when destinations doesn't include :notification_center" do
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_like_notification(@frame, @user)
+      GT::NotificationManager.check_and_send_like_notification(@frame, nil)
+
+      DashboardEntryCreator.should have_queue_size_of(0)
+    end
+
+    it "doesn't create a like_notification dbe when user_from and user_to are the same" do
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_like_notification(@frame, @f_creator, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(0)
     end
 
     it "should raise error with bad frame" do
@@ -263,6 +465,116 @@ describe GT::NotificationManager do
         GT::NotificationManager.check_and_send_reroll_notification(@old_frame)
       }.should raise_error(ArgumentError)
     end
+
+    it "creates a share_notification dbe for the frame creator when destinations includes :notification_center" do
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_reroll_notification(@old_frame, @new_frame, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@old_frame.id],
+        DashboardEntry::ENTRY_TYPE[:share_notification],
+        [@old_user.id],
+        {:persist => true, :actor_id => @new_user.id}
+      )
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+      AppleNotificationPusher.should have_queue_size_of(0)
+
+      dbe = DashboardEntry.last
+      expect(dbe.user).to eql @old_user
+      expect(dbe.actor).to eql @new_user
+      expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:share_notification]
+      expect(dbe.frame).to eql @old_frame
+      expect(dbe.video).to eql @video
+    end
+
+    it "creates a share_notification dbe and queues up a push notification if user is eligible" do
+      @old_user.apn_tokens = ['token']
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_reroll_notification(@old_frame, @new_frame, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@old_frame.id],
+        DashboardEntry::ENTRY_TYPE[:share_notification],
+        [@old_user.id],
+        {
+          :persist => true,
+          :actor_id => @new_user.id,
+          :push_notification_options => {
+            :devices => ['token'],
+            :alert => "#{@new_user.nickname} shared your video",
+            :ga_event => {
+              :category => "Push Notification",
+              :action => "Send Share Notification",
+              :label => @old_user.id
+            }
+          }
+        }
+      )
+      AppleNotificationPusher.should have_queue_size_of(0)
+
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      AppleNotificationPusher.should have_queue_size_of(1)
+      AppleNotificationPusher.should have_queued({
+        :device => 'token',
+        :alert => "#{@new_user.nickname} shared your video",
+        :sound => 'default',
+        :dashboard_entry_id => DashboardEntry.last.id,
+        :ga_event => {
+          :category => "Push Notification",
+          :action => "Send Share Notification",
+          :label => @old_user.id.to_s
+        }
+      })
+    end
+
+    it "does not push a share notification to iOS if user has that preference turned off" do
+      @old_user.apn_tokens = ['token']
+      @old_user.preferences.reroll_notifications_ios = false
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_reroll_notification(@old_frame, @new_frame, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [@old_frame.id],
+        DashboardEntry::ENTRY_TYPE[:share_notification],
+        [@old_user.id],
+        {:persist => true, :actor_id => @new_user.id}
+      )
+
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      AppleNotificationPusher.should have_queue_size_of(0)
+    end
+
+    it "doesn't create a share_notification dbe for the frame creator when destinations doesn't include :notification_center" do
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_reroll_notification(@old_frame, @new_frame)
+
+      DashboardEntryCreator.should have_queue_size_of(0)
+    end
+
+    it "doesn't create a share_notification dbe when user_from and user_to are the same" do
+      @old_frame.creator = @new_user; @old_frame.save
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_reroll_notification(@old_frame, @new_frame, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(0)
+    end
+
   end
 
   describe "join roll notifications" do
@@ -308,6 +620,78 @@ describe GT::NotificationManager do
         GT::NotificationManager.check_and_send_join_roll_notification(@roll)
       }.should raise_error(ArgumentError)
     end
+
+    it "creates a follow_notification dbe for the roll owner when destinations includes :notification_center" do
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(1)
+      DashboardEntryCreator.should have_queued(
+        [nil],
+        DashboardEntry::ENTRY_TYPE[:follow_notification],
+        [@roll_owner.id],
+        {:persist => true, :actor_id => @user_joined.id}
+      )
+      AppleNotificationPusher.should have_queue_size_of(0)
+
+      expect {
+        ResqueSpec.perform_next(:dashboard_entries_queue)
+      }.to change { DashboardEntry.count }.by(1)
+
+      dbe = DashboardEntry.last
+      expect(dbe.user).to eql @roll_owner
+      expect(dbe.actor).to eql @user_joined
+      expect(dbe.action).to eql DashboardEntry::ENTRY_TYPE[:follow_notification]
+      expect(dbe.frame).to be_nil
+    end
+
+    it "queues up a push notification if user is eligible" do
+      @roll_owner.apn_tokens = ['token']
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll, [:notification_center])
+
+      AppleNotificationPusher.should have_queue_size_of(1)
+      AppleNotificationPusher.should have_queued({
+        :device => 'token',
+        :alert => "#{@user_joined.nickname} is following you",
+        :sound => 'default',
+        :user_id => @user_joined.id,
+        :ga_event => {
+          :category => "Push Notification",
+          :action => "Send Follow Notification",
+          :label => @roll_owner.id
+        }
+      })
+    end
+
+    it "does not push a share notification to iOS if user has that preference turned off" do
+      @roll_owner.apn_tokens = ['token']
+      @roll_owner.preferences.roll_activity_notifications_ios = false
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll, [:notification_center])
+
+      AppleNotificationPusher.should have_queue_size_of(0)
+    end
+
+    it "doesn't create a follow_notification dbe for the roll owner when destinations does not include :notification_center" do
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll)
+
+      DashboardEntryCreator.should have_queue_size_of(0)
+    end
+
+    it "doesn't create a follow_notification dbe when user_from and user_to are the same" do
+      ResqueSpec.reset!
+
+      GT::NotificationManager.check_and_send_join_roll_notification(@roll_owner, @roll, [:notification_center])
+
+      DashboardEntryCreator.should have_queue_size_of(0)
+    end
+
   end
 
   describe "invite accepted notifications" do
