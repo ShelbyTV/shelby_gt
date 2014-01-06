@@ -226,9 +226,9 @@ module GT
 
       def self.find_or_create_video_for_embedly_hash(h)
         # Determine provider name and id
-        if (provider_info = GT::UrlHelper.parse_url_for_provider_info(h['url'])) or
-            (provider_info = GT::UrlHelper.parse_url_for_provider_info(h['html'])) or
-            (provider_info = GT::UrlHelper.parse_url_for_provider_info(h['thumbnail_url']))
+        if provider_info = (GT::UrlHelper.parse_url_for_provider_info(h['url']) or
+                        GT::UrlHelper.parse_url_for_provider_info(URI.unescape(h['html'])) or
+                        GT::UrlHelper.parse_url_for_provider_info(h['thumbnail_url']))
           provider_name = provider_info[:provider_name]
           provider_id = provider_info[:provider_id]
         else
