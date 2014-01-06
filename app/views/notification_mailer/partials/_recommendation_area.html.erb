@@ -13,7 +13,7 @@
             :button   => true,
             :name     => user.name,
             :nickname => user.nickname,
-            :url      => user.id,
+            :url      => "#{Settings::Email.web_url_base}/#{user.id}",
             :size     => Settings::Email.user_item.smaller
           } %>
         </td>
