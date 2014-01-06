@@ -12,9 +12,13 @@
             <td data-name>
               <a href="<%= video.permalink %>?source=email" style="color: <%= Settings::Email.ui_soft_black %>;text-decoration: none;">
                 <% if frame_type == Settings::Frame.frame_type.heavy_weight %>
-                  <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>"<%= " title=\"#{creator.name}\"" if creator.name %>><strong><%= creator.nickname %></strong></span>
+                  <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>"<%= " title=\"#{creator.name}\"" if creator.name %>>
+                    <strong><%= creator.nickname %></strong>
+                  </span>
                 <% else %>
-                  <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>"<%= " title=\"#{creator.name}\"" if creator.name %>><strong><%= creator.nickname %></strong> liked this</span>
+                  <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>"<%= " title=\"#{creator.name}\"" if creator.name %>>
+                    <strong><%= creator.nickname %></strong> liked this
+                  </span>
                 <% end %>
               </a>
             </td>
