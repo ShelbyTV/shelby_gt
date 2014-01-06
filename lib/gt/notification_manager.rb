@@ -35,14 +35,12 @@ module GT
           NotificationMailer.like_notification(user_to, frame, user_from).deliver
         end
       end
-      user_on_notification_whitelist = user_to && Settings::PushNotifications.notification_users_whitelist.include?(user_to.nickname)
-      user_to_gets_push_notification = (user_to && user_to.preferences.like_notifications_ios && !user_to.apn_tokens.empty? && user_on_notification_whitelist)
-      if destinations.include?(:notification_center) && user_to && (user_from != user_to) && user_on_notification_whitelist
+      if destinations.include?(:notification_center) && user_to && (user_from != user_to)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
         dbe_type = user_from ? DashboardEntry::ENTRY_TYPE[:like_notification] : DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
         options = {:actor_id => user_from && user_from.id}
         # if the user is eligible, also do an ios push notification
-        if user_to_gets_push_notification
+        if user_to && user_to.preferences.like_notifications_ios && !user_to.apn_tokens.empty?
           user_from_name = user_from ? (user_from.name || user_from.nickname) : "Someone"
           options[:push_notification_options] = {
             :devices => user_to.apn_tokens,
@@ -75,13 +73,11 @@ module GT
           NotificationMailer.reroll_notification(old_frame, new_frame).deliver
         end
       end
-      user_on_notification_whitelist = Settings::PushNotifications.notification_users_whitelist.include?(user_to.nickname)
-      user_to_gets_push_notification = (user_to.preferences.reroll_notifications_ios && !user_to.apn_tokens.empty? && user_on_notification_whitelist)
-      if destinations.include?(:notification_center) && (user_from_id != user_to.id) && user_on_notification_whitelist
+      if destinations.include?(:notification_center) && (user_from_id != user_to.id)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
         options = {:actor_id => user_from_id}
         # if the user is eligible, also do an ios push notification
-        if user_to_gets_push_notification
+        if user_to.preferences.reroll_notifications_ios && !user_to.apn_tokens.empty?
           user_from = new_frame.creator
           user_from_name = user_from.name || user_from.nickname
           options[:push_notification_options] = {
@@ -152,13 +148,11 @@ module GT
           NotificationMailer.join_roll_notification(user_to, user_from, roll).deliver
         end
       end
-      user_on_notification_whitelist = Settings::PushNotifications.notification_users_whitelist.include?(user_to.nickname)
-      user_to_gets_push_notification = user_to.preferences.roll_activity_notifications_ios && !user_to.apn_tokens.empty? && user_on_notification_whitelist
-      if destinations.include?(:notification_center) && (user_from != user_to) && user_on_notification_whitelist
+      if destinations.include?(:notification_center) && (user_from != user_to)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
         GT::Framer.create_dashboard_entries_async([nil], DashboardEntry::ENTRY_TYPE[:follow_notification], [user_to.id], {:actor_id => user_from.id})
         # if the user is eligible, also do an ios push notification
-        if user_to_gets_push_notification
+        if user_to.preferences.roll_activity_notifications_ios && !user_to.apn_tokens.empty?
           user_from_name = user_from.name || user_from.nickname
           GT::AppleIOSPushNotifier.push_notification_to_user_devices_async(
             user_to,

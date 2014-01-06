@@ -48,14 +48,9 @@ describe GT::NotificationManager do
     before(:each) do
       @user = Factory.create(:user)
       @f_creator = Factory.create(:user, :gt_enabled => true)
-      Settings::PushNotifications.notification_users_whitelist << @f_creator.nickname
       @roll = Factory.create(:roll, :creator => @f_creator)
       @video = Factory.create(:video)
       @frame = Factory.create(:frame, :creator => @f_creator, :video=> @video, :roll => @roll)
-    end
-
-    after(:each) do
-      Settings::PushNotifications.notification_users_whitelist.clear
     end
 
     it "should queue email to deliver" do
@@ -298,19 +293,6 @@ describe GT::NotificationManager do
       DashboardEntryCreator.should have_queue_size_of(0)
     end
 
-    it "doesn't create a like_notification dbe when user_to is not on the notification whitelist" do
-      @f_creator.apn_tokens = ['token']
-      @f_creator.preferences.like_notifications_ios = true
-      Settings::PushNotifications.notification_users_whitelist.clear
-      ResqueSpec.reset!
-
-      GT::NotificationManager.check_and_send_like_notification(@frame, @user, [:notification_center])
-      GT::NotificationManager.check_and_send_like_notification(@frame, nil, [:notification_center])
-
-      DashboardEntryCreator.should have_queue_size_of(0)
-      AppleNotificationPusher.should have_queue_size_of(0)
-    end
-
     it "should raise error with bad frame" do
       lambda {
         GT::NotificationManager.check_and_send_like_notification(@user)
@@ -442,17 +424,12 @@ describe GT::NotificationManager do
   describe "reroll notifications" do
     before(:each) do
       @old_user = Factory.create(:user, :gt_enabled => true)
-      Settings::PushNotifications.notification_users_whitelist << @old_user.nickname
       @new_user = Factory.create(:user, :gt_enabled => true)
       @old_roll = Factory.create(:roll, :creator => @old_user)
       @new_roll = Factory.create(:roll, :creator => @new_user)
       @video = Factory.create(:video)
       @old_frame = Factory.create(:frame, :creator => @old_user, :video => @video, :roll => @old_roll)
       @new_frame = Factory.create(:frame, :creator => @new_user, :video => @video, :roll => @new_roll)
-    end
-
-    after(:each) do
-      Settings::PushNotifications.notification_users_whitelist.clear
     end
 
     it "should should queue email to deliver" do
@@ -598,29 +575,13 @@ describe GT::NotificationManager do
       DashboardEntryCreator.should have_queue_size_of(0)
     end
 
-    it "doesn't create a share_notification dbe when user_to is not on the notification whitelist" do
-      @old_user.apn_tokens = ['token']
-      @old_user.preferences.reroll_notifications_ios = true
-      Settings::PushNotifications.notification_users_whitelist.clear
-      ResqueSpec.reset!
-
-      GT::NotificationManager.check_and_send_reroll_notification(@old_frame, @new_frame, [:notification_center])
-
-      DashboardEntryCreator.should have_queue_size_of(0)
-      AppleNotificationPusher.should have_queue_size_of(0)
-    end
   end
 
   describe "join roll notifications" do
     before(:each) do
       @user_joined = Factory.create(:user)
       @roll_owner = Factory.create(:user, :gt_enabled => true, :user_image => "http://f.off.com.jpg")
-      Settings::PushNotifications.notification_users_whitelist << @roll_owner.nickname
       @roll = Factory.create(:roll, :creator => @roll_owner)
-    end
-
-    after(:each) do
-      Settings::PushNotifications.notification_users_whitelist.clear
     end
 
     it "should not send email to any non-gt_enabled users" do
@@ -731,17 +692,6 @@ describe GT::NotificationManager do
       DashboardEntryCreator.should have_queue_size_of(0)
     end
 
-    it "doesn't create a follow_notification dbe when user_to is not on the notification whitelist" do
-      @roll_owner.apn_tokens = ['token']
-      @roll_owner.preferences.roll_activity_notifications_ios = true
-      Settings::PushNotifications.notification_users_whitelist.clear
-      ResqueSpec.reset!
-
-      GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll, [:notification_center])
-
-      DashboardEntryCreator.should have_queue_size_of(0)
-      AppleNotificationPusher.should have_queue_size_of(0)
-    end
   end
 
   describe "invite accepted notifications" do
