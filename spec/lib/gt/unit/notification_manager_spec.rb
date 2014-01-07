@@ -133,7 +133,7 @@ describe GT::NotificationManager do
           :actor_id => @user.id,
           :push_notification_options => {
             :devices => ['token'],
-            :alert => "#{@user.nickname} liked your video",
+            :alert => "#{@user.name} liked your video",
             :ga_event => {
               :category => "Push Notification",
               :action => "Send Like Notification",
@@ -151,7 +151,7 @@ describe GT::NotificationManager do
       AppleNotificationPusher.should have_queue_size_of(1)
       AppleNotificationPusher.should have_queued({
         :device => 'token',
-        :alert => "#{@user.nickname} liked your video",
+        :alert => "#{@user.name} liked your video",
         :sound => 'default',
         :dashboard_entry_id => DashboardEntry.last.id,
         :ga_event => {
@@ -507,7 +507,7 @@ describe GT::NotificationManager do
           :actor_id => @new_user.id,
           :push_notification_options => {
             :devices => ['token'],
-            :alert => "#{@new_user.nickname} shared your video",
+            :alert => "#{@new_user.name} shared your video",
             :ga_event => {
               :category => "Push Notification",
               :action => "Send Share Notification",
@@ -525,7 +525,7 @@ describe GT::NotificationManager do
       AppleNotificationPusher.should have_queue_size_of(1)
       AppleNotificationPusher.should have_queued({
         :device => 'token',
-        :alert => "#{@new_user.nickname} shared your video",
+        :alert => "#{@new_user.name} shared your video",
         :sound => 'default',
         :dashboard_entry_id => DashboardEntry.last.id,
         :ga_event => {
@@ -655,7 +655,7 @@ describe GT::NotificationManager do
       AppleNotificationPusher.should have_queue_size_of(1)
       AppleNotificationPusher.should have_queued({
         :device => 'token',
-        :alert => "#{@user_joined.nickname} is following you",
+        :alert => "#{@user_joined.name} is following you",
         :sound => 'default',
         :user_id => @user_joined.id,
         :ga_event => {

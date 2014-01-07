@@ -53,6 +53,7 @@ describe GT::AuthenticationBuilder do
   end
 
   it "should incorporate auth.name on normalization" do
+    @u.name = nil
     @u.name.blank?.should == true
     auth = GT::AuthenticationBuilder.build_from_omniauth(@omniauth_hash)
     @u.authentications << auth
@@ -73,6 +74,7 @@ describe GT::AuthenticationBuilder do
   end
 
   it "should incorporate auth.first_name and auth.last_name on normalization when present" do
+    @u.name = nil
     @u.name.blank?.should == true
     @omniauth_hash['info']['first_name'] = "first"
     @omniauth_hash['info']['last_name'] = "last"

@@ -294,4 +294,20 @@ describe User do
     end
   end
 
+  describe "name_or_nickname" do
+    it "returns the user's name if they have one" do
+      expect(@user.name_or_nickname).to eql @user.name
+    end
+
+    it "returns the user's nickname if they don't have a name" do
+      @user.name = nil
+      expect(@user.name_or_nickname).to eql @user.nickname
+    end
+
+    it "returns the user's nickname if their name is an empty string" do
+      @user.name = ''
+      expect(@user.name_or_nickname).to eql @user.nickname
+    end
+  end
+
 end

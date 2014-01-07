@@ -431,6 +431,10 @@ class User
     invite ? invite.sender : nil
   end
 
+  def name_or_nickname
+    (!self.name.nil? and !self.name.empty? and self.name) or self.nickname
+  end
+
   private
 
     def check_to_send_email_address_to_sailthru

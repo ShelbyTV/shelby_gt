@@ -8,18 +8,18 @@ module WeeklyRecommendationEmailHelper
       case dbe.action
       when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
         verb = frame_action_string(dbe.src_frame)
-        "This video is similar to videos #{dbe.src_frame.creator.nickname} has #{verb}"
+        "This video is similar to videos #{dbe.src_frame.creator.name_or_nickname} has #{verb}"
       when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
         "This video is similar to \"#{dbe.src_video.title}\""
       when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
         verb = frame_action_string(dbe.frame)
-        "This featured video was #{verb} by #{dbe.frame.creator.nickname}"
+        "This featured video was #{verb} by #{dbe.frame.creator.name_or_nickname}"
       when DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
         friend_users = dbe.all_associated_friends
         if friend_users.count > 1
-          "#{friend_users.first.nickname} and #{pluralize(friend_users.count - 1, 'other')} are sharing, liking, and watching this video."
+          "#{friend_users.first.name_or_nickname} and #{pluralize(friend_users.count - 1, 'other')} are sharing, liking, and watching this video."
         else
-          "We've discovered that #{friend_users.first.nickname} checked out this video."
+          "We've discovered that #{friend_users.first.name_or_nickname} checked out this video."
         end
       end
     end
@@ -33,18 +33,18 @@ module WeeklyRecommendationEmailHelper
       case dbe.action
       when DashboardEntry::ENTRY_TYPE[:video_graph_recommendation]
         verb = frame_action_string(dbe.src_frame)
-        "Watch this, it's similar to videos #{dbe.src_frame.creator.nickname} has #{verb}"
+        "Watch this, it's similar to videos #{dbe.src_frame.creator.name_or_nickname} has #{verb}"
       when DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
         "A video because you liked: \"#{dbe.src_video.title}\""
       when DashboardEntry::ENTRY_TYPE[:channel_recommendation]
         verb = frame_action_string(dbe.frame)
-        "This video was #{verb} by #{dbe.frame.creator.nickname}. Check it out."
+        "This video was #{verb} by #{dbe.frame.creator.name_or_nickname}. Check it out."
       when DashboardEntry::ENTRY_TYPE[:entertainment_graph_recommendation]
         friend_users = dbe.all_associated_friends
         if friend_users.count > 1
-          "Watch this video that #{friend_users.first.nickname} and #{pluralize(friend_users.count - 1, 'other')} shared, liked, and watched"
+          "Watch this video that #{friend_users.first.name_or_nickname} and #{pluralize(friend_users.count - 1, 'other')} shared, liked, and watched"
         else
-          "Watch this video that #{friend_users.first.nickname} watched"
+          "Watch this video that #{friend_users.first.name_or_nickname} watched"
         end
       end
     end
@@ -59,7 +59,7 @@ module WeeklyRecommendationEmailHelper
       # VIDEO GRAPH
       if dbe.src_frame && dbe.src_frame.creator
         verb = frame_action_string(dbe.src_frame)
-        return "This video is similar to videos #{dbe.src_frame.creator.nickname} has #{verb}"
+        return "This video is similar to videos #{dbe.src_frame.creator.name_or_nickname} has #{verb}"
       else
         return "Check out this video"
       end
