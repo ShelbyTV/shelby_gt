@@ -5,6 +5,8 @@ namespace :apns_feedback do
     require "apple_push_notification_services_manager"
 
     Rails.logger = Logger.new(STDOUT)
+    STDOUT.sync = true
+
     Rails.logger.info "Querying APNS feedback service"
     tokens = GT::ApplePushNotificationServicesManager.get_invalid_devices_from_feedback_service
     Rails.logger.info "Received #{tokens.length} invalidated tokens"
