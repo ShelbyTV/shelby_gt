@@ -8,13 +8,14 @@ describe User do
 
   context "database" do
 
-    it "should have an index on [nickname], [downcase_nickname], [primary_email], [authentications.uid], [authentications.nickname]" do
+    it "should have an index on [nickname], [downcase_nickname], [primary_email], [authentications.uid], [authentications.nickname], [bh (apn_tokens)]" do
       indexes = User.collection.index_information.values.map { |v| v["key"] }
       indexes.should include({"nickname"=>1})
       indexes.should include({"downcase_nickname"=>1})
       indexes.should include({"primary_email"=>1})
       indexes.should include({"authentications.uid"=>1})
       indexes.should include({"authentications.nickname"=>1})
+      indexes.should include({"bh"=>1})
     end
 
     it "should be savable and loadable" do

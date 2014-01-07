@@ -31,10 +31,7 @@ module GT
       unless tokens.empty?
         result = User.collection.update(
           {
-            :$and => [
-              {:_id => {:$lte => BSON::ObjectId.from_time(Time.at(Time.now.utc.to_f.ceil))}},
-              {:bh => {:$in => tokens}}
-            ]
+            :bh => {:$in => tokens}
           },
           {
             :$pullAll => {:bh => tokens}

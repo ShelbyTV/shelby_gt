@@ -54,6 +54,8 @@ module MongoMapper
       User.ensure_index([['authentications.uid', 1], ['authentications.provider', 1]], :background => true, :unique => true, :sparse => true)
       # Get user based on their nickname on a 3rd party network (facebook, twitter)
       User.ensure_index('authentications.nickname', :background => true)
+      # Get user based on their ios device token(s)
+      User.ensure_index(:bh, :background => true, :sparse => true)
 
       # Get UserAction by [user_id, type]
       UserAction.ensure_index([[:b, 1], [:a, 1]], :background => true)
