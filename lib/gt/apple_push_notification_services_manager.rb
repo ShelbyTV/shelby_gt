@@ -41,8 +41,16 @@ module GT
             :w => 1
           }
         )
-        Rails.logger.info "DB update #{result == true ? 'succeeded' : 'failed'}"
-        Rails.logger.info result.inspect unless result == true
+
+        error_message = result["err"]
+        if error_message.nil?
+          Rails.logger.info "DB update succeeded"
+          n = result["n"]
+          Rails.logger.info "Tokens removed from #{n} user #{'record'.pluralize(n)}"
+        else
+          Rails.logger.info "DB update failed"
+          Rails.logger.info error_message
+        end
       end
     end
 

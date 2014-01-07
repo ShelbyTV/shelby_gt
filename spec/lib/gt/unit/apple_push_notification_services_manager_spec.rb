@@ -86,7 +86,7 @@ describe GT::ApplePushNotificationServicesManager do
 
   context "remove_device_tokens" do
     before(:each) do
-      @user_collection = double("user_collection", :update => true)
+      @user_collection = double("user_collection", :update => {"updatedExisting"=>true, "n"=>2, "connectionId"=>1185, "err"=>nil, "ok"=>1.0})
       User.stub(:collection).and_return(@user_collection)
     end
 
@@ -102,14 +102,15 @@ describe GT::ApplePushNotificationServicesManager do
     end
 
     it "logs appropriate message when update succeeds" do
-      Rails.logger.should_receive(:info).once().with("DB update succeeded")
+      Rails.logger.should_receive(:info).ordered.with("DB update succeeded")
+      Rails.logger.should_receive(:info).ordered.with("Tokens removed from 2 user records")
       GT::ApplePushNotificationServicesManager.remove_device_tokens(['<token1>', '<token3>'])
     end
 
     it "logs appropriate message when update fails" do
-      @user_collection.stub(:update).and_return({})
+      @user_collection.stub(:update).and_return({"err"=>"There was a problem with the database."})
       Rails.logger.should_receive(:info).ordered.with("DB update failed")
-      Rails.logger.should_receive(:info).ordered.with("{}")
+      Rails.logger.should_receive(:info).ordered.with("There was a problem with the database.")
       GT::ApplePushNotificationServicesManager.remove_device_tokens(['<token1>', '<token3>'])
     end
   end
