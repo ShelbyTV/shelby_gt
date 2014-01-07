@@ -35,6 +35,18 @@ if Rails.env.development?
         #frame.delete
       end
 
+      def like_notification_with_recs #(user_to, frame, user_from=nil)
+        user_to   = User.all.first
+        user_from = User.all.last
+        roll      = user_to.public_roll
+        video     = Video.all.last
+        frame     = Factory.create(:frame, :roll => roll, :video => video, :creator => user_to)
+
+        NotificationMailer.like_notification(user_to, frame, user_from)
+
+        #frame.delete
+      end
+
       def anonymous_like_notification #(user_to, frame, user_from=nil)
         user_to   = User.all.first
         roll      = user_to.public_roll

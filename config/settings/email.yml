@@ -8,6 +8,7 @@ defaults: &defaults
   web_url_base: "http://shelby.tv"
   #CSS UI Constants
   font_family: "'Helvetica Neue',Helvetica,sans-serif"
+  font_size_micro: "12px"
   font_size: "13px"
   font_size_medium: "15px"
   font_size_large: "18px"
@@ -18,6 +19,7 @@ defaults: &defaults
   ui_off_white: "#f4f4f4"
   ui_black: "#333333"
   ui_soft_black: "#555555"
+  ui_light_black: "#888888"
   ui_gray: "#f1f1f1"
   #ui_green == darken(rgba(#6fbe47,1),5%)
   ui_green: "#63ae3d"
@@ -32,6 +34,11 @@ defaults: &defaults
   share_frame:
     category: "Share Frame"
     subject: "%{sharers_name} found a video to share with you"
+  # User Item Sizes
+  user_item:
+    smaller: 40px
+    default: 50px
+
 
   # Notifications --------------------------------------------------------------
   notification_sender: "notifications@shelby.tv"
@@ -39,8 +46,10 @@ defaults: &defaults
     category: "Share Notifications"
     subject: "%{re_rollers_name} shared your video on Shelby.tv"
   like_notification:
+    header: …and they liked it too!
+    find_more_video: Find more awesome video
     category: "Like Notifications"
-    subject: "%{likers_name} saw a video you liked on Shelby.tv..."
+    subject: "%{likers_name} liked %{video_title}"
     second_lines:
       any_liker: [ "Is this the beginning of a great relationship?",
                    "You were always the popular one, weren't you?",

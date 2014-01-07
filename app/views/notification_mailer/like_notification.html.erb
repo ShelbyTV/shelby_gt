@@ -9,7 +9,7 @@
               <tbody>
                 <%=
                   render  :partial => "/objects/summary_text",
-                          :locals => { :text => "#{@user_from_name} liked #{@frame_title}" }
+                          :locals => { :text => "#{@user_from_name_and_alias} liked #{@frame_title}" }
                 %>
 
                 <%= render :partial => "/objects/header" %>
@@ -28,22 +28,23 @@
 
                                     <center>
 
-                                      <h1 style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;">
-                                        ...and they liked it too!
-                                      </h1>
+                                      <%= render :partial => '/notification_mailer/partials/frame',
+                                          :locals => {
+                                            :frame          => @frame,
+                                            :ga_category    => "Email",
+                                            :signed_in_user => {},
+                                            :user_to        => @user_to,
+                                            :video          => @frame.video
+                                          }
+                                      %>
 
                                       <% if @user_from %>
-                                        <p style="margin: 25px 0;">
-                                          <a href="<%= @frame_permalink %>" style="font-size: <%= Settings::Email.font_size_large %>;color: <%= Settings::Email.ui_soft_black %>">“<%= @frame_title %>”</a>
-                                        </p>
 
-                                        <a href="<%= @user_permalink %>" style="text-decoration:none;color: <%= Settings::Email.ui_soft_black %>">
-                                          <div style="color: <%= Settings::Email.ui_off_white %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-radius:5px;border:<%= Settings::Email.ui_outline %>;padding: 7px 10px; background-color: <%= Settings::Email.ui_green %>; margin: 40px 10px;">
-
-                                              See what else <%= @user_from_first_name %> likes
-
-                                          </div>
-                                        </a>
+                                        <%= render :partial => '/notification_mailer/partials/liked_by',
+                                            :locals => {
+                                              :user => @user_from
+                                            }
+                                        %>
 
                                       <% else %>
 
@@ -51,16 +52,20 @@
 
                                         <a href="<%= Settings::Email.web_url_base %>" style="text-decoration:none;color: <%= Settings::Email.ui_soft_black %>">
                                           <p style="color: <%= Settings::Email.ui_off_white %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;border-radius:5px;border:<%= Settings::Email.ui_outline %>;padding: 7px; background-color: <%= Settings::Email.ui_green %>">
-
-                                              Find more awesome video
-
+                                            <%= Settings::Email.like_notification.find_more_video %>
                                           </p>
                                         </a>
                                       <% end %>
 
                                       <% # Recommended Content %>
+
                                       <% if @people_recommendation and !@people_recommendation.empty? %>
-                                          <%= render :partial => "/notification_mailer/partials/recommendation_area", :locals => {:type => :people, :people => @people_recommendation, :user_from_first_name => @user_from_first_name} %>
+                                          <%= render :partial => "/notification_mailer/partials/recommendation_area",
+                                                     :locals => {
+                                                       :type                 => :people,
+                                                       :people               => @people_recommendation,
+                                                       :user_from_first_name => @user_from_first_name
+                                          } %>
                                       <% end %>
                                     </center>
 

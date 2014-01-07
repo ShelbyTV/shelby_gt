@@ -31,14 +31,14 @@
                                 <tr>
                                   <td>
                                     <center>
-                                      <%= render :partial => '/notification_mailer/partials/frame',
+                                      <%= render :partial => '/notification_mailer/partials/dashboard_entry',
                                           :locals => {
+                                            :ab_bucket      => @ab_bucket,
                                             :dbe            => dbe,
                                             :ga_category    => "Email",
                                             :signed_in_user => {},
-                                            :video          => dbe.frame.video,
-                                            :user_to => @user_to,
-                                            :ab_bucket => @ab_bucket
+                                            :user_to        => @user_to,
+                                            :video          => dbe.frame.video
                                           }
                                       %>
                                     </center>

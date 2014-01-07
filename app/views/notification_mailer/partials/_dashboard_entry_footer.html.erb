@@ -1,7 +1,7 @@
 <table data-frame_footer style="border: <%= Settings::Email.ui_outline %>; padding: 5px; width: 100%; " border="0" cellpadding="5" cellspacing="0">
   <tr>
     <td data-avatar style="width: 13%" valign="top">
-      <a href="<%= "#{Settings::Email.web_url_base}/#{user_to.id}/shares/#{frame.id}" %>" style="text-decoration: none;">
+      <a href="<%= Settings::Email.web_url_base %>/stream?entry=<%= id %>" style="text-decoration: none;">
         <img src="<%= avatar %>" style="border-radius: 5px; width: 100%; display: block;" />
       </a>
     </td>
@@ -10,15 +10,15 @@
         <table data-frame_comment style="width: 100%"  border="0" cellpadding="5" cellspacing="0">
           <tr>
             <td data-name>
-              <a href="<%= "#{Settings::Email.web_url_base}/#{user_to.id}/shares/#{frame.id}" %>?source=email" style="color: <%= Settings::Email.ui_soft_black %>;text-decoration: none;">
-                <% if frame_type == Settings::Frame.frame_type.heavy_weight %>
-                  <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>"<%= " title=\"#{creator.name}\"" if creator.name %>>
-                    <strong><%= creator.nickname %></strong>
-                  </span>
+              <a href="<%= video.permalink %>?source=email" style="color: <%= Settings::Email.ui_soft_black %>;text-decoration: none;">
+                <% if !is_recommendation %>
+                  <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>"<%= " title=\"#{creator.name}\"" if creator.name %>><strong><%= creator.nickname %></strong></span>
                 <% else %>
-                  <span style="color: <%= Settings::Email.ui_soft_black %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>"<%= " title=\"#{creator.name}\"" if creator.name %>>
-                    <strong><%= creator.nickname %></strong> liked this
-                  </span>
+                  <% if action == DashboardEntry::ENTRY_TYPE[:channel_recommendation] %>
+                    <strong style="color: <%= Settings::Email.ui_green %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>">Featured: <%= creator.nickname %></strong>
+                  <% else %>
+                    <strong style="color: <%= Settings::Email.ui_green %>;font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size %>">Recommended for you</strong>
+                  <% end %>
                 <% end %>
               </a>
             </td>
