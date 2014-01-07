@@ -93,6 +93,7 @@ describe NotificationMailer do
       @video = Factory.create(:video, :title => 'ti')
       @roll = Factory.create(:roll, :creator => @user_to)
       @frame = Factory.create(:frame, :video => @video, :roll => @roll, :creator => @user_from)
+      @user_from_name_and_alias = (@user_from.name && @user_from.nickname) ? "#{@user_from.name} (#{@user_from.nickname})" : (@user_from.name || @user_from.nickname)
     end
 
     context "shelby user liker" do
@@ -101,7 +102,7 @@ describe NotificationMailer do
       end
 
       it 'renders the subject' do
-        @email.subject.should eq(Settings::Email.like_notification['subject'] % {:likers_name => @user_from.nickname, :video_title => @frame.video.title } )
+        @email.subject.should eq(Settings::Email.like_notification['subject'] % {:likers_name => @user_from_name_and_alias, :video_title => @frame.video.title } )
       end
 
       it 'renders the receiver email' do

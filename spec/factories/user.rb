@@ -1,4 +1,8 @@
 # Needed for testing with Devise
+Factory.sequence :name do |n|
+  "name#{n}"
+end
+
 Factory.sequence :nickname do |n|
   "nickname#{n}"
 end
@@ -29,6 +33,7 @@ Factory.define :authentication do |a|
 end
 
 Factory.define :user do |user|
+  user.name                     { Factory.next :name }
   user.nickname                 { Factory.next :nickname }
   user.downcase_nickname        { self.nickname }
   user.authentications          { [FactoryGirl.create(:authentication)] }

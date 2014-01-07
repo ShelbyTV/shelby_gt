@@ -15,4 +15,5 @@ module MailHelper
     </html>
     END_HTML
   end
+
 end
