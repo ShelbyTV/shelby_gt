@@ -38,6 +38,19 @@ module GT
       end
     end
 
+    # if the shelby user matching twitter_uid is a faux user, make unfollowing_user unfollow them
+    # returns:
+    # => something truthy if the user is unfollowed
+    # => false if no unfollow occurs
+    def self.unfollow_twitter_faux_user(unfollowing_user, twitter_uid)
+      if shelby_user_for_uid = User.first('authentications.uid' => twitter_uid, 'authentications.provider' => 'twitter')
+        if shelby_user_for_uid.user_type == User::USER_TYPE[:faux]
+          return shelby_user_for_uid.public_roll.remove_follower(unfollowing_user)
+        end
+      end
+      return false
+    end
+
     private
 
       def self.friends_ids(user)
