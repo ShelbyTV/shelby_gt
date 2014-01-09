@@ -25,7 +25,7 @@ class V1::TokenController < ApplicationController
   # for the parameter auth_token.  For example: http://api.gt.shelby.tv/v1/dashboard?auth_token=sF7waBf8jBMqsxeskPp2
   #
   # [POST] /v1/token
-  #  
+  #
   # All following third party credentials are Optional if you're using email/password
   #   @param [Required, String] provider_name The name of the 3rd party provider the user is authorized with (ie. "twitter")
   #   @param [Required, String] uid The id of the User at the 3rd party
@@ -55,7 +55,7 @@ class V1::TokenController < ApplicationController
       User.where(:primary_email => email.downcase).first
       User.find_by_primary_email(email.downcase) || User.find_by_nickname(email.downcase)
     end
-    
+
     #----------------------------------Already Authenticated User----------------------------------
     if current_user
       if @user
@@ -87,7 +87,7 @@ class V1::TokenController < ApplicationController
                                       :error_message => "Not merging users, please email support@shelby.tv" })
           end
         end
-        
+
       elsif token
         #Add auth to current_user, return current_user w/ token
         omniauth = GT::ImposterOmniauth.get_user_info(provider, uid, token, secret)
@@ -97,25 +97,25 @@ class V1::TokenController < ApplicationController
         unless new_auth
           return render_error(404, "failed to add authentication to current user")
         end
-        
+
       elsif password
         return render_error(404, "user already authenticated, email/password unnecessary")
 
       else
         return render_error(404, "user already authenticated; must provide oauth token")
       end
-      
+
     #----------------------------------Existing User, Not Authenticated----------------------------------
     elsif @user
       if token and GT::UserManager.verify_user(@user, provider, uid, token, secret)
-        
+
         if @user.user_type == User::USER_TYPE[:faux]
           if params[:intention] == "login"
             #iOS sends this; we don't want to create account for OAuth unless explicity signing up
             return render_error(403, {:error_code => 403001,
                                       :error_message => "Real user not found for given token.  Use sign up to create an account."})
           end
-          GT::UserManager.convert_faux_user_to_real(@user, GT::ImposterOmniauth.get_user_info(provider, uid, token, secret))
+          GT::UserManager.convert_user_to_real(@user, GT::ImposterOmniauth.get_user_info(provider, uid, token, secret))
         else
           if params[:intention] == "signup"
             #iOS sends this; doesn't want a login success when it thinks it's creating a new user
@@ -152,14 +152,14 @@ class V1::TokenController < ApplicationController
       unless @user.valid?
         return render_error(404, "Failed to create new user.")
       end
-      
+
       if params[:client_identifier]
         @user.update_for_signup_client_identifier!(params[:client_identifier])
       end
 
     elsif password
       return render_error(404, "Use /v1/user/create to create a new user without oauth")
-      
+
     else
       return render_error(404, "Missing valid provider/uid, and/or token/secret")
     end

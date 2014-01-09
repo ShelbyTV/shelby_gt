@@ -331,11 +331,6 @@ class User
 
       self.save(:validate => false)
       self.public_roll.save(:validate => false)
-
-      ShelbyGT_EM.next_tick {
-        rhombus = Rhombus.new('shelby', '_rhombus_gt')
-        rhombus.post('/sadd', {:args => ['new_gt_enabled_users', self.id.to_s]})
-      }
     end
   end
 

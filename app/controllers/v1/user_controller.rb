@@ -244,6 +244,11 @@ class V1::UserController < ApplicationController
         end
 
         if @user.update_attributes(params)
+          # convert an anonymous user to real iff they have email + pw
+          if (@user.user_type == User::USER_TYPE[:anonymous]) and !@user.primary_email.nil? and !@user.primary_email.empty? and @user.has_password?
+            GT::UserManager.convert_user_to_real(@user)
+          end
+
           @status = 200
 
           # When changing the password, need to re-sign in (and bypass validation)

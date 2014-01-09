@@ -224,7 +224,7 @@ module GT
     end
 
     # Handles faux User becoming *real* User
-    def self.convert_faux_user_to_real(user, omniauth=nil)
+    def self.convert_user_to_real(user, omniauth=nil)
       if omniauth
         # create new auth and drop old auth
         user.authentications = []
@@ -241,20 +241,22 @@ module GT
 
       user.user_type = User::USER_TYPE[:converted]
       if user.save
-        ShelbyGT_EM.next_tick {
-          #start processing
-          GT::PredatorManager.initialize_video_processing(user, new_auth) if new_auth
 
-          #start following
-          GT::UserTwitterManager.follow_all_friends_public_rolls(user)
-          GT::UserFacebookManager.follow_all_friends_public_rolls(user)
-        }
+        if new_auth
+          ShelbyGT_EM.next_tick {
+            #start processing
+            GT::PredatorManager.initialize_video_processing(user, new_auth)
+            #start following
+            GT::UserTwitterManager.follow_all_friends_public_rolls(user)
+            GT::UserFacebookManager.follow_all_friends_public_rolls(user)
+          }
+        end
 
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'])
         return user, new_auth
       else
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
-        Rails.logger.error "[GT::UserManager#convert_faux_user_to_real] Failed to save user: #{user.errors.full_messages.join(',')}"
+        Rails.logger.error "[GT::UserManager#convert_user_to_real] Failed to save user: #{user.errors.full_messages.join(',')}"
         return user.errors
       end
     end
