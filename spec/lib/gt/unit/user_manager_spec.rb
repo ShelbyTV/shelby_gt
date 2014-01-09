@@ -604,6 +604,8 @@ describe GT::UserManager do
 
     context "from omniauth" do
       before(:each) do
+        @roll = Factory.create(:roll)
+        Roll.stub(:find).and_return( @roll )
         @nickname = "nick-#{rand.to_s}"
         @omniauth_hash = {
           'provider' => "twitter",
@@ -885,6 +887,11 @@ describe GT::UserManager do
         u.public_roll.origin_network.should == Roll::SHELBY_USER_PUBLIC_ROLL
       end
 
+      it "should follow the shelby roll" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        u.following_roll?(@roll, false).should == true
+      end
+
       it "should have the user follow their public, upvoted, and watch_later rolls (and NOT the viewed Roll)" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
 
@@ -988,6 +995,26 @@ describe GT::UserManager do
 
         u.viewed_roll.class.should == Roll
         u.viewed_roll.persisted?.should == true
+      end
+
+      it "should create new user for anonymous, user_type == anonymous, user" do
+        params = {:nickname => Factory.next(:nickname), :password => "password", :anonymous => true}
+        lambda {
+          u = GT::UserManager.create_new_user_from_params(params)
+          u.valid?.should == true
+          u.persisted?.should == true
+          u.gt_enabled?.should == true
+          u.cohorts.size.should > 0
+          u.nickname.should == params[:nickname]
+          u.user_type.should == User::USER_TYPE[:anonymous]
+        }.should change { User.count } .by(1)
+      end
+
+      it "should follow the shelby roll" do
+        r = Factory.create(:roll)
+        Roll.stub(:find).and_return( r )
+        u = GT::UserManager.create_new_user_from_params(@params)
+        u.following_roll?(r, false).should == true
       end
 
     end

@@ -75,12 +75,15 @@ class V1::UserController < ApplicationController
   # @param [Optional, String] user.password The plaintext password, required unless generate_temporary_nickname_and_password == 1
   # @param [Optional, Boolean] generate_temporary_nickname_and_password If "1", nickname and password will use randomly generated values.
   # @param [Optional, String] client_identifier Used by iOS to update user appropriately (ie. add cohort, don't repeat onboarding on web)
+  # @param [Optional, String] user.user_type Primarily for new anonymous type user.
   #
   # Example payloads:
   #   Creating user will all details specified:
   #     {user: {name: "dan spinosa", nickname: "spinosa", primary_email: "dan@shelby.tv", password: "pass"}}
   #   Creating user with just name and email:
   #     {user: {name: "dan spinosa", primary_email: "dan@shelby.tv"}, generate_temporary_nickname_and_password: "1"}
+  #   Creating a purely anonymous user:
+  #     {user: {anonymous: true}, generate_temporary_nickname_and_password: "1"}
   def create
     if params[:generate_temporary_nickname_and_password] and params[:user]
       params[:user][:nickname] = GT::UserManager.generate_temporary_nickname

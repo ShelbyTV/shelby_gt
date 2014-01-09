@@ -3,6 +3,7 @@ defaults: &defaults
   db_port: '27017'
   db_options: {}
   mm_use_identity_map: true
+  shelby_roll_id: '4f901bd8b415cc466a0008ec'
   featured: [
     {
       category_title: "Featured",

@@ -75,6 +75,15 @@ describe V1::UserController do
         response.content_type.should == "application/json"
       end
 
+      it "can generate temporary username and password for JSON without a name or email" do
+        post :create, :format => :json, :generate_temporary_nickname_and_password => "1",
+                                        :user => { :user_type => "4" }
+        assigns(:status).should eq(200)
+        assigns(:user).nickname.should_not be_nil
+        assigns(:user).authentication_token.should_not be_nil
+        response.content_type.should == "application/json"
+      end
+
       it "can generate temporary username and password for HTML" do
         post :create, :format => :html, :generate_temporary_nickname_and_password => "1",
                                         :user => { :name => "some name",

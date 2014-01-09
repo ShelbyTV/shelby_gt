@@ -26,6 +26,8 @@ module GT
         user.gt_enable!
         #additional meta-data for user's public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
+        # All new users follow shelby's roll
+        follow_shelby_roll(user)
 
         ShelbyGT_EM.next_tick {
           #start processing
@@ -78,7 +80,14 @@ module GT
         #additional meta-data for user's public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
 
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
+        # All new users follow shelby's roll
+        follow_shelby_roll(user)
+
+        if params[:anonymous]
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['anonymous'])
+        else
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
+        end
 
         return user
       else
@@ -454,6 +463,8 @@ module GT
         u.password = params[:password]
         u.name = params[:name]
 
+        u.user_type = User::USER_TYPE[:anonymous] if params[:anonymous]
+
         u.server_created_on = "GT::UserManager#build_new_user_from_params/#{u.nickname}"
 
         #not going to force unique, but will steal from faux users here
@@ -554,6 +565,11 @@ module GT
             Rails.logger.error "[USER MANAGER ERROR] error with getting friends to rank: #{e}"
           end
         end
+      end
+
+      def self.follow_shelby_roll(u)
+        r = Roll.find(Settings::Roll.shelby_roll_id)
+        r.add_follower(u, false) if r
       end
   end
 end
