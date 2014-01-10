@@ -87,6 +87,7 @@ describe GT::UserTwitterManager do
       }.to change(@user.roll_followings,:count).by(-1)
 
       expect(@user.roll_followings).not_to be_any {|rf| rf.roll_id == @twitter_faux_user.public_roll_id}
+      expect(@user.rolls_unfollowed).not_to be_any {|roll_id| roll_id == @twitter_faux_user.public_roll_id}
       expect(@res).to be_true
     end
 

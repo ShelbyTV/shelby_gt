@@ -188,17 +188,21 @@ class Roll
     GT::UserActionManager.follow_roll!(u.id, self.id)
   end
 
-  # Should be used when a user explicity takes the action to unfollow the roll
-  def remove_follower(u)
+  # Param explicit=true should be used when a user explicity takes the action to unfollow the roll
+  def remove_follower(u, explicit=true)
     raise ArgumentError, "must supply user" unless u and u.is_a?(User)
 
     return false unless self.followed_by?(u, false) #doesntt have to be symmetric for remove to proceed
 
     self.following_users.delete_if { |fu| fu.user_id == u.id }
     u.roll_followings.delete_if { |rf| rf.roll_id == self.id }
-    u.rolls_unfollowed << self.id
 
-    GT::UserActionManager.unfollow_roll!(u.id, self.id) if u.save and self.save
+    if explicit
+      u.rolls_unfollowed << self.id
+      GT::UserActionManager.unfollow_roll!(u.id, self.id) if u.save and self.save
+    end
+
+    return true
   end
 
   # For all followers, remove their roll following, but do not save this as a UserAction since it isn't
