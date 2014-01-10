@@ -1157,6 +1157,13 @@ describe GT::UserManager do
         u.id.should == updated_u.id
       end
 
+      it "should add a new auth to an existing user" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        u.user_type = User::USER_TYPE[:anonymous]
+        updated_u = GT::UserManager.add_new_auth_from_omniauth(u, @new_omniauth_hash)
+        u.user_type.should == User::USER_TYPE[:converted]
+      end
+
       it "should follow all twitter and facebook friends when adding a twitter auth" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
 

@@ -125,6 +125,12 @@ module GT
       new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
       GT::AuthenticationBuilder.normalize_user_info(user, new_auth)
 
+      # if user was anonymous type user, change to converted, and make sure nickname is updated
+      if user.user_type == User::USER_TYPE[:anonymous]
+        user.user_type = User::USER_TYPE[:converted]
+        # TODO make sure nickname is updated // user merging issues?
+      end
+
       user.authentications << new_auth
       if user.save
         ShelbyGT_EM.next_tick {
