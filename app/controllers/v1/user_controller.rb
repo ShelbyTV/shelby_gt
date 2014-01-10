@@ -83,9 +83,9 @@ class V1::UserController < ApplicationController
   #   Creating user with just name and email:
   #     {user: {name: "dan spinosa", primary_email: "dan@shelby.tv"}, generate_temporary_nickname_and_password: "1"}
   #   Creating a purely anonymous user:
-  #     {user: {anonymous: true}, generate_temporary_nickname_and_password: "1"}
+  #     {anonymous: true}
   def create
-    if params[:generate_temporary_nickname_and_password] and params[:user]
+    if (params[:generate_temporary_nickname_and_password] and params[:user]) or params[:anonymous]
       params[:user][:nickname] = GT::UserManager.generate_temporary_nickname
       params[:user][:password] = GT::UserManager.generate_temporary_password
     end

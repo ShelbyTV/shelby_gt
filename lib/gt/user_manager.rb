@@ -577,7 +577,8 @@ module GT
 
       def self.follow_shelby_roll(u)
         r = Roll.find(Settings::Roll.shelby_roll_id)
-        r.add_follower(u, false) if r
+        r.add_follower(u, false)
+        GT::Framer.backfill_dashboard_entries(u, r, 30, {:async_dashboard_entries => true})
       end
   end
 end
