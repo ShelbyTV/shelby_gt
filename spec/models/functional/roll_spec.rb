@@ -154,6 +154,15 @@ describe Roll do
         @user.unfollowed_roll?(@roll).should == true
       end
 
+      it "doesn't record that the roll was unfollowed if explicit=false is passed" do
+        @roll.add_follower(@user)
+        @roll.remove_follower(@user, false)
+
+        @roll.followed_by?(@user).should == false
+        @user.following_roll?(@roll).should == false
+        @user.unfollowed_roll?(@roll).should == false
+      end
+
       it "should not remove follower unless they're following" do
         lambda {
           @roll.remove_follower(@user).should == false

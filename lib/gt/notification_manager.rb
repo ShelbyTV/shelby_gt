@@ -42,9 +42,10 @@ module GT
         # if the user is eligible, also do an ios push notification
         if user_to && user_to.preferences.like_notifications_ios && !user_to.apn_tokens.empty?
           user_from_name = user_from ? (user_from.name_or_nickname) : "Someone"
+          alert = insert_invisible_character_at_random_position(Settings::PushNotifications.like_notification['alert'] % { :likers_name => user_from_name })
           options[:push_notification_options] = {
             :devices => user_to.apn_tokens,
-            :alert => Settings::PushNotifications.like_notification['alert'] % { :likers_name => user_from_name },
+            :alert => alert,
             :ga_event => {
               :category => "Push Notification",
               :action => "Send Like Notification",
@@ -80,9 +81,10 @@ module GT
         if user_to.preferences.reroll_notifications_ios && !user_to.apn_tokens.empty?
           user_from = new_frame.creator
           user_from_name = user_from.name_or_nickname
+          alert = insert_invisible_character_at_random_position(Settings::PushNotifications.reroll_notification['alert'] % { :re_rollers_name => user_from_name })
           options[:push_notification_options] = {
             :devices => user_to.apn_tokens,
-            :alert => Settings::PushNotifications.reroll_notification['alert'] % { :re_rollers_name => user_from_name },
+            :alert => alert,
             :ga_event => {
               :category => "Push Notification",
               :action => "Send Share Notification",
@@ -154,9 +156,10 @@ module GT
         # if the user is eligible, also do an ios push notification
         if user_to.preferences.roll_activity_notifications_ios && !user_to.apn_tokens.empty?
           user_from_name = user_from.name_or_nickname
+          alert = insert_invisible_character_at_random_position(Settings::PushNotifications.follow_notification['alert'] % { :followers_name => user_from_name })
           GT::ApplePushNotificationServicesManager.push_notification_to_user_devices_async(
             user_to,
-            Settings::PushNotifications.follow_notification['alert'] % { :followers_name => user_from_name },
+            alert,
             {
               :user_id => user_from.id,
               :ga_event => {
@@ -242,6 +245,15 @@ module GT
 
       def self.identifier_for_participant(participant)
         participant.is_a?(User) ? participant.id : participant
+      end
+
+      # to avoid some problems with iOS push notifications it's important that we not send messages with identical contents
+      # so, we use this to insert an invisible character at a random position to make the messages unique with high probability
+      # http://stackoverflow.com/questions/18074529/duplicate-push-notifications-on-ios
+      # NB: This could become a problem when we internationalize, so hopefully Apple will fix their bug and we can take this out
+
+      def self.insert_invisible_character_at_random_position(message)
+        message.clone.insert(rand(message.length + 1), "\u200C")
       end
 
   end
