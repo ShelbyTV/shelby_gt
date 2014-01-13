@@ -116,7 +116,7 @@ class V1::TokenController < ApplicationController
             return render_error(403, {:error_code => 403001,
                                       :error_message => "Real user not found for given token.  Use sign up to create an account."})
           end
-          GT::UserManager.convert_user_to_real(@user, GT::ImposterOmniauth.get_user_info(provider, uid, token, secret))
+          GT::UserManager.convert_eligible_user_to_real(@user, GT::ImposterOmniauth.get_user_info(provider, uid, token, secret))
         else
           if params[:intention] == "signup"
             #iOS sends this; doesn't want a login success when it thinks it's creating a new user

@@ -251,9 +251,9 @@ class V1::UserController < ApplicationController
         end
 
         if @user.update_attributes(params)
-          # convert an anonymous user to real iff they have email + pw
-          if (@user.user_type == User::USER_TYPE[:anonymous]) and !@user.primary_email.nil? and !@user.primary_email.empty? and @user.has_password?
-            GT::UserManager.convert_user_to_real(@user)
+          # convert an anonymous user to real if they have email and are updating their password
+          if params[:password] && (@user.user_type == User::USER_TYPE[:anonymous])
+            GT::UserManager.convert_eligible_user_to_real(@user)
           end
 
           @status = 200

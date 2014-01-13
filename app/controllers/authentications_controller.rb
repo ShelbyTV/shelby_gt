@@ -265,7 +265,7 @@ class AuthenticationsController < ApplicationController
     end
 
     def sign_in_current_user(user, omniauth=nil)
-      GT::UserManager.convert_user_to_real(user, omniauth) if user.user_type == User::USER_TYPE[:faux]
+      GT::UserManager.convert_eligible_user_to_real(user, omniauth) if user.user_type == User::USER_TYPE[:faux]
       GT::UserManager.start_user_sign_in(user, :omniauth => omniauth)
 
       if session[:cohort_entrance_id]

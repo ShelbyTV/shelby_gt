@@ -229,8 +229,9 @@ module GT
       end
     end
 
-    # Handles faux User becoming *real* User
-    def self.convert_user_to_real(user, omniauth=nil)
+    # Handles eligible faux or anonymous User becoming *real* User
+    # Will not convert users who do not meet the requirements for conversion
+    def self.convert_eligible_user_to_real(user, omniauth=nil)
       original_user_type = user.user_type
       # legacy approaches may be counting on gt_enable happening and we're convinced it's safely idempotent
       # so do it before checking parameter validity
@@ -251,7 +252,7 @@ module GT
         user.authentications << new_auth
       end
 
-      if (original_user_type == User::USER_TYPE[:faux]) || (user.authentications.length > 0) || (!user.primary_email.nil? && !user.primary_email.empty? && user.has_password?)
+      if (original_user_type == User::USER_TYPE[:faux]) || (user.authentications.length > 0) || (!user.primary_email.nil? && !user.primary_email.empty?)
         user.user_type = User::USER_TYPE[:converted]
         user.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
 
@@ -271,7 +272,7 @@ module GT
           return user, new_auth
         else
           StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
-          Rails.logger.error "[GT::UserManager#convert_user_to_real] Failed to save user: #{user.errors.full_messages.join(',')}"
+          Rails.logger.error "[GT::UserManager#convert_eligible_user_to_real] Failed to save user: #{user.errors.full_messages.join(',')}"
           return user.errors
         end
       end

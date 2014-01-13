@@ -1168,6 +1168,22 @@ describe 'v1/user' do
         @u1.reload.valid_password?(pass).should == true
       end
 
+      it "converts the user if an anonymous user is updated with an email address and password" do
+        roll = Factory.build(:roll, :title => @u1.nickname)
+        roll.creator = @u1
+        @u1.public_roll = roll
+        @u1.user_type = User::USER_TYPE[:anonymous]
+        @u1.primary_email = nil
+        @u1.authentications = []
+
+        put '/v1/user/'+@u1.id+'?primary_email=barack%40whitehouse.gov&password=supportsmassassignment&password_confirmation=supportsmassassignment'
+        response.body.should be_json_eql(200).at_path("status")
+
+        parsed_response = parse_json(response.body)
+        parsed_response["result"]["primary_email"].should == "barack@whitehouse.gov"
+        parsed_response["result"]["user_type"].should == User::USER_TYPE[:converted]
+      end
+
       it "will return error if user id is not the current_user" do
         put "/v1/user/A1/visit"
         response.body.should be_json_eql(404).at_path("status")

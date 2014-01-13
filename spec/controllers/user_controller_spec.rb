@@ -214,6 +214,34 @@ describe V1::UserController do
       assigns(:user).preferences.email_updates.should eq(false)
       assigns(:status).should eq(200)
     end
+
+    it "converts an anonymous user if they update with an email and password" do
+      @u1.user_type = User::USER_TYPE[:anonymous]
+      @u1.authentications = []
+      @u1.primary_email = nil
+      put :update, :id => @u1.id, :primary_email => "something@example.com", :password => "12345", :password_confirmation => "12345", :format => :json
+      updated_user = assigns(:user)
+      updated_user.primary_email.should eq("something@example.com")
+      updated_user.user_type.should eq(User::USER_TYPE[:converted])
+    end
+
+    it "converts an anonymous user if they have an email address and update their password" do
+      @u1.user_type = User::USER_TYPE[:anonymous]
+      @u1.authentications = []
+      put :update, :id => @u1.id, :password => "12345", :password_confirmation => "12345", :format => :json
+      updated_user = assigns(:user)
+      updated_user.user_type.should eq(User::USER_TYPE[:converted])
+    end
+
+    it "does not convert an anonymous user if they aren't updating their password in the current request" do
+      @u1.user_type = User::USER_TYPE[:anonymous]
+      @u1.authentications = []
+      @u1.primary_email = nil
+      put :update, :id => @u1.id, :primary_email => "somethingdifferent@example.com", :format => :json
+      updated_user = assigns(:user)
+      updated_user.primary_email.should eq("somethingdifferent@example.com")
+      updated_user.user_type.should eq(User::USER_TYPE[:anonymous])
+    end
   end
 
   describe "PUT log_session" do
