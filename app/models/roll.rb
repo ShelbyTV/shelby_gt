@@ -56,7 +56,7 @@ class Roll
   TYPES = {
     # special rolls that have not yet been updated to their specific type default to :special_roll
     :special_roll => 10,
-    :special_public => 11, # <-- faux user
+    :special_public => 11, # <-- faux or anonymous user
     :special_upvoted => 12,
     :special_watch_later => 13,
     :special_viewed => 14,

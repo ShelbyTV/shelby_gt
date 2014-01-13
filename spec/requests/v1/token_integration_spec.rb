@@ -51,7 +51,7 @@ describe 'v1/token' do
             response.body.should_not have_json_path("result/authentication_token")
           end
         end
-        
+
         context "there is an authenticated user via auth_token" do
           before(:each) do
             @current_user_via_token = Factory.create(:user)
@@ -72,12 +72,12 @@ describe 'v1/token' do
             @user.save
             @new_token = "lkjwelrkjlkjer"
             @new_secret = "Asdfasdfasdfasdf"
-            
+
             lambda {
               post "/v1/token?provider_name=twitter&uid=#{@twt_auth.uid}&token=#{@new_token}&secret=#{@new_secret}&auth_token=#{@user.authentication_token}"
               response.body.should be_json_eql(200).at_path("status")
             }.should_not change { User.count }
-            
+
             @user.reload
             @user.authentications[0].oauth_token.should == @new_token
             @user.authentications[0].oauth_secret.should == @new_secret
@@ -87,7 +87,8 @@ describe 'v1/token' do
 
       context "tokens are for: an existing GT faux user" do
         before(:each) do
-          @fuser = Factory.create(:user, :authentication_token => nil, :user_type => User::USER_TYPE[:faux]) #adds a twitter authentication
+          @fuser_public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public])
+          @fuser = Factory.create(:user, :authentication_token => nil, :user_type => User::USER_TYPE[:faux], :public_roll => @fuser_public_roll) #adds a twitter authentication
           @twt_auth = @fuser.authentications[0]
           @fb_auth = Factory.create(:authentication, :provider => "facebook", :oauth_secret => nil)
           @fuser.authentications << @fb_auth
@@ -177,6 +178,7 @@ describe 'v1/token' do
 
       context "tokens are for: a new user" do
         before(:each) do
+          @shelby_roll = Factory.create(:roll, :id => Settings::Roll.shelby_roll_id)
           @uid, @oauth_token, @oauth_secret, @name, @nickname = "123uid", "oaTok", "oaSec", "name", "someNickname--is--unique"
 
           @omniauth_hash = {
@@ -193,7 +195,7 @@ describe 'v1/token' do
             }
           }
         end
-        
+
         context "there is no authenticated user" do
           it "should create new user if token/secret verify" do
             GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
@@ -215,7 +217,7 @@ describe 'v1/token' do
 
             u.destroy
           end
-          
+
           it "should update app_progress for client: iOS" do
             GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
 
@@ -250,14 +252,14 @@ describe 'v1/token' do
             }.should change { User.count } .by(0)
           end
         end
-        
+
         context "there is an authenticated user via auth_token" do
           before(:each) do
             @current_user_via_token = Factory.create(:user)
             @current_user_via_token.ensure_authentication_token!
             @current_user_via_token.save
           end
-          
+
           it "should add a new authentication to current user" do
             GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
 
@@ -266,16 +268,16 @@ describe 'v1/token' do
               response.body.should be_json_eql(200).at_path("status")
               response.body.should have_json_path("result/authentication_token")
               parse_json(response.body)['result']['id'].should == @current_user_via_token.id.to_s
-              
+
               parse_json(response.body)['result']['authentications'].count.should == 2
               parse_json(response.body)['result']['authentications'][1]['provider'].should == "twitter"
               parse_json(response.body)['result']['authentications'][1]['uid'].should == @uid
-              
+
               @current_user_via_token.reload
               @current_user_via_token.authentications[1].oauth_token.should == @oauth_token
               @current_user_via_token.authentications[1].oauth_secret.should == @oauth_secret
             }.should_not change { User.count }
-            
+
             u = User.find_by_nickname(@nickname)
             u.should == nil
           end
