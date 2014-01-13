@@ -236,7 +236,21 @@ describe AuthenticationsController do
           session[:cohort_entrance_id] = cohort_entrance.id
 
           get :create
-          assigns(:current_user).gt_enabled.should == true
+          @existing_user = assigns(:current_user)
+          @existing_user.gt_enabled.should == true
+          @existing_user.public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
+        end
+
+        it "ensures the user has the right roll type if they already had a public roll`" do
+          @u.gt_enabled = false
+          @u.public_roll = Factory.create(:roll)
+          cohorts = ["post_onboarding"]
+          cohort_entrance = Factory.create(:cohort_entrance, :cohorts => cohorts)
+          session[:cohort_entrance_id] = cohort_entrance.id
+
+          get :create
+          @existing_user = assigns(:current_user)
+          @existing_user.public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
         end
 
         it "should handle redirect via session on sign in" do

@@ -327,10 +327,14 @@ class User
 
       self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
       GT::UserManager.ensure_users_special_rolls(self, true)
-      self.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
 
       self.save(:validate => false)
-      self.public_roll.save(:validate => false)
+
+      public_roll = self.public_roll
+      if (self.user_type == User::USER_TYPE[:real] || self.user_type == User::USER_TYPE[:converted])
+        public_roll.roll_type = Roll::TYPES[:special_public_real_user]
+      end
+      public_roll.save(:validate => false)
     end
   end
 

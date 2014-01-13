@@ -1445,9 +1445,11 @@ describe 'v1/user' do
     end
 
     describe "POST create" do
+
       before(:each) do
         @shelby_roll = Factory.create(:roll, :id => Settings::Roll.shelby_roll_id)
       end
+
       it "should create a new user and return via JSON" do
         post '/v1/user', :user => { :name => "some name",
                                     :nickname => Factory.next(:nickname),

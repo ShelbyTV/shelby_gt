@@ -17,6 +17,11 @@ describe V1::UserController do
   end
 
   describe "POST create" do
+
+    before(:each) do
+      @shelby_roll = Factory.create(:roll, :id => Settings::Roll.shelby_roll_id)
+    end
+
     it "assigns new user to @user for JSON" do
       post :create, :format => :json, :user => { :name => "some name",
                                                  :nickname => Factory.next(:nickname),
@@ -65,11 +70,16 @@ describe V1::UserController do
 
     context "without username, password" do
 
-      it "can generate temporary username and password for JSON without any user info" do
-        post :create, :format => :json, :anonymous => "true"
+      before(:each) do
+        @shelby_roll = Factory.create(:roll, :id => Settings::Roll.shelby_roll_id)
+      end
+
+      it "can generate temporary username and password for JSON without a name or email" do
+        post :create, :format => :json, :anonymous => true
         assigns(:status).should eq(200)
         assigns(:user).nickname.should_not be_nil
         assigns(:user).authentication_token.should_not be_nil
+        assigns(:user).public_roll.roll_type.should == Roll::TYPES[:special_public]
         response.content_type.should == "application/json"
       end
 
@@ -81,15 +91,7 @@ describe V1::UserController do
         assigns(:user).nickname.should_not be_nil
         assigns(:user).name.should == "some name"
         assigns(:user).authentication_token.should_not be_nil
-        response.content_type.should == "application/json"
-      end
-
-      it "can generate temporary username and password for JSON without a name or email" do
-        post :create, :format => :json, :generate_temporary_nickname_and_password => "1",
-                                        :user => { :user_type => "4" }
-        assigns(:status).should eq(200)
-        assigns(:user).nickname.should_not be_nil
-        assigns(:user).authentication_token.should_not be_nil
+        assigns(:user).public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
         response.content_type.should == "application/json"
       end
 

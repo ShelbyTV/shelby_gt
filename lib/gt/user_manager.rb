@@ -244,8 +244,9 @@ module GT
       end
 
       user.gt_enable!
-
       user.user_type = User::USER_TYPE[:converted]
+      user.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
+
       if user.save
 
         if new_auth
@@ -510,7 +511,11 @@ module GT
         r.creator = u
         r.public = true
         r.collaborative = false
-        r.roll_type = (u.user_type == User::USER_TYPE[:faux] ? Roll::TYPES[:special_public] : Roll::TYPES[:special_public_real_user])
+        if u.user_type == User::USER_TYPE[:faux] || u.user_type == User::USER_TYPE[:anonymous]
+          r.roll_type = Roll::TYPES[:special_public]
+        else
+          r.roll_type = Roll::TYPES[:special_public_real_user]
+        end
         r.title = u.nickname
         r.creator_thumbnail_url = u.user_image || u.user_image_original
         r.origin_network = origin_network if origin_network

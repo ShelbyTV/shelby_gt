@@ -89,6 +89,8 @@ describe GT::UserManager do
         usr.should == u
         usr.public_roll.class.should == Roll
         usr.public_roll.persisted?.should == true
+        MongoMapper::Plugins::IdentityMap.clear
+        usr.public_roll.roll_type.should == Roll::TYPES[:special_public]
       }.should_not change { User.count }
     end
 
@@ -114,6 +116,7 @@ describe GT::UserManager do
         usr.should == u
         usr.watch_later_roll.class.should == Roll
         usr.watch_later_roll.persisted?.should == true
+        MongoMapper::Plugins::IdentityMap.clear
         usr.watch_later_roll.roll_type.should == Roll::TYPES[:special_watch_later]
 
         usr.viewed_roll.class.should == Roll
@@ -384,6 +387,7 @@ describe GT::UserManager do
     it "should update their public roll's roll_type" do
       @faux_u.public_roll.roll_type.should == Roll::TYPES[:special_public]
       GT::UserManager.convert_user_to_real(@faux_u)
+      MongoMapper::Plugins::IdentityMap.clear
       @faux_u.public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
     end
 
@@ -986,6 +990,8 @@ describe GT::UserManager do
 
         u.public_roll.class.should == Roll
         u.public_roll.persisted?.should == true
+        MongoMapper::Plugins::IdentityMap.clear
+        u.public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
 
         u.watch_later_roll.class.should == Roll
         u.watch_later_roll.persisted?.should == true
@@ -1008,6 +1014,8 @@ describe GT::UserManager do
           u.cohorts.size.should > 0
           u.nickname.should == params[:nickname]
           u.user_type.should == User::USER_TYPE[:anonymous]
+          MongoMapper::Plugins::IdentityMap.clear
+          u.public_roll.roll_type.should == Roll::TYPES[:special_public]
         }.should change { User.count } .by(1)
       end
 
