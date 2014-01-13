@@ -316,15 +316,6 @@ class User
     unless self.gt_enabled?
       self.gt_enabled = true
 
-      self.user_type = case self.user_type
-      when USER_TYPE[:faux]
-        USER_TYPE[:converted]
-      when USER_TYPE[:anonymous]
-        USER_TYPE[:anonymous]
-      else
-        USER_TYPE[:real]
-      end
-
       self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
       GT::UserManager.ensure_users_special_rolls(self, true)
 

@@ -231,6 +231,14 @@ module GT
 
     # Handles faux User becoming *real* User
     def self.convert_user_to_real(user, omniauth=nil)
+      original_user_type = user.user_type
+      # legacy approaches may be counting on gt_enable happening and we're convinced it's safely idempotent
+      # so do it before checking parameter validity
+      user.gt_enable! unless user.gt_enabled
+
+      return nil unless [User::USER_TYPE[:faux], User::USER_TYPE[:anonymous]].include?(original_user_type)
+
+      new_auth = nil
       if omniauth
         # create new auth and drop old auth
         user.authentications = []
@@ -243,30 +251,29 @@ module GT
         user.authentications << new_auth
       end
 
-      user.gt_enable!
-      user.user_type = User::USER_TYPE[:converted]
-      user.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
+      if (original_user_type == User::USER_TYPE[:faux]) || (user.authentications.length > 0) || (!user.primary_email.nil? && !user.primary_email.empty? && user.has_password?)
+        user.user_type = User::USER_TYPE[:converted]
+        user.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
 
-      if user.save
+        if user.save
 
-        if new_auth
-          ShelbyGT_EM.next_tick {
-            #start processing
-            GT::PredatorManager.initialize_video_processing(user, new_auth)
-            #start following
-            GT::UserTwitterManager.follow_all_friends_public_rolls(user)
-            GT::UserFacebookManager.follow_all_friends_public_rolls(user)
-          }
+          if new_auth
+            ShelbyGT_EM.next_tick {
+              #start processing
+              GT::PredatorManager.initialize_video_processing(user, new_auth)
+              #start following
+              GT::UserTwitterManager.follow_all_friends_public_rolls(user)
+              GT::UserFacebookManager.follow_all_friends_public_rolls(user)
+            }
+          end
+
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'])
+          return user, new_auth
         else
-          new_auth = nil
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
+          Rails.logger.error "[GT::UserManager#convert_user_to_real] Failed to save user: #{user.errors.full_messages.join(',')}"
+          return user.errors
         end
-
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'])
-        return user, new_auth
-      else
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
-        Rails.logger.error "[GT::UserManager#convert_user_to_real] Failed to save user: #{user.errors.full_messages.join(',')}"
-        return user.errors
       end
     end
 
