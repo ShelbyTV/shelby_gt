@@ -928,6 +928,7 @@ describe GT::UserManager do
 
     context "from params (ie. email/password)" do
       before(:each) do
+        @shelby_roll = Factory.create(:roll, :id => Settings::Roll.shelby_roll_id)
         @params = {:nickname => Factory.next(:nickname), :primary_email => Factory.next(:primary_email), :password => "password", :name => "name"}
       end
 

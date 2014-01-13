@@ -3,6 +3,7 @@ require 'spec_helper'
 describe V1::UserController do
 
   before(:each) do
+    @shelby_roll = Factory.create(:roll, :id => Settings::Roll.shelby_roll_id)
     @u1 = Factory.create(:user)
     User.stub(:find) { @u1 }
     r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user])
@@ -63,6 +64,14 @@ describe V1::UserController do
     end
 
     context "without username, password" do
+
+      it "can generate temporary username and password for JSON without any user info" do
+        post :create, :format => :json, :anonymous => "true"
+        assigns(:status).should eq(200)
+        assigns(:user).nickname.should_not be_nil
+        assigns(:user).authentication_token.should_not be_nil
+        response.content_type.should == "application/json"
+      end
 
       it "can generate temporary username and password for JSON" do
         post :create, :format => :json, :generate_temporary_nickname_and_password => "1",

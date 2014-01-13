@@ -85,11 +85,12 @@ class V1::UserController < ApplicationController
   #   Creating a purely anonymous user:
   #     {anonymous: true}
   def create
+    params[:user] = {} if params[:anonymous] # make sure there is a user hash to work with
     if (params[:generate_temporary_nickname_and_password] and params[:user]) or params[:anonymous]
       params[:user][:nickname] = GT::UserManager.generate_temporary_nickname
       params[:user][:password] = GT::UserManager.generate_temporary_password
     end
-    @user = GT::UserManager.create_new_user_from_params(params[:user]) if params[:user]
+    @user = GT::UserManager.create_new_user_from_params(params[:user]) if (params[:user])
 
     if @user and @user.errors.empty? and @user.valid?
       sign_in(:user, @user)

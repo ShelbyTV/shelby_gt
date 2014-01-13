@@ -227,13 +227,6 @@ defaults: &defaults
           include_in: {onboarding: true}
         },
         {
-          display_title : 'THNKR',
-          id : '4fc8f77f88ba6b0881000995',
-          description : 'Extraordinary access to the people, stories, ideas',
-          display_thumbnail_src : 'https://lh4.googleusercontent.com/-s4bLGopD5b8/AAAAAAAAAAI/AAAAAAAAAAA/nU7h6CIJqT8/s60-c-k/photo.jpg',
-          include_in: {onboarding: true}
-        },
-        {
           display_title: "Sesame Street",
           id: "4fa2931f88ba6b68b6000ba9",
           description: 'Can you tell me how to get to...',
