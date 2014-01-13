@@ -106,6 +106,7 @@ class V1::TokenController < ApplicationController
       end
 
     #----------------------------------Existing User, Not Authenticated----------------------------------
+    ### NOT HIT IN NEW SCHEME because we have current_user
     elsif @user
       if token and GT::UserManager.verify_user(@user, provider, uid, token, secret)
 
@@ -134,6 +135,7 @@ class V1::TokenController < ApplicationController
 
 
     #----------------------------------New User (Not Authenticated)----------------------------------
+    ### NOT HIT IN NEW SCHEME because we have current_user
     elsif token
       if params[:intention] == "login"
         #iOS sends this; we don't want to create account for OAuth unless explicity signing up
@@ -165,6 +167,7 @@ class V1::TokenController < ApplicationController
     end
 
     #we have a valid user if we've made it here
+    # TODO: THIS SHOULD BE DONE FOR ALL
     @user.ensure_authentication_token!
     sign_in(:user, @user)
     StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success']['token'])

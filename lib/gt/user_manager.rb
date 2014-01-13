@@ -256,6 +256,8 @@ module GT
             GT::UserTwitterManager.follow_all_friends_public_rolls(user)
             GT::UserFacebookManager.follow_all_friends_public_rolls(user)
           }
+        else
+          new_auth = nil
         end
 
         StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'])
