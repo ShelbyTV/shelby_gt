@@ -37,7 +37,7 @@ module Dev
       if @user and @user.errors.empty? and @user.valid?
         @user.user_image = avatar if has_avatar
         @user.ensure_authentication_token!
-        @user.user_type = 3 if service_user
+        @user.user_type = User::USER_TYPE[:service] if service_user
         if @user.save
           puts "[SUCCESS] #{@user.name} created: \n #{@user.inspect}"
           if youtube_user
