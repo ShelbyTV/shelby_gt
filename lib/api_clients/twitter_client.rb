@@ -1,5 +1,5 @@
 module APIClients
-  
+
   # NB: Clients of this module are expected to handle all Grackle::TwitterError errors themselves
   # The module does not do so because it cannot know if a twitter error constitutes an actual
   # exception for the particular client situation
@@ -22,7 +22,7 @@ module APIClients
 
   #     -- can call the private methods setup_for_user or setup_for_token_and_secret any time
   #     -- to configure twitter client with an authed user
-      
+
   #     def setup_my_twitter_info
   #       setup_for_user(user_object)
 
@@ -31,20 +31,20 @@ module APIClients
   #       setup_for_token_and_secret(token, secret)
 
   #     end
-      
+
   #     ...
 
   #     -- private method twitter_client will return a Grackle twitter client ready to go
   #     -- configured as specified in the setup* methods
 
-  #     def do_some_twitter_query  
+  #     def do_some_twitter_query
   #       begin
   #         -- perform some twitter operations such as --
   #         friend_ids = twitter_client.friends.ids?
   #       rescue Grackle::TwitterError
   #         -- handle any twitter errors
   #       end
-        
+
   #       return friend_ids
   #     end
 
@@ -67,7 +67,7 @@ module APIClients
     def self.build_for_token_and_secret(oauth_token, oauth_secret)
       ensure_token_and_secret(oauth_token, oauth_secret)
       build_client(oauth_token, oauth_secret)
-    end 
+    end
 
     def setup_for_user(user)
       raise ArgumentError, 'Must provide User' unless @user = user
@@ -99,11 +99,11 @@ module APIClients
       end
 
       def self.build_client(oauth_token, oauth_secret)
-        Grackle::Client.new(:auth => {
+        Grackle::Client.new(:ssl => true, :auth => {
             :type => :oauth,
-            :consumer_key => Settings::Twitter.consumer_key, 
+            :consumer_key => Settings::Twitter.consumer_key,
             :consumer_secret => Settings::Twitter.consumer_secret,
-            :token => oauth_token, 
+            :token => oauth_token,
             :token_secret => oauth_secret
         })
       end
