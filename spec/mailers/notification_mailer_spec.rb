@@ -136,7 +136,26 @@ describe NotificationMailer do
       end
 
       it 'should not have a link to a sending user' do
-        @email.body.encoded.should_not have_tag(:a, :with => { :href => "#{Settings::Email.web_url_base}/#{@user_from.nickname}" })
+        @email.body.encoded.should_not have_tag(:a, :with => { :href => "#{Settings::Email.web_url_base}/#{@user_from.id.to_s}" })
+      end
+
+      it 'should contain the like message' do
+        @email.body.encoded.should match(@frame.video.title)
+      end
+    end
+
+    context "liker with user_type anonymous" do
+      before(:all) do
+        @user_from.user_type = User::USER_TYPE[:anonymous]
+        @email = NotificationMailer.like_notification(@user_to, @frame, @user_from)
+      end
+
+      it 'renders the subject' do
+        @email.subject.should eq(Settings::Email.like_notification['subject'] % {:likers_name => 'Someone', :video_title => @frame.video.title} )
+      end
+
+      it 'should not have a link to a sending user' do
+        @email.body.encoded.should_not have_tag(:a, :with => { :href => "#{Settings::Email.web_url_base}/#{@user_from.id.to_s}" })
       end
 
       it 'should contain the like message' do

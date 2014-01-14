@@ -37,6 +37,8 @@ module GT
       end
       if destinations.include?(:notification_center) && user_to && (user_from != user_to)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
+        # if the liking user has user_type anonymous or there is no liking user, treat this as an anonymous like notification
+        user_from = nil if user_from && user_from.user_type == User::USER_TYPE[:anonymous]
         dbe_type = user_from ? DashboardEntry::ENTRY_TYPE[:like_notification] : DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
         options = {:actor_id => user_from && user_from.id}
         # if the user is eligible, also do an ios push notification
