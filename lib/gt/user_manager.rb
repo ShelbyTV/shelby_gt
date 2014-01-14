@@ -128,7 +128,8 @@ module GT
       # if user was anonymous type user, change to converted, and make sure nickname is updated
       if user.user_type == User::USER_TYPE[:anonymous]
         user.user_type = User::USER_TYPE[:converted]
-        # TODO make sure nickname is updated // user merging issues?
+        user.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
+        set_nickname_from_omniauth(user, omniauth)
       end
 
       user.authentications << new_auth
@@ -446,15 +447,20 @@ module GT
       to.save
     end
 
+    # set a valid nickname for the user from their omniauth info
+    def self.set_nickname_from_omniauth(u, omniauth)
+      u.nickname = omniauth['info']['nickname']
+      u.nickname = omniauth['info']['name'] if u.nickname.blank? or u.nickname.match(/\.php\?/)
+      u.nickname = omniauth['info']['email'].split('@').first if u.nickname.blank? and omniauth['info']['email']
+    end
+
     private
 
       # Takes an omniauth hash to build one user, prefs, and an auth to go along with it
       def self.build_new_user_and_auth(omniauth)
         u = User.new
 
-        u.nickname = omniauth['info']['nickname']
-        u.nickname = omniauth['info']['name'] if u.nickname.blank? or u.nickname.match(/\.php\?/)
-        u.nickname = omniauth['info']['email'].split('@').first if u.nickname.blank? and omniauth['info']['email']
+        set_nickname_from_omniauth(u, omniauth)
 
         u.name = omniauth['info']['name']
 

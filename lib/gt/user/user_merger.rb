@@ -14,6 +14,8 @@ module GT
     def self.merge_users(other_user, into_user, omniauth=nil)
       raise ArgumentError, "must supply two valid User's" unless other_user.is_a?(User) and into_user.is_a?(User)
 
+      converting_anonymous_user = (into_user.user_type == User::USER_TYPE[:anonymous]) && (other_user.user_type != User::USER_TYPE[:anonymous])
+
       return false unless self.ensure_valid_user(into_user)
 
       return false unless self.move_authentications(other_user, into_user, omniauth)
@@ -48,6 +50,29 @@ module GT
       # Destroy the other user which we have now successfully merged in
       other_user.destroy
 
+      # now that the old user is gone, take their nickname if into_user was an anonymous user
+      if converting_anonymous_user
+        nickname_converted = false
+        if omniauth
+          # take the nickname from the incoming omniauth param if there is one
+          GT::UserManager.set_nickname_from_omniauth(into_user, omniauth)
+          nickname_converted = true
+        elsif into_user.authentications.length > 0
+          # otherwise, take the nickname from the auths copied in from the other user
+          auth = into_user.authentications.last
+          if nickname_from_auth = auth.nickname || auth.name
+            into_user.nickname = nickname_from_auth
+            nickname_converted = true
+          end
+        end
+        # if all else fails, take the nickname of the user merged in
+        into_user.nickname = other_user.nickname unless nickname_converted
+
+        into_user.save
+      end
+
+      return true
+
     end
 
     private
@@ -69,11 +94,24 @@ module GT
           copy_auths = [new_auth]
         end
 
+        # if the user being merged into is anonymous and the other is not,
+        # convert the anonymous user
+        converted_anonymous_user = false
+        if (into_user.user_type == User::USER_TYPE[:anonymous]) && (other_user.user_type != User::USER_TYPE[:anonymous])
+          converted_anonymous_user = true
+          into_user.user_type = User::USER_TYPE[:converted]
+        end
+
         into_user.authentications += copy_auths
         other_user.authentications = []
         # need to remove old auths first b/c of index requirements
         if other_user.save(:validate => false)
-          if into_user.save(:validate => false)
+          if into_user.save
+            if converted_anonymous_user
+              public_roll = into_user.public_roll
+              public_roll.roll_type = Roll::TYPES[:special_public_real_user]
+              public_roll.save
+            end
             return true
           else
             #restore the old auths

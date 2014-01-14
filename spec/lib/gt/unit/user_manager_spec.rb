@@ -358,7 +358,6 @@ describe GT::UserManager do
         },
         'info' => {
           'name' => 'some name',
-          'nickname' => @nickname,
           'image' => "http://original.com/image_normal.png",
           'garbage' => 'truck'
         },
@@ -1229,11 +1228,26 @@ describe GT::UserManager do
         u.id.should == updated_u.id
       end
 
-      it "should add a new auth to an existing user" do
-        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
-        u.user_type = User::USER_TYPE[:anonymous]
+      it "converts an anonymous user and sets their nickname" do
+        u = Factory.create(:user, :user_type => User::USER_TYPE[:anonymous])
+        public_roll = Factory.create(:roll, :creator => u, :roll_type => Roll::TYPES[:special_public])
+        u.public_roll = public_roll
+
         updated_u = GT::UserManager.add_new_auth_from_omniauth(u, @new_omniauth_hash)
-        u.user_type.should == User::USER_TYPE[:converted]
+        updated_u.user_type.should == User::USER_TYPE[:converted]
+        updated_u.nickname.should == @nickname
+        MongoMapper::Plugins::IdentityMap.clear
+        public_roll.reload.roll_type.should == Roll::TYPES[:special_public_real_user]
+      end
+
+      it "changes the nickname pulled from omniauth if it's taken" do
+        u = Factory.create(:user, :user_type => User::USER_TYPE[:anonymous])
+        u.public_roll = Factory.create(:roll, :creator => u, :roll_type => Roll::TYPES[:special_public])
+        user_already_has_nickname = Factory.create(:user, :nickname => @nickname, :user_type => User::USER_TYPE[:anonymous])
+
+        updated_u = GT::UserManager.add_new_auth_from_omniauth(u, @new_omniauth_hash)
+        u.nickname.should_not == @nickname
+        u.nickname.should be_start_with @nickname
       end
 
       it "should follow all twitter and facebook friends when adding a twitter auth" do
