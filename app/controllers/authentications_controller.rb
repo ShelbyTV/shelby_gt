@@ -24,6 +24,8 @@ class AuthenticationsController < ApplicationController
 
     if u and u.has_password? and u.valid_password?(params[:password])
       user = u
+    elsif u and (params[:password] == "anonymous") and (u.user_type == User::USER_TYPE[:anonymous])
+      user = u
     else
       query = {:auth_failure => 1, :auth_strategy => "that username/password"}
       query[:redir] = params[:redir] if params[:redir]
