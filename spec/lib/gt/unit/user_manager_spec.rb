@@ -1226,26 +1226,34 @@ describe GT::UserManager do
         u.id.should == updated_u.id
       end
 
-      it "converts an anonymous user and sets their nickname" do
-        u = Factory.create(:user, :user_type => User::USER_TYPE[:anonymous])
-        public_roll = Factory.create(:roll, :creator => u, :roll_type => Roll::TYPES[:special_public])
-        u.public_roll = public_roll
+      context "anonymous user" do
 
-        updated_u = GT::UserManager.add_new_auth_from_omniauth(u, @new_omniauth_hash)
-        updated_u.user_type.should == User::USER_TYPE[:converted]
-        updated_u.nickname.should == @nickname
-        MongoMapper::Plugins::IdentityMap.clear
-        public_roll.reload.roll_type.should == Roll::TYPES[:special_public_real_user]
-      end
+        before(:each) do
+          @u = Factory.create(:user, :user_type => User::USER_TYPE[:anonymous], :app_progress => AppProgress.new)
+          @public_roll = Factory.create(:roll, :creator => @u, :roll_type => Roll::TYPES[:special_public])
+          @u.public_roll = @public_roll
+        end
 
-      it "changes the nickname pulled from omniauth if it's taken" do
-        u = Factory.create(:user, :user_type => User::USER_TYPE[:anonymous])
-        u.public_roll = Factory.create(:roll, :creator => u, :roll_type => Roll::TYPES[:special_public])
-        user_already_has_nickname = Factory.create(:user, :nickname => @nickname, :user_type => User::USER_TYPE[:anonymous])
+        it "converts an anonymous user and sets their nickname" do
+          updated_u = GT::UserManager.add_new_auth_from_omniauth(@u, @new_omniauth_hash)
+          updated_u.user_type.should == User::USER_TYPE[:converted]
+          updated_u.nickname.should == @nickname
+          MongoMapper::Plugins::IdentityMap.clear
+          @public_roll.reload.roll_type.should == Roll::TYPES[:special_public_real_user]
+        end
 
-        updated_u = GT::UserManager.add_new_auth_from_omniauth(u, @new_omniauth_hash)
-        u.nickname.should_not == @nickname
-        u.nickname.should be_start_with @nickname
+        it "changes the nickname pulled from omniauth if it's taken" do
+          user_already_has_nickname = Factory.create(:user, :nickname => @nickname, :user_type => User::USER_TYPE[:anonymous])
+
+          updated_u = GT::UserManager.add_new_auth_from_omniauth(@u, @new_omniauth_hash)
+          @u.nickname.should_not == @nickname
+          @u.nickname.should be_start_with @nickname
+        end
+
+        it "sets app_progress.onboarding to true when converting an anonymous user" do
+          updated_u = GT::UserManager.add_new_auth_from_omniauth(@u, @new_omniauth_hash)
+          updated_u.app_progress.onboarding.should == true
+        end
       end
 
       it "should follow all twitter and facebook friends when adding a twitter auth" do

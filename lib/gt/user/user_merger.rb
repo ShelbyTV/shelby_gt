@@ -100,6 +100,7 @@ module GT
         if (into_user.user_type == User::USER_TYPE[:anonymous]) && (other_user.user_type != User::USER_TYPE[:anonymous])
           converted_anonymous_user = true
           into_user.user_type = User::USER_TYPE[:converted]
+          into_user.app_progress.onboarding = true
         end
 
         into_user.authentications += copy_auths

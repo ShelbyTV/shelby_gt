@@ -129,6 +129,7 @@ module GT
       if user.user_type == User::USER_TYPE[:anonymous]
         user.user_type = User::USER_TYPE[:converted]
         user.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
+        user.app_progress.onboarding = true
         set_nickname_from_omniauth(user, omniauth)
       end
 

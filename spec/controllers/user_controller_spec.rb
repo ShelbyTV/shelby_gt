@@ -216,6 +216,7 @@ describe V1::UserController do
     end
 
     it "converts an anonymous user if they update with an email and password" do
+      @u1.app_progress = AppProgress.new
       @u1.user_type = User::USER_TYPE[:anonymous]
       @u1.authentications = []
       @u1.primary_email = nil
@@ -223,14 +224,17 @@ describe V1::UserController do
       updated_user = assigns(:user)
       updated_user.primary_email.should eq("something@example.com")
       updated_user.user_type.should eq(User::USER_TYPE[:converted])
+      updated_user.app_progress.onboarding.should == false
     end
 
     it "converts an anonymous user if they have an email address and update their password" do
+      @u1.app_progress = AppProgress.new
       @u1.user_type = User::USER_TYPE[:anonymous]
       @u1.authentications = []
       put :update, :id => @u1.id, :password => "12345", :password_confirmation => "12345", :format => :json
       updated_user = assigns(:user)
       updated_user.user_type.should eq(User::USER_TYPE[:converted])
+      updated_user.app_progress.onboarding.should == false
     end
 
     it "does not convert an anonymous user if they aren't updating their password in the current request" do

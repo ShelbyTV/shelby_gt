@@ -165,6 +165,7 @@ describe GT::UserMerger do
         @into_user.user_type = User::USER_TYPE[:anonymous]
         @into_user_public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public])
         @into_user.public_roll = @into_user_public_roll
+        @into_user.app_progress = AppProgress.new
 
         @nickname = "nick-#{rand.to_s}"
         @omniauth["info"]["nickname"] = @nickname
@@ -215,6 +216,13 @@ describe GT::UserMerger do
 
         @into_user.nickname.should_not == @nickname
         @into_user.nickname.should be_start_with @nickname
+      end
+
+      it "sets the merged into user's app_progress onboarding to true" do
+        GT::UserMerger.merge_users(@other_user, @into_user, @omniauth)
+        MongoMapper::Plugins::IdentityMap.clear
+        @into_user.reload
+        @into_user.app_progress.onboarding.should == true
       end
     end
 
