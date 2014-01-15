@@ -1,5 +1,7 @@
 collection @categories
-cache @cache_key
+if @cache_key
+  cache @cache_key
+end
 
 node :category_title do |c|
   c["category_title"]

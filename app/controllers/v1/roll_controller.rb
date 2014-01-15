@@ -148,16 +148,36 @@ class V1::RollController < ApplicationController
       # we don't accidentally overwrite them
       @categories = Marshal.load(Marshal.dump(Settings::Roll.featured))
 
-      if (@segment = params[:segment])
-        @categories.select! { |f| f["include_in"][@segment] }
-        @categories.each do |c|
-          c['rolls'] = c['rolls'].select { |r| r['include_in'][@segment] }
-          c['user_channels'] = c['user_channels'].select { |r| r['include_in'][@segment] }  if c['user_channels']
+      @segment = params[:segment]
+      # include the roll categories for the specified segment, or all segments if none was specified
+      @categories.select! { |f| f["include_in"][@segment] } if @segment
+      unless @categories.empty? || !current_user
+        # if we've got a user and some roll categories, collect some info that will let us efficiently check what rolls
+        # the user is following
+        followed_rolls_dictionary = current_user.roll_followings.reduce({}) { |res, rf| res[rf.roll_id.to_s] = true ; res }
+      end
+      @categories.each do |c|
+        c['rolls'] = c['rolls'].reduce([]) do |res, roll|
+          # include the rolls for the specified segment, or all segments if none was specified
+          if !@segment || roll['include_in'][@segment]
+            unless current_user
+              # if no one is logged in then no one is following anything
+              roll['following'] = false
+            else
+              # add a value specifying whether the logged in user is following the roll
+              roll['following'] = followed_rolls_dictionary.has_key? roll['id']
+            end
+            res.push roll
+          else
+            res
+          end
         end
+        # include the user channels for the specified segment, or all segments if none was specified
+        c['user_channels'].select! { |r| r['include_in'][@segment] } if @segment && c['user_channels']
       end
 
-      #rabl caching
-      @cache_key = "featured#{params[:segment]}"
+      # if there's no logged in user, the results never change, so cache
+      @cache_key = "featured#{params[:segment]}" unless current_user
 
       @status = 200
     end

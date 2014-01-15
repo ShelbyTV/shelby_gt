@@ -100,8 +100,15 @@ describe V1::RollController do
     end
 
     it "should return everything when no segment is specified" do
+      featured_with_followings = @featured.clone
+      featured_with_followings.each do |c|
+        c['rolls'].each do |r|
+          r['following'] = false
+        end
+      end
+
       get :featured, :format => :json
-      assigns(:categories).should eq(@featured)
+      assigns(:categories).should eq(featured_with_followings)
     end
 
     it "should filter by segment if one is specified" do

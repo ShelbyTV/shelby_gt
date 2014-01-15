@@ -173,6 +173,27 @@ describe 'v1/roll' do
         get 'v1/roll/featured'
         response.body.should be_json_eql(200).at_path("status")
         response.body.should have_json_size(Settings::Roll.featured.size).at_path("result")
+        expect(assigns(:cache_key)).to be_nil
+      end
+
+      it "includes a following field for each roll that specifies whether the logged in user is following the roll" do
+        roll = Factory.create(:roll, :id => Settings::Roll.featured[0]['rolls'][0]['id'])
+        roll.add_follower(@u1, false)
+
+        get 'v1/roll/featured'
+        response.body.should have_json_path("result/0/rolls/0/following")
+        response.body.should be_json_eql(true).at_path("result/0/rolls/0/following")
+
+        response.body.should have_json_path("result/0/rolls/1/following")
+        response.body.should be_json_eql(false).at_path("result/0/rolls/1/following")
+      end
+
+      it "sets following field false for every roll if there is no logged in user" do
+        get '/signout'
+        get 'v1/roll/featured'
+        response.body.should have_json_path("result/0/rolls/0/following")
+        response.body.should be_json_eql(false).at_path("result/0/rolls/0/following")
+        expect(assigns(:cache_key)).not_to be_nil
       end
 
       it "should return all the categories" do
