@@ -74,6 +74,7 @@ defaults: &defaults
       faux: "user.new.faux"
       real: "user.new.real"
       converted: "user.new.converted"
+      anonymous: "user.new.anonymous"
       error: "user.new.error"
     signin:
       success:

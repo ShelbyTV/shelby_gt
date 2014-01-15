@@ -271,6 +271,49 @@ describe GT::NotificationManager do
         })
       end
 
+      it "creates an anonymous_like_notification dbe if the liking user's user_type is anonymous" do
+        @user.user_type = User::USER_TYPE[:anonymous]
+        ResqueSpec.reset!
+
+        GT::NotificationManager.check_and_send_like_notification(@frame, @user, [:notification_center])
+
+        DashboardEntryCreator.should have_queue_size_of(1)
+        DashboardEntryCreator.should have_queued(
+          [@frame.id],
+          DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+          [@f_creator.id],
+          {:persist => true, :actor_id => nil}
+        )
+      end
+
+      it "creates an anonymous_like_notification dbe and queues up a push notification if user is eligible and liking user's user_type is anonymous" do
+        @f_creator.apn_tokens = ['token']
+        @user.user_type = User::USER_TYPE[:anonymous]
+        ResqueSpec.reset!
+
+        GT::NotificationManager.check_and_send_like_notification(@frame, @user, [:notification_center])
+
+        DashboardEntryCreator.should have_queue_size_of(1)
+        DashboardEntryCreator.should have_queued(
+          [@frame.id],
+          DashboardEntry::ENTRY_TYPE[:anonymous_like_notification],
+          [@f_creator.id],
+          {
+            :persist => true,
+            :actor_id => nil,
+            :push_notification_options => {
+              :devices => ['token'],
+              :alert => "Someone liked your video",
+              :ga_event => {
+                :category => "Push Notification",
+                :action => "Send Like Notification",
+                :label => @f_creator.id
+              }
+            }
+          }
+        )
+      end
+
       it "inserts a random invisible space in the push notification message" do
         @f_creator.apn_tokens = ['token']
         ResqueSpec.reset!

@@ -89,6 +89,7 @@ describe GT::UserManager do
         usr.should == u
         usr.public_roll.class.should == Roll
         usr.public_roll.persisted?.should == true
+        usr.public_roll.roll_type.should == Roll::TYPES[:special_public]
       }.should_not change { User.count }
     end
 
@@ -341,7 +342,7 @@ describe GT::UserManager do
 
   end
 
-  context "convert_faux_user_to_real" do
+  context "convert_eligible_user_to_real" do
     before(:each) do
       # we sleep when finding a new user, need to stub that
       EventMachine::Synchrony.stub(:sleep)
@@ -355,7 +356,6 @@ describe GT::UserManager do
         },
         'info' => {
           'name' => 'some name',
-          'nickname' => @nickname,
           'image' => "http://original.com/image_normal.png",
           'garbage' => 'truck'
         },
@@ -367,23 +367,68 @@ describe GT::UserManager do
     end
 
     it "should convert a (persisted) faux User to real user" do
-      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u, new_auth = GT::UserManager.convert_eligible_user_to_real(@faux_u, @omniauth_hash)
       real_u.class.should == User
       real_u.persisted?.should == true
       real_u.user_type.should == User::USER_TYPE[:converted]
     end
 
     it "should convert a (persisted) faux User to real user w/o omniauth creds" do
-      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u)
+      real_u, new_auth = GT::UserManager.convert_eligible_user_to_real(@faux_u)
       real_u.class.should == User
       real_u.persisted?.should == true
       real_u.user_type.should == User::USER_TYPE[:converted]
       new_auth.should == nil
     end
 
+    it "converts a (persisted) anonymous User with an email and password to real user w/o omniauth creds" do
+      anonymous_u_public_roll = Factory.create(:roll)
+      anonymous_u = Factory.create(
+        :user,
+        :public_roll => anonymous_u_public_roll,
+        :user_type => User::USER_TYPE[:anonymous],
+        :authentications => []
+      )
+      real_u, new_auth = GT::UserManager.convert_eligible_user_to_real(anonymous_u)
+      real_u.class.should == User
+      real_u.persisted?.should == true
+      real_u.user_type.should == User::USER_TYPE[:converted]
+      new_auth.should == nil
+    end
+
+    it "converts a (persisted) anonymous User with an existing authentication to real user w/o omniauth creds" do
+      anonymous_u_public_roll = Factory.create(:roll)
+      anonymous_u = Factory.create(
+        :user,
+        :public_roll => anonymous_u_public_roll,
+        :user_type => User::USER_TYPE[:anonymous],
+        :primary_email => nil,
+        :authentications => [{}]
+      )
+      real_u, new_auth = GT::UserManager.convert_eligible_user_to_real(anonymous_u)
+      real_u.class.should == User
+      real_u.persisted?.should == true
+      real_u.user_type.should == User::USER_TYPE[:converted]
+      new_auth.should == nil
+    end
+
+    it "doesn't do anything the second time if called twice on the same user" do
+      anonymous_u_public_roll = Factory.create(:roll)
+      anonymous_u = Factory.create(
+        :user,
+        :public_roll => anonymous_u_public_roll,
+        :user_type => User::USER_TYPE[:anonymous],
+        :authentications => []
+      )
+
+      expect(GT::UserManager.convert_eligible_user_to_real(anonymous_u)).not_to be_nil
+      expect(GT::UserManager.convert_eligible_user_to_real(anonymous_u)).to be_nil
+    end
+
     it "should update their public roll's roll_type" do
       @faux_u.public_roll.roll_type.should == Roll::TYPES[:special_public]
-      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      GT::UserManager.convert_eligible_user_to_real(@faux_u)
+      MongoMapper::Plugins::IdentityMap.clear
       @faux_u.public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
     end
 
@@ -391,7 +436,7 @@ describe GT::UserManager do
       @faux_u.watch_later_roll.remove_follower(@faux_u)
       @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == false
 
-      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      GT::UserManager.convert_eligible_user_to_real(@faux_u)
       @faux_u.reload.following_roll?(@faux_u.watch_later_roll.reload).should == true
 
     end
@@ -400,7 +445,7 @@ describe GT::UserManager do
       @faux_u.watch_later_roll.update_attribute(:public, true)
       @faux_u.watch_later_roll.reload.public.should == true
 
-      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      GT::UserManager.convert_eligible_user_to_real(@faux_u)
 
       @faux_u.watch_later_roll.reload.public.should == false
     end
@@ -409,36 +454,55 @@ describe GT::UserManager do
       @faux_u.upvoted_roll.update_attribute(:public, false)
       @faux_u.upvoted_roll.reload.public.should == false
 
-      GT::UserManager.convert_faux_user_to_real(@faux_u)
+      GT::UserManager.convert_eligible_user_to_real(@faux_u)
 
       @faux_u.upvoted_roll.reload.public.should == true
     end
 
     it "should have one authentication with an oauth token" do
-      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u, new_auth = GT::UserManager.convert_eligible_user_to_real(@faux_u, @omniauth_hash)
       real_u.authentications.length.should eq(1)
       new_auth.oauth_token.should eq(@omniauth_hash["credentials"]["token"])
     end
 
     it "should have preferences set" do
-      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u, new_auth = GT::UserManager.convert_eligible_user_to_real(@faux_u, @omniauth_hash)
       real_u.preferences.class.should eq(Preferences)
     end
 
     it "should have app_progrss set" do
-      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u, new_auth = GT::UserManager.convert_eligible_user_to_real(@faux_u, @omniauth_hash)
       real_u.app_progress.class.should eq(AppProgress)
     end
 
     it "should have at least one cohort" do
-      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u, new_auth = GT::UserManager.convert_eligible_user_to_real(@faux_u, @omniauth_hash)
       real_u.cohorts.size.should > 0
     end
 
     it "should follow all twitter and facebook friends" do
       GT::UserTwitterManager.should_receive(:follow_all_friends_public_rolls).exactly(1).times
       GT::UserFacebookManager.should_receive(:follow_all_friends_public_rolls).exactly(1).times
-      real_u, new_auth = GT::UserManager.convert_faux_user_to_real(@faux_u, @omniauth_hash)
+      real_u, new_auth = GT::UserManager.convert_eligible_user_to_real(@faux_u, @omniauth_hash)
+    end
+
+    it "does nothing and returns nil if the user is already real" do
+      real_user = Factory.create(:user, :user_type => User::USER_TYPE[:real])
+      expect(GT::UserManager.convert_eligible_user_to_real(real_user)).to be_nil
+
+      converted_user = Factory.create(:user, :user_type => User::USER_TYPE[:converted])
+      expect(GT::UserManager.convert_eligible_user_to_real(converted_user)).to be_nil
+
+      service_user = Factory.create(:user, :user_type => User::USER_TYPE[:service])
+      expect(GT::UserManager.convert_eligible_user_to_real(service_user)).to be_nil
+    end
+
+    it "does nothing and returns nil if the user is anonymous and hasn't met the criteria for conversion yet" do
+      anonymous_user = Factory.create(:user, :user_type => User::USER_TYPE[:service])
+      anonymous_user.authentications = []
+      anonymous_user.primary_email = nil
+
+      expect(GT::UserManager.convert_eligible_user_to_real(anonymous_user)).to be_nil
     end
   end
 
@@ -604,6 +668,8 @@ describe GT::UserManager do
 
     context "from omniauth" do
       before(:each) do
+        @roll = Factory.create(:roll)
+        Roll.stub(:find).and_return( @roll )
         @nickname = "nick-#{rand.to_s}"
         @omniauth_hash = {
           'provider' => "twitter",
@@ -885,6 +951,11 @@ describe GT::UserManager do
         u.public_roll.origin_network.should == Roll::SHELBY_USER_PUBLIC_ROLL
       end
 
+      it "should follow the shelby roll" do
+        u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
+        u.following_roll?(@roll, false).should == true
+      end
+
       it "should have the user follow their public, upvoted, and watch_later rolls (and NOT the viewed Roll)" do
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
 
@@ -921,6 +992,7 @@ describe GT::UserManager do
 
     context "from params (ie. email/password)" do
       before(:each) do
+        @shelby_roll = Factory.create(:roll, :id => Settings::Roll.shelby_roll_id)
         @params = {:nickname => Factory.next(:nickname), :primary_email => Factory.next(:primary_email), :password => "password", :name => "name"}
       end
 
@@ -978,6 +1050,8 @@ describe GT::UserManager do
 
         u.public_roll.class.should == Roll
         u.public_roll.persisted?.should == true
+        MongoMapper::Plugins::IdentityMap.clear
+        u.public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
 
         u.watch_later_roll.class.should == Roll
         u.watch_later_roll.persisted?.should == true
@@ -988,6 +1062,28 @@ describe GT::UserManager do
 
         u.viewed_roll.class.should == Roll
         u.viewed_roll.persisted?.should == true
+      end
+
+      it "should create new user for anonymous, user_type == anonymous, user" do
+        params = {:nickname => Factory.next(:nickname), :password => "password", :anonymous => true}
+        lambda {
+          u = GT::UserManager.create_new_user_from_params(params)
+          u.valid?.should == true
+          u.persisted?.should == true
+          u.gt_enabled?.should == true
+          u.cohorts.size.should > 0
+          u.nickname.should == params[:nickname]
+          u.user_type.should == User::USER_TYPE[:anonymous]
+          MongoMapper::Plugins::IdentityMap.clear
+          u.public_roll.roll_type.should == Roll::TYPES[:special_public]
+        }.should change { User.count } .by(1)
+      end
+
+      it "should follow the shelby roll" do
+        r = Factory.create(:roll)
+        Roll.stub(:find).and_return( r )
+        u = GT::UserManager.create_new_user_from_params(@params)
+        u.following_roll?(r, false).should == true
       end
 
     end
@@ -1128,6 +1224,28 @@ describe GT::UserManager do
 
         updated_u = GT::UserManager.add_new_auth_from_omniauth(u, @new_omniauth_hash)
         u.id.should == updated_u.id
+      end
+
+      it "converts an anonymous user and sets their nickname" do
+        u = Factory.create(:user, :user_type => User::USER_TYPE[:anonymous])
+        public_roll = Factory.create(:roll, :creator => u, :roll_type => Roll::TYPES[:special_public])
+        u.public_roll = public_roll
+
+        updated_u = GT::UserManager.add_new_auth_from_omniauth(u, @new_omniauth_hash)
+        updated_u.user_type.should == User::USER_TYPE[:converted]
+        updated_u.nickname.should == @nickname
+        MongoMapper::Plugins::IdentityMap.clear
+        public_roll.reload.roll_type.should == Roll::TYPES[:special_public_real_user]
+      end
+
+      it "changes the nickname pulled from omniauth if it's taken" do
+        u = Factory.create(:user, :user_type => User::USER_TYPE[:anonymous])
+        u.public_roll = Factory.create(:roll, :creator => u, :roll_type => Roll::TYPES[:special_public])
+        user_already_has_nickname = Factory.create(:user, :nickname => @nickname, :user_type => User::USER_TYPE[:anonymous])
+
+        updated_u = GT::UserManager.add_new_auth_from_omniauth(u, @new_omniauth_hash)
+        u.nickname.should_not == @nickname
+        u.nickname.should be_start_with @nickname
       end
 
       it "should follow all twitter and facebook friends when adding a twitter auth" do

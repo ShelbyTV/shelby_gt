@@ -25,7 +25,7 @@ end
 
 Factory.define :authentication do |a|
   a.name          "name"
-  a.nickname      "nickname"
+  a.nickname      { Factory.next :nickname }
   a.provider      "twitter"
   a.oauth_token   "token"
   a.oauth_secret  "secret"

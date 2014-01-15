@@ -10,7 +10,7 @@ module GT
 
       # don't email the creator if they are the upvoting user or they dont have an email address!
       user_to = frame.creator
-      return if !user_to or (user == user_to) or !user_to.primary_email or (user_to.primary_email == "")
+      return if !user_to or (user == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.is_real?
 
       # Temp: for now only send emails to gt_enabled users
       return unless frame.creator.gt_enabled
@@ -27,7 +27,7 @@ module GT
 
       if destinations.include?(:email)
         # don't email the creator if they are the liking user or they dont have an email address!
-        if !user_to or (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.like_notifications
+        if !user_to or (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.like_notifications or !user_to.is_real?
           StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['like'])
           return
         else
@@ -37,10 +37,12 @@ module GT
       end
       if destinations.include?(:notification_center) && user_to && (user_from != user_to)
         # create dbe for iOS Push and Notification Center notifications, asynchronously
+        # if the liking user has user_type anonymous or there is no liking user, treat this as an anonymous like notification
+        user_from = nil if user_from && user_from.user_type == User::USER_TYPE[:anonymous]
         dbe_type = user_from ? DashboardEntry::ENTRY_TYPE[:like_notification] : DashboardEntry::ENTRY_TYPE[:anonymous_like_notification]
         options = {:actor_id => user_from && user_from.id}
         # if the user is eligible, also do an ios push notification
-        if user_to && user_to.preferences.like_notifications_ios && !user_to.apn_tokens.empty?
+        if user_to && user_to.preferences.like_notifications_ios && !user_to.apn_tokens.empty? && user_to.is_real?
           user_from_name = user_from ? (user_from.name_or_nickname) : "Someone"
           alert = insert_invisible_character_at_random_position(Settings::PushNotifications.like_notification['alert'] % { :likers_name => user_from_name })
           options[:push_notification_options] = {
@@ -66,7 +68,7 @@ module GT
 
       if destinations.include?(:email)
         # don't email the creator if they are the upvoting user or they dont have an email address!
-        if (user_from_id == user_to.id) or user_to.primary_email.blank? or !user_to.preferences.reroll_notifications or !user_to.gt_enabled
+        if (user_from_id == user_to.id) or user_to.primary_email.blank? or !user_to.preferences.reroll_notifications or !user_to.gt_enabled or !user_to.is_real?
           StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['share'])
           return
         else
@@ -78,7 +80,7 @@ module GT
         # create dbe for iOS Push and Notification Center notifications, asynchronously
         options = {:actor_id => user_from_id}
         # if the user is eligible, also do an ios push notification
-        if user_to.preferences.reroll_notifications_ios && !user_to.apn_tokens.empty?
+        if user_to.preferences.reroll_notifications_ios && !user_to.apn_tokens.empty? && user_to.is_real?
           user_from = new_frame.creator
           user_from_name = user_from.name_or_nickname
           alert = insert_invisible_character_at_random_position(Settings::PushNotifications.reroll_notification['alert'] % { :re_rollers_name => user_from_name })
@@ -138,7 +140,7 @@ module GT
       user_to = roll.creator
 
       # for now only send notifications to gt_enabled users
-      return unless user_to and user_to.gt_enabled
+      return unless user_to and user_to.gt_enabled and user_to.is_real?
 
       if destinations.include?(:email)
         # don't email the creator if they are the user joining or they dont have an email address!

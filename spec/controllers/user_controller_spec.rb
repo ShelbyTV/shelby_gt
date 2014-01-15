@@ -3,6 +3,7 @@ require 'spec_helper'
 describe V1::UserController do
 
   before(:each) do
+    @shelby_roll = Factory.create(:roll, :id => Settings::Roll.shelby_roll_id)
     @u1 = Factory.create(:user)
     User.stub(:find) { @u1 }
     r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user])
@@ -16,6 +17,11 @@ describe V1::UserController do
   end
 
   describe "POST create" do
+
+    before(:each) do
+      @shelby_roll = Factory.create(:roll, :id => Settings::Roll.shelby_roll_id)
+    end
+
     it "assigns new user to @user for JSON" do
       post :create, :format => :json, :user => { :name => "some name",
                                                  :nickname => Factory.next(:nickname),
@@ -64,6 +70,19 @@ describe V1::UserController do
 
     context "without username, password" do
 
+      before(:each) do
+        @shelby_roll = Factory.create(:roll, :id => Settings::Roll.shelby_roll_id)
+      end
+
+      it "can generate temporary username and password for JSON without a name or email" do
+        post :create, :format => :json, :anonymous => true
+        assigns(:status).should eq(200)
+        assigns(:user).nickname.should_not be_nil
+        assigns(:user).authentication_token.should_not be_nil
+        assigns(:user).public_roll.roll_type.should == Roll::TYPES[:special_public]
+        response.content_type.should == "application/json"
+      end
+
       it "can generate temporary username and password for JSON" do
         post :create, :format => :json, :generate_temporary_nickname_and_password => "1",
                                         :user => { :name => "some name",
@@ -72,6 +91,7 @@ describe V1::UserController do
         assigns(:user).nickname.should_not be_nil
         assigns(:user).name.should == "some name"
         assigns(:user).authentication_token.should_not be_nil
+        assigns(:user).public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
         response.content_type.should == "application/json"
       end
 
@@ -193,6 +213,34 @@ describe V1::UserController do
       put :update, :id => @u1.id, :preferences => {:email_updates=>false}, :format => :json
       assigns(:user).preferences.email_updates.should eq(false)
       assigns(:status).should eq(200)
+    end
+
+    it "converts an anonymous user if they update with an email and password" do
+      @u1.user_type = User::USER_TYPE[:anonymous]
+      @u1.authentications = []
+      @u1.primary_email = nil
+      put :update, :id => @u1.id, :primary_email => "something@example.com", :password => "12345", :password_confirmation => "12345", :format => :json
+      updated_user = assigns(:user)
+      updated_user.primary_email.should eq("something@example.com")
+      updated_user.user_type.should eq(User::USER_TYPE[:converted])
+    end
+
+    it "converts an anonymous user if they have an email address and update their password" do
+      @u1.user_type = User::USER_TYPE[:anonymous]
+      @u1.authentications = []
+      put :update, :id => @u1.id, :password => "12345", :password_confirmation => "12345", :format => :json
+      updated_user = assigns(:user)
+      updated_user.user_type.should eq(User::USER_TYPE[:converted])
+    end
+
+    it "does not convert an anonymous user if they aren't updating their password in the current request" do
+      @u1.user_type = User::USER_TYPE[:anonymous]
+      @u1.authentications = []
+      @u1.primary_email = nil
+      put :update, :id => @u1.id, :primary_email => "somethingdifferent@example.com", :format => :json
+      updated_user = assigns(:user)
+      updated_user.primary_email.should eq("somethingdifferent@example.com")
+      updated_user.user_type.should eq(User::USER_TYPE[:anonymous])
     end
   end
 

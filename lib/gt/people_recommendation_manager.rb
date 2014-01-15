@@ -60,7 +60,7 @@ module GT
       filtered_ids = []
       User.fields(:user_type).find(user_ids_to_recommend).each do |u|
         # only return real or converted users
-        filtered_ids << u.id if u.user_type == User::USER_TYPE[:real] || u.user_type == User::USER_TYPE[:converted]
+        filtered_ids << u.id if u.is_real?
       end
 
       if shuffle

@@ -293,6 +293,11 @@ describe User do
       @user.user_type = User::USER_TYPE[:service]
       @user.is_real?.should eql false
     end
+
+    it "should return false if user is anonymous" do
+      @user.user_type = User::USER_TYPE[:anonymous]
+      @user.is_real?.should eql false
+    end
   end
 
   describe "name_or_nickname" do
