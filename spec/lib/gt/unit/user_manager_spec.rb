@@ -89,7 +89,6 @@ describe GT::UserManager do
         usr.should == u
         usr.public_roll.class.should == Roll
         usr.public_roll.persisted?.should == true
-        MongoMapper::Plugins::IdentityMap.clear
         usr.public_roll.roll_type.should == Roll::TYPES[:special_public]
       }.should_not change { User.count }
     end
@@ -116,7 +115,6 @@ describe GT::UserManager do
         usr.should == u
         usr.watch_later_roll.class.should == Roll
         usr.watch_later_roll.persisted?.should == true
-        MongoMapper::Plugins::IdentityMap.clear
         usr.watch_later_roll.roll_type.should == Roll::TYPES[:special_watch_later]
 
         usr.viewed_roll.class.should == Roll
