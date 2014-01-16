@@ -683,6 +683,14 @@ describe GT::NotificationManager do
         }.should change(ActionMailer::Base.deliveries,:size).by(1)
       end
 
+      it "doesn't send email if the following user's user_type is anonymous" do
+        @user_joined.user_type = User::USER_TYPE[:anonymous]
+
+        expect {
+          GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll)
+        }.not_to change(ActionMailer::Base.deliveries,:size)
+      end
+
       it "should return nil if user is creator of the roll" do
         @roll.creator = @user_joined; @roll.save
         r = GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll)
@@ -756,6 +764,25 @@ describe GT::NotificationManager do
       it "does not push a share notification to iOS if user has that preference turned off" do
         @roll_owner.apn_tokens = ['token']
         @roll_owner.preferences.roll_activity_notifications_ios = false
+        ResqueSpec.reset!
+
+        GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll, [:notification_center])
+
+        AppleNotificationPusher.should have_queue_size_of(0)
+      end
+
+      it "does not create a follow_notification dbe for the roll owner when following user's user_type is anonymous" do
+        @user_joined.user_type = User::USER_TYPE[:anonymous]
+        ResqueSpec.reset!
+
+        GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll, [:notification_center])
+
+        DashboardEntryCreator.should have_queue_size_of(0)
+      end
+
+      it "does not queue up a push notification when following user's user_type is anonymous" do
+        @roll_owner.apn_tokens = ['token']
+        @user_joined.user_type = User::USER_TYPE[:anonymous]
         ResqueSpec.reset!
 
         GT::NotificationManager.check_and_send_join_roll_notification(@user_joined, @roll, [:notification_center])

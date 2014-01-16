@@ -144,7 +144,8 @@ module GT
 
       if destinations.include?(:email)
         # don't email the creator if they are the user joining or they dont have an email address!
-        if (user_from == user_to) or !user_to.primary_email or (user_to.primary_email == "") or !user_to.preferences.roll_activity_notifications or !user_to.is_real?
+        if (user_from == user_to) || !user_to.primary_email || (user_to.primary_email == "") ||
+           !user_to.preferences.roll_activity_notifications || !user_to.is_real? || (user_from.user_type == User::USER_TYPE[:anonymous])
           StatsManager::StatsD.increment(Settings::StatsConstants.notification['not_sent']['follow'])
           return
         else
@@ -152,7 +153,7 @@ module GT
           NotificationMailer.join_roll_notification(user_to, user_from, roll).deliver
         end
       end
-      if destinations.include?(:notification_center) && (user_from != user_to)
+      if destinations.include?(:notification_center) && (user_from != user_to) && (user_from.user_type != User::USER_TYPE[:anonymous])
         # create dbe for iOS Push and Notification Center notifications, asynchronously
         GT::Framer.create_dashboard_entries_async([nil], DashboardEntry::ENTRY_TYPE[:follow_notification], [user_to.id], {:actor_id => user_from.id})
         # if the user is eligible, also do an ios push notification
