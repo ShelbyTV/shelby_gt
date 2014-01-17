@@ -10,6 +10,13 @@ defaults: &defaults
       include_in: {onboarding: true},
       rolls: [
         {
+          display_title: "Shelby",
+          id: "4f901bd8b415cc466a0008ec",
+          display_thumbnail_src: 'http://s3.amazonaws.com/shelby-gt-user-avatars/sq48x48/4d877a47f6db2414e2000001?1375389005000',
+          description : 'Discover videos the Shelby.tv staff loves',
+          include_in: {onboarding: true}
+        },
+        {
           display_title: "Buzzfeed",
           id: "4f9577c488ba6b15ec0084c7",
           display_thumbnail_src: 'http://i1.ytimg.com/i/pko_-a4wgz2u_DgDgd9fqA/mq1.jpg',
