@@ -9,7 +9,7 @@ namespace :stats do
       real_user_count = User.collection.find(
         {:$and => [
           {:ag => true}, # gt_enabled
-          {:ac => {:$in => [0,2] }} # user_type
+          {:ac => {:$in => [0,2,4] }} # user_type
           ]}
         ).count
 
