@@ -92,6 +92,9 @@ class V1::TokenController < ApplicationController
         #Add auth to current_user, return current_user w/ token
         omniauth = GT::ImposterOmniauth.get_user_info(provider, uid, token, secret)
         new_auth = GT::UserManager.add_new_auth_from_omniauth(current_user, omniauth)
+
+        # TODO if current_user == user_type[:anonymous], convert to real
+
         @user = current_user
 
         unless new_auth
