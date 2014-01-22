@@ -179,6 +179,17 @@ describe Video do
       expect(video_liker.user_id).to eq @liker1.id
     end
 
+    it "does not update liker count when the liker is an anonymous user" do
+      @liker1.user_type = User::USER_TYPE[:anonymous]
+      @liker2.user_type = User::USER_TYPE[:anonymous]
+      expect{@video.like!(@liker1)}.to change(@video, :like_count).by(1)
+      expect{@video.like!(@liker2)}.not_to change(@video, :tracked_liker_count)
+    end
+
+    it "does not create a VideoLikerBucket or VideoLiker document when the liker is an anonymous user" do
+      @liker1.user_type = User::USER_TYPE[:anonymous]
+      expect{@video.like!(@liker1)}.not_to change(VideoLikerBucket, :count)
+    end
   end
 
 end

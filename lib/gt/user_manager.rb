@@ -26,6 +26,8 @@ module GT
         user.gt_enable!
         #additional meta-data for user's public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
+        # All new users follow shelby's roll
+        follow_shelby_roll(user)
 
         ShelbyGT_EM.next_tick {
           #start processing
@@ -78,7 +80,14 @@ module GT
         #additional meta-data for user's public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
 
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
+        # All new users follow shelby's roll
+        follow_shelby_roll(user)
+
+        if params[:anonymous]
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['anonymous'])
+        else
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['real'])
+        end
 
         return user
       else
@@ -115,6 +124,14 @@ module GT
     def self.add_new_auth_from_omniauth(user, omniauth)
       new_auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth)
       GT::AuthenticationBuilder.normalize_user_info(user, new_auth)
+
+      # if user was anonymous type user, change to converted, and make sure nickname is updated
+      if user.user_type == User::USER_TYPE[:anonymous]
+        user.user_type = User::USER_TYPE[:converted]
+        user.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
+        user.app_progress.onboarding = true
+        set_nickname_from_omniauth(user, omniauth)
+      end
 
       user.authentications << new_auth
       if user.save
@@ -214,8 +231,17 @@ module GT
       end
     end
 
-    # Handles faux User becoming *real* User
-    def self.convert_faux_user_to_real(user, omniauth=nil)
+    # Handles eligible faux or anonymous User becoming *real* User
+    # Will not convert users who do not meet the requirements for conversion
+    def self.convert_eligible_user_to_real(user, omniauth=nil)
+      original_user_type = user.user_type
+      # legacy approaches may be counting on gt_enable happening and we're convinced it's safely idempotent
+      # so do it before checking parameter validity
+      user.gt_enable! unless user.gt_enabled
+
+      return nil unless [User::USER_TYPE[:faux], User::USER_TYPE[:anonymous]].include?(original_user_type)
+
+      new_auth = nil
       if omniauth
         # create new auth and drop old auth
         user.authentications = []
@@ -228,25 +254,29 @@ module GT
         user.authentications << new_auth
       end
 
-      user.gt_enable!
+      if (original_user_type == User::USER_TYPE[:faux]) || (user.authentications.length > 0) || (!user.primary_email.nil? && !user.primary_email.empty?)
+        user.user_type = User::USER_TYPE[:converted]
+        user.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
 
-      user.user_type = User::USER_TYPE[:converted]
-      if user.save
-        ShelbyGT_EM.next_tick {
-          #start processing
-          GT::PredatorManager.initialize_video_processing(user, new_auth) if new_auth
+        if user.save
 
-          #start following
-          GT::UserTwitterManager.follow_all_friends_public_rolls(user)
-          GT::UserFacebookManager.follow_all_friends_public_rolls(user)
-        }
+          if new_auth
+            ShelbyGT_EM.next_tick {
+              #start processing
+              GT::PredatorManager.initialize_video_processing(user, new_auth)
+              #start following
+              GT::UserTwitterManager.follow_all_friends_public_rolls(user)
+              GT::UserFacebookManager.follow_all_friends_public_rolls(user)
+            }
+          end
 
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'])
-        return user, new_auth
-      else
-        StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
-        Rails.logger.error "[GT::UserManager#convert_faux_user_to_real] Failed to save user: #{user.errors.full_messages.join(',')}"
-        return user.errors
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['converted'])
+          return user, new_auth
+        else
+          StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
+          Rails.logger.error "[GT::UserManager#convert_eligible_user_to_real] Failed to save user: #{user.errors.full_messages.join(',')}"
+          return user.errors
+        end
       end
     end
 
@@ -418,15 +448,20 @@ module GT
       to.save
     end
 
+    # set a valid nickname for the user from their omniauth info
+    def self.set_nickname_from_omniauth(u, omniauth)
+      u.nickname = omniauth['info']['nickname']
+      u.nickname = omniauth['info']['name'] if u.nickname.blank? or u.nickname.match(/\.php\?/)
+      u.nickname = omniauth['info']['email'].split('@').first if u.nickname.blank? and omniauth['info']['email']
+    end
+
     private
 
       # Takes an omniauth hash to build one user, prefs, and an auth to go along with it
       def self.build_new_user_and_auth(omniauth)
         u = User.new
 
-        u.nickname = omniauth['info']['nickname']
-        u.nickname = omniauth['info']['name'] if u.nickname.blank? or u.nickname.match(/\.php\?/)
-        u.nickname = omniauth['info']['email'].split('@').first if u.nickname.blank? and omniauth['info']['email']
+        set_nickname_from_omniauth(u, omniauth)
 
         u.name = omniauth['info']['name']
 
@@ -453,6 +488,8 @@ module GT
         u.primary_email = params[:primary_email]
         u.password = params[:password]
         u.name = params[:name]
+
+        u.user_type = User::USER_TYPE[:anonymous] if params[:anonymous]
 
         u.server_created_on = "GT::UserManager#build_new_user_from_params/#{u.nickname}"
 
@@ -491,7 +528,11 @@ module GT
         r.creator = u
         r.public = true
         r.collaborative = false
-        r.roll_type = (u.user_type == User::USER_TYPE[:faux] ? Roll::TYPES[:special_public] : Roll::TYPES[:special_public_real_user])
+        if u.user_type == User::USER_TYPE[:faux] || u.user_type == User::USER_TYPE[:anonymous]
+          r.roll_type = Roll::TYPES[:special_public]
+        else
+          r.roll_type = Roll::TYPES[:special_public_real_user]
+        end
         r.title = u.nickname
         r.creator_thumbnail_url = u.user_image || u.user_image_original
         r.origin_network = origin_network if origin_network
@@ -554,6 +595,12 @@ module GT
             Rails.logger.error "[USER MANAGER ERROR] error with getting friends to rank: #{e}"
           end
         end
+      end
+
+      def self.follow_shelby_roll(u)
+        r = Roll.find(Settings::Roll.shelby_roll_id)
+        r.add_follower(u, false)
+        GT::Framer.backfill_dashboard_entries(u, r, 30, {:async_dashboard_entries => true})
       end
   end
 end

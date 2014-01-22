@@ -75,18 +75,28 @@ class V1::UserController < ApplicationController
   # @param [Optional, String] user.password The plaintext password, required unless generate_temporary_nickname_and_password == 1
   # @param [Optional, Boolean] generate_temporary_nickname_and_password If "1", nickname and password will use randomly generated values.
   # @param [Optional, String] client_identifier Used by iOS to update user appropriately (ie. add cohort, don't repeat onboarding on web)
+  # @param [Optional, String] user.user_type Primarily for new anonymous type user.
   #
   # Example payloads:
   #   Creating user will all details specified:
   #     {user: {name: "dan spinosa", nickname: "spinosa", primary_email: "dan@shelby.tv", password: "pass"}}
   #   Creating user with just name and email:
   #     {user: {name: "dan spinosa", primary_email: "dan@shelby.tv"}, generate_temporary_nickname_and_password: "1"}
+  #   Creating a purely anonymous user:
+  #     {anonymous: true}
   def create
-    if params[:generate_temporary_nickname_and_password] and params[:user]
-      params[:user][:nickname] = GT::UserManager.generate_temporary_nickname
-      params[:user][:password] = GT::UserManager.generate_temporary_password
+    if params[:user]
+      user_options = params[:user]
+    elsif params[:anonymous]
+      user_options = {:anonymous => true}
+    else
+      user_options = {}
     end
-    @user = GT::UserManager.create_new_user_from_params(params[:user]) if params[:user]
+    if ((params[:generate_temporary_nickname_and_password] && params[:user]) || params[:anonymous])
+      user_options[:nickname] = GT::UserManager.generate_temporary_nickname
+      user_options[:password] = GT::UserManager.generate_temporary_password
+    end
+    @user = GT::UserManager.create_new_user_from_params(user_options) unless user_options.empty?
 
     if @user and @user.errors.empty? and @user.valid?
       sign_in(:user, @user)
@@ -241,6 +251,11 @@ class V1::UserController < ApplicationController
         end
 
         if @user.update_attributes(params)
+          # convert an anonymous user to real if they have email and are updating their password
+          if params[:password] && (@user.user_type == User::USER_TYPE[:anonymous])
+            GT::UserManager.convert_eligible_user_to_real(@user)
+          end
+
           @status = 200
 
           # When changing the password, need to re-sign in (and bypass validation)

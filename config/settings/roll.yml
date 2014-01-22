@@ -3,11 +3,19 @@ defaults: &defaults
   db_port: '27017'
   db_options: {}
   mm_use_identity_map: true
+  shelby_roll_id: '4f901bd8b415cc466a0008ec'
   featured: [
     {
       category_title: "Featured",
       include_in: {onboarding: true},
       rolls: [
+        {
+          display_title: "Shelby",
+          id: "4f901bd8b415cc466a0008ec",
+          display_thumbnail_src: 'http://s3.amazonaws.com/shelby-gt-user-avatars/sq48x48/4d877a47f6db2414e2000001?1375389005000',
+          description : 'Discover videos the Shelby.tv staff loves',
+          include_in: {onboarding: true}
+        },
         {
           display_title: "Buzzfeed",
           id: "4f9577c488ba6b15ec0084c7",
@@ -223,13 +231,6 @@ defaults: &defaults
           id : '4f9731be88ba6b5309025c59',
           description : 'Science news and history',
           display_thumbnail_src : 'http://i3.ytimg.com/i/ZYTClx2T1of7BRZ86-8fow/mq1.jpg',
-          include_in: {onboarding: true}
-        },
-        {
-          display_title : 'THNKR',
-          id : '4fc8f77f88ba6b0881000995',
-          description : 'Extraordinary access to the people, stories, ideas',
-          display_thumbnail_src : 'https://lh4.googleusercontent.com/-s4bLGopD5b8/AAAAAAAAAAI/AAAAAAAAAAA/nU7h6CIJqT8/s60-c-k/photo.jpg',
           include_in: {onboarding: true}
         },
         {

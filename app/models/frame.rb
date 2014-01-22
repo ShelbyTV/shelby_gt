@@ -125,11 +125,12 @@ class Frame
   def add_to_watch_later!(u)
     raise ArgumentError, "must supply User" unless u and u.is_a?(User)
 
-    # add liker to upvoters array & inc frame liker count
-    Frame.collection.update({:_id => self.id}, {
-      :$addToSet => {:f => u.id},
-      :$inc => {:n => 1}
-    })
+    #inc frame liker count
+    update_params = {:$inc => {:n => 1}}
+    # add liker to upvoters array if they are not anonymous
+    update_params[:$addToSet] = {:f => u.id} unless u.user_type == User::USER_TYPE[:anonymous]
+
+    Frame.collection.update({:_id => self.id}, update_params)
     self.reload
     self.update_score
     self.save

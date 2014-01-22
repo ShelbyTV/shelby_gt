@@ -176,7 +176,7 @@ describe 'v1/user' do
           response.body.should have_json_path('result/0/creator_authentications/0/name')
           response.body.should be_json_eql("\"twitter\"").at_path('result/0/creator_authentications/0/provider')
           response.body.should be_json_eql("\"#{@u1.authentications[0].uid}\"").at_path('result/0/creator_authentications/0/uid')
-          response.body.should be_json_eql("\"nickname\"").at_path('result/0/creator_authentications/0/nickname')
+          response.body.should be_json_eql("\"#{@u1.authentications[0].nickname}\"").at_path('result/0/creator_authentications/0/nickname')
           response.body.should be_json_eql("\"name\"").at_path('result/0/creator_authentications/0/name')
         end
 
@@ -1168,6 +1168,22 @@ describe 'v1/user' do
         @u1.reload.valid_password?(pass).should == true
       end
 
+      it "converts the user if an anonymous user is updated with an email address and password" do
+        roll = Factory.build(:roll, :title => @u1.nickname)
+        roll.creator = @u1
+        @u1.public_roll = roll
+        @u1.user_type = User::USER_TYPE[:anonymous]
+        @u1.primary_email = nil
+        @u1.authentications = []
+
+        put '/v1/user/'+@u1.id+'?primary_email=barack%40whitehouse.gov&password=supportsmassassignment&password_confirmation=supportsmassassignment'
+        response.body.should be_json_eql(200).at_path("status")
+
+        parsed_response = parse_json(response.body)
+        parsed_response["result"]["primary_email"].should == "barack@whitehouse.gov"
+        parsed_response["result"]["user_type"].should == User::USER_TYPE[:converted]
+      end
+
       it "will return error if user id is not the current_user" do
         put "/v1/user/A1/visit"
         response.body.should be_json_eql(404).at_path("status")
@@ -1445,6 +1461,11 @@ describe 'v1/user' do
     end
 
     describe "POST create" do
+
+      before(:each) do
+        @shelby_roll = Factory.create(:roll, :id => Settings::Roll.shelby_roll_id)
+      end
+
       it "should create a new user and return via JSON" do
         post '/v1/user', :user => { :name => "some name",
                                     :nickname => Factory.next(:nickname),

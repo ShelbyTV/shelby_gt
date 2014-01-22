@@ -125,7 +125,7 @@ class Video
   def like!(liker)
     # increment like_count atomically, abbreviation is :v
     self.increment({:v => 1})
-    GT::VideoLikerManager.add_liker_for_video(self, liker)
+    GT::VideoLikerManager.add_liker_for_video(self, liker) unless liker.user_type == User::USER_TYPE[:anonymous]
     self.reload
   end
 

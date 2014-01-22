@@ -7,7 +7,7 @@ node do |r|
   creator = r.creator
   result = {}
   if creator
-    if creator.user_type == 1 && creator.authentications && !creator.authentications.empty?
+    if creator.user_type == User::USER_TYPE[:faux] && creator.authentications && !creator.authentications.empty?
       result[:creator_nickname] = creator.authentications[0].nickname
       result[:creator_name] = creator.authentications[0].name
     else

@@ -160,6 +160,71 @@ describe GT::UserMerger do
       end
     end
 
+    context "into anonymous user" do
+      before(:each) do
+        @into_user.user_type = User::USER_TYPE[:anonymous]
+        @into_user_public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public])
+        @into_user.public_roll = @into_user_public_roll
+        @into_user.app_progress = AppProgress.new
+
+        @nickname = "nick-#{rand.to_s}"
+        @omniauth["info"]["nickname"] = @nickname
+      end
+
+      it "converts the anonymous user" do
+        GT::UserMerger.merge_users(@other_user, @into_user, @omniauth)
+
+        @into_user.reload
+        @into_user.user_type.should == User::USER_TYPE[:converted]
+        MongoMapper::Plugins::IdentityMap.clear
+        @into_user_public_roll.reload.roll_type.should == Roll::TYPES[:special_public_real_user]
+      end
+
+      it "works the same if no omniauth param is passed in" do
+        GT::UserMerger.merge_users(@other_user, @into_user)
+
+        @into_user.reload
+        @into_user.user_type.should == User::USER_TYPE[:converted]
+        MongoMapper::Plugins::IdentityMap.clear
+        @into_user_public_roll.reload.roll_type.should == Roll::TYPES[:special_public_real_user]
+      end
+
+      it "takes the nickname from the omniauth param" do
+        GT::UserMerger.merge_users(@other_user, @into_user, @omniauth)
+        MongoMapper::Plugins::IdentityMap.clear
+        @into_user.reload
+        @into_user.nickname.should == @nickname
+      end
+
+      it "takes the nickname from the copied auths if there's no omniauth param" do
+        GT::UserMerger.merge_users(@other_user, @into_user)
+        @into_user.nickname.should == @into_user.authentications.last.nickname
+      end
+
+      it "takes the nickname from the merged in user if there are no auths" do
+        @into_user.authentications = []
+        @other_user.authentications = []
+
+        GT::UserMerger.merge_users(@other_user, @into_user)
+        @into_user.nickname.should == @other_user.nickname
+      end
+
+      it "changes the nickname pulled from omniauth if it's taken" do
+        user_has_nickname = Factory.create(:user, :nickname => @nickname)
+
+        GT::UserMerger.merge_users(@other_user, @into_user, @omniauth)
+
+        @into_user.nickname.should_not == @nickname
+        @into_user.nickname.should be_start_with @nickname
+      end
+
+      it "sets the merged into user's app_progress onboarding to true" do
+        GT::UserMerger.merge_users(@other_user, @into_user, @omniauth)
+        MongoMapper::Plugins::IdentityMap.clear
+        @into_user.reload
+        @into_user.app_progress.onboarding.should == true
+      end
+    end
 
     context "handle special Rolls" do
       before(:each) do

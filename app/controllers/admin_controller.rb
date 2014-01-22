@@ -77,7 +77,7 @@ class AdminController < ApplicationController
     invited_uids = invites.map {|invite| invite.invitee_id}.compact
     @invited_users = User.find(invited_uids)
   end
-  
+
   def destroy_user
     if (@user = User.find params[:id])
       t = T101.new(:target => @user)

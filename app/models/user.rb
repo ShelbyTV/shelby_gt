@@ -63,7 +63,8 @@ class User
     :real => 0,
     :faux => 1,
     :converted => 2,
-    :service => 3
+    :service => 3,
+    :anonymous => 4
   }.freeze
   key :user_type, Integer, :abbr => :ac, :default => USER_TYPE[:real]
 
@@ -223,7 +224,7 @@ class User
 
 
   RESERVED_NICNAMES = %w(admin system anonymous)
-  ROUTE_PREFIXES = %w(signout login users user authentication authentications auth setup bookmarklet pages images javascripts robots stylesheets staging favicon send-invite isolated-roll roll rollFromFrame embed channels help legal search following onboarding preferences likes saves stream tools community)
+  ROUTE_PREFIXES = %w(signout login users user authentication authentications auth setup bookmarklet pages images javascripts robots stylesheets staging favicon send-invite isolated-roll roll rollFromFrame embed channels help legal search following onboarding preferences likes saves stream tools community shares user signout)
   validates_exclusion_of :nickname, :in => RESERVED_NICNAMES + ROUTE_PREFIXES
 
   validates_format_of :primary_email, :with => /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\Z/, :allow_blank => true
@@ -314,18 +315,17 @@ class User
   def gt_enable!
     unless self.gt_enabled?
       self.gt_enabled = true
-      self.user_type = (self.user_type == USER_TYPE[:faux] ? USER_TYPE[:converted] : USER_TYPE[:real])
+
       self.cohorts << Settings::User.current_cohort unless self.cohorts.include? Settings::User.current_cohort
       GT::UserManager.ensure_users_special_rolls(self, true)
-      self.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
 
       self.save(:validate => false)
-      self.public_roll.save(:validate => false)
 
-      ShelbyGT_EM.next_tick {
-        rhombus = Rhombus.new('shelby', '_rhombus_gt')
-        rhombus.post('/sadd', {:args => ['new_gt_enabled_users', self.id.to_s]})
-      }
+      public_roll = self.public_roll
+      if (self.user_type == User::USER_TYPE[:real] || self.user_type == User::USER_TYPE[:converted])
+        public_roll.roll_type = Roll::TYPES[:special_public_real_user]
+      end
+      public_roll.save(:validate => false)
     end
   end
 

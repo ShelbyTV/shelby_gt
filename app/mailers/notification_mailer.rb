@@ -79,8 +79,8 @@ class NotificationMailer < ActionMailer::Base
 
     @user_to = user_to
 
-    if user_from
-      # liked by a logged in user
+    if user_from && (user_from.user_type != User::USER_TYPE[:anonymous])
+      # liked by a logged in user who is not anonymous
       @user_from = user_from
       @user_from_name_and_alias = (@user_from.name && @user_from.nickname) ? "#{@user_from.name} (#{@user_from.nickname})" : (@user_from.name or @user_from.nickname)
       @user_from_name = (@user_from.name || @user_from.nickname)

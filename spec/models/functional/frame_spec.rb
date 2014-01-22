@@ -384,6 +384,14 @@ describe Frame do
       @frame.upvoters.length.should == 1
     end
 
+    it "does not add the user to the upvoters array if they are an anonymous user" do
+      @u1.user_type = User::USER_TYPE[:anonymous]
+
+      @frame.add_to_watch_later!(@u1)
+
+      @frame.upvoters.length.should == 0
+    end
+
     it "should increment the number of likes" do
       lambda {
         @frame.add_to_watch_later!(@u1)
@@ -391,7 +399,7 @@ describe Frame do
 
       u2 = Factory.create(:user)
       u2.public_roll = Factory.create(:roll, :creator => u2)
-      u3 = Factory.create(:user)
+      u3 = Factory.create(:user, :user_type => User::USER_TYPE[:anonymous])
       u3.public_roll = Factory.create(:roll, :creator => u3)
 
       lambda {
@@ -400,10 +408,11 @@ describe Frame do
       }.should change { @frame.like_count } .by 2
     end
 
-    it "should increment the number of video likes" do
-      lambda {
-        @frame.add_to_watch_later!(@u1)
-      }.should change { @video.like_count } .by 1
+    it "increments the number of video likes" do
+      expect{@frame.add_to_watch_later!(@u1)}.to change(@video, :like_count).by 1
+
+      @u1.user_type = User::USER_TYPE[:anonymous]
+      expect{@frame.add_to_watch_later!(@u1)}.to change(@video, :like_count).by 1
     end
 
     it "increments the number of video likers" do
@@ -412,6 +421,16 @@ describe Frame do
 
     it "inserts a VideoLiker record in a VideoLikerBucket" do
       expect{@frame.add_to_watch_later!(@u1)}.to change(VideoLikerBucket, :count).by(1)
+    end
+
+    it "does not increment the number of video likers if the liking user is anonymous" do
+      @u1.user_type = User::USER_TYPE[:anonymous]
+      expect{@frame.add_to_watch_later!(@u1)}.not_to change(@video, :tracked_liker_count)
+    end
+
+    it "does not insert a VideoLiker record in a VideoLikerBucket if the liking user is anonymous" do
+      @u1.user_type = User::USER_TYPE[:anonymous]
+      expect{@frame.add_to_watch_later!(@u1)}.not_to change(VideoLikerBucket, :count)
     end
 
     it "should increment the number of likes once for each user" do
@@ -704,6 +723,24 @@ describe Frame do
           @frame.upvoters.should_not include(@stranger.id)
           @frame.upvoters.should include(@stranger2.id)
           @frame.upvoters.length.should == 1
+        end
+
+        it "doesn't blow up if the user is not in the frame ancestor's upvoters array (for anonymous likers)" do
+          anonymous_stranger = Factory.create(:user, :user_type => User::USER_TYPE[:anonymous])
+          anonymous_stranger_public_roll = Factory.create(:roll, :creator => anonymous_stranger, :roll_type => Roll::TYPES[:special_public])
+          anonymous_stranger.public_roll = anonymous_stranger_public_roll
+          MongoMapper::Plugins::IdentityMap.clear
+
+          @frame.add_to_watch_later!(anonymous_stranger)
+          @frame.upvoters.should_not include(anonymous_stranger.id)
+          old_like_count = @frame.like_count
+
+          expect {
+            anonymous_stranger_public_roll.frames.first.destroy
+            @frame.reload
+          }.not_to change(@frame.upvoters, :length)
+
+          @frame.like_count.should == old_like_count - 1
         end
 
         it "should decrement the number of likes of the frame's ancestor (original upvoted frame)" do
