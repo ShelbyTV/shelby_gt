@@ -142,19 +142,19 @@ describe 'v1/token' do
             @current_user_via_token = Factory.create(:user)
             @current_user_via_token.ensure_authentication_token!
             @current_user_via_token.save
-          end
 
-          it "should merge in a faux user (if different from current_user)" do
             @fuser.authentications[0].oauth_token = nil
             @fuser.authentications[0].oauth_secret = nil
             @fuser.authentications[1].oauth_token = nil
             @fuser.authentications[1].oauth_secret = nil
             @fuser.save(:validate => false)
 
-            fb_token = "new_fb-tokeno827u354"
+            @fb_token = "new_fb-tokeno827u354"
+          end
 
+          it "should merge in a faux user (if different from current_user)" do
             lambda {
-              post "/v1/token?provider_name=facebook&uid=#{@fb_auth.uid}&token=#{fb_token}&auth_token=#{@current_user_via_token.authentication_token}"
+              post "/v1/token?provider_name=facebook&uid=#{@fb_auth.uid}&token=#{@fb_token}&auth_token=#{@current_user_via_token.authentication_token}"
 
               response.body.should be_json_eql(200).at_path("status")
               #original user returned
@@ -170,9 +170,25 @@ describe 'v1/token' do
               #and merged in user is gone
             }.should change { User.count } .by(-1)
 
-            @current_user_via_token.authentications[2].oauth_token.should == fb_token
+            @current_user_via_token.authentications[2].oauth_token.should == @fb_token
           end
 
+          it "should convert an anonymous user" do
+            @current_user_via_token.user_type = User::USER_TYPE[:anonymous]
+            @current_user_via_token.app_progress = AppProgress.new
+            @current_user_via_token.public_roll = public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public])
+            @current_user_via_token.save
+
+            post "/v1/token?provider_name=facebook&uid=#{@fb_auth.uid}&token=#{@fb_token}&auth_token=#{@current_user_via_token.authentication_token}"
+
+            response.body.should be_json_eql(200).at_path("status")
+
+            parsed_response = parse_json(response.body)
+            parsed_response['result']['user_type'].should == User::USER_TYPE[:converted]
+            parsed_response['result']['app_progress']['onboarding'].should be_true
+
+            public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
+          end
         end
       end
 
@@ -258,10 +274,11 @@ describe 'v1/token' do
             @current_user_via_token = Factory.create(:user)
             @current_user_via_token.ensure_authentication_token!
             @current_user_via_token.save
+
+            GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
           end
 
           it "should add a new authentication to current user" do
-            GT::ImposterOmniauth.stub(:get_user_info).and_return(@omniauth_hash)
 
             lambda {
               post "/v1/token?provider_name=twitter&uid=#{@uid}&token=#{@oauth_token}&secret=#{@oauth_secret}&auth_token=#{@current_user_via_token.authentication_token}"
@@ -280,9 +297,27 @@ describe 'v1/token' do
 
             u = User.find_by_nickname(@nickname)
             u.should == nil
+
+            @current_user_via_token.destroy
+          end
+
+          it "should convert an anonymous user" do
+            @current_user_via_token.user_type = User::USER_TYPE[:anonymous]
+            @current_user_via_token.app_progress = AppProgress.new
+            @current_user_via_token.public_roll = public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public])
+            @current_user_via_token.save
+
+            post "/v1/token?provider_name=twitter&uid=#{@uid}&token=#{@oauth_token}&secret=#{@oauth_secret}&auth_token=#{@current_user_via_token.authentication_token}"
+
+            response.body.should be_json_eql(200).at_path("status")
+
+            parsed_response = parse_json(response.body)
+            parsed_response['result']['user_type'].should == User::USER_TYPE[:converted]
+            parsed_response['result']['app_progress']['onboarding'].should be_true
+
+            public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
           end
         end
-
 
       end
     end
