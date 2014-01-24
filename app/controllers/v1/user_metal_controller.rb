@@ -26,8 +26,8 @@ class V1::UserMetalController < MetalController
   # @param [Optional, boolean] postable Set this to true (or use the second route) if you only want rolls postable by current user returned (used by bookmarklet)
   def roll_followings
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
-      if current_user and current_user.id.to_s == params[:id]
-        fast_stdout = `cpp/bin/userRollFollowings -u #{current_user.downcase_nickname} #{params[:postable] ? "-p" : ""} #{params[:include_faux] ? "-i" : ""} -e #{Rails.env}`
+      if current_user
+        fast_stdout = `cpp/bin/userRollFollowings -d #{params[:id]} #{params[:postable] ? "-p" : ""} #{params[:include_faux] ? "-i" : ""} #{current_user.id.to_s == params[:id] ? "-s" : ""} -e #{Rails.env}`
         fast_status = $?.to_i
 
         if (fast_status == 0)

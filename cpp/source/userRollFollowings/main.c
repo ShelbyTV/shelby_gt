@@ -14,8 +14,10 @@
 
 static struct options {
    char* user;
+   char* userId;
    int postable;
    int includeFaux;
+   int includeSpecial;
    char *environment;
 } options;
 
@@ -31,11 +33,13 @@ struct timeval beginTime;
 void printHelpText()
 {
    printf("userRollFollowings usage:\n");
-   printf("   -h --help           Print this help message\n");
-   printf("   -u --user           User downcase nickname\n");
-   printf("   -p --postable       Only return postable rolls\n");
-   printf("   -i --include-faux   Include faux user rolls\n");
-   printf("   -e --environment    Specify environment: production, staging, test, or development\n");
+   printf("   -h --help            Print this help message\n");
+   printf("   -u --user            User downcase nickname\n");
+   printf("   -d --user-id         User id\n");
+   printf("   -p --postable        Only return postable rolls\n");
+   printf("   -i --include-faux    Include faux user rolls\n");
+   printf("   -s --include-special Include the user's special rolls\n");
+   printf("   -e --environment     Specify environment: production, staging, test, or development\n");
 }
 
 void parseUserOptions(int argc, char **argv)
@@ -45,16 +49,18 @@ void parseUserOptions(int argc, char **argv)
    while (1) {
       static struct option long_options[] =
       {
-         {"help",         no_argument,       0, 'h'},
-         {"user",         required_argument, 0, 'u'},
-         {"postable",     no_argument,       0, 'p'},
-         {"include-faux", no_argument,       0, 'i'},
-         {"environment",  required_argument, 0, 'e'},
+         {"help",            no_argument,       0, 'h'},
+         {"user",            optional_argument, 0, 'u'},
+         {"user-id",         optional_argument, 0, 'd'},
+         {"postable",        no_argument,       0, 'p'},
+         {"include-faux",    no_argument,       0, 'i'},
+         {"include-special", no_argument,       0, 's'},
+         {"environment",     required_argument, 0, 'e'},
          {0, 0, 0, 0}
       };
 
       int option_index = 0;
-      c = getopt_long(argc, argv, "hu:pie:", long_options, &option_index);
+      c = getopt_long(argc, argv, "hu:d:pise:", long_options, &option_index);
 
       /* Detect the end of the options. */
       if (c == -1) {
@@ -67,12 +73,20 @@ void parseUserOptions(int argc, char **argv)
             options.user = optarg;
             break;
 
+         case 'd':
+            options.userId = optarg;
+            break;
+
          case 'p':
             options.postable = TRUE;
             break;
 
          case 'i':
             options.includeFaux = TRUE;
+            break;
+
+         case 's':
+            options.includeSpecial = TRUE;
             break;
 
          case 'e':
@@ -93,8 +107,8 @@ void parseUserOptions(int argc, char **argv)
       exit(1);
    }
 
-   if (strcmp(options.user, "") == 0) {
-      printf("Specifying -u or --user is required.\n");
+   if (strcmp(options.user, "") == 0 && strcmp(options.userId, "") == 0) {
+      printf("Specifying user id or nickname is required.\n");
       printHelpText();
       exit(1);
    }
@@ -103,8 +117,10 @@ void parseUserOptions(int argc, char **argv)
 void setDefaultOptions()
 {
    options.user = "";
+   options.userId = "";
    options.postable = FALSE;
    options.includeFaux = FALSE;
+   options.includeSpecial = FALSE;
    options.environment = "";
 }
 
@@ -336,36 +352,38 @@ void printJsonOutput(sobContext sob)
    mrjsonIntAttribute(context, "status", 200);
    mrjsonStartArray(context, "result");
 
-   bson *userBson;
-   bson *publicRoll;
-   bson *watchLaterRoll;
+   if (options.includeSpecial) {
+      bson *userBson;
+      bson *publicRoll;
+      bson *watchLaterRoll;
 
-   int publicRollStatus = FALSE;
-   int watchLaterRollStatus = FALSE;
+      int publicRollStatus = FALSE;
+      int watchLaterRollStatus = FALSE;
 
-   int userStatus = sobGetBsonByOid(sob, SOB_USER, userOid, &userBson);
+      int userStatus = sobGetBsonByOid(sob, SOB_USER, userOid, &userBson);
 
-   if (userStatus) {
-      publicRollStatus = sobGetBsonByOidField(sob,
-                                              SOB_ROLL,
-                                              userBson,
-                                              SOB_USER_PUBLIC_ROLL_ID,
-                                              &publicRoll);
+      if (userStatus) {
+         publicRollStatus = sobGetBsonByOidField(sob,
+                                                 SOB_ROLL,
+                                                 userBson,
+                                                 SOB_USER_PUBLIC_ROLL_ID,
+                                                 &publicRoll);
 
-      watchLaterRollStatus = sobGetBsonByOidField(sob,
-                                                  SOB_ROLL,
-                                                  userBson,
-                                                  SOB_USER_WATCH_LATER_ROLL_ID,
-                                                  &watchLaterRoll);
-   }
+         watchLaterRollStatus = sobGetBsonByOidField(sob,
+                                                     SOB_ROLL,
+                                                     userBson,
+                                                     SOB_USER_WATCH_LATER_ROLL_ID,
+                                                     &watchLaterRoll);
+      }
 
-   // first 2 rolls are always the user public roll and the user watch later roll
-   if (publicRollStatus) {
-      printJsonRoll(sob, context, publicRoll, getRollFollowedAtTime(sob, publicRoll, NULL));
-   }
+      // first 2 rolls are always the user public roll and the user watch later roll
+      if (publicRollStatus) {
+         printJsonRoll(sob, context, publicRoll, getRollFollowedAtTime(sob, publicRoll, NULL));
+      }
 
-   if (watchLaterRollStatus) {
-      printJsonRoll(sob, context, watchLaterRoll, getRollFollowedAtTime(sob, watchLaterRoll, NULL));
+      if (watchLaterRollStatus) {
+         printJsonRoll(sob, context, watchLaterRoll, getRollFollowedAtTime(sob, watchLaterRoll, NULL));
+      }
    }
 
    cvector rollSortVec = cvectorAlloc(sizeof(rollSortable));
@@ -412,10 +430,16 @@ int loadData(sobContext sob)
    cvector rollOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector userOids = cvectorAlloc(sizeof(bson_oid_t));
 
-   userOid = sobGetUniqueOidByStringField(sob,
-                                          SOB_USER,
-                                          SOB_USER_DOWNCASE_NICKNAME,
-                                          options.user);
+   if (strcmp(options.userId, "") != 0) {
+      // if a user id was passed as a parameter, use that
+      bson_oid_from_string(&userOid, options.userId);
+   } else {
+      // otherwise lookup the user by the nickname supplied and get their id
+      userOid = sobGetUniqueOidByStringField(sob,
+                                             SOB_USER,
+                                             SOB_USER_DOWNCASE_NICKNAME,
+                                             options.user);
+   }
 
    cvectorAddElement(userOids, &userOid);
    sobLoadAllById(sob, SOB_USER, userOids);
