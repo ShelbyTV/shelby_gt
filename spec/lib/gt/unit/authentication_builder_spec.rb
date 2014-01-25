@@ -63,14 +63,29 @@ describe GT::AuthenticationBuilder do
     @u.name.should == "some name"
   end
 
-  it "should incorporate auth.email on normalization" do
-    @u.primary_email.nil?.should == true
-    auth = GT::AuthenticationBuilder.build_from_omniauth(@omniauth_hash)
-    @u.authentications << auth
+  context "primary_email" do
 
-    GT::AuthenticationBuilder.normalize_user_info(@u, auth)
+    before(:each) do
+      @u.primary_email.nil?.should == true
+      @auth = GT::AuthenticationBuilder.build_from_omniauth(@omniauth_hash)
+      @u.authentications << @auth
+    end
 
-    @u.primary_email.should == "test@test.com"
+    it "should incorporate auth.email on normalization" do
+      GT::AuthenticationBuilder.normalize_user_info(@u, @auth)
+
+      @u.primary_email.should == "test@test.com"
+    end
+
+    it "should not incorporate auth.email if there is an existing user with that email" do
+      other_user = Factory.create(:user, :primary_email => @omniauth_hash['info']['email'])
+      other_user.save
+
+      expect {
+        GT::AuthenticationBuilder.normalize_user_info(@u, @auth)
+      }.not_to change(@u, :primary_email)
+    end
+
   end
 
   it "should incorporate auth.first_name and auth.last_name on normalization when present" do

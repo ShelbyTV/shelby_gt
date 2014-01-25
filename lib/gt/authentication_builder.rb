@@ -95,7 +95,13 @@ module GT
         u.user_image_original = auth.image.gsub("_normal", "")
       end
 
-      u.primary_email = auth.email if u.primary_email.nil? and !auth.email.blank?
+      #if the user doesn't already have a valid email address and the auth does,
+      #make sure the auth's email isn't taken by another user, then give it to this user
+      if u.primary_email.nil? and !auth.email.blank?
+        if User.collection.find({:primary_email => auth.email},{:fields => {:primary_email => 1, :_id => 0}}).limit(1).count(true) == 0
+          u.primary_email = auth.email
+        end
+      end
 
       if u.name.blank?
         u.name = auth.name
