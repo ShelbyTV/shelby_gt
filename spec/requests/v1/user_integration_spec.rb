@@ -234,49 +234,70 @@ describe 'v1/user' do
             parse_json(response.body)["result"][0]["followed_at"].should == @u1.roll_followings[0].id.generation_time.to_f
           end
 
-          it "should return rolls in followed_at descending order" do
-            r0 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
-            r0.add_follower(@u1)
-            r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
-            r1.add_follower(@u1)
-            r2 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
-            r2.add_follower(@u1)
+          context "non-special rolls" do
+            before(:each) do
+              @r0 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
+              @r0.add_follower(@u1)
+              @r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
+              @r1.add_follower(@u1)
+              @r2 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
+              @r2.add_follower(@u1)
 
-            #adjust the roll followings id which in turn is used as creation time
-            @u1.roll_following_for(r1).update_attribute(:_id, BSON::ObjectId.from_time(50.days.ago))
-            @u1.roll_following_for(r2).update_attribute(:_id, BSON::ObjectId.from_time(10.days.ago))
-            @u1.roll_following_for(r0).update_attribute(:_id, BSON::ObjectId.from_time(1.days.ago))
-            @u1.save
+              #adjust the roll followings id which in turn is used as creation time
+              @u1.roll_following_for(@r1).update_attribute(:_id, BSON::ObjectId.from_time(50.days.ago))
+              @u1.roll_following_for(@r2).update_attribute(:_id, BSON::ObjectId.from_time(10.days.ago))
+              @u1.roll_following_for(@r0).update_attribute(:_id, BSON::ObjectId.from_time(1.days.ago))
+              @u1.save
+            end
+
+          it "should return rolls in followed_at descending order" do
 
             get '/v1/user/'+@u1.id+'/rolls/following'
             response.body.should be_json_eql(200).at_path("status")
             parse_json(response.body)["result"].class.should eq(Array)
-            parse_json(response.body)["result"][0]["id"].should == r0.id.to_s
-            parse_json(response.body)["result"][1]["id"].should == r2.id.to_s
-            parse_json(response.body)["result"][2]["id"].should == r1.id.to_s
+            response.body.should have_json_size(3).at_path('result')
+            parse_json(response.body)["result"][0]["id"].should == @r0.id.to_s
+            parse_json(response.body)["result"][1]["id"].should == @r2.id.to_s
+            parse_json(response.body)["result"][2]["id"].should == @r1.id.to_s
           end
 
-          it "should have the first three rolls be mine, hearts, watch later" do
-            r0 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
-            r0.add_follower(@u1)
-            wl_roll = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_watch_later])
-            wl_roll.add_follower(@u1)
-            public_roll = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user])
-            public_roll.add_follower(@u1)
-            hearts_roll = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_upvoted])
-            hearts_roll.add_follower(@u1)
-            r3 = Factory.create(:roll, :creator => @u1)
-            r3.add_follower(@u1)
-            @u1.public_roll = public_roll
-            @u1.upvoted_roll = hearts_roll
-            @u1.watch_later_roll = wl_roll
-            @u1.save
+          it "limits the number of non-special rolls returned according to the limit parameter" do
+            get '/v1/user/'+@u1.id+'/rolls/following?limit=2'
+            response.body.should be_json_eql(200).at_path("status")
+            response.body.should have_json_size(2).at_path('result')
+          end
 
-            get '/v1/user/'+@u1.id+'/rolls/following'
-            parse_json(response.body)["result"][0]["id"].should == public_roll.id.to_s
-            parse_json(response.body)["result"][0]["roll_type"].should == public_roll.roll_type
-            #no longer returning hearts roll
-            parse_json(response.body)["result"][1]["id"].should == wl_roll.id.to_s
+          end
+
+          context "special rolls" do
+            before(:each) do
+              r0 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
+              r0.add_follower(@u1)
+              r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
+              r1.add_follower(@u1)
+              @wl_roll = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_watch_later])
+              @wl_roll.add_follower(@u1)
+              @public_roll = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user])
+              @public_roll.add_follower(@u1)
+              r3 = Factory.create(:roll, :creator => @u1)
+              r3.add_follower(@u1)
+              @u1.public_roll = @public_roll
+              @u1.watch_later_roll = @wl_roll
+              @u1.save
+            end
+
+            it "should have the first three rolls be mine, hearts, watch later" do
+              get '/v1/user/'+@u1.id+'/rolls/following'
+              response.body.should have_json_size(4).at_path('result')
+              parse_json(response.body)["result"][0]["id"].should == @public_roll.id.to_s
+              parse_json(response.body)["result"][0]["roll_type"].should == @public_roll.roll_type
+              parse_json(response.body)["result"][1]["id"].should == @wl_roll.id.to_s
+            end
+
+            it "does not apply the limit to the special rolls" do
+              get '/v1/user/'+@u1.id+'/rolls/following?limit=1'
+              response.body.should have_json_size(3).at_path('result')
+            end
           end
         end
 

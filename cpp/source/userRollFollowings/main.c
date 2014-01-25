@@ -18,6 +18,7 @@ static struct options {
    int postable;
    int includeFaux;
    int includeSpecial;
+   int limit;
    char *environment;
 } options;
 
@@ -39,6 +40,7 @@ void printHelpText()
    printf("   -p --postable        Only return postable rolls\n");
    printf("   -i --include-faux    Include faux user rolls\n");
    printf("   -s --include-special Include the user's special rolls\n");
+   printf("   -l --limit           Maximum number of non-special rolls to return\n");
    printf("   -e --environment     Specify environment: production, staging, test, or development\n");
 }
 
@@ -55,12 +57,13 @@ void parseUserOptions(int argc, char **argv)
          {"postable",        no_argument,       0, 'p'},
          {"include-faux",    no_argument,       0, 'i'},
          {"include-special", no_argument,       0, 's'},
+         {"limit",           optional_argument, 0, 'l'},
          {"environment",     required_argument, 0, 'e'},
          {0, 0, 0, 0}
       };
 
       int option_index = 0;
-      c = getopt_long(argc, argv, "hu:d:pise:", long_options, &option_index);
+      c = getopt_long(argc, argv, "hu:d:pisl:e:", long_options, &option_index);
 
       /* Detect the end of the options. */
       if (c == -1) {
@@ -88,6 +91,9 @@ void parseUserOptions(int argc, char **argv)
          case 's':
             options.includeSpecial = TRUE;
             break;
+
+         case 'l':
+            options.limit = atoi(optarg);
 
          case 'e':
             options.environment = optarg;
@@ -121,6 +127,7 @@ void setDefaultOptions()
    options.postable = FALSE;
    options.includeFaux = FALSE;
    options.includeSpecial = FALSE;
+   options.limit = 0;
    options.environment = "";
 }
 
@@ -405,7 +412,16 @@ void printJsonOutput(sobContext sob)
 
    cvectorSort(rollSortVec, &rollSortByFollowedAt);
 
-   for (int i = 0; i < cvectorCount(rollSortVec); i++) {
+   int rollCount = cvectorCount(rollSortVec);
+   int numRollsToPrint;
+
+   if (options.limit > 0) {
+    numRollsToPrint = options.limit < rollCount ? options.limit : rollCount;
+   } else {
+    numRollsToPrint = rollCount;
+   }
+
+   for (int i = 0; i < numRollsToPrint; i++) {
       rollSortable *rs = (rollSortable *)cvectorGetElement(rollSortVec, i);
       printJsonRoll(sob, context, rs->roll, rs->followedAt.t);
    }
@@ -429,6 +445,7 @@ int loadData(sobContext sob)
 {
    cvector rollOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector userOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector creatorOids = cvectorAlloc(sizeof(bson_oid_t));
 
    if (strcmp(options.userId, "") != 0) {
       // if a user id was passed as a parameter, use that
@@ -447,8 +464,8 @@ int loadData(sobContext sob)
    sobGetOidVectorFromObjectArrayField(sob, SOB_USER, SOB_USER_ROLL_FOLLOWINGS, SOB_ROLL_FOLLOWING_ROLL_ID, rollOids);
    sobLoadAllById(sob, SOB_ROLL, rollOids);
 
-   sobGetOidVectorFromObjectField(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, userOids);
-   sobLoadAllById(sob, SOB_USER, userOids);
+   sobGetOidVectorFromObjectField(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, creatorOids);
+   sobLoadAllById(sob, SOB_USER, creatorOids);
 
    return TRUE;
 }
