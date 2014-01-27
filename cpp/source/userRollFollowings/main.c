@@ -8,9 +8,16 @@
 #include "lib/mrjson/mrjson.h"
 #include "lib/shelby/shelby.h"
 #include "lib/cvector/cvector.h"
+#include "lib/uthash/uthash.h"
 
 #define TRUE 1
 #define FALSE 0
+
+typedef struct {
+  bson_oid_t rollId;
+  bson *rollBson;
+  UT_hash_handle hh;
+} rollFollowingBsonEntry;
 
 static struct options {
    char *userId;
@@ -23,7 +30,9 @@ static struct options {
    char *environment;
 } options;
 
+rollFollowingBsonEntry*rollFollowings;
 bson_oid_t userOid;
+cvector rollOids;
 
 struct timeval beginTime;
 
@@ -333,11 +342,28 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
    mrjsonEndObject(context);
 }
 
-void printJsonOutput(sobContext sob)
+int printJsonOutput(sobContext sob)
 {
    // get rolls
    cvector rolls = cvectorAlloc(sizeof(bson *));
    sobGetBsonVector(sob, SOB_ROLL, rolls);
+
+   // put the rolls into a hash for faster access
+   rollFollowings = NULL;
+   for (int i = 0; i <  cvectorCount(rolls); i++) {
+      bson *roll = *(bson **)cvectorGetElement(rolls, i);
+      rollFollowingBsonEntry *toInsert = (rollFollowingBsonEntry *)malloc(sizeof(rollFollowingBsonEntry));
+      if (!toInsert) {
+        return FALSE;
+      }
+      memset(toInsert, 0, sizeof(rollFollowingBsonEntry));
+
+      bson_oid_t rollOid;
+      sobBsonOidField(SOB_ROLL, SOB_ROLL_ID, roll, &rollOid);
+      toInsert->rollId = rollOid;
+      toInsert->rollBson = roll;
+      HASH_ADD(hh, rollFollowings, rollId, sizeof(bson_oid_t), toInsert);
+   }
 
    // allocate context; match Ruby API "status" and "result" response syntax
    sobEnvironment environment = sobGetEnvironment(sob);
@@ -348,39 +374,42 @@ void printJsonOutput(sobContext sob)
 
    if (options.includeSpecial) {
       bson *userBson;
-      bson *publicRoll;
-      bson *watchLaterRoll;
-
-      int publicRollStatus = FALSE;
-      int watchLaterRollStatus = FALSE;
 
       int userStatus = sobGetBsonByOid(sob, SOB_USER, userOid, &userBson);
 
       if (userStatus) {
-         publicRollStatus = sobGetBsonByOidField(sob,
-                                                 SOB_ROLL,
-                                                 userBson,
-                                                 SOB_USER_PUBLIC_ROLL_ID,
-                                                 &publicRoll);
+         int rollStatus;
 
-         watchLaterRollStatus = sobGetBsonByOidField(sob,
-                                                     SOB_ROLL,
-                                                     userBson,
-                                                     SOB_USER_WATCH_LATER_ROLL_ID,
-                                                     &watchLaterRoll);
-      }
+         // first 2 rolls are always the user public roll and the user watch later roll
+         bson_oid_t userPublicRollId;
+         rollStatus = sobBsonOidField(SOB_USER,
+                                            SOB_USER_PUBLIC_ROLL_ID,
+                                            userBson,
+                                            &userPublicRollId);
+         if (rollStatus) {
+            rollFollowingBsonEntry *foundRollFollowing = NULL;
+            HASH_FIND(hh, rollFollowings, &userPublicRollId, sizeof(bson_oid_t), foundRollFollowing);
+            if (foundRollFollowing) {
+               printJsonRoll(sob, context, foundRollFollowing->rollBson);
+            }
+         }
 
-      // first 2 rolls are always the user public roll and the user watch later roll
-      if (publicRollStatus) {
-         printJsonRoll(sob, context, publicRoll);
-      }
-
-      if (watchLaterRollStatus) {
-         printJsonRoll(sob, context, watchLaterRoll);
+         bson_oid_t userWatchLaterRollId;
+         rollStatus = sobBsonOidField(SOB_USER,
+                                      SOB_USER_WATCH_LATER_ROLL_ID,
+                                      userBson,
+                                      &userWatchLaterRollId);
+         if (rollStatus) {
+            rollFollowingBsonEntry *foundRollFollowing = NULL;
+            HASH_FIND(hh, rollFollowings, &userWatchLaterRollId, sizeof(bson_oid_t), foundRollFollowing);
+            if (foundRollFollowing) {
+               printJsonRoll(sob, context, foundRollFollowing->rollBson);
+            }
+         }
       }
    }
 
-   int rollCount = cvectorCount(rolls);
+   int rollCount = cvectorCount(rollOids);
    int startIndex = rollCount - options.skip - 1;
    int finishIndex;
 
@@ -395,9 +424,16 @@ void printJsonOutput(sobContext sob)
    }
 
    for (int i = startIndex; i >= finishIndex; i--) {
-      bson *roll = *(bson **)cvectorGetElement(rolls, i);
-      if (shouldPrintRegularRoll(sob, roll)) {
-        printJsonRoll(sob, context, roll);
+      bson_oid_t *rollOid = (bson_oid_t *)cvectorGetElement(rollOids, i);
+      rollFollowingBsonEntry *foundRollFollowing = NULL;
+      char rollId [25];
+      bson_oid_to_string(rollOid, rollId);
+      HASH_FIND(hh, rollFollowings, rollOid, sizeof(bson_oid_t), foundRollFollowing);
+      if (foundRollFollowing) {
+         bson *roll = foundRollFollowing->rollBson;
+         if (shouldPrintRegularRoll(sob, roll)) {
+            printJsonRoll(sob, context, roll);
+         }
       }
    }
 
@@ -411,6 +447,8 @@ void printJsonOutput(sobContext sob)
 
    // not a big deal to prevent memory leaks until we have persistent FastCGI, but this is easy
    mrjsonFreeContext(context);
+
+   return TRUE;
 }
 
 /*
@@ -418,7 +456,7 @@ void printJsonOutput(sobContext sob)
  */
 int loadData(sobContext sob)
 {
-   cvector rollOids = cvectorAlloc(sizeof(bson_oid_t));
+   rollOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector userOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector creatorOids = cvectorAlloc(sizeof(bson_oid_t));
 
@@ -447,6 +485,8 @@ int loadData(sobContext sob)
 
 int main(int argc, char **argv)
 {
+   rollFollowingBsonEntry *p, *tmp = NULL;
+
    gettimeofday(&beginTime, NULL);
 
    int status = 0;
@@ -462,9 +502,20 @@ int main(int argc, char **argv)
       goto cleanup;
    }
 
-   printJsonOutput(sob);
+
+   if (!printJsonOutput(sob)) {
+      status = 3;
+      goto cleanup;
+   }
+
 
 cleanup:
+
+   HASH_ITER(hh, rollFollowings, p, tmp) {
+      HASH_DEL(rollFollowings, p);
+      free(p);
+   }
+
    sobFreeContext(sob);
 
    return status;

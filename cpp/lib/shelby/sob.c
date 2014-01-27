@@ -924,7 +924,7 @@ void sobGetOidVectorFromObjectArrayField(sobContext context,
    cvector objectVector = context->objectVector[type];
 
    for (unsigned int i = 0; i < cvectorCount(objectVector); i++) {
-      bson_iterator iterator;
+      bson_iterator iterator, arrayFieldIterator;
       bson_type type;
 
       type = bson_find(&iterator, *(bson **)cvectorGetElement(objectVector, i), sobFieldDBName[arrayField]);
@@ -932,14 +932,12 @@ void sobGetOidVectorFromObjectArrayField(sobContext context,
          continue;
       }
 
-     bson arrayBson;
-     bson_iterator_subobject(&iterator, &arrayBson);
-     bson_iterator_from_buffer(&iterator, arrayBson.data);
+     bson_iterator_subiterator(&iterator, &arrayFieldIterator);
 
-     while (bson_iterator_next(&iterator)) {
+     while (bson_iterator_next(&arrayFieldIterator)) {
         bson element;
         bson_iterator subIterator;
-        bson_iterator_subobject(&iterator, &element);
+        bson_iterator_subobject(&arrayFieldIterator, &element);
 
         type = bson_find(&subIterator, &element, sobFieldDBName[subObjectOidField]);
         if (type != BSON_OID) {
