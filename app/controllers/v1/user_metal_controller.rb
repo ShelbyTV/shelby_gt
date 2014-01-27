@@ -18,17 +18,26 @@ class V1::UserMetalController < MetalController
   ##
   # Returns the rolls the current_user is following
   #   REQUIRES AUTHENTICATION
+  #   NB!!: skip and limit parameters are not supported when retrieving the followings for the curently authenticated user
   #
   # [GET] /v1/user/:id/rolls/following
   # [GET] /v1/user/:id/rolls/postable (returns the subset of rolls the user is following which they can also post to)
   #
   # @param [Required, String] id The id of the user
   # @param [Optional, boolean] postable Set this to true (or use the second route) if you only want rolls postable by current user returned (used by bookmarklet)
-  # @param [Optional, Integer] limit Set this to limit the number of non-special rolls returned
+  # @param [Optional, Integer] skip The number of non-special rolls to skip
+  # @param [Optional, Integer] limit The number of non-special rolls to return
   def roll_followings
     StatsManager::StatsD.time(Settings::StatsConstants.api['user']['rolls']) do
       if current_user
-        fast_stdout = `cpp/bin/userRollFollowings -d #{params[:id]} #{params[:postable] ? "-p" : ""} #{params[:limit] ? "-l #{params[:limit]}" : ""} #{params[:include_faux] ? "-i" : ""} #{current_user.id.to_s == params[:id] ? "-s" : ""} -e #{Rails.env}`
+        commandParams = "-u #{params[:id]}"
+        commandParams += " -p" if params[:postable]
+        commandParams += " -s #{params[:skip]}" if params[:skip]
+        commandParams += " -l #{params[:limit]}" if params[:limit]
+        commandParams += " -i" if params[:include_faux]
+        commandParams += " --include-special" if current_user.id.to_s == params[:id]
+        commandParams += " -e #{Rails.env}"
+        fast_stdout = `cpp/bin/userRollFollowings #{commandParams}`
         fast_status = $?.to_i
 
         if (fast_status == 0)

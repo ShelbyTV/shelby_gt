@@ -13,21 +13,17 @@
 #define FALSE 0
 
 static struct options {
-   char* user;
-   char* userId;
+   char *userId;
+   char *userNickname;
    int postable;
    int includeFaux;
    int includeSpecial;
+   int skip;
    int limit;
    char *environment;
 } options;
 
 bson_oid_t userOid;
-
-typedef struct rollSortable {
-   bson *roll;
-   bson_timestamp_t followedAt;
-} rollSortable;
 
 struct timeval beginTime;
 
@@ -35,11 +31,12 @@ void printHelpText()
 {
    printf("userRollFollowings usage:\n");
    printf("   -h --help            Print this help message\n");
-   printf("   -u --user            User downcase nickname\n");
-   printf("   -d --user-id         User id\n");
+   printf("   -u --user-id         User id\n");
+   printf("   --user-nickname      User downcase nickname\n");
    printf("   -p --postable        Only return postable rolls\n");
    printf("   -i --include-faux    Include faux user rolls\n");
-   printf("   -s --include-special Include the user's special rolls\n");
+   printf("   --include-special    Include the user's special rolls\n");
+   printf("   -s --skip            Number of non-special rolls to skip before starting to output\n");
    printf("   -l --limit           Maximum number of non-special rolls to return\n");
    printf("   -e --environment     Specify environment: production, staging, test, or development\n");
 }
@@ -52,18 +49,19 @@ void parseUserOptions(int argc, char **argv)
       static struct option long_options[] =
       {
          {"help",            no_argument,       0, 'h'},
-         {"user",            optional_argument, 0, 'u'},
-         {"user-id",         optional_argument, 0, 'd'},
+         {"user-id",         required_argument, 0, 'u'},
+         {"user-nickname",   required_argument, 0,   1},
          {"postable",        no_argument,       0, 'p'},
          {"include-faux",    no_argument,       0, 'i'},
-         {"include-special", no_argument,       0, 's'},
-         {"limit",           optional_argument, 0, 'l'},
+         {"include-special", no_argument,       0,   0},
+         {"skip",            required_argument, 0, 's'},
+         {"limit",           required_argument, 0, 'l'},
          {"environment",     required_argument, 0, 'e'},
          {0, 0, 0, 0}
       };
 
       int option_index = 0;
-      c = getopt_long(argc, argv, "hu:d:pisl:e:", long_options, &option_index);
+      c = getopt_long(argc, argv, "hu:pis:l:e:", long_options, &option_index);
 
       /* Detect the end of the options. */
       if (c == -1) {
@@ -73,11 +71,11 @@ void parseUserOptions(int argc, char **argv)
       switch (c)
       {
          case 'u':
-            options.user = optarg;
+            options.userId = optarg;
             break;
 
-         case 'd':
-            options.userId = optarg;
+         case 1:
+            options.userNickname = optarg;
             break;
 
          case 'p':
@@ -88,8 +86,12 @@ void parseUserOptions(int argc, char **argv)
             options.includeFaux = TRUE;
             break;
 
-         case 's':
+         case 0:
             options.includeSpecial = TRUE;
+            break;
+
+         case 's':
+            options.skip = atoi(optarg);
             break;
 
          case 'l':
@@ -113,7 +115,7 @@ void parseUserOptions(int argc, char **argv)
       exit(1);
    }
 
-   if (strcmp(options.user, "") == 0 && strcmp(options.userId, "") == 0) {
+   if (strcmp(options.userId, "") == 0 && strcmp(options.userNickname, "") == 0) {
       printf("Specifying user id or nickname is required.\n");
       printHelpText();
       exit(1);
@@ -122,11 +124,12 @@ void parseUserOptions(int argc, char **argv)
 
 void setDefaultOptions()
 {
-   options.user = "";
    options.userId = "";
+   options.userNickname = "";
    options.postable = FALSE;
    options.includeFaux = FALSE;
    options.includeSpecial = FALSE;
+   options.skip = 0;
    options.limit = 0;
    options.environment = "";
 }
@@ -222,7 +225,24 @@ void printJsonAuthentication(sobContext sob, mrjsonContext context, bson *authen
 
 }
 
-void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, unsigned int followedAtTime)
+int getRollFollowedAtTime(sobContext sob, bson *roll)
+{
+   bson_oid_t rollOid;
+   sobBsonOidField(SOB_ROLL, SOB_ROLL_ID, roll, &rollOid);
+
+   bson rollFollowing;
+   sobGetBsonForArrayObjectWithOidField(sob,
+                                        SOB_USER,
+                                        userOid,
+                                        SOB_USER_ROLL_FOLLOWINGS,
+                                        SOB_ROLL_FOLLOWING_ROLL_ID,
+                                        rollOid,
+                                        &rollFollowing);
+
+   return sobGetOidGenerationTimeSinceEpoch(&rollFollowing, NULL);
+}
+
+void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
 {
    mrjsonStartNamelessObject(context);
 
@@ -307,43 +327,10 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll, unsigned i
                                       SOB_ROLL_FOLLOWING_USERS,
                                       "following_user_count");
 
+   int followedAtTime = getRollFollowedAtTime(sob, roll);
    mrjsonIntAttribute(context, "followed_at", followedAtTime);
 
    mrjsonEndObject(context);
-}
-
-int getRollFollowedAtTime(sobContext sob, bson *roll, bson_timestamp_t *ts)
-{
-   bson_oid_t rollOid;
-   sobBsonOidField(SOB_ROLL, SOB_ROLL_ID, roll, &rollOid);
-
-   bson rollFollowing;
-   sobGetBsonForArrayObjectWithOidField(sob,
-                                        SOB_USER,
-                                        userOid,
-                                        SOB_USER_ROLL_FOLLOWINGS,
-                                        SOB_ROLL_FOLLOWING_ROLL_ID,
-                                        rollOid,
-                                        &rollFollowing);
-
-   return sobGetOidGenerationTimeSinceEpoch(&rollFollowing, ts);
-}
-
-int rollSortByFollowedAt(void *one, void *two)
-{
-   rollSortable *rsOne = (rollSortable *)one;
-   rollSortable *rsTwo = (rollSortable *)two;
-
-   if ((rsOne->followedAt.t == rsTwo->followedAt.t) &&
-       (rsOne->followedAt.i == rsTwo->followedAt.i)) {
-      return 0;
-   } else if ((rsOne->followedAt.t < rsTwo->followedAt.t) ||
-              (rsOne->followedAt.t == rsTwo->followedAt.t &&
-               rsOne->followedAt.i < rsTwo->followedAt.i)) {
-      return 1;
-   } else {
-      return -1;
-   }
 }
 
 void printJsonOutput(sobContext sob)
@@ -385,45 +372,33 @@ void printJsonOutput(sobContext sob)
 
       // first 2 rolls are always the user public roll and the user watch later roll
       if (publicRollStatus) {
-         printJsonRoll(sob, context, publicRoll, getRollFollowedAtTime(sob, publicRoll, NULL));
+         printJsonRoll(sob, context, publicRoll);
       }
 
       if (watchLaterRollStatus) {
-         printJsonRoll(sob, context, watchLaterRoll, getRollFollowedAtTime(sob, watchLaterRoll, NULL));
+         printJsonRoll(sob, context, watchLaterRoll);
       }
    }
 
-   cvector rollSortVec = cvectorAlloc(sizeof(rollSortable));
-
-   // create sortable vector of rolls we should print
-   for (int i = 0; i < cvectorCount(rolls); i++) {
-
-      bson *roll = *(bson **)cvectorGetElement(rolls, i);
-
-      if (shouldPrintRegularRoll(sob, roll)) {
-
-         rollSortable *rs = malloc(sizeof(rollSortable));
-         rs->roll = roll;
-         getRollFollowedAtTime(sob, roll, &(rs->followedAt));
-
-         cvectorAddElement(rollSortVec, rs);
-      }
-   }
-
-   cvectorSort(rollSortVec, &rollSortByFollowedAt);
-
-   int rollCount = cvectorCount(rollSortVec);
-   int numRollsToPrint;
+   int rollCount = cvectorCount(rolls);
+   int startIndex = rollCount - options.skip - 1;
+   int finishIndex;
 
    if (options.limit > 0) {
-    numRollsToPrint = options.limit < rollCount ? options.limit : rollCount;
+    finishIndex = startIndex - (options.limit - 1);
    } else {
-    numRollsToPrint = rollCount;
+    finishIndex = 0;
    }
 
-   for (int i = 0; i < numRollsToPrint; i++) {
-      rollSortable *rs = (rollSortable *)cvectorGetElement(rollSortVec, i);
-      printJsonRoll(sob, context, rs->roll, rs->followedAt.t);
+   if (finishIndex < 0) {
+    finishIndex = 0;
+   }
+
+   for (int i = startIndex; i >= finishIndex; i--) {
+      bson *roll = *(bson **)cvectorGetElement(rolls, i);
+      if (shouldPrintRegularRoll(sob, roll)) {
+        printJsonRoll(sob, context, roll);
+      }
    }
 
    mrjsonEndArray(context);
@@ -455,7 +430,7 @@ int loadData(sobContext sob)
       userOid = sobGetUniqueOidByStringField(sob,
                                              SOB_USER,
                                              SOB_USER_DOWNCASE_NICKNAME,
-                                             options.user);
+                                             options.userNickname);
    }
 
    cvectorAddElement(userOids, &userOid);
