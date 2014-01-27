@@ -37,8 +37,33 @@ class V1::UserMetalController < MetalController
         commandParams += " -i" if params[:include_faux]
         commandParams += " --include-special" if current_user.id.to_s == params[:id]
         commandParams += " -e #{Rails.env}"
-        fast_stdout = `cpp/bin/userRollFollowings #{commandParams}`
-        fast_status = $?.to_i
+
+        cmd = "cpp/bin/userRollFollowings #{commandParams}"
+
+        fast_status = 0
+        fast_stdout = ''
+        log_text = ''
+        Open3.popen3 cmd do |stdin, stdout, stderr, wait_thr|
+          fast_stdout = stdout.read
+          log_text = stderr.read
+          fast_status = wait_thr.value.exitstatus
+        end
+
+        ShelbyGT_EM.next_tick {
+          # Append logging from the c executable to our log file, but don't
+          # make responding to the request wait on that
+          File.open("#{Settings::CExtensions.log_file}_#{Rails.env}.log","a") do |f|
+            f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] -------RUBY SAYS: HANDLE v1/user/#{params[:id]}/rolls/following START-------"
+            f.puts log_text
+            f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] STATUS: #{fast_status == 0 ? 'SUCCESS' : 'ERROR'}"
+            if fast_status != 0
+              f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] -------------------C OUTPUT FOR DEBUGGING START-----------------------------"
+              f.puts fast_stdout
+              f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] -------------------C OUTPUT FOR DEBUGGING END-------------------------------"
+            end
+            f.puts "[#{Time.now.strftime("%m-%d-%Y %T")}] --------RUBY SAYS: HANDLE v1/user/#{params[:id]}/rolls/following END--------"
+          end
+        }
 
         if (fast_status == 0)
           renderMetalResponse(200, fast_stdout)
