@@ -48,8 +48,8 @@ module MongoMapper
       User.ensure_index(:primary_email, :background => true, :unique => true, :sparse => true)
       # Get a user by their authentication_token
       User.ensure_index(:ah, :background => true, :unique => true, :sparse => true)
-      # the old index was on authentications.uid, now also have a unique index on uid and provider to make sure we don't overlap
-      User.ensure_index('authentications.uid', :background => true)
+      # Get all users who have auth from a given provider
+      User.ensure_index('authentications.provider', :background => true)
       # sparse true allows documents to be missing these fields (otherwise, null is not unique from any other null)
       User.ensure_index([['authentications.uid', 1], ['authentications.provider', 1]], :background => true, :unique => true, :sparse => true)
       # Get user based on their nickname on a 3rd party network (facebook, twitter)

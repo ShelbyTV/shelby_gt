@@ -36,6 +36,8 @@ RSpec.configure do |config|
     @twt_info_getter = double("twt_info_getter")
     @twt_info_getter.stub(:get_following_screen_names).and_return(['a','b'])
     @twt_info_getter.stub(:get_following_ids).and_return([0, 1])
+    user_show_response = OpenStruct.new(:profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url)
+    @twt_info_getter.stub(:get_user_info).and_return(user_show_response)
     APIClients::TwitterInfoGetter.stub(:new).and_return(@twt_info_getter)
 
     # don't want FacebookInfoGetter trying to make real requests to API

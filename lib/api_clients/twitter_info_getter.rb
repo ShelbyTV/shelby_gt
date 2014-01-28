@@ -7,7 +7,7 @@ module APIClients
       def initialize(user)
         self.setup_for_user user
       end
-      
+
       def get_following_ids
         # gets 5,000 ids at a time, we'll take a max of 5,000 for now
         twitter_client.friends.ids?.ids
@@ -27,6 +27,10 @@ module APIClients
         }
 
         return following_screen_names
+      end
+
+      def get_user_info
+        twitter_client.users.show? :user_id => @user_id, :include_entities => false
       end
 
     end

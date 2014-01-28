@@ -6,9 +6,22 @@ require 'api_clients/twitter_client'
 # UNIT test
 describe APIClients::TwitterClient do
 
-  it "should create a Grackle twitter client given appropriate parameters" do
+  it "creates a Grackle twitter client with correct token and secret for app and user" do
     c = APIClients::TwitterClient.build_for_token_and_secret('x','y')
-    c.should be_an_instance_of(Grackle::Client)
+    expect(c).to be_an_instance_of(Grackle::Client)
+    expect(c.auth[:consumer_key]).to eql Settings::Twitter.consumer_key
+    expect(c.auth[:consumer_secret]).to eql Settings::Twitter.consumer_secret
+    expect(c.auth[:token]).to eql 'x'
+    expect(c.auth[:token_secret]).to eql 'y'
+  end
+
+  it "crates a Grackle twitter client with correct token and secret for just our app" do
+    c = APIClients::TwitterClient.build_for_app
+    expect(c).to be_an_instance_of(Grackle::Client)
+    expect(c.auth[:consumer_key]).to eql Settings::Twitter.consumer_key
+    expect(c.auth[:consumer_secret]).to eql Settings::Twitter.consumer_secret
+    expect(c.auth).not_to have_key :token
+    expect(c.auth).not_to have_key :token_secret
   end
 
   context "Argument validation" do
