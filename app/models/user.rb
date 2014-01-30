@@ -189,7 +189,7 @@ class User
   key :accepted_ios_push, Boolean, :abbr => :bi, :default => false
 
   attr_accessible :name, :nickname, :password, :password_confirmation, :primary_email, :preferences, :app_progress, :user_image, :user_image_original, :avatar,
-                  :google_analytics_client_id, :rolled_since_last_notification
+                  :google_analytics_client_id, :rolled_since_last_notification, :dot_tv_description
 
   # Arnold does a *shit ton* of user saving, which runs this validation, which turns out to be very expensive
   # (see shelby_gt/etc/performance/unique_nickname_realtime_profile.gif)
