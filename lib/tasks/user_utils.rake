@@ -175,7 +175,6 @@ namespace :user_utils do
   task :update_twitter_avatars, [:invalid_credentials_only] => [:environment] do |t, args|
 
     Rails.logger = Logger.new(STDOUT)
-    STDOUT.sync = true
 
     args.with_defaults(:invalid_credentials_only => "false")
 
