@@ -172,13 +172,21 @@ namespace :user_utils do
   end
 
   desc "Update all users' twitter avatars"
-  task :update_twitter_avatars => :environment do
+  task :update_twitter_avatars, [:invalid_credentials_only] => [:environment] do |t, args|
 
     Rails.logger = Logger.new(STDOUT)
     STDOUT.sync = true
 
-    Rails.logger.info("Updating user twitter avatars")
-    result = GT::UserTwitterManager.update_all_twitter_avatars
+    args.with_defaults(:invalid_credentials_only => "false")
+
+    options = {
+      :invalid_credentials_only => "true".casecmp(args[:invalid_credentials_only]) == 0
+    }
+
+    action_message = "Updating user twitter avatars"
+    action_message += " only for users with invalid oauth credentials" if options[:invalid_credentials_only]
+    Rails.logger.info(action_message)
+    result = GT::UserTwitterManager.update_all_twitter_avatars(options)
     Rails.logger.info("DONE!")
     Rails.logger.info("STATS:")
     Rails.logger.info(result)

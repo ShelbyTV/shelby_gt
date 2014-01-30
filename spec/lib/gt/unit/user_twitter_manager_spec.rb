@@ -219,6 +219,8 @@ describe GT::UserTwitterManager do
       @users_route = double("users_route")
       @twitter_client_for_app = double("twitter_client_for_app", :users => @users_route)
       APIClients::TwitterClient.stub(:build_for_app).and_return(@twitter_client_for_app)
+
+      Grackle::TwitterError.any_instance.stub(:response_object).and_return(OpenStruct.new(:errors => nil))
     end
 
 
@@ -232,10 +234,10 @@ describe GT::UserTwitterManager do
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 1,
-          :users_with_oauth_creds_found => 1,
-          :users_without_oauth_creds_found => 0,
-          :users_with_oauth_creds_updated => 1,
-          :users_without_oauth_creds_updated => 0
+          :users_with_valid_oauth_creds_found => 1,
+          :users_without_valid_oauth_creds_found => 0,
+          :users_with_valid_oauth_creds_updated => 1,
+          :users_without_valid_oauth_creds_updated => 0
         })
 
         @user_with_twitter_oauth.reload
@@ -253,10 +255,10 @@ describe GT::UserTwitterManager do
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 1,
-          :users_with_oauth_creds_found => 1,
-          :users_without_oauth_creds_found => 0,
-          :users_with_oauth_creds_updated => 0,
-          :users_without_oauth_creds_updated => 0
+          :users_with_valid_oauth_creds_found => 1,
+          :users_without_valid_oauth_creds_found => 0,
+          :users_with_valid_oauth_creds_updated => 0,
+          :users_without_valid_oauth_creds_updated => 0
         })
       end
 
@@ -273,10 +275,10 @@ describe GT::UserTwitterManager do
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 2,
-          :users_with_oauth_creds_found => 2,
-          :users_without_oauth_creds_found => 0,
-          :users_with_oauth_creds_updated => 1,
-          :users_without_oauth_creds_updated => 0
+          :users_with_valid_oauth_creds_found => 2,
+          :users_without_valid_oauth_creds_found => 0,
+          :users_with_valid_oauth_creds_updated => 1,
+          :users_without_valid_oauth_creds_updated => 0
         })
       end
 
@@ -294,10 +296,10 @@ describe GT::UserTwitterManager do
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 2,
-          :users_with_oauth_creds_found => 2,
-          :users_without_oauth_creds_found => 0,
-          :users_with_oauth_creds_updated => 1,
-          :users_without_oauth_creds_updated => 0
+          :users_with_valid_oauth_creds_found => 2,
+          :users_without_valid_oauth_creds_found => 0,
+          :users_with_valid_oauth_creds_updated => 1,
+          :users_without_valid_oauth_creds_updated => 0
         })
       end
 
@@ -341,10 +343,10 @@ describe GT::UserTwitterManager do
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 4,
-          :users_with_oauth_creds_found => 1,
-          :users_without_oauth_creds_found => 3,
-          :users_with_oauth_creds_updated => 1,
-          :users_without_oauth_creds_updated => 3
+          :users_with_valid_oauth_creds_found => 1,
+          :users_without_valid_oauth_creds_found => 3,
+          :users_with_valid_oauth_creds_updated => 1,
+          :users_without_valid_oauth_creds_updated => 3
         })
 
         expect {
@@ -372,10 +374,10 @@ describe GT::UserTwitterManager do
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 4,
-          :users_with_oauth_creds_found => 1,
-          :users_without_oauth_creds_found => 3,
-          :users_with_oauth_creds_updated => 1,
-          :users_without_oauth_creds_updated => 0
+          :users_with_valid_oauth_creds_found => 1,
+          :users_without_valid_oauth_creds_found => 3,
+          :users_with_valid_oauth_creds_updated => 1,
+          :users_without_valid_oauth_creds_updated => 0
         })
       end
 
@@ -395,10 +397,10 @@ describe GT::UserTwitterManager do
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 4,
-          :users_with_oauth_creds_found => 1,
-          :users_without_oauth_creds_found => 3,
-          :users_with_oauth_creds_updated => 1,
-          :users_without_oauth_creds_updated => 1
+          :users_with_valid_oauth_creds_found => 1,
+          :users_without_valid_oauth_creds_found => 3,
+          :users_with_valid_oauth_creds_updated => 1,
+          :users_without_valid_oauth_creds_updated => 1
         })
       end
 
@@ -427,11 +429,88 @@ describe GT::UserTwitterManager do
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 4,
-          :users_with_oauth_creds_found => 1,
-          :users_without_oauth_creds_found => 3,
-          :users_with_oauth_creds_updated => 1,
-          :users_without_oauth_creds_updated => 2
+          :users_with_valid_oauth_creds_found => 1,
+          :users_without_valid_oauth_creds_found => 3,
+          :users_with_valid_oauth_creds_updated => 1,
+          :users_without_valid_oauth_creds_updated => 2
         })
+      end
+    end
+
+    context "users with invalid twitter oauth credentials" do
+      before(:each) do
+        Settings::Twitter['user_lookup_slice_size'] = 2
+        @user_with_invalid_twitter_oauth = Factory.create(:user)
+        @another_user_with_twitter_oauth = Factory.create(:user)
+        @user_without_twitter_oauth = Factory.create(:user)
+        @user_without_twitter_oauth.authentications.first.oauth_token = nil
+        @user_without_twitter_oauth.save
+        MongoMapper::Plugins::IdentityMap.clear
+
+        twitter_error = Grackle::TwitterError.new(:get, nil, 401, "{\"errors\":[{\"message\":\"Invalid or expired token\",\"code\":89}]}")
+        twitter_error_struct = OpenStruct.new(:message => "Invalid or expired token", :code => 89)
+        twitter_response_object = OpenStruct.new(:errors => [twitter_error_struct])
+        twitter_error.should_receive(:response_object).at_least(:once).and_return(twitter_response_object)
+
+        @twt_info_getter.should_receive(:get_user_info).ordered()
+        @twt_info_getter.should_receive(:get_user_info).ordered().and_raise(twitter_error)
+        @twt_info_getter.should_receive(:get_user_info).ordered()
+
+        Rails.logger.stub(:info).with(any_args())
+        Rails.logger.should_receive(:info).once().with("User oauth creds invalid, will process later with application auth")
+      end
+
+      it "processes the user along with the users for whom we have no oauth credentials" do
+        @users_route.should_receive(:lookup!).with({
+          :user_id => "#{@user_with_invalid_twitter_oauth.authentications.first.uid},#{@user_without_twitter_oauth.authentications.first.uid}",
+          :include_entities => false
+        }).and_return([
+          OpenStruct.new(:id_str => @user_without_twitter_oauth.authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url),
+          OpenStruct.new(:id_str => @user_with_invalid_twitter_oauth.authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url)
+        ])
+
+        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
+          :users_with_twitter_auth_found => 4,
+          :users_with_valid_oauth_creds_found => 2,
+          :users_without_valid_oauth_creds_found => 2,
+          :users_with_valid_oauth_creds_updated => 2,
+          :users_without_valid_oauth_creds_updated => 2
+        })
+
+        @user_with_invalid_twitter_oauth.reload
+        expect(@user_with_invalid_twitter_oauth.authentications.first.image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
+      end
+
+      it "has a mode to process only users for whom we have invalid oauth credentials" do
+        @users_route.should_receive(:lookup!).with({
+          :user_id => "#{@user_with_invalid_twitter_oauth.authentications.first.uid}",
+          :include_entities => false
+        }).and_return([
+          OpenStruct.new(:id_str => @user_with_invalid_twitter_oauth.authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url),
+        ])
+
+        expect(GT::UserTwitterManager.update_all_twitter_avatars({:invalid_credentials_only => true})).to eql({
+          :users_with_twitter_auth_found => 4,
+          :users_with_valid_oauth_creds_found => 2,
+          :users_without_valid_oauth_creds_found => 2,
+          :users_with_valid_oauth_creds_updated => 0,
+          :users_without_valid_oauth_creds_updated => 1
+        })
+
+        @user_with_invalid_twitter_oauth.reload
+        expect(@user_with_invalid_twitter_oauth.authentications.first.image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
+
+        expect {
+          @user_with_twitter_oauth.reload
+        }.not_to change(@user_with_twitter_oauth.authentications.first, :image)
+
+        expect {
+          @another_user_with_twitter_oauth.reload
+        }.not_to change(@another_user_with_twitter_oauth.authentications.first, :image)
+
+        expect {
+          @user_without_twitter_oauth.reload
+        }.not_to change(@user_with_invalid_twitter_oauth.authentications.first, :image)
       end
     end
   end

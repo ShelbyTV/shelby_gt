@@ -70,14 +70,23 @@ module GT
     end
 
     # loop through all of our users who have twitter auth objects and update their twitter avatars
-    def self.update_all_twitter_avatars
+    # --options--
+    #
+    # :invalid_credentials_only => Bool --- set to true to only update avatars for users for whom we have invalid
+    # => twitter oauth credentials, default false
+    def self.update_all_twitter_avatars(options={})
+      defaults = {
+        :invalid_credentials_only => false
+      }
+      options = defaults.merge(options)
+
       # keep some stats on our processing and return them at the end
       response = {
         :users_with_twitter_auth_found => 0,
-        :users_with_oauth_creds_found => 0,
-        :users_without_oauth_creds_found => 0,
-        :users_with_oauth_creds_updated => 0,
-        :users_without_oauth_creds_updated => 0
+        :users_with_valid_oauth_creds_found => 0,
+        :users_without_valid_oauth_creds_found => 0,
+        :users_with_valid_oauth_creds_updated => 0,
+        :users_without_valid_oauth_creds_updated => 0
       }
 
       # we'll keep track of twitter uids for whom we don't have oauth creds to be handled in a different way
@@ -101,8 +110,7 @@ module GT
           begin
             user_twitter_auth = user.authentications.to_ary.find{ |a| a.provider = 'twitter'}
             unless user_twitter_auth.oauth_token.nil? || user_twitter_auth.oauth_secret.nil?
-              response[:users_with_oauth_creds_found] += 1
-              Rails.logger.info("Processing a user with oauth creds")
+              Rails.logger.info("Examining a user with oauth creds")
               # if we can oauth on behalf of the user, just lookup and update their info now as we don't have any
               # rate limiting concerns
               twitter_info_getter = APIClients::TwitterInfoGetter.new(user)
@@ -111,17 +119,31 @@ module GT
               rescue Grackle::TwitterError => e
                 if e.status == 429
                   Rails.logger.info('WE GOT RATE LIMITED PER USER')
+                  response[:users_with_valid_oauth_creds_found] += 1
                   return response
+                elsif e.response_object.errors && e.response_object.errors.any?{ |err| err.code == 89}
+                  Rails.logger.info("User oauth creds invalid, will process later with application auth")
+                  response[:users_without_valid_oauth_creds_found] += 1
+                  non_oauthed_users[user_twitter_auth.uid] = user
+                  next
                 else
                   Rails.logger.info("TWITTER EXCEPTION: #{e}")
+                  response[:users_with_valid_oauth_creds_found] += 1
                   next
                 end
+              else
+                response[:users_with_valid_oauth_creds_found] += 1
               end
-              self.update_user_twitter_avatar(user, new_avatar_image)
-              response[:users_with_oauth_creds_updated] += 1
+              unless options[:invalid_credentials_only]
+                Rails.logger.info("User oauth creds valid, updating now")
+                self.update_user_twitter_avatar(user, new_avatar_image)
+                response[:users_with_valid_oauth_creds_updated] += 1
+              else
+                Rails.logger.info("User oauth creds valid, skipping")
+              end
             else
-              response[:users_without_oauth_creds_found] += 1
-              non_oauthed_users[user_twitter_auth.uid] = user
+              response[:users_without_valid_oauth_creds_found] += 1
+              non_oauthed_users[user_twitter_auth.uid] = user unless options[:invalid_credentials_only]
             end
           rescue => e
             Rails.logger.info("GENERAL EXCEPTION: #{e}")
@@ -136,7 +158,7 @@ module GT
 
         # we can get info for many users per call from /users/lookup
         non_oauthed_users.each_slice(Settings::Twitter.user_lookup_slice_size) do |slice|
-          Rails.logger.info("Processing a slice of users without oauth creds")
+          Rails.logger.info("Processing a slice of users without valid oauth creds")
           begin
             result = twitter_client_for_app.users.lookup!(:user_id => slice.map{ |uinfo| uinfo[0] }.join(','), :include_entities => false)
           rescue Grackle::TwitterError => e
@@ -154,7 +176,7 @@ module GT
             begin
               Rails.logger.info("--> Processing a user from the slice")
               self.update_user_twitter_avatar(non_oauthed_users[twitter_struct.id_str], twitter_struct.profile_image_url)
-              response[:users_without_oauth_creds_updated] += 1
+              response[:users_without_valid_oauth_creds_updated] += 1
             rescue => e
               Rails.logger.info("GENERAL EXCEPTION: #{e}")
             next
