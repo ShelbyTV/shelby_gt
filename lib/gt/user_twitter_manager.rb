@@ -102,6 +102,7 @@ module GT
             user_twitter_auth = user.authentications.to_ary.find{ |a| a.provider = 'twitter'}
             unless user_twitter_auth.oauth_token.nil? || user_twitter_auth.oauth_secret.nil?
               response[:users_with_oauth_creds_found] += 1
+              Rails.logger.info("Processing a user with oauth creds")
               # if we can oauth on behalf of the user, just lookup and update their info now as we don't have any
               # rate limiting concerns
               twitter_info_getter = APIClients::TwitterInfoGetter.new(user)
@@ -135,6 +136,7 @@ module GT
 
         # we can get info for many users per call from /users/lookup
         non_oauthed_users.each_slice(Settings::Twitter.user_lookup_slice_size) do |slice|
+          Rails.logger.info("Processing a slice of users without oauth creds")
           begin
             result = twitter_client_for_app.users.lookup!(:user_id => slice.map{ |uinfo| uinfo[0] }.join(','), :include_entities => false)
           rescue Grackle::TwitterError => e
@@ -150,6 +152,7 @@ module GT
           # shelby users
           result.each do |twitter_struct|
             begin
+              Rails.logger.info("--> Processing a user from the slice")
               self.update_user_twitter_avatar(non_oauthed_users[twitter_struct.id_str], twitter_struct.profile_image_url)
               response[:users_without_oauth_creds_updated] += 1
             rescue => e

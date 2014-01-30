@@ -248,7 +248,8 @@ describe GT::UserTwitterManager do
         twitter_error = Grackle::TwitterError.new(:get, nil, 429, nil)
         @twt_info_getter.stub(:get_user_info).and_raise(twitter_error)
 
-        Rails.logger.should_receive(:info).with("WE GOT RATE LIMITED PER USER")
+        Rails.logger.stub(:info).with(any_args())
+        Rails.logger.should_receive(:info).once().with("WE GOT RATE LIMITED PER USER")
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 1,
@@ -288,7 +289,8 @@ describe GT::UserTwitterManager do
         GT::UserTwitterManager.stub(:update_user_twitter_avatar).with(@user_with_twitter_oauth, anything()).and_raise(exception)
         GT::UserTwitterManager.stub(:update_user_twitter_avatar).with(@another_user_with_twitter_oauth, anything()).and_call_original
 
-        Rails.logger.should_receive(:info).with("GENERAL EXCEPTION: #{exception}")
+        Rails.logger.stub(:info).with(any_args())
+        Rails.logger.should_receive(:info).once().with("GENERAL EXCEPTION: #{exception}")
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 2,
@@ -365,7 +367,8 @@ describe GT::UserTwitterManager do
         twitter_error = Grackle::TwitterError.new(:get, nil, 429, nil)
         @users_route.stub(:lookup!).and_raise(twitter_error)
 
-        Rails.logger.should_receive(:info).with("WE GOT RATE LIMITED PER APP")
+        Rails.logger.stub(:info).with(any_args())
+        Rails.logger.should_receive(:info).once().with("WE GOT RATE LIMITED PER APP")
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 4,
@@ -386,7 +389,8 @@ describe GT::UserTwitterManager do
           OpenStruct.new(:id_str => @users_without_twitter_oauth[2].authentications.first.uid, :profile_image_url => "http://someothermadeupimage.png")
         ])
 
-        Rails.logger.should_receive(:info).with("TWITTER EXCEPTION: #{twitter_error}")
+        Rails.logger.stub(:info).with(any_args())
+        Rails.logger.should_receive(:info).once().with("TWITTER EXCEPTION: #{twitter_error}")
         Rails.logger.should_not_receive(:info).with("WE GOT RATE LIMITED PER APP")
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
@@ -418,7 +422,8 @@ describe GT::UserTwitterManager do
         GT::UserTwitterManager.stub(:update_user_twitter_avatar).and_call_original
         GT::UserTwitterManager.stub(:update_user_twitter_avatar).with(@users_without_twitter_oauth[1], anything()).and_raise(exception)
 
-        Rails.logger.should_receive(:info).with("GENERAL EXCEPTION: #{exception}")
+        Rails.logger.stub(:info).with(any_args())
+        Rails.logger.should_receive(:info).once().with("GENERAL EXCEPTION: #{exception}")
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 4,

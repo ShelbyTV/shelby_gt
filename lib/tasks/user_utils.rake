@@ -171,4 +171,18 @@ namespace :user_utils do
     end
   end
 
+  desc "Update all users' twitter avatars"
+  task :update_twitter_avatars => :environment do
+
+    Rails.logger = Logger.new(STDOUT)
+    STDOUT.sync = true
+
+    Rails.logger.info("Updating user twitter avatars")
+    result = GT::UserTwitterManager.update_all_twitter_avatars
+    Rails.logger.info("DONE!")
+    Rails.logger.info("STATS:")
+    Rails.logger.info(result)
+
+  end
+
 end
