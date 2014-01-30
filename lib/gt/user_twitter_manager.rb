@@ -154,6 +154,8 @@ module GT
 
       #we're done with the users we have twitter oauth creds for, now handle the ones we don't
       unless non_oauthed_users.empty?
+        Rails.logger.info("We have #{response[:users_without_valid_oauth_creds_found]} users without valid oauth creds to process in slices")
+
         twitter_client_for_app = APIClients::TwitterClient.build_for_app
 
         # we can get info for many users per call from /users/lookup
