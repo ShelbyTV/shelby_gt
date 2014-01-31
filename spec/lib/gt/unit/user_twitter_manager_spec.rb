@@ -340,6 +340,22 @@ describe GT::UserTwitterManager do
         end
       end
 
+      it "limits the number of users processed based on the :limit option" do
+
+        @users_route.should_receive(:lookup!).exactly(:once).with({
+          :user_id => "#{@users[3].authentications.first.uid}",
+          :include_entities => false
+        }).and_return([
+          OpenStruct.new(:id_str => @users[3].authentications.first.uid, :profile_image_url => "http://0.png"),
+        ])
+
+        expect(GT::UserTwitterManager.update_all_twitter_avatars(:limit => 1)).to eql({
+          :users_with_twitter_auth_found => 1,
+          :users_with_twitter_auth_updated => 1
+        })
+
+      end
+
       it "moves on to another set of user oauth creds if twitter response indicates that current creds are invalid" do
         MongoMapper::Plugins::IdentityMap.clear
 
@@ -506,7 +522,6 @@ describe GT::UserTwitterManager do
           :users_with_twitter_auth_updated => 2
         })
       end
-
     end
 
     it "falls back to a twitter client with app-wide credentials for one request at a time if user creds are not available" do

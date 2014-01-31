@@ -226,5 +226,5 @@ production:
 # here.  By default, the staging environment has the agent turned on.
 staging:
   <<: *default_settings
-  monitor_mode: false
-  app_name: My Application (Staging)
+  monitor_mode: true
+  app_name: ShelbyGT (Staging)

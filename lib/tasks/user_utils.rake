@@ -172,18 +172,19 @@ namespace :user_utils do
   end
 
   desc "Update all users' twitter avatars"
-  task :update_twitter_avatars, [:invalid_credentials_only] => [:environment] do |t, args|
+  task :update_twitter_avatars, [:limit] => [:environment] do |t, args|
+    require 'newrelic-rake'
+    NewRelic::Agent.manual_start
 
     Rails.logger = Logger.new(STDOUT)
 
-    args.with_defaults(:invalid_credentials_only => "false")
+    args.with_defaults(:limit => "0")
 
     options = {
-      :invalid_credentials_only => "true".casecmp(args[:invalid_credentials_only]) == 0
+      :limit => args[:limit].to_i
     }
 
     action_message = "Updating user twitter avatars"
-    action_message += " only for users with invalid oauth credentials" if options[:invalid_credentials_only]
     Rails.logger.info(action_message)
     result = GT::UserTwitterManager.update_all_twitter_avatars(options)
     Rails.logger.info("DONE!")

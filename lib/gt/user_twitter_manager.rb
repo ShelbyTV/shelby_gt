@@ -72,11 +72,10 @@ module GT
     # loop through all of our users who have twitter auth objects and update their twitter avatars
     # --options--
     #
-    # :invalid_credentials_only => Bool --- set to true to only update avatars for users for whom we have invalid
-    # => twitter oauth credentials, default false
+    # :limit => Integer --- OPTIONAL maximum number of users to process
     def self.update_all_twitter_avatars(options={})
       defaults = {
-        :invalid_credentials_only => false
+        :limit => 0
       }
       options = defaults.merge(options)
 
@@ -105,6 +104,7 @@ module GT
         },
         {
           :sort => [:_id, :desc],
+          :limit => options[:limit],
           :timeout => false,
           :fields => ["authentications", "user_image"]
         }
