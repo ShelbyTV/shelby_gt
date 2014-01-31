@@ -244,6 +244,23 @@ describe GT::UserTwitterManager do
         expect(@user_with_twitter_oauth.authentications.first.image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
       end
 
+      it "limits the number of users processed based on the :limit option" do
+        @another_user_with_twitter_oauth = Factory.create(:user)
+
+        expect(GT::UserTwitterManager.update_all_twitter_avatars(:limit => 1)).to eql({
+          :users_with_twitter_auth_found => 1,
+          :users_with_valid_oauth_creds_found => 1,
+          :users_without_valid_oauth_creds_found => 0,
+          :users_with_valid_oauth_creds_updated => 1,
+          :users_without_valid_oauth_creds_updated => 0
+        })
+
+        expect {
+          @another_user_with_twitter_oauth.reload
+        }.not_to change(@another_user_with_twitter_oauth.authentications.first, :image)
+
+      end
+
       it "notices when it gets rate limited and quits immediately" do
         MongoMapper::Plugins::IdentityMap.clear
 
@@ -479,38 +496,6 @@ describe GT::UserTwitterManager do
 
         @user_with_invalid_twitter_oauth.reload
         expect(@user_with_invalid_twitter_oauth.authentications.first.image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
-      end
-
-      it "has a mode to process only users for whom we have invalid oauth credentials" do
-        @users_route.should_receive(:lookup!).with({
-          :user_id => "#{@user_with_invalid_twitter_oauth.authentications.first.uid}",
-          :include_entities => false
-        }).and_return([
-          OpenStruct.new(:id_str => @user_with_invalid_twitter_oauth.authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url),
-        ])
-
-        expect(GT::UserTwitterManager.update_all_twitter_avatars({:invalid_credentials_only => true})).to eql({
-          :users_with_twitter_auth_found => 4,
-          :users_with_valid_oauth_creds_found => 2,
-          :users_without_valid_oauth_creds_found => 2,
-          :users_with_valid_oauth_creds_updated => 0,
-          :users_without_valid_oauth_creds_updated => 1
-        })
-
-        @user_with_invalid_twitter_oauth.reload
-        expect(@user_with_invalid_twitter_oauth.authentications.first.image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
-
-        expect {
-          @user_with_twitter_oauth.reload
-        }.not_to change(@user_with_twitter_oauth.authentications.first, :image)
-
-        expect {
-          @another_user_with_twitter_oauth.reload
-        }.not_to change(@another_user_with_twitter_oauth.authentications.first, :image)
-
-        expect {
-          @user_without_twitter_oauth.reload
-        }.not_to change(@user_with_invalid_twitter_oauth.authentications.first, :image)
       end
     end
   end

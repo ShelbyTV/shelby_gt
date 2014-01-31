@@ -105,6 +105,7 @@ gem "pusher" # for remote control
 
 gem 'newrelic_rpm'
 gem 'rpm_contrib'
+gem 'newrelic-rake'
 
 #
 # ---------- Scheduled Task Management
