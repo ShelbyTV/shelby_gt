@@ -173,6 +173,8 @@ namespace :user_utils do
 
   desc "Update all users' twitter avatars"
   task :update_twitter_avatars, [:limit] => [:environment] do |t, args|
+    require 'newrelic-rake'
+    NewRelic::Agent.manual_start
 
     Rails.logger = Logger.new(STDOUT)
 
