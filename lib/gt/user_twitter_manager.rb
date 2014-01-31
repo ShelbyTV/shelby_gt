@@ -32,7 +32,7 @@ module GT
         return true
       rescue Grackle::TwitterError
         return false
-      rescue => e
+      rescue
         StatsManager::StatsD.increment(Settings::StatsConstants.user['verify_service']['failure']['twitter'])
         return false
       end
@@ -81,17 +81,22 @@ module GT
       options = defaults.merge(options)
 
       # keep some stats on our processing and return them at the end
-      response = {
+      stats = {
         :users_with_twitter_auth_found => 0,
-        :users_with_valid_oauth_creds_found => 0,
-        :users_without_valid_oauth_creds_found => 0,
-        :users_with_valid_oauth_creds_updated => 0,
-        :users_without_valid_oauth_creds_updated => 0
+        :users_with_twitter_auth_updated => 0
       }
 
-      # we'll keep track of twitter uids for whom we don't have oauth creds to be handled in a different way
-      # to avoid rate limiting
-      non_oauthed_users = {}
+      # collect a pool of user oauth_creds as we go so we can use them smartly to
+      # avoid rate limiting
+      oauth_creds = []
+      # collect users hashed by twitter uid so we can get back to the user objects once we have
+      # our twitter results
+      users = {}
+      # keep track of how many requests we have left to make with the current set of oauth creds
+      client_info = {
+        :requests_left => 0,
+        :twitter_client => {}
+      }
       User.collection.find(
         {:$and => [
             {:_id => {:$lte => BSON::ObjectId.from_time(Time.at(Time.now.utc.to_f.ceil))}},
@@ -99,6 +104,7 @@ module GT
           ]
         },
         {
+          :sort => [:_id, :desc],
           :timeout => false,
           :fields => ["authentications", "user_image"]
         }
@@ -106,93 +112,130 @@ module GT
         cursor.each do |doc|
           user = User.load(doc)
 
-          response[:users_with_twitter_auth_found] += 1
+          stats[:users_with_twitter_auth_found] += 1
           begin
+            collected_user = false
             user_twitter_auth = user.authentications.to_ary.find{ |a| a.provider = 'twitter'}
+            # if the user has oauth creds, collect them for smart use later
             unless user_twitter_auth.oauth_token.nil? || user_twitter_auth.oauth_secret.nil?
-              Rails.logger.info("Examining a user with oauth creds")
-              # if we can oauth on behalf of the user, just lookup and update their info now as we don't have any
-              # rate limiting concerns
-              twitter_info_getter = APIClients::TwitterInfoGetter.new(user)
-              begin
-                new_avatar_image = twitter_info_getter.get_user_info.profile_image_url
-              rescue Grackle::TwitterError => e
-                if e.status == 429
-                  Rails.logger.info('WE GOT RATE LIMITED PER USER')
-                  response[:users_with_valid_oauth_creds_found] += 1
-                  return response
-                elsif e.response_object.errors && e.response_object.errors.any?{ |err| err.code == 89}
-                  Rails.logger.info("User oauth creds invalid, will process later with application auth")
-                  response[:users_without_valid_oauth_creds_found] += 1
-                  non_oauthed_users[user_twitter_auth.uid] = user
-                  next
-                else
-                  Rails.logger.info("TWITTER EXCEPTION: #{e}")
-                  response[:users_with_valid_oauth_creds_found] += 1
-                  next
-                end
-              else
-                response[:users_with_valid_oauth_creds_found] += 1
-              end
-              unless options[:invalid_credentials_only]
-                Rails.logger.info("User oauth creds valid, updating now")
-                self.update_user_twitter_avatar(user, new_avatar_image)
-                response[:users_with_valid_oauth_creds_updated] += 1
-              else
-                Rails.logger.info("User oauth creds valid, skipping")
-              end
+              oauth_creds.push({:token => user_twitter_auth.oauth_token, :secret => user_twitter_auth.oauth_secret})
+            end
+            users[user_twitter_auth.uid] = user
+            collected_user = true
+            # check if we've collected enough users to fetch a batch of info from twitter,
+            # and then do so
+            unless check_update_user_avatar_batch(users, oauth_creds, client_info, stats)
+              # if something went drastically wrong, return immediately
+              return stats
             else
-              response[:users_without_valid_oauth_creds_found] += 1
-              non_oauthed_users[user_twitter_auth.uid] = user unless options[:invalid_credentials_only]
             end
           rescue => e
-            Rails.logger.info("GENERAL EXCEPTION: #{e}")
+            Rails.logger.info("GENERAL EXCEPTION, SKIPPING PROCESSING SHELBY USER #{user.id}: #{e}")
+            users.delete(user_twitter_auth.uid) if collected_user
             next
           end
         end
       end
 
-      #we're done with the users we have twitter oauth creds for, now handle the ones we don't
-      unless non_oauthed_users.empty?
-        Rails.logger.info("We have #{response[:users_without_valid_oauth_creds_found]} users without valid oauth creds to process in slices")
-
-        twitter_client_for_app = APIClients::TwitterClient.build_for_app
-
-        # we can get info for many users per call from /users/lookup
-        non_oauthed_users.each_slice(Settings::Twitter.user_lookup_slice_size) do |slice|
-          Rails.logger.info("Processing a slice of users without valid oauth creds")
-          begin
-            result = twitter_client_for_app.users.lookup!(:user_id => slice.map{ |uinfo| uinfo[0] }.join(','), :include_entities => false)
-          rescue Grackle::TwitterError => e
-            if e.status == 429
-              Rails.logger.info('WE GOT RATE LIMITED PER APP')
-              return response
-            else
-              Rails.logger.info("TWITTER EXCEPTION: #{e}")
-              next
-            end
-          end
-          # loop through the user info structures we got back from twitter and update avatars for the corresponding
-          # shelby users
-          result.each do |twitter_struct|
-            begin
-              Rails.logger.info("--> Processing a user from the slice")
-              self.update_user_twitter_avatar(non_oauthed_users[twitter_struct.id_str], twitter_struct.profile_image_url)
-              response[:users_without_valid_oauth_creds_updated] += 1
-            rescue => e
-              Rails.logger.info("GENERAL EXCEPTION: #{e}")
-            next
-          end
-          end
-        end
-
+      # do one more batch for whatever users are left over
+      begin
+        check_update_user_avatar_batch(users, oauth_creds, client_info, stats, {:force_batch => true})
+      rescue => e
+        Rails.logger.info("GENERAL EXCEPTION, SKIPPING LAST BATCH: #{e}")
       end
 
-      return response
+      return stats
 
     end
 
     private
+
+      def self.check_update_user_avatar_batch(users, oauth_creds, client_info, stats, options={})
+        defaults = {
+         :force_batch => false
+        }
+        options = defaults.merge(options)
+
+        if (users.count == Settings::Twitter.user_lookup_batch_size) || (!users.count.zero? && options[:force_batch])
+          # if we've collected the number of users we include in a batch for a twitter lookup,
+          # do the lookup and update the avatars
+          lookup_resolved = false
+          until lookup_resolved do
+            # if we don't have a twitter client with sufficient requests left, create a new one
+            if (client_info[:requests_left] == 0) && (!oauth_creds.empty? || client_info[:twitter_client][:client_type] != :app)
+              Rails.logger.info("Building a new twitter client")
+              client_info[:twitter_client] = build_best_available_client(oauth_creds)
+              # if we had to build a client with our app credentials, only use it once before
+              # trying to build a client with user credentials again
+              client_info[:requests_left] = (client_info[:twitter_client][:client_type] == :app) ? 1 : Settings::Twitter.user_lookup_max_requests_per_oauth
+            end
+            # ok, now we've got a twitter client, so lookup some info and update our user avatars
+            begin
+              Rails.logger.info("Looking up a batch of #{users.count} users with #{client_info[:twitter_client][:client_type]} credentials")
+              result = client_info[:twitter_client][:client].users.lookup!(:user_id => users.map{ |uinfo| uinfo[0] }.join(','), :include_entities => false)
+            rescue Grackle::TwitterError => e
+              if e.status == 429
+                # if we get rate limited, return immediately
+                Rails.logger.info("WE GOT RATE LIMITED #{(client_info[:twitter_client][:client_type] == :app) ? 'PER APP' : 'PER USER'}")
+                return false
+              elsif e.response_object.errors && e.response_object.errors.any?{ |err| err.code == 89}
+                if client_info[:twitter_client][:client_type] == :app
+                  Rails.logger.info('TWITTER REPLIED INVALID CREDENTIALS TO APP-WIDE CREDENTIALS')
+                  return false
+                else
+                  # if our user twitter credentials are invalid, mark this client as having no requests left
+                  # and we'll circle around with the next set of credential available to us
+                  Rails.logger.info("User twitter creds invalid, will try new creds: #{e}")
+                  client_info[:requests_left] = 0
+                end
+              else
+                Rails.logger.info("TWITTER EXCEPTION, SKIPPING BATCH: #{e}")
+                lookup_resolved = true
+              end
+            else
+              lookup_resolved = true
+              # loop through the user info structures we got back from twitter and update avatars for the corresponding
+              # shelby users
+              result.each do |twitter_struct|
+                begin
+                  Rails.logger.info("--> Processing a user returned from the batch")
+                  self.update_user_twitter_avatar(users[twitter_struct.id_str], twitter_struct.profile_image_url)
+                  stats[:users_with_twitter_auth_updated] += 1
+                rescue => e
+                  Rails.logger.info("GENERAL EXCEPTION, SKIPPING RETURNED TWITTER USER #{twitter_struct.id_str}: #{e}")
+                  next
+                end
+              end
+            end
+          end
+
+          client_info[:requests_left] -= 1
+          # we've processed all the users we found so far, don't need to hang on to them anymore
+          users.clear
+        end
+
+        return true
+      end
+
+      def self.build_best_available_client(oauth_creds=[])
+        result = {}
+
+        user_oauth_creds = oauth_creds.shift
+        if user_oauth_creds
+          # if we have user creds available, use them
+          result[:client] = APIClients::TwitterClient.build_for_token_and_secret(
+            user_oauth_creds[:token],
+            user_oauth_creds[:secret]
+          )
+          result[:client_type] = :user
+        else
+          # otherwise, build a client using our app credentials
+          result[:client] = APIClients::TwitterClient.build_for_app
+          result[:client_type] = :app
+        end
+
+        return result
+      end
 
       def self.friends_ids(user)
         begin

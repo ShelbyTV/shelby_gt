@@ -211,307 +211,373 @@ describe GT::UserTwitterManager do
 
   context "udpate_all_twitter_avatars" do
     before(:each) do
+      Settings::Twitter['user_lookup_batch_size'] = 2
+      Settings::Twitter['user_lookup_max_requests_per_oauth'] = 100
+
       MongoMapper::Helper.drop_all_dbs
       MongoMapper::Helper.ensure_all_indexes
 
-      @user_with_twitter_oauth = Factory.create(:user)
-
       @users_route = double("users_route")
-      @twitter_client_for_app = double("twitter_client_for_app", :users => @users_route)
-      APIClients::TwitterClient.stub(:build_for_app).and_return(@twitter_client_for_app)
+      @users_route.stub(:lookup!).and_return([])
+      @twitter_client = double("twitter_client", :users => @users_route)
+      APIClients::TwitterClient.stub(:build_for_token_and_secret).and_return(@twitter_client)
+      APIClients::TwitterClient.stub(:build_for_app).and_return(@twitter_client)
 
       Grackle::TwitterError.any_instance.stub(:response_object).and_return(OpenStruct.new(:errors => nil))
     end
 
-
-    context "users with twitter oauth credentials" do
-
-      it "immediately updates twitter avatar" do
-        MongoMapper::Plugins::IdentityMap.clear
-
-        APIClients::TwitterInfoGetter.should_receive(:new).exactly(1).times().with(@user_with_twitter_oauth)
-        APIClients::TwitterClient.should_not_receive(:build_for_app)
-
-        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
-          :users_with_twitter_auth_found => 1,
-          :users_with_valid_oauth_creds_found => 1,
-          :users_without_valid_oauth_creds_found => 0,
-          :users_with_valid_oauth_creds_updated => 1,
-          :users_without_valid_oauth_creds_updated => 0
-        })
-
-        @user_with_twitter_oauth.reload
-        expect(@user_with_twitter_oauth.authentications.first.image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
-      end
-
-      it "notices when it gets rate limited and quits immediately" do
-        MongoMapper::Plugins::IdentityMap.clear
-
-        twitter_error = Grackle::TwitterError.new(:get, nil, 429, nil)
-        @twt_info_getter.stub(:get_user_info).and_raise(twitter_error)
-
-        Rails.logger.stub(:info).with(any_args())
-        Rails.logger.should_receive(:info).once().with("WE GOT RATE LIMITED PER USER")
-
-        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
-          :users_with_twitter_auth_found => 1,
-          :users_with_valid_oauth_creds_found => 1,
-          :users_without_valid_oauth_creds_found => 0,
-          :users_with_valid_oauth_creds_updated => 0,
-          :users_without_valid_oauth_creds_updated => 0
-        })
-      end
-
-      it "doesn't quit when it gets other kinds of twitter errors" do
-        @another_user_with_twitter_oauth = Factory.create(:user)
-        MongoMapper::Plugins::IdentityMap.clear
-
-        twitter_error = Grackle::TwitterError.new(:get, nil, 404, nil)
-        @twt_info_getter.should_receive(:get_user_info).ordered().and_raise(twitter_error)
-        @twt_info_getter.should_receive(:get_user_info).ordered()
-
-        Rails.logger.should_receive(:info).with("TWITTER EXCEPTION: #{twitter_error}")
-        Rails.logger.should_not_receive(:info).with("WE GOT RATE LIMITED PER USER")
-
-        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
-          :users_with_twitter_auth_found => 2,
-          :users_with_valid_oauth_creds_found => 2,
-          :users_without_valid_oauth_creds_found => 0,
-          :users_with_valid_oauth_creds_updated => 1,
-          :users_without_valid_oauth_creds_updated => 0
-        })
-      end
-
-      it "logs errors other than twitter errors and skips to the next user" do
-        @another_user_with_twitter_oauth = Factory.create(:user)
-        MongoMapper::Plugins::IdentityMap.clear
-
-        exception = 'hello'
-
-        GT::UserTwitterManager.stub(:update_user_twitter_avatar).with(@user_with_twitter_oauth, anything()).and_raise(exception)
-        GT::UserTwitterManager.stub(:update_user_twitter_avatar).with(@another_user_with_twitter_oauth, anything()).and_call_original
-
-        Rails.logger.stub(:info).with(any_args())
-        Rails.logger.should_receive(:info).once().with("GENERAL EXCEPTION: #{exception}")
-
-        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
-          :users_with_twitter_auth_found => 2,
-          :users_with_valid_oauth_creds_found => 2,
-          :users_without_valid_oauth_creds_found => 0,
-          :users_with_valid_oauth_creds_updated => 1,
-          :users_without_valid_oauth_creds_updated => 0
-        })
-      end
-
-    end
-
-    context "users without twitter oauth credentials" do
+    context "mixed user and non-user creds" do
       before(:each) do
-        Settings::Twitter['user_lookup_slice_size'] = 2
-
-        @users_without_twitter_oauth = []
-        3.times do |i|
-          @users_without_twitter_oauth[i] = Factory.create(:user)
-          @users_without_twitter_oauth[i].authentications.first.oauth_token = nil
+        @users = []
+        2.times do |i|
+          user_with_twitter_oauth = Factory.create(:user)
+          user_with_twitter_oauth.authentications.first.oauth_token = "token#{i}"
+          user_with_twitter_oauth.authentications.first.oauth_secret = "secret#{i}"
+          user_with_twitter_oauth.save
+          @users << user_with_twitter_oauth
+          user_without_twitter_oauth = Factory.create(:user)
+          user_without_twitter_oauth.authentications.first.oauth_token = nil
+          user_without_twitter_oauth.save
+          @users << user_without_twitter_oauth
         end
+      end
 
-        @users_without_twitter_oauth[1].user_image = 'https://pbs.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.png'
+      it "builds twitter clients with oauth creds from examined users and keeps them for a specified number of requests" do
+        MongoMapper::Plugins::IdentityMap.clear
 
-        3.times do |i|
-          @users_without_twitter_oauth[i].save
+        Settings::Twitter['user_lookup_max_requests_per_oauth'] = 1
+
+        APIClients::TwitterClient.should_receive(:build_for_token_and_secret).once().ordered().with(
+          "token1",
+          "secret1"
+        )
+
+        APIClients::TwitterClient.should_receive(:build_for_token_and_secret).once().ordered().with(
+          "token0",
+          "secret0"
+        )
+
+        GT::UserTwitterManager.update_all_twitter_avatars
+      end
+
+      it "batches twitter requests for slices of users and updates their twitter avatars with the returned data" do
+        @users[0].user_image = 'https://pbs.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.png'
+        @users[0].save
+        MongoMapper::Plugins::IdentityMap.clear
+
+        @users_route.should_receive(:lookup!).with({
+          :user_id => "#{@users[3].authentications.first.uid},#{@users[2].authentications.first.uid}",
+          :include_entities => false
+        }).and_return([
+          OpenStruct.new(:id_str => @users[2].authentications.first.uid, :profile_image_url => "http://2.png"),
+          OpenStruct.new(:id_str => @users[3].authentications.first.uid, :profile_image_url => "http://3.png")
+        ])
+        @users_route.should_receive(:lookup!).with({
+          :user_id => "#{@users[1].authentications.first.uid},#{@users[0].authentications.first.uid}",
+          :include_entities => false
+        }).and_return([
+          OpenStruct.new(:id_str => @users[1].authentications.first.uid, :profile_image_url => "http://1.png"),
+          OpenStruct.new(:id_str => @users[0].authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url)
+        ])
+
+        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
+          :users_with_twitter_auth_found => 4,
+          :users_with_twitter_auth_updated => 4
+        })
+
+        @users[0].reload
+        expect(@users[0].authentications.first.image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
+        expect(@users[0].user_image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
+        expect(@users[0].user_image_original).to eql "http://dummy.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3.png"
+
+        (1..3).each do |i|
+          expect {
+            @users[i].reload
+          }.not_to change(@users[i], :user_image)
+          expect(@users[i].authentications.first.image).to eql "http://#{i}.png"
         end
+      end
 
+      it "processes one last batch with any users that are left over at the end" do
+        one_more_user = Factory.create(:user)
+        one_more_user.authentications.first.oauth_token = "token5"
+        one_more_user.authentications.first.oauth_secret = "secret5"
+        one_more_user.save
+        @users << one_more_user
         MongoMapper::Plugins::IdentityMap.clear
-      end
 
-      it "batches twitter requests for slices of users" do
-        APIClients::TwitterClient.should_receive(:build_for_app)
-
-        @users_route.should_receive(:lookup!).ordered().with({
-          :user_id => "#{@users_without_twitter_oauth[0].authentications.first.uid},#{@users_without_twitter_oauth[1].authentications.first.uid}",
+        @users_route.should_receive(:lookup!).with({
+          :user_id => "#{@users[4].authentications.first.uid},#{@users[3].authentications.first.uid}",
           :include_entities => false
         }).and_return([
-          OpenStruct.new(:id_str => @users_without_twitter_oauth[1].authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url),
-          OpenStruct.new(:id_str => @users_without_twitter_oauth[0].authentications.first.uid, :profile_image_url => "http://somemaedupimage.png")
+          OpenStruct.new(:id_str => @users[3].authentications.first.uid, :profile_image_url => "http://3.png"),
+          OpenStruct.new(:id_str => @users[4].authentications.first.uid, :profile_image_url => "http://4.png")
         ])
-        @users_route.should_receive(:lookup!).ordered().with({
-          :user_id => "#{@users_without_twitter_oauth[2].authentications.first.uid}",
+        @users_route.should_receive(:lookup!).with({
+          :user_id => "#{@users[2].authentications.first.uid},#{@users[1].authentications.first.uid}",
           :include_entities => false
         }).and_return([
-          OpenStruct.new(:id_str => @users_without_twitter_oauth[2].authentications.first.uid, :profile_image_url => "http://someothermadeupimage.png")
+          OpenStruct.new(:id_str => @users[2].authentications.first.uid, :profile_image_url => "http://2.png"),
+          OpenStruct.new(:id_str => @users[1].authentications.first.uid, :profile_image_url => "http://1.png")
+        ])
+        @users_route.should_receive(:lookup!).with({
+          :user_id => "#{@users[0].authentications.first.uid}",
+          :include_entities => false
+        }).and_return([
+          OpenStruct.new(:id_str => @users[0].authentications.first.uid, :profile_image_url => "http://0.png"),
         ])
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
-          :users_with_twitter_auth_found => 4,
-          :users_with_valid_oauth_creds_found => 1,
-          :users_without_valid_oauth_creds_found => 3,
-          :users_with_valid_oauth_creds_updated => 1,
-          :users_without_valid_oauth_creds_updated => 3
+          :users_with_twitter_auth_found => 5,
+          :users_with_twitter_auth_updated => 5
         })
 
-        expect {
-          @users_without_twitter_oauth[0].reload
-        }.not_to change(@users_without_twitter_oauth[0], :user_image)
-        expect(@users_without_twitter_oauth[0].authentications.first.image).to eql "http://somemaedupimage.png"
-
-        @users_without_twitter_oauth[1].reload
-        expect(@users_without_twitter_oauth[1].authentications.first.image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
-        expect(@users_without_twitter_oauth[1].user_image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
-        expect(@users_without_twitter_oauth[1].user_image_original).to eql "http://dummy.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3.png"
-
-        expect {
-          @users_without_twitter_oauth[2].reload
-        }.not_to change(@users_without_twitter_oauth[2], :user_image)
-        expect(@users_without_twitter_oauth[2].authentications.first.image).to eql "http://someothermadeupimage.png"
+        (0..4).each do |i|
+          expect {
+            @users[i].reload
+          }.not_to change(@users[i], :user_image)
+          expect(@users[i].authentications.first.image).to eql "http://#{i}.png"
+        end
       end
 
-      it "notices when it gets rate limited and quits immediately" do
-        twitter_error = Grackle::TwitterError.new(:get, nil, 429, nil)
-        @users_route.stub(:lookup!).and_raise(twitter_error)
-
-        Rails.logger.stub(:info).with(any_args())
-        Rails.logger.should_receive(:info).once().with("WE GOT RATE LIMITED PER APP")
-
-        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
-          :users_with_twitter_auth_found => 4,
-          :users_with_valid_oauth_creds_found => 1,
-          :users_without_valid_oauth_creds_found => 3,
-          :users_with_valid_oauth_creds_updated => 1,
-          :users_without_valid_oauth_creds_updated => 0
-        })
-      end
-
-      it "doesn't quit when it gets other kinds of twitter errors" do
-        twitter_error = Grackle::TwitterError.new(:get, nil, 404, nil)
-        @users_route.stub(:lookup!).ordered().and_raise(twitter_error)
-        @users_route.stub(:lookup!).ordered().with({
-          :user_id => "#{@users_without_twitter_oauth[2].authentications.first.uid}",
-          :include_entities => false
-        }).and_return([
-          OpenStruct.new(:id_str => @users_without_twitter_oauth[2].authentications.first.uid, :profile_image_url => "http://someothermadeupimage.png")
-        ])
-
-        Rails.logger.stub(:info).with(any_args())
-        Rails.logger.should_receive(:info).once().with("TWITTER EXCEPTION: #{twitter_error}")
-        Rails.logger.should_not_receive(:info).with("WE GOT RATE LIMITED PER APP")
-
-        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
-          :users_with_twitter_auth_found => 4,
-          :users_with_valid_oauth_creds_found => 1,
-          :users_without_valid_oauth_creds_found => 3,
-          :users_with_valid_oauth_creds_updated => 1,
-          :users_without_valid_oauth_creds_updated => 1
-        })
-      end
-
-      it "logs errors other than twitter errors and skips to the next user" do
-        @users_route.stub(:lookup!).with({
-          :user_id => "#{@users_without_twitter_oauth[0].authentications.first.uid},#{@users_without_twitter_oauth[1].authentications.first.uid}",
-          :include_entities => false
-        }).and_return([
-          OpenStruct.new(:id_str => @users_without_twitter_oauth[1].authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url),
-          OpenStruct.new(:id_str => @users_without_twitter_oauth[0].authentications.first.uid, :profile_image_url => "http://somemaedupimage.png")
-        ])
-        @users_route.stub(:lookup!).with({
-          :user_id => "#{@users_without_twitter_oauth[2].authentications.first.uid}",
-          :include_entities => false
-        }).and_return([
-          OpenStruct.new(:id_str => @users_without_twitter_oauth[2].authentications.first.uid, :profile_image_url => "http://someothermadeupimage.png")
-        ])
-
-        exception = 'hello'
-
-        GT::UserTwitterManager.stub(:update_user_twitter_avatar).and_call_original
-        GT::UserTwitterManager.stub(:update_user_twitter_avatar).with(@users_without_twitter_oauth[1], anything()).and_raise(exception)
-
-        Rails.logger.stub(:info).with(any_args())
-        Rails.logger.should_receive(:info).once().with("GENERAL EXCEPTION: #{exception}")
-
-        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
-          :users_with_twitter_auth_found => 4,
-          :users_with_valid_oauth_creds_found => 1,
-          :users_without_valid_oauth_creds_found => 3,
-          :users_with_valid_oauth_creds_updated => 1,
-          :users_without_valid_oauth_creds_updated => 2
-        })
-      end
-    end
-
-    context "users with invalid twitter oauth credentials" do
-      before(:each) do
-        Settings::Twitter['user_lookup_slice_size'] = 2
-        @user_with_invalid_twitter_oauth = Factory.create(:user)
-        @another_user_with_twitter_oauth = Factory.create(:user)
-        @user_without_twitter_oauth = Factory.create(:user)
-        @user_without_twitter_oauth.authentications.first.oauth_token = nil
-        @user_without_twitter_oauth.save
+      it "moves on to another set of user oauth creds if twitter response indicates that current creds are invalid" do
         MongoMapper::Plugins::IdentityMap.clear
+
+        users_route_client1 = double("users_route_client1")
+        users_route_client2 = double("users_route_client2")
+        twitter_client1 = double("twitter_client1", :users => users_route_client1)
+        twitter_client2 = double("twitter_client2", :users => users_route_client2)
+
+        APIClients::TwitterClient.should_receive(:build_for_token_and_secret).exactly(:once).ordered().with(
+          "token1",
+          "secret1"
+        ).and_return(twitter_client1)
 
         twitter_error = Grackle::TwitterError.new(:get, nil, 401, "{\"errors\":[{\"message\":\"Invalid or expired token\",\"code\":89}]}")
         twitter_error_struct = OpenStruct.new(:message => "Invalid or expired token", :code => 89)
         twitter_response_object = OpenStruct.new(:errors => [twitter_error_struct])
         twitter_error.should_receive(:response_object).at_least(:once).and_return(twitter_response_object)
 
-        @twt_info_getter.should_receive(:get_user_info).ordered()
-        @twt_info_getter.should_receive(:get_user_info).ordered().and_raise(twitter_error)
-        @twt_info_getter.should_receive(:get_user_info).ordered()
+        users_route_client1.should_receive(:lookup!).with({
+          :user_id => "#{@users[3].authentications.first.uid},#{@users[2].authentications.first.uid}",
+          :include_entities => false
+        }).ordered().and_return([
+          OpenStruct.new(:id_str => @users[2].authentications.first.uid, :profile_image_url => "http://2.png"),
+          OpenStruct.new(:id_str => @users[3].authentications.first.uid, :profile_image_url => "http://3.png")
+        ])
+        users_route_client1.should_receive(:lookup!).with({
+          :user_id => "#{@users[1].authentications.first.uid},#{@users[0].authentications.first.uid}",
+          :include_entities => false
+        }).ordered().and_raise(twitter_error)
+
+        APIClients::TwitterClient.should_receive(:build_for_token_and_secret).exactly(:once).ordered().with(
+          "token0",
+          "secret0"
+        ).and_return(twitter_client2)
+
+        users_route_client2.should_receive(:lookup!).with({
+          :user_id => "#{@users[1].authentications.first.uid},#{@users[0].authentications.first.uid}",
+          :include_entities => false
+        }).ordered().and_return([
+          OpenStruct.new(:id_str => @users[1].authentications.first.uid, :profile_image_url => "http://1.png"),
+          OpenStruct.new(:id_str => @users[0].authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url)
+        ])
 
         Rails.logger.stub(:info).with(any_args())
-        Rails.logger.should_receive(:info).once().with("User oauth creds invalid, will process later with application auth")
-      end
-
-      it "processes the user along with the users for whom we have no oauth credentials" do
-        @users_route.should_receive(:lookup!).with({
-          :user_id => "#{@user_with_invalid_twitter_oauth.authentications.first.uid},#{@user_without_twitter_oauth.authentications.first.uid}",
-          :include_entities => false
-        }).and_return([
-          OpenStruct.new(:id_str => @user_without_twitter_oauth.authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url),
-          OpenStruct.new(:id_str => @user_with_invalid_twitter_oauth.authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url)
-        ])
+        Rails.logger.should_receive(:info).once().with("User twitter creds invalid, will try new creds: #{twitter_error}")
 
         expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 4,
-          :users_with_valid_oauth_creds_found => 2,
-          :users_without_valid_oauth_creds_found => 2,
-          :users_with_valid_oauth_creds_updated => 2,
-          :users_without_valid_oauth_creds_updated => 2
+          :users_with_twitter_auth_updated => 4
         })
-
-        @user_with_invalid_twitter_oauth.reload
-        expect(@user_with_invalid_twitter_oauth.authentications.first.image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
       end
 
-      it "has a mode to process only users for whom we have invalid oauth credentials" do
-        @users_route.should_receive(:lookup!).with({
-          :user_id => "#{@user_with_invalid_twitter_oauth.authentications.first.uid}",
+      it "notices when it gets rate limited and quits immediately" do
+        MongoMapper::Plugins::IdentityMap.clear
+
+        twitter_error = Grackle::TwitterError.new(:get, nil, 429, nil)
+        @users_route.stub(:lookup!).with({
+          :user_id => "#{@users[3].authentications.first.uid},#{@users[2].authentications.first.uid}",
           :include_entities => false
         }).and_return([
-          OpenStruct.new(:id_str => @user_with_invalid_twitter_oauth.authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url),
+          OpenStruct.new(:id_str => @users[2].authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url),
+          OpenStruct.new(:id_str => @users[3].authentications.first.uid, :profile_image_url => "http://somemaedupimage.png")
+        ])
+        @users_route.stub(:lookup!).with({
+          :user_id => "#{@users[1].authentications.first.uid},#{@users[0].authentications.first.uid}",
+          :include_entities => false
+        }).and_raise(twitter_error)
+
+        Rails.logger.stub(:info).with(any_args())
+        Rails.logger.should_receive(:info).once().with("WE GOT RATE LIMITED PER USER")
+
+        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
+          :users_with_twitter_auth_found => 4,
+          :users_with_twitter_auth_updated => 2
+        })
+      end
+
+    it "doesn't quit when it gets other kinds of twitter errors" do
+        MongoMapper::Plugins::IdentityMap.clear
+
+        twitter_error = Grackle::TwitterError.new(:get, nil, 404, nil)
+        @users_route.stub(:lookup!).with({
+          :user_id => "#{@users[3].authentications.first.uid},#{@users[2].authentications.first.uid}",
+          :include_entities => false
+        }).and_raise(twitter_error)
+        @users_route.stub(:lookup!).with({
+          :user_id => "#{@users[1].authentications.first.uid},#{@users[0].authentications.first.uid}",
+          :include_entities => false
+        }).and_return([
+          OpenStruct.new(:id_str => @users[1].authentications.first.uid, :profile_image_url => "http://1.png"),
+          OpenStruct.new(:id_str => @users[0].authentications.first.uid, :profile_image_url => "http://2.png")
         ])
 
-        expect(GT::UserTwitterManager.update_all_twitter_avatars({:invalid_credentials_only => true})).to eql({
+        Rails.logger.should_receive(:info).with("TWITTER EXCEPTION, SKIPPING BATCH: #{twitter_error}").once()
+        Rails.logger.should_not_receive(:info).with("WE GOT RATE LIMITED PER USER")
+
+        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
           :users_with_twitter_auth_found => 4,
-          :users_with_valid_oauth_creds_found => 2,
-          :users_without_valid_oauth_creds_found => 2,
-          :users_with_valid_oauth_creds_updated => 0,
-          :users_without_valid_oauth_creds_updated => 1
+          :users_with_twitter_auth_updated => 2
         })
-
-        @user_with_invalid_twitter_oauth.reload
-        expect(@user_with_invalid_twitter_oauth.authentications.first.image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
-
-        expect {
-          @user_with_twitter_oauth.reload
-        }.not_to change(@user_with_twitter_oauth.authentications.first, :image)
-
-        expect {
-          @another_user_with_twitter_oauth.reload
-        }.not_to change(@another_user_with_twitter_oauth.authentications.first, :image)
-
-        expect {
-          @user_without_twitter_oauth.reload
-        }.not_to change(@user_with_invalid_twitter_oauth.authentications.first, :image)
       end
+
+      it "logs errors other than twitter errors and skips to the next returned twitter user" do
+        MongoMapper::Plugins::IdentityMap.clear
+
+        exception = 'hello'
+
+        @users_route.stub(:lookup!).with({
+          :user_id => "#{@users[3].authentications.first.uid},#{@users[2].authentications.first.uid}",
+          :include_entities => false
+        }).and_return([
+          OpenStruct.new(:id_str => @users[2].authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url),
+          OpenStruct.new(:id_str => @users[3].authentications.first.uid, :profile_image_url => "http://somemaedupimage.png")
+        ])
+        @users_route.stub(:lookup!).with({
+          :user_id => "#{@users[1].authentications.first.uid},#{@users[0].authentications.first.uid}",
+          :include_entities => false
+        }).and_return([
+          OpenStruct.new(:id_str => @users[1].authentications.first.uid, :profile_image_url => "http://1.png"),
+          OpenStruct.new(:id_str => @users[0].authentications.first.uid, :profile_image_url => "http://2.png")
+        ])
+
+        GT::UserTwitterManager.stub(:update_user_twitter_avatar).and_call_original
+        GT::UserTwitterManager.stub(:update_user_twitter_avatar).with(@users[3], anything()).and_raise(exception)
+
+        Rails.logger.stub(:info).with(any_args())
+        Rails.logger.should_receive(:info).once().with("GENERAL EXCEPTION, SKIPPING RETURNED TWITTER USER #{@users[3].authentications.first.uid}: #{exception}")
+
+        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
+          :users_with_twitter_auth_found => 4,
+          :users_with_twitter_auth_updated => 3
+        })
+      end
+
+      it "logs errors outside the twitter interaction process and skips to the next shelby user" do
+        MongoMapper::Plugins::IdentityMap.clear
+
+        exception = 'hello'
+
+        @users_route.should_receive(:lookup!).exactly(:once).with({
+          :user_id => "#{@users[2].authentications.first.uid},#{@users[1].authentications.first.uid}",
+          :include_entities => false
+        }).and_return([
+          OpenStruct.new(:id_str => @users[2].authentications.first.uid, :profile_image_url => Settings::Twitter.dummy_twitter_avatar_image_url),
+          OpenStruct.new(:id_str => @users[1].authentications.first.uid, :profile_image_url => "http://somemaedupimage.png")
+        ])
+
+        i = 0
+        Settings::Twitter.stub(:user_lookup_batch_size) do |arg|
+          if i == 0
+            i = i + 1
+            raise(exception)
+          else
+            i = i + 1
+            2
+          end
+        end
+
+        Rails.logger.stub(:info).with(any_args())
+        Rails.logger.should_receive(:info).once().with("GENERAL EXCEPTION, SKIPPING PROCESSING SHELBY USER #{@users[3].id}: #{exception}")
+
+        expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
+          :users_with_twitter_auth_found => 4,
+          :users_with_twitter_auth_updated => 2
+        })
+      end
+
     end
+
+    it "falls back to a twitter client with app-wide credentials for one request at a time if user creds are not available" do
+      Settings::Twitter['user_lookup_batch_size'] = 1
+
+      user_with_twitter_oauth = Factory.create(:user)
+      user_with_twitter_oauth.authentications.first.oauth_token = "token"
+      user_with_twitter_oauth.authentications.first.oauth_secret = "secret"
+      user_with_twitter_oauth.save
+
+      user_without_twitter_oauth = Factory.create(:user)
+      user_without_twitter_oauth.authentications.first.oauth_token = nil
+      user_without_twitter_oauth.save
+
+      APIClients::TwitterClient.should_receive(:build_for_app).once().ordered()
+
+      APIClients::TwitterClient.should_receive(:build_for_token_and_secret).once().ordered().with(
+        "token",
+        "secret"
+      )
+
+      GT::UserTwitterManager.update_all_twitter_avatars
+    end
+
+    it "doesn't keep creating app-wide credentialed clients over and over again" do
+      Settings::Twitter['user_lookup_batch_size'] = 1
+
+      @users = []
+      2.times do |i|
+        user_without_twitter_oauth = Factory.create(:user)
+        user_without_twitter_oauth.authentications.first.oauth_token = nil
+        user_without_twitter_oauth.save
+        @users << user_without_twitter_oauth
+      end
+
+      MongoMapper::Plugins::IdentityMap.clear
+
+      APIClients::TwitterClient.should_receive(:build_for_app).once()
+
+      GT::UserTwitterManager.update_all_twitter_avatars
+    end
+
+    it "exits immediately if the app-wide twitter client has invalid twitter credentials" do
+      Settings::Twitter['user_lookup_batch_size'] = 1
+
+      @users = []
+      2.times do |i|
+        user_without_twitter_oauth = Factory.create(:user)
+        user_without_twitter_oauth.authentications.first.oauth_token = nil
+        user_without_twitter_oauth.save
+        @users << user_without_twitter_oauth
+      end
+
+      MongoMapper::Plugins::IdentityMap.clear
+
+      twitter_error = Grackle::TwitterError.new(:get, nil, 401, "{\"errors\":[{\"message\":\"Invalid or expired token\",\"code\":89}]}")
+      twitter_error_struct = OpenStruct.new(:message => "Invalid or expired token", :code => 89)
+      twitter_response_object = OpenStruct.new(:errors => [twitter_error_struct])
+      twitter_error.should_receive(:response_object).at_least(:once).and_return(twitter_response_object)
+
+      @users_route.should_receive(:lookup!).exactly(:once).and_raise(twitter_error)
+
+      Rails.logger.stub(:info).with(any_args())
+      Rails.logger.should_receive(:info).once().with("TWITTER REPLIED INVALID CREDENTIALS TO APP-WIDE CREDENTIALS")
+
+      expect(GT::UserTwitterManager.update_all_twitter_avatars).to eql({
+        :users_with_twitter_auth_found => 1,
+        :users_with_twitter_auth_updated => 0
+      })
+    end
+
   end
+
 end
