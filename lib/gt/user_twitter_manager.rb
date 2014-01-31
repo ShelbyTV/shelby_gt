@@ -115,7 +115,7 @@ module GT
           stats[:users_with_twitter_auth_found] += 1
           begin
             collected_user = false
-            user_twitter_auth = user.authentications.to_ary.find{ |a| a.provider = 'twitter'}
+            user_twitter_auth = user.authentications.to_ary.find{ |a| a.provider == 'twitter'}
             # if the user has oauth creds, collect them for smart use later
             unless user_twitter_auth.oauth_token.nil? || user_twitter_auth.oauth_secret.nil?
               oauth_creds.push({:token => user_twitter_auth.oauth_token, :secret => user_twitter_auth.oauth_secret})
