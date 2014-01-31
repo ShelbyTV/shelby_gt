@@ -198,7 +198,6 @@ module GT
               # shelby users
               result.each do |twitter_struct|
                 begin
-                  Rails.logger.info("--> Processing a user returned from the batch")
                   self.update_user_twitter_avatar(users[twitter_struct.id_str], twitter_struct.profile_image_url)
                   stats[:users_with_twitter_auth_updated] += 1
                 rescue => e
