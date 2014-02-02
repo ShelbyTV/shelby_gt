@@ -6,7 +6,7 @@ defaults: &defaults
   should_send_tweet: false
   dummy_twitter_avatar_image_url: "http://dummy.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.png"
   user_lookup_batch_size: 100
-  user_lookup_max_requests_per_oauth: 100
+  user_lookup_max_requests_per_oauth: 150
   twitter_avatar_url_regex: !ruby/regexp '/https?:\/\/[^.]+[.]twimg[.]com\/profile_images\/[^\/]+\/[^\/]+[.](png|jpg)/i'
   twitter_default_avatar_url_regex: !ruby/regexp '/https?:\/\/[^.]+[.]twimg[.]com\/sticky\/default_profile_images\/[^\/]+[.](png|jpg)/i'
 

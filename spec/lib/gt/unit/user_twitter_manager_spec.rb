@@ -260,6 +260,38 @@ describe GT::UserTwitterManager do
         GT::UserTwitterManager.update_all_twitter_avatars
       end
 
+      it "works when it has user creds from the very first user" do
+        user_with_twitter_oauth = Factory.create(:user)
+        user_with_twitter_oauth.authentications.first.oauth_token = "tokenN"
+        user_with_twitter_oauth.authentications.first.oauth_secret = "secretN"
+        user_with_twitter_oauth.save
+        MongoMapper::Plugins::IdentityMap.clear
+
+        Settings::Twitter['user_lookup_max_requests_per_oauth'] = 1
+        Settings::Twitter['user_lookup_batch_size'] = 1
+
+        APIClients::TwitterClient.should_receive(:build_for_token_and_secret).once().ordered().with(
+          "tokenN",
+          "secretN"
+        )
+
+        APIClients::TwitterClient.should_receive(:build_for_app).once().ordered
+
+        APIClients::TwitterClient.should_receive(:build_for_token_and_secret).once().ordered().with(
+          "token1",
+          "secret1"
+        )
+
+        APIClients::TwitterClient.should_receive(:build_for_app).once().ordered
+
+        APIClients::TwitterClient.should_receive(:build_for_token_and_secret).once().ordered().with(
+          "token0",
+          "secret0"
+        )
+
+        GT::UserTwitterManager.update_all_twitter_avatars
+      end
+
       it "batches twitter requests for slices of users and updates their twitter avatars with the returned data" do
         @users[0].user_image = 'https://pbs.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.png'
         @users[0].save
@@ -532,9 +564,11 @@ describe GT::UserTwitterManager do
       user_with_twitter_oauth.authentications.first.oauth_secret = "secret"
       user_with_twitter_oauth.save
 
-      user_without_twitter_oauth = Factory.create(:user)
-      user_without_twitter_oauth.authentications.first.oauth_token = nil
-      user_without_twitter_oauth.save
+      2.times do
+        user_without_twitter_oauth = Factory.create(:user)
+        user_without_twitter_oauth.authentications.first.oauth_token = nil
+        user_without_twitter_oauth.save
+      end
 
       APIClients::TwitterClient.should_receive(:build_for_app).once().ordered()
 

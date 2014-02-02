@@ -70,6 +70,27 @@ module GT
     end
 
     # loop through all of our users who have twitter auth objects and update their twitter avatars
+    #
+    # Some details:
+    #   Twitter lets us look up info for a maxium of 100 users in a single request to twitter api's /users/lookup, so we walk backwards
+    #   through our users who have twitter auth, collecting 100 of them at a time, then making requests to twitter to get their latest avatars.
+    #   We then use that info to update the users in the batch with their new avatar info in our DB.
+    #
+    #   An issue we must deal with is rate limiting - we can only make a certain number of twitter requests within
+    #   each 15 minute window to the twitter api /users/lookup endpoint.  We have a separate rate limit for every set of twitter oauth credentials
+    #   we use, so as we are going through our users, we also collect any twitter oauth credentials we can find from them and use them for the
+    #   /users/lookup requests.  We monitor how many requests we've made with each set of credentials, and switch to a new set of credentials
+    #   when we've reached a certain number of requests, ideally slightly less than the rate limit, in case other parts of our app need to
+    #   make additional requests on behalf of that user in the window.  The number of requests to make with each set of credentials is configured
+    #   with Settings::Twitter.user_lookup_max_requests_per_oauth:
+    #
+    #   If it comes time to make a request and we don't have any unexhausted user credntials available, we will fall back to using our application's
+    #   oauth credentials.  These have a stricter rate limit, so we will only use them for as long as we don't have any user credentials available,
+    #   then switch to a new set of user credentials as soon as they are available.
+    #
+    #   We monitor the rate limit headers that twitter sends back to us after each request and if we are going to hit the rate limit, which will
+    #   only be possible with our application credentials, we simply quit, and redesign our algorithm :)
+    #
     # --options--
     #
     # :limit => Integer --- OPTIONAL maximum number of users to process
@@ -127,7 +148,6 @@ module GT
             unless check_update_user_avatar_batch(users, oauth_creds, client_info, stats)
               # if something went drastically wrong, return immediately
               return stats
-            else
             end
           rescue => e
             Rails.logger.info("GENERAL EXCEPTION, SKIPPING PROCESSING SHELBY USER #{user.id}: #{e}")
@@ -162,12 +182,18 @@ module GT
           lookup_resolved = false
           until lookup_resolved do
             # if we don't have a twitter client with sufficient requests left, create a new one
-            if (client_info[:requests_left] == 0) && (!oauth_creds.empty? || client_info[:twitter_client][:client_type] != :app)
-              Rails.logger.info("Building a new twitter client")
-              client_info[:twitter_client] = build_best_available_client(oauth_creds)
-              # if we had to build a client with our app credentials, only use it once before
-              # trying to build a client with user credentials again
-              client_info[:requests_left] = (client_info[:twitter_client][:client_type] == :app) ? 1 : Settings::Twitter.user_lookup_max_requests_per_oauth
+            if client_info[:requests_left] == 0
+              if !oauth_creds.empty? || (client_info[:twitter_client][:client_type] != :app)
+                Rails.logger.info("Building a new twitter client")
+                client_info[:twitter_client] = build_best_available_client(oauth_creds)
+                # if we had to build a client with our app credentials, only use it once before
+                # trying to build a client with user credentials again
+                client_info[:requests_left] = (client_info[:twitter_client][:client_type] == :app) ? 1 : Settings::Twitter.user_lookup_max_requests_per_oauth
+              else
+                # we haven't found any more user credentials and we're already using app credentials, so
+                # we have no choice but to use the app credentials again
+                client_info[:requests_left] = 1
+              end
             end
             # ok, now we've got a twitter client, so lookup some info and update our user avatars
             begin
@@ -184,7 +210,7 @@ module GT
                   return false
                 else
                   # if our user twitter credentials are invalid, mark this client as having no requests left
-                  # and we'll circle around with the next set of credential available to us
+                  # and we'll circle around with the next set of credentials available to us
                   Rails.logger.info("User twitter creds invalid, will try new creds: #{e}")
                   client_info[:requests_left] = 0
                 end
@@ -194,17 +220,20 @@ module GT
               end
             else
               lookup_resolved = true
+              users_updated = 0
               # loop through the user info structures we got back from twitter and update avatars for the corresponding
               # shelby users
               result.each do |twitter_struct|
                 begin
                   self.update_user_twitter_avatar(users[twitter_struct.id_str], twitter_struct.profile_image_url)
                   stats[:users_with_twitter_auth_updated] += 1
+                  users_updated += 1
                 rescue => e
                   Rails.logger.info("GENERAL EXCEPTION, SKIPPING RETURNED TWITTER USER #{twitter_struct.id_str}: #{e}")
                   next
                 end
               end
+              Rails.logger.info("Batch finished successfully, #{users_updated} users updated")
             end
           end
 
