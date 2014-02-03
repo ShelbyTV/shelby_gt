@@ -1371,6 +1371,70 @@ describe GT::UserManager do
     end
   end
 
+  context "fix_inconsistent_user_images" do
+    before(:each) do
+      @user = Factory.create(:user)
+      @user.authentications.to_ary.find{ |a| a.provider == 'twitter'}.image = Settings::Twitter.dummy_twitter_avatar_image_url
+    end
+
+    context "facebook user image" do
+      before (:each) do
+        @user.user_image = "http://graph.facebook.com/1234/picture"
+      end
+
+      it "copies user_image to user_image_original, if user_image_original is nil" do
+        @user.user_image_original = nil
+
+        expect(GT::UserManager.fix_inconsistent_user_images(@user)).to be_true
+
+        expect(@user.user_image_original).to eql "http://graph.facebook.com/1234/picture"
+      end
+
+      it "resets user_image AND user_image_original based on the user's twitter auth, if user_image_original is a twitter image" do
+        @user.user_image_original = 'http://a2.twimg.com/profile_images/1165820679/reece_-_bio_pic_normal.png'
+
+        expect(GT::UserManager.fix_inconsistent_user_images(@user)).to be_true
+
+        expect(@user.user_image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
+        expect(@user.user_image_original).to eql "http://dummy.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3.png"
+      end
+
+      it "does nothing otherwise" do
+        expect {
+          GT::UserManager.fix_inconsistent_user_images(@user)
+        }.not_to change(@user, :user_image)
+
+        expect {
+          GT::UserManager.fix_inconsistent_user_images(@user)
+        }.not_to change(@user, :user_image_original)
+      end
+    end
+
+    it "does nothing, if user_image is not a facebook image" do
+      expect {
+        GT::UserManager.fix_inconsistent_user_images(@user)
+      }.not_to change(@user, :user_image)
+
+      expect {
+        GT::UserManager.fix_inconsistent_user_images(@user)
+      }.not_to change(@user, :user_image_original)
+    end
+
+    it "returns false if it doesn't update anything" do
+      expect(GT::UserManager.fix_inconsistent_user_images(@user)).to be_false
+    end
+
+    it "doesn't blow up if the user_image is nil" do
+      @user.user_image = nil
+      @res = nil
+
+      expect {
+        @res = GT::UserManager.fix_inconsistent_user_images(@user)
+      }.not_to raise_error
+      expect(@res).to be_false
+    end
+  end
+
   context "helper stuff" do
     it "should add public and watch later roll w/o saving" do
       u = Factory.create(:user)

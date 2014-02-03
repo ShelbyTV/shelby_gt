@@ -455,6 +455,28 @@ module GT
       u.nickname = omniauth['info']['email'].split('@').first if u.nickname.blank? and omniauth['info']['email']
     end
 
+    # fix various possible states where the user_image and user_image_original are not set properly to match each other
+    # returns a boolean specifying whether it fixed anything
+    def self.fix_inconsistent_user_images(u)
+      user_image = u.user_image
+      if user_image && user_image.downcase.starts_with?("http://graph.facebook.com")
+        user_image_original = u.user_image_original
+        if user_image_original.nil?
+          # facebook user_image and nil user_image_original => copy user_image to user_image_original to avoid confusion
+          u.user_image_original = user_image
+          return true
+        elsif GT::UserTwitterManager.url_is_twitter_avatar?(user_image_original)
+          # facebook user_image and twitter user_image_original => reset the user_image and user_image_original from the user's twitter auth
+          user_twitter_auth = u.authentications.to_ary.find{ |a| a.provider == 'twitter' }
+          if user_twitter_auth && user_twitter_auth.image
+            u.user_image = user_twitter_auth.image
+            u.user_image_original = user_twitter_auth.image.gsub("_normal", "")
+            return true
+          end
+        end
+      end
+    end
+
     private
 
       # Takes an omniauth hash to build one user, prefs, and an auth to go along with it

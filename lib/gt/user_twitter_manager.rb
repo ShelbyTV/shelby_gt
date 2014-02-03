@@ -56,7 +56,7 @@ module GT
       fields_to_update = {'authentications.$.image' => new_avatar_image}
 
       # if the user's existing user_image is from twitter, update it with the new one
-      user_image_from_twitter = (Settings::Twitter.twitter_avatar_url_regex.match(u.user_image) || Settings::Twitter.twitter_default_avatar_url_regex.match(u.user_image))
+      user_image_from_twitter = self.url_is_twitter_avatar?(u.user_image)
       if user_image_from_twitter
         fields_to_update[:user_image] = new_avatar_image
         fields_to_update[:user_image_original] = new_avatar_image.gsub("_normal", "")
@@ -166,6 +166,11 @@ module GT
 
       return stats
 
+    end
+
+    # returns a boolean specifying whether the url string passed in is a twitter avatar url
+    def self.url_is_twitter_avatar?(url)
+      (Settings::Twitter.twitter_avatar_url_regex.match(url) || Settings::Twitter.twitter_default_avatar_url_regex.match(url))
     end
 
     private

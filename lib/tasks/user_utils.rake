@@ -192,4 +192,51 @@ namespace :user_utils do
 
   end
 
+  desc 'Fix all users who have inconsistencies between user_image and user_image_original'
+  task :fix_inconsistent_user_images, [:limit] => [:environment] do |t, args|
+
+    Rails.logger = Logger.new(STDOUT)
+
+    args.with_defaults(:limit => "0")
+
+    options = {
+      :limit => args[:limit].to_i
+    }
+
+    Rails.logger.info("Fixing users")
+
+    stats = {
+      :users => 0,
+      :users_fixed => 0
+    }
+
+    User.collection.find(
+      {:_id => {:$lt => BSON::ObjectId.from_time(Time.now.utc)}},
+      {
+        :timeout => false,
+        :limit => options[:limit]
+      }
+    ) do |cursor|
+      cursor.each do |doc|
+        u = User.load(doc)
+        stats[:users] += 1
+        Rails.logger.info "Processing user #{u.nickname}"
+        begin
+          result = GT::UserManager.fix_inconsistent_user_images(u)
+          if result
+            u.save
+            Rails.logger.info "User #{u.nickname} fixed"
+            stats[:users_fixed] += 1
+          end
+        rescue Exception => e
+          Rails.logger.info "EXCEPTION PROCESSING USER #{u.id.to_s}: #{e}"
+        end
+
+      end
+    end
+    puts "DONE!"
+    puts stats
+
+  end
+
 end

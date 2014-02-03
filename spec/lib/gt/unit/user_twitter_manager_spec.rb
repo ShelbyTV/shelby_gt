@@ -209,6 +209,60 @@ describe GT::UserTwitterManager do
     end
   end
 
+  context "url_is_twitter_avatar?" do
+    it "returns true for a new style twitter avatar" do
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'https://pbs.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.png'
+      )).to be_true
+
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'http://pbs.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.png'
+      )).to be_true
+
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'http://pbs.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.jpg'
+      )).to be_true
+    end
+
+    it "returns true for an old style twitter avatar" do
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'http://a2.twimg.com/profile_images/1165820679/reece_-_bio_pic_normal.png'
+      )).to be_true
+
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'https://a2.twimg.com/profile_images/1165820679/reece_-_bio_pic_normal.png'
+      )).to be_true
+
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'http://a2.twimg.com/profile_images/1165820679/reece_-_bio_pic_normal.jpg'
+      )).to be_true
+    end
+
+    it "returns true for a twitter default avatar" do
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'http://a0.twimg.com/sticky/default_profile_images/default_profile_6_normal.png'
+      )).to be_true
+
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'https://a0.twimg.com/sticky/default_profile_images/default_profile_6_normal.png'
+      )).to be_true
+    end
+
+    it "returns false for any other url" do
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'http://pbs.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.tiff'
+      )).to be_false
+
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'http://shelby.tv/avatar.png'
+      )).to be_false
+
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'http://www.espn.com'
+      )).to be_false
+    end
+  end
+
   context "udpate_all_twitter_avatars" do
     before(:each) do
       Settings::Twitter['user_lookup_batch_size'] = 2
