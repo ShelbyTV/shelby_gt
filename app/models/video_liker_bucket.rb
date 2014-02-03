@@ -13,4 +13,13 @@ class VideoLikerBucket
   key :sequence, Integer, :abbr => :c, :default => 0
 
   many :likers, :class_name => "VideoLiker"
+
+  # loop through the likers in the bucket and refresh the denormalized data for each liker
+  # from the user model
+  def refresh_user_data!
+    self.likers.each do |liker|
+      liker.refresh_user_data!
+    end
+    self.save
+  end
 end

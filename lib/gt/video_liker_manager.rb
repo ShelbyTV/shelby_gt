@@ -87,6 +87,47 @@ module GT
       return likers
     end
 
+    # refresh the denormalized user data for all VideoLikers stored in all VideoLikerBuckets
+    # --options--
+    #
+    # :limit => Integer --- OPTIONAL maximum number of users to process
+    def self.refresh_all_user_data(options={})
+      defaults = {
+        :limit => 0
+      }
+      options = defaults.merge(options)
+
+      # keep some stats on our processing and return them at the end
+      stats = {
+        :buckets_found => 0,
+        :buckets_updated => 0
+      }
+
+      VideoLikerBucket.collection.find(
+        {:_id => {:$lte => BSON::ObjectId.from_time(Time.at(Time.now.utc.to_f.ceil))}},
+        {
+          :limit => options[:limit],
+          :timeout => false
+        }
+      ) do |cursor|
+        cursor.each do |doc|
+          vlb = VideoLikerBucket.load(doc)
+          stats[:buckets_found] += 1
+          Rails.logger.info("Refreshing one bucket")
+          begin
+            vlb.refresh_user_data!
+          rescue => e
+            Rails.logger.info("EXCEPTION, SKIPPING VIDEO LIKER BUCKET #{vlb.id}: #{e}")
+          else
+            stats[:buckets_updated] += 1
+          end
+
+        end
+      end
+
+      return stats
+    end
+
     private
 
       def self.calculate_bucket_values(liker_count)

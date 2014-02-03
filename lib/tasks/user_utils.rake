@@ -184,8 +184,7 @@ namespace :user_utils do
       :limit => args[:limit].to_i
     }
 
-    action_message = "Updating user twitter avatars"
-    Rails.logger.info(action_message)
+    Rails.logger.info("Updating user twitter avatars")
     result = GT::UserTwitterManager.update_all_twitter_avatars(options)
     Rails.logger.info("DONE!")
     Rails.logger.info("STATS:")

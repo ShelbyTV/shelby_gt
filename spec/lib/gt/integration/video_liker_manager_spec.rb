@@ -93,7 +93,7 @@ describe GT::VideoLikerManager do
     end
 
     it "returns an empty array when there are no likers" do
-      VideoLikerBucket.new({:provider_name => @v.provider_name, :provider_id => @v.provider_id, :sequence => 0}).save
+      Factory.create(:video_liker_bucket, :provider_name => @v.provider_name, :provider_id => @v.provider_id, :sequence => 0)
       MongoMapper::Plugins::IdentityMap.clear
 
       GT::VideoLikerManager.get_likers_for_video(@v).should be_empty
@@ -102,7 +102,7 @@ describe GT::VideoLikerManager do
     it "returns likers when there are some" do
       liker = Factory.create(:user)
       video_liker = Factory.create(:video_liker, :nickname => liker.nickname, :has_shelby_avatar => false)
-      video_liker_bucket = VideoLikerBucket.new({:provider_name => @v.provider_name, :provider_id => @v.provider_id, :sequence => 0})
+      video_liker_bucket = Factory.create(:video_liker_bucket, :provider_name => @v.provider_name, :provider_id => @v.provider_id, :sequence => 0)
       video_liker_bucket.likers << video_liker
       video_liker_bucket.save
       MongoMapper::Plugins::IdentityMap.clear
@@ -166,6 +166,56 @@ describe GT::VideoLikerManager do
         MongoMapper::Plugins::IdentityMap.clear
         expect(GT::VideoLikerManager.get_likers_for_video(@v, {:limit => 3})).to eql [@video_likers[-4], @video_likers[-5], @video_likers[-6]]
       end
+    end
+
+  end
+
+  describe "refresh_all_user_data" do
+
+    before(:each) do
+      MongoMapper::Helper.drop_all_dbs
+      MongoMapper::Helper.ensure_all_indexes
+
+      @user = Factory.create(:user, :avatar_file_name => "somefile.png")
+
+      @video_liker_buckets = []
+      2.times do
+        vl = Factory.create(:video_liker, :user => @user)
+        video = Factory.create(:video)
+        vlb = Factory.create(:video_liker_bucket, :provider_name => video.provider_name, :provider_id => video.provider_id, :likers => [vl])
+        vlb.save
+        @video_liker_buckets << vlb
+      end
+
+      MongoMapper::Plugins::IdentityMap.clear
+    end
+
+    it "refreshes the user data for all likers in all buckets" do
+      GT::VideoLikerManager.refresh_all_user_data
+
+      2.times do |i|
+        @video_liker_buckets[i].reload
+        liker = @video_liker_buckets[i].likers.first
+        expect(liker.name).to eql @user.name
+        expect(liker.nickname).to eql @user.nickname
+        expect(liker.user_image).to eql @user.user_image
+        expect(liker.user_image_original).to eql @user.user_image_original
+        expect(liker.has_shelby_avatar).to be_true
+      end
+    end
+
+    it "returns stats on buckets found and updated" do
+      expect(GT::VideoLikerManager.refresh_all_user_data).to eql({
+        :buckets_found => 2,
+        :buckets_updated => 2
+      })
+    end
+
+    it "only processes as many buckets as specified by the limit parameter" do
+      expect(GT::VideoLikerManager.refresh_all_user_data(:limit => 1)).to eql({
+        :buckets_found => 1,
+        :buckets_updated => 1
+      })
     end
 
   end
