@@ -88,11 +88,14 @@ module GT
     end
 
     def self.normalize_user_info(u, auth)
-      u.user_image = auth.image if !u.user_image and auth.image
-
-      #If auth is twitter, we can try removing the _normal before the extension of the image to get the large version...
-      if !u.user_image_original and auth.twitter? and !auth.image.blank? and !auth.image.include?("default_profile")
-        u.user_image_original = auth.image.gsub("_normal", "")
+      if auth.image && !auth.image.blank? && !u.user_image
+        u.user_image = auth.image
+        if auth.twitter?
+          #If auth is twitter, we can try removing the _normal before the extension of the image to get the large version...
+          u.user_image_original = auth.image.gsub("_normal", "")
+        else
+          u.user_image_original = auth.image
+        end
       end
 
       #if the user doesn't already have a valid email address and the auth does,

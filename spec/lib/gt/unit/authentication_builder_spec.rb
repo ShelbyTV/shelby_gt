@@ -42,14 +42,49 @@ describe GT::AuthenticationBuilder do
     @u.has_provider('your mom').should eq(false)
   end
 
-  it "should incorporate authentication user image, and larger user image if twitter" do
-    auth = GT::AuthenticationBuilder.build_from_omniauth(@omniauth_hash)
-    @u.authentications << auth
+  context "user_image(_original)" do
 
-    GT::AuthenticationBuilder.normalize_user_info(@u, auth)
+    before(:each) do
+      @auth = GT::AuthenticationBuilder.build_from_omniauth(@omniauth_hash)
+    end
 
-    @u.user_image.should == "http://original.com/image_normal.png"
-    @u.user_image_original.should == "http://original.com/image.png"
+    it "incorporates authentication auth.image as user_image and larger user_image_original if twitter" do
+      GT::AuthenticationBuilder.normalize_user_info(@u, @auth)
+
+      expect(@u.user_image).to eql "http://original.com/image_normal.png"
+      expect(@u.user_image_original).to eql "http://original.com/image.png"
+    end
+
+    it "does not incorporate auth.image as user_image if the user already has a user_image" do
+      @u.user_image = 'someimage.png'
+      expect {
+        GT::AuthenticationBuilder.normalize_user_info(@u, @auth)
+      }.not_to change(@u, :user_image)
+    end
+
+    it "does not incorporate auth.image as user_image_original if the user already has a user_image" do
+      @u.user_image = 'someimage.png'
+      expect {
+        GT::AuthenticationBuilder.normalize_user_info(@u, @auth)
+      }.not_to change(@u, :user_image_original)
+    end
+
+    it "makes user_image and user_image_original the same if not twitter" do
+      @auth.provider = 'facebook'
+      GT::AuthenticationBuilder.normalize_user_info(@u, @auth)
+
+      expect(@u.user_image).to eql "http://original.com/image_normal.png"
+      expect(@u.user_image_original).to eql "http://original.com/image_normal.png"
+    end
+
+    it "always updates user_image_original when it updates user_image" do
+      @u.user_image_original = 'someimage.png'
+      GT::AuthenticationBuilder.normalize_user_info(@u, @auth)
+
+      expect(@u.user_image).to eql "http://original.com/image_normal.png"
+      expect(@u.user_image_original).to eql "http://original.com/image.png"
+    end
+
   end
 
   it "should incorporate auth.name on normalization" do
@@ -99,28 +134,6 @@ describe GT::AuthenticationBuilder do
     GT::AuthenticationBuilder.normalize_user_info(@u, auth)
 
     @u.name.should == "first last"
-  end
-
-  it "should incorporate auth user image, and larger user image if twitter, but not if it's a default image" do
-    omniauth_hash = {
-      'provider' => "twitter",
-      'uid' => '33',
-      'credentials' => {
-        'token' => "somelongtoken",
-        'secret' => 'foreskin'
-      },
-      'info' => {
-        'name' => 'some name',
-        'nickname' => 'ironically nick',
-        'garbage' => 'truck',
-        'image' => "http://original.com/default_profile_6_normal.png"
-      }
-    }
-
-    auth = GT::AuthenticationBuilder.build_from_omniauth(omniauth_hash)
-    GT::AuthenticationBuilder.normalize_user_info(@u, auth)
-    @u.user_image.should == "http://original.com/default_profile_6_normal.png"
-    @u.user_image_original.should == nil
   end
 
   it "should be able to get auth from provider and id" do
