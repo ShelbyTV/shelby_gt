@@ -17,7 +17,7 @@ module GT
         return false
       end
     end
-    
+
     def self.post_to_facebook(from_user, text, entity)
       begin
         return post_fb_comment(from_user, text, nil, entity)
@@ -32,7 +32,7 @@ module GT
         return false
       end
     end
-    
+
     #TODO: we need an iframe player for gt before we can post to tumblr!
     #      This will return false no matter what until we do!
     def self.post_to_tumblr(from_user, text, entity)
@@ -44,24 +44,24 @@ module GT
         return false
       end
     end
-    
+
     # to_emails is a comma or semicolon deliniated string of email addresses
     def self.email_frame(from_user, to_emails, message, frame)
       return send_email(from_user, to_emails, message, frame)
     end
-    
-    private 
-  
+
+    private
+
       def self.post_tweet(user, message, in_reply_to_tweet_id=nil)
         if user.has_provider('twitter')
           tw = SocialPosting::Twitter.new(user)
-        
+
           return tw.post_tweet(message, in_reply_to_tweet_id)
         else
           return nil
         end
       end
-      
+
       def self.post_fb_comment(user, message, fb_post_id=nil, entity=nil)
         if user.has_provider('facebook')
           fb = SocialPosting::Facebook.new(user)
@@ -70,7 +70,7 @@ module GT
           return nil
         end
       end
-      
+
       def self.post_tumblr(user, text, entity)
         if user.has_provider('tumblr')
           tu = SocialPosting::Tumblr.new(user)
@@ -80,7 +80,7 @@ module GT
           return nil
         end
       end
-      
+
       # to_emails is a comma or semicolon deliniated string of email addresses
       def self.send_email(user, to_emails, message, frame)
         from_email = user.primary_email || "Shelby.tv <wecare@shelby.tv>"
@@ -88,6 +88,6 @@ module GT
         # Just send 1 email to all the recipients (mailer expects a comma deliniated string)
         SharingMailer.share_frame(user, from_email, to_emails.join(','), message, frame).deliver
       end
-    
+
   end
 end
