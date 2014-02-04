@@ -118,7 +118,7 @@ defaults: &defaults
           display_title : 'GQ',
           id : '519bac7cb415cc01910000af',
           description : 'Look sharp + live smart',
-          display_thumbnail_src : 'https://si0.twimg.com/profile_images/3658741077/a711cfb45b08e33226ea3845223bff15.jpeg',
+          display_thumbnail_src : 'https://pbs.twimg.com/profile_images/378800000731084703/c849f0ec489a56d302bd1c6d2352812b.jpeg',
           include_in: {onboarding: true}
         },
         {
