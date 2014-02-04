@@ -206,25 +206,37 @@ namespace :user_utils do
     Rails.logger.info("Fixing users")
 
     stats = {
-      :users => 0,
+      :users_examined => 0,
       :users_fixed => 0
     }
 
     User.collection.find(
-      {:_id => {:$lt => BSON::ObjectId.from_time(Time.now.utc)}},
+      {
+        :$and => [
+          {:_id => {:$lt => BSON::ObjectId.from_time(Time.now.utc)}},
+          {:user_image => {:$exists => true, :$nin => ["", nil]}}
+        ]
+      },
       {
         :timeout => false,
-        :limit => options[:limit]
+        :limit => options[:limit],
+        :fields => ["authentications", "user_image", "user_image_original", "nickname"]
       }
     ) do |cursor|
       cursor.each do |doc|
         u = User.load(doc)
-        stats[:users] += 1
-        Rails.logger.info "Processing user #{u.nickname}"
+        stats[:users_examined] += 1
+        Rails.logger.info "Examining user #{u.nickname}"
         begin
           result = GT::UserManager.fix_inconsistent_user_images(u)
           if result
-            u.save
+            User.collection.update({:_id => u.id},
+            {
+              :$set => {
+                :user_image => u.user_image,
+                :user_image_original => u.user_image_original
+              }
+            })
             Rails.logger.info "User #{u.nickname} fixed"
             stats[:users_fixed] += 1
           end
