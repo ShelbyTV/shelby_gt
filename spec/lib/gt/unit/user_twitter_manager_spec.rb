@@ -222,6 +222,10 @@ describe GT::UserTwitterManager do
       expect(GT::UserTwitterManager.url_is_twitter_avatar?(
         'http://pbs.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.jpg'
       )).to be_true
+
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'http://pbs.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.jpeg'
+      )).to be_true
     end
 
     it "returns true for an old style twitter avatar" do
@@ -235,6 +239,10 @@ describe GT::UserTwitterManager do
 
       expect(GT::UserTwitterManager.url_is_twitter_avatar?(
         'http://a2.twimg.com/profile_images/1165820679/reece_-_bio_pic_normal.jpg'
+      )).to be_true
+
+      expect(GT::UserTwitterManager.url_is_twitter_avatar?(
+        'http://a2.twimg.com/profile_images/1165820679/reece_-_bio_pic_normal.jpeg'
       )).to be_true
     end
 
@@ -250,7 +258,7 @@ describe GT::UserTwitterManager do
 
     it "returns false for any other url" do
       expect(GT::UserTwitterManager.url_is_twitter_avatar?(
-        'http://pbs.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.tiff'
+        'http://pbs.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3_normal.a'
       )).to be_false
 
       expect(GT::UserTwitterManager.url_is_twitter_avatar?(
