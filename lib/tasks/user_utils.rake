@@ -192,7 +192,7 @@ namespace :user_utils do
 
   end
 
-  desc 'Fix all users who have inconsistencies between user_image and user_image_original'
+  desc 'Fix all users who have inconsistencies in their avatar data'
   task :fix_inconsistent_user_images, [:limit] => [:environment] do |t, args|
 
     Rails.logger = Logger.new(STDOUT)

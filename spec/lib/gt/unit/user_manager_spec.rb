@@ -1410,6 +1410,34 @@ describe GT::UserManager do
       end
     end
 
+    context "twitter user image" do
+      before(:each) do
+        @user.user_image = 'http://a2.twimg.com/profile_images/1165820679/reece_-_bio_pic_normal.jpeg'
+        @user.user_image_original = 'http://a2.twimg.com/profile_images/1165820679/reece_-_bio_pic.jpeg'
+      end
+
+      it "resets user_image AND user_image_original based on the user's twitter auth, if what's in the twitter auth is different" do
+        expect(GT::UserManager.fix_inconsistent_user_images(@user)).to be_true
+
+        expect(@user.user_image).to eql Settings::Twitter.dummy_twitter_avatar_image_url
+        expect(@user.user_image_original).to eql "http://dummy.twimg.com/profile_images/2284174872/7df3h38zabcvjylnyfe3.png"
+      end
+
+      it "does nothing, if what's in the twitter auth matches the current user_image" do
+        @user.authentications.to_ary.find{ |a| a.provider == 'twitter'}.image = 'http://a2.twimg.com/profile_images/1165820679/reece_-_bio_pic_normal.jpeg'
+        @res = nil
+
+        expect {
+          @res = GT::UserManager.fix_inconsistent_user_images(@user)
+        }.not_to change(@user, :user_image)
+        expect(@res).to be_false
+
+        expect {
+          GT::UserManager.fix_inconsistent_user_images(@user)
+        }.not_to change(@user, :user_image_original)
+      end
+    end
+
     it "does nothing, if user_image is not a facebook image" do
       expect {
         GT::UserManager.fix_inconsistent_user_images(@user)

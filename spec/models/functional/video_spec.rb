@@ -159,7 +159,6 @@ describe Video do
     before(:each) do
       @liker1 = Factory.create(:user)
       @liker2 = Factory.create(:user)
-      @video.save
       MongoMapper::Plugins::IdentityMap.clear
     end
 
