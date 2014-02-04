@@ -10,6 +10,7 @@ describe VideoLiker do
   context "refresh_user_data!" do
 
     it "refreshes the denormalized user data from the user model" do
+      MongoMapper::Plugins::IdentityMap.clear
       @vl.refresh_user_data!
 
       expect(@vl.name).to eql @user.name
