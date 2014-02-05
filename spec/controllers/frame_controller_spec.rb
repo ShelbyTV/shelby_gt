@@ -165,10 +165,6 @@ describe V1::FrameController do
   describe "POST share" do
     before(:each) do
       sign_in @u1
-      resp = {"awesm_urls" => [
-        {"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"},
-        {"service"=>"facebook", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_fb", "awesm_id"=>"shl.by_fb", "awesm_url"=>"http://shl.by/fb", "user_id"=>nil, "path"=>"fb", "channel"=>"facebook-post", "domain"=>"shl.by"}]}
-      Awesm::Url.stub(:batch).and_return([200, resp])
     end
 
     context "frame on normal roll" do
@@ -176,23 +172,43 @@ describe V1::FrameController do
       before(:each) do
         @roll = Factory.create(:roll, :creator => @u1)
         @frame = Factory.create(:frame, :roll => @roll, :conversation => Factory.create(:conversation))
-        resp = {"awesm_urls" => [
-          {"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"},
-          {"service"=>"facebook", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_fb", "awesm_id"=>"shl.by_fb", "awesm_url"=>"http://shl.by/fb", "user_id"=>nil, "path"=>"fb", "channel"=>"facebook-post", "domain"=>"shl.by"}]}
-        Awesm::Url.stub(:batch).and_return([200, resp])
+      end
+
+      context "process later in background" do
+        before(:each) do
+          ResqueSpec.reset!
+
+          @u1.authentications << Authentication.new(:provider => "facebook")
+        end
+
+        it "enqueues a resque job to perform the sharing to the specified destinations" do
+          post :share, :frame_id => @frame.id.to_s, :destination => ["facebook"], :text => "testing", :format => :json
+
+          expect(ExternalServiceSharer).to have_queue_size_of(1)
+          expect(ExternalServiceSharer).to have_queued(
+            @frame.id,
+            ["facebook"],
+            nil,
+            "testing",
+            @u1.id
+          )
+
+          post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :addresses => "spinosa@gmail.com, invalidaddress, j@jay.net", :format => :json
+
+          expect(ExternalServiceSharer).to have_queue_size_of(2)
+          expect(ExternalServiceSharer).to have_queued(
+            @frame.id,
+            ["email"],
+            "spinosa@gmail.com, invalidaddress, j@jay.net",
+            "testing",
+            @u1.id
+          )
+        end
       end
 
       it "should return 200 if the user posts succesfully to destination" do
         post :share, :frame_id => @frame.id.to_s, :destination => ["twitter"], :text => "testing", :format => :json
         assigns(:status).should eq(200)
-      end
-
-      it "should only add link text to each individual service's post" do
-        @u1.authentications << Authentication.new(:provider => "twitter")
-        @u1.authentications << Authentication.new(:provider => "facebook")
-        GT::SocialPoster.should_receive(:post_to_twitter).with(@u1, "testing http://shl.by/4")
-        GT::SocialPoster.should_receive(:post_to_facebook).with(@u1, "testing http://shl.by/fb", @frame)
-        post :share, :frame_id => @frame.id.to_s, :destination => ["twitter", "facebook"], :text => "testing", :format => :json
       end
 
       it "should return 404 if destination is not an array" do
@@ -203,11 +219,13 @@ describe V1::FrameController do
       it "should return 404 if the user cant post to the destination" do
         post :share, :frame_id => @frame.id.to_s, :destination => ["facebook"], :text => "testing", :format => :json
         assigns(:status).should eq(404)
+        expect(assigns(:message)).to eql "invalid destinations #{["facebook"]}"
       end
 
       it "should not post if the destination is not supported" do
         post :share, :frame_id => @frame.id.to_s, :destination => ["awesome_service"], :text => "testing", :format => :json
         assigns(:status).should eq(404)
+        expect(assigns(:message)).to eql "invalid destinations #{["awesome_service"]}"
       end
 
       it "should return 404 if a comment or destination is not present" do
@@ -218,6 +236,12 @@ describe V1::FrameController do
         assigns(:status).should eq(404)
 
         assigns(:message).should eq("a destination and text is required to post")
+      end
+
+      it "returns 404 if trying to share to email without supplying addresses" do
+        post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :format => :json
+        expect(assigns(:status)).to eql 404
+        expect(assigns(:message)).to eql "you must provide addresses"
       end
 
       it "should return 404 if frame/roll not found" do
@@ -257,32 +281,19 @@ describe V1::FrameController do
         GT::SocialPoster.stub(:email_frame)
       end
 
-      it "should try to save email addresses to user's autocomplete" do
-        controller.current_user.should_receive(:store_autocomplete_info).once
-
-        post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :addresses => "spinosa@gmail.com, invalidaddress, j@jay.net", :format => :json
-      end
-
-      it "should NOT try to save email addresses to user's autocomplete if none are specified" do
-        controller.current_user.should_not_receive(:store_autocomplete_info)
-
-        post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :format => :json
-      end
-
       context "frame on watch later roll and has no ancestors" do
-      before(:each) do
-        @roll.roll_type = Roll::TYPES[:special_watch_later]
-        @video = Factory.create(:video)
-        @frame.video = @video
-        @frame.stub(:frame_ancestors).and_return []
-        Frame.should_receive(:find).once.and_return(@frame)
-      end
+        before(:each) do
+          @roll.roll_type = Roll::TYPES[:special_watch_later]
+          @video = Factory.create(:video)
+          @frame.video = @video
+          @frame.stub(:frame_ancestors).and_return []
+          Frame.should_receive(:find).once.and_return(@frame)
+        end
 
-      it "should return 200" do
-        post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :format => :json
-        assigns(:status).should eq(200)
-      end
-
+        it "should return 200" do
+          post :share, :frame_id => @frame.id.to_s, :destination => ["email"], :text => "testing", :addresses => "spinosa@gmail.com", :format => :json
+          assigns(:status).should eq(200)
+        end
       end
 
     end

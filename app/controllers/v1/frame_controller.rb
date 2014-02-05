@@ -218,11 +218,15 @@ class V1::FrameController < ApplicationController
   def share
     StatsManager::StatsD.client.time(Settings::StatsConstants.api['frame']['share']) do
       unless params.keys.include?("destination") and params.keys.include?("text")
-        return  render_error(404, "a destination and text is required to post")
+        return render_error(404, "a destination and text is required to post")
       end
 
       unless params[:destination].is_a? Array
-        return  render_error(404, "destination must be an array of strings")
+        return render_error(404, "destination must be an array of strings")
+      end
+
+      if params[:destination].include?('email') && (!params[:addresses] || params[:addresses].blank?)
+        return render_error(404, "you must provide addresses")
       end
 
       if params[:frame_id]
@@ -234,8 +238,8 @@ class V1::FrameController < ApplicationController
         frameToShare = get_linkable_entity(frame, params[:destination] == ['email'])
         return render_error(404, "no valid frame to share") unless frameToShare
 
-        #Do the sharing in the background, hope it works (we don't want to wait for slow external API calls, like awe.sm)
-        ShelbyGT_EM.next_tick { share_frame_to_destinations(frameToShare, params[:destination], params[:addresses], params[:text], current_user) }
+        # Do the sharing in the background
+        Resque.enqueue(ExternalServiceSharer, frameToShare.id, params[:destination], params[:addresses], params[:text], current_user.id)
 
         @status = 200
 
@@ -468,37 +472,11 @@ end
     end
 
     def can_share_frame_to_destinations(destinations, user)
-      (destinations-['email']).each do |dest|
-        return false unless user.authentications.any? { |auth| auth.provider == dest }
+      destinations.each do |dest|
+        return false if !['twitter', 'facebook', 'email'].include?(dest)
+        return false unless (dest == 'email') || (user.authentications.any? { |auth| auth.provider == dest })
       end
-    end
-
-    def share_frame_to_destinations(frame, destinations, email_addresses, text, user)
-      #  short_links will be a hash of desinations/links
-      short_links = GT::LinkShortener.get_or_create_shortlinks(frame, destinations.join(','), user)
-
-      destinations.each do |d|
-        case d
-        when 'twitter'
-          t = GT::SocialPostFormatter.format_for_twitter(text, short_links)
-          GT::SocialPoster.post_to_twitter(user, t)
-        when 'facebook'
-          t = GT::SocialPostFormatter.format_for_facebook(text, short_links)
-          GT::SocialPoster.post_to_facebook(user, t, frame)
-        when 'email'
-          # This is just a Frame share
-          return render_error(404, "you must provide addresses") if email_addresses.blank?
-
-          # save any valid addresses for future use in autocomplete
-          user.store_autocomplete_info(:email, email_addresses)
-
-          # Best effort.  For speed, not checking if send succeeds (front-end should validate eaddresses format)
-          ShelbyGT_EM.next_tick { GT::SocialPoster.email_frame(user, email_addresses, text, frame) }
-        else
-          return render_error(404, "we dont support that destination yet :(")
-        end
-        StatsManager::StatsD.increment(Settings::StatsConstants.frame['share'][d])
-      end
+      return true
     end
 
 end

@@ -191,7 +191,7 @@ gem 'formatted_rails_logger'
 gem 'capistrano', '2.15.3'
 gem 'rvm-capistrano'
 gem 'capistrano-unicorn', :require => false
-gem 'capistrano-resque', :require => false
+gem 'capistrano-resque', :git => 'git://github.com/iceberg901/capistrano-resque.git', :branch => 'control-verbose-parameter', :require => false
 
 #
 # ----------- Web Server
@@ -243,5 +243,5 @@ gem "sitemap_generator", "~> 3.2.1"
 
 gem "therubyracer", :require => 'v8'
 
-gem "resque", "~> 1.0"
+gem 'resque', :git => 'git://github.com/resque/resque.git', :branch => '1-x-stable'
 gem "resque-web", require: "resque_web"

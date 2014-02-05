@@ -29,7 +29,7 @@ Factory.define :authentication do |a|
   a.provider      "twitter"
   a.oauth_token   "token"
   a.oauth_secret  "secret"
-  a.uid         { Factory.next :uid }
+  a.uid           { Factory.next :uid }
 end
 
 Factory.define :user do |user|

@@ -539,13 +539,59 @@ describe 'v1/frame' do
 
       context "share frame" do
         before(:each) do
-          resp = {"awesm_urls" => [{"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"}]}
+          resp = {"awesm_urls" => [
+            {"service"=>"twitter", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_4", "awesm_id"=>"shl.by_4", "awesm_url"=>"http://shl.by/4", "user_id"=>nil, "path"=>"4", "channel"=>"twitter", "domain"=>"shl.by"},
+            {"service"=>"facebook", "parent"=>nil, "original_url"=>"http://henrysztul.info", "redirect_url"=>"http://henrysztul.info?awesm=shl.by_fb", "awesm_id"=>"shl.by_fb", "awesm_url"=>"http://shl.by/fb", "user_id"=>nil, "path"=>"fb", "channel"=>"facebook-post", "domain"=>"shl.by"}
+          ]}
           Awesm::Url.stub(:batch).and_return([200, resp])
         end
 
         it "should return 200 if post is successful" do
           post '/v1/frame/'+@f.id+'/share?destination[]=twitter&text=testing'
           response.body.should be_json_eql(200).at_path("status")
+        end
+
+        context "Resque" do
+          before(:each) do
+            ResqueSpec.reset!
+            @u1.stub(:store_autocomplete_info)
+            GT::SocialPoster.stub(:post_to_twitter)
+            GT::SocialPoster.stub(:post_to_facebook)
+            GT::SocialPoster.stub(:email_frame)
+          end
+
+          it "shares the frame via twitter" do
+            GT::SocialPoster.should_receive(:post_to_twitter).with(@u1, "testing http://shl.by/4")
+
+            post '/v1/frame/'+@f.id+'/share?destination[]=twitter&text=testing'
+            ResqueSpec.perform_next(:external_service_share)
+          end
+
+
+          it "shares the frame via facebook" do
+            @u1.authentications << FactoryGirl.create(:authentication, :provider => "facebook")
+            GT::SocialPoster.should_receive(:post_to_facebook).with(@u1, "testing http://shl.by/fb", @f)
+
+            post '/v1/frame/'+@f.id+'/share?destination[]=facebook&text=testing'
+            ResqueSpec.perform_next(:external_service_share)
+          end
+
+          it "shares to multiple destinations at once" do
+            @u1.authentications << FactoryGirl.create(:authentication, :provider => "facebook")
+            GT::SocialPoster.should_receive(:post_to_twitter).with(@u1, "testing http://shl.by/4")
+            GT::SocialPoster.should_receive(:post_to_facebook).with(@u1, "testing http://shl.by/fb", @f)
+
+            post '/v1/frame/'+@f.id+'/share?destination[]=twitter&destination[]=facebook&text=testing'
+            ResqueSpec.perform_next(:external_service_share)
+          end
+
+          it "shares the frame via email" do
+            @u1.should_receive(:store_autocomplete_info).with(:email, "spinosa@shelby.tv")
+            GT::SocialPoster.should_receive(:email_frame).with(@u1, "spinosa@shelby.tv", "testing", @f)
+
+            post '/v1/frame/'+@f.id+'/share?destination[]=email&addresses=spinosa@shelby.tv&text=testing'
+            ResqueSpec.perform_next(:external_service_share)
+          end
         end
 
         it "should return 404 if roll not found" do
@@ -568,6 +614,13 @@ describe 'v1/frame' do
 
           response.body.should be_json_eql(404).at_path("status")
           response.body.should have_json_path("message")
+        end
+
+        it "returns 404 if trying to post to email with no email addresses" do
+          post '/v1/frame/'+@f.id+'/share?destination[]=email&text=testing'
+          response.body.should be_json_eql(404).at_path("status")
+          response.body.should have_json_path("message")
+          parse_json(response.body)["message"].should eq("you must provide addresses")
         end
 
         it "should return 404 if destination and/or comment not incld" do
