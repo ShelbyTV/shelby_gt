@@ -317,7 +317,7 @@ void sobLoadAllByOidField(sobContext context,
                           sobType type,
                           sobField field,
                           bson_oid_t oid,
-			  unsigned int limit,
+                          unsigned int limit,
                           unsigned int skip,
                           const char *sinceIdString)
 {
@@ -369,6 +369,21 @@ void sobLoadAllById(sobContext context,
                     sobType type,
                     cvector oids)
 {
+   static sobField fields[0];
+
+   sobLoadAllByIdSpecifyFields(context,
+                               type,
+                               fields,
+                               0,
+                               oids);
+}
+
+void sobLoadAllByIdSpecifyFields(sobContext context,
+                                 sobType type,
+                                 sobField *fieldArray,
+                                 unsigned int numFields,
+                                 cvector oids)
+{
    assert(cvectorElementSize(oids) == sizeof(bson_oid_t));
 
    bson query;
@@ -397,6 +412,17 @@ void sobLoadAllById(sobContext context,
    mongo_cursor_set_options(&cursor, MONGO_SLAVE_OK);
 
    mongo_cursor_set_query(&cursor, &query);
+
+   bson fields;
+   if (numFields) {
+      bson_init(&fields);
+      for (unsigned int i = 0; i < numFields; i++) {
+         sobField field = fieldArray[i];
+         bson_append_int(&fields, sobFieldDBName[field], 1);
+      }
+      bson_finish(&fields);
+      mongo_cursor_set_fields(&cursor, &fields);
+   }
 
    insertMongoCursorIntoObjectMap(context, type, &cursor);
 

@@ -118,6 +118,12 @@ void sobLoadAllById(sobContext context,
                     sobType type,
                     cvector oids);
 
+void sobLoadAllByIdSpecifyFields(sobContext context,
+                                 sobType type,
+                                 sobField *fieldArray,
+                                 unsigned int numFields,
+                                 cvector oids);
+
 void sobPrintAttributes(mrjsonContext context,
                         bson *object,
                         sobField *fieldArray,

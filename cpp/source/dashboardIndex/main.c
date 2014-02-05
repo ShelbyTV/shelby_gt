@@ -730,7 +730,21 @@ int loadData(sobContext sob)
                                   SOB_DASHBOARD_ENTRY_ACTOR_ID,
                                   actorOids);
 
-   sobLoadAllById(sob, SOB_USER, actorOids);
+   static sobField actorFields[] = {
+      SOB_USER_ID,
+      SOB_USER_NAME,
+      SOB_USER_NICKNAME,
+      SOB_USER_USER_IMAGE_ORIGINAL,
+      SOB_USER_USER_IMAGE,
+      SOB_USER_USER_TYPE,
+      SOB_USER_PUBLIC_ROLL_ID,
+      SOB_USER_AVATAR_FILE_NAME
+   };
+   sobLoadAllByIdSpecifyFields(sob,
+                            SOB_USER,
+                            actorFields,
+                            sizeof(actorFields) / sizeof(sobField),
+                            actorOids);
 
    // and frames have references to everything else, so we load it all up...
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_ROLL_ID, rollOids);
@@ -742,7 +756,25 @@ int loadData(sobContext sob)
                                         SOB_FRAME_FRAME_ANCESTORS,
                                         frameAncestorOids);
    sobLoadAllById(sob, SOB_ROLL, rollOids);
-   sobLoadAllById(sob, SOB_USER, userOids);
+
+   static sobField userFields[] = {
+      SOB_USER_ID,
+      SOB_USER_NAME,
+      SOB_USER_NICKNAME,
+      SOB_USER_USER_IMAGE_ORIGINAL,
+      SOB_USER_USER_IMAGE,
+      SOB_USER_USER_TYPE,
+      SOB_USER_PUBLIC_ROLL_ID,
+      SOB_USER_GT_ENABLED,
+      SOB_USER_AVATAR_FILE_NAME,
+      SOB_USER_AUTHENTICATIONS
+   };
+   sobLoadAllByIdSpecifyFields(sob,
+                               SOB_USER,
+                               userFields,
+                               sizeof(userFields) / sizeof(sobField),
+                               userOids);
+
    sobLoadAllById(sob, SOB_VIDEO, videoOids);
    sobLoadAllById(sob, SOB_CONVERSATION, conversationOids);
    sobLoadAllById(sob, SOB_ANCESTOR_FRAME, frameAncestorOids);
@@ -750,7 +782,17 @@ int loadData(sobContext sob)
    // get the creators of the final ancestor frames for each frame, whom we will call the originators,
    // then load them
    sobGetOidVectorFromObjectField(sob, SOB_ANCESTOR_FRAME, SOB_ANCESTOR_FRAME_CREATOR_ID, originatorOids);
-   sobLoadAllById(sob, SOB_USER, originatorOids);
+   static sobField originatorFields[] = {
+      SOB_USER_ID,
+      SOB_USER_NAME,
+      SOB_USER_NICKNAME,
+      SOB_USER_USER_TYPE
+   };
+   sobLoadAllByIdSpecifyFields(sob,
+                               SOB_USER,
+                               originatorFields,
+                               sizeof(originatorFields) / sizeof(sobField),
+                               originatorOids);
 
    return TRUE;
 }

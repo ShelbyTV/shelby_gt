@@ -30,7 +30,7 @@ static struct options {
    char *environment;
 } options;
 
-rollFollowingBsonEntry*rollFollowings;
+rollFollowingBsonEntry *rollFollowings;
 bson_oid_t userOid;
 cvector rollOids;
 
