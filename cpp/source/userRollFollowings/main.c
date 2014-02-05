@@ -472,13 +472,43 @@ int loadData(sobContext sob)
    }
 
    cvectorAddElement(userOids, &userOid);
-   sobLoadAllById(sob, SOB_USER, userOids);
+   static sobField userFields[] = {
+      SOB_USER_NICKNAME,
+      SOB_USER_NAME,
+      SOB_USER_AVATAR_FILE_NAME,
+      SOB_USER_AVATAR_UPDATED_AT,
+      SOB_USER_USER_IMAGE_ORIGINAL,
+      SOB_USER_USER_IMAGE,
+      SOB_USER_AUTHENTICATIONS,
+      SOB_USER_ROLL_FOLLOWINGS,
+      SOB_USER_UPVOTED_ROLL_ID,
+      SOB_USER_PUBLIC_ROLL_ID,
+      SOB_USER_WATCH_LATER_ROLL_ID
+   };
+   sobLoadAllByIdSpecifyFields(sob,
+                               SOB_USER,
+                               userFields,
+                               sizeof(userFields) / sizeof(sobField),
+                               userOids);
 
    sobGetOidVectorFromObjectArrayField(sob, SOB_USER, SOB_USER_ROLL_FOLLOWINGS, SOB_ROLL_FOLLOWING_ROLL_ID, rollOids);
    sobLoadAllById(sob, SOB_ROLL, rollOids);
 
    sobGetOidVectorFromObjectField(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, creatorOids);
-   sobLoadAllById(sob, SOB_USER, creatorOids);
+   static sobField creatorFields[] = {
+      SOB_USER_NICKNAME,
+      SOB_USER_NAME,
+      SOB_USER_AVATAR_FILE_NAME,
+      SOB_USER_AVATAR_UPDATED_AT,
+      SOB_USER_USER_IMAGE_ORIGINAL,
+      SOB_USER_USER_IMAGE,
+      SOB_USER_AUTHENTICATIONS
+   };
+   sobLoadAllByIdSpecifyFields(sob,
+                               SOB_USER,
+                               creatorFields,
+                               sizeof(creatorFields) / sizeof(sobField),
+                               creatorOids);
 
    return TRUE;
 }

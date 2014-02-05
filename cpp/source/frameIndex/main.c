@@ -698,13 +698,29 @@ int loadData(sobContext sob)
    cvector frameAncestorOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector originatorOids = cvectorAlloc(sizeof(bson_oid_t));
 
+   static sobField userFields[] = {
+      SOB_USER_ID,
+      SOB_USER_NAME,
+      SOB_USER_NICKNAME,
+      SOB_USER_USER_IMAGE_ORIGINAL,
+      SOB_USER_USER_IMAGE,
+      SOB_USER_USER_TYPE,
+      SOB_USER_PUBLIC_ROLL_ID,
+      SOB_USER_AVATAR_FILE_NAME,
+      SOB_USER_AUTHENTICATIONS
+   };
+
    // means we're looking up the public_roll of a user
    if (strcmp(options.rollString, "") == 0 &&
        strcmp(options.userString, "") != 0)
    {
       sobLog("Looking up public roll by creator id: %s", options.userString);
       cvectorAddElement(userOids, &options.user);
-      sobLoadAllById(sob, SOB_USER, userOids);
+      sobLoadAllByIdSpecifyFields(sob,
+                                  SOB_USER,
+                                  userFields,
+                                  sizeof(userFields) / sizeof(sobField),
+                                  userOids);
       sobGetOidVectorFromObjectField(sob, SOB_USER, SOB_USER_PUBLIC_ROLL_ID, rollOids);
 
       assert(cvectorCount(rollOids) == 1);
@@ -738,19 +754,48 @@ int loadData(sobContext sob)
                                         SOB_FRAME_FRAME_ANCESTORS,
                                         frameAncestorOids);
    sobLoadAllById(sob, SOB_ROLL, rollOids);
-   sobLoadAllById(sob, SOB_USER, userOids);
+   sobLoadAllByIdSpecifyFields(sob,
+                               SOB_USER,
+                               userFields,
+                               sizeof(userFields) / sizeof(sobField),
+                               userOids);
    sobLoadAllById(sob, SOB_VIDEO, videoOids);
    sobLoadAllById(sob, SOB_CONVERSATION, conversationOids);
    sobLoadAllById(sob, SOB_ANCESTOR_FRAME, frameAncestorOids);
 
    // load the creators of all the rolls (probably just this one roll)
    sobGetOidVectorFromObjectField(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, rollCreatorOids);
-   sobLoadAllById(sob, SOB_USER, rollCreatorOids);
+   static sobField rollCreatorFields[] = {
+      SOB_USER_ID,
+      SOB_USER_USER_TYPE,
+      SOB_USER_AUTHENTICATIONS,
+      SOB_USER_NICKNAME,
+      SOB_USER_NAME,
+      SOB_USER_AVATAR_FILE_NAME,
+      SOB_USER_AVATAR_UPDATED_AT,
+      SOB_USER_USER_IMAGE_ORIGINAL,
+      SOB_USER_USER_IMAGE
+   };
+   sobLoadAllByIdSpecifyFields(sob,
+                               SOB_USER,
+                               rollCreatorFields,
+                               sizeof(rollCreatorFields) / sizeof(sobField),
+                               rollCreatorOids);
 
    // get the creators of the final ancestor frames for each frame, whom we will call the originators,
    // then load them
    sobGetOidVectorFromObjectField(sob, SOB_ANCESTOR_FRAME, SOB_ANCESTOR_FRAME_CREATOR_ID, originatorOids);
-   sobLoadAllById(sob, SOB_USER, originatorOids);
+   static sobField originatorFields[] = {
+      SOB_USER_ID,
+      SOB_USER_NAME,
+      SOB_USER_NICKNAME,
+      SOB_USER_USER_TYPE
+   };
+   sobLoadAllByIdSpecifyFields(sob,
+                               SOB_USER,
+                               originatorFields,
+                               sizeof(originatorFields) / sizeof(sobField),
+                               originatorOids);
 
 
    sobLog("Checking roll permissions");
