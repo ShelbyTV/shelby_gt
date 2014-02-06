@@ -14,7 +14,9 @@ module Dev
       email = ask("Enter an email address for the user: ")
       name = ask("Enter the name of the user: ")
       has_avatar = agree("Do you have an avatar for this user? ") { |q| q.default = "n" }
-      avatar = ask("enter the url of the avatar: ") if has_avatar
+      avatar = ask("Enter the url of the avatar: ") if has_avatar
+      has_description = agree("Do you want to enter a description/bio for this user? ") { |q| q.default = "n" }
+      dot_tv_description = ask("Enter the user description/bio: ") if has_description
       youtube_user = agree('Will this be a youtube BotRoll user? ') { |q| q.default = "n"}
       if youtube_user
         service_user = true
@@ -35,7 +37,11 @@ module Dev
 
       @user = GT::UserManager.create_new_user_from_params(user_params)
       if @user and @user.errors.empty? and @user.valid?
-        @user.user_image = avatar if has_avatar
+        if has_avatar
+          @user.user_image_original = avatar
+          @user.user_image = avatar
+        end
+        @user.dot_tv_description = dot_tv_description if has_description
         @user.ensure_authentication_token!
         @user.user_type = User::USER_TYPE[:service] if service_user
         if @user.save
