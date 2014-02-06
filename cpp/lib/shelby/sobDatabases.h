@@ -21,6 +21,9 @@
 // ordered in the same order as sobType so that arrays get populated correctly
 #define ALL_DATABASES(apply)        \
    USER_DATABASES(apply)            \
+   CREATOR_DATABASES(apply)         \
+   ORIGINATOR_DATABASES(apply)      \
+   ACTOR_DATABASES(apply)           \
    FRAME_DATABASES(apply)           \
    ANCESTOR_FRAME_DATABASES(apply)  \
    ROLL_DATABASES(apply)            \
@@ -29,6 +32,24 @@
    DASHBOARD_ENTRY_DATABASES(apply) \
 
 #define USER_DATABASES(apply)                   \
+   apply(DEVELOPMENT , dev-gt-user    , users , FALSE , , 127.0.0.1:27017 , , , ) \
+   apply(TEST        , test-gt-user   , users , FALSE , , 127.0.0.1:27017 , , , ) \
+   apply(STAGING     , nos-production , users , TRUE , shelbySet , nos-db-s0-a:27018 , nos-db-s0-b:27018 , NULL, ) \
+   apply(PRODUCTION  , nos-production , users , TRUE , shelbySet , nos-db-s0-a:27018 , nos-db-s0-b:27018 , NULL, )
+
+#define CREATOR_DATABASES(apply)                \
+   apply(DEVELOPMENT , dev-gt-user    , users , FALSE , , 127.0.0.1:27017 , , , ) \
+   apply(TEST        , test-gt-user   , users , FALSE , , 127.0.0.1:27017 , , , ) \
+   apply(STAGING     , nos-production , users , TRUE , shelbySet , nos-db-s0-a:27018 , nos-db-s0-b:27018 , NULL, ) \
+   apply(PRODUCTION  , nos-production , users , TRUE , shelbySet , nos-db-s0-a:27018 , nos-db-s0-b:27018 , NULL, )
+
+#define ORIGINATOR_DATABASES(apply)             \
+   apply(DEVELOPMENT , dev-gt-user    , users , FALSE , , 127.0.0.1:27017 , , , ) \
+   apply(TEST        , test-gt-user   , users , FALSE , , 127.0.0.1:27017 , , , ) \
+   apply(STAGING     , nos-production , users , TRUE , shelbySet , nos-db-s0-a:27018 , nos-db-s0-b:27018 , NULL, ) \
+   apply(PRODUCTION  , nos-production , users , TRUE , shelbySet , nos-db-s0-a:27018 , nos-db-s0-b:27018 , NULL, )
+
+#define ACTOR_DATABASES(apply)                  \
    apply(DEVELOPMENT , dev-gt-user    , users , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(TEST        , test-gt-user   , users , FALSE , , 127.0.0.1:27017 , , , ) \
    apply(STAGING     , nos-production , users , TRUE , shelbySet , nos-db-s0-a:27018 , nos-db-s0-b:27018 , NULL, ) \

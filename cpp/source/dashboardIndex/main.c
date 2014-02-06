@@ -256,43 +256,43 @@ void printJsonAuthentication(sobContext sob, mrjsonContext context, bson *authen
 
 }
 
-void printJsonUser(sobContext sob, mrjsonContext context, bson *user)
+void printJsonCreator(sobContext sob, mrjsonContext context, bson *creator)
 {
-   static sobField userAttributes[] = {
-      SOB_USER_ID,
-      SOB_USER_NAME,
-      SOB_USER_NICKNAME,
-      SOB_USER_USER_IMAGE_ORIGINAL,
-      SOB_USER_USER_IMAGE,
-      SOB_USER_USER_TYPE,
-      SOB_USER_PUBLIC_ROLL_ID,
-      SOB_USER_GT_ENABLED,
+   static sobField creatorAttributes[] = {
+      SOB_CREATOR_ID,
+      SOB_CREATOR_NAME,
+      SOB_CREATOR_NICKNAME,
+      SOB_CREATOR_USER_IMAGE_ORIGINAL,
+      SOB_CREATOR_USER_IMAGE,
+      SOB_CREATOR_USER_TYPE,
+      SOB_CREATOR_PUBLIC_ROLL_ID,
+      SOB_CREATOR_GT_ENABLED,
    };
 
    sobPrintStringToBoolAttributeWithKeyOverride(context,
-                                                user,
-                                                SOB_USER_AVATAR_FILE_NAME,
+                                                creator,
+                                                SOB_CREATOR_AVATAR_FILE_NAME,
                                                 "has_shelby_avatar");
 
    sobPrintAttributes(context,
-                      user,
-                      userAttributes,
-                      sizeof(userAttributes) / sizeof(sobField));
+                      creator,
+                      creatorAttributes,
+                      sizeof(creatorAttributes) / sizeof(sobField));
 
    sobPrintSubobjectArray(sob,
                           context,
-                          user,
-                          SOB_USER_AUTHENTICATIONS,
+                          creator,
+                          SOB_CREATOR_AUTHENTICATIONS,
                           &printJsonAuthentication);
 }
 
 void printJsonOriginator(sobContext sob, mrjsonContext context, bson *originator)
 {
    static sobField originatorAttributes[] = {
-      SOB_USER_ID,
-      SOB_USER_NAME,
-      SOB_USER_NICKNAME,
-      SOB_USER_USER_TYPE
+      SOB_ORIGINATOR_ID,
+      SOB_ORIGINATOR_NAME,
+      SOB_ORIGINATOR_NICKNAME,
+      SOB_ORIGINATOR_USER_TYPE
    };
 
    sobPrintAttributes(context,
@@ -363,7 +363,7 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
 
       sobLog("Checking if originator frame has a creator");
       status = sobGetBsonByOidField(sob,
-                                        SOB_USER,
+                                        SOB_ORIGINATOR,
                                         originatorFrame,
                                         SOB_ANCESTOR_FRAME_CREATOR_ID,
                                         &originator);
@@ -372,7 +372,7 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
          sobLog("Printing frame originator_id field");
          sobPrintAttributeWithKeyOverride(context,
                                           originator,
-                                          SOB_USER_ID,
+                                          SOB_ORIGINATOR_ID,
                                           "originator_id");
 
          sobLog("Printing frame originator field");
@@ -380,7 +380,7 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
                                 context,
                                 originatorFrame,
                                 SOB_ANCESTOR_FRAME_CREATOR_ID,
-                                SOB_USER,
+                                SOB_ORIGINATOR,
                                 "originator",
                                 &printJsonOriginator);
       } else {
@@ -401,9 +401,9 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
                           context,
                           frame,
                           SOB_FRAME_CREATOR_ID,
-                          SOB_USER,
+                          SOB_CREATOR,
                           "creator",
-                          &printJsonUser);
+                          &printJsonCreator);
 
    sobPrintSubobjectByOid(sob,
                           context,
@@ -433,8 +433,8 @@ void printJsonFrame(sobContext sob, mrjsonContext context, bson *frame)
 void printJsonSourceFrameCreator(sobContext sob, mrjsonContext context, bson *sourceFrameCreator)
 {
    static sobField sourceFrameCreatorAttributes[] = {
-      SOB_USER_ID,
-      SOB_USER_NICKNAME
+      SOB_CREATOR_ID,
+      SOB_CREATOR_NICKNAME
    };
 
    sobPrintAttributes(context,
@@ -459,7 +459,7 @@ void printJsonSourceFrame(sobContext sob, mrjsonContext context, bson *sourceFra
                           context,
                           sourceFrame,
                           SOB_FRAME_CREATOR_ID,
-                          SOB_USER,
+                          SOB_CREATOR,
                           "creator",
                           &printJsonSourceFrameCreator);
 }
@@ -480,18 +480,18 @@ void printJsonSourceVideo(sobContext sob, mrjsonContext context, bson *sourceVid
 void printJsonActor(sobContext sob, mrjsonContext context, bson *actor)
 {
    static sobField actorAttributes[] = {
-      SOB_USER_ID,
-      SOB_USER_NAME,
-      SOB_USER_NICKNAME,
-      SOB_USER_USER_IMAGE_ORIGINAL,
-      SOB_USER_USER_IMAGE,
-      SOB_USER_USER_TYPE,
-      SOB_USER_PUBLIC_ROLL_ID,
+      SOB_ACTOR_ID,
+      SOB_ACTOR_NAME,
+      SOB_ACTOR_NICKNAME,
+      SOB_ACTOR_USER_IMAGE_ORIGINAL,
+      SOB_ACTOR_USER_IMAGE,
+      SOB_ACTOR_USER_TYPE,
+      SOB_ACTOR_PUBLIC_ROLL_ID,
    };
 
    sobPrintStringToBoolAttributeWithKeyOverride(context,
                                                 actor,
-                                                SOB_USER_AVATAR_FILE_NAME,
+                                                SOB_ACTOR_AVATAR_FILE_NAME,
                                                 "has_shelby_avatar");
 
    sobPrintAttributes(context,
@@ -545,7 +545,7 @@ void printJsonDashboardEntry(sobContext sob, mrjsonContext context, bson *dbEntr
                           context,
                           dbEntry,
                           SOB_DASHBOARD_ENTRY_ACTOR_ID,
-                          SOB_USER,
+                          SOB_ACTOR,
                           "actor",
                           &printJsonActor);
 
@@ -679,7 +679,7 @@ int loadData(sobContext sob)
    cvector srcVideoOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector actorOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector rollOids = cvectorAlloc(sizeof(bson_oid_t));
-   cvector userOids = cvectorAlloc(sizeof(bson_oid_t));
+   cvector creatorOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector videoOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector conversationOids = cvectorAlloc(sizeof(bson_oid_t));
    cvector frameAncestorOids = cvectorAlloc(sizeof(bson_oid_t));
@@ -731,24 +731,24 @@ int loadData(sobContext sob)
                                   actorOids);
 
    static sobField actorFields[] = {
-      SOB_USER_ID,
-      SOB_USER_NAME,
-      SOB_USER_NICKNAME,
-      SOB_USER_USER_IMAGE_ORIGINAL,
-      SOB_USER_USER_IMAGE,
-      SOB_USER_USER_TYPE,
-      SOB_USER_PUBLIC_ROLL_ID,
-      SOB_USER_AVATAR_FILE_NAME
+      SOB_ACTOR_ID,
+      SOB_ACTOR_NAME,
+      SOB_ACTOR_NICKNAME,
+      SOB_ACTOR_USER_IMAGE_ORIGINAL,
+      SOB_ACTOR_USER_IMAGE,
+      SOB_ACTOR_USER_TYPE,
+      SOB_ACTOR_PUBLIC_ROLL_ID,
+      SOB_ACTOR_AVATAR_FILE_NAME
    };
    sobLoadAllByIdSpecifyFields(sob,
-                            SOB_USER,
+                            SOB_ACTOR,
                             actorFields,
                             sizeof(actorFields) / sizeof(sobField),
                             actorOids);
 
    // and frames have references to everything else, so we load it all up...
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_ROLL_ID, rollOids);
-   sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_CREATOR_ID, userOids);
+   sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_CREATOR_ID, creatorOids);
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_VIDEO_ID, videoOids);
    sobGetOidVectorFromObjectField(sob, SOB_FRAME, SOB_FRAME_CONVERSATION_ID, conversationOids);
    sobGetLastOidVectorFromOidArrayField(sob,
@@ -757,23 +757,23 @@ int loadData(sobContext sob)
                                         frameAncestorOids);
    sobLoadAllById(sob, SOB_ROLL, rollOids);
 
-   static sobField userFields[] = {
-      SOB_USER_ID,
-      SOB_USER_NAME,
-      SOB_USER_NICKNAME,
-      SOB_USER_USER_IMAGE_ORIGINAL,
-      SOB_USER_USER_IMAGE,
-      SOB_USER_USER_TYPE,
-      SOB_USER_PUBLIC_ROLL_ID,
-      SOB_USER_GT_ENABLED,
-      SOB_USER_AVATAR_FILE_NAME,
-      SOB_USER_AUTHENTICATIONS
+   static sobField creatorFields[] = {
+      SOB_CREATOR_ID,
+      SOB_CREATOR_NAME,
+      SOB_CREATOR_NICKNAME,
+      SOB_CREATOR_USER_IMAGE_ORIGINAL,
+      SOB_CREATOR_USER_IMAGE,
+      SOB_CREATOR_USER_TYPE,
+      SOB_CREATOR_PUBLIC_ROLL_ID,
+      SOB_CREATOR_GT_ENABLED,
+      SOB_CREATOR_AVATAR_FILE_NAME,
+      SOB_CREATOR_AUTHENTICATIONS
    };
    sobLoadAllByIdSpecifyFields(sob,
-                               SOB_USER,
-                               userFields,
-                               sizeof(userFields) / sizeof(sobField),
-                               userOids);
+                               SOB_CREATOR,
+                               creatorFields,
+                               sizeof(creatorFields) / sizeof(sobField),
+                               creatorOids);
 
    sobLoadAllById(sob, SOB_VIDEO, videoOids);
    sobLoadAllById(sob, SOB_CONVERSATION, conversationOids);
@@ -783,13 +783,13 @@ int loadData(sobContext sob)
    // then load them
    sobGetOidVectorFromObjectField(sob, SOB_ANCESTOR_FRAME, SOB_ANCESTOR_FRAME_CREATOR_ID, originatorOids);
    static sobField originatorFields[] = {
-      SOB_USER_ID,
-      SOB_USER_NAME,
-      SOB_USER_NICKNAME,
-      SOB_USER_USER_TYPE
+      SOB_ORIGINATOR_ID,
+      SOB_ORIGINATOR_NAME,
+      SOB_ORIGINATOR_NICKNAME,
+      SOB_ORIGINATOR_USER_TYPE
    };
    sobLoadAllByIdSpecifyFields(sob,
-                               SOB_USER,
+                               SOB_ORIGINATOR,
                                originatorFields,
                                sizeof(originatorFields) / sizeof(sobField),
                                originatorOids);

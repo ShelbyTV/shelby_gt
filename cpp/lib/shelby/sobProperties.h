@@ -21,6 +21,9 @@
 
 #define ALL_PROPERTIES(apply)        \
    USER_PROPERTIES(apply)            \
+   CREATOR_PROPERTIES(apply)         \
+   ORIGINATOR_PROPERTIES(apply)      \
+   ACTOR_PROPERTIES(apply)           \
    FRAME_PROPERTIES(apply)           \
    ANCESTOR_FRAME_PROPERTIES(apply)  \
    ROLL_PROPERTIES(apply)            \
@@ -62,6 +65,96 @@
    apply(USER , social_tracker       ,  SOCIAL_TRACKER       ,  ARRAY  , social_tracker      ) \
    apply(USER , roll_followings      ,  ROLL_FOLLOWINGS      ,  ARRAY  , roll_followings     ) \
    apply(USER , authentications      ,  AUTHENTICATIONS      ,  ARRAY  , authentications     )
+
+#define CREATOR_PROPERTIES(apply)                                                                 \
+   apply(CREATOR , id                   ,  ID                   ,  OID    , _id                 ) \
+   apply(CREATOR , rolls_unfollowed     ,  ROLLS_UNFOLLOWED     ,  ARRAY  , aa                  ) \
+   apply(CREATOR , public_roll_id       ,  PUBLIC_ROLL_ID       ,  OID    , ab                  ) \
+   apply(CREATOR , watch_later_roll_id  ,  WATCH_LATER_ROLL_ID  ,  OID    , ad                  ) \
+   apply(CREATOR , upvoted_roll_id      ,  UPVOTED_ROLL_ID      ,  OID    , ae                  ) \
+   apply(CREATOR , viewed_roll_id       ,  VIEWED_ROLL_ID       ,  OID    , af                  ) \
+   apply(CREATOR , user_type            ,  USER_TYPE            ,  INT    , ac                  ) \
+   apply(CREATOR , authentication_token ,  AUTHENTICATION_TOKEN ,  STRING , ah                  ) \
+   apply(CREATOR , gt_enabled           ,  GT_ENABLED           ,  BOOL   , ag                  ) \
+   apply(CREATOR , applications         ,  APPLICATIONS         ,  ARRAY  , ap                  ) \
+   apply(CREATOR , clients              ,  CLIENTS              ,  ARRAY  , ai                  ) \
+   apply(CREATOR , cohorts              ,  COHORTS              ,  ARRAY  , aq                  ) \
+   apply(CREATOR , autocomplete         ,  AUTOCOMPLETE         ,  ARRAY  , as                  ) \
+   apply(CREATOR , avatar_file_name     ,  AVATAR_FILE_NAME     ,  STRING , at                  ) \
+   apply(CREATOR , avatar_updated_at    ,  AVATAR_UPDATED_AT    ,  STRING , aw                  ) \
+   apply(CREATOR , name                 ,  NAME                 ,  STRING , name                ) \
+   apply(CREATOR , nickname             ,  NICKNAME             ,  STRING , nickname            ) \
+   apply(CREATOR , downcase_nickname    ,  DOWNCASE_NICKNAME    ,  STRING , downcase_nickname   ) \
+   apply(CREATOR , user_image           ,  USER_IMAGE           ,  STRING , user_image          ) \
+   apply(CREATOR , user_image_original  ,  USER_IMAGE_ORIGINAL  ,  STRING , user_image_original ) \
+   apply(CREATOR , primary_email        ,  PRIMARY_EMAIL        ,  STRING , primary_email       ) \
+   apply(CREATOR , encrypted_password   ,  ENCRYPTED_PASSWORD   ,  STRING , ar                  ) \
+   apply(CREATOR , server_created_on    ,  SERVER_CREATED_ON    ,  STRING , server_created_on   ) \
+   apply(CREATOR , referral_frame_id    ,  REFERRAL_FRAME_ID    ,  OID    , referral_frame_id   ) \
+   apply(CREATOR , is_admin             ,  IS_ADMIN             ,  BOOL   , is_admin            ) \
+   apply(CREATOR , social_tracker       ,  SOCIAL_TRACKER       ,  ARRAY  , social_tracker      ) \
+   apply(CREATOR , roll_followings      ,  ROLL_FOLLOWINGS      ,  ARRAY  , roll_followings     ) \
+   apply(CREATOR , authentications      ,  AUTHENTICATIONS      ,  ARRAY  , authentications     )
+
+#define ORIGINATOR_PROPERTIES(apply)                                                                 \
+   apply(ORIGINATOR , id                   ,  ID                   ,  OID    , _id                 ) \
+   apply(ORIGINATOR , rolls_unfollowed     ,  ROLLS_UNFOLLOWED     ,  ARRAY  , aa                  ) \
+   apply(ORIGINATOR , public_roll_id       ,  PUBLIC_ROLL_ID       ,  OID    , ab                  ) \
+   apply(ORIGINATOR , watch_later_roll_id  ,  WATCH_LATER_ROLL_ID  ,  OID    , ad                  ) \
+   apply(ORIGINATOR , upvoted_roll_id      ,  UPVOTED_ROLL_ID      ,  OID    , ae                  ) \
+   apply(ORIGINATOR , viewed_roll_id       ,  VIEWED_ROLL_ID       ,  OID    , af                  ) \
+   apply(ORIGINATOR , user_type            ,  USER_TYPE            ,  INT    , ac                  ) \
+   apply(ORIGINATOR , authentication_token ,  AUTHENTICATION_TOKEN ,  STRING , ah                  ) \
+   apply(ORIGINATOR , gt_enabled           ,  GT_ENABLED           ,  BOOL   , ag                  ) \
+   apply(ORIGINATOR , applications         ,  APPLICATIONS         ,  ARRAY  , ap                  ) \
+   apply(ORIGINATOR , clients              ,  CLIENTS              ,  ARRAY  , ai                  ) \
+   apply(ORIGINATOR , cohorts              ,  COHORTS              ,  ARRAY  , aq                  ) \
+   apply(ORIGINATOR , autocomplete         ,  AUTOCOMPLETE         ,  ARRAY  , as                  ) \
+   apply(ORIGINATOR , avatar_file_name     ,  AVATAR_FILE_NAME     ,  STRING , at                  ) \
+   apply(ORIGINATOR , avatar_updated_at    ,  AVATAR_UPDATED_AT    ,  STRING , aw                  ) \
+   apply(ORIGINATOR , name                 ,  NAME                 ,  STRING , name                ) \
+   apply(ORIGINATOR , nickname             ,  NICKNAME             ,  STRING , nickname            ) \
+   apply(ORIGINATOR , downcase_nickname    ,  DOWNCASE_NICKNAME    ,  STRING , downcase_nickname   ) \
+   apply(ORIGINATOR , user_image           ,  USER_IMAGE           ,  STRING , user_image          ) \
+   apply(ORIGINATOR , user_image_original  ,  USER_IMAGE_ORIGINAL  ,  STRING , user_image_original ) \
+   apply(ORIGINATOR , primary_email        ,  PRIMARY_EMAIL        ,  STRING , primary_email       ) \
+   apply(ORIGINATOR , encrypted_password   ,  ENCRYPTED_PASSWORD   ,  STRING , ar                  ) \
+   apply(ORIGINATOR , server_created_on    ,  SERVER_CREATED_ON    ,  STRING , server_created_on   ) \
+   apply(ORIGINATOR , referral_frame_id    ,  REFERRAL_FRAME_ID    ,  OID    , referral_frame_id   ) \
+   apply(ORIGINATOR , is_admin             ,  IS_ADMIN             ,  BOOL   , is_admin            ) \
+   apply(ORIGINATOR , social_tracker       ,  SOCIAL_TRACKER       ,  ARRAY  , social_tracker      ) \
+   apply(ORIGINATOR , roll_followings      ,  ROLL_FOLLOWINGS      ,  ARRAY  , roll_followings     ) \
+   apply(ORIGINATOR , authentications      ,  AUTHENTICATIONS      ,  ARRAY  , authentications     )
+
+#define ACTOR_PROPERTIES(apply)                                                                 \
+   apply(ACTOR , id                   ,  ID                   ,  OID    , _id                 ) \
+   apply(ACTOR , rolls_unfollowed     ,  ROLLS_UNFOLLOWED     ,  ARRAY  , aa                  ) \
+   apply(ACTOR , public_roll_id       ,  PUBLIC_ROLL_ID       ,  OID    , ab                  ) \
+   apply(ACTOR , watch_later_roll_id  ,  WATCH_LATER_ROLL_ID  ,  OID    , ad                  ) \
+   apply(ACTOR , upvoted_roll_id      ,  UPVOTED_ROLL_ID      ,  OID    , ae                  ) \
+   apply(ACTOR , viewed_roll_id       ,  VIEWED_ROLL_ID       ,  OID    , af                  ) \
+   apply(ACTOR , user_type            ,  USER_TYPE            ,  INT    , ac                  ) \
+   apply(ACTOR , authentication_token ,  AUTHENTICATION_TOKEN ,  STRING , ah                  ) \
+   apply(ACTOR , gt_enabled           ,  GT_ENABLED           ,  BOOL   , ag                  ) \
+   apply(ACTOR , applications         ,  APPLICATIONS         ,  ARRAY  , ap                  ) \
+   apply(ACTOR , clients              ,  CLIENTS              ,  ARRAY  , ai                  ) \
+   apply(ACTOR , cohorts              ,  COHORTS              ,  ARRAY  , aq                  ) \
+   apply(ACTOR , autocomplete         ,  AUTOCOMPLETE         ,  ARRAY  , as                  ) \
+   apply(ACTOR , avatar_file_name     ,  AVATAR_FILE_NAME     ,  STRING , at                  ) \
+   apply(ACTOR , avatar_updated_at    ,  AVATAR_UPDATED_AT    ,  STRING , aw                  ) \
+   apply(ACTOR , name                 ,  NAME                 ,  STRING , name                ) \
+   apply(ACTOR , nickname             ,  NICKNAME             ,  STRING , nickname            ) \
+   apply(ACTOR , downcase_nickname    ,  DOWNCASE_NICKNAME    ,  STRING , downcase_nickname   ) \
+   apply(ACTOR , user_image           ,  USER_IMAGE           ,  STRING , user_image          ) \
+   apply(ACTOR , user_image_original  ,  USER_IMAGE_ORIGINAL  ,  STRING , user_image_original ) \
+   apply(ACTOR , primary_email        ,  PRIMARY_EMAIL        ,  STRING , primary_email       ) \
+   apply(ACTOR , encrypted_password   ,  ENCRYPTED_PASSWORD   ,  STRING , ar                  ) \
+   apply(ACTOR , server_created_on    ,  SERVER_CREATED_ON    ,  STRING , server_created_on   ) \
+   apply(ACTOR , referral_frame_id    ,  REFERRAL_FRAME_ID    ,  OID    , referral_frame_id   ) \
+   apply(ACTOR , is_admin             ,  IS_ADMIN             ,  BOOL   , is_admin            ) \
+   apply(ACTOR , social_tracker       ,  SOCIAL_TRACKER       ,  ARRAY  , social_tracker      ) \
+   apply(ACTOR , roll_followings      ,  ROLL_FOLLOWINGS      ,  ARRAY  , roll_followings     ) \
+   apply(ACTOR , authentications      ,  AUTHENTICATIONS      ,  ARRAY  , authentications     )
 
 #define FRAME_PROPERTIES(apply)                                                                       \
    apply(FRAME , id                         , ID                         , OID    , _id             ) \

@@ -23,6 +23,9 @@ extern "C" {
 typedef enum sobType
 {
    SOB_USER = 0,
+   SOB_CREATOR,
+   SOB_ORIGINATOR,
+   SOB_ACTOR,
    SOB_FRAME,
    SOB_ANCESTOR_FRAME,
    SOB_ROLL,

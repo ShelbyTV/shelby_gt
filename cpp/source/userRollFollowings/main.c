@@ -282,7 +282,7 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
 
    bson *rollCreator;
    int status = sobGetBsonByOidField(sob,
-                                     SOB_USER,
+                                     SOB_CREATOR,
                                      roll,
                                      SOB_ROLL_CREATOR_ID,
                                      &rollCreator);
@@ -290,38 +290,38 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
    if (status) {
       sobPrintAttributeWithKeyOverride(context,
                                        rollCreator,
-                                       SOB_USER_NICKNAME,
+                                       SOB_CREATOR_NICKNAME,
                                        "creator_nickname");
 
       sobPrintAttributeWithKeyOverride(context,
                                        rollCreator,
-                                       SOB_USER_NAME,
+                                       SOB_CREATOR_NAME,
                                        "creator_name");
 
       sobPrintStringToBoolAttributeWithKeyOverride(context,
                                                    rollCreator,
-                                                   SOB_USER_AVATAR_FILE_NAME,
+                                                   SOB_CREATOR_AVATAR_FILE_NAME,
                                                    "creator_has_shelby_avatar");
 
       sobPrintAttributeWithKeyOverride(context,
                                        rollCreator,
-                                       SOB_USER_AVATAR_UPDATED_AT,
+                                       SOB_CREATOR_AVATAR_UPDATED_AT,
                                        "creator_avatar_updated_at");
 
       sobPrintAttributeWithKeyOverride(context,
                                        rollCreator,
-                                       SOB_USER_USER_IMAGE_ORIGINAL,
+                                       SOB_CREATOR_USER_IMAGE_ORIGINAL,
                                        "creator_image_original");
 
       sobPrintAttributeWithKeyOverride(context,
                                        rollCreator,
-                                       SOB_USER_USER_IMAGE,
+                                       SOB_CREATOR_USER_IMAGE,
                                        "creator_image");
 
       sobPrintSubobjectArrayWithKey(sob,
                                     context,
                                     rollCreator,
-                                    SOB_USER_AUTHENTICATIONS,
+                                    SOB_CREATOR_AUTHENTICATIONS,
                                     "creator_authentications",
                                     &printJsonAuthentication);
    }
@@ -383,9 +383,9 @@ int printJsonOutput(sobContext sob)
          // first 2 rolls are always the user public roll and the user watch later roll
          bson_oid_t userPublicRollId;
          rollStatus = sobBsonOidField(SOB_USER,
-                                            SOB_USER_PUBLIC_ROLL_ID,
-                                            userBson,
-                                            &userPublicRollId);
+                                      SOB_USER_PUBLIC_ROLL_ID,
+                                      userBson,
+                                      &userPublicRollId);
          if (rollStatus) {
             rollFollowingBsonEntry *foundRollFollowing = NULL;
             HASH_FIND(hh, rollFollowings, &userPublicRollId, sizeof(bson_oid_t), foundRollFollowing);
@@ -496,16 +496,16 @@ int loadData(sobContext sob)
 
    sobGetOidVectorFromObjectField(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, creatorOids);
    static sobField creatorFields[] = {
-      SOB_USER_NICKNAME,
-      SOB_USER_NAME,
-      SOB_USER_AVATAR_FILE_NAME,
-      SOB_USER_AVATAR_UPDATED_AT,
-      SOB_USER_USER_IMAGE_ORIGINAL,
-      SOB_USER_USER_IMAGE,
-      SOB_USER_AUTHENTICATIONS
+      SOB_CREATOR_NICKNAME,
+      SOB_CREATOR_NAME,
+      SOB_CREATOR_AVATAR_FILE_NAME,
+      SOB_CREATOR_AVATAR_UPDATED_AT,
+      SOB_CREATOR_USER_IMAGE_ORIGINAL,
+      SOB_CREATOR_USER_IMAGE,
+      SOB_CREATOR_AUTHENTICATIONS
    };
    sobLoadAllByIdSpecifyFields(sob,
-                               SOB_USER,
+                               SOB_CREATOR,
                                creatorFields,
                                sizeof(creatorFields) / sizeof(sobField),
                                creatorOids);
