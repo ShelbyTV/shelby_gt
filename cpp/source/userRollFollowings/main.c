@@ -492,7 +492,30 @@ int loadData(sobContext sob)
                                userOids);
 
    sobGetOidVectorFromObjectArrayField(sob, SOB_USER, SOB_USER_ROLL_FOLLOWINGS, SOB_ROLL_FOLLOWING_ROLL_ID, rollOids);
-   sobLoadAllById(sob, SOB_ROLL, rollOids);
+
+   static sobField rollFields[] = {
+      SOB_ROLL_ID,
+      SOB_ROLL_COLLABORATIVE,
+      SOB_ROLL_PUBLIC,
+      SOB_ROLL_CREATOR_ID,
+      SOB_ROLL_ORIGIN_NETWORK,
+      SOB_ROLL_GENIUS,
+      SOB_ROLL_FRAME_COUNT,
+      SOB_ROLL_FIRST_FRAME_THUMBNAIL_URL,
+      SOB_ROLL_HEADER_IMAGE_FILE_NAME,
+      SOB_ROLL_TITLE,
+      SOB_ROLL_ROLL_TYPE,
+      SOB_ROLL_DISCUSSION_ROLL_PARTICIPANTS,
+      SOB_ROLL_FOLLOWING_USERS,
+      SOB_ROLL_SUBDOMAIN,
+      SOB_ROLL_SUBDOMAIN_ACTIVE,
+      SOB_ROLL_CREATOR_THUMBNAIL_URL
+   };
+   sobLoadAllByIdSpecifyFields(sob,
+                               SOB_ROLL,
+                               rollFields,
+                               sizeof(rollFields) / sizeof(sobField),
+                               rollOids);
 
    sobGetOidVectorFromObjectField(sob, SOB_ROLL, SOB_ROLL_CREATOR_ID, creatorOids);
    static sobField creatorFields[] = {
