@@ -9,7 +9,7 @@
       <tr>
         <td>
           <%= render :partial => "/notification_mailer/partials/user_item", :locals => {
-            :avatar   => avatar_url_for_user(user),
+            :avatar   => user.avatar_url,
             :button   => true,
             :name     => user.name,
             :nickname => user.nickname,

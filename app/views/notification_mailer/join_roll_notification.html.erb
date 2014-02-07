@@ -25,7 +25,7 @@
                                     <center>
                                       <p style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;">
                                         <a href="<%= @user_permalink %>" style="color: <%= Settings::Email.ui_soft_black %>">
-                                          <img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;height: 45px;line-height: 1;outline: none;text-decoration: none;display: inline-block;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>"/>
+                                          <img class="image_fix" src="<%= @user_from.avatar_url %>" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;height: 45px;line-height: 1;outline: none;text-decoration: none;display: inline-block;border-radius:5px;border:1px solid <%= Settings::Email.ui_soft_black %>"/>
                                         </a>
                                       </p>
 

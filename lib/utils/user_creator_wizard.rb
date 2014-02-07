@@ -120,5 +120,43 @@ module Dev
       end
     end
 
+    # add the user's public roll to a roll cateogry in the roll.yml file
+    # --parameters--
+    # u => A user or an array of users to process
+    #
+    # --options--
+    #
+    # :file_name => String --- OPTIONAL the yaml file to modify, roll.yml is the default
+    # :category_title => String --- OPTIONAL the roll category to add the roll to, featured is the default
+    # :display_thumbnail_src => String --- OPTIONAL an override for the thumbnail image to be associated with the
+    # => roll, by default will use the standard helper to determine the user's avatar image
+    def self.add_user_to_roll_categories(u, options={})
+      u = [u] if !u.is_a?(Array)
+
+      defaults = {
+        :file_name => "config/settings/roll.yml",
+        :category_title => "Featured",
+        :display_thumbnail_src => nil
+      }
+
+      options = defaults.merge(options)
+
+      yaml_data = YAML.load_file(options[:file_name])
+      category = yaml_data['defaults']['featured'].find{ |c| c['category_title'] == options[:category_title]}
+
+      u.each do |user|
+        featured_roll_entry = {
+          "display_title" => user.nickname,
+          "id" => user.public_roll_id.to_s,
+          "display_thumbnail_src" => user.avatar_url,
+          "description" => user.dot_tv_description,
+          "include_in" => {"onboarding" => true}
+        }
+
+        category['rolls'] << featured_roll_entry
+      end
+
+      File.open(options[:file_name], 'w') { |f| YAML.dump(yaml_data, f) }
+    end
   end
 end

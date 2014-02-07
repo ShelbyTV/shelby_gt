@@ -91,9 +91,9 @@ module WeeklyRecommendationEmailHelper
     elsif dbe.action == DashboardEntry::ENTRY_TYPE[:mortar_recommendation]
       return "http://#{Settings::Global.web_host}/images/recommendations/share-2.jpg"
     elsif dbe.action == DashboardEntry::ENTRY_TYPE[:channel_recommendation]
-      return avatar_url_for_user(dbe.frame.creator)
+      return dbe.frame.creator.avatar_url
     else
-      return avatar_url_for_user(dbe.frame.creator)
+      return dbe.frame.creator.avatar_url
     end
   end
 

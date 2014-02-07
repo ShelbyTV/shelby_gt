@@ -24,10 +24,10 @@
 						<tr height="10">
 							<td width="45" valign="top">
 								<a href="<%= @user_from.permalink %>" style="float:left;">
-									<img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="user_image" title="<%= @user_from.name %>" width="45" height="45" style="margin-right: 15px;display:block;"/>
+									<img class="image_fix" src="<%= @user_from.avatar_url %>" alt="user_image" title="<%= @user_from.name %>" width="45" height="45" style="margin-right: 15px;display:block;"/>
 								</a>
 								<div style="float:left;max-width:218px;font-size:11px;color:#333;">
-									<%= @message %>									
+									<%= @message %>
 								</div>
 							</td>
 						</tr>
@@ -52,7 +52,7 @@
 											<td>
 												<div style="width: 278px; height:27px; background-color: #0590c4; color: white;text-align: center;font-weight: bold;margin-top: 8px; border: 1px solid #056083;padding-top: 9px;">
 													watch now ▶
-												</div>												
+												</div>
 											</td>
 										</tr>
 									</table>
@@ -60,7 +60,7 @@
 						</td>
 					</tr>
 				</table>
-			</td>	
+			</td>
 		</tr>
 		<tr height="43">
 			<td colspan="2">
@@ -73,6 +73,6 @@
 				</div>
 			</td>
 		</tr>
-	</table>  
+	</table>
 	<!-- End of wrapper table -->
 <% end %>

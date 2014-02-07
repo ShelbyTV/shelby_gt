@@ -247,6 +247,7 @@ class User
   # When true, you should display this user's avatar via a deterministic S3 file location (see initializers/paperclip.rb)
   def has_shelby_avatar() !self.avatar_file_name.blank?; end
 
+  # returns the url for an avatar that the user has uploaded directly to Shelby, if any
   def shelby_avatar_url(size)
     avatar_size = case size
                   when "small"
@@ -264,6 +265,16 @@ class User
     end
 
     "http://s3.amazonaws.com/#{Settings::Paperclip.user_avatar_bucket}/#{avatar_size}/#{id.to_s}?#{updated_time_string}" if has_shelby_avatar
+  end
+
+  # returns a url for displaying the user's avatar
+  # valid avatar_size options are "small", "large", "original"
+  def avatar_url(avatar_size="small")
+    if self.has_shelby_avatar
+      return self.shelby_avatar_url(avatar_size)
+    else
+      return self.user_image_original || self.user_image || "#{Settings::ShelbyAPI.web_root}/images/assets/avatar.png"
+    end
   end
 
   # When update_attributes recieves a :google_analytics_identifier, add it to our set

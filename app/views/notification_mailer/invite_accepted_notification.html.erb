@@ -41,7 +41,7 @@
                           <div style="color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
                               <h4 class="h4" style="color: #666;display: block;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 125%;font-weight: normal;line-height: 100%;margin-top: 0.5em;margin-right: 0;margin-bottom: 0;margin-left: 0;">
                                 <div class="shelby-avatar" style="background: transparent;display: inline-block;height: 50px;margin-right: .5em;overflow: hidden;width: 50px;vertical-align: middle;color: #505050;font-family: 'Ubuntu',Trebuchet MS,sans-serif;font-size: 14px;line-height: 150%;">
-                                  <img class="image_fix" src="<%= avatar_url_for_user(@user_from,"small") %>" alt="user_image" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;height: 45px;line-height: 100%;outline: none;text-decoration: none;display: block;"/>
+                                  <img class="image_fix" src="<%= @user_from.avatar_url %>" alt="user_image" alt="<%= @user_from_name %>" title="<%= @user_from_name %>" width="45" height="45" style="border: 0;height: 45px;line-height: 100%;outline: none;text-decoration: none;display: block;"/>
                                 </div>
                                 <%= @user_from_name %> accepted your invitation to join Shelby.tv
                               </h4>
@@ -54,7 +54,7 @@
                               <a href="<%= @user_permalink %>" style="text-decoration: none;color:#444; font-family: Ubuntu,Trebuchet MS,Helvetica,sans-serif; font-weight:300;">
                                 <div style="height:27px; background-color: #0590c4; color: white;text-align: center;font-weight: bold;border: 1px solid #056083;padding-top: 9px;">
                                   Follow <%= @user_from_name %>'s roll
-                                </div>                        
+                                </div>
                               </a>
                           </div>
                         </td>

@@ -29,7 +29,7 @@
       <%= render :partial => '/notification_mailer/partials/frame_footer',
                  :locals => {
                     :action            => nil,
-                    :avatar            => avatar_url_for_user(frame.creator),
+                    :avatar            => frame.creator.avatar_url,
                     :creator           => frame.creator,
                     :dbe               => nil,
                     :frame             => frame,

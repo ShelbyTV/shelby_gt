@@ -4,8 +4,8 @@
 <article class="user clearfix">
   <div class="media_module">
     <div class="media_image media_image--rev user__image">
-      <% if !user.user_image.nil? and !user.user_image_original.nil? and ((user.user_image != "null") or (user.user_image_original != "") ) and (avatar_url_for_user(user) != "null")%>
-        <%= image_tag(avatar_url_for_user(user), :size=>"50x50")  %>
+      <% if !user.user_image.nil? and !user.user_image_original.nil? and ((user.user_image != "null") or (user.user_image_original != "") ) and (user.avatar_url != "null")%>
+        <%= image_tag(user.avatar_url, :size=>"50x50")  %>
       <% else %>
         BAD IMG
       <% end %>

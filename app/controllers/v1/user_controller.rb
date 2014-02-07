@@ -330,7 +330,7 @@ class V1::UserController < ApplicationController
       @status = 200
       num_recent_frames = params[:num_frames] ? params[:num_frames].to_i : Settings::UserStats.num_recent_frames
       @stats = GT::UserStatsManager.get_dot_tv_stats_for_recent_frames(@user, num_recent_frames)
-      @stats.each {|s| s.frame.creator[:shelby_user_image] = avatar_url_for_user(s.frame.creator)}
+      @stats.each {|s| s.frame.creator[:shelby_user_image] = s.frame.creator.avatar_url}
     end
   end
 

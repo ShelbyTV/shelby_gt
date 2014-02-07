@@ -7,7 +7,7 @@
         <h1><%= @user['name'] if @user %> shared this video</h1>
 
       <div class="media_module">
-        <img src="<%= avatar_url_for_user(@user) %>" class="media_image user-avatar" />
+        <img src="<%= @user.avatar_url %>" class="media_image user-avatar" />
 
         <p class="media_body share-context clearfix">
           <span class="user-nickname"><%= @user['nickname'] if @user %></span><br />

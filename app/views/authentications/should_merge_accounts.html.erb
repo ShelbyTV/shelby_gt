@@ -16,7 +16,7 @@
 
     <div class="user">
       <div class="media_module clearfix">
-        <% into_avatar = URI.encode(avatar_url_for_user(@into_user)) %>
+        <% into_avatar = URI.encode(@into_user.avatar_url) %>
         <span class="media_image image_module avatar avatar--small user__avatar" role="img" style="background-image:url(<%= into_avatar %>);">
           <img class="visuallyhidden" src="<%= into_avatar %>"/>
         </span><!-- eo media_image -->
@@ -54,7 +54,7 @@
 
     <div class="user">
       <div class="media_module clearfix">
-        <% other_avatar = avatar_url_for_user(@other_user) %>
+        <% other_avatar = @other_user.avatar_url %>
 
         <span class="media_image image_module avatar avatar--small user__avatar" role="img" style="background-image:url(<%= other_avatar %>);">
           <img class="visuallyhidden" src="<%= other_avatar %>"/>
