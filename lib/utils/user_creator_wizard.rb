@@ -80,11 +80,14 @@ module Dev
         q.validate = lambda { |a| a.length > 0 }
         q.responses[:not_valid] = "You didn't enter a username. Try again please."
       end
+      has_description = agree("Do you want to enter a description/bio for this user? ") { |q| q.default = "n" }
+      dot_tv_description = ask("Enter the user description/bio: ") if has_description
 
       if user = User.find_by_nickname(nickname)
         user.ensure_authentication_token!
         user.user_type = User::USER_TYPE[:service]
         user.public_roll.roll_type = Roll::TYPES[:special_public_upgraded]
+        user.dot_tv_description = dot_tv_description if has_description
         puts "[SUCCESS] #{user.nickname} updated to be a service user."
         if user.public_roll.save and user.save
           youtube_username = ask('Enter a youtube username: ') do |q|
