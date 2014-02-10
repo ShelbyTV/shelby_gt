@@ -755,7 +755,30 @@ int loadData(sobContext sob)
                                         SOB_FRAME,
                                         SOB_FRAME_FRAME_ANCESTORS,
                                         frameAncestorOids);
-   sobLoadAllById(sob, SOB_ROLL, rollOids);
+
+   static sobField rollFields[] = {
+      SOB_ROLL_ID,
+      SOB_ROLL_COLLABORATIVE,
+      SOB_ROLL_PUBLIC,
+      SOB_ROLL_CREATOR_ID,
+      SOB_ROLL_ORIGIN_NETWORK,
+      SOB_ROLL_GENIUS,
+      SOB_ROLL_FRAME_COUNT,
+      SOB_ROLL_FIRST_FRAME_THUMBNAIL_URL,
+      SOB_ROLL_HEADER_IMAGE_FILE_NAME,
+      SOB_ROLL_TITLE,
+      SOB_ROLL_ROLL_TYPE,
+      SOB_ROLL_DISCUSSION_ROLL_PARTICIPANTS,
+      SOB_ROLL_CREATOR_THUMBNAIL_URL,
+      SOB_ROLL_SUBDOMAIN,
+      SOB_ROLL_SUBDOMAIN_ACTIVE
+   };
+   sobLoadAllByIdSpecifyFields(sob,
+                               SOB_ROLL,
+                               rollFields,
+                               sizeof(rollFields) / sizeof(sobField),
+                               rollOids);
+
    sobLoadAllByIdSpecifyFields(sob,
                                SOB_CREATOR,
                                userFields,
