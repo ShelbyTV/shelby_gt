@@ -45,6 +45,34 @@ defaults: &defaults
           include_in: {onboarding: true}
         },
         {
+          display_title : 'Movieclips',
+          id : '4f958e049a725b0dba014577',
+          description : 'All your favorite moments from all your favorite movies!',
+          display_thumbnail_src : 'https://yt3.ggpht.com/-eUygaxpkDso/AAAAAAAAAAI/AAAAAAAAAAA/sgWUW78eZsA/s100-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'BBC Earth',
+          id : '52f53bff59b0520bca002ecf',
+          description : '50 years worth of astounding, entertaining, thought-provoking and educational natural history content',
+          display_thumbnail_src : 'https://yt3.ggpht.com/-dVL3DQ8KQSE/AAAAAAAAAAI/AAAAAAAAAAA/gGjvUa4oKd0/s100-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'CNET',
+          id : '4fa28f7c88ba6b5fda000af0',
+          description : 'The latest tech news, unbiased reviews, making tech products easy to find, understand and use.',
+          display_thumbnail_src : 'https://yt3.ggpht.com/-YRfuYcmY5sA/AAAAAAAAAAI/AAAAAAAAAAA/4XUYyNrEcTk/s100-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'New York Magazine',
+          id : '52f53bca59b052181900bd4a',
+          description : 'Original video chronicling our unique viewpoint on everything from pop culture to politics, food to fashion.',
+          display_thumbnail_src : 'https://yt3.ggpht.com/-LjvhlV7SmnE/AAAAAAAAAAI/AAAAAAAAAAA/4iGYPGUgIdA/s100-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
           display_title : 'The Daily What',
           id : '4fa28d849a725b79c9000228',
           description : 'Hot off the Internets',
@@ -63,6 +91,13 @@ defaults: &defaults
           id : '4fa054ff88ba6b09c8000e93',
           description : 'Ideas worth spreading',
           display_thumbnail_src : 'http://i2.ytimg.com/i/AuUUnT6oDeKwE6v1NGQxug/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Minute Physics',
+          id : '4f9f3fc19a725b5b9700329b',
+          description : 'Simply put: cool physics and other sweet science.',
+          display_thumbnail_src : 'http://i1.ytimg.com/i/UHW94eEFW7hkUMVaZz4eDg/mq1.jpg?v=d69778',
           include_in: {onboarding: true}
         },
         {
@@ -94,10 +129,38 @@ defaults: &defaults
           include_in: {onboarding: true}
         },
         {
+          display_title : "Zagat",
+          id : '4fc63f699a725b14ea0014d8',
+          description : "Zagat's new channel is showing the best of the restaurant industry!",
+          display_thumbnail_src : 'https://yt3.ggpht.com/-PYfYNfHyDAc/AAAAAAAAAAI/AAAAAAAAAAA/tEEOjcZh8WI/s100-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'POPSUGAR Food',
+          id : '52f53a8159b0521819009592',
+          description : 'Delicious recipes, delightful drink concoctions... everything fun in food, wine, and beyond!',
+          display_thumbnail_src : 'https://yt3.ggpht.com/-v3jpBf46isE/AAAAAAAAAAI/AAAAAAAAAAA/i_IxYn7oSis/s100-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
           display_title : 'New York Times',
           id : '50522466b415cc5b81002080',
           description : 'Where the conversation begins',
           display_thumbnail_src : 'http://i2.ytimg.com/i/qnbDFdCpuN8CMEg0VuEBqA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Reuters',
+          id : '4f95622b9a725b72e700106b',
+          description : "Reuters tells the world's stories like no one else",
+          display_thumbnail_src : 'https://yt4.ggpht.com/-BNBn3A6nYZk/AAAAAAAAAAI/AAAAAAAAAAA/ZwJ7dbtk_H0/s100-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'Storyful',
+          id : '4f90930888ba6b0384000b02',
+          description : "Storyful provides discovery, verification and access information for the best news and viral videos.",
+          display_thumbnail_src : 'https://yt4.ggpht.com/-7JN0l8MrUcE/AAAAAAAAAAI/AAAAAAAAAAA/9SAWes7kngI/s100-c-k-no/photo.jpg',
           include_in: {onboarding: true}
         },
         {
@@ -157,6 +220,13 @@ defaults: &defaults
           include_in: {onboarding: true}
         },
         {
+          display_title : 'NASA',
+          id : '4f9b11f09a725b352f0020c4',
+          description : "NASA's mission is to pioneer the future in space exploration, scientific discovery and aeronautics research.",
+          display_thumbnail_src : 'https://yt4.ggpht.com/-D7tNppml7sw/AAAAAAAAAAI/AAAAAAAAAAA/65fuq-FHf3g/s100-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
           display_title : 'GoPro',
           id : '4f91700d88ba6b2aab000fba',
           description : "World's most versatile camera",
@@ -198,11 +268,25 @@ defaults: &defaults
           display_thumbnail_src : 'http://i3.ytimg.com/i/ziB6WaaUPEFSE2X1TNqUTg/mq1.jpg',
           include_in: {onboarding: true}
         },
-         {
+        {
           display_title : 'PBS Idea Channel',
           id : '4faabca99a725b5cd50026a2',
           description : 'Pop culture, technology and art',
           display_thumbnail_src : 'http://i4.ytimg.com/i/3LqW4ijMoENQ2Wv17ZrFJA/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'PBS Parents',
+          id : '52f53b0859b052181900a944',
+          description : 'Amazing family-friendly videos including original series and perfect playlists for kids!',
+          display_thumbnail_src : 'https://yt3.ggpht.com/-pmPnC-mIzQw/AAAAAAAAAAI/AAAAAAAAAAA/GkrItWYWh3c/s100-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'The Travel Channel',
+          id : '4fcf8ec41c1cf427770019dc',
+          description : 'Watch clips from our most popular TV shows, and learn about our hottest travel ideas and destinations.',
+          display_thumbnail_src : 'https://yt3.ggpht.com/-EaovwwmvDE4/AAAAAAAAAAI/AAAAAAAAAAA/lQbiLMGPrUQ/s100-c-k-no/photo.jpg',
           include_in: {onboarding: true}
         },
         {
@@ -217,6 +301,20 @@ defaults: &defaults
           id : '4fa1591f88ba6b78da0008b7',
           description : 'Intersection of technology, science, art, & culture',
           display_thumbnail_src : 'http://i1.ytimg.com/i/ddiUEpeqJcYeBxX1IVBKvQ/mq1.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'TechCrunch',
+          id : '4fccef549a725b7d4a005363',
+          description : 'TechCrunch is a leading technology media property, dedicated to obsessively profiling startups, and breaking tech news',
+          display_thumbnail_src : 'https://yt4.ggpht.com/-NoG7o5O9YIY/AAAAAAAAAAI/AAAAAAAAAAA/qNwBa3hKsgE/s100-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        },
+        {
+          display_title : 'The Young Turks',
+          id : '4f907b359a725b4614000704',
+          description : 'The Largest Online News Show in the World. Hosted by Cenk Uygur and Ana Kasparian.',
+          display_thumbnail_src : 'https://yt4.ggpht.com/-8EmOV6Uyan8/AAAAAAAAAAI/AAAAAAAAAAA/lsr2usyFUO0/s100-c-k-no/photo.jpg',
           include_in: {onboarding: true}
         },
         {
