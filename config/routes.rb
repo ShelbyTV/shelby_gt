@@ -63,7 +63,6 @@ ShelbyGt::Application.routes.draw do
       get 'is_token_valid' => 'user#valid_token', :on => :member
       get 'rolls/following' => 'user_metal#roll_followings', :on => :member
       get 'roll/:roll_id/following/' => 'user#roll_following', :on => :member
-      get 'rolls/postable' => 'user_metal#roll_followings', :on => :member, :defaults => { :postable => true }
       get 'rolls/personal' => 'roll#show_users_public_roll', :constraints => { :user_id => /[^\/]+/ }
       get 'rolls/personal/frames' => 'frame_metal#index_for_users_public_roll'
       get 'dashboard' => 'dashboard_entries_metal#index_for_user'

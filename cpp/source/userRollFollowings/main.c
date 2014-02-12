@@ -22,7 +22,6 @@ typedef struct {
 static struct options {
    char *userId;
    char *userNickname;
-   int postable;
    int includeFaux;
    int includeSpecial;
    int skip;
@@ -42,7 +41,6 @@ void printHelpText()
    printf("   -h --help            Print this help message\n");
    printf("   -u --user-id         User id\n");
    printf("   --user-nickname      User downcase nickname\n");
-   printf("   -p --postable        Only return postable rolls\n");
    printf("   -i --include-faux    Include faux user rolls\n");
    printf("   --include-special    Include the user's special rolls\n");
    printf("   -s --skip            Number of non-special rolls to skip before starting to output\n");
@@ -60,7 +58,6 @@ void parseUserOptions(int argc, char **argv)
          {"help",            no_argument,       0, 'h'},
          {"user-id",         required_argument, 0, 'u'},
          {"user-nickname",   required_argument, 0,   1},
-         {"postable",        no_argument,       0, 'p'},
          {"include-faux",    no_argument,       0, 'i'},
          {"include-special", no_argument,       0,   0},
          {"skip",            required_argument, 0, 's'},
@@ -85,10 +82,6 @@ void parseUserOptions(int argc, char **argv)
 
          case 1:
             options.userNickname = optarg;
-            break;
-
-         case 'p':
-            options.postable = TRUE;
             break;
 
          case 'i':
@@ -135,7 +128,6 @@ void setDefaultOptions()
 {
    options.userId = "";
    options.userNickname = "";
-   options.postable = FALSE;
    options.includeFaux = FALSE;
    options.includeSpecial = FALSE;
    options.skip = 0;
@@ -154,32 +146,10 @@ unsigned int timeSinceMS(struct timeval begin)
    return difference.tv_sec * 1000 + (difference.tv_usec / 1000);
 }
 
-int rollPostable(sobContext sob, bson_oid_t rollOid, bson *roll)
-{
-   bson_oid_t rollCreatorOid;
-   sobBsonOidField(SOB_ROLL, SOB_ROLL_CREATOR_ID, roll, &rollCreatorOid);
-
-   if (sobBsonOidEqual(rollCreatorOid, userOid)) {
-      return TRUE;
-   } else if (!sobBsonBoolField(sob, SOB_ROLL, SOB_ROLL_COLLABORATIVE, rollOid)) {
-      return FALSE;
-   } else if (sobBsonBoolField(sob, SOB_ROLL, SOB_ROLL_PUBLIC, rollOid)) {
-      return TRUE;
-   } else if (sobOidArrayFieldContainsOid(sob, SOB_ROLL_FOLLOWING_USERS, SOB_FOLLOWING_USER_USER_ID, roll, userOid)) {
-      return TRUE;
-   }
-
-   return FALSE;
-}
-
 int shouldPrintRegularRoll(sobContext sob, bson *roll)
 {
    bson_oid_t rollOid;
    sobBsonOidField(SOB_ROLL, SOB_ROLL_ID, roll, &rollOid);
-
-   if (options.postable && !rollPostable(sob, rollOid, roll)) {
-      return FALSE;
-   }
 
    int rollType = 10;
    int status = sobBsonIntField(sob, SOB_ROLL, SOB_ROLL_ROLL_TYPE, rollOid, &rollType);
@@ -330,11 +300,6 @@ void printJsonRoll(sobContext sob, mrjsonContext context, bson *roll)
                                     roll,
                                     SOB_ROLL_CREATOR_THUMBNAIL_URL,
                                     "thumbnail_url");
-
-   sobPrintArrayAttributeCountWithKey(context,
-                                      roll,
-                                      SOB_ROLL_FOLLOWING_USERS,
-                                      "following_user_count");
 
    int followedAtTime = getRollFollowedAtTime(sob, roll);
    mrjsonIntAttribute(context, "followed_at", followedAtTime);
@@ -506,7 +471,6 @@ int loadData(sobContext sob)
       SOB_ROLL_TITLE,
       SOB_ROLL_ROLL_TYPE,
       SOB_ROLL_DISCUSSION_ROLL_PARTICIPANTS,
-      SOB_ROLL_FOLLOWING_USERS,
       SOB_ROLL_SUBDOMAIN,
       SOB_ROLL_SUBDOMAIN_ACTIVE,
       SOB_ROLL_CREATOR_THUMBNAIL_URL

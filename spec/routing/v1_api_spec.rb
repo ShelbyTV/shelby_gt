@@ -103,16 +103,6 @@ describe V1::UserController do
       )
     end
 
-    it "routes for GET users rolls collaborating" do
-      { :get => "/v1/user/1/rolls/postable" }.should route_to(
-        :controller => "v1/user_metal",
-        :action => "roll_followings",
-        :format => "json",
-        :id => "1",
-        :postable => true
-      )
-    end
-
     it "route for getting validity of users fb auth token" do
       { :get => "/v1/user/1/is_token_valid" }.should route_to(
         :controller => "v1/user",
