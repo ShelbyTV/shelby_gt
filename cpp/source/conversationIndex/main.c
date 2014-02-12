@@ -194,13 +194,20 @@ void printJsonOutput(sobContext sob)
  */
 int loadData(sobContext sob)
 {
-   sobLoadAllByOidField(sob,
+   static sobField conversationFields[] = {
+      SOB_CONVERSATION_ID,
+      SOB_CONVERSATION_PUBLIC,
+      SOB_CONVERSATION_MESSAGES
+   };
+   sobLoadAllByOidFieldSpecifyFields(sob,
                         SOB_CONVERSATION,
                         SOB_CONVERSATION_VIDEO_ID,
                         options.video,
                         options.limit,
                         0,
-                        "");
+                        "",
+                        conversationFields,
+                        sizeof(conversationFields) / sizeof(sobField));
 
    return TRUE;
 }

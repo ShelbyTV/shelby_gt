@@ -314,12 +314,35 @@ void insertMongoCursorIntoObjectMap(sobContext context,
 }
 
 void sobLoadAllByOidField(sobContext context,
-                          sobType type,
-                          sobField field,
-                          bson_oid_t oid,
-                          unsigned int limit,
-                          unsigned int skip,
-                          const char *sinceIdString)
+                                       sobType type,
+                                       sobField field,
+                                       bson_oid_t oid,
+                                       unsigned int limit,
+                                       unsigned int skip,
+                                       const char *sinceIdString)
+{
+   static sobField fields[0];
+
+   sobLoadAllByOidFieldSpecifyFields(context,
+                                     type,
+                                     field,
+                                     oid,
+                                     limit,
+                                     skip,
+                                     sinceIdString,
+                                     fields,
+                                     0);
+}
+
+void sobLoadAllByOidFieldSpecifyFields(sobContext context,
+                                       sobType type,
+                                       sobField field,
+                                       bson_oid_t oid,
+                                       unsigned int limit,
+                                       unsigned int skip,
+                                       const char *sinceIdString,
+                                       sobField *fieldArray,
+                                       unsigned int numFields)
 {
    bson_oid_t sinceId;
    bson query;
@@ -351,6 +374,18 @@ void sobLoadAllByOidField(sobContext context,
    mongo_cursor_set_options(&cursor, MONGO_SLAVE_OK);
 
    mongo_cursor_set_query(&cursor, &query);
+
+   bson fields;
+   if (numFields) {
+      bson_init(&fields);
+      for (unsigned int i = 0; i < numFields; i++) {
+         sobField field = fieldArray[i];
+         bson_append_int(&fields, sobFieldDBName[field], 1);
+      }
+      bson_finish(&fields);
+      mongo_cursor_set_fields(&cursor, &fields);
+   }
+
 
    if (limit != 0) {
       mongo_cursor_set_limit(&cursor, limit);
