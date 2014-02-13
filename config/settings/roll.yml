@@ -120,7 +120,14 @@ defaults: &defaults
           description : "The world's newest authority on electronic everything.",
           display_thumbnail_src : 'https://yt3.ggpht.com/-Hb3_JDJZCaE/AAAAAAAAAAI/AAAAAAAAAAA/EpTns5VT70E/s100-c-k-no/photo.jpg',
           include_in: {onboarding: true}
-        }
+        },
+        {
+          display_title : 'Boiler Room',
+          id : '52f53e4e59b0520bca0048f1',
+          description : "The world's leading underground music show.",
+          display_thumbnail_src : 'https://yt3.ggpht.com/-b3wBbPVe2h0/AAAAAAAAAAI/AAAAAAAAAAA/84JxKhOhayo/s100-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        },
         {
           display_title : 'Reserve Channel',
           id : '5005b00e9a725b0e150178fa',
