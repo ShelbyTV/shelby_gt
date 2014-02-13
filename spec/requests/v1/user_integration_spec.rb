@@ -463,36 +463,6 @@ describe 'v1/user' do
         end
       end
 
-      context "rolls/postable" do
-        it "should only return the subset of rolls that the user can post to" do
-          public_roll = Factory.create(:roll, :creator => @u1, :collaborative => false, :roll_type => Roll::TYPES[:special_public_real_user])
-          public_roll.add_follower(@u1)
-          @u1.public_roll = public_roll
-          @u1.save
-
-          upvoted_roll = Factory.create(:roll, :creator => @u1, :collaborative => false, :roll_type => Roll::TYPES[:special_upvoted])
-          upvoted_roll.add_follower(@u1)
-          @u1.upvoted_roll = upvoted_roll
-          @u1.save
-
-          r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:special_public_real_user])
-          r1.add_follower(@u1)
-          r2 = Factory.create(:roll, :creator => Factory.create(:user), :public => false, :collaborative => true, :roll_type => Roll::TYPES[:user_public])
-          r2.add_follower(@u1)
-          r3 = Factory.create(:roll, :creator => Factory.create(:user), :public => true, :collaborative => false, :roll_type => Roll::TYPES[:user_public])
-          r3.add_follower(@u1)
-
-          @u1.save
-
-          get '/v1/user/'+@u1.id+'/rolls/postable'
-          response.body.should have_json_size(3).at_path("result")
-          parse_json(response.body)["result"][0]["id"].should == public_roll.id.to_s
-          #no longer returning hearts roll
-          parse_json(response.body)["result"][1]["id"].should == r2.id.to_s
-          parse_json(response.body)["result"][2]["id"].should == r1.id.to_s
-        end
-      end
-
       it "should return frames if they are asked for in roll followings" do
         url = 'http://url.here'
         r1 = Factory.create(:roll, :creator => @u1, :first_frame_thumbnail_url => url, :roll_type => Roll::TYPES[:user_public])
@@ -511,14 +481,13 @@ describe 'v1/user' do
         parse_json(response.body)["result"]["personal_roll_id"].should eq(@u1.public_roll_id)
       end
 
-      it "should return :creator_nickname, :creator_name, :following_user_count which are specially injected in the controller" do
+      it "should return :creator_nickname, :creator_name which are specially injected in the controller" do
         r1 = Factory.create(:roll, :creator => @u1, :roll_type => Roll::TYPES[:user_public])
         r1.add_follower(@u1)
         get '/v1/user/'+@u1.id+'/rolls/following'
         response.body.should be_json_eql(200).at_path("status")
         parse_json(response.body)["result"][0]["creator_nickname"].should == @u1.nickname
         parse_json(response.body)["result"][0]["creator_name"].should == @u1.name
-        parse_json(response.body)["result"][0]["following_user_count"].should == 1
       end
 
       context "valid_token route" do

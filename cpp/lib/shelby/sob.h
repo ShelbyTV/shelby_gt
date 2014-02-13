@@ -75,6 +75,16 @@ void sobLoadAllByOidField(sobContext context,
                           unsigned int skip,
                           const char *sinceIdString);
 
+void sobLoadAllByOidFieldSpecifyFields(sobContext context,
+                                       sobType type,
+                                       sobField field,
+                                       bson_oid_t oid,
+                                       unsigned int limit,
+                                       unsigned int skip,
+                                       const char *sinceIdString,
+                                       sobField *fieldArray,
+                                       unsigned int numFields);
+
 int sobGetBsonByOid(sobContext context,
                     sobType type,
                     bson_oid_t oid,
