@@ -103,14 +103,14 @@ module GT
     end
 
     def save_video_aggregation(video_list)
-      return "NOT SET TO WRITE TO REDIS. TO DO SO, SET: opt[:write] = true" unless @redis_client
+      # return "NOT SET TO WRITE TO REDIS. TO DO SO, SET: opt[:write] = true" unless @redis_client
 
-      video_list.each do |v|
+      # video_list.each do |v|
 
-        key = "#{Date.today.to_s}::#{@inverval}::#{v['video_id']}}"
-        @redis_client.mapped_hmset(key, v)
+      #   key = "#{Date.today.to_s}::#{@inverval}::#{v['video_id']}}"
+      #   @redis_client.mapped_hmset(key, v)
 
-      end
+      # end
 
     end
 
