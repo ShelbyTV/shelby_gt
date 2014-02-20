@@ -91,7 +91,7 @@ module GT
 
     def incorporate_video_data
 
-      @video_list.each do |v|
+      @videos.each do |v|
         if video = Video.find(v["video_id"])
           v["title"] = video.title
           v["description"] = video.description
