@@ -1,5 +1,5 @@
 defaults: &defaults
-  api_url : "http://198.101.158.13"
+  api_url : "http://audrey2.data.shelby.tv"
 
 development:
   <<: *defaults

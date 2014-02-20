@@ -14,13 +14,13 @@ module GT
     #                         videos_to_return: how many videos to return after video aggregation
     #                         cutoff: threshold of frequency of shares
     #                         limit: how many Conversations are scanned
-    #                         write:  should persist results to redis
+    #                         persist:  should persist results to redis
     #
     #
     ######################
 
     def initialize(opts={})
-      @redis_client = Redis.new(:port => Settings::Resque.redis_port) if opts[:write]
+      @persist = opts[:persist] if opts[:persist]
       @aggregation_limit = opts[:limit] ? opts[:limit] : 10000
       @video_count_cutoff = opts[:cutoff] ? opts[:cutoff] : 1000
       @videos_to_return = opts[:videos_to_return] ? opts[:videos_to_return] : 20
@@ -28,9 +28,11 @@ module GT
       # period to look over
       raise ArgumentError, "must include an interval to look back on, eg 'week' or 'day' " unless opts[:interval]
       if opts[:interval] == "week"
+        @interval = "week"
         @since_date = BSON::ObjectId.from_time(Time.now - 1.week)
         @to_date = BSON::ObjectId.from_time(Time.now)
       elsif opts[:interval] == "day"
+        @interval = "day"
         @since_date = BSON::ObjectId.from_time(Time.now - 1.day)
         @to_date = BSON::ObjectId.from_time(Time.now)
       else
@@ -87,9 +89,9 @@ module GT
 
     end
 
-    def incorporate_video_data(video_list)
+    def incorporate_video_data
 
-      video_list.each do |v|
+      @video_list.each do |v|
         if video = Video.find(v["video_id"])
           v["title"] = video.title
           v["description"] = video.description
@@ -102,15 +104,18 @@ module GT
 
     end
 
-    def save_video_aggregation(video_list)
-      # return "NOT SET TO WRITE TO REDIS. TO DO SO, SET: opt[:write] = true" unless @redis_client
+    def save_video_aggregation
+      return "NOT SET TO PERSIST DATA TO ZEDDMORE. TO DO SO, SET: opt[:persist] = true" unless @persist
 
-      # video_list.each do |v|
-
-      #   key = "#{Date.today.to_s}::#{@inverval}::#{v['video_id']}}"
-      #   @redis_client.mapped_hmset(key, v)
-
-      # end
+      @video_list.each do |v|
+        begin
+          HTTParty.post("http://zeddmore.data.shelby.tv:8080/v1/videos/#{v['video_id']}/#{@interval}", {:body => v})
+          sleep(1.0/2.0)
+        rescue Exception => e
+          puts "[FAILURE] zeddmore request failed: \n #{e.inspect}"
+          return
+        end
+      end
 
     end
 
