@@ -107,9 +107,9 @@ module GT
     def save_video_aggregation
       return "NOT SET TO PERSIST DATA TO ZEDDMORE. TO DO SO, SET: opt[:persist] = true" unless @persist
 
-      @video_list.each do |v|
+      @videos.each do |v|
         begin
-          HTTParty.post("http://zeddmore.data.shelby.tv:8080/v1/videos/#{v['video_id']}/#{@interval}", {:body => v})
+          HTTParty.post("http://zeddmore.data.shelby.tv:8080/v1/videos/#{v['video_id']}/#{@interval}", {:body => {:video => v}})
           sleep(1.0/2.0)
         rescue Exception => e
           puts "[FAILURE] zeddmore request failed: \n #{e.inspect}"
