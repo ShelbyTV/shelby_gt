@@ -1,10 +1,10 @@
 namespace :util do
 
   desc 'Harvest popular videos by some interval, defaults to week'
-  task :harvest_popular_videos => :environment do |t, interval|
+  task :harvest_popular_videos, [:interval] => :environment do |t, args|
     require 'video_popularity_harvester'
 
-    interval = interval || 'week'
+    interval = args.interval || 'week'
 
     opts = {
       :persist => true,
