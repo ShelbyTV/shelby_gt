@@ -99,12 +99,13 @@ module GT
           v["embed_url"] = video.embed_url
           v["thumbnail_url"] = video.thumbnail_url
           v["duration"] = video.duration
+          v["shelby_permalink"] = video.permalink
         end
       end
 
     end
 
-    def save_video_aggregation(interval)
+    def save_video_aggregation
       return "NOT SET TO PERSIST DATA TO ZEDDMORE. TO DO SO, SET: opt[:persist] = true" unless @persist
 
       @videos.each do |v|
