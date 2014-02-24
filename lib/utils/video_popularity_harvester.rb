@@ -100,6 +100,8 @@ module GT
           v["thumbnail_url"] = video.thumbnail_url
           v["duration"] = video.duration
           v["shelby_permalink"] = video.permalink
+          v["provider_name"] = video.provider_name
+          v["provider_id"] = video.provider_id
         end
       end
 
