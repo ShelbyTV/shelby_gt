@@ -10,8 +10,8 @@ namespace :util do
       :persist => true,
       :limit => 5000000,
       :interval => interval,
-      :cutoff => 50,
-      :videos_to_return => 20
+      :cutoff => 30,
+      :videos_to_return => 50
     }
 
     p = GT::VideoPopularityHarvester.new(opts)
