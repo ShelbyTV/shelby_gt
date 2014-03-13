@@ -222,7 +222,7 @@ defaults: &defaults
           id: "4f95a19988ba6b25ae021141",
           description: "Never Stop Exploring. Athletes, expeditions, events, products, sustainability efforts, and more.",
           display_thumbnail_src: 'http://i1.ytimg.com/i/NfWDbERpf34FsSWIpqGD0Q/mq1.jpg',
-          creator_id: "4f95a19988ba6b25ae02113f',
+          creator_id: "4f95a19988ba6b25ae02113f",
           include_in: {onboarding: true}
         },
         {
