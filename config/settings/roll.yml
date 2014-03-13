@@ -14,6 +14,7 @@ defaults: &defaults
           id: "4f901bd8b415cc466a0008ec",
           display_thumbnail_src: 'http://s3.amazonaws.com/shelby-gt-user-avatars/sq48x48/4d877a47f6db2414e2000001?1375389005000',
           description : 'Discover videos the Shelby.tv staff loves',
+          creator_id: "4d877a47f6db2414e2000001",
           include_in: {onboarding: true}
         },
         {
@@ -21,6 +22,7 @@ defaults: &defaults
           id: "4f9577c488ba6b15ec0084c7",
           display_thumbnail_src: 'http://i1.ytimg.com/i/pko_-a4wgz2u_DgDgd9fqA/mq1.jpg',
           description : 'Social content on the web',
+          creator_id: "4f9577c488ba6b15ec0084c5",
           include_in: {onboarding: true}
         },
         {
@@ -28,6 +30,7 @@ defaults: &defaults
           id : '4f907a9b9a725b46010005c7',
           description : 'Exploring uncomfortable truths',
           display_thumbnail_src : 'http://i3.ytimg.com/i/n8zNIfYAQNdrFRrr8oibKw/mq1.jpg',
+          creator_id: "4f907a9a9a725b46010005c5",
           include_in: {onboarding: true}
         },
         {
@@ -35,6 +38,7 @@ defaults: &defaults
           id : '4fbbc4211c1cf42b91002eac',
           description : 'Tech in music, art, film, and design',
           display_thumbnail_src : 'http://i4.ytimg.com/i/_NaA2HkWDT6dliWVcvnkuQ/mq1.jpg',
+          creator_id: "4fbbc4269a725b2f49002a91",
           include_in: {onboarding: true}
         },
         {
@@ -42,6 +46,7 @@ defaults: &defaults
           id : '5321c63959b0522047000007',
           description : 'The Tonight Show Starring Jimmy Fallon features hilarious highlights from the show.',
           display_thumbnail_src : 'https://yt3.ggpht.com/-x3CU1CXklQI/AAAAAAAAAAI/AAAAAAAAAAA/jPQ9GJeU53g/s200-c-k-no/photo.jpg',
+          creator_id: "5321c63559b0522047000001",
           include_in: {onboarding: true}
         },
         {
@@ -49,6 +54,7 @@ defaults: &defaults
           id : '4fa41c4f88ba6b0d4e00130f',
           description : 'Unheard interviews with American icons',
           display_thumbnail_src : 'http://i2.ytimg.com/i/9pO2YNforRbdwKOh09djKA/mq1.jpg',
+          creator_id: "4fa41c4f88ba6b0d4e00130d",
           include_in: {onboarding: true}
         },
         {
@@ -56,6 +62,7 @@ defaults: &defaults
           id : '4f958e049a725b0dba014577',
           description : 'All your favorite moments from all your favorite movies!',
           display_thumbnail_src : 'https://yt3.ggpht.com/-eUygaxpkDso/AAAAAAAAAAI/AAAAAAAAAAA/sgWUW78eZsA/s100-c-k-no/photo.jpg',
+          creator_id: "4f958e049a725b0dba014575",
           include_in: {onboarding: true}
         },
         {
@@ -63,6 +70,7 @@ defaults: &defaults
           id : '52f53bff59b0520bca002ecf',
           description : '50 years worth of astounding, entertaining, thought-provoking and educational natural history content',
           display_thumbnail_src : 'https://yt3.ggpht.com/-dVL3DQ8KQSE/AAAAAAAAAAI/AAAAAAAAAAA/gGjvUa4oKd0/s100-c-k-no/photo.jpg',
+          creator_id: "52f53bfb59b0520bca002ec9",
           include_in: {onboarding: true}
         },
         {
@@ -70,6 +78,7 @@ defaults: &defaults
           id : '4fa28f7c88ba6b5fda000af0',
           description : 'The latest tech news, unbiased reviews, making tech products easy to find, understand and use.',
           display_thumbnail_src : 'https://yt3.ggpht.com/-YRfuYcmY5sA/AAAAAAAAAAI/AAAAAAAAAAA/4XUYyNrEcTk/s100-c-k-no/photo.jpg',
+          creator_id: "4fa28f7c88ba6b5fda000aee",
           include_in: {onboarding: true}
         },
         {
@@ -77,6 +86,7 @@ defaults: &defaults
           id : '52f53bca59b052181900bd4a',
           description : 'Original video chronicling our unique viewpoint on everything from pop culture to politics, food to fashion.',
           display_thumbnail_src : 'https://yt3.ggpht.com/-LjvhlV7SmnE/AAAAAAAAAAI/AAAAAAAAAAA/4iGYPGUgIdA/s100-c-k-no/photo.jpg',
+          creator_id: "52f53bc659b052181900bd44",
           include_in: {onboarding: true}
         },
         {
@@ -84,6 +94,7 @@ defaults: &defaults
           id : '4fa28d849a725b79c9000228',
           description : 'Hot off the Internets',
           display_thumbnail_src : 'http://24.media.tumblr.com/avatar_72e68a2dede0_512.png',
+          creator_id: "4fa28d849a725b79c9000226",
           include_in: {onboarding: true}
         },
         {
@@ -91,6 +102,7 @@ defaults: &defaults
           id : '4fc532169a725b2999000354',
           description : "America's finest news satire",
           display_thumbnail_src : 'http://i3.ytimg.com/i/fAOh2t5DpxVrgS9NQKjC7A/mq1.jpg',
+          creator_id: "4fc532169a725b2999000352",
           include_in: {onboarding: true}
         },
         {
@@ -98,6 +110,7 @@ defaults: &defaults
           id : '4fa054ff88ba6b09c8000e93',
           description : 'Ideas worth spreading',
           display_thumbnail_src : 'http://i2.ytimg.com/i/AuUUnT6oDeKwE6v1NGQxug/mq1.jpg',
+          creator_id: "4fa054ff88ba6b09c8000e91",
           include_in: {onboarding: true}
         },
         {
@@ -105,6 +118,7 @@ defaults: &defaults
           id : '4f9f3fc19a725b5b9700329b',
           description : 'Simply put: cool physics and other sweet science.',
           display_thumbnail_src : 'http://i1.ytimg.com/i/UHW94eEFW7hkUMVaZz4eDg/mq1.jpg?v=d69778',
+          creator_id: "4f9f3fc19a725b5b97003299",
           include_in: {onboarding: true}
         },
         {
@@ -112,6 +126,7 @@ defaults: &defaults
           id : '519baa7eb415cc0191000007',
           description : 'Thinkers, innovators and outcasts',
           display_thumbnail_src : 'http://i2.ytimg.com/i/E560wL2ftkMrQL40LYFUVg/mq1.jpg',
+          creator_id: "519baa7db415cc0191000001",
           include_in: {onboarding: true}
         },
         {
@@ -119,6 +134,7 @@ defaults: &defaults
           id : '519bab29b415cc0191000077',
           description : "JAY Z's digital experience",
           display_thumbnail_src : 'http://i3.ytimg.com/i/N-sc1xJr-QQNj_uNIM9wTA/mq1.jpg',
+          creator_id: "519bab28b415cc0191000031",
           include_in: {onboarding: true}
         },
         {
@@ -126,6 +142,7 @@ defaults: &defaults
           id : '52fcd7be59b0522a12000007',
           description : "The world's newest authority on electronic everything.",
           display_thumbnail_src : 'https://yt3.ggpht.com/-Hb3_JDJZCaE/AAAAAAAAAAI/AAAAAAAAAAA/EpTns5VT70E/s100-c-k-no/photo.jpg',
+          creator_id: "52fcd7ba59b0522a12000001",
           include_in: {onboarding: true}
         },
         {
@@ -133,6 +150,7 @@ defaults: &defaults
           id : '52f53e4e59b0520bca0048f1',
           description : "The world's leading underground music show.",
           display_thumbnail_src : 'https://yt3.ggpht.com/-b3wBbPVe2h0/AAAAAAAAAAI/AAAAAAAAAAA/84JxKhOhayo/s100-c-k-no/photo.jpg',
+          creator_id: "52f53e4a59b0520bca0048eb",
           include_in: {onboarding: true}
         },
         {
@@ -140,6 +158,7 @@ defaults: &defaults
           id : '5005b00e9a725b0e150178fa',
           description : 'Extraordinary people and places',
           display_thumbnail_src : 'http://i2.ytimg.com/i/-LE7UowYotavwgFWKfN-nQ/mq1.jpg',
+          creator_id: "5005b00e9a725b0e150178f8",
           include_in: {onboarding: true}
         },
         {
@@ -147,6 +166,7 @@ defaults: &defaults
           id : '4f9d9c1a88ba6b56aa00150f',
           description : 'Great recipes',
           display_thumbnail_src : 'http://i1.ytimg.com/i/pSgg_ECBj25s9moCDfSTsA/mq1.jpg',
+          creator_id: "4f9d9c1a88ba6b56aa00150d",
           include_in: {onboarding: true}
         },
         {
@@ -154,6 +174,7 @@ defaults: &defaults
           id : '4fc63f699a725b14ea0014d8',
           description : "Zagat's new channel is showing the best of the restaurant industry!",
           display_thumbnail_src : 'https://yt3.ggpht.com/-PYfYNfHyDAc/AAAAAAAAAAI/AAAAAAAAAAA/tEEOjcZh8WI/s100-c-k-no/photo.jpg',
+          creator_id: "4fc63f699a725b14ea0014d6",
           include_in: {onboarding: true}
         },
         {
@@ -161,6 +182,7 @@ defaults: &defaults
           id : '52f53a8159b0521819009592',
           description : 'Delicious recipes, delightful drink concoctions... everything fun in food, wine, and beyond!',
           display_thumbnail_src : 'https://yt3.ggpht.com/-v3jpBf46isE/AAAAAAAAAAI/AAAAAAAAAAA/i_IxYn7oSis/s100-c-k-no/photo.jpg',
+          creator_id: "52f53a7d59b052181900958c",
           include_in: {onboarding: true}
         },
         {
@@ -168,6 +190,7 @@ defaults: &defaults
           id : '50522466b415cc5b81002080',
           description : 'Where the conversation begins',
           display_thumbnail_src : 'http://i2.ytimg.com/i/qnbDFdCpuN8CMEg0VuEBqA/mq1.jpg',
+          creator_id: "50522466b415cc5b8100207d",
           include_in: {onboarding: true}
         },
         {
@@ -175,6 +198,7 @@ defaults: &defaults
           id : '4f95622b9a725b72e700106b',
           description : "Reuters tells the world's stories like no one else",
           display_thumbnail_src : 'https://yt4.ggpht.com/-BNBn3A6nYZk/AAAAAAAAAAI/AAAAAAAAAAA/ZwJ7dbtk_H0/s100-c-k-no/photo.jpg',
+          creator_id: "4f95622b9a725b72e7001069",
           include_in: {onboarding: true}
         },
         {
@@ -182,6 +206,7 @@ defaults: &defaults
           id : '4f90930888ba6b0384000b02',
           description : "Storyful provides discovery, verification and access information for the best news and viral videos.",
           display_thumbnail_src : 'https://yt4.ggpht.com/-7JN0l8MrUcE/AAAAAAAAAAI/AAAAAAAAAAA/9SAWes7kngI/s100-c-k-no/photo.jpg',
+          creator_id: "4f90930688ba6b0384000b00",
           include_in: {onboarding: true}
         },
         {
@@ -189,6 +214,7 @@ defaults: &defaults
           id: '4f92e06b9a725b23fb000b8a',
           description: 'Watch news video, sports commentary, local and foreign reporting from The Washington Post',
           display_thumbnail_src: 'http://i1.ytimg.com/i/Hd62-u_v4DvJ8TCFtpi4GA/mq1.jpg',
+          creator_id: "4f92e06b9a725b23fb000b88",
           include_in: {onboarding: true}
         },
         {
@@ -196,6 +222,7 @@ defaults: &defaults
           id: "4f95a19988ba6b25ae021141",
           description: "Never Stop Exploring. Athletes, expeditions, events, products, sustainability efforts, and more.",
           display_thumbnail_src: 'http://i1.ytimg.com/i/NfWDbERpf34FsSWIpqGD0Q/mq1.jpg',
+          creator_id: "4f95a19988ba6b25ae02113f',
           include_in: {onboarding: true}
         },
         {
@@ -203,6 +230,7 @@ defaults: &defaults
           id : '519bac7cb415cc01910000af',
           description : 'Look sharp + live smart',
           display_thumbnail_src : 'https://pbs.twimg.com/profile_images/378800000731084703/c849f0ec489a56d302bd1c6d2352812b.jpeg',
+          creator_id: "519bac7cb415cc01910000a9",
           include_in: {onboarding: true}
         },
         {
@@ -210,6 +238,7 @@ defaults: &defaults
           id : '4fa062869a725b0c2c0010fc',
           description : 'Defining the culture of fashion',
           display_thumbnail_src : 'http://i3.ytimg.com/i/RXiA3h1no_PFkb1JCP0yMA/mq1.jpg',
+          creator_id: "4fa062869a725b0c2c0010fa",
           include_in: {onboarding: true}
         },
         {
@@ -217,6 +246,7 @@ defaults: &defaults
           id : '4fa3e6309a725b3689001792',
           description : 'Essential guide to indie music',
           display_thumbnail_src : 'http://i4.ytimg.com/i/7kI8WjpCfFoMSNDuRh_4lA/mq1.jpg',
+          creator_id: "4fa3e5f388ba6b0eea00117c",
           include_in: {onboarding: true}
         },
         {
@@ -224,6 +254,7 @@ defaults: &defaults
           id : '50951b06b415cc567800aa16',
           description : 'High-quality laughs',
           display_thumbnail_src : 'http://i3.ytimg.com/i/NVBYBxWj9dMHqKEl_V8HBQ/mq1.jpg',
+          creator_id: "50951b06b415cc567800aa15",
           include_in: {onboarding: true}
         },
         {
@@ -231,6 +262,7 @@ defaults: &defaults
           id : '519bada3b415cc01910000e5',
           description : 'Sports and pop culture',
           display_thumbnail_src : 'http://i4.ytimg.com/i/wLr_DYKR8aS0k4r8bB5I5Q/mq1.jpg',
+          creator_id: "519bada3b415cc01910000df",
           include_in: {onboarding: true}
         },
         {
@@ -238,6 +270,7 @@ defaults: &defaults
           id : '4f987a5e9a725b032b002f13',
           description : 'Inside scoop on videogames',
           display_thumbnail_src : 'https://lh4.googleusercontent.com/-CUStYqbZjKk/AAAAAAAAAAI/AAAAAAAAAAA/-WVBoj_7FTs/s100-c-k/photo.jpg',
+          creator_id: "4f987a5e9a725b032b002f11",
           include_in: {onboarding: true}
         },
         {
@@ -245,6 +278,7 @@ defaults: &defaults
           id : '4f9b11f09a725b352f0020c4',
           description : "NASA's mission is to pioneer the future in space exploration, scientific discovery and aeronautics research.",
           display_thumbnail_src : 'https://yt4.ggpht.com/-D7tNppml7sw/AAAAAAAAAAI/AAAAAAAAAAA/65fuq-FHf3g/s100-c-k-no/photo.jpg',
+          creator_id: "4f9b11f09a725b352f0020c2",
           include_in: {onboarding: true}
         },
         {
@@ -252,6 +286,7 @@ defaults: &defaults
           id : '4f91700d88ba6b2aab000fba',
           description : "World's most versatile camera",
           display_thumbnail_src : 'http://i2.ytimg.com/i/qhnX4jA0A5paNd1v-zEysw/mq1.jpg',
+          creator_id: "4f91700c88ba6b2aab000fb8",
           include_in: {onboarding: true}
         },
         {
@@ -259,6 +294,7 @@ defaults: &defaults
           id : '4fb413bb9a725b650900195a',
           description : "Prepare for maximum 'stoke factor'",
           display_thumbnail_src : 'http://i3.ytimg.com/i/blfuW_4rakIf2h6aqANefA/mq1.jpg',
+          creator_id: "4fb413bb9a725b6509001958",
           include_in: {onboarding: true}
         },
         {
@@ -266,6 +302,7 @@ defaults: &defaults
           id : '4f987e9188ba6b58500122da',
           description : 'Intersection of Surf, Skate, Snow, BMX, Ski & Moto',
           display_thumbnail_src : 'https://lh6.googleusercontent.com/-hG8LNuSwl5c/AAAAAAAAAAI/AAAAAAAAAAA/ZD0mnHsVHX8/s100-c-k/photo.jpg',
+          creator_id: "4f987e9188ba6b58500122d8",
           include_in: {onboarding: true}
         },
         {
@@ -273,6 +310,7 @@ defaults: &defaults
           id : '4f9ee11b9a725b6605001713',
           description: '22 skateboarding shows',
           display_thumbnail_src : 'https://lh5.googleusercontent.com/-oCkEPfbsgm8/AAAAAAAAAAI/AAAAAAAAAAA/lfSnlX_J83M/s100-c-k/photo.jpg',
+          creator_id: "4f9ee11b9a725b6605001711",
           include_in: {onboarding: true}
         },
         {
@@ -280,6 +318,7 @@ defaults: &defaults
           id : '4f99e5069a725b1c7501c038',
           description : 'The culture of cars',
           display_thumbnail_src : 'http://i2.ytimg.com/i/5rBpVgv83gYPZ593XwQUsA/mq1.jpg',
+          creator_id: "4f99e5069a725b1c7501c036",
           include_in: {onboarding: true}
         },
         {
@@ -287,6 +326,7 @@ defaults: &defaults
           id : '512d1f15b415cc5d8c0001cf',
           description : 'Ski and snowboard',
           display_thumbnail_src : 'http://i3.ytimg.com/i/ziB6WaaUPEFSE2X1TNqUTg/mq1.jpg',
+          creator_id: "512d1f14b415cc5d8c0001c9",
           include_in: {onboarding: true}
         },
         {
@@ -294,6 +334,7 @@ defaults: &defaults
           id : '4faabca99a725b5cd50026a2',
           description : 'Pop culture, technology and art',
           display_thumbnail_src : 'http://i4.ytimg.com/i/3LqW4ijMoENQ2Wv17ZrFJA/mq1.jpg',
+          creator_id: "4faabca99a725b5cd50026a0",
           include_in: {onboarding: true}
         },
         {
@@ -301,6 +342,7 @@ defaults: &defaults
           id : '52f53b0859b052181900a944',
           description : 'Amazing family-friendly videos including original series and perfect playlists for kids!',
           display_thumbnail_src : 'https://yt3.ggpht.com/-pmPnC-mIzQw/AAAAAAAAAAI/AAAAAAAAAAA/GkrItWYWh3c/s100-c-k-no/photo.jpg',
+          creator_id: "52f53b0359b052181900a93e",
           include_in: {onboarding: true}
         },
         {
@@ -308,6 +350,7 @@ defaults: &defaults
           id : '4fcf8ec41c1cf427770019dc',
           description : 'Watch clips from our most popular TV shows, and learn about our hottest travel ideas and destinations.',
           display_thumbnail_src : 'https://yt3.ggpht.com/-EaovwwmvDE4/AAAAAAAAAAI/AAAAAAAAAAA/lQbiLMGPrUQ/s100-c-k-no/photo.jpg',
+          creator_id: "4fcf8ec41c1cf427770019da",
           include_in: {onboarding: true}
         },
         {
@@ -315,6 +358,7 @@ defaults: &defaults
           id : '4f9a08909a725b43ad00f798',
           description : 'Intersection of technology with all else',
           display_thumbnail_src : 'http://i3.ytimg.com/i/ftwRNsjfRo08xYE31tkiyw/mq1.jpg',
+          creator_id: "4f9a088f9a725b43ad00f796",
           include_in: {onboarding: true}
         },
         {
@@ -322,6 +366,7 @@ defaults: &defaults
           id : '4fa1591f88ba6b78da0008b7',
           description : 'Intersection of technology, science, art, & culture',
           display_thumbnail_src : 'http://i1.ytimg.com/i/ddiUEpeqJcYeBxX1IVBKvQ/mq1.jpg',
+          creator_id: "4fa1595b9a725b062f000f8e",
           include_in: {onboarding: true}
         },
         {
@@ -329,6 +374,7 @@ defaults: &defaults
           id : '4fccef549a725b7d4a005363',
           description : 'TechCrunch is a leading technology media property, dedicated to obsessively profiling startups, and breaking tech news',
           display_thumbnail_src : 'https://yt4.ggpht.com/-NoG7o5O9YIY/AAAAAAAAAAI/AAAAAAAAAAA/qNwBa3hKsgE/s100-c-k-no/photo.jpg',
+          creator_id: "4fccef549a725b7d4a005361",
           include_in: {onboarding: true}
         },
         {
@@ -336,6 +382,7 @@ defaults: &defaults
           id : '4f907b359a725b4614000704',
           description : 'The Largest Online News Show in the World. Hosted by Cenk Uygur and Ana Kasparian.',
           display_thumbnail_src : 'https://yt4.ggpht.com/-8EmOV6Uyan8/AAAAAAAAAAI/AAAAAAAAAAA/lsr2usyFUO0/s100-c-k-no/photo.jpg',
+          creator_id: "4f907b109a725b45f10006e9",
           include_in: {onboarding: true}
         },
         {
@@ -343,6 +390,7 @@ defaults: &defaults
           id : '4f95f29f88ba6b72c2004aed',
           description : 'Six awesome courses in from awesome channel',
           display_thumbnail_src : 'http://i1.ytimg.com/i/X6b17PVsYBQ0ip5gyeme-Q/mq1.jpg',
+          creator_id: "4f95f29f88ba6b72c2004aeb",
           include_in: {onboarding: true}
         },
         {
@@ -350,6 +398,7 @@ defaults: &defaults
           id : '4f9731be88ba6b5309025c59',
           description : 'Science news and history',
           display_thumbnail_src : 'http://i3.ytimg.com/i/ZYTClx2T1of7BRZ86-8fow/mq1.jpg',
+          creator_id: "4f9731be88ba6b5309025c57",
           include_in: {onboarding: true}
         },
         {
@@ -357,6 +406,7 @@ defaults: &defaults
           id: "4fa2931f88ba6b68b6000ba9",
           description: 'Can you tell me how to get to...',
           display_thumbnail_src: "http://i1.ytimg.com/i/oookXUzPciGrEZEXmh4Jjg/mq1.jpg",
+          creator_id: "4fa2931f88ba6b68b6000ba7",
           include_in: {onboarding: true}
         },
        {
@@ -364,6 +414,7 @@ defaults: &defaults
         id: "4fa39bd89a725b1f920008f3",
         description: "Changing education for the better by providing a free world-class education for anyone anywhere",
         display_thumbnail_src: "http://i1.ytimg.com/i/4a-Gbdw7vOaccHmFo40b9g/mq1.jpg",
+        creator_id: "4fa39bd89a725b1f920008f1",
         include_in: {onboarding: true}
       },
       {
@@ -371,6 +422,7 @@ defaults: &defaults
         id: "4f9009d9b415cc466a000466",
         description: "Funny Videos, Funny Pictures, Funny Links!",
         display_thumbnail_src: "http://i1.ytimg.com/i/PDXXXJj9nax0fr0Wfc048g/mq1.jpg",
+        creator_id: "4f9009d9b415cc466a000464",
         include_in: {onboarding: true}
       },
       {
@@ -378,6 +430,7 @@ defaults: &defaults
         id: "4fb6344d9a725b2d6a0011b0",
         description: "Smarthistory is the art history part of Khan Academy",
         display_thumbnail_src: "http://i1.ytimg.com/i/3R-xanNgtoa8b7gpVexVlA/mq1.jpg?v=4f79d422",
+        creator_id: "4fb6344d9a725b2d6a0011ae",
         include_in: {onboarding: true}
       },
       {
@@ -385,6 +438,7 @@ defaults: &defaults
         id: "4fa0a50a88ba6b448f000dd4",
         description: "Music Television, and more of course",
         display_thumbnail_src: "http://i1.ytimg.com/i/xAICW_LdkfFYwTqTHHE0vg/mq1.jpg",
+        creator_id: "4fa0a50a88ba6b461f0006df",
         include_in: {onboarding: true}
       },
       {
@@ -392,6 +446,7 @@ defaults: &defaults
         id: "4f907d3f9a725b45e50009ad",
         description: "SHOWS + POP CULTURE + MUSIC + CELEBRITY",
         display_thumbnail_src: "http://i1.ytimg.com/i/vn-HVrAGYEKsVx6gW3MeNQ/mq1.jpg",
+        creator_id: "4f907d3d9a725b45e50009ab",
         include_in: {onboarding: true}
       },
       {
@@ -399,6 +454,7 @@ defaults: &defaults
         id: "4f957feb88ba6b17c100e88c",
         description: "SPIKE, the ultimate destination for men",
         display_thumbnail_src: "https://lh4.googleusercontent.com/-f4hkwQxHAGQ/AAAAAAAAAAI/AAAAAAAAAAA/tWyYCuj4eP8/s100-c-k/photo.jpg",
+        creator_id: "4f957feb88ba6b17c100e88a",
         include_in: {onboarding: true}
       },
       {
@@ -406,6 +462,7 @@ defaults: &defaults
         id: "4f95c8ec88ba6b4d7e0138e9",
         description: "The funniest stuff on the planet.",
         display_thumbnail_src: "https://lh3.googleusercontent.com/-ios1OK1LQyc/AAAAAAAAAAI/AAAAAAAAAAA/1lJALaYer2c/s100-c-k/photo.jpg",
+        creator_id: "4f95c8ec88ba6b4d7e0138e7",
         include_in: {onboarding: true}
       },
       {
@@ -413,6 +470,7 @@ defaults: &defaults
         id: "52419d90b415cc3493000007",
         description: "The number one video entertainment network for gamers",
         display_thumbnail_src: "https://lh5.googleusercontent.com/-pymaumvxDsA/AAAAAAAAAAI/AAAAAAAAAAA/3Br0EbtsPDU/s100-c-k/photo.jpg",
+        creator_id: "52419d8fb415cc3493000001",
         include_in: {onboarding: true}
       },
       {
@@ -420,6 +478,7 @@ defaults: &defaults
         id: "4f92e08f9a725b23ec001068",
         description: "We make your dreams come true... and then we eat them.",
         display_thumbnail_src: "https://lh6.googleusercontent.com/-wsUurA2UA6Q/AAAAAAAAAAI/AAAAAAAAAAA/mYrc7qkwqbw/s100-c-k/photo.jpg",
+        creator_id: "4f92e08f9a725b23ec001066",
         include_in: {onboarding: true}
       },
       {
@@ -427,6 +486,7 @@ defaults: &defaults
         id: "512d1e55b415cc5d8c00013f",
         description: "Making science more accessible to better understand the world",
         display_thumbnail_src: "https://lh4.googleusercontent.com/-_vUbB-8EGHw/AAAAAAAAAAI/AAAAAAAAAAA/Q3iieA7QFc8/s48-c-k/photo.jpg",
+        creator_id: "512d1e4ab415cc5d8c000139",
         include_in: {onboarding: true}
       },
       {
@@ -434,6 +494,7 @@ defaults: &defaults
         id: "4f95f25488ba6b70ed0080e3",
         description: "Build the best product, cause no unnecessary harm, use business to inspire.",
         display_thumbnail_src: "https://lh4.googleusercontent.com/-s3AUNZ0SZzo/AAAAAAAAAAI/AAAAAAAAAAA/wX0iy0H2YYo/s100-c-k/photo.jpg",
+        creator_id: "4f95f28d9a725b4c9e01bd85",
         include_in: {onboarding: true}
       },
       {
@@ -441,6 +502,7 @@ defaults: &defaults
         id: "4fc64bfd9a725b24af0014db",
         description: "The latest scoop on celebs, fashion, beauty, sex & relationships and health news",
         display_thumbnail_src: "https://lh6.googleusercontent.com/-rgrooeRabA4/AAAAAAAAAAI/AAAAAAAAAAA/KqSexgQLt4E/s100-c-k/photo.jpg",
+        creator_id: "4fc64bfd9a725b24af0014d9",
         include_in: {onboarding: true}
       },
       {
@@ -448,6 +510,7 @@ defaults: &defaults
         id: "50fd9b11b415cc6ab503e3ce",
         description: "Seriously, there is secret stuff in here.",
         display_thumbnail_src: "http://s3.amazonaws.com/shelby-gt-user-avatars/sq192x192/50fd9b10b415cc6ab503e3c8",
+        creator_id: "50fd9b10b415cc6ab503e3c8",
         include_in: {onboarding: true}
       }
       ]
