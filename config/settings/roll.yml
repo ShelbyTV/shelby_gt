@@ -38,6 +38,13 @@ defaults: &defaults
           include_in: {onboarding: true}
         },
         {
+          display_title : 'The Tonight Show starring Jimmy Fallon',
+          id : '5321c63959b0522047000007',
+          description : 'The Tonight Show Starring Jimmy Fallon features hilarious highlights from the show.',
+          display_thumbnail_src : 'https://yt3.ggpht.com/-x3CU1CXklQI/AAAAAAAAAAI/AAAAAAAAAAA/jPQ9GJeU53g/s200-c-k-no/photo.jpg',
+          include_in: {onboarding: true}
+        }
+        {
           display_title : 'Blank on Blank',
           id : '4fa41c4f88ba6b0d4e00130f',
           description : 'Unheard interviews with American icons',
