@@ -362,6 +362,14 @@ defaults: &defaults
           include_in: {onboarding: true}
         },
         {
+          display_title: 'Mashable',
+          id: '4f916a7b88ba6b26ae0001c4',
+          description: "Mashable is dedicated to news, information and resources for the connected generation.",
+          display_thumbnail_src: 'https://yt3.ggpht.com/-QN_50PuVBvA/AAAAAAAAAAI/AAAAAAAAAAA/BTltwiK9xLg/s100-c-k-no/photo.jpg',
+          creator_id: '4f916a7b88ba6b26ae0001c2',
+          include_in: {onboarding: true}
+        },
+        {
           display_title : 'The Verge',
           id : '4fa1591f88ba6b78da0008b7',
           description : 'Intersection of technology, science, art, & culture',
