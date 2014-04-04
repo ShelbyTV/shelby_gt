@@ -43,7 +43,7 @@ defaults: &defaults
           active: true,
           day: 5,
           time: 1600,
-          message: "%@, %@, and %@ shared videos with you.  Nice!"
+          message: "%@, %@, and %@ shared videos with you. Nice!"
         },
         {
           name: "F",
@@ -51,7 +51,7 @@ defaults: &defaults
           active: true,
           day: 5,
           time: 1600,
-          message: "It's Throwback Thursday! New videos from %@ are ready for you to watch."
+          message: "Fresh new videos are hot of the internet and ready for you to watch."
         },
         {
           name: "G",
@@ -59,7 +59,7 @@ defaults: &defaults
           active: true,
           day: 1,
           time: 1000,
-          message: "%@, %@, and %@ shared videos with you.  Awesome!"
+          message: "It's Sunday morning! %@, %@, and %@ shared videos with you. Watch now?"
         },
         {
           name: "H",
@@ -67,7 +67,7 @@ defaults: &defaults
           active: true,
           day: 1,
           time: 1000,
-          message: "Sunday morning Shelby is ready featuring new videos from %@!"
+          message: "Happy Sunday! New recommended videos are ready to watch!"
         }
       ]
     }
