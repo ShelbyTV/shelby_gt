@@ -94,10 +94,8 @@ class V1::UserController < ApplicationController
       user_options = {}
     end
     if ((params[:generate_temporary_nickname_and_password] && params[:user]) || params[:anonymous])
-      self.class.trace_execution_scoped(['Custom/user_create/generate_temporary_password_and_nickname']) do
-        user_options[:nickname] = GT::UserManager.generate_temporary_nickname
-        user_options[:password] = GT::UserManager.generate_temporary_password
-      end
+      user_options[:nickname] = GT::UserManager.generate_temporary_nickname
+      user_options[:password] = GT::UserManager.generate_temporary_password
     end
 
     self.class.trace_execution_scoped(['Custom/user_create/create_user']) do
@@ -116,9 +114,7 @@ class V1::UserController < ApplicationController
           @status = 200
           @user.remember_me!(true)
           set_common_cookie(@user, form_authenticity_token)
-          self.class.trace_execution_scoped(['Custom/user_create/ensure_authentication_token']) do
-            @user.ensure_authentication_token!
-          end
+          @user.ensure_authentication_token!
           render 'v1/user/show'
         end
         format.html do

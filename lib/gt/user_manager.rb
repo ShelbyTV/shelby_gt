@@ -8,6 +8,8 @@ require 'api_clients/twitter_info_getter'
 require 'api_clients/facebook_info_getter'
 require 'facebook_friend_ranker'
 
+require 'new_relic/agent/method_tracer'
+
 
 # This is the one and only place where Users are created.
 #
@@ -16,6 +18,8 @@ require 'facebook_friend_ranker'
 # REFACTOR: move this lib into ./user
 module GT
   class UserManager
+
+    extend NewRelic::Agent::MethodTracer
 
     # Creates a real User on signup
     def self.create_new_user_from_omniauth(omniauth)
@@ -57,11 +61,15 @@ module GT
 
     # Creats a real User on signup w/ email, password
     def self.create_new_user_from_params(params)
-      user = build_new_user_from_params(params)
+      self.class.trace_execution_scoped(['Custom/user_manager/build']) do
+        user = build_new_user_from_params(params)
+      end
 
       if user.valid?
         begin
-          user.save(:safe => true)
+          self.class.trace_execution_scoped(['Custom/user_manager/save']) do
+            user.save(:safe => true)
+          end
         rescue Mongo::OperationFailure => mongo_err
           # unique key failure due to duplicate
           StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['error'])
@@ -76,12 +84,16 @@ module GT
         end
 
         # Need to ensure special rolls after saving user b/c of the way add_follower works
-        user.gt_enable!
+        self.class.trace_execution_scoped(['Custom/user_manager/gt_enable']) do
+          user.gt_enable!
+        end
         #additional meta-data for user's public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
 
-        # All new users follow shelby's roll
-        follow_shelby_roll(user)
+        self.class.trace_execution_scoped(['Custom/user_manager/follow_shelby_roll']) do
+          # All new users follow shelby's roll
+          follow_shelby_roll(user)
+        end
 
         if params[:anonymous]
           StatsManager::StatsD.increment(Settings::StatsConstants.user['new']['anonymous'])
@@ -646,8 +658,12 @@ module GT
 
       def self.follow_shelby_roll(u)
         r = Roll.find(Settings::Roll.shelby_roll_id)
-        r.add_follower(u, false)
-        GT::Framer.backfill_dashboard_entries(u, r, 30, {:async_dashboard_entries => true})
+        self.class.trace_execution_scoped(['Custom/user_manager/add_follower']) do
+          r.add_follower(u, false)
+        end
+        self.class.trace_execution_scoped(['Custom/user_manager/backfill_dashboard_entries']) do
+          GT::Framer.backfill_dashboard_entries(u, r, 30, {:async_dashboard_entries => true})
+        end
       end
   end
 end
