@@ -3,6 +3,7 @@ require 'user_stats_manager'
 require 'event_tracking'
 require "framer"
 require "predator_manager"
+require 'new_relic/agent/method_tracer'
 
 class V1::UserController < ApplicationController
 
@@ -93,10 +94,15 @@ class V1::UserController < ApplicationController
       user_options = {}
     end
     if ((params[:generate_temporary_nickname_and_password] && params[:user]) || params[:anonymous])
-      user_options[:nickname] = GT::UserManager.generate_temporary_nickname
-      user_options[:password] = GT::UserManager.generate_temporary_password
+      self.class.trace_execution_scoped(['Custom/user_create/generate_temporary_password_and_nickname']) do
+        user_options[:nickname] = GT::UserManager.generate_temporary_nickname
+        user_options[:password] = GT::UserManager.generate_temporary_password
+      end
     end
-    @user = GT::UserManager.create_new_user_from_params(user_options) unless user_options.empty?
+
+    self.class.trace_execution_scoped(['Custom/user_create/create_user']) do
+      @user = GT::UserManager.create_new_user_from_params(user_options) unless user_options.empty?
+    end
 
     if @user and @user.errors.empty? and @user.valid?
       sign_in(:user, @user)
@@ -110,7 +116,9 @@ class V1::UserController < ApplicationController
           @status = 200
           @user.remember_me!(true)
           set_common_cookie(@user, form_authenticity_token)
-          @user.ensure_authentication_token!
+          self.class.trace_execution_scoped(['Custom/user_create/ensure_authentication_token']) do
+            @user.ensure_authentication_token!
+          end
           render 'v1/user/show'
         end
         format.html do
