@@ -537,7 +537,9 @@ module GT
       end
 
       def self.build_new_user_from_params(params)
-        u = User.new
+        self.class.trace_execution_scoped(['Custom/user_manager/create_new_user']) do
+          u = User.new
+        end
 
         u.nickname = params[:nickname]
         self.class.trace_execution_scoped(['Custom/user_manager/clean_nickname']) do
