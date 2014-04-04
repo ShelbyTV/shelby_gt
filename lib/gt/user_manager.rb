@@ -547,7 +547,9 @@ module GT
         u.password = params[:password]
         u.name = params[:name]
 
-        u.user_type = User::USER_TYPE[:anonymous] if params[:anonymous]
+        self.class.trace_execution_scoped(['Custom/user_manager/set_anon_user_type']) do
+          u.user_type = User::USER_TYPE[:anonymous] if params[:anonymous]
+        end
 
         u.server_created_on = "GT::UserManager#build_new_user_from_params/#{u.nickname}"
 
@@ -664,9 +666,7 @@ module GT
         self.class.trace_execution_scoped(['Custom/user_manager/add_follower']) do
           r.add_follower(u, false)
         end
-        self.class.trace_execution_scoped(['Custom/user_manager/backfill_dashboard_entries']) do
-          GT::Framer.backfill_dashboard_entries(u, r, 30, {:async_dashboard_entries => true})
-        end
+        GT::Framer.backfill_dashboard_entries(u, r, 30, {:async_dashboard_entries => true})
       end
   end
 end

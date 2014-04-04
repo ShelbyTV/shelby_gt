@@ -171,12 +171,19 @@ class Roll
     return false if self.followed_by?(u)
     return false if self.roll_type == TYPES[:special_watch_later] and self.creator_id != u.id
 
-    self.push_uniq :following_users => FollowingUser.new(:user => u).to_mongo
-    u.push_uniq :roll_followings => RollFollowing.new(:roll => self).to_mongo
+    self.class.trace_execution_scoped(['Custom/user_manager/pushes']) do
+      self.push_uniq :following_users => FollowingUser.new(:user => u).to_mongo
+      u.push_uniq :roll_followings => RollFollowing.new(:roll => self).to_mongo
+    end
 
     #need to reload so the local copy is up to date for future operations
-    self.reload
-    u.reload
+    self.class.trace_execution_scoped(['Custom/user_manager/reload_roll']) do
+      self.reload
+    end
+
+    self.class.trace_execution_scoped(['Custom/user_manager/reload_user']) do
+      u.reload
+    end
 
     if send_notification
       # create dbe for iOS Push and Notification Center notifications, asynchronously
@@ -185,7 +192,9 @@ class Roll
       ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_join_roll_notification(u, self) }
     end
 
-    GT::UserActionManager.follow_roll!(u.id, self.id)
+    self.class.trace_execution_scoped(['Custom/user_manager/follow_roll_action']) do
+      GT::UserActionManager.follow_roll!(u.id, self.id)
+    end
   end
 
   # Param explicit=true should be used when a user explicity takes the action to unfollow the roll
