@@ -382,7 +382,7 @@ describe GT::UserManager do
     end
 
     it "converts a (persisted) anonymous User with an email and password to real user w/o omniauth creds" do
-      anonymous_u_public_roll = Factory.create(:roll)
+      anonymous_u_public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public])
       anonymous_u = Factory.create(
         :user,
         :public_roll => anonymous_u_public_roll,
@@ -394,10 +394,12 @@ describe GT::UserManager do
       real_u.persisted?.should == true
       real_u.user_type.should == User::USER_TYPE[:converted]
       new_auth.should == nil
+      MongoMapper::Plugins::IdentityMap.clear
+      Roll.find(anonymous_u_public_roll.id).roll_type.should == Roll::TYPES[:special_public_real_user]
     end
 
     it "converts a (persisted) anonymous User with an existing authentication to real user w/o omniauth creds" do
-      anonymous_u_public_roll = Factory.create(:roll)
+      anonymous_u_public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public])
       anonymous_u = Factory.create(
         :user,
         :public_roll => anonymous_u_public_roll,
@@ -410,6 +412,8 @@ describe GT::UserManager do
       real_u.persisted?.should == true
       real_u.user_type.should == User::USER_TYPE[:converted]
       new_auth.should == nil
+      MongoMapper::Plugins::IdentityMap.clear
+      Roll.find(anonymous_u_public_roll.id).roll_type.should == Roll::TYPES[:special_public_real_user]
     end
 
     it "doesn't do anything the second time if called twice on the same user" do
@@ -429,7 +433,7 @@ describe GT::UserManager do
       @faux_u.public_roll.roll_type.should == Roll::TYPES[:special_public]
       GT::UserManager.convert_eligible_user_to_real(@faux_u)
       MongoMapper::Plugins::IdentityMap.clear
-      @faux_u.public_roll.roll_type.should == Roll::TYPES[:special_public_real_user]
+      Roll.find(@faux_u.public_roll.id).roll_type.should == Roll::TYPES[:special_public_real_user]
     end
 
     it "should follow their watch_later roll if they're not" do
@@ -580,6 +584,37 @@ describe GT::UserManager do
       faux_user.public_roll.roll_type.should eql Roll::TYPES[:special_public]
       #use ActiveRecord changed? to verify that the roll object is not dirty
       faux_user.public_roll.should_not be_changed
+
+      # calling it on a user that's already fixed should return false
+      GT::UserManager.fix_user_public_roll_type(faux_user).should == false
+    end
+
+    it "corrects the roll type for a real user" do
+      public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public])
+      real_user = Factory.create(:user, :user_type => User::USER_TYPE[:real], :public_roll => public_roll)
+
+      GT::UserManager.fix_user_public_roll_type(real_user).should == true
+
+      real_user.public_roll.roll_type.should eql Roll::TYPES[:special_public_real_user]
+      #use ActiveRecord changed? to verify that the roll object is not dirty
+      real_user.public_roll.should_not be_changed
+
+      # calling it on a user that's already fixed should return false
+      GT::UserManager.fix_user_public_roll_type(real_user).should == false
+    end
+
+    it "corrects the roll type for a converted user" do
+      public_roll = Factory.create(:roll, :roll_type => Roll::TYPES[:special_public])
+      converted_user = Factory.create(:user, :user_type => User::USER_TYPE[:converted], :public_roll => public_roll)
+
+      GT::UserManager.fix_user_public_roll_type(converted_user).should == true
+
+      converted_user.public_roll.roll_type.should eql Roll::TYPES[:special_public_real_user]
+      #use ActiveRecord changed? to verify that the roll object is not dirty
+      converted_user.public_roll.should_not be_changed
+
+      # calling it on a user that's already fixed should return false
+      GT::UserManager.fix_user_public_roll_type(converted_user).should == false
     end
 
     it "should do nothing if the user type and user public roll type already match" do
@@ -587,6 +622,10 @@ describe GT::UserManager do
       faux_user = Factory.create(:user, :user_type => User::USER_TYPE[:faux], :public_roll => public_roll)
       faux_user.public_roll.should_not_receive(:save)
 
+      GT::UserManager.fix_user_public_roll_type(faux_user).should == false
+
+      #faux users have two acceptable roll types
+      public_roll.roll_type = Roll::TYPES[:special_public_upgraded]
       GT::UserManager.fix_user_public_roll_type(faux_user).should == false
     end
 

@@ -29,7 +29,7 @@ set :app_env,     "staging"
 # resque
 #############################################################
 
-set :workers, { "*" => 10 }
+set :workers, { "*" => 8 }
 set :interval, 1
 set :resque_environment_task, true
 set :resque_log_verbose, false

@@ -256,9 +256,12 @@ module GT
 
       if (original_user_type == User::USER_TYPE[:faux]) || (user.authentications.length > 0) || (!user.primary_email.nil? && !user.primary_email.empty?)
         user.user_type = User::USER_TYPE[:converted]
-        user.public_roll.roll_type = Roll::TYPES[:special_public_real_user]
 
         if user.save
+
+          user_public_roll = user.public_roll
+          user_public_roll.roll_type = Roll::TYPES[:special_public_real_user]
+          user_public_roll.save
 
           if new_auth
             ShelbyGT_EM.next_tick {
@@ -300,10 +303,21 @@ module GT
     # returns a boolean specifying whether or not anything needed to be fixed
     def self.fix_user_public_roll_type(u)
       user_public_roll = u.public_roll
-      if u.user_type == User::USER_TYPE[:faux] && user_public_roll.roll_type == Roll::TYPES[:special_public_real_user]
-        user_public_roll.roll_type = Roll::TYPES[:special_public]
-        user_public_roll.save
-        return true
+      if user_public_roll
+        case u.user_type
+        when User::USER_TYPE[:faux]
+          if (user_public_roll.roll_type != Roll::TYPES[:special_public]) && (user_public_roll.roll_type != Roll::TYPES[:special_public_upgraded])
+            user_public_roll.roll_type = Roll::TYPES[:special_public]
+            user_public_roll.save
+            return true
+          end
+        when User::USER_TYPE[:real], User::USER_TYPE[:converted]
+          if user_public_roll.roll_type != Roll::TYPES[:special_public_real_user]
+            user_public_roll.roll_type = Roll::TYPES[:special_public_real_user]
+            user_public_roll.save
+            return true
+          end
+        end
       end
       return false
     end

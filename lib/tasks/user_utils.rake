@@ -37,39 +37,59 @@ namespace :user_utils do
 
   end
 
-  desc "Fix (for now only faux) user's public roll types"
+  desc "Fix (faux, real, converted) user's public roll types"
   task :fix_public_roll_types => :environment do
 
-    puts "Processing users"
+    Rails.logger = Logger.new(STDOUT)
 
-    processed = 0
-    num_faux = 0
-    num_fixed = 0
+    Rails.logger.info "Fixing user public roll types"
+
+    stats = {
+      :users_examined => {},
+      :users_processed => {},
+      :users_fixed => {},
+      :users_with_errors => {}
+    }
 
     #can't pass :timeout => nil to find_each, so need to drop down to the driver...
     #don't want to keep running forever if users get created during the life of the cursor,
     #  so limit ourselves to records created before the cursor is started, this also causes
     #  the query to use the index on _id so that modified records won't come out of the cursor
     #  a second time
-    User.collection.find({:_id => {:$lt => BSON::ObjectId.from_time(Time.now.utc)}}, {:timeout => false}) do |cursor|
+    User.collection.find(
+      {
+        :_id => {:$lt => BSON::ObjectId.from_time(Time.now.utc)}
+      }, {
+        :timeout => false,
+        :fields => [:ab, :ac, :_id]
+      }
+    ) do |cursor|
       cursor.each do |hsh|
         begin
-          # for now we're only interested in faux users
-          if hsh["ac"] == User::USER_TYPE[:faux]
-            num_faux += 1
+          Rails.logger.info "Processing user #{hsh['_id']}"
+          user_type = hsh["ac"]
+          stats[:users_examined][:total] = (stats[:users_examined][:total] || 0) + 1
+          stats[:users_examined][hsh["ac"]] = (stats[:users_examined][hsh["ac"]] || 0) + 1
+          # for now, we only fix faux, real, and converted users
+          if [User::USER_TYPE[:faux], User::USER_TYPE[:real], User::USER_TYPE[:converted]].include?(hsh["ac"])
+            stats[:users_processed][:total] = (stats[:users_processed][:total] || 0) + 1
+            stats[:users_processed][hsh["ac"]] = (stats[:users_processed][hsh["ac"]] || 0) + 1
             u = User.load(hsh)
-            num_fixed += 1 if GT::UserManager.fix_user_public_roll_type(u)
+            if GT::UserManager.fix_user_public_roll_type(u)
+              stats[:users_fixed][:total] = (stats[:users_fixed][:total] || 0) + 1
+              stats[:users_fixed][hsh["ac"]] = (stats[:users_fixed][hsh["ac"]] || 0) + 1
+            end
           end
         rescue Exception => e
-          puts ""
-          puts "[fix_public_roll_types] EXCEPTION PROCESSING USER #{u.id.to_s}: #{e}"
+          stats[:users_with_errors][:total] = (stats[:users_with_errors][:total] || 0) + 1
+          stats[:users_with_errors][hsh["ac"]] = (stats[:users_with_errors][hsh["ac"]] || 0) + 1
+          Rails.logger.info "[fix_public_roll_types] EXCEPTION PROCESSING USER #{u.id.to_s}: #{e}"
         end
-        print '.'
-        processed += 1
       end
     end
-    puts ""
-    puts "Done! Processed #{processed} users, #{num_faux} were faux, #{num_fixed} had their roll types fixed"
+    Rails.logger.info "Done!"
+    Rails.logger.info "Stats:"
+    Rails.logger.info stats
 
   end
 
