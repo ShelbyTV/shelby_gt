@@ -51,7 +51,7 @@ defaults: &defaults
           active: true,
           day: 5,
           time: 1600,
-          message: "It's Thursday, check out video while you check out from work. ;-)"
+          message: "It's Throwback Thursday! New videos from %@ are ready for you to watch."
         },
         {
           name: "G",
@@ -67,7 +67,7 @@ defaults: &defaults
           active: true,
           day: 1,
           time: 1000,
-          message: "Sunday morning Shelby!  Better than mowing the lawn."
+          message: "Sunday morning Shelby is ready featuring new videos from %@!"
         }
       ]
     }
