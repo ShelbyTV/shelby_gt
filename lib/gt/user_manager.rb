@@ -60,11 +60,7 @@ module GT
 
     # Creats a real User on signup w/ email, password
     def self.create_new_user_from_params(params)
-      t1 = Time.now
       user = build_new_user_from_params(params)
-      t2 = Time.now
-      delta = t2 - t1
-       ::NewRelic::Agent.record_metric('Custom/user_manager/build_time', delta)
 
       if user.valid?
         begin
@@ -544,7 +540,9 @@ module GT
         u = User.new
 
         u.nickname = params[:nickname]
-        clean_nickname!(u)
+        self.class.trace_execution_scoped(['Custom/user_manager/clean_nickname']) do
+          clean_nickname!(u)
+        end
         u.primary_email = params[:primary_email]
         u.password = params[:password]
         u.name = params[:name]
@@ -554,10 +552,14 @@ module GT
         u.server_created_on = "GT::UserManager#build_new_user_from_params/#{u.nickname}"
 
         #not going to force unique, but will steal from faux users here
-        steal_faux_nickname(u)
+        self.class.trace_execution_scoped(['Custom/user_manager/steal_faux_nickname']) do
+          steal_faux_nickname(u)
+        end
 
-        u.preferences = Preferences.new()
-        u.app_progress = AppProgress.new()
+        self.class.trace_execution_scoped(['Custom/user_manager/new_prefs_and_progress']) do
+          u.preferences = Preferences.new()
+          u.app_progress = AppProgress.new()
+        end
 
         return u
       end
