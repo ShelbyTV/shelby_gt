@@ -7,7 +7,6 @@ require 'api_clients/twitter_client'
 require 'api_clients/twitter_info_getter'
 require 'api_clients/facebook_info_getter'
 require 'facebook_friend_ranker'
-
 require 'new_relic/agent/method_tracer'
 
 
@@ -19,7 +18,7 @@ require 'new_relic/agent/method_tracer'
 module GT
   class UserManager
 
-    extend NewRelic::Agent::MethodTracer
+    extend ::NewRelic::Agent::MethodTracer
 
     # Creates a real User on signup
     def self.create_new_user_from_omniauth(omniauth)
@@ -61,9 +60,11 @@ module GT
 
     # Creats a real User on signup w/ email, password
     def self.create_new_user_from_params(params)
-      self.class.trace_execution_scoped(['Custom/user_manager/build']) do
-        user = build_new_user_from_params(params)
-      end
+      t1 = Time.now
+      user = build_new_user_from_params(params)
+      t2 = Time.now
+      delta = t2 - t1
+       ::NewRelic::Agent.record_metric('Custom/user_manager/build_time', delta)
 
       if user.valid?
         begin
