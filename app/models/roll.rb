@@ -168,7 +168,10 @@ class Roll
 
     send_notification = false if ['cg', 'bobhund', 'ugo', 'henry.sztul'].include?(u.nickname)
 
-    return false if self.followed_by?(u)
+    self.class.trace_execution_scoped(['Custom/user_manager/followed_by']) do
+      return false if self.followed_by?(u)
+    end
+
     return false if self.roll_type == TYPES[:special_watch_later] and self.creator_id != u.id
 
     self.class.trace_execution_scoped(['Custom/user_manager/pushes']) do
