@@ -438,10 +438,12 @@ module GT
 
     # Used by UserController when iOS is creating users that are temporarily missing username/password
     def self.generate_temporary_nickname
-      begin
-        nick = "cobra.#{Time.now.to_f}"
-      end while User.where( :downcase_nickname => nick ).count > 0
-      return nick
+      self.class.trace_execution_scoped(['Custom/user_manager/generate_temporary_nickname']) do
+        begin
+          nick = "cobra.#{Time.now.to_f}"
+        end while User.where( :downcase_nickname => nick ).count > 0
+        return nick
+      end
     end
 
     # Used by UserController when iOS is creating users that are temporarily missing username/password
