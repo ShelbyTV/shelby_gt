@@ -438,12 +438,10 @@ module GT
 
     # Used by UserController when iOS is creating users that are temporarily missing username/password
     def self.generate_temporary_nickname
-      self.class.trace_execution_scoped(['Custom/user_manager/generate_temporary_nickname']) do
-        begin
-          nick = "cobra.#{Time.now.to_f}"
-        end while User.where( :downcase_nickname => nick ).count > 0
-        return nick
-      end
+      begin
+        nick = "cobra.#{Time.now.to_f}"
+      end while User.where( :downcase_nickname => nick ).count > 0
+      return nick
     end
 
     # Used by UserController when iOS is creating users that are temporarily missing username/password
@@ -545,9 +543,12 @@ module GT
         self.class.trace_execution_scoped(['Custom/user_manager/clean_nickname']) do
           clean_nickname!(u)
         end
-        u.primary_email = params[:primary_email]
-        u.password = params[:password]
-        u.name = params[:name]
+
+        self.class.trace_execution_scoped(['Custom/user_manager/set_basic_params']) do
+          u.primary_email = params[:primary_email]
+          u.password = params[:password]
+          u.name = params[:name]
+        end
 
         self.class.trace_execution_scoped(['Custom/user_manager/set_anon_user_type']) do
           u.user_type = User::USER_TYPE[:anonymous] if params[:anonymous]
