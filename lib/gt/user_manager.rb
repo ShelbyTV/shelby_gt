@@ -30,7 +30,7 @@ module GT
         #additional meta-data for user's public roll
         user.public_roll.update_attribute(:origin_network, Roll::SHELBY_USER_PUBLIC_ROLL)
         # All new users follow shelby's roll
-        follow_shelby_roll(user)
+        follow_shelby_roll(user, {:async => true} )
 
         ShelbyGT_EM.next_tick {
           #start processing
@@ -89,7 +89,7 @@ module GT
 
         self.class.trace_execution_scoped(['Custom/user_manager/follow_shelby_roll']) do
           # All new users follow shelby's roll
-          follow_shelby_roll(user)
+          follow_shelby_roll(user, {:async => true} )
         end
 
         if params[:anonymous]
@@ -661,12 +661,14 @@ module GT
         end
       end
 
-      def self.follow_shelby_roll(u)
-        r = Roll.find(Settings::Roll.shelby_roll_id)
-        self.class.trace_execution_scoped(['Custom/user_manager/add_follower']) do
+      def self.follow_shelby_roll(u, options={})
+        if options[:async]
+          Resque.enqueue(RollFollower, user, Settings::Roll.shelby_roll_id)
+        else
+          r = Roll.find(Settings::Roll.shelby_roll_id)
           r.add_follower(u, false)
+          GT::Framer.backfill_dashboard_entries(u, r, 30, {:async_dashboard_entries => true})
         end
-        GT::Framer.backfill_dashboard_entries(u, r, 30, {:async_dashboard_entries => true})
       end
   end
 end
