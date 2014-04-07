@@ -991,8 +991,10 @@ describe GT::UserManager do
       end
 
       it "should follow the shelby roll" do
+        ResqueSpec.reset!
         u = GT::UserManager.create_new_user_from_omniauth(@omniauth_hash)
-        u.following_roll?(@roll, false).should == true
+        AddFollower.should have_queue_size_of(1)
+        AddFollower.should have_queued(@roll.id, u.id, false)
       end
 
       it "should have the user follow their public, upvoted, and watch_later rolls (and NOT the viewed Roll)" do
@@ -1119,10 +1121,12 @@ describe GT::UserManager do
       end
 
       it "should follow the shelby roll" do
+        ResqueSpec.reset!
         r = Factory.create(:roll)
         Roll.stub(:find).and_return( r )
         u = GT::UserManager.create_new_user_from_params(@params)
-        u.following_roll?(r, false).should == true
+        AddFollower.should have_queue_size_of(1)
+        AddFollower.should have_queued(r.id, u.id, false)
       end
 
     end

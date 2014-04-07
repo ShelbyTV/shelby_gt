@@ -168,25 +168,15 @@ class Roll
 
     send_notification = false if ['cg', 'bobhund', 'ugo', 'henry.sztul'].include?(u.nickname)
 
-    self.class.trace_execution_scoped(['Custom/user_manager/followed_by']) do
-      return false if self.followed_by?(u)
-    end
-
+    return false if self.followed_by?(u)
     return false if self.roll_type == TYPES[:special_watch_later] and self.creator_id != u.id
 
-    self.class.trace_execution_scoped(['Custom/user_manager/pushes']) do
-      self.push_uniq :following_users => FollowingUser.new(:user => u).to_mongo
-      u.push_uniq :roll_followings => RollFollowing.new(:roll => self).to_mongo
-    end
+    self.push_uniq :following_users => FollowingUser.new(:user => u).to_mongo
+    u.push_uniq :roll_followings => RollFollowing.new(:roll => self).to_mongo
 
     #need to reload so the local copy is up to date for future operations
-    self.class.trace_execution_scoped(['Custom/user_manager/reload_roll']) do
-      self.reload
-    end
-
-    self.class.trace_execution_scoped(['Custom/user_manager/reload_user']) do
-      u.reload
-    end
+    self.reload
+    u.reload
 
     if send_notification
       # create dbe for iOS Push and Notification Center notifications, asynchronously
@@ -195,9 +185,11 @@ class Roll
       ShelbyGT_EM.next_tick { GT::NotificationManager.check_and_send_join_roll_notification(u, self) }
     end
 
-    self.class.trace_execution_scoped(['Custom/user_manager/follow_roll_action']) do
-      GT::UserActionManager.follow_roll!(u.id, self.id)
-    end
+    GT::UserActionManager.follow_roll!(u.id, self.id)
+  end
+
+  def add_follower_async(u,send_notification=false)
+    Resque.enqueue(AddFollower, self.id, u.id, send_notification)
   end
 
   # Param explicit=true should be used when a user explicity takes the action to unfollow the roll
