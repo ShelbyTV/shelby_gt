@@ -95,7 +95,7 @@ class V1::UserController < ApplicationController
     end
     if ((params[:generate_temporary_nickname_and_password] && params[:user]) || params[:anonymous])
       user_options[:nickname] = GT::UserManager.generate_temporary_nickname
-      user_options[:password] = GT::UserManager.generate_temporary_password
+      user_options[:password] = GT::UserManager.generate_temporary_password unless params[:anonymous]
     end
 
     self.class.trace_execution_scoped(['Custom/user_create/create_user']) do

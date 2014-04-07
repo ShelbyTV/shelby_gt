@@ -446,7 +446,8 @@ module GT
 
     # Used by UserController when iOS is creating users that are temporarily missing username/password
     def self.generate_temporary_password
-      Devise.friendly_token.first(8)
+      nil
+      #Devise.friendly_token.first(8)
     end
 
     def self.clean_nickname!(user)
