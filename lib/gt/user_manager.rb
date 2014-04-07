@@ -662,13 +662,13 @@ module GT
       end
 
       def self.follow_shelby_roll(u, options={})
+        r = Roll.find(Settings::Roll.shelby_roll_id)
         if options[:async]
-          Resque.enqueue(RollFollower, user, Settings::Roll.shelby_roll_id)
+          r.add_follower_async(u, false)
         else
-          r = Roll.find(Settings::Roll.shelby_roll_id)
           r.add_follower(u, false)
-          GT::Framer.backfill_dashboard_entries(u, r, 30, {:async_dashboard_entries => true})
         end
+        GT::Framer.backfill_dashboard_entries(u, r, 30, {:async_dashboard_entries => true})
       end
   end
 end
