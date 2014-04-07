@@ -446,7 +446,7 @@ module GT
 
     # Used by UserController when iOS is creating users that are temporarily missing username/password
     def self.generate_temporary_password
-      "p.#{Time.now.to_f}"
+      Devise.friendly_token.first(8)
     end
 
     def self.clean_nickname!(user)
@@ -544,11 +544,12 @@ module GT
           clean_nickname!(u)
         end
 
+
+        u.primary_email = params[:primary_email]
         self.class.trace_execution_scoped(['Custom/user_manager/set_basic_params']) do
-          u.primary_email = params[:primary_email]
           u.password = params[:password]
-          u.name = params[:name]
         end
+        u.name = params[:name]
 
         self.class.trace_execution_scoped(['Custom/user_manager/set_anon_user_type']) do
           u.user_type = User::USER_TYPE[:anonymous] if params[:anonymous]
