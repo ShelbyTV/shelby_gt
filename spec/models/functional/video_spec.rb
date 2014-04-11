@@ -24,6 +24,12 @@ describe Video do
 
   end
 
+  context "before_create" do
+    it "fills the video's info_updated_at Time on creation" do
+      expect(@video.info_updated_at).to be_a(Time)
+    end
+  end
+
   context "validations" do
 
     it "should validate uniqueness of provider_name and provider_id (when arnold performance settings aren't on)" do

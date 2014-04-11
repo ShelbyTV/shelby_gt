@@ -5,6 +5,8 @@ class Video
   include Plugins::MongoMapperConfigurator
   configure_mongomapper Settings::Video
 
+  before_create :set_video_info_updated_at_now
+
   # A video may be references by many frames
   many :frames, :foreign_key => :b
 
@@ -127,6 +129,10 @@ class Video
     self.increment({:v => 1})
     GT::VideoLikerManager.add_liker_for_video(self, liker) unless liker.user_type == User::USER_TYPE[:anonymous]
     self.reload
+  end
+
+  def set_video_info_updated_at_now
+    self.info_updated_at = Time.now.utc
   end
 
 end
