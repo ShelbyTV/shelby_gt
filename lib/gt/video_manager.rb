@@ -193,8 +193,8 @@ module GT
             # if the video can't be found or is private, mark it as unavailable
             video.available = false
           end
-          # if something has changed, save the changes
-          video.save if video.changed?
+          video.info_updated_at = Time.now.utc
+          video.save
         end
       end
     end

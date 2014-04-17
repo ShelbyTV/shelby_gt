@@ -1,6 +1,5 @@
 defaults: &defaults
   db_options:
-   :pool_size: 1
    :w: 0
 
 development:
@@ -11,8 +10,6 @@ test:
 
 production: &production
   <<: *defaults
-  db_options:
-   :pool_size: 10
 
 staging:
   <<: *production

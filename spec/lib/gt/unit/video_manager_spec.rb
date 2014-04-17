@@ -336,6 +336,7 @@ describe GT::VideoManager do
     end
 
     it "should try to update the video info if it's never been updated" do
+      @vid.info_updated_at = nil
       GT::VideoProviderApi.should_receive(:get_video_info).with(@vid.provider_name, @vid.provider_id)
 
       GT::VideoManager.update_video_info(@vid)
@@ -355,6 +356,14 @@ describe GT::VideoManager do
       GT::VideoManager.update_video_info(@vid)
     end
 
+    it "doesn't update the video's updated at time if it doesn't try to update the video" do
+      @vid.info_updated_at = 1.hours.ago
+
+      expect {
+        GT::VideoManager.update_video_info(@vid)
+      }.not_to change(@vid, :info_updated_at)
+    end
+
     it "should always try to update the video if cache=false is passed" do
       @vid.info_updated_at = 1.hours.ago
       GT::VideoProviderApi.should_receive(:get_video_info)
@@ -363,15 +372,17 @@ describe GT::VideoManager do
     end
 
     it "should set the video to available if a 200 is returned" do
+      @vid.info_updated_at = nil
       response = double("response", :code => 200, :body => "")
       GT::VideoProviderApi.stub(:get_video_info).and_return(response)
-      @vid.should_not_receive(:save)
+      @vid.should_receive(:save)
 
       GT::VideoManager.update_video_info(@vid)
       @vid.available.should == true
     end
 
     it "should set the video to unavailable if a 404 (deleted or nonexistant) is returned" do
+      @vid.info_updated_at = nil
       response = double("response", :code => 404, :body => "")
       GT::VideoProviderApi.stub(:get_video_info).and_return(response)
       @vid.should_receive(:save)
@@ -381,6 +392,7 @@ describe GT::VideoManager do
     end
 
     it "should set the video to unavailable if a 403 (private) is returned" do
+      @vid.info_updated_at = nil
       response = double("response", :code => 403, :body => "")
       GT::VideoProviderApi.stub(:get_video_info).and_return(response)
       @vid.should_receive(:save)
@@ -389,7 +401,18 @@ describe GT::VideoManager do
       @vid.available.should == false
     end
 
+    it "updates the video's updated at time when it gets new video info" do
+      @vid.info_updated_at = nil
+      response = double("response", :code => 200, :body => "")
+      GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+
+      expect {
+        GT::VideoManager.update_video_info(@vid)
+      }.to change(@vid, :info_updated_at)
+    end
+
     it "should not modify the video info if a 500 is returned" do
+      @vid.info_updated_at = nil
       response = double("response", :code => 500, :body => "")
       GT::VideoProviderApi.stub(:get_video_info).and_return(response)
       @vid.should_not_receive(:available=)
@@ -397,9 +420,20 @@ describe GT::VideoManager do
       GT::VideoManager.update_video_info(@vid)
     end
 
+    it "doesn't update the video's updated at time if a 500 is returned" do
+      @vid.info_updated_at = nil
+      response = double("response", :code => 500, :body => "")
+      GT::VideoProviderApi.stub(:get_video_info).and_return(response)
+
+      expect {
+        GT::VideoManager.update_video_info(@vid)
+      }.not_to change(@vid, :info_updated_at)
+    end
+
     context "youtube specific info" do
 
       it "should set the video to unavailable if its not embeddable" do
+        @vid.info_updated_at = nil
         response = double("response", :code => 200, :body => "")
         GT::VideoProviderApi.stub(:get_video_info).and_return(response)
         @yt_model.should_receive(:noembed).and_return(true)
@@ -411,6 +445,7 @@ describe GT::VideoManager do
       end
 
       it "should set the video to unavailable if its state is not published" do
+        @vid.info_updated_at = nil
         response = double("response", :code => 200, :body => "")
         GT::VideoProviderApi.stub(:get_video_info).and_return(response)
         @yt_model.should_receive(:state).twice.and_return({:name => "restricted"})
@@ -425,6 +460,7 @@ describe GT::VideoManager do
 
     context "dailymotion specific info" do
       before(:each) do
+        @vid.info_updated_at = nil
         @vid.provider_name = "dailymotion"
         @vid.save
       end
@@ -453,7 +489,7 @@ describe GT::VideoManager do
         response = double("response", :code => 200, :body => "", :parsed_response => {"allow_embed"=> true, "status" => "published"})
         GT::VideoProviderApi.stub(:get_video_info).and_return(response)
 
-        @vid.should_not_receive(:save)
+        @vid.should_receive(:save)
 
         GT::VideoManager.update_video_info(@vid)
         @vid.available.should == true
@@ -470,6 +506,7 @@ describe GT::VideoManager do
 
     context "vimeo specific info" do
       before(:each) do
+        @vid.info_updated_at = nil
         @vid.provider_name = "vimeo"
         @vid.save
       end
@@ -479,7 +516,7 @@ describe GT::VideoManager do
         GT::VideoProviderApi.stub(:get_video_info).and_return(response)
         YouTubeIt::Parser::VideoFeedParser.should_not_receive(:new)
 
-        @vid.should_not_receive(:save)
+        @vid.should_receive(:save)
 
         GT::VideoManager.update_video_info(@vid)
         @vid.available.should == true
