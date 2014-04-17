@@ -92,20 +92,6 @@ describe GT::Framer do
       res[:frame].conversation.frame.should == res[:frame]
     end
 
-    it "should set the frame's roll's thumbnail_url if it's nil" do
-      @roll.creator_thumbnail_url.blank?.should == true
-
-      res = GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => @frame_creator,
-        :video => @video,
-        :message => @message,
-        :roll => @roll
-        )
-
-      res[:frame].roll.creator_thumbnail_url.should == @video.thumbnail_url
-    end
-
     it "should not touch the frame's roll's thumbnail_url if it's already set" do
       @roll.update_attribute(:creator_thumbnail_url, "something://el.se")
 
@@ -118,31 +104,6 @@ describe GT::Framer do
         )
 
       res[:frame].roll.creator_thumbnail_url.should == "something://el.se"
-    end
-
-    it "should set the roll's first_frame_thumbnail_url everytime a frame is added to a roll" do
-      res1 = GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => @frame_creator,
-        :video => @video,
-        :message => @message,
-        :roll => @roll
-        )
-
-      res1[:frame].roll.first_frame_thumbnail_url.should == @video.thumbnail_url
-
-      vid2 = @video
-      vid2.thumbnail_url = "http://test.ing"; vid2.save
-
-      res2 = GT::Framer.create_frame(
-        :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
-        :creator => @frame_creator,
-        :video => vid2,
-        :message => @message,
-        :roll => @roll
-        )
-
-        res1[:frame].roll.first_frame_thumbnail_url.should == vid2.thumbnail_url
     end
 
     it "should create no DashboardEntries if the roll has no followers" do
@@ -719,14 +680,6 @@ describe GT::Framer do
       GT::NotificationManager.should_receive(:check_and_send_reroll_notification).with(@f1, new_frame, [:notification_center])
 
       GT::Framer.re_roll(@f1, @roll_creator, @roll)
-    end
-
-    it "should set the frame's roll's thumbnail_url if it's nil" do
-      @roll.creator_thumbnail_url.blank?.should == true
-
-      res = GT::Framer.re_roll(@f1, Factory.create(:user), @roll)
-
-      res[:frame].roll.creator_thumbnail_url.should == @video.thumbnail_url
     end
 
     it "should not touch the frame's roll's thumbnail_url if it's already set" do

@@ -264,7 +264,6 @@ describe 'v1/discussion_roll' do
         emails = [msg_poster_email, Factory.next(:primary_email), Factory.next(:primary_email)]
         roll = @tester.create_discussion_roll_for(@u1, emails)
         res = GT::Framer.re_roll(@frame, @u1, roll, {:skip_dashboard_entries => true})
-        roll.reload.content_updated_at.to_i.should be_within(5).of(res[:frame].created_at.to_i)
 
         #change it to make sure we update later
         roll.content_updated_at = 1.day.ago
