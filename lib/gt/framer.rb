@@ -140,7 +140,7 @@ module GT
       end
 
       # Roll - set its thumbnail if missing, update content_updated_at
-      ensure_roll_metadata!(roll, f) if roll
+      #ensure_roll_metadata!(roll, f) if roll
 
       return res
     end
@@ -177,7 +177,7 @@ module GT
       end
 
       # Roll - set its thumbnail if missing
-      ensure_roll_metadata!(Roll.find(roll_id), new_frame)
+      #ensure_roll_metadata!(Roll.find(roll_id), new_frame)
 
       return { :frame => new_frame }
     end
