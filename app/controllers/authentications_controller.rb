@@ -24,31 +24,26 @@ class AuthenticationsController < ApplicationController
   # @param [Required, String] username May be the username or the primary email address of the user
   # @param [Required, String] password The plaintext password
   def login
-    t1 = Time.now
-    u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s)) if params[:username]
-    t2 = Time.now
-    ::NewRelic::Agent.record_metric('Custom/login/find_user', t2-t1)
+    self.class.trace_execution_scoped(['Custom/login/find_user']) do
+      @u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s)) if params[:username]
+    end
 
-    if u and u.has_password? and u.valid_password?(params[:password])
-      t1 = Time.now
-      user = u
-      t2 = Time.now
-      ::NewRelic::Agent.record_metric('Custom/login/set_u_to_user_a', t2-t1)
-    elsif u and (params[:password] == "anonymous") and (u.user_type == User::USER_TYPE[:anonymous])
-      t1 = Time.now
-      user = u
-      t2 = Time.now
-      ::NewRelic::Agent.record_metric('Custom/login/set_u_to_user_b', t2-t1)
-    else
-      query = {:auth_failure => 1, :auth_strategy => "that username/password"}
-      query[:redir] = params[:redir] if params[:redir]
-      redirect_to add_query_params(request.referer || Settings::ShelbyAPI.web_root, query) and return
+    self.class.trace_execution_scoped(['Custom/login/if_block']) do
+      if @u and @u.has_password? and @u.valid_password?(params[:password])
+        @user = @u
+      elsif @u and (params[:password] == "anonymous") and (@u.user_type == User::USER_TYPE[:anonymous])
+        @user = @u
+      else
+        query = {:auth_failure => 1, :auth_strategy => "that username/password"}
+        query[:redir] = params[:redir] if params[:redir]
+        redirect_to add_query_params(request.referer || Settings::ShelbyAPI.web_root, query) and return
+      end
     end
 
     # any user with valid email/password is a valid Shelby user
     # this sets up redirect
     self.class.trace_execution_scoped(['Custom/login/sign_in_current_user']) do
-      sign_in_current_user(user)
+      sign_in_current_user(@user)
     end
     redirect_to clean_query_params(@opener_location) and return
   end
