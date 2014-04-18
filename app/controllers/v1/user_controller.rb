@@ -3,11 +3,8 @@ require 'user_stats_manager'
 require 'event_tracking'
 require "framer"
 require "predator_manager"
-require 'new_relic/agent/method_tracer'
 
 class V1::UserController < ApplicationController
-
-  extend NewRelic::Agent::MethodTracer
 
   include ApplicationHelper
 
@@ -98,9 +95,7 @@ class V1::UserController < ApplicationController
       user_options[:password] = GT::UserManager.generate_temporary_password unless params[:anonymous]
     end
 
-    self.class.trace_execution_scoped(['Custom/user_create/create_user']) do
-      @user = GT::UserManager.create_new_user_from_params(user_options) unless user_options.empty?
-    end
+    @user = GT::UserManager.create_new_user_from_params(user_options) unless user_options.empty?
 
     if @user and @user.errors.empty? and @user.valid?
       sign_in(:user, @user)

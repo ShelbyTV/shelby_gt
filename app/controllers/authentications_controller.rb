@@ -3,7 +3,11 @@ require 'user_manager'
 require 'user_merger'
 require 'rack/utils'
 
+require 'new_relic/agent/method_tracer'
+
 class AuthenticationsController < ApplicationController
+
+  extend NewRelic::Agent::MethodTracer
 
   before_filter :authenticate_user!, :only => [:should_merge_accounts, :do_merge_accounts, :remove_all_authentications]
 
@@ -20,12 +24,18 @@ class AuthenticationsController < ApplicationController
   # @param [Required, String] username May be the username or the primary email address of the user
   # @param [Required, String] password The plaintext password
   def login
-    u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s)) if params[:username]
+    self.class.trace_execution_scoped(['Custom/login/find_user']) do
+      u = (User.find_by_primary_email(params[:username].downcase) || User.find_by_nickname(params[:username].downcase.to_s)) if params[:username]
+    end
 
     if u and u.has_password? and u.valid_password?(params[:password])
-      user = u
+      self.class.trace_execution_scoped(['Custom/login/set_u_to_user_a']) do
+        user = u
+      end
     elsif u and (params[:password] == "anonymous") and (u.user_type == User::USER_TYPE[:anonymous])
-      user = u
+      self.class.trace_execution_scoped(['Custom/login/set_u_to_user_b']) do
+        user = u
+      end
     else
       query = {:auth_failure => 1, :auth_strategy => "that username/password"}
       query[:redir] = params[:redir] if params[:redir]
@@ -34,7 +44,9 @@ class AuthenticationsController < ApplicationController
 
     # any user with valid email/password is a valid Shelby user
     # this sets up redirect
-    sign_in_current_user(user)
+    self.class.trace_execution_scoped(['Custom/login/sign_in_current_user']) do
+      sign_in_current_user(user)
+    end
     redirect_to clean_query_params(@opener_location) and return
   end
 
@@ -267,17 +279,25 @@ class AuthenticationsController < ApplicationController
     end
 
     def sign_in_current_user(user, omniauth=nil)
-      GT::UserManager.convert_eligible_user_to_real(user, omniauth) if user.user_type == User::USER_TYPE[:faux]
-      GT::UserManager.start_user_sign_in(user, :omniauth => omniauth)
+      self.class.trace_execution_scoped(['Custom/sign_in_current_user/convert_to_real']) do
+        GT::UserManager.convert_eligible_user_to_real(user, omniauth) if user.user_type == User::USER_TYPE[:faux]
+      end
+      self.class.trace_execution_scoped(['Custom/sign_in_current_user/start_user_sign_in']) do
+        GT::UserManager.start_user_sign_in(user, :omniauth => omniauth)
+      end
 
       if session[:cohort_entrance_id]
         use_cohort_entrance user, CohortEntrance.find(session[:cohort_entrance_id])
         session[:cohort_entrance_id] = nil
       end
 
-      sign_in(:user, user)
+      self.class.trace_execution_scoped(['Custom/sign_in_current_user/sign_in']) do
+        sign_in(:user, user)
+      end
 
-      set_common_cookie(user, form_authenticity_token)
+      self.class.trace_execution_scoped(['Custom/sign_in_current_user/set_cookies']) do
+        set_common_cookie(user, form_authenticity_token)
+      end
 
       if omniauth
         StatsManager::StatsD.increment(Settings::StatsConstants.user['signin']['success'][omniauth['provider'].to_s])
