@@ -172,7 +172,8 @@
    apply(FRAME , order                      , ORDER                      , DOUBLE , k               ) \
    apply(FRAME , anonymous_creator_nickname , ANONYMOUS_CREATOR_NICKNAME , STRING , m               ) \
    apply(FRAME , like_count                 , LIKE_COUNT                 , INT    , n               ) \
-   apply(FRAME , frame_type                 , FRAME_TYPE                 , INT    , o               )
+   apply(FRAME , frame_type                 , FRAME_TYPE                 , INT    , o               ) \
+   apply(FRAME , original_source_url        , ORIGINAL_SOURCE_URL        , STRING , p               )
 
 #define ANCESTOR_FRAME_PROPERTIES(apply)                     \
    apply(ANCESTOR_FRAME , id        , ID        , OID, _id ) \
