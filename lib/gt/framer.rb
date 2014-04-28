@@ -75,6 +75,7 @@ module GT
       persist = true if persist.nil?
       raise ArgumentError, ":persist must be true if :async_dashboard_entries is true" if async_dashboard_entries && !persist
       dashboard_entry_options[:persist] = persist
+      original_source_url = options.delete(:original_source_url)
 
       # Try to safely create conversation
       if genius || !persist
@@ -109,6 +110,7 @@ module GT
       f.score = score
       f.order = order
       f.frame_type = frame_type if frame_type
+      f.original_source_url if original_source_url
 
       f.save if persist
 

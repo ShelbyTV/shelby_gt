@@ -56,6 +56,7 @@ class V1::FrameController < ApplicationController
   # @param [Required, Escaped String] url A video url
   # @param [Optional, Escaped String] text Message text to be added to the conversation
   # @param [Optional, String] source The source could be bookmarklet, webapp, etc
+  # @param [Optional, String] original_source_url Whats the permalink of the page (for cheezeburger mostly)
   #
   # Returns: The new Frame, including all children expanded.
   def create
@@ -115,6 +116,7 @@ class V1::FrameController < ApplicationController
           # and finally create the frame
           # creating dashboard entries async.
           frame_options[:async_dashboard_entries] = true
+          frame_options[:original_source_url] = params[:original_source_url] if params[:original_source_url]
 
           r = frame_options[:video] ? GT::Framer.create_frame(frame_options) : {}
 
