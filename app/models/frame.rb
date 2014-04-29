@@ -67,7 +67,7 @@ class Frame
   }.freeze
   key :frame_type, Integer, :abbr => :o, :default => FRAME_TYPE[:heavy_weight]
 
-  key :original_source_url, String, :abbr => :p
+  key :original_source_url, String, :abbr => :p, :default => nil
 
   #nothing needs to be mass-assigned (yet?)
   attr_accessible

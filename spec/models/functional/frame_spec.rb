@@ -29,6 +29,12 @@ describe Frame do
       frame = Factory.create(:frame, :roll => roll)
       frame.frame_type.should == Frame::FRAME_TYPE[:heavy_weight]
     end
+
+    it "should have an original_source_url if set" do
+      roll = Factory.create(:roll)
+      frame = Factory.create(:frame, :roll => roll, :original_source_url => "http://foo")
+      frame.original_source_url.should == "http://foo"
+    end
   end
 
   # We're testing a private method here, but it's a pretty fucking important/tricky one and has to be correct

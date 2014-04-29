@@ -110,7 +110,7 @@ module GT
       f.score = score
       f.order = order
       f.frame_type = frame_type if frame_type
-      f.original_source_url if original_source_url
+      f.original_source_url = original_source_url if original_source_url
 
       f.save if persist
 

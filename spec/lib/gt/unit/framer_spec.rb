@@ -40,6 +40,7 @@ describe GT::Framer do
 
     it "should create a Frame for with an original_source_url" do
       foo = "foo"
+
       res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_in_app_frame],
         :creator => @frame_creator,
@@ -49,7 +50,6 @@ describe GT::Framer do
         :original_source_url => foo
         )
 
-      MongoMapper::Plugins::IdentityMap.clear
       res[:frame].original_source_url.should == foo
     end
 
