@@ -38,6 +38,21 @@ describe GT::Framer do
       res[:frame].frame_type.should == Frame::FRAME_TYPE[:heavy_weight]
     end
 
+    it "should create a Frame for with an original_source_url" do
+      foo = "foo"
+      res = GT::Framer.create_frame(
+        :action => DashboardEntry::ENTRY_TYPE[:new_in_app_frame],
+        :creator => @frame_creator,
+        :video => @video,
+        :message => @message,
+        :roll => @roll,
+        :original_source_url => foo
+        )
+
+      MongoMapper::Plugins::IdentityMap.clear
+      res[:frame].original_source_url.should == foo
+    end
+
     it "should not persist anything if persist option is set to false" do
       res = GT::Framer.create_frame(
         :action => DashboardEntry::ENTRY_TYPE[:new_social_frame],
