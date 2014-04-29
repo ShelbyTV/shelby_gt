@@ -63,7 +63,7 @@ module GT
       end
 
       User.collection.update({
-        'authentications.uid' => u.authentications.to_ary.find{ |a| a.provider == 'twitter'}.uid, 'authentications.provider' => 'twitter'
+        :_id => u.id, 'authentications.provider' => 'twitter'
       },{
         :$set => fields_to_update
       })

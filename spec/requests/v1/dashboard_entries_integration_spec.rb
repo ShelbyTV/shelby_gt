@@ -12,7 +12,7 @@ describe 'v1/dashboard' do
       context "when entries exist" do
         before(:each) do
           @v = Factory.create(:video)
-          @f = Factory.create(:frame, :creator_id => @u1.id, :video => @v)
+          @f = Factory.create(:frame, :creator_id => @u1.id, :video => @v, :original_source_url => "some_url")
           @d = Factory.build(:dashboard_entry)
           @d.user = @u1; @d.frame = @f
           @d.save
@@ -72,6 +72,13 @@ describe 'v1/dashboard' do
           response.body.should have_json_path("result/0/frame/video/tracked_liker_count")
           response.body.should have_json_type(Integer).at_path("result/0/frame/video/tracked_liker_count")
           parse_json(response.body)["result"][0]["frame"]["video"]["tracked_liker_count"].should eq(0)
+        end
+
+        it "contains frame's original_source_url attribute" do
+          get '/v1/dashboard'
+
+          expect(response.body).to have_json_path("result/0/frame/original_source_url")
+          expect(parse_json(response.body)["result"][0]["frame"]["original_source_url"]).to eql "some_url"
         end
 
         it "should return an empty array when there are no video recommendations" do

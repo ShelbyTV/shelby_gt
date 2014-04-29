@@ -14,7 +14,7 @@ describe 'v1/frame' do
 
     @r = Factory.create(:roll, :creator => @u1, :public => false, :roll_type => Roll::TYPES[:user_private])
     @v = Factory.create(:video, :title => 'title')
-    @f = Factory.create(:frame, :creator => @u1, :roll => @r, :conversation => Factory.create(:conversation), :video => @v)
+    @f = Factory.create(:frame, :creator => @u1, :roll => @r, :conversation => Factory.create(:conversation), :video => @v, :original_source_url => "some_url")
     @f2 = Factory.create(:frame, :creator => @u1, :roll => @r)
     @f3 = Factory.create(:frame, :creator => @u1, :roll => @r)
     @f4 = Factory.create(:frame, :creator => @u1, :roll => @r)
@@ -63,6 +63,12 @@ describe 'v1/frame' do
         it "should contain like_count attribute" do
           get '/v1/frame/'+@f.id
           response.body.should have_json_path("result/like_count")
+        end
+
+        it "contains original_source_url attribute" do
+          get '/v1/frame/'+@f.id
+          expect(response.body).to have_json_path("result/original_source_url")
+          expect(parse_json(response.body)["result"]["original_source_url"]).to eql "some_url"
         end
 
         it "contains video's tracked_liker_count attribute" do
@@ -168,6 +174,13 @@ describe 'v1/frame' do
           response.body.should have_json_path("result/frames/0/video/tracked_liker_count")
           response.body.should have_json_type(Integer).at_path("result/frames/0/video/tracked_liker_count")
           parse_json(response.body)["result"]["frames"][0]["video"]["tracked_liker_count"].should eq(0)
+        end
+
+        it "contains frame's original_source_url attribute" do
+          get '/v1/roll/'+@frames_roll.id.to_s+'/frames'
+
+          expect(response.body).to have_json_path("result/frames/0/original_source_url")
+          expect(parse_json(response.body)["result"]["frames"][0]["original_source_url"]).to eql "some_url"
         end
 
         it "should return an empty array when there are no video recommendations" do
