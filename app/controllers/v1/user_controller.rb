@@ -334,6 +334,28 @@ class V1::UserController < ApplicationController
   end
 
   ##
+  # Enqueues a Resque job to create a CSV file export of the user's public roll and email it to them
+  #   REQUIRES AUTHENTICATION
+  #
+  # [GET] /v1/user/:id/public_roll_export
+  #
+  # @param [Required, String] id The id of the user
+  # @param [Required, String] email The email address to send the CSV file to
+  def public_roll_export
+    return render_error(400, "must include an email address") unless email = params[:email]
+
+    if params[:id] == current_user.id.to_s
+      @user = current_user
+    else
+      return render_error(403, "unauthorized")
+    end
+
+    Resque.enqueue(PublicRollExporter, @user.id, email)
+
+    @status = 200
+  end
+
+  ##
   # Creates a new dashboard entry for a user with the given frame id.
   #
   # [POST] /v1/user/:id/dashboard_entry
