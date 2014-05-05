@@ -86,6 +86,19 @@ class Video
     self.permalink
   end
 
+  def video_provider_permalink
+    case self.provider_name
+    when "youtube"
+      return "http://www.youtube.com/watch?v=" + self.provider_id
+    when "vimeo"
+      return "http://vimeo.com/" + self.provider_id
+    when "dailymotion"
+      return "http://www.dailymotion.com/video/" + self.provider_id
+    else #SOL
+      return nil
+    end
+  end
+
   #------ Viewing
 
   # Create a Frame with this video on the User's viewed_roll if they haven't viewed this in the last day.

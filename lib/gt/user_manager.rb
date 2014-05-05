@@ -8,7 +8,9 @@ require 'api_clients/twitter_info_getter'
 require 'api_clients/facebook_info_getter'
 require 'facebook_friend_ranker'
 require 'new_relic/agent/method_tracer'
-
+require 'fileutils'
+require 'tempfile'
+require 'csv'
 
 # This is the one and only place where Users are created.
 #
@@ -677,7 +679,25 @@ module GT
       end
 
       def self.export_public_roll(user, email)
-        # do things
+        # get users public roll
+        frames = user.public_roll.frames
+        # create a temp csv file.
+        filename = (user.nickname || user.name.first)+'-shelby-export.csv'
+        file = Tempfile.new(filename)
+        begin
+          CSV.open(file, "w") do |csv|
+            csv << ['Date', 'Title', 'URL']
+            # loop through frames in public roll
+            frames.each do |f|
+              #  - get date frame created, title, video url
+              csv << [ f.created_at, f.video.title, f.video.video_provider_permalink] if f.video.video_provider_permalink
+            end
+          end
+          # send email to person with csv
+          file.close
+        ensure
+          file.unlink   # deletes the temp file
+        end
       end
   end
 end
