@@ -694,6 +694,7 @@ module GT
             end
           end
           # send email to person with csv
+
           file.close
         ensure
           file.unlink   # deletes the temp file
