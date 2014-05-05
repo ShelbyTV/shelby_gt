@@ -240,7 +240,7 @@ module GT
       mail_message.deliver
     end
 
-    def send_takeout_notification(user, email_to, attachment)
+    def self.send_takeout_notification(user, email_to, attachment)
       mail_message = NotificationMailer.takeout_notification(user, email_to, attachment)
 
       mail_message.delivery_method.settings = {
