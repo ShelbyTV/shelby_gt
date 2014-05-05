@@ -106,6 +106,12 @@ if Rails.env.development?
         MortarMailer.mortar_recommendation_trial(user, recs, true)
       end
 
+      def takeout_notification
+        user = User.last
+        email = "test@test.com"
+        NotificationMailer.takeout_notification(user,email)
+      end
+
       def weekly_recommendation__video_graph
         user      = User.first
         frame     = Factory.create(:frame, :video => Video.first, :creator => user, :conversation => Conversation.first)

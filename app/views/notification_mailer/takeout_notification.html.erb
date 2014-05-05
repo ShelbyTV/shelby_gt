@@ -7,7 +7,7 @@
             <!-- main -->
             <table border="0" cellspacing="0" cellpadding="0">
               <tbody>
-                <%= render :partial => "/objects/summary_text", :locals => { :text => "Here's all your awesome video..." } %>
+                <%= render :partial => "/objects/summary_text", :locals => { :text => "Download attached CSV" } %>
 
                 <%= render :partial => "/objects/header" %>
 
@@ -23,7 +23,7 @@
                                 <td>
                                   <!-- BODY -->
                                     <center>
-                                      <p style="color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;">
+                                      <p style="width:420px;color: <%= Settings::Email.ui_soft_black %>; font-family: <%= Settings::Email.font_family %>; font-size: <%= Settings::Email.font_size_large %>; font-weight: <%= Settings::Email.font_weight %>; line-height: 1.231;">
                                         All the videos you've liked and shared on Shelby.tv are ready to download!
                                       </p>
                                     </center>
@@ -34,11 +34,18 @@
                                 <td>
                                   <center>
                                     <div style="width:278px">
-                                      <div style="height:27px; background-color: <%= Settings::Email.ui_green %>; color: <%= Settings::Email.ui_white %>;text-align: center;border: 1px solid #056083;padding-top: 9px;">
+                                      <div style="height:27px; color: <%= Settings::Email.ui_soft_black %>;text-align: center;padding-top: 9px;">
                                             (CSV Attached)
                                       </div>
                                     </div>
                                   </center>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="text-align:center;">
+                                    <small style="text-align: center;">
+                                    <a style="color: <%= Settings::Email.ui_white %>;text-decoration: none;" href="https://www.youtube.com/watch?v=wn8XFiAwLkM">dishes are done</a>
+                                  </small>
                                 </td>
                               </tr>
                             </table>
