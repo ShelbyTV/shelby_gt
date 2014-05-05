@@ -675,5 +675,9 @@ module GT
         end
         GT::Framer.backfill_dashboard_entries(u, r, 30, {:async_dashboard_entries => true})
       end
+
+      def self.export_public_roll(user, email)
+        # do things
+      end
   end
 end
