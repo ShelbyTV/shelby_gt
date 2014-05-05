@@ -691,7 +691,9 @@ module GT
             # loop through frames in public roll
             frames.each do |f|
               #  - get date frame created, title, video url
-              csv << [ f.created_at, f.video.title, f.video.video_provider_permalink] if f.video.video_provider_permalink
+              if f.video and f.video.title and f.video.video_provider_permalink
+                csv << [ f.created_at, f.video.title, f.video.video_provider_permalink]
+              end
             end
           end
           # send email to person with csv
