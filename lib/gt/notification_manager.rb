@@ -240,6 +240,20 @@ module GT
       mail_message.deliver
     end
 
+    def send_takeout_notification(user, email_to, attachment)
+      mail_message = NotificationMailer.takeout_notification(user, email_to, attachment)
+
+      mail_message.delivery_method.settings = {
+        :address => Settings::Email.postfix["server_address"],
+        :domain => Settings::Email.postfix["server_domain"],
+        :user_name => nil,
+        :password => nil,
+        :authentication => nil,
+        :enable_starttls_auto => false
+      }
+      mail_message.deliver
+    end
+
     private
 
       def self.email_address_for_participant(participant)

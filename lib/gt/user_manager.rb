@@ -11,6 +11,7 @@ require 'new_relic/agent/method_tracer'
 require 'fileutils'
 require 'tempfile'
 require 'csv'
+require 'notification_manager'
 
 # This is the one and only place where Users are created.
 #
@@ -694,9 +695,9 @@ module GT
             end
           end
           # send email to person with csv
-
-          file.close
+          NotificationManager.send_takeout_notification(user, email, file)
         ensure
+          file.close
           file.unlink   # deletes the temp file
         end
       end

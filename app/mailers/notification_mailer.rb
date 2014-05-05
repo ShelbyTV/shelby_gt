@@ -187,4 +187,19 @@ class NotificationMailer < ActionMailer::Base
          :subject => subject_line
   end
 
+  # aka export info for user
+  def takeout_notification(user_to, email_to, attachment)
+    sendgrid_category Settings::Email.takeout_notification["category"]
+
+    sendgrid_ganalytics_options(:utm_source => '#{user.nickname}', :utm_medium => 'notification', :utm_campaign => "Takeout")
+
+    @user_to = user_to
+
+    attachments["#{user_to.nickname || user_to.name.first}-shelby-export.csv"] = attachment
+
+    mail :from => "Shelby.tv <#{Settings::Email.notification_sender}>",
+      :to => email_to,
+      :subject => Settings::Email.takeout_notification
+  end
+
 end

@@ -62,6 +62,9 @@ defaults: &defaults
   disqus_comment_notification:
     category: "Comment Notifications"
     subject: "Someone commented on the video you shared on Shelby.tv"
+  takeout_notification:
+    category: "Takeout Notification"
+    subject: "All the videos you've like and shared on Shelby!"
   # Deprecated Notifications ---------------------------------------------------
   comment_notification:
     category: "Comment Notifications"

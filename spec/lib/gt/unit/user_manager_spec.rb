@@ -1524,14 +1524,5 @@ describe GT::UserManager do
       u.public_roll.persisted?.should == true
       u.watch_later_roll.persisted?.should == true
     end
-
-  context "export user info"
-    it "should " do
-      u = Factory.create(:user)
-      email = "test@test.com"
-
-    end
-  end
-
 end
 
