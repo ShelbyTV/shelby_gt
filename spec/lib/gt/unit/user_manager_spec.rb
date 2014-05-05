@@ -1524,5 +1524,7 @@ describe GT::UserManager do
       u.public_roll.persisted?.should == true
       u.watch_later_roll.persisted?.should == true
     end
-end
 
+  end
+
+end
