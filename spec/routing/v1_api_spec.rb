@@ -75,6 +75,15 @@ describe V1::UserController do
       )
     end
 
+    it "routes for public_roll_export GET" do
+      { :get => "/v1/user/1/public_roll_export" }.should route_to(
+        :controller => "v1/user",
+        :action => "public_roll_export",
+        :format => "json",
+        :id => "1"
+      )
+    end
+
     it "route for incrementing session count PUT" do
       { :put => "/v1/user/1/visit" }.should route_to(
         :controller => "v1/user",

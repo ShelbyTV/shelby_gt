@@ -490,6 +490,41 @@ describe 'v1/user' do
         parse_json(response.body)["result"][0]["creator_name"].should == @u1.name
       end
 
+      context 'public_roll_export' do
+        before(:each) do
+          ResqueSpec.reset!
+          @email = 'someemail@somedomain.com'
+        end
+
+        it "returns success for the logged in user" do
+          get '/v1/user/'+@u1.id+'/public_roll_export?email='+@email
+          response.body.should be_json_eql(200).at_path("status")
+        end
+
+        it "enqueues a resque job to perform the CSV export and email" do
+          get '/v1/user/'+@u1.id+'/public_roll_export?email='+@email
+          expect(PublicRollExporter).to have_queue_size_of(1)
+          expect(PublicRollExporter).to have_queued(@u1.id, @email)
+        end
+
+        it "returns 400 if the client does not supply an email address" do
+          get '/v1/user/'+@u1.id+'/public_roll_export'
+          response.body.should be_json_eql(400).at_path("status")
+        end
+
+        it "returns 403 if trying to look up a user other than the current_user" do
+          u2 = Factory.create(:user)
+          get '/v1/user/'+u2.id+'/public_roll_export?email='+@email
+          response.body.should be_json_eql(403).at_path("status")
+        end
+
+        it "returns 401 if not authenticated" do
+          get "/signout"
+          get '/v1/user/'+@u1.id+'/public_roll_export?email='+@email
+          response.body.should be_json_eql(401).at_path("status")
+        end
+      end
+
       context "valid_token route" do
 
         it "should render an error if user doen't have the specified authentication" do
