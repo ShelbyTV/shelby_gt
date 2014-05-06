@@ -64,7 +64,7 @@ defaults: &defaults
     subject: "Someone commented on the video you shared on Shelby.tv"
   takeout_notification:
     category: "Takeout Notification"
-    subject: "All the videos you've like and shared on Shelby, ready to download!"
+    subject: "All the videos you've liked and shared on Shelby, ready to download!"
   # Deprecated Notifications ---------------------------------------------------
   comment_notification:
     category: "Comment Notifications"
