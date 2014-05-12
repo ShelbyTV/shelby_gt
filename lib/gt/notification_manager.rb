@@ -17,7 +17,7 @@ module GT
 
       return unless user_to.preferences.upvote_notifications
 
-      NotificationMailer.upvote_notification(user_to, user, frame).deliver
+      #NotificationMailer.upvote_notification(user_to, user, frame).deliver
     end
 
     def self.check_and_send_like_notification(frame, user_from=nil, destinations=[:email])
@@ -32,7 +32,7 @@ module GT
           return
         else
           StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['like'])
-          NotificationMailer.like_notification(user_to, frame, user_from).deliver
+          #NotificationMailer.like_notification(user_to, frame, user_from).deliver
         end
       end
       if destinations.include?(:notification_center) && user_to && (user_from != user_to)
@@ -73,7 +73,7 @@ module GT
           return
         else
           StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['share'])
-          NotificationMailer.reroll_notification(old_frame, new_frame).deliver
+          #NotificationMailer.reroll_notification(old_frame, new_frame).deliver
         end
       end
       if destinations.include?(:notification_center) && (user_from_id != user_to.id)
@@ -121,7 +121,7 @@ module GT
       # Temp: for now only send emails to gt_enabled users
       users_to_email.select! { |u| u.gt_enabled and u.preferences and u.preferences.comment_notifications? }
 
-      users_to_email.each { |u| NotificationMailer.comment_notification(u, new_message.user, frame, new_message).deliver unless u.primary_email.blank? }
+      #users_to_email.each { |u| NotificationMailer.comment_notification(u, new_message.user, frame, new_message).deliver unless u.primary_email.blank? }
 
     end
 
@@ -130,7 +130,7 @@ module GT
 
       return unless frame.creator.preferences.comment_notifications
 
-      NotificationMailer.disqus_comment_notification(frame, frame.creator).deliver
+      #NotificationMailer.disqus_comment_notification(frame, frame.creator).deliver
     end
 
     def self.check_and_send_join_roll_notification(user_from, roll, destinations=[:email])
@@ -150,7 +150,7 @@ module GT
           return
         else
           StatsManager::StatsD.increment(Settings::StatsConstants.notification['sent']['follow'])
-          NotificationMailer.join_roll_notification(user_to, user_from, roll).deliver
+          #NotificationMailer.join_roll_notification(user_to, user_from, roll).deliver
         end
       end
       if destinations.include?(:notification_center) && (user_from != user_to) && (user_from.user_type != User::USER_TYPE[:anonymous])
@@ -182,7 +182,7 @@ module GT
 
       return if !inviter.primary_email or inviter.primary_email == "" or !inviter.preferences.invite_accepted_notifications
 
-      NotificationMailer.invite_accepted_notification(inviter, invitee, invitee.public_roll).deliver
+      #NotificationMailer.invite_accepted_notification(inviter, invitee, invitee.public_roll).deliver
     end
 
     # Email all of the participants, except for the posting_participant.
@@ -219,9 +219,9 @@ module GT
         }
 
         if initial_email
-          DiscussionRollMailer.on_discussion_roll_creation(opts).deliver
+          #DiscussionRollMailer.on_discussion_roll_creation(opts).deliver
         else
-          DiscussionRollMailer.on_discussion_roll_reply(opts).deliver
+          #DiscussionRollMailer.on_discussion_roll_reply(opts).deliver
         end
       end
     end
